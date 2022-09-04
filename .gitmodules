@@ -1,3 +1,0 @@
-[submodule "Sparky/vendor/spdlog"]
-	path = Sparky/vendor/spdlog
-	url = https://github.com/gabime/spdlog.git
