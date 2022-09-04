@@ -1,0 +1,8 @@
+﻿  Sandbox.cpp
+C:\dev\Projects\Sparky Game Engine\Sparky\Sparky\src\Sparky\Log.h(18,49): warning C4251: 'Sparky::Log::s_CoreLogger': class 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of class 'Sparky::Log'
+C:\dev\Projects\Sparky Game Engine\Sparky\Sparky\vendor\spdlog\include\spdlog\details\registry.h(34): message : see declaration of 'std::shared_ptr<spdlog::logger>'
+C:\dev\Projects\Sparky Game Engine\Sparky\Sparky\src\Sparky\Log.h(19,49): warning C4251: 'Sparky::Log::s_ClientLogger': class 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of class 'Sparky::Log'
+C:\dev\Projects\Sparky Game Engine\Sparky\Sparky\vendor\spdlog\include\spdlog\details\registry.h(34): message : see declaration of 'std::shared_ptr<spdlog::logger>'
+C:\dev\Projects\Sparky Game Engine\Sparky\Sparky\src\Sparky\Log.h(34,1): warning C4005: 'SP_ERROR': macro redefinition
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\wingdi.h(551): message : see previous definition of 'SP_ERROR'
+  Testbed.vcxproj -> C:\dev\Projects\Sparky Game Engine\Sparky\bin\Debug-windows-x86_64\Testbed\Testbed.exe
