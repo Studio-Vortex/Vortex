@@ -4,6 +4,9 @@
     <Filter Include="Sparky">
       <UniqueIdentifier>{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sparky\Events">
+      <UniqueIdentifier>{6318B00E-CFD8-2B45-9813-75C204937021}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Sparky.h" />
@@ -15,6 +18,18 @@
     </ClInclude>
     <ClInclude Include="src\Sparky\EntryPoint.h">
       <Filter>Sparky</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sparky\Events\ApplicationEvent.h">
+      <Filter>Sparky\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sparky\Events\Event.h">
+      <Filter>Sparky\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sparky\Events\KeyEvent.h">
+      <Filter>Sparky\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sparky\Events\MouseEvent.h">
+      <Filter>Sparky\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Sparky\Log.h">
       <Filter>Sparky</Filter>

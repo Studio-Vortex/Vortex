@@ -9,7 +9,6 @@
 	int main(int argc, char* argv[])
 	{
 		Sparky::Log::Init();
-		SP_TRACE("Hello");
 
 		auto app = Sparky::CreateApplication();
 		app->Run();
