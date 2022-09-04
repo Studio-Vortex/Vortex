@@ -2,9 +2,6 @@
 
 #include "Sparky/Core.h"
 
-#include <string>
-#include <functional>
-
 namespace Sparky {
 	enum class EventType
 	{

@@ -18,6 +18,9 @@ project "Sparky"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "sppch.h"
+	pchsource "Sparky/src/sppch.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",

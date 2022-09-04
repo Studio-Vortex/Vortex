@@ -1,4 +1,6 @@
+#include "sppch.h"
 #include "Application.h"
+
 #include "Sparky/Events/Event.h"
 #include "Sparky/Events/MouseEvent.h"
 #include "Sparky/Log.h"

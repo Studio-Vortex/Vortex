@@ -2,8 +2,6 @@
 
 #include "Event.h"
 
-#include <sstream>
-
 namespace Sparky {
 	class SPARKY_API MouseMovedEvent : public Event
 	{

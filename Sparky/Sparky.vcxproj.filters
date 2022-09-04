@@ -34,6 +34,7 @@
     <ClInclude Include="src\Sparky\Log.h">
       <Filter>Sparky</Filter>
     </ClInclude>
+    <ClInclude Include="src\sppch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Sparky\Application.cpp">
@@ -42,5 +43,6 @@
     <ClCompile Include="src\Sparky\Log.cpp">
       <Filter>Sparky</Filter>
     </ClCompile>
+    <ClCompile Include="src\sppch.cpp" />
   </ItemGroup>
 </Project>

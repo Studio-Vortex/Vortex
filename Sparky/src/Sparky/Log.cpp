@@ -1,3 +1,4 @@
+#include "sppch.h"
 #include "Log.h"
 
 namespace Sparky {
