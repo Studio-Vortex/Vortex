@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Sparky\Log.h" />
     <ClInclude Include="src\Sparky.h" />
     <ClInclude Include="src\Sparky\Application.h" />
     <ClInclude Include="src\Sparky\Core.h" />
     <ClInclude Include="src\Sparky\EntryPoint.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Sparky\Log.cpp" />
     <ClCompile Include="src\Sparky\Application.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -67,6 +69,7 @@
       <PreprocessorDefinitions>SP_PLATFORM_WINDOWS;SP_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Sparky\vendor\spdlog\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -82,6 +85,7 @@
       <PreprocessorDefinitions>SP_PLATFORM_WINDOWS;SP_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Sparky\vendor\spdlog\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

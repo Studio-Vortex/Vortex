@@ -5,7 +5,7 @@
 		#define SPARKY_API __declspec(dllexport)
 	#else
 		#define SPARKY_API __declspec(dllimport)
-	#endif
+	#endif // SP_BUILD_DLL
 #else
 	#error Sparky only supports Windows!
-#endif
+#endif // SP_PLATFORM_WINDOWS
