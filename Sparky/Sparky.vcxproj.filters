@@ -13,6 +13,9 @@
     <Filter Include="Sparky\Events">
       <UniqueIdentifier>{6318B00E-CFD8-2B45-9813-75C204937021}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sparky\Gui">
+      <UniqueIdentifier>{33A82D4A-1F60-6F97-8867-48F3743E0A88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
@@ -40,6 +43,9 @@
     <ClInclude Include="src\Sparky\Events\MouseEvent.h">
       <Filter>Sparky\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sparky\Gui\ImGuiLayer.h">
+      <Filter>Sparky\Gui</Filter>
+    </ClInclude>
     <ClInclude Include="src\Sparky\Layer.h">
       <Filter>Sparky</Filter>
     </ClInclude>
@@ -53,6 +59,7 @@
       <Filter>Sparky</Filter>
     </ClInclude>
     <ClInclude Include="src\sppch.h" />
+    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
@@ -60,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="src\Sparky\Application.cpp">
       <Filter>Sparky</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sparky\Gui\ImGuiLayer.cpp">
+      <Filter>Sparky\Gui</Filter>
     </ClCompile>
     <ClCompile Include="src\Sparky\Layer.cpp">
       <Filter>Sparky</Filter>
@@ -71,5 +81,6 @@
       <Filter>Sparky</Filter>
     </ClCompile>
     <ClCompile Include="src\sppch.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
   </ItemGroup>
 </Project>

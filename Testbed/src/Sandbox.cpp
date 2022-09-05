@@ -28,6 +28,7 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
+		PushOverlay(new Sparky::ImGuiLayer());
 	}
 
 	~Sandbox() override

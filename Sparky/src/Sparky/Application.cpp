@@ -10,8 +10,13 @@ namespace Sparky {
 
 #define BIND_CALLBACK(ident) std::bind(&Application::ident, this, std::placeholders::_1)
 
+	Application* Application::s_Instance = nullptr;
+
 	Application::Application()
 	{
+		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
+		s_Instance = this;
+
 		m_Window = Window::Create();
 		m_Window->SetEventCallback(BIND_CALLBACK(OnEvent));
 	}
