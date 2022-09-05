@@ -8,6 +8,8 @@
 #include "Sparky/KeyCodes.h"
 #include "Sparky/MouseButtonCodes.h"
 
+#include "Sparky/Math.h"
+
 #include "Sparky/Gui/ImGuiLayer.h"
 
 /// --- Entry Point --------------------------

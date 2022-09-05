@@ -15,6 +15,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
 IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
+IncludeDir["glm"] = "Sparky/vendor/glm"
 
 group "Third Party"
 	include "Sparky/vendor/GLFW"
@@ -37,7 +38,9 @@ project "Sparky"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl",
 	}
 
 	includedirs
@@ -47,6 +50,7 @@ project "Sparky"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}",
 	}
 
 	links
@@ -116,13 +120,14 @@ project "Testbed"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
 	}
 
 	includedirs
 	{
 		"Sparky/vendor/spdlog/include",
-		"Sparky/src"
+		"Sparky/src",
+		"%{IncludeDir.glm}",
 	}
 
 	links
