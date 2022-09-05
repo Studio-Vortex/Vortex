@@ -22,4 +22,6 @@
 
 #endif // SP_ENABLE_ASSERTS
 
+#define SP_BIND_CALLBACK(ident) std::bind(&ident, this, std::placeholders::_1)
+
 #define BIT(x) (1 << x)

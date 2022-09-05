@@ -1,6 +1,8 @@
 workspace "Sparky"
 	architecture "x64"
 
+	startproject "Testbed"
+
 	configurations
 	{
 		"Debug",

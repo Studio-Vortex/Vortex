@@ -8,8 +8,6 @@
 
 namespace Sparky {
 
-#define BIND_CALLBACK(ident) std::bind(&Application::ident, this, std::placeholders::_1)
-
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
@@ -18,7 +16,7 @@ namespace Sparky {
 		s_Instance = this;
 
 		m_Window = Window::Create();
-		m_Window->SetEventCallback(BIND_CALLBACK(OnEvent));
+		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 	}
 
 	Application::~Application() {}
@@ -26,7 +24,7 @@ namespace Sparky {
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(BIND_CALLBACK(OnWindowClose));
+		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowClose));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
