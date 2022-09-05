@@ -37,6 +37,6 @@ public:
 	}
 };
 
-Sparky::Application* Sparky::CreateApplication() {
-	return new Sandbox();
+std::unique_ptr<Sparky::Application> Sparky::CreateApplication() {
+	return std::make_unique<Sandbox>();
 }
