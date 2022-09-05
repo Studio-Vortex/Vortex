@@ -37,6 +37,6 @@ namespace Sparky {
 	};
 
 	// To be defined in CLIENT
-	std::unique_ptr<Application> CreateApplication();
+	Application* CreateApplication();
 
 }

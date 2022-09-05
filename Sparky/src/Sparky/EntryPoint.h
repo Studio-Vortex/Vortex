@@ -2,9 +2,9 @@
 
 #include "Application.h"
 
-#ifdef SP_PLATFORM_WINDOWS
+#if defined(SP_PLATFORM_WINDOWS)
 
-	extern std::unique_ptr<Sparky::Application> Sparky::CreateApplication();
+	extern Sparky::Application* Sparky::CreateApplication();
 
 	int main(int argc, char* argv[])
 	{
@@ -12,6 +12,20 @@
 
 		auto app = Sparky::CreateApplication();
 		app->Run();
+		delete app;
+	}
+
+#elif defined(SP_PLATFORM_MACOS)
+
+	extern Sparky::Application* Sparky::CreateApplication();
+
+	int main(int argc, char* argv[])
+	{
+		Sparky::Log::Init();
+
+		auto app = Sparky::CreateApplication();
+		app->Run();
+		delete app;
 	}
 
 #endif // SP_PLATFORM_WINDOWS
