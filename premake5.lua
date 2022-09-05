@@ -12,8 +12,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
+IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 
 include "Sparky/vendor/GLFW"
+include "Sparky/vendor/Glad"
 
 project "Sparky"
 	location "Sparky"
@@ -37,11 +39,13 @@ project "Sparky"
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
 	}
 
 	links
 	{
 		"GLFW",
+		"Glad",
 		"opengl32.lib",
 	}
 
@@ -53,7 +57,8 @@ project "Sparky"
 		defines
 		{
 			"SP_PLATFORM_WINDOWS",
-			"SP_BUILD_DLL"
+			"SP_BUILD_DLL",
+			"GLFW_INCLUDE_NONE",
 		}
 
 		postbuildcommands
@@ -62,7 +67,7 @@ project "Sparky"
 		}
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines { "SP_DEBUG", "SP_ENABLE_ASSERTS" }
 		buildoptions "/MDd"
 		symbols "On"
 
@@ -112,7 +117,7 @@ project "Testbed"
 		}
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines { "SP_DEBUG", "SP_ENABLE_ASSERTS" }
 		buildoptions "/MDd"
 		symbols "On"
 

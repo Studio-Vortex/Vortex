@@ -4,7 +4,7 @@
 #include "Sparky/Events/Event.h"
 #include "Sparky/Events/MouseEvent.h"
 
-#include <GLFW/glfw3.h>
+#include <Glad/glad.h>
 
 namespace Sparky {
 
