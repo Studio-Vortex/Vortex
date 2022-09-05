@@ -1,6 +1,5 @@
 workspace "Sparky"
 	architecture "x64"
-
 	startproject "Testbed"
 
 	configurations
@@ -17,9 +16,11 @@ IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
 IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 
-include "Sparky/vendor/GLFW"
-include "Sparky/vendor/Glad"
-include "Sparky/vendor/imgui"
+group "Third Party"
+	include "Sparky/vendor/GLFW"
+	include "Sparky/vendor/Glad"
+	include "Sparky/vendor/imgui"
+group ""
 
 project "Sparky"
 	location "Sparky"
@@ -69,7 +70,7 @@ project "Sparky"
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Testbed")
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Testbed/\""),
 		}
 
 	filter "system:macosx"
@@ -85,7 +86,7 @@ project "Sparky"
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Testbed")
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Testbed/\""),
 		}
 
 	filter "configurations:Debug"

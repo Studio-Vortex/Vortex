@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Testbed", "Testbed\Testbed.vcxproj", "{70E0D639-DCBF-55D5-E5D7-E0AB5136BC36}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sparky", "Sparky\Sparky.vcxproj", "{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Third Party", "Third Party", "{379BEF72-A3B1-ED08-EC28-792A587EBE90}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "Sparky\vendor\GLFW\GLFW.vcxproj", "{154B857C-0182-860D-AA6E-6C109684020F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Glad", "Sparky\vendor\Glad\Glad.vcxproj", "{BDD6857C-A90D-870D-52FA-6C103E10030F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "Sparky\vendor\imgui\ImGui.vcxproj", "{C0FF640D-2C14-8DBE-F595-301E616989EF}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sparky", "Sparky\Sparky.vcxproj", "{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,12 @@ Global
 		{70E0D639-DCBF-55D5-E5D7-E0AB5136BC36}.Dist|x64.Build.0 = Dist|x64
 		{70E0D639-DCBF-55D5-E5D7-E0AB5136BC36}.Release|x64.ActiveCfg = Release|x64
 		{70E0D639-DCBF-55D5-E5D7-E0AB5136BC36}.Release|x64.Build.0 = Release|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Debug|x64.ActiveCfg = Debug|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Debug|x64.Build.0 = Debug|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Dist|x64.ActiveCfg = Dist|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Dist|x64.Build.0 = Dist|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Release|x64.ActiveCfg = Release|x64
+		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Release|x64.Build.0 = Release|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.ActiveCfg = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.Build.0 = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Dist|x64.ActiveCfg = Dist|x64
@@ -42,14 +50,13 @@ Global
 		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Dist|x64.Build.0 = Dist|x64
 		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x64.ActiveCfg = Release|x64
 		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x64.Build.0 = Release|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Debug|x64.ActiveCfg = Debug|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Debug|x64.Build.0 = Debug|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Dist|x64.ActiveCfg = Dist|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Dist|x64.Build.0 = Dist|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Release|x64.ActiveCfg = Release|x64
-		{5F0D9DD1-4BAF-C7A7-346A-DBFB20AB4EF8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{154B857C-0182-860D-AA6E-6C109684020F} = {379BEF72-A3B1-ED08-EC28-792A587EBE90}
+		{BDD6857C-A90D-870D-52FA-6C103E10030F} = {379BEF72-A3B1-ED08-EC28-792A587EBE90}
+		{C0FF640D-2C14-8DBE-F595-301E616989EF} = {379BEF72-A3B1-ED08-EC28-792A587EBE90}
 	EndGlobalSection
 EndGlobal

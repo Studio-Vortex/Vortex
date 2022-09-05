@@ -19,7 +19,10 @@ namespace Sparky {
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 	}
 
-	Application::~Application() {}
+	Application::~Application()
+	{
+
+	}
 
 	void Application::OnEvent(Event& e)
 	{
