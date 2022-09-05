@@ -4,6 +4,8 @@
 #include "Sparky/Events/Event.h"
 #include "Sparky/Events/MouseEvent.h"
 
+#include "Sparky/Input.h"
+
 #include <Glad/glad.h>
 
 namespace Sparky {
@@ -21,7 +23,7 @@ namespace Sparky {
 
 	Application::~Application()
 	{
-
+		delete m_Window;
 	}
 
 	void Application::OnEvent(Event& e)

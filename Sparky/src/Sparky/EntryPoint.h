@@ -15,7 +15,7 @@
 		delete app;
 	}
 
-#elif defined(SP_PLATFORM_MACOS)
+#elif defined(GLFW_PLATFORM_MACOS)
 
 	extern Sparky::Application* Sparky::CreateApplication();
 
@@ -28,4 +28,4 @@
 		delete app;
 	}
 
-#endif // SP_PLATFORM_WINDOWS
+#endif // GLFW_PLATFORM_WINDOWS

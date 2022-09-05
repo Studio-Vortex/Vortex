@@ -13,12 +13,17 @@ public:
 
 	void OnUpdate() override
 	{
-		SP_INFO("ExampleLayer::Update");
+		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
+			Sparky::Application::Get().CloseApplication();
 	}
 
 	void OnEvent(Sparky::Event& event) override
 	{
-		SP_TRACE(event);
+		if (event.GetEventType() == Sparky::EventType::KeyPressed)
+		{
+			Sparky::KeyPressedEvent& e = (Sparky::KeyPressedEvent&)event;
+			SP_TRACE("{}", (char)e.GetKeyCode());
+		}
 	}
 };
 

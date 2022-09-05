@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Sparky.h" />
     <ClInclude Include="src\Sparky\Application.h" />
@@ -163,14 +164,18 @@
     <ClInclude Include="src\Sparky\Events\KeyEvent.h" />
     <ClInclude Include="src\Sparky\Events\MouseEvent.h" />
     <ClInclude Include="src\Sparky\Gui\ImGuiLayer.h" />
+    <ClInclude Include="src\Sparky\Input.h" />
+    <ClInclude Include="src\Sparky\KeyCodes.h" />
     <ClInclude Include="src\Sparky\Layer.h" />
     <ClInclude Include="src\Sparky\LayerStack.h" />
     <ClInclude Include="src\Sparky\Log.h" />
+    <ClInclude Include="src\Sparky\MouseButtonCodes.h" />
     <ClInclude Include="src\Sparky\Window.h" />
     <ClInclude Include="src\sppch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Sparky\Application.cpp" />
     <ClCompile Include="src\Sparky\Gui\ImGuiLayer.cpp" />

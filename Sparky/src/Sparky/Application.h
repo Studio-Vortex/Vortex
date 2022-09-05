@@ -24,11 +24,13 @@ namespace Sparky {
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
 
+		inline void CloseApplication() { m_Running = false; }
+
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 
 	private:
-		std::unique_ptr<Window> m_Window;
+		Window* m_Window;
 		LayerStack m_LayerStack;
 		bool m_Running = true;
 
