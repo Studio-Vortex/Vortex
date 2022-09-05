@@ -3,12 +3,14 @@
 #include "Event.h"
 
 namespace Sparky {
+
 	class SPARKY_API KeyEvent : public Event
 	{
 	public:
 		inline int GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
+
 	protected:
 		KeyEvent(int keycode)
 			: m_KeyCode(keycode) {}
@@ -32,6 +34,7 @@ namespace Sparky {
 		}
 
 		EVENT_CLASS_TYPE(KeyPressed)
+
 	private:
 		int m_RepeatCount;
 	};
@@ -51,4 +54,5 @@ namespace Sparky {
 
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
+
 }

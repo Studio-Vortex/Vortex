@@ -84,6 +84,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/MDd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -110,6 +111,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -137,6 +139,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -161,6 +164,8 @@
     <ClInclude Include="src\Sparky\Events\Event.h" />
     <ClInclude Include="src\Sparky\Events\KeyEvent.h" />
     <ClInclude Include="src\Sparky\Events\MouseEvent.h" />
+    <ClInclude Include="src\Sparky\Layer.h" />
+    <ClInclude Include="src\Sparky\LayerStack.h" />
     <ClInclude Include="src\Sparky\Log.h" />
     <ClInclude Include="src\Sparky\Window.h" />
     <ClInclude Include="src\sppch.h" />
@@ -168,6 +173,8 @@
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Sparky\Application.cpp" />
+    <ClCompile Include="src\Sparky\Layer.cpp" />
+    <ClCompile Include="src\Sparky\LayerStack.cpp" />
     <ClCompile Include="src\Sparky\Log.cpp" />
     <ClCompile Include="src\sppch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

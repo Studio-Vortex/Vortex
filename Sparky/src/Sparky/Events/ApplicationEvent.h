@@ -3,6 +3,7 @@
 #include "Event.h"
 
 namespace Sparky {
+
 	class SPARKY_API WindowResizeEvent : public Event
 	{
 	public:
@@ -18,6 +19,7 @@ namespace Sparky {
 
 		EVENT_CLASS_TYPE(WindowResize)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
 	private:
 		unsigned int m_Width;
 		unsigned int m_Height;
@@ -58,4 +60,5 @@ namespace Sparky {
 		EVENT_CLASS_TYPE(AppRender)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
+
 }

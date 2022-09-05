@@ -40,6 +40,12 @@
     <ClInclude Include="src\Sparky\Events\MouseEvent.h">
       <Filter>Sparky\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sparky\Layer.h">
+      <Filter>Sparky</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sparky\LayerStack.h">
+      <Filter>Sparky</Filter>
+    </ClInclude>
     <ClInclude Include="src\Sparky\Log.h">
       <Filter>Sparky</Filter>
     </ClInclude>
@@ -53,6 +59,12 @@
       <Filter>Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Sparky\Application.cpp">
+      <Filter>Sparky</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sparky\Layer.cpp">
+      <Filter>Sparky</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sparky\LayerStack.cpp">
       <Filter>Sparky</Filter>
     </ClCompile>
     <ClCompile Include="src\Sparky\Log.cpp">

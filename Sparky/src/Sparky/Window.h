@@ -6,6 +6,7 @@
 #include "Sparky/Events/Event.h"
 
 namespace Sparky {
+
 	struct WindowProps
 	{
 		std::string Title;
@@ -39,4 +40,5 @@ namespace Sparky {
 
 		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
 	};
+
 }
