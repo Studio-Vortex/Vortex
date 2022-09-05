@@ -1,5 +1,4 @@
 #include "sppch.h"
-#include "Log.h"
 
 namespace Sparky {
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;

@@ -3,5 +3,5 @@
 #include "Sparky/Application.h"
 #include "Sparky/Log.h"
 
-// Entry Point --------------------------
+/// --- Entry Point --------------------------
 #include "Sparky/EntryPoint.h"

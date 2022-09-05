@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sppch.h"
 #include "Sparky/Core.h"
 
 namespace Sparky {

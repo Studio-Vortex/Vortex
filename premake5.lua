@@ -10,6 +10,11 @@ workspace "Sparky"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
+
+include "Sparky/vendor/GLFW"
+
 project "Sparky"
 	location "Sparky"
 	kind "SharedLib"
@@ -29,8 +34,15 @@ project "Sparky"
 
 	includedirs
 	{
+		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{prj.name}/src"
+		"%{IncludeDir.GLFW}",
+	}
+
+	links
+	{
+		"GLFW",
+		"opengl32.lib",
 	}
 
 	filter "system:windows"

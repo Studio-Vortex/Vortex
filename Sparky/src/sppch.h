@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Sparky/Log.h"
+
 #ifdef SP_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif // SP_PLATFORM_WINDOWS
