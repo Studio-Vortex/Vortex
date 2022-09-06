@@ -49,7 +49,7 @@ namespace Sparky {
 
 	void GuiLayer::OnDetach()
 	{
-		ImGui_ImplOpenGL3_Shutdown;
+		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}

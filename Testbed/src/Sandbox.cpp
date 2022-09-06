@@ -19,7 +19,7 @@ public:
 
 	void OnGuiRender() override
 	{
-		Gui::Begin("Hello");
+		Gui::Begin("Game Engine");
 		Gui::Text("Welcome to Sparky!");
 		Gui::End();
 	}
@@ -30,10 +30,6 @@ public:
 		{
 			Sparky::KeyPressedEvent& e = (Sparky::KeyPressedEvent&)event;
 			SP_TRACE("{}", (char)e.GetKeyCode());
-			
-			vec2 a(10, 10);
-			vec2 b(10, 10);
-			SP_TRACE("Hello {}", a);
 		}
 	}
 };

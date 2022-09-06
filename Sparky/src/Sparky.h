@@ -15,9 +15,9 @@
 #include "Sparky/Math.h"
 using namespace Sparky::Math;
 
-#include <imgui.h>
 #include "Sparky/Gui/GuiLayer.h"
 
+#include <imgui.h>
 // Re Exporting ImGui as Gui in Client
 namespace Gui = ImGui;
 

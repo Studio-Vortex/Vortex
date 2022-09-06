@@ -25,9 +25,10 @@ group ""
 
 project "Sparky"
 	location "Sparky"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "Off"
+	cppdialect "C++20"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -41,6 +42,11 @@ project "Sparky"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
+	}
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS",
 	}
 
 	includedirs
@@ -62,7 +68,6 @@ project "Sparky"
 	}
 
 	filter "system:windows"
-		cppdialect "C++20"
 		systemversion "latest"
 
 		defines
@@ -72,47 +77,28 @@ project "Sparky"
 			"GLFW_INCLUDE_NONE",
 		}
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Testbed/\""),
-		}
-
-	filter "system:macosx"
-		cppdialect "C++20"
-		systemversion "latest"
-
-		defines
-		{
-			"SP_PLATFORM_MACOS",
-			"SP_BUILD_DLL",
-			"GLFW_INCLUDE_NONE",
-		}
-
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Testbed/\""),
-		}
-
 	filter "configurations:Debug"
-		defines { "SP_DEBUG" }
+		defines "SP_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "SP_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
+
 
 project "Testbed"
 	location "Testbed"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "Off"
+	cppdialect "C++20"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -133,38 +119,28 @@ project "Testbed"
 
 	links
 	{
-		"Sparky"
+		"Sparky",
 	}
 
 	filter "system:windows"
-		cppdialect "C++20"
 		systemversion "latest"
 
 		defines
 		{
-			"SP_PLATFORM_WINDOWS"
-		}
-
-	filter "system:macosx"
-		cppdialect "C++20"
-		systemversion "latest"
-
-		defines
-		{
-			"SP_PLATFORM_MACOS"
+			"SP_PLATFORM_WINDOWS",
 		}
 
 	filter "configurations:Debug"
-		defines { "SP_DEBUG", "SP_ENABLE_ASSERTS" }
+		defines "SP_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "SP_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
