@@ -5,16 +5,16 @@
 #include "Sparky/Events/MouseEvent.h"
 #include "Sparky/Events/KeyEvent.h"
 
-#include <Glad/glad.h>
+#include "Platform/OpenGL/OpenGLContext.h"
 
 namespace Sparky {
+
+	static bool s_GLFWInitialized = false;
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
 		SP_CORE_ERROR("GLFW Error: ({}): {}", error, description);
 	}
-
-	static bool s_GLFWInitialized = false;
 
 	std::unique_ptr<Window> Window::Create(const WindowProps& props)
 	{
@@ -36,7 +36,7 @@ namespace Sparky {
 		m_Data.Title = props.Title;
 		m_Data.Size = props.Size;
 
-		SP_CORE_INFO("Creating window {} with size: {}, {}", props.Title, props.Size.x, props.Size.y);
+		SP_CORE_INFO("Creating window named '{}' with size: ({}, {})", props.Title, props.Size.x, props.Size.y);
 
 		if (!s_GLFWInitialized)
 		{
@@ -47,9 +47,11 @@ namespace Sparky {
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
-		glfwMakeContextCurrent(m_Window);
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		SP_CORE_ASSERT(status, "Failed to initialize Glad!");
+		m_Context = new OpenGLContext(m_Window);
+
+		m_Context->Init();
+
+		
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
@@ -153,7 +155,7 @@ namespace Sparky {
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(m_Window);
+		m_Context->SwapFrameBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)

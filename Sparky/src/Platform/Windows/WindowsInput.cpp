@@ -37,7 +37,7 @@ namespace Sparky {
 		return state == GLFW_RELEASE;
 	}
 
-	std::pair<float, float> WindowsInput::GetMousePositionImpl()
+	Math::vec2 WindowsInput::GetMousePositionImpl()
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		double xPos, yPos;
@@ -48,14 +48,12 @@ namespace Sparky {
 
 	float WindowsInput::GetMouseXImpl()
 	{
-		auto [x, _y] = GetMousePositionImpl();
-		return x;
+		return GetMousePositionImpl().x;
 	}
 
 	float WindowsInput::GetMouseYImpl()
 	{
-		auto [_x, y] = GetMousePositionImpl();
-		return y;
+		return GetMousePositionImpl().y;
 	}
 
 }
