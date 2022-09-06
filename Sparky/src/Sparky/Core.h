@@ -26,6 +26,8 @@
 	#define SP_CORE_ASSERT(x, ...)
 #endif // SP_ENABLE_ASSERTS
 
+#define SP_ARRAYSIZE(ident) sizeof(ident) / sizeof(ident[0])
+
 #define SP_BIND_CALLBACK(ident) std::bind(&ident, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)

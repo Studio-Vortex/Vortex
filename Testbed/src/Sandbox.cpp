@@ -19,7 +19,7 @@ public:
 
 	void OnGuiRender() override
 	{
-		Gui::Begin("Game Engine");
+		Gui::Begin("Sparky Game Engine");
 		Gui::Text("Welcome to Sparky!");
 		Gui::End();
 	}
