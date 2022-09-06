@@ -12,8 +12,8 @@ namespace Sparky {
 		inline static bool IsMouseButtonPressed(int button) { return s_Instance->IsMouseButtonPressedImpl(button); }
 		inline static bool IsMouseButtonReleased(int button) { return s_Instance->IsMouseButtonReleasedImpl(button); }
 		inline static std::pair<float, float> GetMousePosition() { return s_Instance->GetMousePositionImpl(); }
-		inline static float GetMouseX() { return s_Instance->GetMouseX(); }
-		inline static float GetMouseY() { return s_Instance->GetMouseY(); }
+		inline static float GetMouseX() { return s_Instance->GetMouseXImpl(); }
+		inline static float GetMouseY() { return s_Instance->GetMouseYImpl(); }
 
 	protected:
 		virtual bool IsKeyPressedImpl(int keycode) = 0;

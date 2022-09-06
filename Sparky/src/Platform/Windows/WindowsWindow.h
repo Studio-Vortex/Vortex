@@ -14,8 +14,9 @@ namespace Sparky {
 
 		void OnUpdate() override;
 
-		inline unsigned int GetWidth() const override { return m_Data.Width; }
-		inline unsigned int GetHeight() const override { return m_Data.Height; }
+		inline Math::vec2 GetSize() const override { return { (float)GetWidth(), (float)GetHeight() }; }
+		inline unsigned int GetWidth() const override { return (unsigned int)m_Data.Size.x; }
+		inline unsigned int GetHeight() const override { return (unsigned int)m_Data.Size.y; }
 
 		// Window Attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
@@ -34,8 +35,7 @@ namespace Sparky {
 		struct WindowData
 		{
 			std::string Title;
-			unsigned int Width;
-			unsigned int Height;
+			Math::vec2 Size;
 			bool VSync;
 
 			EventCallbackFn EventCallback;

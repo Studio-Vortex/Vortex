@@ -13,17 +13,19 @@ namespace Sparky {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
+		: m_Window(Window::Create()), m_GuiLayer(new GuiLayer())
 	{
 		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Window::Create();
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
+
+		PushOverlay(m_GuiLayer);
 	}
 
 	Application::~Application()
 	{
-		delete m_Window;
+		
 	}
 
 	void Application::OnEvent(Event& e)
@@ -44,12 +46,17 @@ namespace Sparky {
 	{
 		while (m_Running)
 		{
-			glClearColor(.2, .2, .2, 1.0);
+			glClearColor(.2f, .2f, .2f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();
 
+			m_GuiLayer->BeginFrame();
+			for (Layer* layer : m_LayerStack)
+				layer->OnGuiRender();
+			m_GuiLayer->EndFrame();
+			
 			m_Window->OnUpdate();
 		}
 	}

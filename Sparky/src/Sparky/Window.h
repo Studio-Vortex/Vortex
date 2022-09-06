@@ -3,21 +3,21 @@
 #include "sppch.h"
 
 #include "Sparky/Core.h"
+
 #include "Sparky/Events/Event.h"
+#include "Sparky/Math.h"
 
 namespace Sparky {
 
 	struct WindowProps
 	{
 		std::string Title;
-		unsigned int Width;
-		unsigned int Height;
+		Math::vec2 Size;
 
 		WindowProps(
 			const std::string& title = "Sparky Engine",
-			unsigned int width = 1280,
-			unsigned int height = 720
-		) : Title(title), Width(width), Height(height) {}
+			const Math::vec2& size = Math::vec2(1280.0f, 720.0f)
+		) : Title(title), Size(size) {}
 	};
 
 	// Interface representing a desktop system based window
@@ -30,6 +30,7 @@ namespace Sparky {
 
 		virtual void OnUpdate() = 0;
 
+		virtual Math::vec2 GetSize() const = 0;
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 
@@ -40,7 +41,7 @@ namespace Sparky {
 
 		virtual void* GetNativeWindowHandle() const = 0;
 
-		static Window* Create(const WindowProps& props = WindowProps());
+		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
 	};
 
 }

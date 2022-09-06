@@ -2,9 +2,11 @@
 
 #include "Core.h"
 
-#include "Window.h"
-#include "LayerStack.h"
-#include "Events/ApplicationEvent.h"
+#include "Sparky/Window.h"
+#include "Sparky/LayerStack.h"
+#include "Sparky/Events/ApplicationEvent.h"
+
+#include "Sparky/Gui/GuiLayer.h"
 
 namespace Sparky {
 
@@ -30,7 +32,8 @@ namespace Sparky {
 		bool OnWindowClose(WindowCloseEvent& e);
 
 	private:
-		Window* m_Window;
+		std::unique_ptr<Window> m_Window;
+		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
 		bool m_Running = true;
 

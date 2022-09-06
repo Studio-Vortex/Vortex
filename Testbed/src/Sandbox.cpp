@@ -1,7 +1,5 @@
 #include <Sparky.h>
 
-using namespace Sparky::Math;
-
 class ExampleLayer : public Sparky::Layer
 {
 public:
@@ -10,7 +8,7 @@ public:
 
 	~ExampleLayer() override
 	{
-	
+		
 	}
 
 	void OnUpdate() override
@@ -19,12 +17,20 @@ public:
 			Sparky::Application::Get().CloseApplication();
 	}
 
+	void OnGuiRender() override
+	{
+		Gui::Begin("Hello");
+		Gui::Text("Welcome to Sparky!");
+		Gui::End();
+	}
+
 	void OnEvent(Sparky::Event& event) override
 	{
 		if (event.GetEventType() == Sparky::EventType::KeyPressed)
 		{
 			Sparky::KeyPressedEvent& e = (Sparky::KeyPressedEvent&)event;
 			SP_TRACE("{}", (char)e.GetKeyCode());
+			
 			vec2 a(10, 10);
 			vec2 b(10, 10);
 			SP_TRACE("Hello {}", a);
@@ -38,7 +44,6 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Sparky::ImGuiLayer());
 	}
 
 	~Sandbox() override

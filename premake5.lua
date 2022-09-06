@@ -127,6 +127,7 @@ project "Testbed"
 	{
 		"Sparky/vendor/spdlog/include",
 		"Sparky/src",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 	}
 
