@@ -46,9 +46,16 @@ namespace Sparky::Math {
 		return mat4(1.0f);
 	}
 
-	static auto ValuePtr(const mat4& matrix)
+	template <typename T>
+	static auto ValuePtr(const T& value)
 	{
-		return glm::value_ptr(matrix);
+		return glm::value_ptr(value);
+	}
+	
+	template <typename T>
+	static auto ValuePtr(T& value)
+	{
+		return glm::value_ptr(value);
 	}
 
 	inline std::ostream& operator<<(std::ostream& stream, const vec2& vec)

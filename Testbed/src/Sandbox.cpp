@@ -1,5 +1,7 @@
 #include <Sparky.h>
 
+#include "Platform/OpenGL/OpenGLShader.h"
+
 class ExampleLayer : public Sparky::Layer
 {
 public:
@@ -85,9 +87,9 @@ public:
 			}
 		)";
 
-		m_TriangleShader.reset(new Sparky::Shader(triangleVertexSrc, triangleFragmentSrc));
+		m_TriangleShader.reset(Sparky::Shader::Create(triangleVertexSrc, triangleFragmentSrc));
 
-		std::string SquareVertexSrc = R"(
+		std::string flatColorVertexSrc = R"(
 			#version 460 core
 
 			layout(location = 0) in vec3 a_Position;
@@ -104,20 +106,22 @@ public:
 			}
 		)";
 
-		std::string SquareFragmentSrc = R"(
+		std::string flagColorFragmentSrc = R"(
 			#version 460 core
 
 			out vec4 gl_Color;
 			
 			in vec3 f_Position;
 
+			uniform vec3 u_Color;
+
 			void main()
 			{
-				gl_Color = vec4(f_Position * 0.5 + 0.5, 1.0);
+				gl_Color = vec4(u_Color, 1.0);
 			}
 		)";
 
-		m_SquareShader.reset(new Sparky::Shader(SquareVertexSrc, SquareFragmentSrc));
+		m_FlatColorShader.reset(Sparky::Shader::Create(flatColorVertexSrc, flagColorFragmentSrc));
 	}
 
 	~ExampleLayer() override
@@ -153,7 +157,7 @@ public:
 		SP_CORE_INFO("Delta Time: {}s ({}ms)", ts.GetDeltaTime(), ts.GetDeltaTimeMs());
 		ProcessInput(ts);
 
-		Sparky::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.8f });
+		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Sparky::RenderCommand::Clear();
 
 		m_Camera.SetPosition(m_CameraPosition);
@@ -163,24 +167,29 @@ public:
 
 		static Sparky::Math::mat4 scale = Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(0.1f));
 
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->Enable();
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->SetUniform("u_Color", m_SquareColor);
+
 		for (int y = 0; y < 20; y++)
 		{
 			for (int x = 0; x < 20; x++)
 			{
 				Sparky::Math::vec3 position{ (float)x * 0.11f, (float)y * 0.11f, 0.0f };
 				Sparky::Math::mat4 transform{ Sparky::Math::Translate(Sparky::Math::Identity(), position) * scale };
-				Sparky::Renderer::Submit(m_SquareShader, m_SquareVA, transform);
+				Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
 
-		//Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
+		Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 		Sparky::Renderer::EndScene();
 	}
 
 	void OnGuiRender() override
 	{
-
+		Gui::Begin("Settings");
+		Gui::ColorEdit3("Color:", Sparky::Math::ValuePtr(m_SquareColor));
+		Gui::End();
 	}
 
 	void OnEvent(Sparky::Event& event) override
@@ -193,7 +202,7 @@ private:
 	std::shared_ptr<Sparky::Shader> m_TriangleShader;
 
 	std::shared_ptr<Sparky::VertexArray> m_SquareVA;
-	std::shared_ptr<Sparky::Shader> m_SquareShader;
+	std::shared_ptr<Sparky::Shader> m_FlatColorShader;
 
 	Sparky::OrthographicCamera m_Camera;
 	Sparky::Math::vec3 m_CameraPosition;
@@ -201,6 +210,8 @@ private:
 
 	float m_CameraMoveSpeed = -5.0f;
 	float m_CameraRotationSpeed = 180.0f;
+
+	Sparky::Math::vec3 m_SquareColor{ 0.2f, 0.2f, 0.8f };
 };
 
 class Sandbox : public Sparky::Application

@@ -36,7 +36,9 @@ namespace Sparky {
 		m_Data.Title = props.Title;
 		m_Data.Size = props.Size;
 
+#ifdef SP_DEBUG
 		SP_CORE_INFO("Creating window named '{}' with size: ({}, {})", props.Title, props.Size.x, props.Size.y);
+#endif // SP_DEBUG
 
 		if (!s_GLFWInitialized)
 		{

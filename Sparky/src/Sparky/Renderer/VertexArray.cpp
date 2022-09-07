@@ -6,7 +6,7 @@
 
 /*
 *** #ifdef SP_PLATFORM_WINDOWS
-***		#include "Platform/Direct3D/Direct3DBuffer.h"
+***		#include "Platform/Direct3D/Direct3DVertexArray.h"
 *** #endif // SP_PLATFORM_WINDOWS
 */
 
