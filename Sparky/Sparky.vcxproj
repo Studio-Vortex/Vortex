@@ -152,6 +152,7 @@
     <ClInclude Include="src\Sparky.h" />
     <ClInclude Include="src\Sparky\Application.h" />
     <ClInclude Include="src\Sparky\Core.h" />
+    <ClInclude Include="src\Sparky\Core\TimeStep.h" />
     <ClInclude Include="src\Sparky\EntryPoint.h" />
     <ClInclude Include="src\Sparky\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Sparky\Events\Event.h" />

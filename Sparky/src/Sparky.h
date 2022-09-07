@@ -4,6 +4,7 @@
 #include "Sparky/Application.h"
 #include "Sparky/Layer.h"
 #include "Sparky/Log.h"
+#include "Sparky/Core/TimeStep.h"
 
 #include "Sparky/Gui/GuiLayer.h"
 

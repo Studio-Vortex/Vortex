@@ -1,7 +1,5 @@
 #include <Sparky.h>
 
-using namespace Sparky::Math;
-
 class ExampleLayer : public Sparky::Layer
 {
 public:
@@ -125,27 +123,35 @@ public:
 		
 	}
 
-	void OnUpdate() override
+	void ProcessInput(Sparky::TimeStep ts)
 	{
+		float deltaTime = ts;
+
 		if (Sparky::Input::IsKeyPressed(SP_KEY_W))
-			m_CameraPosition.y += m_CameraMoveSpeed;
+			m_CameraPosition.y += m_CameraMoveSpeed * deltaTime;
 		else if (Sparky::Input::IsKeyPressed(SP_KEY_S))
-			m_CameraPosition.y -= m_CameraMoveSpeed;
+			m_CameraPosition.y -= m_CameraMoveSpeed * deltaTime;
 
 		if (Sparky::Input::IsKeyPressed(SP_KEY_A))
-			m_CameraPosition.x -= m_CameraMoveSpeed;
+			m_CameraPosition.x -= m_CameraMoveSpeed * deltaTime;
 		else if (Sparky::Input::IsKeyPressed(SP_KEY_D))
-			m_CameraPosition.x += m_CameraMoveSpeed;
+			m_CameraPosition.x += m_CameraMoveSpeed * deltaTime;
 
 		if (Sparky::Input::IsKeyPressed(SP_KEY_R))
-			m_CameraRotation -= m_CameraRotationSpeed;
+			m_CameraRotation -= m_CameraRotationSpeed * deltaTime;
 		else if (Sparky::Input::IsKeyPressed(SP_KEY_T))
-			m_CameraRotation += m_CameraRotationSpeed;
+			m_CameraRotation += m_CameraRotationSpeed * deltaTime;
 
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().CloseApplication();
+	}
 
-		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
+	void OnUpdate(Sparky::TimeStep ts) override
+	{
+		SP_CORE_INFO("Delta Time: {}s ({}ms)", ts.GetDeltaTime(), ts.GetDeltaTimeMs());
+		ProcessInput(ts);
+
+		Sparky::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.8f });
 		Sparky::RenderCommand::Clear();
 
 		m_Camera.SetPosition(m_CameraPosition);
@@ -180,8 +186,8 @@ private:
 	Sparky::Math::vec3 m_CameraPosition;
 	float m_CameraRotation = 0.0f;
 
-	float m_CameraMoveSpeed = -0.03f;
-	float m_CameraRotationSpeed = 1.0f;
+	float m_CameraMoveSpeed = -1.0f;
+	float m_CameraRotationSpeed = 30.0f;
 };
 
 class Sandbox : public Sparky::Application

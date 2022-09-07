@@ -4,8 +4,10 @@
 #include "Sparky/Input.h"
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/KeyCodes.h"
+#include "Sparky/Core/TimeStep.h"
 
 #include <Glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace Sparky {
 
@@ -45,8 +47,12 @@ namespace Sparky {
 	{
 		while (m_Running)
 		{
+			float time = (float)glfwGetTime();
+			TimeStep timeStep = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
 			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate();
+				layer->OnUpdate(timeStep);
 
 			m_GuiLayer->BeginFrame();
 

@@ -2,6 +2,7 @@
 
 #include "Sparky/Core.h"
 #include "Sparky/Events/Event.h"
+#include "Sparky/Core/TimeStep.h"
 
 namespace Sparky {
 
@@ -13,7 +14,7 @@ namespace Sparky {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(TimeStep ts) {}
 		virtual void OnGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

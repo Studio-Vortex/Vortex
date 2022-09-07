@@ -35,6 +35,7 @@ namespace Sparky {
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
+		float m_LastFrameTime = 0.0f;
 		bool m_Running = true;
 
 	private:
