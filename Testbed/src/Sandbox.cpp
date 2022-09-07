@@ -4,7 +4,7 @@ class ExampleLayer : public Sparky::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(m_Camera.GetPosition())
+		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition()
 	{
 		m_TriangleVA.reset(Sparky::VertexArray::Create());
 
@@ -35,10 +35,10 @@ public:
 
 		float squareVertices[4 * 7] = {
 			//position
-			 -0.75f, -0.75f, 0.0f, // bottom left
-			  0.75f, -0.75f, 0.0f, // bottom right
-			  0.75f,  0.75f, 0.0f, // top right
-			 -0.75f,  0.75f, 0.0f, // top left
+			 -0.5f, -0.5f, 0.0f, // bottom left
+			  0.5f, -0.5f, 0.0f, // bottom right
+			  0.5f,  0.5f, 0.0f, // top right
+			 -0.5f,  0.5f, 0.0f, // top left
 		};
 
 		std::shared_ptr<Sparky::VertexBuffer> pSquareVB;
@@ -54,7 +54,7 @@ public:
 		pSquareIB.reset(Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices)));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
-		std::string vertexSrc = R"(
+		std::string triangleVertexSrc = R"(
 			#version 460 core
 
 			layout(location = 0) in vec3 a_Position;
@@ -63,15 +63,16 @@ public:
 			out vec4 f_Color;
 
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 
 			void main()
 			{
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 				f_Color = a_Color;
 			}
 		)";
 
-		std::string fragmentSrc = R"(
+		std::string triangleFragmentSrc = R"(
 			#version 460 core
 
 			out vec4 gl_Color;
@@ -84,9 +85,9 @@ public:
 			}
 		)";
 
-		m_TriangleShader.reset(new Sparky::Shader(vertexSrc, fragmentSrc));
+		m_TriangleShader.reset(new Sparky::Shader(triangleVertexSrc, triangleFragmentSrc));
 
-		std::string vertexSrc2 = R"(
+		std::string SquareVertexSrc = R"(
 			#version 460 core
 
 			layout(location = 0) in vec3 a_Position;
@@ -94,15 +95,16 @@ public:
 			out vec3 f_Position;
 
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 
 			void main()
 			{
 				f_Position = a_Position;
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 			}
 		)";
 
-		std::string fragmentSrc2 = R"(
+		std::string SquareFragmentSrc = R"(
 			#version 460 core
 
 			out vec4 gl_Color;
@@ -115,7 +117,7 @@ public:
 			}
 		)";
 
-		m_SquareShader.reset(new Sparky::Shader(vertexSrc2, fragmentSrc2));
+		m_SquareShader.reset(new Sparky::Shader(SquareVertexSrc, SquareFragmentSrc));
 	}
 
 	~ExampleLayer() override
@@ -159,8 +161,19 @@ public:
 
 		Sparky::Renderer::BeginScene(m_Camera);
 
-		Sparky::Renderer::Submit(m_SquareShader, m_SquareVA);
-		Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
+		static Sparky::Math::mat4 scale = Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(0.1f));
+
+		for (int y = 0; y < 20; y++)
+		{
+			for (int x = 0; x < 20; x++)
+			{
+				Sparky::Math::vec3 position{ (float)x * 0.11f, (float)y * 0.11f, 0.0f };
+				Sparky::Math::mat4 transform{ Sparky::Math::Translate(Sparky::Math::Identity(), position) * scale };
+				Sparky::Renderer::Submit(m_SquareShader, m_SquareVA, transform);
+			}
+		}
+
+		//Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 		Sparky::Renderer::EndScene();
 	}
@@ -186,8 +199,8 @@ private:
 	Sparky::Math::vec3 m_CameraPosition;
 	float m_CameraRotation = 0.0f;
 
-	float m_CameraMoveSpeed = -1.0f;
-	float m_CameraRotationSpeed = 30.0f;
+	float m_CameraMoveSpeed = -5.0f;
+	float m_CameraRotationSpeed = 180.0f;
 };
 
 class Sandbox : public Sparky::Application
