@@ -1,11 +1,9 @@
 #include "sppch.h"
 #include "Application.h"
 
-#include "Sparky/Events/Event.h"
-#include "Sparky/Events/MouseEvent.h"
-
 #include "Sparky/Input.h"
 #include "Sparky/Renderer/Renderer.h"
+
 #include <Glad/glad.h>
 
 namespace Sparky {
@@ -126,7 +124,7 @@ namespace Sparky {
 			}
 		)";
 
-		m_Shader2.reset(new Shader(vertexSrc2, fragmentSrc2));
+		m_PositionShader.reset(new Shader(vertexSrc2, fragmentSrc2));
 	}
 
 	Application::~Application()
@@ -151,17 +149,23 @@ namespace Sparky {
 	void Application::Run()
 	{
 		while (m_Running)
-		{
-			glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+		{	
+			RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f });
+			RenderCommand::Clear();
 
-			m_Shader2->Enable();
-			m_SquareVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_SquareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			Renderer::BeginScene();
 
-			m_Shader->Enable();
-			m_TriangleVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_TriangleVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			{
+				m_PositionShader->Enable();
+				Renderer::Submit(m_SquareVA);
+				RenderCommand::DrawIndexed(m_SquareVA);
+
+				m_Shader->Enable();
+				Renderer::Submit(m_TriangleVA);
+				RenderCommand::DrawIndexed(m_TriangleVA);
+			}
+
+			Renderer::EndScene();
 
 			for (Layer* layer : m_LayerStack)
 				layer->OnUpdate();

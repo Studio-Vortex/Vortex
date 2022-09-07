@@ -45,7 +45,7 @@ namespace Sparky {
 		std::shared_ptr<Shader> m_Shader;
 
 		std::shared_ptr<VertexArray> m_SquareVA;
-		std::shared_ptr<Shader> m_Shader2;
+		std::shared_ptr<Shader> m_PositionShader;
 
 	private:
 		static Application* s_Instance;

@@ -1,23 +1,19 @@
 #pragma once
 
-#include "Sparky/Core.h"
+#include "RenderCommand.h"
 
 namespace Sparky {
 
-	enum class RendererAPI
-	{
-		None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
-	};
-
-	class SPARKY_API Renderer
+	class Renderer
 	{
 	public:
-		inline static RendererAPI GetGraphicsAPI() { return s_RendererAPI; }
-		inline static void SetGraphicsAPI(const RendererAPI& api) { s_RendererAPI = api; }
+		static void BeginScene();
+		static void EndScene();
 
-	private:
-		static RendererAPI s_RendererAPI;
+		static void Submit(const std::shared_ptr<VertexArray>& vertexArray);
 
+		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
+		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }
 	};
 
 }
