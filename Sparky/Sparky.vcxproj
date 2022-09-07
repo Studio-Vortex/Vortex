@@ -143,6 +143,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="src\Sparky\Renderer\Renderer.h" />
     <ClInclude Include="src\Sparky\Renderer\RendererContext.h" />
     <ClInclude Include="src\Sparky\Renderer\Shader.h" />
+    <ClInclude Include="src\Sparky\Renderer\VertexArray.h" />
     <ClInclude Include="src\Sparky\Window.h" />
     <ClInclude Include="src\sppch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
@@ -586,6 +588,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
@@ -599,6 +602,7 @@
     <ClCompile Include="src\Sparky\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Sparky\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Sparky\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Sparky\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\sppch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
