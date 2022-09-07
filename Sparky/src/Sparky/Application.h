@@ -5,14 +5,8 @@
 #include "Sparky/Window.h"
 #include "Sparky/LayerStack.h"
 #include "Sparky/Events/ApplicationEvent.h"
-#include "Sparky/Events/KeyEvent.h"
 
 #include "Sparky/Gui/GuiLayer.h"
-
-#include "Sparky/Renderer/VertexArray.h"
-#include "Sparky/Renderer/Buffer.h"
-#include "Sparky/Renderer/Shader.h"
-#include "Sparky/Renderer/OrthographicCamera.h"
 
 namespace Sparky {
 
@@ -35,22 +29,13 @@ namespace Sparky {
 		inline void CloseApplication() { m_Running = false; }
 
 	private:
-		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
 	private:
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
 		bool m_Running = true;
-
-		std::shared_ptr<VertexArray> m_TriangleVA;
-		std::shared_ptr<Shader> m_TriangleShader;
-
-		std::shared_ptr<VertexArray> m_SquareVA;
-		std::shared_ptr<Shader> m_SquareShader;
-
-		OrthographicCamera m_Camera;
 
 	private:
 		static Application* s_Instance;

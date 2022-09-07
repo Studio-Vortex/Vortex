@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Sparky/Core.h"
+
 #include "Sparky/Renderer/RendererAPI.h"
 
 namespace Sparky {
 
-	class RenderCommand
+	class SPARKY_API RenderCommand
 	{
 	public:
 		inline static void SetClearColor(const Math::vec3& color)
