@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Sparky/Core.h"
+
 namespace Sparky {
 
-	enum class ShaderDataType
+	enum class SPARKY_API ShaderDataType
 	{
 		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Boolean,
 	};
@@ -28,7 +30,7 @@ namespace Sparky {
 		return 0;
 	}
 
-	struct BufferElement
+	struct SPARKY_API BufferElement
 	{
 		std::string Name;
 		ShaderDataType Type;
@@ -63,7 +65,7 @@ namespace Sparky {
 		}
 	};
 
-	class BufferLayout
+	class SPARKY_API BufferLayout
 	{
 	public:
 		BufferLayout() = default;
@@ -101,7 +103,7 @@ namespace Sparky {
 		uint32_t m_Stride = 0;
 	};
 
-	class VertexBuffer
+	class SPARKY_API VertexBuffer
 	{
 	public:
 		virtual ~VertexBuffer() {}
@@ -115,7 +117,7 @@ namespace Sparky {
 		static VertexBuffer* Create(float* vertices, uint32_t size);
 	};
 
-	class IndexBuffer
+	class SPARKY_API IndexBuffer
 	{
 	public:
 		virtual ~IndexBuffer() {}

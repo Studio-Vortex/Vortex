@@ -6,7 +6,7 @@
 
 namespace Sparky {
 
-	class VertexArray
+	class SPARKY_API VertexArray
 	{
 	public:
 		virtual ~VertexArray() {}

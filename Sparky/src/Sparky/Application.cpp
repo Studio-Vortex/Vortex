@@ -11,7 +11,7 @@ namespace Sparky {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
-		: m_Window(Window::Create()), m_GuiLayer(new GuiLayer())
+		: m_Window(Window::Create()), m_GuiLayer(new GuiLayer()), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
 	{
 		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
@@ -75,9 +75,11 @@ namespace Sparky {
 
 			out vec4 f_Color;
 
+			uniform mat4 u_ViewProjection;
+
 			void main()
 			{
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 				f_Color = a_Color;
 			}
 		)";
@@ -95,7 +97,7 @@ namespace Sparky {
 			}
 		)";
 
-		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
+		m_TriangleShader.reset(new Shader(vertexSrc, fragmentSrc));
 
 		std::string vertexSrc2 = R"(
 			#version 460 core
@@ -104,10 +106,12 @@ namespace Sparky {
 
 			out vec3 f_Position;
 
+			uniform mat4 u_ViewProjection;
+
 			void main()
 			{
 				f_Position = a_Position;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -124,7 +128,7 @@ namespace Sparky {
 			}
 		)";
 
-		m_PositionShader.reset(new Shader(vertexSrc2, fragmentSrc2));
+		m_SquareShader.reset(new Shader(vertexSrc2, fragmentSrc2));
 	}
 
 	Application::~Application()
@@ -136,6 +140,7 @@ namespace Sparky {
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowClose));
+		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(Application::OnKeyPressed));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -148,22 +153,16 @@ namespace Sparky {
 
 	void Application::Run()
 	{
+		RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f });
+
 		while (m_Running)
 		{	
-			RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f });
 			RenderCommand::Clear();
 
-			Renderer::BeginScene();
+			Renderer::BeginScene(m_Camera);
 
-			{
-				m_PositionShader->Enable();
-				Renderer::Submit(m_SquareVA);
-				RenderCommand::DrawIndexed(m_SquareVA);
-
-				m_Shader->Enable();
-				Renderer::Submit(m_TriangleVA);
-				RenderCommand::DrawIndexed(m_TriangleVA);
-			}
+			Renderer::Submit(m_SquareShader, m_SquareVA);
+			Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 			Renderer::EndScene();
 
@@ -194,6 +193,22 @@ namespace Sparky {
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		m_Running = false;
+		return true;
+	}
+
+	bool Application::OnKeyPressed(KeyPressedEvent& e)
+	{
+		auto& currentPosition = m_Camera.GetPosition();
+		auto moveSpeed = 0.01f;
+
+		switch ((char)e.GetKeyCode())
+		{
+			case 'W': m_Camera.SetPosition(currentPosition + Math::vec3(0.0f, moveSpeed, 0.0f)); break;
+			case 'A': m_Camera.SetPosition(currentPosition + Math::vec3(-moveSpeed, 0.0f, 0.0f)); break;
+			case 'S': m_Camera.SetPosition(currentPosition + Math::vec3(0.0f, -moveSpeed, 0.0f)); break;
+			case 'D': m_Camera.SetPosition(currentPosition + Math::vec3(moveSpeed, 0.0f, 0.0f)); break;
+		}
+
 		return true;
 	}
 

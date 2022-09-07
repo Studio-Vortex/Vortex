@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Sparky/Core.h"
+
 #include "Sparky/Renderer/Buffer.h"
 
 namespace Sparky {
 
-	class OpenGLVertexBuffer : public VertexBuffer
+	class SPARKY_API OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
 		OpenGLVertexBuffer(float* vertices, uint32_t size);
@@ -21,7 +23,7 @@ namespace Sparky {
 		BufferLayout m_Layout;
 	};
 
-	class OpenGLIndexBuffer : public IndexBuffer
+	class SPARKY_API OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);

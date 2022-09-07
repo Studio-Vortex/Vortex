@@ -144,7 +144,7 @@ namespace Sparky {
 
 	void Shader::SetUniform(const std::string& uniformName, const Math::mat4& matrix) const
 	{
-		glProgramUniformMatrix4fv(m_RendererID, GetUniformLocation(uniformName), 1, false, &matrix[0][0]);
+		glProgramUniformMatrix4fv(m_RendererID, GetUniformLocation(uniformName), 1, false, Math::ValuePtr(matrix));
 	}
 
 	int Shader::GetUniformLocation(const std::string& uniformName) const

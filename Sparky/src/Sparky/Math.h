@@ -15,6 +15,42 @@ namespace Sparky::Math {
 	typedef glm::mat3 mat3;
 	typedef glm::mat4 mat4;
 
+	template <typename T>
+	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
+	{
+		return glm::ortho(left, right, bottom, top, zNear, zFar);
+	}
+
+	static auto Translate(const mat4& matrix, const vec3& translation)
+	{
+		return glm::translate(matrix, translation);
+	}
+
+	static auto Rotate(const mat4& matrix, float rotation, const vec3& axis)
+	{
+		return glm::rotate(matrix, glm::radians(rotation), axis);
+	}
+
+	static auto Scale(const mat4& matrix, const vec3& scale)
+	{
+		return glm::scale(matrix, scale);
+	}
+
+	static auto Inverse(const mat4& matrix)
+	{
+		return glm::inverse(matrix);
+	}
+
+	static auto Identity()
+	{
+		return mat4(1.0f);
+	}
+
+	static auto ValuePtr(const mat4& matrix)
+	{
+		return glm::value_ptr(matrix);
+	}
+
 	inline std::ostream& operator<<(std::ostream& stream, const vec2& vec)
 	{
 		return stream << "(" << vec.x << ", " << vec.y << ')';
