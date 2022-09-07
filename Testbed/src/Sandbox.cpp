@@ -17,7 +17,7 @@ public:
 			  0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 		};
 
-		std::shared_ptr<Sparky::VertexBuffer> pTriangleVB;
+		Sparky::SharedRef<Sparky::VertexBuffer> pTriangleVB;
 		pTriangleVB.reset(Sparky::VertexBuffer::Create(vertices, sizeof(vertices)));
 
 		Sparky::BufferLayout layout = {
@@ -29,7 +29,7 @@ public:
 		m_TriangleVA->AddVertexBuffer(pTriangleVB);
 
 		uint32_t indices[3] = { 0, 1, 2 };
-		std::shared_ptr<Sparky::IndexBuffer> pTriangleIB;
+		Sparky::SharedRef<Sparky::IndexBuffer> pTriangleIB;
 		pTriangleIB.reset(Sparky::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices)));
 		m_TriangleVA->SetIndexBuffer(pTriangleIB);
 
@@ -43,7 +43,7 @@ public:
 			 -0.5f,  0.5f, 0.0f, // top left
 		};
 
-		std::shared_ptr<Sparky::VertexBuffer> pSquareVB;
+		Sparky::SharedRef<Sparky::VertexBuffer> pSquareVB;
 		pSquareVB.reset(Sparky::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 
 		pSquareVB->SetLayout({
@@ -52,7 +52,7 @@ public:
 		m_SquareVA->AddVertexBuffer(pSquareVB);
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
-		std::shared_ptr<Sparky::IndexBuffer> pSquareIB;
+		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB;
 		pSquareIB.reset(Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices)));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
@@ -198,11 +198,11 @@ public:
 	}
 
 private:
-	std::shared_ptr<Sparky::VertexArray> m_TriangleVA;
-	std::shared_ptr<Sparky::Shader> m_TriangleShader;
+	Sparky::SharedRef<Sparky::VertexArray> m_TriangleVA;
+	Sparky::SharedRef<Sparky::Shader> m_TriangleShader;
 
-	std::shared_ptr<Sparky::VertexArray> m_SquareVA;
-	std::shared_ptr<Sparky::Shader> m_FlatColorShader;
+	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
+	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
 
 	Sparky::OrthographicCamera m_Camera;
 	Sparky::Math::vec3 m_CameraPosition;

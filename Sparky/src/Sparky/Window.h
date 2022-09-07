@@ -41,7 +41,7 @@ namespace Sparky {
 
 		virtual void* GetNativeWindowHandle() const = 0;
 
-		static std::unique_ptr<Window> Create(const WindowProps& props = WindowProps());
+		static UniqueRef<Window> Create(const WindowProps& props = WindowProps());
 	};
 
 }

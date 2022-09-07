@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "Renderer.h"
 
+#include "Sparky/Core.h"
+
 #include "Platform/OpenGL/OpenGLShader.h"
 
 namespace Sparky {
@@ -17,7 +19,7 @@ namespace Sparky {
 
 	}
 
-	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, const Math::mat4& transform)
+	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform)
 	{
 		shader->Enable();
 		std::dynamic_pointer_cast<OpenGLShader>(shader)->SetUniform("u_ViewProjection", s_SceneData->ViewProjectionMatrix);

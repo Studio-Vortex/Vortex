@@ -17,7 +17,7 @@ namespace Sparky {
 		virtual void SetClearColor(const Math::vec3& color) = 0;
 		virtual void Clear() const = 0;
 
-		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) const = 0;
+		virtual void DrawIndexed(const SharedRef<VertexArray>& vertexArray) const = 0;
 
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }

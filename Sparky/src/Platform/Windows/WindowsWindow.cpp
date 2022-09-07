@@ -16,7 +16,7 @@ namespace Sparky {
 		SP_CORE_ERROR("GLFW Error: ({}): {}", error, description);
 	}
 
-	std::unique_ptr<Window> Window::Create(const WindowProps& props)
+	UniqueRef<Window> Window::Create(const WindowProps& props)
 	{
 		return std::make_unique<WindowsWindow>(props);
 	}

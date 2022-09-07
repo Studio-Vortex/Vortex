@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #ifdef SP_PLATFORM_WINDOWS
 #if SP_DYNAMIC_LINK
 	#ifdef SP_BUILD_DLL
@@ -31,3 +33,13 @@
 #define SP_BIND_CALLBACK(ident) std::bind(&ident, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)
+
+namespace Sparky {
+
+	template <typename T>
+	using UniqueRef = std::unique_ptr<T>;
+
+	template <typename T>
+	using SharedRef = std::shared_ptr<T>;
+
+}

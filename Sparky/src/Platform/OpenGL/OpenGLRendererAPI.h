@@ -10,7 +10,7 @@ namespace Sparky {
 		void SetClearColor(const Math::vec3& color);
 		void Clear() const;
 
-		void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) const;
+		void DrawIndexed(const SharedRef<VertexArray>& vertexArray) const;
 	};
 
 }
