@@ -143,7 +143,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Sparky\OrthographicCameraController.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
@@ -169,6 +168,7 @@
     <ClInclude Include="src\Sparky\Log.h" />
     <ClInclude Include="src\Sparky\Math.h" />
     <ClInclude Include="src\Sparky\MouseButtonCodes.h" />
+    <ClInclude Include="src\Sparky\OrthographicCameraController.h" />
     <ClInclude Include="src\Sparky\Renderer\Buffer.h" />
     <ClInclude Include="src\Sparky\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Sparky\Renderer\RenderCommand.h" />
@@ -598,7 +598,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Sparky\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
@@ -613,6 +612,7 @@
     <ClCompile Include="src\Sparky\Layer.cpp" />
     <ClCompile Include="src\Sparky\LayerStack.cpp" />
     <ClCompile Include="src\Sparky\Log.cpp" />
+    <ClCompile Include="src\Sparky\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Sparky\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Sparky\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\Sparky\Renderer\RenderCommand.cpp" />

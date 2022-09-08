@@ -32,14 +32,17 @@ namespace Sparky {
 				m_CameraRotation += m_CameraRotationSpeed * ts;
 
 			if (Input::IsKeyPressed(SP_KEY_R))
-				ResetCameraRotation();
+				ResetRotation();
 
 			m_Camera.SetRotation(m_CameraRotation);
 		}
 
-		m_Camera.SetPosition(m_CameraPosition);
+		if (Input::IsKeyPressed(SP_KEY_LEFT_SHIFT))
+			m_CameraTranslationSpeed = m_ZoomLevel * m_ShiftKeyModiferSpeed;
+		else
+			m_CameraTranslationSpeed = m_ZoomLevel;
 
-		m_CameraTranslationSpeed = m_ZoomLevel;
+		m_Camera.SetPosition(m_CameraPosition);
 	}
 
 	void OrthographicCameraController::OnEvent(Event& e)
@@ -52,7 +55,7 @@ namespace Sparky {
 	bool OrthographicCameraController::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
 		m_ZoomLevel -= e.GetYOffset() * 0.25f;
-		m_ZoomLevel = std::min(m_ZoomLevel, 10.0f); // zoom out limit
+		m_ZoomLevel = std::min(m_ZoomLevel, 20.0f); // zoom out limit
 		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f); // zoom in limit
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 
@@ -61,7 +64,7 @@ namespace Sparky {
 
 	bool OrthographicCameraController::OnWindowResizeEvent(WindowResizeEvent& e)
 	{
-		m_AspectRatio -= (float)e.GetWidth() / (float)e.GetHeight();
+		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 
 		return false;

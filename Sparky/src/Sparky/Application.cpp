@@ -35,6 +35,7 @@ namespace Sparky {
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowCloseEvent));
+		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
@@ -53,8 +54,11 @@ namespace Sparky {
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(timeStep);
+			if (!m_Minimized)
+			{
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(timeStep);
+			}
 
 			m_GuiLayer->BeginFrame();
 
@@ -81,6 +85,20 @@ namespace Sparky {
 	{
 		CloseApplication();
 		return true;
+	}
+
+	bool Application::OnWindowResizeEvent(WindowResizeEvent& e)
+	{
+		if (e.GetWidth() == NULL || e.GetHeight() == NULL)
+		{
+			m_Minimized = true;
+			return false;
+		}
+
+		m_Minimized = false;
+		Renderer::OnWindowResize({ 0, 0, e.GetWidth(), e.GetHeight() });
+
+		return false;
 	}
 
 }

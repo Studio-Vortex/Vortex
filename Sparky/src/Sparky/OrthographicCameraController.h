@@ -20,11 +20,17 @@ namespace Sparky {
 		inline const OrthographicCamera& GetCamera() const { return m_Camera; }
 		inline OrthographicCamera& GetCamera() { return m_Camera; }
 
-		inline const Math::vec3& GetCameraPosition() const { return m_CameraPosition; }
+		inline const Math::vec3& GetPosition() const { return m_CameraPosition; }
 
-		inline void ResetCameraRotation() { m_CameraRotation = 0.0f; }
-		inline void SetCameraRotationSpeed(float speed) { m_CameraRotationSpeed = speed; }
-		inline float GetCameraRotation() const { return m_CameraRotation; }
+		inline float GetRotation() const { return m_CameraRotation; }
+		inline void SetRotation(float rotation) { m_CameraRotation = rotation; }
+		inline void ResetRotation() { m_CameraRotation = 0.0f; }
+
+		inline float GetRotationSpeed() const { return m_CameraRotationSpeed; }
+		inline void SetRotationSpeed(float speed) { m_CameraRotationSpeed = speed; }
+
+		inline float GetZoomLevel() const { return m_ZoomLevel; }
+		inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; }
 
 	private:
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
@@ -41,6 +47,7 @@ namespace Sparky {
 		float m_CameraRotation{};
 
 		float m_CameraTranslationSpeed = 1.0f;
+		float m_ShiftKeyModiferSpeed = 4.0f;
 		float m_CameraRotationSpeed = 180.0f;
 	};
 

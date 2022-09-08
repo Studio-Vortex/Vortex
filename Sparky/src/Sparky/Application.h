@@ -30,6 +30,7 @@ namespace Sparky {
 
 	private:
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
+		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 	private:
 		UniqueRef<Window> m_Window;
@@ -37,6 +38,7 @@ namespace Sparky {
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
 		bool m_Running = true;
+		bool m_Minimized = false;
 
 	private:
 		static Application* s_Instance;

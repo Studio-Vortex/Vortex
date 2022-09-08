@@ -5,10 +5,15 @@
 
 namespace Sparky {
 
-    void OpenGLRendererAPI::Init()
+    void OpenGLRendererAPI::Init() const
     {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    void OpenGLRendererAPI::SetViewport(const Viewport& viewport) const
+    {
+		glViewport(viewport.XPos, viewport.YPos, viewport.Width, viewport.Height);
     }
 
     void OpenGLRendererAPI::SetClearColor(const Math::vec3& color)

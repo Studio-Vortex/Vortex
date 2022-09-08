@@ -13,6 +13,8 @@ namespace Sparky {
 	public:
 		static void Init();
 
+		static void OnWindowResize(const Viewport& viewport);
+
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 

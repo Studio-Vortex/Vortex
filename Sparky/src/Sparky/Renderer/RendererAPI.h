@@ -5,6 +5,14 @@
 
 namespace Sparky {
 
+	struct Viewport
+	{
+		uint32_t XPos;
+		uint32_t YPos;
+		uint32_t Width;
+		uint32_t Height;
+	};
+
 	class RendererAPI
 	{
 	public:
@@ -14,7 +22,9 @@ namespace Sparky {
 		};
 
 	public:
-		virtual void Init() = 0;
+		virtual void Init() const = 0;
+
+		virtual void SetViewport(const Viewport& viewport) const = 0;
 
 		virtual void SetClearColor(const Math::vec3& color) = 0;
 		virtual void Clear() const = 0;

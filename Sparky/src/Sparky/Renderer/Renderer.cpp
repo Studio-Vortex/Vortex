@@ -14,6 +14,11 @@ namespace Sparky {
 		RenderCommand::Init();
     }
 
+    void Renderer::OnWindowResize(const Viewport& viewport)
+    {
+		RenderCommand::SetViewport(viewport);
+    }
+
     void Renderer::BeginScene(const OrthographicCamera& camera)
 	{
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();

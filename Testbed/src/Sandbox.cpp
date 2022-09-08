@@ -122,7 +122,7 @@ public:
 		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
-		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/LinuxLogo.png");
+		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/Crate.png");
 
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->Enable();
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->SetUniform("u_Texture", 0);
@@ -177,7 +177,7 @@ public:
 	void OnGuiRender() override
 	{
 		Gui::Begin("Settings");
-		Gui::ColorEdit3("Color:", Sparky::Math::ValuePtr(m_SquareColor));
+		Gui::ColorEdit3("Square Color", Sparky::Math::ValuePtr(m_SquareColor));
 		Gui::End();
 	}
 
@@ -199,7 +199,7 @@ private:
 
 	Sparky::OrthographicCameraController m_CameraController;
 
-	Sparky::Math::vec3 m_SquareColor{ 0.2f, 0.2f, 0.8f };
+	Sparky::Math::vec3 m_SquareColor{ 0.2f, 0.3f, 0.8f };
 };
 
 class Sandbox : public Sparky::Application

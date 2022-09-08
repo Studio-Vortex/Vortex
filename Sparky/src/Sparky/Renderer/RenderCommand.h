@@ -14,6 +14,11 @@ namespace Sparky {
 			s_RendererAPI->Init();
 		}
 
+		inline static void SetViewport(const Viewport& viewport)
+		{
+			s_RendererAPI->SetViewport(viewport);
+		}
+
 		inline static void SetClearColor(const Math::vec3& color)
 		{
 			s_RendererAPI->SetClearColor(color);

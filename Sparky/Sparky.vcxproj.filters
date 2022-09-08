@@ -129,6 +129,9 @@
     <ClInclude Include="src\Sparky\MouseButtonCodes.h">
       <Filter>src\Sparky</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sparky\OrthographicCameraController.h">
+      <Filter>src\Sparky</Filter>
+    </ClInclude>
     <ClInclude Include="src\Sparky\Renderer\Buffer.h">
       <Filter>src\Sparky\Renderer</Filter>
     </ClInclude>
@@ -1410,7 +1413,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sparky\OrthographicCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1455,6 +1457,9 @@
     <ClCompile Include="src\Sparky\Log.cpp">
       <Filter>src\Sparky</Filter>
     </ClCompile>
+    <ClCompile Include="src\Sparky\OrthographicCameraController.cpp">
+      <Filter>src\Sparky</Filter>
+    </ClCompile>
     <ClCompile Include="src\Sparky\Renderer\Buffer.cpp">
       <Filter>src\Sparky\Renderer</Filter>
     </ClCompile>
@@ -1485,6 +1490,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Sparky\OrthographicCameraController.cpp" />
   </ItemGroup>
 </Project>

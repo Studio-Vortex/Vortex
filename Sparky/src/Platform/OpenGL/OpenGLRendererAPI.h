@@ -7,12 +7,14 @@ namespace Sparky {
 	class OpenGLRendererAPI : public RendererAPI
 	{
 	public:
-		void Init() override;
+		void Init() const override;
 
-		void SetClearColor(const Math::vec3& color);
-		void Clear() const;
+		void SetViewport(const Viewport& viewport) const override;
 
-		void DrawIndexed(const SharedRef<VertexArray>& vertexArray) const;
+		void SetClearColor(const Math::vec3& color) override;
+		void Clear() const override;
+
+		void DrawIndexed(const SharedRef<VertexArray>& vertexArray) const override;
 	};
 
 }
