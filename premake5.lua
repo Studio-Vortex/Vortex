@@ -77,7 +77,6 @@ project "Sparky"
 
 		defines
 		{
-			"SP_PLATFORM_WINDOWS",
 			"SP_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
 		}
@@ -129,11 +128,6 @@ project "Testbed"
 
 	filter "system:windows"
 		systemversion "latest"
-
-		defines
-		{
-			"SP_PLATFORM_WINDOWS",
-		}
 
 	filter "configurations:Debug"
 		defines "SP_DEBUG"

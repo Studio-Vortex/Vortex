@@ -37,7 +37,3 @@ namespace Gui = ImGui;
 
 #include "Sparky/Renderer/OrthographicCamera.h"
 /// ---------------------------------------------------
-
-/// Entry Point
-#include "Sparky/Core/EntryPoint.h"
-/// ---------------------------------------------------

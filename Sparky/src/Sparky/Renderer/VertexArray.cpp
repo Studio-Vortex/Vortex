@@ -12,12 +12,12 @@
 
 namespace Sparky {
 
-	VertexArray* VertexArray::Create()
+	SharedRef<VertexArray> VertexArray::Create()
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 		case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-		case RendererAPI::API::OpenGL:   return new OpenGLVertexArray();
+		case RendererAPI::API::OpenGL:   return std::make_shared<OpenGLVertexArray>();
 #ifdef SP_PLATFORM_WINDOWS
 		case RendererAPI::API::Direct3D: return nullptr;
 #endif // SP_PLATFORM_WINDOWS

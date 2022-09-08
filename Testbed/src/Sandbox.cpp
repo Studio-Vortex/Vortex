@@ -1,6 +1,8 @@
 #include <Sparky.h>
+#include <Sparky/Core/EntryPoint.h>
 
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Sandbox2D.h"
 
 class ExampleLayer : public Sparky::Layer
 {
@@ -8,7 +10,7 @@ public:
 	ExampleLayer()
 		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
-		m_TriangleVA.reset(Sparky::VertexArray::Create());
+		m_TriangleVA = Sparky::VertexArray::Create();
 
 		float vertices[3 * 7] = {
 			//position           color
@@ -29,11 +31,10 @@ public:
 		m_TriangleVA->AddVertexBuffer(pTriangleVB);
 
 		uint32_t indices[3] = { 0, 1, 2 };
-		Sparky::SharedRef<Sparky::IndexBuffer> pTriangleIB;
-		pTriangleIB = Sparky::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices));
+		Sparky::SharedRef<Sparky::IndexBuffer> pTriangleIB = Sparky::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices));
 		m_TriangleVA->SetIndexBuffer(pTriangleIB);
 
-		m_SquareVA.reset(Sparky::VertexArray::Create());
+		m_SquareVA = Sparky::VertexArray::Create();
 
 		float squareVertices[4 * 5] = {
 			//position           tex coords
@@ -53,72 +54,11 @@ public:
 		m_SquareVA->AddVertexBuffer(pSquareVB);
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
-		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB;
-		pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
+		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
-		std::string vertPosColorVertexSrc = R"(
-			#version 460 core
-
-			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec4 a_Color;
-
-			out vec3 f_Position;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			void main()
-			{
-				f_Position = a_Position;
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-			}
-		)";
-
-		std::string vertPosColorFragmentSrc = R"(
-			#version 460 core
-
-			layout (location = 0) out vec4 gl_Color;
-			
-			in vec3 f_Position;
-
-			void main()
-			{
-				gl_Color = vec4(f_Position * 0.5 + 0.5, 1.0);
-			}
-		)";
-
-		m_TriangleShader = Sparky::Shader::Create("VertexPosColor", vertPosColorVertexSrc, vertPosColorFragmentSrc);
-
-		std::string flatColorVertexSrc = R"(
-			#version 460 core
-
-			layout(location = 0) in vec3 a_Position;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			void main()
-			{
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-			}
-		)";
-
-		std::string flatColorFragmentSrc = R"(
-			#version 460 core
-
-			layout (location = 0) out vec4 gl_Color;
-
-			uniform vec3 u_Color;
-
-			void main()
-			{
-				gl_Color = vec4(u_Color, 1.0);
-			}
-		)";
-
-		m_FlatColorShader = Sparky::Shader::Create("Flat Color", flatColorVertexSrc, flatColorFragmentSrc);
-
+		m_TriangleShader = m_ShaderLibrary.Load("assets/shaders/VertexPosColor.glsl");
+		m_FlatColorShader = m_ShaderLibrary.Load("assets/shaders/FlatColor.glsl");
 		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
@@ -135,11 +75,13 @@ public:
 
 	void OnUpdate(Sparky::TimeStep ts) override
 	{
+		// Update
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().CloseApplication();
 
 		m_CameraController.OnUpdate(ts);
 
+		// Render
 		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Sparky::RenderCommand::Clear();
 
@@ -207,7 +149,8 @@ class Sandbox : public Sparky::Application
 public:
 	Sandbox()
 	{
-		PushLayer(new ExampleLayer());
+		//PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2D());
 	}
 
 	~Sandbox() override

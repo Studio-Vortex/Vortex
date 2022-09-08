@@ -2,7 +2,7 @@
 
 #include "Application.h"
 
-#if SP_PLATFORM_WINDOWS
+#ifdef SP_PLATFORM_WINDOWS
 
 	extern Sparky::Application* Sparky::CreateApplication();
 

@@ -26,6 +26,12 @@ namespace Sparky {
 
 		SP_CORE_INFO("  GLSL Info:");
 		SP_CORE_INFO("    Version:    {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+		int major, minor;
+		glGetIntegerv(GL_MAJOR_VERSION, &major);
+		glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+		SP_CORE_ASSERT(major >= 4 && minor >= 5, "Sparky requires OpenGL Version 4.5 or above!");
 #endif // SP_DEBUG
 	}
 

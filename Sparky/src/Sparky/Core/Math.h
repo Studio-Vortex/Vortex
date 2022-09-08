@@ -15,6 +15,16 @@ namespace Sparky::Math {
 	typedef glm::mat3 mat3;
 	typedef glm::mat4 mat4;
 
+	static auto Deg2Rad(float degrees)
+	{
+		return glm::radians(degrees);
+	}
+
+	static auto Rad2Deg(float radians)
+	{
+		return glm::degrees(radians);
+	}
+
 	template <typename T>
 	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
 	{

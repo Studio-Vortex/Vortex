@@ -20,7 +20,7 @@ namespace Sparky {
 		virtual const std::vector<SharedRef<VertexBuffer>>& GetVertexBuffers() const = 0;
 		virtual const SharedRef<IndexBuffer>& GetIndexBuffer() const = 0;
 
-		static VertexArray* Create();
+		static SharedRef<VertexArray> Create();
 	};
 
 }
