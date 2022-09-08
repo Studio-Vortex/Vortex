@@ -1,7 +1,14 @@
 // Directories
+
 /.vs
 /bin
 /bin-int
+Sparky/resources/images
+Testbed/assets/textures
 
 // Files
+
 *.user
+*.vcxproj
+*.sln
+Testbed/src/imgui.ini
