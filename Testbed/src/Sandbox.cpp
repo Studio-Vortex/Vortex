@@ -18,7 +18,7 @@ public:
 		};
 
 		Sparky::SharedRef<Sparky::VertexBuffer> pTriangleVB;
-		pTriangleVB.reset(Sparky::VertexBuffer::Create(vertices, sizeof(vertices)));
+		pTriangleVB = Sparky::VertexBuffer::Create(vertices, sizeof(vertices));
 
 		Sparky::BufferLayout layout = {
 			{ Sparky::ShaderDataType::Float3, "a_Position" },
@@ -30,7 +30,7 @@ public:
 
 		uint32_t indices[3] = { 0, 1, 2 };
 		Sparky::SharedRef<Sparky::IndexBuffer> pTriangleIB;
-		pTriangleIB.reset(Sparky::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices)));
+		pTriangleIB = Sparky::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices));
 		m_TriangleVA->SetIndexBuffer(pTriangleIB);
 
 		m_SquareVA.reset(Sparky::VertexArray::Create());
@@ -44,7 +44,7 @@ public:
 		};
 
 		Sparky::SharedRef<Sparky::VertexBuffer> pSquareVB;
-		pSquareVB.reset(Sparky::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		pSquareVB = Sparky::VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 
 		pSquareVB->SetLayout({
 			{ Sparky::ShaderDataType::Float3, "a_Position" },
@@ -54,7 +54,7 @@ public:
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
 		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB;
-		pSquareIB.reset(Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices)));
+		pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
 		std::string triangleVertexSrc = R"(
@@ -88,7 +88,7 @@ public:
 			}
 		)";
 
-		m_TriangleShader.reset(Sparky::Shader::Create(triangleVertexSrc, triangleFragmentSrc));
+		m_TriangleShader = Sparky::Shader::Create(triangleVertexSrc, triangleFragmentSrc);
 
 		std::string flatColorVertexSrc = R"(
 			#version 460 core
@@ -122,42 +122,9 @@ public:
 			}
 		)";
 
-		m_FlatColorShader.reset(Sparky::Shader::Create(flatColorVertexSrc, flatColorFragmentSrc));
+		m_FlatColorShader = Sparky::Shader::Create(flatColorVertexSrc, flatColorFragmentSrc);
 
-		std::string textureShaderVertexSrc = R"(
-			#version 460 core
-
-			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec2 a_TexCoord;
-
-			out vec2 f_TexCoord;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			void main()
-			{
-				f_TexCoord = a_TexCoord;
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-			}
-		)";
-
-		std::string textureShaderFragmentSrc = R"(
-			#version 460 core
-
-			layout (location = 0) out vec4 gl_Color;
-			
-			in vec2 f_TexCoord;
-
-			uniform sampler2D u_Texture;
-
-			void main()
-			{
-				gl_Color = texture(u_Texture, f_TexCoord);
-			}
-		)";
-
-		m_TextureShader.reset(Sparky::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+		m_TextureShader = Sparky::Shader::Create("assets/shaders/Texture.glsl");
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/LinuxLogo.png");

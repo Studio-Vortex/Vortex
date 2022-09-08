@@ -6,11 +6,15 @@
 
 #include <string>
 
+// TODO: REMOVE!!!
+typedef unsigned int GLenum;
+
 namespace Sparky {
 
 	class OpenGLShader : public Shader
 	{
 	public:
+		OpenGLShader(const std::string& filepath);
 		OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc);
 		~OpenGLShader();
 
@@ -29,6 +33,9 @@ namespace Sparky {
 		void SetUniform(const std::string& uniformName, const Math::mat4& matrix) const;
 
 	private:
+		std::string ReadFile(const std::string& filepath) const;
+		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source) const;
+		void Compile(const std::unordered_map<GLenum, std::string> shaderSources);
 		int GetUniformLocation(const std::string& uniformName) const;
 
 	private:

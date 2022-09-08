@@ -14,7 +14,8 @@ namespace Sparky {
 		virtual void Enable() const = 0;
 		virtual void Disable() const = 0;
 
-		static Shader* Create(const std::string& vertexSrc, const std::string& fragmentSrc);
+		static SharedRef<Shader> Create(const std::string& filepath);
+		static SharedRef<Shader> Create(const std::string& vertexSrc, const std::string& fragmentSrc);
 	};
 
 }
