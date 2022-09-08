@@ -9,7 +9,12 @@ namespace Sparky {
 
 	Renderer::SceneData* Renderer::s_SceneData = new Renderer::SceneData();
 
-	void Renderer::BeginScene(const OrthographicCamera& camera)
+    void Renderer::Init()
+    {
+		RenderCommand::Init();
+    }
+
+    void Renderer::BeginScene(const OrthographicCamera& camera)
 	{
 		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	}

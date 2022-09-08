@@ -160,6 +160,7 @@ public:
 		m_TextureShader.reset(Sparky::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
+		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/LinuxLogo.png");
 
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->Enable();
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->SetUniform("u_Texture", 0);
@@ -216,7 +217,10 @@ public:
 		}
 
 		m_Texture->Bind();
-		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f))); \
+		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
+		
+		m_LinuxLogo->Bind();
+		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
 
 		///Triangle
 		//Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
@@ -243,7 +247,7 @@ private:
 	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
 	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader, m_TextureShader;
 
-	Sparky::SharedRef<Sparky::Texture2D> m_Texture;
+	Sparky::SharedRef<Sparky::Texture2D> m_Texture, m_LinuxLogo;
 
 	Sparky::OrthographicCamera m_Camera;
 	Sparky::Math::vec3 m_CameraPosition;

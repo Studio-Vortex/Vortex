@@ -5,7 +5,13 @@
 
 namespace Sparky {
 
-	void OpenGLRendererAPI::SetClearColor(const Math::vec3& color)
+    void OpenGLRendererAPI::Init()
+    {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    void OpenGLRendererAPI::SetClearColor(const Math::vec3& color)
 	{
 		glClearColor(color.r, color.g, color.b, 1.0f);
 	}

@@ -14,6 +14,8 @@ namespace Sparky {
 		};
 
 	public:
+		virtual void Init() = 0;
+
 		virtual void SetClearColor(const Math::vec3& color) = 0;
 		virtual void Clear() const = 0;
 

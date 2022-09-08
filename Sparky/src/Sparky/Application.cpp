@@ -21,6 +21,8 @@ namespace Sparky {
 
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
+		Renderer::Init();
+
 		PushOverlay(m_GuiLayer);
 	}
 

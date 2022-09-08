@@ -9,6 +9,11 @@ namespace Sparky {
 	class SPARKY_API RenderCommand
 	{
 	public:
+		inline static void Init()
+		{
+			s_RendererAPI->Init();
+		}
+
 		inline static void SetClearColor(const Math::vec3& color)
 		{
 			s_RendererAPI->SetClearColor(color);
