@@ -12,12 +12,14 @@ workspace "Sparky"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
+IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
 IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["glm"] = "Sparky/vendor/glm"
+IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 
-group "Third Party"
+group "Vendor"
 	include "Sparky/vendor/GLFW"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
@@ -40,6 +42,8 @@ project "Sparky"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 	}
@@ -52,11 +56,12 @@ project "Sparky"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.stb_image}",
 	}
 
 	links
@@ -111,8 +116,8 @@ project "Testbed"
 
 	includedirs
 	{
-		"Sparky/vendor/spdlog/include",
 		"Sparky/src",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 	}

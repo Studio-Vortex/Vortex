@@ -1,23 +1,23 @@
 #include "sppch.h"
-#include "Shader.h"
+#include "Texture.h"
 
 #include "Sparky/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/OpenGL/OpenGLTexture.h"
 
 /*
 *** #ifdef SP_PLATFORM_WINDOWS
-***		#include "Platform/Direct3D/Direct3DShader.h"
+***		#include "Platform/Direct3D/Direct3DTexture.h"
 *** #endif // SP_PLATFORM_WINDOWS
 */
 
 namespace Sparky {
 
-	Shader* Shader::Create(const std::string& vertexSrc, const std::string& fragmentSrc)
+	SharedRef<Texture2D> Texture2D::Create(const std::string& path, bool flipVertical)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return new OpenGLShader(vertexSrc, fragmentSrc);
+			case RendererAPI::API::OpenGL:   return std::make_shared<OpenGLTexture2D>(path, flipVertical);
 #ifdef SP_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // SP_PLATFORM_WINDOWS

@@ -35,12 +35,12 @@ public:
 
 		m_SquareVA.reset(Sparky::VertexArray::Create());
 
-		float squareVertices[4 * 7] = {
-			//position
-			 -0.5f, -0.5f, 0.0f, // bottom left
-			  0.5f, -0.5f, 0.0f, // bottom right
-			  0.5f,  0.5f, 0.0f, // top right
-			 -0.5f,  0.5f, 0.0f, // top left
+		float squareVertices[4 * 5] = {
+			//position           tex coords
+			 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,// bottom left
+			  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,// bottom right
+			  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,// top right
+			 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,// top left
 		};
 
 		Sparky::SharedRef<Sparky::VertexBuffer> pSquareVB;
@@ -48,6 +48,7 @@ public:
 
 		pSquareVB->SetLayout({
 			{ Sparky::ShaderDataType::Float3, "a_Position" },
+			{ Sparky::ShaderDataType::Float2, "a_TexCoord" },
 		});
 		m_SquareVA->AddVertexBuffer(pSquareVB);
 
@@ -77,7 +78,7 @@ public:
 		std::string triangleFragmentSrc = R"(
 			#version 460 core
 
-			out vec4 gl_Color;
+			layout (location = 0) out vec4 gl_Color;
 			
 			in vec4 f_Color;
 
@@ -106,10 +107,10 @@ public:
 			}
 		)";
 
-		std::string flagColorFragmentSrc = R"(
+		std::string flatColorFragmentSrc = R"(
 			#version 460 core
 
-			out vec4 gl_Color;
+			layout (location = 0) out vec4 gl_Color;
 			
 			in vec3 f_Position;
 
@@ -121,7 +122,47 @@ public:
 			}
 		)";
 
-		m_FlatColorShader.reset(Sparky::Shader::Create(flatColorVertexSrc, flagColorFragmentSrc));
+		m_FlatColorShader.reset(Sparky::Shader::Create(flatColorVertexSrc, flatColorFragmentSrc));
+
+		std::string textureShaderVertexSrc = R"(
+			#version 460 core
+
+			layout(location = 0) in vec3 a_Position;
+			layout(location = 1) in vec2 a_TexCoord;
+
+			out vec2 f_TexCoord;
+
+			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
+
+			void main()
+			{
+				f_TexCoord = a_TexCoord;
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+			}
+		)";
+
+		std::string textureShaderFragmentSrc = R"(
+			#version 460 core
+
+			layout (location = 0) out vec4 gl_Color;
+			
+			in vec2 f_TexCoord;
+
+			uniform sampler2D u_Texture;
+
+			void main()
+			{
+				gl_Color = texture(u_Texture, f_TexCoord);
+			}
+		)";
+
+		m_TextureShader.reset(Sparky::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+
+		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
+
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->Enable();
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->SetUniform("u_Texture", 0);
 	}
 
 	~ExampleLayer() override
@@ -129,7 +170,7 @@ public:
 		
 	}
 
-	void ProcessInput(Sparky::TimeStep ts)
+	void OnUpdate(Sparky::TimeStep ts) override
 	{
 		float deltaTime = ts;
 
@@ -150,12 +191,6 @@ public:
 
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().CloseApplication();
-	}
-
-	void OnUpdate(Sparky::TimeStep ts) override
-	{
-		SP_CORE_INFO("Delta Time: {}s ({}ms)", ts.GetDeltaTime(), ts.GetDeltaTimeMs());
-		ProcessInput(ts);
 
 		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Sparky::RenderCommand::Clear();
@@ -180,7 +215,11 @@ public:
 			}
 		}
 
-		Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
+		m_Texture->Bind();
+		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f))); \
+
+		///Triangle
+		//Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 		Sparky::Renderer::EndScene();
 	}
@@ -202,7 +241,9 @@ private:
 	Sparky::SharedRef<Sparky::Shader> m_TriangleShader;
 
 	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
-	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
+	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader, m_TextureShader;
+
+	Sparky::SharedRef<Sparky::Texture2D> m_Texture;
 
 	Sparky::OrthographicCamera m_Camera;
 	Sparky::Math::vec3 m_CameraPosition;

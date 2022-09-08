@@ -2,7 +2,9 @@
 
 #include <functional>
 #include <algorithm>
+#include <stdint.h>
 #include <iostream>
+#include <cstring>
 #include <utility>
 #include <memory>
 #include <cmath>
