@@ -1,7 +1,7 @@
 #include "sppch.h"
 #include "GuiLayer.h"
 
-#include "Sparky/Application.h"
+#include "Sparky/Core/Application.h"
 
 #include <imgui.h>
 

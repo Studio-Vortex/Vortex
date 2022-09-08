@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Core.h"
+#include "Sparky/Core/Core.h"
 #include "Sparky/Events/Event.h"
 #include "Sparky/Core/TimeStep.h"
 
@@ -10,7 +10,7 @@ namespace Sparky {
 	{
 	public:
 		Layer(const std::string& name = "Layer");
-		virtual ~Layer();
+		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}

@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Sparky/Log.h"
+#include "Sparky/Core/Log.h"
 
 #ifdef SP_PLATFORM_WINDOWS
 	#include <Windows.h>

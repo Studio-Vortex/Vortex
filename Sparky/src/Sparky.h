@@ -1,13 +1,15 @@
 #pragma once
 
 /// Core
-#include "Sparky/Application.h"
-#include "Sparky/Layer.h"
-#include "Sparky/Log.h"
+#include "Sparky/Core/Application.h"
+#include "Sparky/Core/Layer.h"
+#include "Sparky/Core/Log.h"
 #include "Sparky/Core/TimeStep.h"
+#include "Sparky/Core/Math.h"
+/// ---------------------------------------------------
 
+/// Gui
 #include "Sparky/Gui/GuiLayer.h"
-
 #include <imgui.h>
 // Re Exporting ImGui as Gui in Client
 namespace Gui = ImGui;
@@ -18,14 +20,10 @@ namespace Gui = ImGui;
 #include "Sparky/Events/KeyEvent.h"
 #include "Sparky/Events/MouseEvent.h"
 
-#include "Sparky/Input.h"
-#include "Sparky/KeyCodes.h"
-#include "Sparky/MouseButtonCodes.h"
-#include "Sparky/OrthographicCameraController.h"
-/// ---------------------------------------------------
-
-/// Math
-#include "Sparky/Math.h"
+#include "Sparky/Core/Input.h"
+#include "Sparky/Core/KeyCodes.h"
+#include "Sparky/Core/MouseButtonCodes.h"
+#include "Sparky/Renderer/OrthographicCameraController.h"
 /// ---------------------------------------------------
 
 /// Graphics
@@ -41,5 +39,5 @@ namespace Gui = ImGui;
 /// ---------------------------------------------------
 
 /// Entry Point
-#include "Sparky/EntryPoint.h"
+#include "Sparky/Core/EntryPoint.h"
 /// ---------------------------------------------------

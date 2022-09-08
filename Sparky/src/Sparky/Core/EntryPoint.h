@@ -2,7 +2,7 @@
 
 #include "Application.h"
 
-#if defined(SP_PLATFORM_WINDOWS)
+#if SP_PLATFORM_WINDOWS
 
 	extern Sparky::Application* Sparky::CreateApplication();
 
@@ -15,7 +15,7 @@
 		delete app;
 	}
 
-#elif defined(GLFW_PLATFORM_MACOS)
+#elif SP_PLATFORM_MACOS
 
 	extern Sparky::Application* Sparky::CreateApplication();
 
@@ -28,4 +28,4 @@
 		delete app;
 	}
 
-#endif // GLFW_PLATFORM_WINDOWS
+#endif // SP_PLATFORM_WINDOWS

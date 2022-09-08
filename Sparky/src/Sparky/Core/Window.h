@@ -2,10 +2,10 @@
 
 #include "sppch.h"
 
-#include "Sparky/Core.h"
+#include "Sparky/Core/Core.h"
 
 #include "Sparky/Events/Event.h"
-#include "Sparky/Math.h"
+#include "Sparky/Core/Math.h"
 
 namespace Sparky {
 
@@ -26,7 +26,7 @@ namespace Sparky {
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual ~Window() {}
+		virtual ~Window() = default;
 
 		virtual void OnUpdate() = 0;
 

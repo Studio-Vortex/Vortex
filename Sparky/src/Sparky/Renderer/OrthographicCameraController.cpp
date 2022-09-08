@@ -1,8 +1,8 @@
 #include "sppch.h"
 #include "OrthographicCameraController.h"
 
-#include "Sparky/Input.h"
-#include "Sparky/KeyCodes.h"
+#include "Sparky/Core/Input.h"
+#include "Sparky/Core/KeyCodes.h"
 
 namespace Sparky {
 

@@ -1,7 +1,7 @@
 #include "sppch.h"
 #include "Renderer.h"
 
-#include "Sparky/Core.h"
+#include "Sparky/Core/Core.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
 

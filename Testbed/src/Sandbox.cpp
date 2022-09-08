@@ -122,7 +122,7 @@ public:
 		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
-		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/Crate.png");
+		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/AwesomeFace.png");
 
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->Enable();
 		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->SetUniform("u_Texture", 0);

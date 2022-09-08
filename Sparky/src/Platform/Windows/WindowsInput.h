@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sparky/Core.h"
-
-#include "Sparky/Input.h"
+#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Input.h"
+#include "Sparky/Core/Math.h"
 
 namespace Sparky {
 
@@ -16,9 +16,6 @@ namespace Sparky {
 		Math::vec2 GetMousePositionImpl() override;
 		float GetMouseXImpl() override;
 		float GetMouseYImpl() override;
-
-	public:
-	private:
 	};
 
 }

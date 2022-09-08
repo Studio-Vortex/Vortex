@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sparky/Core.h"
+#include "Sparky/Core/Core.h"
 
-#include "Sparky/Math.h"
+#include "Sparky/Core/Math.h"
 
 namespace Sparky {
 

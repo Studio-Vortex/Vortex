@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Math.h"
+#include "Sparky/Core/Math.h"
 #include "Sparky/Renderer/VertexArray.h"
 
 namespace Sparky {

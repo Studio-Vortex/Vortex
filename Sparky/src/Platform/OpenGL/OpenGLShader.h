@@ -2,7 +2,7 @@
 
 #include "Sparky/Renderer/Shader.h"
 
-#include "Sparky/Math.h"
+#include "Sparky/Core/Math.h"
 
 #include <string>
 

@@ -2,8 +2,8 @@
 
 #include "Core.h"
 
-#include "Sparky/Window.h"
-#include "Sparky/LayerStack.h"
+#include "Sparky/Core/Window.h"
+#include "Sparky/Core/LayerStack.h"
 #include "Sparky/Events/ApplicationEvent.h"
 
 #include "Sparky/Gui/GuiLayer.h"

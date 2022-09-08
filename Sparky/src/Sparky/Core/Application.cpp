@@ -1,10 +1,10 @@
 #include "sppch.h"
 #include "Application.h"
 
-#include "Sparky/Input.h"
 #include "Sparky/Renderer/Renderer.h"
-#include "Sparky/KeyCodes.h"
 #include "Sparky/Core/TimeStep.h"
+#include "Sparky/Core/KeyCodes.h"
+#include "Sparky/Core/Input.h"
 
 #include <Glad/glad.h>
 #include <GLFW/glfw3.h>

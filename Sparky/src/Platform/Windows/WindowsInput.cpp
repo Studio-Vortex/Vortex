@@ -1,7 +1,7 @@
 #include "sppch.h"
 #include "WindowsInput.h"
 
-#include "Sparky/Application.h"
+#include "Sparky/Core/Application.h"
 
 #include <GLFW/glfw3.h>
 
