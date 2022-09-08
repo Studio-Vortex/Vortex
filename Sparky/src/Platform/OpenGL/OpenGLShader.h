@@ -15,11 +15,13 @@ namespace Sparky {
 	{
 	public:
 		OpenGLShader(const std::string& filepath);
-		OpenGLShader(const std::string& vertexSrc, const std::string& fragmentSrc);
+		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 		~OpenGLShader();
 
 		void Enable() const override;
 		void Disable() const override;
+
+		inline const std::string& GetName() const override { return m_Name; };
 
 		void SetUniform(const std::string& uniformName, int v) const;
 		void SetUniform(const std::string& uniformName, unsigned int v) const;
@@ -40,6 +42,7 @@ namespace Sparky {
 
 	private:
 		uint32_t m_RendererID = 0;
+		std::string m_Name;
 	};
 
 }

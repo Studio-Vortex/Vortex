@@ -57,43 +57,11 @@ public:
 		pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
-		std::string triangleVertexSrc = R"(
+		std::string vertPosColorVertexSrc = R"(
 			#version 460 core
 
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Color;
-
-			out vec4 f_Color;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			void main()
-			{
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-				f_Color = a_Color;
-			}
-		)";
-
-		std::string triangleFragmentSrc = R"(
-			#version 460 core
-
-			layout (location = 0) out vec4 gl_Color;
-			
-			in vec4 f_Color;
-
-			void main()
-			{
-				gl_Color = f_Color;
-			}
-		)";
-
-		m_TriangleShader = Sparky::Shader::Create(triangleVertexSrc, triangleFragmentSrc);
-
-		std::string flatColorVertexSrc = R"(
-			#version 460 core
-
-			layout(location = 0) in vec3 a_Position;
 
 			out vec3 f_Position;
 
@@ -107,12 +75,39 @@ public:
 			}
 		)";
 
-		std::string flatColorFragmentSrc = R"(
+		std::string vertPosColorFragmentSrc = R"(
 			#version 460 core
 
 			layout (location = 0) out vec4 gl_Color;
 			
 			in vec3 f_Position;
+
+			void main()
+			{
+				gl_Color = vec4(f_Position * 0.5 + 0.5, 1.0);
+			}
+		)";
+
+		m_TriangleShader = Sparky::Shader::Create("VertexPosColor", vertPosColorVertexSrc, vertPosColorFragmentSrc);
+
+		std::string flatColorVertexSrc = R"(
+			#version 460 core
+
+			layout(location = 0) in vec3 a_Position;
+
+			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
+
+			void main()
+			{
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+			}
+		)";
+
+		std::string flatColorFragmentSrc = R"(
+			#version 460 core
+
+			layout (location = 0) out vec4 gl_Color;
 
 			uniform vec3 u_Color;
 
@@ -122,15 +117,15 @@ public:
 			}
 		)";
 
-		m_FlatColorShader = Sparky::Shader::Create(flatColorVertexSrc, flatColorFragmentSrc);
+		m_FlatColorShader = Sparky::Shader::Create("Flat Color", flatColorVertexSrc, flatColorFragmentSrc);
 
-		m_TextureShader = Sparky::Shader::Create("assets/shaders/Texture.glsl");
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/LinuxLogo.png");
 
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->Enable();
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_TextureShader)->SetUniform("u_Texture", 0);
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->Enable();
+		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->SetUniform("u_Texture", 0);
 	}
 
 	~ExampleLayer() override
@@ -183,14 +178,16 @@ public:
 			}
 		}
 
+		auto textureShader = m_ShaderLibrary.Get("Texture");
+
 		m_Texture->Bind();
-		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
 		
 		m_LinuxLogo->Bind();
-		Sparky::Renderer::Submit(m_TextureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
 
 		///Triangle
-		//Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
+		Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 		Sparky::Renderer::EndScene();
 	}
@@ -208,11 +205,13 @@ public:
 	}
 
 private:
+	Sparky::ShaderLibrary m_ShaderLibrary;
+
 	Sparky::SharedRef<Sparky::VertexArray> m_TriangleVA;
 	Sparky::SharedRef<Sparky::Shader> m_TriangleShader;
 
 	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
-	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader, m_TextureShader;
+	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
 
 	Sparky::SharedRef<Sparky::Texture2D> m_Texture, m_LinuxLogo;
 
