@@ -6,7 +6,7 @@ class ExampleLayer : public Sparky::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition()
+		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
 		m_TriangleVA.reset(Sparky::VertexArray::Create());
 
@@ -135,33 +135,15 @@ public:
 
 	void OnUpdate(Sparky::TimeStep ts) override
 	{
-		float deltaTime = ts;
-
-		if (Sparky::Input::IsKeyPressed(SP_KEY_W))
-			m_CameraPosition.y += m_CameraMoveSpeed * deltaTime;
-		else if (Sparky::Input::IsKeyPressed(SP_KEY_S))
-			m_CameraPosition.y -= m_CameraMoveSpeed * deltaTime;
-
-		if (Sparky::Input::IsKeyPressed(SP_KEY_A))
-			m_CameraPosition.x -= m_CameraMoveSpeed * deltaTime;
-		else if (Sparky::Input::IsKeyPressed(SP_KEY_D))
-			m_CameraPosition.x += m_CameraMoveSpeed * deltaTime;
-
-		if (Sparky::Input::IsKeyPressed(SP_KEY_R))
-			m_CameraRotation -= m_CameraRotationSpeed * deltaTime;
-		else if (Sparky::Input::IsKeyPressed(SP_KEY_T))
-			m_CameraRotation += m_CameraRotationSpeed * deltaTime;
-
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().CloseApplication();
+
+		m_CameraController.OnUpdate(ts);
 
 		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Sparky::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
-
-		Sparky::Renderer::BeginScene(m_Camera);
+		Sparky::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		static Sparky::Math::mat4 scale = Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(0.1f));
 
@@ -172,8 +154,8 @@ public:
 		{
 			for (int x = 0; x < 20; x++)
 			{
-				Sparky::Math::vec3 position{ (float)x * 0.11f, (float)y * 0.11f, 0.0f };
-				Sparky::Math::mat4 transform{ Sparky::Math::Translate(Sparky::Math::Identity(), position) * scale };
+				Sparky::Math::vec3 position((float)x * 0.11f, (float)y * 0.11f, 0.0f);
+				Sparky::Math::mat4 transform = Sparky::Math::Translate(Sparky::Math::Identity(), position) * scale;
 				Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
@@ -187,7 +169,7 @@ public:
 		Sparky::Renderer::Submit(textureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
 
 		///Triangle
-		Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
+		// Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
 
 		Sparky::Renderer::EndScene();
 	}
@@ -201,7 +183,7 @@ public:
 
 	void OnEvent(Sparky::Event& event) override
 	{
-
+		m_CameraController.OnEvent(event);
 	}
 
 private:
@@ -215,12 +197,7 @@ private:
 
 	Sparky::SharedRef<Sparky::Texture2D> m_Texture, m_LinuxLogo;
 
-	Sparky::OrthographicCamera m_Camera;
-	Sparky::Math::vec3 m_CameraPosition;
-	float m_CameraRotation = 0.0f;
-
-	float m_CameraMoveSpeed = -5.0f;
-	float m_CameraRotationSpeed = 180.0f;
+	Sparky::OrthographicCameraController m_CameraController;
 
 	Sparky::Math::vec3 m_SquareColor{ 0.2f, 0.2f, 0.8f };
 };

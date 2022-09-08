@@ -11,6 +11,8 @@ namespace Sparky {
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
 
+		void SetProjection(float left, float right, float bottom, float top);
+
 		inline const Math::vec3& GetPosition() const { return m_Position; }
 		inline void SetPosition(const Math::vec3& position) { m_Position = position; ReCalculateViewMatrix(); }
 
@@ -29,8 +31,8 @@ namespace Sparky {
 		Math::mat4 m_ViewMatrix;
 		Math::mat4 m_ViewProjectionMatrix;
 
-		Math::vec3 m_Position;
-		float m_Rotation;
+		Math::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		float m_Rotation = 0.0f;
 	};
 
 }
