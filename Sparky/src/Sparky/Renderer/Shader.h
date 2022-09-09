@@ -16,7 +16,8 @@ namespace Sparky {
 
 		virtual void Enable() const = 0;
 		virtual void Disable() const = 0;
-
+		
+		virtual void SetBool(const std::string& name, bool value) const = 0;
 		virtual void SetInt(const std::string& name, int value) const = 0;
 		virtual void SetFloat(const std::string& name, int value) const = 0;
 		virtual void SetMat3(const std::string& name, const Math::mat3& matrix) const = 0;

@@ -171,7 +171,12 @@ namespace Sparky {
 		glUseProgram(NULL);
 	}
 
-	void OpenGLShader::SetInt(const std::string& name, int value) const
+    void OpenGLShader::SetBool(const std::string& name, bool value) const
+    {
+		SetUniform(name, value);
+    }
+
+    void OpenGLShader::SetInt(const std::string& name, int value) const
 	{
 		SetUniform(name, value);
 	}

@@ -23,9 +23,7 @@ namespace Sparky {
 		SP_CORE_INFO("  Hardware:     {}", glGetString(GL_RENDERER));
 		SP_CORE_INFO("  Vendor:       {}", glGetString(GL_VENDOR));
 		SP_CORE_INFO("  Version:      {}", glGetString(GL_VERSION));
-
-		SP_CORE_INFO("  GLSL Info:");
-		SP_CORE_INFO("    Version:    {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+		SP_CORE_INFO("  GLSL Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		int major, minor;
 		glGetIntegerv(GL_MAJOR_VERSION, &major);

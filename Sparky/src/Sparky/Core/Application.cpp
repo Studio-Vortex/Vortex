@@ -14,15 +14,16 @@ namespace Sparky {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
-		: m_Window(Window::Create()), m_GuiLayer(new GuiLayer())
 	{
 		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
+		m_Window = Window::Create();
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
 		Renderer::Init();
 
+		m_GuiLayer = new GuiLayer();
 		PushOverlay(m_GuiLayer);
 	}
 
@@ -83,7 +84,7 @@ namespace Sparky {
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		CloseApplication();
+		m_Running = false;
 		return true;
 	}
 

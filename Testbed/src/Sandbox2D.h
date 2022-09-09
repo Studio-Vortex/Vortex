@@ -18,9 +18,7 @@ public:
 private:
 	Sparky::OrthographicCameraController m_CameraController;
 
-	// Temp
-	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
-	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
+	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
 
-	Math::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
+	Math::vec4 m_SquareColor;
 };

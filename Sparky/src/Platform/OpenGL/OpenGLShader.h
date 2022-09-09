@@ -21,6 +21,7 @@ namespace Sparky {
 		void Enable() const override;
 		void Disable() const override;
 
+		void SetBool(const std::string& name, bool value) const override;
 		void SetInt(const std::string& name, int value) const override;
 		void SetFloat(const std::string& name, int value) const override;
 		void SetMat3(const std::string& name, const Math::mat3& matrix) const override;

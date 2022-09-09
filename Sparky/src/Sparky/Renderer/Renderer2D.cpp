@@ -9,8 +9,10 @@ namespace Sparky {
 
 	struct Renderer2DState
 	{
-		SharedRef<VertexArray> QuadVertexArray;
 		SharedRef<Shader> FlatColorShader;
+		SharedRef<Shader> TextureShader;
+
+		SharedRef<VertexArray> QuadVertexArray;
 		SharedRef<VertexBuffer> QuadVertexBuffer;
 		SharedRef<IndexBuffer> QuadIndexBuffer;
 	};
@@ -23,18 +25,19 @@ namespace Sparky {
 
 		s_Data->QuadVertexArray = VertexArray::Create();
 
-		float squareVertices[4 * 3] = {
-			//position         
-			 -0.5f, -0.5f, 0.0f,// bottom left
-			  0.5f, -0.5f, 0.0f,// bottom right
-			  0.5f,  0.5f, 0.0f,// top right
-			 -0.5f,  0.5f, 0.0f,// top left
+		float squareVertices[4 * 5] = {
+			//position           tex coord
+			 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,// bottom left
+			  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,// bottom right
+			  0.5f,  0.5f, 0.0f, 1.0f, 1.0f,// top right
+			 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,// top left
 		};
 
 		s_Data->QuadVertexBuffer = VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 
 		s_Data->QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
 		});
 
 		s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
@@ -44,6 +47,10 @@ namespace Sparky {
 		s_Data->QuadVertexArray->SetIndexBuffer(s_Data->QuadIndexBuffer);
 
 		s_Data->FlatColorShader = Shader::Create("assets/shaders/FlatColor.glsl");
+
+		s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl");
+		s_Data->TextureShader->Enable();
+		s_Data->TextureShader->SetInt("u_Texture", 0);
 	}
 
 	void Renderer2D::Shutdown()
@@ -55,11 +62,24 @@ namespace Sparky {
 	{
 		s_Data->FlatColorShader->Enable();
 		s_Data->FlatColorShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+
+		s_Data->TextureShader->Enable();
+		s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 	}
 
 	void Renderer2D::EndScene()
 	{
 
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color, float rotation)
+	{
+		DrawQuad(position, size, ColorToVec4(color), rotation);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color, float rotation)
+	{
+		DrawQuad(position, size, ColorToVec4(color), rotation);
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color, float rotation)
@@ -83,10 +103,33 @@ namespace Sparky {
 		s_Data->FlatColorShader->SetFloat4("u_Color", color);
 
 		auto transform = Math::Translate(Math::Rotate(Math::Scale(
-			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }),position
+			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
 		);
 
 		s_Data->FlatColorShader->SetMat4("u_Transform", transform);
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, int tileScale, const Math::vec4& tintColor)
+	{
+		DrawQuad({ position.x, position.y, 0.0f }, size, texture, rotation, tileScale, tintColor);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, int tileScale, const Math::vec4& tintColor)
+	{
+		s_Data->TextureShader->Enable();
+
+		auto transform = Math::Translate(Math::Rotate(Math::Scale(
+			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
+		);
+
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+		s_Data->TextureShader->SetFloat4("u_TintColor", tintColor);
+		s_Data->TextureShader->SetInt("u_TileScale", tileScale);
+
+		texture->Bind();
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);

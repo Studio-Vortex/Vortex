@@ -35,6 +35,8 @@ namespace Gui = ImGui;
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/RenderCommand.h"
 
+#include "Sparky/Renderer/Color.h"
+
 #include "Sparky/Renderer/Buffer.h"
 #include "Sparky/Renderer/Shader.h"
 #include "Sparky/Renderer/Texture.h"
