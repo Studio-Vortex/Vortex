@@ -28,6 +28,7 @@ namespace Gui = ImGui;
 
 /// Graphics
 #include "Sparky/Renderer/Renderer.h"
+#include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/RenderCommand.h"
 
 #include "Sparky/Renderer/Buffer.h"

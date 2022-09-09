@@ -2,6 +2,7 @@
 #include "Renderer.h"
 
 #include "Sparky/Core/Core.h"
+#include "Sparky/Renderer/Renderer2D.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
 
@@ -12,6 +13,7 @@ namespace Sparky {
     void Renderer::Init()
     {
 		RenderCommand::Init();
+		Renderer2D::Init();
     }
 
     void Renderer::OnWindowResize(const Viewport& viewport)
