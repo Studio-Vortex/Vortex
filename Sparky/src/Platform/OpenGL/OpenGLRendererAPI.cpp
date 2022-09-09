@@ -7,6 +7,8 @@ namespace Sparky {
 
     void OpenGLRendererAPI::Init() const
     {
+		SP_PROFILE_FUNCTION();
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -18,7 +20,7 @@ namespace Sparky {
 		glViewport(viewport.XPos, viewport.YPos, viewport.Width, viewport.Height);
     }
 
-    void OpenGLRendererAPI::SetClearColor(const Math::vec3& color)
+    void OpenGLRendererAPI::SetClearColor(const Math::vec3& color) const
 	{
 		glClearColor(color.r, color.g, color.b, 1.0f);
 	}

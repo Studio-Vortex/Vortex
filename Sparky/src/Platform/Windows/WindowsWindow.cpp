@@ -9,7 +9,7 @@
 
 namespace Sparky {
 
-	static bool s_GLFWInitialized = false;
+	static uint8_t s_GLFWWindowCount = 0;
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
@@ -18,42 +18,51 @@ namespace Sparky {
 
 	UniqueRef<Window> Window::Create(const WindowProps& props)
 	{
-		return std::make_unique<WindowsWindow>(props);
+		return CreateUnique<WindowsWindow>(props);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
+		SP_PROFILE_FUNCTION();
+
 		Init(props);
 	}
 
 	WindowsWindow::~WindowsWindow()
 	{
+		SP_PROFILE_FUNCTION();
+
 		Shutdown();
 	}
 
 	void WindowsWindow::Init(const WindowProps& props)
 	{
+		SP_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Size = props.Size;
 
-#ifdef SP_DEBUG
 		SP_CORE_INFO("Creating window named '{}' with size: ({}, {})", props.Title, props.Size.x, props.Size.y);
-#endif // SP_DEBUG
 
-		if (!s_GLFWInitialized)
+		if (s_GLFWWindowCount == 0)
 		{
+			SP_PROFILE_SCOPE("glfwInit");
+
 			int success = glfwInit();
 			SP_CORE_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
-			s_GLFWInitialized = true;
 		}
 
-		m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
-		m_Context = new OpenGLContext(m_Window);
+		{
+			SP_PROFILE_SCOPE("glfwCreateWindow");
 
+			m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
+			s_GLFWWindowCount++;
+		}
+
+		m_Context = GraphicsContext::Create(m_Window);
 		m_Context->Init();
 
-		
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
@@ -156,12 +165,16 @@ namespace Sparky {
 
 	void WindowsWindow::OnUpdate()
 	{
+		SP_PROFILE_FUNCTION();
+
 		glfwPollEvents();
 		m_Context->SwapFrameBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
+		SP_PROFILE_FUNCTION();
+
 		glfwSwapInterval((int)enabled);
 		m_Data.VSync = enabled;
 	}
@@ -173,7 +186,13 @@ namespace Sparky {
 
 	void WindowsWindow::Shutdown()
 	{
+		SP_PROFILE_FUNCTION();
+
 		glfwDestroyWindow(m_Window);
+		s_GLFWWindowCount--;
+
+		if (s_GLFWWindowCount == 0);
+			glfwTerminate();
 	}
 
 }

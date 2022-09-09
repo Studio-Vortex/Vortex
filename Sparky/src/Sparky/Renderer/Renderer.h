@@ -12,6 +12,7 @@ namespace Sparky {
 	{
 	public:
 		static void Init();
+		static void Shutdown();
 
 		static void OnWindowResize(const Viewport& viewport);
 

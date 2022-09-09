@@ -18,6 +18,8 @@ namespace Sparky {
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
+		SP_PROFILE_FUNCTION();
+
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);
 		Compile(shaderSources);
@@ -33,6 +35,8 @@ namespace Sparky {
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 		: m_Name(name)
 	{
+		SP_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSrc;
 		sources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -41,26 +45,38 @@ namespace Sparky {
 
 	OpenGLShader::~OpenGLShader()
 	{
+		SP_PROFILE_FUNCTION();
+
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		std::string result;
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
 
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
-			in.close();
+			size_t size = in.tellg();
+			if (size != -1)
+			{
+				result.resize(size);
+				in.seekg(0, std::ios::beg);
+				in.read(&result[0], size);
+				in.close();
+			}
+			else
+			{
+				SP_CORE_ERROR("Could not read from file '/{}'", filepath);
+			}
 		}
 		else
 		{
-			SP_CORE_ERROR("Failed to load shader from: '/{}'", filepath);
+			SP_CORE_ERROR("Failed to open shader file from: '/{}'", filepath);
 		}
 
 		return result;
@@ -68,6 +84,8 @@ namespace Sparky {
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
@@ -92,6 +110,8 @@ namespace Sparky {
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string> shaderSources)
 	{
+		SP_PROFILE_FUNCTION();
+
 		GLuint program = glCreateProgram();
 		SP_CORE_ASSERT(shaderSources.size() <= 2, "Shader Limit Reached!");
 		std::array<GLuint, 2> glShaderIDs;
@@ -163,51 +183,71 @@ namespace Sparky {
 
 	void OpenGLShader::Enable() const
 	{
+		SP_PROFILE_FUNCTION();
+
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Disable() const
 	{
+		SP_PROFILE_FUNCTION();
+
 		glUseProgram(NULL);
 	}
 
     void OpenGLShader::SetBool(const std::string& name, bool value) const
     {
-		SetUniform(name, value);
-    }
+		SP_PROFILE_FUNCTION();
 
-    void OpenGLShader::SetInt(const std::string& name, int value) const
+		SetUniform(name, value);
+	}
+
+	void OpenGLShader::SetInt(const std::string& name, int value) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, value);
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, int value) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, value);
 	}
 
 	void OpenGLShader::SetMat3(const std::string& name, const Math::mat3& matrix) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, matrix);
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const Math::mat4& matrix) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, matrix);
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const Math::vec2& vector) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, vector);
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const Math::vec3& vector) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, vector);
 	}
 
 	void OpenGLShader::SetFloat4(const std::string& name, const Math::vec4& vector) const
 	{
+		SP_PROFILE_FUNCTION();
+
 		SetUniform(name, vector);
 	}
 

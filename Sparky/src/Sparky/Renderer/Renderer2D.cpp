@@ -21,6 +21,8 @@ namespace Sparky {
 
 	void Renderer2D::Init()
 	{
+		SP_PROFILE_FUNCTION();
+
 		s_Data = new Renderer2DState();
 
 		s_Data->QuadVertexArray = VertexArray::Create();
@@ -57,17 +59,22 @@ namespace Sparky {
 
 	void Renderer2D::Shutdown()
 	{
+		SP_PROFILE_FUNCTION();
+
 		delete s_Data;
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
+		SP_PROFILE_FUNCTION();
+
 		s_Data->TextureShader->Enable();
 		s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 	}
 
 	void Renderer2D::EndScene()
 	{
+		SP_PROFILE_FUNCTION();
 
 	}
 
@@ -88,6 +95,8 @@ namespace Sparky {
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color)
 	{
+		SP_PROFILE_FUNCTION();
+
 		s_Data->TextureShader->SetFloat4("u_Color", color);
 		s_Data->WhiteTexture->Bind();
 
@@ -115,6 +124,8 @@ namespace Sparky {
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color, uint32_t scale)
 	{
+		SP_PROFILE_FUNCTION();
+
 		s_Data->TextureShader->SetFloat4("u_Color", color);
 		s_Data->TextureShader->SetInt("u_TexScale", (int)scale);
 

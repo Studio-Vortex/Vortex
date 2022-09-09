@@ -2,7 +2,7 @@
 
 #include "Sparky/Core/Window.h"
 
-#include "Sparky/Renderer/RendererContext.h"
+#include "Sparky/Renderer/GraphicsContext.h"
 
 #include <GLFW/glfw3.h>
 
@@ -33,7 +33,7 @@ namespace Sparky {
 
 	private:
 		GLFWwindow* m_Window;
-		RendererContext* m_Context;
+		UniqueRef<GraphicsContext> m_Context;
 
 		struct WindowData
 		{

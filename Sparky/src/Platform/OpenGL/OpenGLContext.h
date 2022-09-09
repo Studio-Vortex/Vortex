@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Sparky/Renderer/RendererContext.h"
+#include "Sparky/Renderer/GraphicsContext.h"
 
 struct GLFWwindow;
 
 namespace Sparky {
 
-	class OpenGLContext : public RendererContext
+	class OpenGLContext : public GraphicsContext
 	{
 	public:
 		OpenGLContext(GLFWwindow* windowHandle);

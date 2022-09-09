@@ -8,12 +8,14 @@ Sandbox2D::Sandbox2D() :
 
 void Sandbox2D::OnAttach()
 {
+	SP_PROFILE_FUNCTION();
+
 	m_GridTexture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 }
 
 void Sandbox2D::OnDetach()
 {
-	Sparky::Renderer2D::Shutdown();
+	
 }
 
 void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
@@ -21,10 +23,7 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 	SP_PROFILE_FUNCTION();
 
 	// Update
-	{
-		SP_PROFILE_SCOPE("CameraController::OnUpdate");
-		m_CameraController.OnUpdate(ts);
-	}
+	m_CameraController.OnUpdate(ts);
 
 	if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 		Sparky::Application::Get().CloseApplication();
@@ -38,7 +37,11 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 
 	{
 		SP_PROFILE_SCOPE("Renderer Draw");
-		Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		{
+			SP_PROFILE_SCOPE("Renderer Begin");
+
+			Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		}
 		Sparky::Renderer2D::DrawQuad(Math::vec3(0.0f, 0.0f, 0.1f), Math::vec2(1.0f), m_SquareColor);
 		Sparky::Renderer2D::DrawQuad(Math::vec3(1.5f, 0.5f, 0.1f), Math::vec2(1.0f, 2.0f), Sparky::Color::LightRed);
 		Sparky::Renderer2D::DrawQuad(Math::vec3(0.0f), Math::vec2(10.0f), m_GridTexture, m_GridColor, m_GridScale);

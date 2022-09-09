@@ -22,6 +22,8 @@ namespace Sparky {
 
 	void GuiLayer::OnAttach()
 	{
+		SP_PROFILE_FUNCTION();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -49,6 +51,8 @@ namespace Sparky {
 
 	void GuiLayer::OnDetach()
 	{
+		SP_PROFILE_FUNCTION();
+
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -56,6 +60,8 @@ namespace Sparky {
 
 	void GuiLayer::BeginFrame()
 	{
+		SP_PROFILE_FUNCTION();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -63,6 +69,8 @@ namespace Sparky {
 
 	void GuiLayer::EndFrame()
 	{
+		SP_PROFILE_FUNCTION();
+
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		auto size = app.GetWindow().GetSize();

@@ -15,6 +15,8 @@ namespace Sparky {
 
 	Application::Application()
 	{
+		SP_PROFILE_FUNCTION();
+
 		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
@@ -29,11 +31,31 @@ namespace Sparky {
 
 	Application::~Application()
 	{
+		SP_PROFILE_FUNCTION();
 
+		Renderer::Shutdown();
+	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		SP_PROFILE_FUNCTION();
+
+		layer->OnAttach();
+		m_LayerStack.PushLayer(layer);
+	}
+
+	void Application::PushOverlay(Layer* overlay)
+	{
+		SP_PROFILE_FUNCTION();
+
+		overlay->OnAttach();
+		m_LayerStack.PushOverlay(overlay);
 	}
 
 	void Application::OnEvent(Event& e)
 	{
+		SP_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(Application::OnWindowResizeEvent));
@@ -49,37 +71,35 @@ namespace Sparky {
 
 	void Application::Run()
 	{
+		SP_PROFILE_FUNCTION();
+
 		while (m_Running)
 		{
+			SP_PROFILE_SCOPE("Game Loop");
+
 			float time = (float)glfwGetTime();
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
 			if (!m_Minimized)
 			{
+				SP_PROFILE_SCOPE("LayerStack OnUpdate");
+
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(timeStep);
 			}
 
-			m_GuiLayer->BeginFrame();
+			{
+				SP_PROFILE_SCOPE("LayerStack OnGuiRender");
 
-			for (Layer* layer : m_LayerStack)
-				layer->OnGuiRender();
-
-			m_GuiLayer->EndFrame();
+				m_GuiLayer->BeginFrame();
+				for (Layer* layer : m_LayerStack)
+					layer->OnGuiRender();
+				m_GuiLayer->EndFrame();
+			}
 
 			m_Window->OnUpdate();
 		}
-	}
-
-	void Application::PushLayer(Layer* layer)
-	{
-		m_LayerStack.PushLayer(layer);
-	}
-
-	void Application::PushOverlay(Layer* overlay)
-	{
-		m_LayerStack.PushOverlay(overlay);
 	}
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
@@ -90,6 +110,8 @@ namespace Sparky {
 
 	bool Application::OnWindowResizeEvent(WindowResizeEvent& e)
 	{
+		SP_PROFILE_FUNCTION();
+
 		if (e.GetWidth() == NULL || e.GetHeight() == NULL)
 		{
 			m_Minimized = true;
