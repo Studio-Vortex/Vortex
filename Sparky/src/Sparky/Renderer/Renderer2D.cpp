@@ -77,7 +77,7 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 	}
-
+	
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f });
@@ -109,7 +109,7 @@ namespace Sparky {
 
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color)
 	{
-		DrawQuad(position, size, ColorToVec4(color));
+		DrawQuad({ position.x, position.y, 0.0f }, size, ColorToVec4(color));
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color)
@@ -117,12 +117,12 @@ namespace Sparky {
 		DrawQuad(position, size, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec4& color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, color, scale);
+		DrawQuad({ position.x, position.y, 0.0f }, size, scale, texture, color);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec4& color)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -138,14 +138,94 @@ namespace Sparky {
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture>& texture, Color color)
 	{
-		DrawQuad(position, size, texture, ColorToVec4(color), scale);
+		DrawQuad({ position.x, position.y, 0.0f }, size, scale, texture, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture>& texture, Color color)
 	{
-		DrawQuad(position, size, texture, ColorToVec4(color), scale);
+		DrawQuad(position, size, scale, texture, ColorToVec4(color));
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, { color.r, color.g, color.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color)
+	{
+		DrawRotatedQuad(position, size, rotation, { color.r, color.g, color.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color)
+	{
+		SP_PROFILE_FUNCTION();
+
+		s_Data->TextureShader->SetFloat4("u_Color", color);
+		s_Data->TextureShader->SetInt("u_TexScale", 1);
+
+		auto transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, ColorToVec4(color));
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, Color color)
+	{
+		DrawRotatedQuad(position, size, rotation, ColorToVec4(color));
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec3& color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, scale, texture, { color.r, color.g, color.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec4& color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, scale, texture, color);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec3& color)
+	{
+		DrawRotatedQuad(position, size, rotation, scale, texture, { color.r, color.g, color.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, const Math::vec4& color)
+	{
+		SP_PROFILE_FUNCTION();
+
+		s_Data->TextureShader->SetFloat4("u_Color", color);
+		s_Data->TextureShader->SetInt("u_TexScale", (int)scale);
+
+		texture->Bind();
+
+		auto transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, Color color)
+	{
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, scale, texture, color);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture>& texture, Color color)
+	{
+		DrawRotatedQuad(position, size, rotation, scale, texture, ColorToVec4(color));
 	}
 
 }

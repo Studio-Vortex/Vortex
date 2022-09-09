@@ -42,9 +42,9 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 
 			Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
 		}
-		Sparky::Renderer2D::DrawQuad(Math::vec3(0.0f, 0.0f, 0.1f), Math::vec2(1.0f), m_SquareColor);
-		Sparky::Renderer2D::DrawQuad(Math::vec3(1.5f, 0.5f, 0.1f), Math::vec2(1.0f, 2.0f), Sparky::Color::LightRed);
-		Sparky::Renderer2D::DrawQuad(Math::vec3(0.0f), Math::vec2(10.0f), m_GridTexture, m_GridColor, m_GridScale);
+		Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f }, Math::vec2(1.0f), m_SquareColor);
+		Sparky::Renderer2D::DrawRotatedQuad(m_RotatedQuadPos, Math::vec2(2.0f), m_RotatedQuadRotation, Sparky::Color::LightYellow);
+		Sparky::Renderer2D::DrawQuad(Math::vec3(), Math::vec2(10.0f), m_GridScale, m_GridTexture, m_GridColor);
 		Sparky::Renderer2D::EndScene();
 	}
 }
@@ -57,6 +57,8 @@ void Sandbox2D::OnGuiRender()
 	Gui::Begin("Settings", &show);
 	Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));
 	Gui::SliderInt("Grid Scale", &m_GridScale, 1, 20);
+	Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -3.0f, 3.0f);
+	Gui::SliderFloat("Quad Rotation", &m_RotatedQuadRotation, -180.0f, 180.0f);
 	Gui::ColorEdit4("Square Color", Math::ValuePtr(m_SquareColor));
 	Gui::End();
 }

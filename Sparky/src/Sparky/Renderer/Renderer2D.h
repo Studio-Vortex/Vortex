@@ -18,17 +18,33 @@ namespace Sparky {
 
 		// Primitives
 
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color = Math::vec3(1.0f));
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color = Math::vec4(1.0f));
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color = Math::vec3(1.0f));
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color = Math::vec4(1.0f));
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color);
 		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color = Color::White);
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color = Color::White);
 
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color = Math::vec4(1.0f), uint32_t scale = 1);
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color = Math::vec4(1.0f), uint32_t scale = 1);
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color = Color::White, uint32_t scale = 1);
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color = Color::White, uint32_t scale = 1);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, const Math::vec4& color = Math::vec4(1.0f));
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, const Math::vec4& color = Math::vec4(1.0f));
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, Color color = Color::White);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, Color color = Color::White);
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color);
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color = Color::White);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, Color color = Color::White);
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>&texture = nullptr, const Math::vec3 & color = Math::vec3(1.0f));
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>&texture = nullptr, const Math::vec4 & color = Math::vec4(1.0f));
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>&texture = nullptr, const Math::vec3 & color = Math::vec3(1.0f));
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, const Math::vec4& color = Math::vec4(1.0f));
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>&texture = nullptr, Color color = Color::White);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, uint32_t scale = 1, const SharedRef<Texture>& texture = nullptr, Color color = Color::White);
 	};
 
 }

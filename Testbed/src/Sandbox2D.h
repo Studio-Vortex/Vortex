@@ -19,7 +19,8 @@ private:
 	Sparky::OrthographicCameraController m_CameraController;
 
 	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
-
+	float m_RotatedQuadRotation = 0.0f;
+	Math::vec3 m_RotatedQuadPos{};
 	Math::vec4 m_SquareColor;
 	Math::vec4 m_GridColor;
 	int m_GridScale;
