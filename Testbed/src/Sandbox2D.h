@@ -22,5 +22,5 @@ private:
 	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
 	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
 
-	Sparky::Math::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
+	Math::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 };

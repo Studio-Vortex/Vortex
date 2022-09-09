@@ -5,8 +5,6 @@
 #include "Sparky/Renderer/VertexArray.h"
 #include "Sparky/Renderer/Shader.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
-
 namespace Sparky {
 
 	struct Renderer2DState
@@ -55,9 +53,8 @@ namespace Sparky {
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColorShader)->Enable();
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColorShader)->SetUniform("u_ViewProjection", camera.GetViewProjectionMatrix());
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColorShader)->SetUniform("u_Transform", Math::Identity());
+		s_Data->FlatColorShader->Enable();
+		s_Data->FlatColorShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 	}
 
 	void Renderer2D::EndScene()
@@ -65,20 +62,31 @@ namespace Sparky {
 
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color, float rotation)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f });
+		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f }, rotation);
 	}
 	
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color, float rotation)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, color);
+		DrawQuad({ position.x, position.y, 0.0f }, size, color, rotation);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color, float rotation)
 	{
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColorShader)->Enable();
-		std::dynamic_pointer_cast<OpenGLShader>(s_Data->FlatColorShader)->SetUniform("u_Color", color);
+		DrawQuad(position, size, { color.r, color.g, color.b, 1.0f }, rotation);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, float rotation)
+	{
+		s_Data->FlatColorShader->Enable();
+		s_Data->FlatColorShader->SetFloat4("u_Color", color);
+
+		auto transform = Math::Translate(Math::Rotate(Math::Scale(
+			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }),position
+		);
+
+		s_Data->FlatColorShader->SetMat4("u_Transform", transform);
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);

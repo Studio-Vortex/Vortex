@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sparky/Renderer/OrthographicCamera.h"
+#include "Sparky/Core/Math.h"
 
 namespace Sparky {
 
@@ -15,10 +16,10 @@ namespace Sparky {
 
 		// Primitives
 
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color);
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color);
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color);
-
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color, float rotation = 0.0f);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color, float rotation = 0.0f);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color, float rotation = 0.0f);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, float rotation = 0.0f);
 	};
 
 }

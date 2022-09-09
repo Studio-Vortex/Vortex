@@ -171,6 +171,41 @@ namespace Sparky {
 		glUseProgram(NULL);
 	}
 
+	void OpenGLShader::SetInt(const std::string& name, int value) const
+	{
+		SetUniform(name, value);
+	}
+
+	void OpenGLShader::SetFloat(const std::string& name, int value) const
+	{
+		SetUniform(name, value);
+	}
+
+	void OpenGLShader::SetMat3(const std::string& name, const Math::mat3& matrix) const
+	{
+		SetUniform(name, matrix);
+	}
+
+	void OpenGLShader::SetMat4(const std::string& name, const Math::mat4& matrix) const
+	{
+		SetUniform(name, matrix);
+	}
+
+	void OpenGLShader::SetFloat2(const std::string& name, const Math::vec2& vector) const
+	{
+		SetUniform(name, vector);
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const Math::vec3& vector) const
+	{
+		SetUniform(name, vector);
+	}
+
+	void OpenGLShader::SetFloat4(const std::string& name, const Math::vec4& vector) const
+	{
+		SetUniform(name, vector);
+	}
+
 	void OpenGLShader::SetUniform(const std::string& uniformName, int v) const
 	{
 		glProgramUniform1i(m_RendererID, GetUniformLocation(uniformName), v);

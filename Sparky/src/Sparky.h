@@ -5,7 +5,11 @@
 #include "Sparky/Core/Layer.h"
 #include "Sparky/Core/Log.h"
 #include "Sparky/Core/TimeStep.h"
+/// ---------------------------------------------------
+
+/// Math
 #include "Sparky/Core/Math.h"
+namespace Math = Sparky::Math;
 /// ---------------------------------------------------
 
 /// Gui

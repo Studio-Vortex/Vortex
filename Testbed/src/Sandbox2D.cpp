@@ -1,16 +1,9 @@
 #include "Sandbox2D.h"
 
-#include <Platform/OpenGL/OpenGLShader.h>
-
 Sandbox2D::Sandbox2D()
-	: Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true)
-{
-}
+	: Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true) { }
 
-void Sandbox2D::OnAttach()
-{
-
-}
+void Sandbox2D::OnAttach() { }
 
 void Sandbox2D::OnDetach()
 {
@@ -20,10 +13,10 @@ void Sandbox2D::OnDetach()
 void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 {
 	// Update
+	m_CameraController.OnUpdate(ts);
+
 	if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 		Sparky::Application::Get().CloseApplication();
-
-	m_CameraController.OnUpdate(ts);
 
 	// Render
 	Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
@@ -31,19 +24,16 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 
 	Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-	Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, m_SquareColor);
+	Sparky::Renderer2D::DrawQuad(Math::vec3(), {1.0f, 1.0f}, m_SquareColor);
+	Sparky::Renderer2D::DrawQuad({ -1.0f, 1.0f }, { 3.0f, 6.0f }, { 1.0, 0.4, 0.2 });
 
 	Sparky::Renderer2D::EndScene();
-
-	// TODO: Add these functions Shader::SetMat4, Shader::SetFloat4
-	//std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->Enable();
-	//std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->SetUniform("u_Color", m_SquareColor);
 }
 
 void Sandbox2D::OnGuiRender()
 {
 	Gui::Begin("Settings");
-	Gui::ColorEdit4("Square Color", Sparky::Math::ValuePtr(m_SquareColor));
+	Gui::ColorEdit4("Square Color", Math::ValuePtr(m_SquareColor));
 	Gui::End();
 }
 

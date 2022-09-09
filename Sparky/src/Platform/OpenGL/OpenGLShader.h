@@ -16,10 +16,18 @@ namespace Sparky {
 	public:
 		OpenGLShader(const std::string& filepath);
 		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
-		~OpenGLShader();
+		~OpenGLShader() override;
 
 		void Enable() const override;
 		void Disable() const override;
+
+		void SetInt(const std::string& name, int value) const override;
+		void SetFloat(const std::string& name, int value) const override;
+		void SetMat3(const std::string& name, const Math::mat3& matrix) const override;
+		void SetMat4(const std::string & name, const Math::mat4 & matrix) const override;
+		void SetFloat2(const std::string & name, const Math::vec2 & vector) const override;
+		void SetFloat3(const std::string & name, const Math::vec3 & vector) const override;
+		void SetFloat4(const std::string & name, const Math::vec4 & vector) const override;
 
 		inline const std::string& GetName() const override { return m_Name; };
 

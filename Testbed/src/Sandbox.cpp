@@ -1,7 +1,6 @@
 #include <Sparky.h>
 #include <Sparky/Core/EntryPoint.h>
 
-#include "Platform/OpenGL/OpenGLShader.h"
 #include "Sandbox2D.h"
 
 class ExampleLayer : public Sparky::Layer
@@ -64,8 +63,8 @@ public:
 		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/AwesomeFace.png");
 
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->Enable();
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(textureShader)->SetUniform("u_Texture", 0);
+		textureShader->Enable();
+		textureShader->SetInt("u_Texture", 0);
 	}
 
 	~ExampleLayer() override
@@ -87,17 +86,17 @@ public:
 
 		Sparky::Renderer::BeginScene(m_CameraController.GetCamera());
 
-		static Sparky::Math::mat4 scale = Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(0.1f));
+		static Math::mat4 scale = Math::Scale(Math::Identity(), Math::vec3(0.1f));
 
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->Enable();
-		std::dynamic_pointer_cast<Sparky::OpenGLShader>(m_FlatColorShader)->SetUniform("u_Color", m_SquareColor);
+		m_FlatColorShader->Enable();
+		m_FlatColorShader->SetFloat3("u_Color", m_SquareColor);
 
 		for (int y = 0; y < 20; y++)
 		{
 			for (int x = 0; x < 20; x++)
 			{
-				Sparky::Math::vec3 position((float)x * 0.11f, (float)y * 0.11f, 0.0f);
-				Sparky::Math::mat4 transform = Sparky::Math::Translate(Sparky::Math::Identity(), position) * scale;
+				Math::vec3 position((float)x * 0.11f, (float)y * 0.11f, 0.0f);
+				Math::mat4 transform = Math::Translate(Math::Identity(), position) * scale;
 				Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
@@ -105,10 +104,10 @@ public:
 		auto textureShader = m_ShaderLibrary.Get("Texture");
 
 		m_Texture->Bind();
-		Sparky::Renderer::Submit(textureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::Identity(), Math::vec3(1.5f)));
 		
 		m_LinuxLogo->Bind();
-		Sparky::Renderer::Submit(textureShader, m_SquareVA, Sparky::Math::Scale(Sparky::Math::Identity(), Sparky::Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::Identity(), Math::vec3(1.5f)));
 
 		///Triangle
 		// Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);
@@ -119,7 +118,7 @@ public:
 	void OnGuiRender() override
 	{
 		Gui::Begin("Settings");
-		Gui::ColorEdit3("Square Color", Sparky::Math::ValuePtr(m_SquareColor));
+		Gui::ColorEdit3("Square Color", Math::ValuePtr(m_SquareColor));
 		Gui::End();
 	}
 
@@ -141,7 +140,7 @@ private:
 
 	Sparky::OrthographicCameraController m_CameraController;
 
-	Sparky::Math::vec3 m_SquareColor{ 0.2f, 0.3f, 0.8f };
+	Math::vec3 m_SquareColor{ 0.2f, 0.3f, 0.8f };
 };
 
 class Sandbox : public Sparky::Application
