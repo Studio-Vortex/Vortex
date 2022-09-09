@@ -17,7 +17,7 @@ namespace Sparky {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLVertexBuffer>(vertices, size);
 #ifdef SP_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // SP_PLATFORM_WINDOWS
@@ -33,7 +33,7 @@ namespace Sparky {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return std::make_shared<OpenGLIndexBuffer>(indices, size);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLIndexBuffer>(indices, size);
 #ifdef SP_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // SP_PLATFORM_WINDOWS

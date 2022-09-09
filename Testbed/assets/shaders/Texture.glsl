@@ -25,11 +25,11 @@ layout (location = 0) out vec4 gl_Color;
 
 in vec2 f_TexCoord;
 
-uniform vec4 u_TintColor;
-uniform int u_TileScale;
+uniform vec4 u_Color;
+uniform int u_TexScale;
 uniform sampler2D u_Texture;
 
 void main()
 {
-	gl_Color = texture(u_Texture, f_TexCoord * u_TileScale) * u_TintColor;
+	gl_Color = texture(u_Texture, f_TexCoord * u_TexScale) * u_Color;
 }

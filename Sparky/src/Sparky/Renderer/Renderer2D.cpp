@@ -9,7 +9,7 @@ namespace Sparky {
 
 	struct Renderer2DState
 	{
-		SharedRef<Shader> FlatColorShader;
+		SharedRef<Texture2D> WhiteTexture;
 		SharedRef<Shader> TextureShader;
 
 		SharedRef<VertexArray> QuadVertexArray;
@@ -46,7 +46,9 @@ namespace Sparky {
 		s_Data->QuadIndexBuffer = IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		s_Data->QuadVertexArray->SetIndexBuffer(s_Data->QuadIndexBuffer);
 
-		s_Data->FlatColorShader = Shader::Create("assets/shaders/FlatColor.glsl");
+		s_Data->WhiteTexture = Texture2D::Create(1, 1);
+		uint32_t whiteTextureData = 0xffffffff;
+		s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl");
 		s_Data->TextureShader->Enable();
@@ -60,9 +62,6 @@ namespace Sparky {
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		s_Data->FlatColorShader->Enable();
-		s_Data->FlatColorShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
-
 		s_Data->TextureShader->Enable();
 		s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 	}
@@ -99,37 +98,36 @@ namespace Sparky {
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, float rotation)
 	{
-		s_Data->FlatColorShader->Enable();
-		s_Data->FlatColorShader->SetFloat4("u_Color", color);
-
-		auto transform = Math::Translate(Math::Rotate(Math::Scale(
-			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
-		);
-
-		s_Data->FlatColorShader->SetMat4("u_Transform", transform);
-
-		s_Data->QuadVertexArray->Bind();
-		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
-	}
-
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, int tileScale, const Math::vec4& tintColor)
-	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, rotation, tileScale, tintColor);
-	}
-
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, int tileScale, const Math::vec4& tintColor)
-	{
-		s_Data->TextureShader->Enable();
+		s_Data->TextureShader->SetFloat4("u_Color", color);
+		s_Data->WhiteTexture->Bind();
 
 		auto transform = Math::Translate(Math::Rotate(Math::Scale(
 			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
 		);
 
 		s_Data->TextureShader->SetMat4("u_Transform", transform);
-		s_Data->TextureShader->SetFloat4("u_TintColor", tintColor);
-		s_Data->TextureShader->SetInt("u_TileScale", tileScale);
+
+		s_Data->QuadVertexArray->Bind();
+		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, uint32_t scale, const Math::vec4& color)
+	{
+		DrawQuad({ position.x, position.y, 0.0f }, size, texture, rotation, scale, color);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, uint32_t scale, const Math::vec4& color)
+	{
+		s_Data->TextureShader->SetFloat4("u_Color", color);
+		s_Data->TextureShader->SetInt("u_TexScale", (int)scale);
 
 		texture->Bind();
+
+		auto transform = Math::Translate(Math::Rotate(Math::Scale(
+			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
+		);
+
+		s_Data->TextureShader->SetMat4("u_Transform", transform);
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
