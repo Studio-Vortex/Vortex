@@ -71,16 +71,6 @@ namespace Sparky {
 
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color, float rotation)
-	{
-		DrawQuad(position, size, ColorToVec4(color), rotation);
-	}
-
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color, float rotation)
-	{
-		DrawQuad(position, size, ColorToVec4(color), rotation);
-	}
-
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color, float rotation)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f }, rotation);
@@ -111,6 +101,16 @@ namespace Sparky {
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color, float rotation)
+	{
+		DrawQuad(position, size, ColorToVec4(color), rotation);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color, float rotation)
+	{
+		DrawQuad(position, size, ColorToVec4(color), rotation);
+	}
+
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, uint32_t scale, const Math::vec4& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, rotation, scale, color);
@@ -131,6 +131,16 @@ namespace Sparky {
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, float rotation, uint32_t scale)
+	{
+		DrawQuad(position, size, texture, rotation, scale, ColorToVec4(color));
+	}
+
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, float rotation, uint32_t scale)
+	{
+		DrawQuad(position, size, texture, rotation, scale, ColorToVec4(color));
 	}
 
 }

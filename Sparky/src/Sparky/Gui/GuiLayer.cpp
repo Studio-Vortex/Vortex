@@ -54,12 +54,6 @@ namespace Sparky {
 		ImGui::DestroyContext();
 	}
 
-	void GuiLayer::OnGuiRender()
-	{
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
-	}
-
 	void GuiLayer::BeginFrame()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
