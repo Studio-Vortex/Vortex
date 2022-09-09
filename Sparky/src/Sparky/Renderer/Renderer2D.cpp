@@ -71,76 +71,70 @@ namespace Sparky {
 
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f }, rotation);
+		DrawQuad({ position.x, position.y, 0.0f }, size, { color.r, color.g, color.b, 1.0f });
 	}
 	
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, color, rotation);
+		DrawQuad({ position.x, position.y, 0.0f }, size, color);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color)
 	{
-		DrawQuad(position, size, { color.r, color.g, color.b, 1.0f }, rotation);
+		DrawQuad(position, size, { color.r, color.g, color.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color)
 	{
 		s_Data->TextureShader->SetFloat4("u_Color", color);
 		s_Data->WhiteTexture->Bind();
 
-		auto transform = Math::Translate(Math::Rotate(Math::Scale(
-			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
-		);
-
+		auto transform = Math::Translate(Math::Identity(), position) * Math::Scale(Math::Identity(), { size.x, size.y, 1.0f });
 		s_Data->TextureShader->SetMat4("u_Transform", transform);
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color)
 	{
-		DrawQuad(position, size, ColorToVec4(color), rotation);
+		DrawQuad(position, size, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color, float rotation)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color)
 	{
-		DrawQuad(position, size, ColorToVec4(color), rotation);
+		DrawQuad(position, size, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, uint32_t scale, const Math::vec4& color)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color, uint32_t scale)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, rotation, scale, color);
+		DrawQuad({ position.x, position.y, 0.0f }, size, texture, color, scale);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, float rotation, uint32_t scale, const Math::vec4& color)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, const Math::vec4& color, uint32_t scale)
 	{
 		s_Data->TextureShader->SetFloat4("u_Color", color);
 		s_Data->TextureShader->SetInt("u_TexScale", (int)scale);
 
 		texture->Bind();
 
-		auto transform = Math::Translate(Math::Rotate(Math::Scale(
-			Math::Identity(), { size.x, size.y, 1.0f }), rotation, { 0.0f, 0.0f, 1.0f }), position
-		);
-
+		auto transform = Math::Translate(Math::Identity(), position) * Math::Scale(Math::Identity(), { size.x, size.y, 1.0f });
 		s_Data->TextureShader->SetMat4("u_Transform", transform);
 
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, float rotation, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, uint32_t scale)
 	{
-		DrawQuad(position, size, texture, rotation, scale, ColorToVec4(color));
+		DrawQuad(position, size, texture, ColorToVec4(color), scale);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, float rotation, uint32_t scale)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture>& texture, Color color, uint32_t scale)
 	{
-		DrawQuad(position, size, texture, rotation, scale, ColorToVec4(color));
+		DrawQuad(position, size, texture, ColorToVec4(color), scale);
 	}
 
 }

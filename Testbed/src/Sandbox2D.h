@@ -19,16 +19,8 @@ private:
 	Sparky::OrthographicCameraController m_CameraController;
 
 	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
-	Math::vec4 m_GridColor;
-	int m_GridScale;
-
-	struct ProfileResult
-	{
-		const char* Name;
-		float Time;
-	};
-
-	std::vector<ProfileResult> m_ProfileResults;
 
 	Math::vec4 m_SquareColor;
+	Math::vec4 m_GridColor;
+	int m_GridScale;
 };

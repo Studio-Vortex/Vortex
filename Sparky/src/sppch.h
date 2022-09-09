@@ -23,6 +23,7 @@
 #include <unordered_set>
 
 #include "Sparky/Core/Log.h"
+#include "Sparky/Debug/Instrumentor.h"
 
 #ifdef SP_PLATFORM_WINDOWS
 	#include <Windows.h>
