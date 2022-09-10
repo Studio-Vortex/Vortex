@@ -209,6 +209,11 @@ namespace Sparky {
 		SetUniform(name, value);
 	}
 
+    void OpenGLShader::SetIntArray(const std::string& name, int* data, uint32_t count) const
+    {
+		SetUniform(name, data, count);
+    }
+
 	void OpenGLShader::SetFloat(const std::string& name, int value) const
 	{
 		SP_PROFILE_FUNCTION();
@@ -254,6 +259,11 @@ namespace Sparky {
 	void OpenGLShader::SetUniform(const std::string& uniformName, int v) const
 	{
 		glProgramUniform1i(m_RendererID, GetUniformLocation(uniformName), v);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& uniformName, int* data, uint32_t count) const
+	{
+		glProgramUniform1iv(m_RendererID, GetUniformLocation(uniformName), count, data);
 	}
 
 	void OpenGLShader::SetUniform(const std::string& uniformName, unsigned int v) const

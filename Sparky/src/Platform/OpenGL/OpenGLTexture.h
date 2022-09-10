@@ -13,13 +13,18 @@ namespace Sparky {
 		OpenGLTexture2D(const std::string& path, bool flipVertical);
 		~OpenGLTexture2D() override;
 
-		inline uint32_t GetWidth() const { return m_Width; }
-		inline uint32_t GetHeight() const { return m_Height; }
+		inline uint32_t GetWidth() const override { return m_Width; }
+		inline uint32_t GetHeight() const override { return m_Height; }
 
-		void SetData(void* data, uint32_t size);
+		void SetData(void* data, uint32_t size) override;
 
 		void Bind(uint32_t slot) const override;
 		void Unbind() const override;
+
+		inline bool operator==(const Texture& other) const override
+		{
+			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
+		}
 
 	private:
 		std::string m_Path;

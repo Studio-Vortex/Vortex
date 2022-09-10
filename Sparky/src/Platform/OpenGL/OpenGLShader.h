@@ -23,6 +23,7 @@ namespace Sparky {
 
 		void SetBool(const std::string& name, bool value) const override;
 		void SetInt(const std::string& name, int value) const override;
+		void SetIntArray(const std::string& name, int* data, uint32_t count) const override;
 		void SetFloat(const std::string& name, int value) const override;
 		void SetMat3(const std::string& name, const Math::mat3& matrix) const override;
 		void SetMat4(const std::string & name, const Math::mat4 & matrix) const override;
@@ -33,6 +34,7 @@ namespace Sparky {
 		inline const std::string& GetName() const override { return m_Name; };
 
 		void SetUniform(const std::string& uniformName, int v) const;
+		void SetUniform(const std::string& uniformName, int* data, uint32_t count) const;
 		void SetUniform(const std::string& uniformName, unsigned int v) const;
 		void SetUniform(const std::string& uniformName, float v) const;
 		void SetUniform(const std::string& uniformName, double v) const;

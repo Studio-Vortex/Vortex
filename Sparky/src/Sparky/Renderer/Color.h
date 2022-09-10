@@ -25,6 +25,8 @@ namespace Sparky {
 			case Sparky::Color::LightBlue:    return Math::vec4(0.2f, 0.2f, 0.8f, 1.0f);
 			case Sparky::Color::LightYellow:  return Math::vec4(0.8f, 0.8f, 0.2f, 1.0f);
 		}
+
+		return Math::vec4(1.0f);
 	}
 
 }
