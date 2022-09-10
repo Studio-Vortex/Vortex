@@ -35,8 +35,10 @@ namespace Sparky {
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
-		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots{};
+		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
+
+		Math::vec4 QuadVertexPositions[4];
 	};
 
 	static Renderer2DData s_Data;
@@ -97,6 +99,12 @@ namespace Sparky {
 
 		// Set the first texture slot to out default white texture
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
+
+		// Create a quad's set of vertices at the origin
+		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 	}
 
 	void Renderer2D::Shutdown()
@@ -161,52 +169,45 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		const float texIndex = 0.0f; // Our White Texture
-		const float texScale = 1.0f;
+		constexpr float textureIndex = 0.0f; // Our White Texture
+		constexpr float textureScale = 1.0f;
 
-		s_Data.QuadVertexBufferPtr->Position = position;
+		Math::mat4 transform = Math::Scale(Math::Translate(Math::Identity(), position), { size.x, size.y, 1.0f });
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
-		s_Data.QuadVertexBufferPtr->TexIndex = texIndex;
-		s_Data.QuadVertexBufferPtr->TexScale = texScale;
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x + size.x, position.y, 0.0f };
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
-		s_Data.QuadVertexBufferPtr->TexIndex = texIndex;
-		s_Data.QuadVertexBufferPtr->TexScale = texScale;
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x + size.x, position.y + size.y, 0.0f };
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
-		s_Data.QuadVertexBufferPtr->TexIndex = texIndex;
-		s_Data.QuadVertexBufferPtr->TexScale = texScale;
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x, position.y + size.y, 0.0f };
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
-		s_Data.QuadVertexBufferPtr->TexIndex = texIndex;
-		s_Data.QuadVertexBufferPtr->TexScale = texScale;
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += SP_INDICES_PER_QUAD;
-
-		/*s_Data.TextureShader->SetFloat4("u_Color", color);
-		s_Data.WhiteTexture->Bind();
-
-		auto transform = Math::Translate(Math::Identity(), position) * Math::Scale(Math::Identity(), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->SetMat4("u_Transform", transform);
-
-		s_Data.QuadVA->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVA);*/
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, ColorToVec4(color));
+		DrawQuad({ position.x, position.y, 0.0f }, size, color);
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color)
@@ -223,10 +224,9 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		constexpr Math::vec4 color = Math::vec4(1.0f);
-
 		float textureIndex = 0.0f;
 
+		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].get() == *texture.get())
@@ -243,53 +243,43 @@ namespace Sparky {
 			s_Data.TextureSlotIndex++;
 		}
 
-		s_Data.QuadVertexBufferPtr->Position = position;
-		s_Data.QuadVertexBufferPtr->Color = color;
+		Math::mat4 transform = Math::Scale(Math::Translate(Math::Identity(), position), { size.x, size.y, 1.0f });
+
+		// Vertex Descriptions
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = scale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x + size.x, position.y, 0.0f };
-		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = scale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x + size.x, position.y + size.y, 0.0f };
-		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = scale;
 		s_Data.QuadVertexBufferPtr++;
 
-		s_Data.QuadVertexBufferPtr->Position = { position.x, position.y + size.y, 0.0f };
-		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = scale;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += SP_INDICES_PER_QUAD;
-
-#if 0
-		s_Data.TextureShader->SetFloat4("u_Color", color);
-		s_Data.TextureShader->SetInt("u_TexScale", (int)scale);
-
-		texture->Bind();
-
-		auto transform = Math::Translate(Math::Identity(), position) * Math::Scale(Math::Identity(), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->SetMat4("u_Transform", transform);
-
-		s_Data.QuadVA->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVA);
-#endif
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture2D>& texture, Color tintColor)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, scale, texture, ColorToVec4(tintColor));
+		DrawQuad({ position.x, position.y, 0.0f }, size, scale, texture, tintColor);
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale, const SharedRef<Texture2D>& texture, Color tintColor)
@@ -316,19 +306,45 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		s_Data.TextureShader->SetFloat4("u_Color", color);
-		s_Data.TextureShader->SetInt("u_TexScale", 1);
+		constexpr float textureIndex = 0.0f; // Our White Texture
+		constexpr float textureScale = 1.0f;
 
-		auto transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->SetMat4("u_Transform", transform);
+		Math::mat4 transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
 
-		s_Data.QuadVA->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVA);
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += SP_INDICES_PER_QUAD;
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, ColorToVec4(color));
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, Color color)
@@ -355,16 +371,57 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		s_Data.TextureShader->SetFloat4("u_Color", tintColor);
-		s_Data.TextureShader->SetInt("u_TexScale", (int)scale);
+		constexpr Math::vec4 color = Math::vec4(1.0f);
 
-		texture->Bind();
+		float textureIndex = 0.0f;
 
-		auto transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
-		s_Data.TextureShader->SetMat4("u_Transform", transform);
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
 
-		s_Data.QuadVA->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVA);
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.TextureSlotIndex;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+			s_Data.TextureSlotIndex++;
+		}
+
+		Math::mat4 transform = Math::Scale(Math::Rotate(Math::Translate(Math::Identity(), position), rotation, { 0.0f, 0.0f, 1.0f }), { size.x, size.y, 1.0f });
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = scale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = scale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = scale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
+		s_Data.QuadVertexBufferPtr->Color = tintColor;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = scale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += SP_INDICES_PER_QUAD;
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, uint32_t scale, const SharedRef<Texture2D>& texture, Color tintColor)

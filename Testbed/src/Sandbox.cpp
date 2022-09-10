@@ -56,12 +56,12 @@ public:
 		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
-		m_TriangleShader = m_ShaderLibrary.Load("assets/shaders/VertexPosColor.glsl");
-		m_FlatColorShader = m_ShaderLibrary.Load("assets/shaders/FlatColor.glsl");
-		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
+		m_TriangleShader = m_ShaderLibrary.Load("assedelta/shaders/VertexPosColor.glsl");
+		m_FlatColorShader = m_ShaderLibrary.Load("assedelta/shaders/FlatColor.glsl");
+		auto textureShader = m_ShaderLibrary.Load("assedelta/shaders/Texture.glsl");
 
-		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
-		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/AwesomeFace.png");
+		m_Texture = Sparky::Texture2D::Create("assedelta/textures/Checkerboard.png");
+		m_LinuxLogo = Sparky::Texture2D::Create("assedelta/textures/AwesomeFace.png");
 
 		textureShader->Enable();
 		textureShader->SetInt("u_Texture", 0);
@@ -72,13 +72,13 @@ public:
 		
 	}
 
-	void OnUpdate(Sparky::TimeStep ts) override
+	void OnUpdate(Sparky::TimeStep delta) override
 	{
 		// Update
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().CloseApplication();
 
-		m_CameraController.OnUpdate(ts);
+		m_CameraController.OnUpdate(delta);
 
 		// Render
 		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });

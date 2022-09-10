@@ -14,7 +14,7 @@ namespace Sparky {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate(TimeStep ts) {}
+		virtual void OnUpdate(TimeStep delta) {}
 		virtual void OnGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

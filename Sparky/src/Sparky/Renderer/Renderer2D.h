@@ -23,8 +23,8 @@ namespace Sparky {
 		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color);
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color);
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color);
-		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color = Color::White);
-		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color = Color::White);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color);
 
 		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture2D>& texture = nullptr, const Math::vec4& tintColor = Math::vec4(1.0f));
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, uint32_t scale = 1, const SharedRef<Texture2D>& texture = nullptr, const Math::vec4& tintColor = Math::vec4(1.0f));

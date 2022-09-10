@@ -18,14 +18,14 @@ namespace Sparky {
 
 		inline operator float() const { return m_DeltaTime; }
 
-		inline float operator+(float amount) const
+		inline float operator+(float other) const
 		{
-			return m_DeltaTime + amount;
+			return m_DeltaTime + other;
 		}
 
-		inline void operator+=(float amount)
+		inline void operator+=(float other)
 		{
-			m_DeltaTime += amount;
+			m_DeltaTime += other;
 		}
 		
 	private:

@@ -78,7 +78,7 @@ namespace Sparky {
 			SP_PROFILE_SCOPE("Game Loop");
 
 			float time = (float)glfwGetTime();
-			TimeStep timeStep = time - m_LastFrameTime;
+			TimeStep delta = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
 			if (!m_Minimized)
@@ -86,7 +86,7 @@ namespace Sparky {
 				SP_PROFILE_SCOPE("LayerStack OnUpdate");
 
 				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(timeStep);
+					layer->OnUpdate(delta);
 			}
 
 			{

@@ -20,6 +20,7 @@ private:
 
 	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
 	float m_RotatedQuadRotation = 0.0f;
+	float m_RotatedQuadRotationSpeed = 25.0f;
 	Math::vec3 m_RotatedQuadPos{};
 	Math::vec4 m_SquareColor;
 	Math::vec4 m_GridColor;
