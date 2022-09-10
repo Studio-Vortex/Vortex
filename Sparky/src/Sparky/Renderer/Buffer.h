@@ -111,12 +111,16 @@ namespace Sparky {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
+		virtual void SetData(const void* data, uint32_t size) const = 0;
+
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 
 		static SharedRef<VertexBuffer> Create(float* vertices, uint32_t size);
+		static SharedRef<VertexBuffer> Create(uint32_t size);
 	};
 
+	// Only supports 32 bit unsigned integers
 	class SPARKY_API IndexBuffer
 	{
 	public:
@@ -128,6 +132,7 @@ namespace Sparky {
 		virtual uint32_t GetCount() const = 0;
 
 		static SharedRef<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static SharedRef<IndexBuffer> Create(uint16_t* indices, uint32_t count);
 	};
 
 }

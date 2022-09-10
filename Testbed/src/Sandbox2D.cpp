@@ -43,8 +43,9 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep ts)
 			Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
 		}
 		Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f }, Math::vec2(1.0f), m_SquareColor);
-		Sparky::Renderer2D::DrawRotatedQuad(m_RotatedQuadPos, Math::vec2(2.0f), m_RotatedQuadRotation, Sparky::Color::LightYellow);
-		Sparky::Renderer2D::DrawQuad(Math::vec3(), Math::vec2(10.0f), m_GridScale, m_GridTexture, m_GridColor);
+		Sparky::Renderer2D::DrawQuad({ 1.0f, 2.0f }, Math::vec2(1.0f), Sparky::Color::LightYellow);
+		//Sparky::Renderer2D::DrawRotatedQuad(m_RotatedQuadPos, Math::vec2(2.0f), m_RotatedQuadRotation, Sparky::Color::LightYellow);
+		//Sparky::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(10.0f), m_GridScale, m_GridTexture, m_GridColor);
 		Sparky::Renderer2D::EndScene();
 	}
 }
