@@ -8,7 +8,7 @@ namespace Sparky {
 		m_ProjectionMatrix(Math::Ortho(left, right, bottom, top, -1.0f, 1.0f)), m_ViewMatrix(Math::Identity())
 	{
 		SP_PROFILE_FUNCTION();
-		
+
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}
 
@@ -25,8 +25,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		Math::mat4 transform = Math::Translate(Math::Identity(), m_Position) *
-			Math::Rotate(Math::Identity(), m_Rotation, { 0.0f, 0.0f, 1.0f });
+		Math::mat4 transform = Math::Translate(m_Position) * Math::Rotate(m_Rotation, { 0.0f, 0.0f, 1.0f });
 
 		m_ViewMatrix = Math::Inverse(transform);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;

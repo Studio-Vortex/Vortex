@@ -56,12 +56,12 @@ public:
 		Sparky::SharedRef<Sparky::IndexBuffer> pSquareIB = Sparky::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
 		m_SquareVA->SetIndexBuffer(pSquareIB);
 
-		m_TriangleShader = m_ShaderLibrary.Load("assedelta/shaders/VertexPosColor.glsl");
-		m_FlatColorShader = m_ShaderLibrary.Load("assedelta/shaders/FlatColor.glsl");
-		auto textureShader = m_ShaderLibrary.Load("assedelta/shaders/Texture.glsl");
+		m_TriangleShader = m_ShaderLibrary.Load("assets/shaders/VertexPosColor.glsl");
+		m_FlatColorShader = m_ShaderLibrary.Load("assets/shaders/FlatColor.glsl");
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
-		m_Texture = Sparky::Texture2D::Create("assedelta/textures/Checkerboard.png");
-		m_LinuxLogo = Sparky::Texture2D::Create("assedelta/textures/AwesomeFace.png");
+		m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
+		m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/AwesomeFace.png");
 
 		textureShader->Enable();
 		textureShader->SetInt("u_Texture", 0);
@@ -86,7 +86,7 @@ public:
 
 		Sparky::Renderer::BeginScene(m_CameraController.GetCamera());
 
-		static Math::mat4 scale = Math::Scale(Math::Identity(), Math::vec3(0.1f));
+		static Math::mat4 scale = Math::Scale(Math::vec3(0.1f));
 
 		m_FlatColorShader->Enable();
 		m_FlatColorShader->SetFloat3("u_Color", m_SquareColor);
@@ -96,7 +96,7 @@ public:
 			for (int x = 0; x < 20; x++)
 			{
 				Math::vec3 position((float)x * 0.11f, (float)y * 0.11f, 0.0f);
-				Math::mat4 transform = Math::Translate(Math::Identity(), position) * scale;
+				Math::mat4 transform = Math::Translate(position) * scale;
 				Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
@@ -104,10 +104,10 @@ public:
 		auto textureShader = m_ShaderLibrary.Get("Texture");
 
 		m_Texture->Bind();
-		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::Identity(), Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
 		
 		m_LinuxLogo->Bind();
-		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::Identity(), Math::vec3(1.5f)));
+		Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
 
 		///Triangle
 		// Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);

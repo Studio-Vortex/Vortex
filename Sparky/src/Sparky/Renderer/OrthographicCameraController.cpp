@@ -7,7 +7,8 @@
 namespace Sparky {
 
 	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool rotation)
-		: m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel), m_Rotation(rotation)
+		: m_AspectRatio(aspectRatio), m_Bounds({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel }),
+		m_Camera(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top), m_Rotation(rotation)
 	{
 
 	}
@@ -77,10 +78,11 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		m_ZoomLevel -= e.GetYOffset() * 0.25f; // nerf the zoom level
-		m_ZoomLevel = std::min(m_ZoomLevel, 300.0f); // zoom out limit
-		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f); // zoom in limit
-		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+		m_ZoomLevel -= e.GetYOffset() * m_ZoomModifer; // nerf the zoom level
+		m_ZoomLevel = std::min(m_ZoomLevel, m_MaxZoomOutLevel);
+		m_ZoomLevel = std::max(m_ZoomLevel, m_MaxZoomInLevel);
+		m_Bounds = { -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel };
+		m_Camera.SetProjection(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top);
 
 		return false;
 	}
@@ -90,7 +92,8 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+		m_Bounds = { -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel };
+		m_Camera.SetProjection(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top);
 
 		return false;
 	}

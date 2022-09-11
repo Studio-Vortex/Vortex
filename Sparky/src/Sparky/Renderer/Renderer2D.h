@@ -7,8 +7,9 @@
 
 namespace Sparky
 {
-
-#define SP_RENDERER_STATISTICS 1;
+	#ifdef SP_DEBUG
+		#define SP_RENDERER_STATISTICS 1;
+	#endif // SP_DEBUG
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
@@ -37,6 +38,7 @@ namespace Sparky
 		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
 		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
 
+		// Rotation is in radians
 		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, const Math::vec3 &color);
 		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, const Math::vec4 &color);
 		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, const Math::vec3 &color);
@@ -67,8 +69,9 @@ namespace Sparky
 		static Statistics GetStats();
 
 	private:
-		static void CopyDataToVertexBuffer();
 		static void StartNewBatch();
+		static void CopyDataToVertexBuffer();
+		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float textureIndex, float textureScale);
 	};
 
 }

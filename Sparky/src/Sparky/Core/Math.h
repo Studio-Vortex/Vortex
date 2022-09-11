@@ -28,22 +28,22 @@ namespace Sparky::Math {
 	template <typename T>
 	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
 	{
-		return glm::ortho(left, right, bottom, top, zNear, zFar);
+		return glm::ortho<T>(left, right, bottom, top, zNear, zFar);
 	}
 
-	static auto Translate(const mat4& matrix, const vec3& translation)
+	static auto Translate(const vec3& translation)
 	{
-		return glm::translate(matrix, translation);
+		return glm::translate(mat4(1.0f), translation);
 	}
 
-	static auto Rotate(const mat4& matrix, float rotation, const vec3& axis)
+	static auto Rotate(float rotation, const vec3& axis)
 	{
-		return glm::rotate(matrix, glm::radians(rotation), axis);
+		return glm::rotate(mat4(1.0f), rotation, axis);
 	}
 
-	static auto Scale(const mat4& matrix, const vec3& scale)
+	static auto Scale(const vec3& scale)
 	{
-		return glm::scale(matrix, scale);
+		return glm::scale(mat4(1.0f), scale);
 	}
 
 	static auto Inverse(const mat4& matrix)

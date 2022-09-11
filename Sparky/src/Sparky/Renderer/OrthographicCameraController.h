@@ -9,6 +9,15 @@
 
 namespace Sparky {
 
+	struct OrthographicCameraBounds
+	{
+		float Left, Right;
+		float Bottom, Top;
+
+		inline float GetWidth() const { return Right - Left; }
+		inline float GetHeight() const { return Top - Bottom; }
+	};
+	
 	class OrthographicCameraController
 	{
 	public:
@@ -32,6 +41,8 @@ namespace Sparky {
 		inline float GetZoomLevel() const { return m_ZoomLevel; }
 		inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; }
 
+		inline const OrthographicCameraBounds& GetBounds() const { return m_Bounds; }
+
 	private:
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
@@ -39,6 +50,10 @@ namespace Sparky {
 	private:
 		float m_AspectRatio;
 		float m_ZoomLevel = 1.0f;
+		float m_ZoomModifer = 0.25f;
+		float m_MaxZoomInLevel = 0.25f;
+		float m_MaxZoomOutLevel = 500.0f;
+		OrthographicCameraBounds m_Bounds;
 		OrthographicCamera m_Camera;
 
 		bool m_Rotation;
