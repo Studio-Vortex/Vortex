@@ -27,6 +27,9 @@ namespace Sparky {
 		virtual void SetViewport(const Viewport& viewport) const = 0;
 
 		virtual void SetClearColor(const Math::vec3& color) const = 0;
+
+		virtual void SetWireframeMode(bool enabled) const = 0;
+
 		virtual void Clear() const = 0;
 
 		virtual void DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;

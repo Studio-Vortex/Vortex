@@ -25,6 +25,14 @@ namespace Sparky {
 		glClearColor(color.r, color.g, color.b, 1.0f);
 	}
 
+    void OpenGLRendererAPI::SetWireframeMode(bool enabled) const
+    {
+		if (enabled)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
 	void OpenGLRendererAPI::Clear() const
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

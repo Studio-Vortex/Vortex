@@ -24,6 +24,11 @@ namespace Sparky {
 			s_RendererAPI->SetClearColor(color);
 		}
 
+		inline static void SetWireframe(bool enabled)
+		{
+			s_RendererAPI->SetWireframeMode(enabled);
+		}
+
 		inline static void Clear()
 		{
 			s_RendererAPI->Clear();

@@ -2,6 +2,7 @@
 
 #include "Sparky/Renderer/OrthographicCamera.h"
 #include "Sparky/Renderer/Texture.h"
+#include "Sparky/Renderer/SubTexture2D.h"
 #include "Sparky/Renderer/Color.h"
 #include "Sparky/Core/Math.h"
 
@@ -20,40 +21,54 @@ namespace Sparky
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const OrthographicCamera &camera);
+		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();
 
 		// Primitives
 
-		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, const Math::vec3 &color);
-		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, const Math::vec4 &color);
-		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, const Math::vec3 &color);
-		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, const Math::vec4 &color);
-		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, Color color = Color::White);
-		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, Color color = Color::White);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec4& color);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec3& color);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color = Color::White);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, Color color = Color::White);
 
-		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, const Math::vec4 &tintColor);
-		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, const Math::vec4 &tintColor);
-		static void DrawQuad(const Math::vec2 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
-		static void DrawQuad(const Math::vec3 &position, const Math::vec2 &size, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, float scale, const SharedRef<Texture2D>& texture, const Math::vec4& tintColor);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, float scale, const SharedRef<Texture2D>& texture, const Math::vec4& tintColor);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, float scale, const SharedRef<Texture2D>& texture, Color tintColor = Color::White);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, float scale, const SharedRef<Texture2D>& texture, Color tintColor = Color::White);
+
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec3& tintColor);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec4& tintColor);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec4& tintColor);
+		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, float scale, const SharedRef<SubTexture2D>& subtexture, Color tintColor = Color::White);
+		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, float scale, const SharedRef<SubTexture2D>& subtexture, Color tintColor = Color::White);
 
 		// Rotation is in radians
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, const Math::vec3 &color);
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, const Math::vec4 &color);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, const Math::vec3 &color);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, const Math::vec4 &color);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color);
 
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, Color color = Color::White);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, Color color = Color::White);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color = Color::White);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, Color color = Color::White);
 
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, const Math::vec3 &tintColor);
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, const Math::vec4 &tintColor);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, const Math::vec3 &tintColor);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, const Math::vec4 &tintColor);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, const Math::vec3& tintColor);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, const Math::vec4& tintColor);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, const Math::vec3& tintColor);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, const Math::vec4& tintColor);
 
-		static void DrawRotatedQuad(const Math::vec2 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
-		static void DrawRotatedQuad(const Math::vec3 &position, const Math::vec2 &size, float rotation, float scale, const SharedRef<Texture2D> &texture, Color tintColor = Color::White);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec3& tintColor);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec4& tintColor);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec3& tintColor);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, const Math::vec4& tintColor);
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, Color tintColor = Color::White);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<Texture2D>& texture, Color tintColor = Color::White);
+
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, Color tintColor = Color::White);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, float scale, const SharedRef<SubTexture2D>& subtexture, Color tintColor = Color::White);
 
 		struct Statistics
 		{
@@ -71,7 +86,7 @@ namespace Sparky
 	private:
 		static void StartNewBatch();
 		static void CopyDataToVertexBuffer();
-		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float textureIndex, float textureScale);
+		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale);
 	};
 
 }
