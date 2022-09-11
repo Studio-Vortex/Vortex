@@ -152,7 +152,7 @@ namespace Sparky {
 		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
-		if (m_ViewportSize != *((Math::vec2*)&scenePanelSize))
+		if (m_ViewportSize != *((Math::vec2*)&scenePanelSize) && scenePanelSize.x > 0 && scenePanelSize.y > 0)
 		{
 			m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);

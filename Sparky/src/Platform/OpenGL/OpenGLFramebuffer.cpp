@@ -5,6 +5,8 @@
 
 namespace Sparky {
 
+	static constexpr uint32_t MAX_FRAME_BUFFER_SIZE = 8192;
+
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferProperties& props)
 		: m_Properties(props)
 	{
@@ -54,6 +56,12 @@ namespace Sparky {
 
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0 || width > MAX_FRAME_BUFFER_SIZE || height > MAX_FRAME_BUFFER_SIZE)
+		{
+			SP_CORE_WARN("Attempted to resize Framebuffer to {}, {}", width, height);
+			return;
+		}
+
 		// Set the framebuffers size to the new size
 		m_Properties.Width = width;
 		m_Properties.Height = height;
