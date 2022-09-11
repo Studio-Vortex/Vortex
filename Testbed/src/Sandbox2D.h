@@ -18,8 +18,6 @@ public:
 private:
 	Sparky::OrthographicCameraController m_CameraController;
 
-	Sparky::SharedRef<Sparky::Framebuffer> m_Framebuffer;
-
 	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
 
 	float m_RotatedQuadRotation = 0.0f;

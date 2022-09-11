@@ -13,7 +13,7 @@ namespace Sparky {
 	class SPARKY_API Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "Sparky App");
 		virtual ~Application();
 
 		void PushLayer(Layer* layer);
