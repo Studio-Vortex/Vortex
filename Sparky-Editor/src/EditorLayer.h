@@ -34,6 +34,9 @@ namespace Sparky {
 
 		Math::vec4 m_GridColor;
 		float m_GridScale;
+
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 	};
 
 }

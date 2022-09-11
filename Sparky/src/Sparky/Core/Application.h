@@ -8,6 +8,8 @@
 
 #include "Sparky/Gui/GuiLayer.h"
 
+int main(int argc, char* argv[]);
+
 namespace Sparky {
 
 	class SPARKY_API Application
@@ -21,7 +23,7 @@ namespace Sparky {
 
 		void OnEvent(Event& e);
 
-		void Run();
+		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
@@ -29,6 +31,7 @@ namespace Sparky {
 		void Close();
 
 	private:
+		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
@@ -42,6 +45,7 @@ namespace Sparky {
 
 	private:
 		static Application* s_Instance;
+		friend int ::main(int argc, char* argv[]);
 	};
 
 	// To be defined in CLIENT

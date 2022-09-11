@@ -27,7 +27,8 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		// Update
-		m_CameraController.OnUpdate(delta);
+		if (m_ViewportFocused)
+			m_CameraController.OnUpdate(delta);
 
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Sparky::Application::Get().Close();
@@ -126,7 +127,7 @@ namespace Sparky {
 			Gui::EndMenuBar();
 		}
 
-		Gui::Begin("Settings", &show);
+		Gui::Begin("Inspector", &show);
 		Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));
 		Gui::SliderFloat("Grid Scale", &m_GridScale, 1, 20, "%.2f");
 		Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");
@@ -145,6 +146,11 @@ namespace Sparky {
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene");
+		
+		m_ViewportFocused = Gui::IsWindowFocused();
+		m_ViewportHovered = Gui::IsWindowHovered();
+		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		if (m_ViewportSize != *((Math::vec2*)&scenePanelSize))
 		{
