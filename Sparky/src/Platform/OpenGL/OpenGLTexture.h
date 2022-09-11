@@ -33,7 +33,7 @@ namespace Sparky {
 		mutable uint32_t m_Slot;
 		uint32_t m_Width;
 		uint32_t m_Height;
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		GLenum m_InternalFormat, m_DataFormat;
 	};
 

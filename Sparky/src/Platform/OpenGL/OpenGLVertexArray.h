@@ -20,7 +20,7 @@ namespace Sparky {
 		inline const SharedRef<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
 
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		std::vector<SharedRef<VertexBuffer>> m_VertexBuffers;
 		SharedRef<IndexBuffer> m_IndexBuffer;
 	};

@@ -141,10 +141,23 @@ namespace Sparky {
 		Gui::Text("Triangles:  %i", stats.GetTriangleCount());
 		Gui::Text("Vertices:   %i", stats.GetVertexCount());
 		Gui::Text("Indices:    %i", stats.GetIndexCount());
+		Gui::End();
+
+		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		Gui::Begin("Scene");
+		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
+		if (m_ViewportSize != *((Math::vec2*)&scenePanelSize))
+		{
+			m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+			m_CameraController.OnResize(m_ViewportSize);
+		}
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image((void*)textureID, ImVec2{ 1280.0f, 720.0f }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		Gui::Image((void*)textureID, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		Gui::End();
+		Gui::PopStyleVar();
 
 		Gui::End();
 	}

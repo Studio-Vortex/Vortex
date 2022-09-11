@@ -24,6 +24,8 @@ namespace Sparky {
 
 		SharedRef<Texture2D> m_GridTexture;
 
+		Math::vec2 m_ViewportSize{};
+
 		float m_RotatedQuadRotation = 0.0f;
 		float m_RotatedQuadRotationSpeed = 25.0f;
 		Math::vec3 m_RotatedQuadPos{ 3.0f, -3.0f, -0.1f };

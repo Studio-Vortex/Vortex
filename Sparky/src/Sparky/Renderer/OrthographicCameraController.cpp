@@ -71,6 +71,12 @@ namespace Sparky {
 		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(OrthographicCameraController::OnWindowResizeEvent));
 	}
 
+	void OrthographicCameraController::OnResize(const Math::vec2& size)
+	{
+		m_AspectRatio = size.x / size.y;
+		CalculateView();
+	}
+
 	void OrthographicCameraController::CalculateView()
 	{
 		m_Bounds = { -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel };
@@ -93,8 +99,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-		CalculateView();
+		OnResize({ (float)e.GetWidth(), (float)e.GetHeight() });
 
 		return false;
 	}

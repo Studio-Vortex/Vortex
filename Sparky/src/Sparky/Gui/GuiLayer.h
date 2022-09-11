@@ -16,6 +16,8 @@ namespace Sparky {
 		void OnAttach() override;
 		void OnDetach() override;
 
+		void OnEvent(Event& event) override;
+
 		void BeginFrame();
 		void EndFrame();
 

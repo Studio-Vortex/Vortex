@@ -58,6 +58,13 @@ namespace Sparky {
 		ImGui::DestroyContext();
 	}
 
+	void GuiLayer::OnEvent(Event& event)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+		event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+	}
+
 	void GuiLayer::BeginFrame()
 	{
 		SP_PROFILE_FUNCTION();

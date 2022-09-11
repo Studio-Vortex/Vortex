@@ -3,6 +3,7 @@
 #include "Sparky/Core/TimeStep.h"
 #include "Sparky/Renderer/OrthographicCamera.h"
 
+#include "Sparky/Core/Math.h"
 #include "Sparky/Events/ApplicationEvent.h"
 #include "Sparky/Events/MouseEvent.h"
 #include "Sparky/Events/KeyEvent.h"
@@ -26,6 +27,8 @@ namespace Sparky {
 		void OnUpdate(TimeStep ts);
 		void OnEvent(Event& e);
 		
+		void OnResize(const Math::vec2& size);
+
 		inline const OrthographicCamera& GetCamera() const { return m_Camera; }
 		inline OrthographicCamera& GetCamera() { return m_Camera; }
 
