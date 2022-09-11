@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
+IncludeDir["entt"] = "Sparky/vendor/entt/include"
 
 group "Vendor"
 	include "Sparky/vendor/GLFW"
@@ -42,10 +43,10 @@ project "Sparky"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/stb_image/**.h",
-		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
 	}
 
 	defines
@@ -62,6 +63,7 @@ project "Sparky"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}",
 	}
 
 	links
@@ -119,6 +121,7 @@ project "Testbed"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 	}
 
 	links
@@ -167,6 +170,7 @@ project "Sparky-Editor"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 	}
 
 	links
