@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Base.h"
 
 namespace Sparky {
 
-	enum class SPARKY_API ShaderDataType
+	enum class ShaderDataType
 	{
 		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Boolean,
 	};
@@ -30,7 +30,7 @@ namespace Sparky {
 		return 0;
 	}
 
-	struct SPARKY_API BufferElement
+	struct BufferElement
 	{
 		std::string Name;
 		ShaderDataType Type;
@@ -65,7 +65,7 @@ namespace Sparky {
 		}
 	};
 
-	class SPARKY_API BufferLayout
+	class BufferLayout
 	{
 	public:
 		BufferLayout() = default;
@@ -103,7 +103,7 @@ namespace Sparky {
 		uint32_t m_Stride = 0;
 	};
 
-	class SPARKY_API VertexBuffer
+	class VertexBuffer
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -121,7 +121,7 @@ namespace Sparky {
 	};
 
 	// Only supports 32 bit unsigned integers
-	class SPARKY_API IndexBuffer
+	class IndexBuffer
 	{
 	public:
 		virtual ~IndexBuffer() = default;

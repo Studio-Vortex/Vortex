@@ -2,7 +2,7 @@
 
 #include "sppch.h"
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Base.h"
 
 #include "Sparky/Events/Event.h"
 #include "Sparky/Core/Math.h"

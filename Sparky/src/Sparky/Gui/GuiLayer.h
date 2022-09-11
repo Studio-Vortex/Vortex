@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Base.h"
 
 #include "Sparky/Core/Layer.h"
 #include "Sparky/Events/Event.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Base.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

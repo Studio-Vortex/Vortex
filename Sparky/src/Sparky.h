@@ -41,6 +41,7 @@ namespace Gui = ImGui;
 #include "Sparky/Renderer/Shader.h"
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Renderer/SubTexture2D.h"
+#include "Sparky/Renderer/Framebuffer.h"
 #include "Sparky/Renderer/VertexArray.h"
 
 #include "Sparky/Renderer/OrthographicCamera.h"

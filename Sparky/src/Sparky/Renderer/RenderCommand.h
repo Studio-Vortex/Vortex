@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/Base.h"
 
 #include "Sparky/Renderer/RendererAPI.h"
 

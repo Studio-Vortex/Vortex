@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sparky/Core/Core.h"
+#include "Sparky/Core/base.h"
 
 #include <string>
 
@@ -24,7 +24,7 @@ namespace Sparky {
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 
-	class Texture2D : public Texture
+	class SPARKY_API Texture2D : public Texture
 	{
 	public:
 		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height);

@@ -1,23 +1,5 @@
 #include "Sandbox2D.h"
 
-
-static constexpr uint32_t s_MapWidth = 24;
-static constexpr const char* s_MapTiles =
-"WWWWWWWWWWWWWWWWWWWWWWWW"
-"WWWWWWWWDDDDDDDDDWWWWWWW"
-"WWWWWWDDDDDDDDDDDDDWWWWW"
-"WWWWWDDDDDDDDDDDDDDDWWWW"
-"WWWWDDDDDDDWDDDDDDDDDWWW"
-"WWWDDDDDDWWWWDDDDDWDDDWW"
-"WWDDDDDDDDWWWDDDDWWWDDDW"
-"WWDDDDDDDDDWDDDDDWWDDDDW"
-"WWWDDDDDDDDDDDDDDDDDDDWW"
-"WWWWDDDDDDDDWWWDDDDDDWWW"
-"WWWWWDDDDDDDDWWDDDDDWWWW"
-"WWWWWWWDDDDDDDDDDDWWWWWW"
-"WWWWWWWWWWWWWWWWWWWWWWWW";
-
-
 Sandbox2D::Sandbox2D() :
 	Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true),
 	m_SquareColor(Sparky::ColorToVec4(Sparky::Color::LightBlue)),
@@ -28,18 +10,12 @@ void Sandbox2D::OnAttach()
 	SP_PROFILE_FUNCTION();
 
 	m_GridTexture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
-	m_SpriteSheet = Sparky::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
 
-	m_Stairs = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 0, 11 }, m_SpriteSize);
-	m_Tree = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, m_SpriteSize, {1, 2});
+	Sparky::FramebufferProperties properties;
+	properties.Width = 1280.0f;
+	properties.Height = 720.0f;
 
-	m_MapWidth = s_MapWidth;
-	m_MapHeight = strlen(s_MapTiles) / s_MapWidth;
-
-	m_TextureMap['D'] = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, {6, 11}, m_SpriteSize);
-	m_TextureMap['W'] = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, {11, 11}, m_SpriteSize);
-
-	m_CameraController.SetZoomLevel(5.0f);
+	m_Framebuffer = Sparky::Framebuffer::Create(properties);
 }
 
 void Sandbox2D::OnDetach() { }
@@ -60,6 +36,7 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 
 	{
 		SP_PROFILE_SCOPE("Renderer Prep");
+		m_Framebuffer->Bind();
 		Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Sparky::RenderCommand::Clear();
 	}
@@ -67,14 +44,13 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 	{
 		SP_PROFILE_SCOPE("Renderer Draw");
 		Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
+
 		Sparky::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(1.0f), m_SquareColor);
 		Sparky::Renderer2D::DrawQuad(Math::vec2(1.5f), Math::vec2(2.0f, 1.0f), Sparky::Color::Purple);
 		Sparky::Renderer2D::DrawRotatedQuad(m_RotatedQuadPos, Math::vec2(2.0f), Math::Deg2Rad(m_RotatedQuadRotation += -m_RotatedQuadRotationSpeed * delta), Sparky::Color::LightYellow);
 		Sparky::Renderer2D::DrawRotatedQuad({ -2.0f, 2.0f }, Math::vec2(2.0f), Math::Deg2Rad(45.0f), 1.0f, m_GridTexture);
 		Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, Math::vec2(20.0f), m_GridScale, m_GridTexture, m_GridColor);
-		Sparky::Renderer2D::EndScene();
-
-		Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
+		
 		for (float y = -5.0f; y < 5.0f; y += 0.5f)
 		{
 			for (float x = -5.0f; x < 5.0f; x += 0.5f)
@@ -83,7 +59,10 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 				Sparky::Renderer2D::DrawQuad({ x, y }, Math::vec2(0.45f), color);
 			}
 		}
+		
 		Sparky::Renderer2D::EndScene();
+
+		m_Framebuffer->Unbind();
 	}
 }
 
@@ -171,8 +150,8 @@ void Sandbox2D::OnGuiRender()
 	Gui::Text("Vertices:   %i", stats.GetVertexCount());
 	Gui::Text("Indices:    %i", stats.GetIndexCount());
 
-	uint32_t textureID = m_GridTexture->GetRendererID();
-	Gui::Image((void*)textureID, ImVec2{ 256, 256 });
+	uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+	Gui::Image((void*)textureID, ImVec2{ 1280.0f, 720.0f });
 	Gui::End();
 
 	ImGui::End();

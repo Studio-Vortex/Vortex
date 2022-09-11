@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "Base.h"
 
 #include "Sparky/Core/Window.h"
 #include "Sparky/Core/LayerStack.h"
