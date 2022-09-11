@@ -76,7 +76,7 @@ public:
 	{
 		// Update
 		if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
-			Sparky::Application::Get().CloseApplication();
+			Sparky::Application::Get().Close();
 
 		m_CameraController.OnUpdate(delta);
 

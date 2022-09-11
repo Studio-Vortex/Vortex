@@ -52,6 +52,11 @@ namespace Sparky {
 		m_LayerStack.PushOverlay(overlay);
 	}
 
+	void Application::Close()
+	{
+		m_Running = false;
+	}
+
 	void Application::OnEvent(Event& e)
 	{
 		SP_PROFILE_FUNCTION();

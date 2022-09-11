@@ -26,7 +26,7 @@ namespace Sparky {
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
 
-		inline void CloseApplication() { m_Running = false; }
+		void Close();
 
 	private:
 		bool OnWindowCloseEvent(WindowCloseEvent& e);

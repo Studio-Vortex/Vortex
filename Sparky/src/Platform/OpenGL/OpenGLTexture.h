@@ -21,6 +21,8 @@ namespace Sparky {
 		void Bind(uint32_t slot) const override;
 		void Unbind() const override;
 
+		inline uint32_t GetRendererID() const override { return m_RendererID; }
+
 		inline bool operator==(const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
