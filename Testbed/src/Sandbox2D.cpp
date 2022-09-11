@@ -1,5 +1,23 @@
 #include "Sandbox2D.h"
 
+
+static constexpr uint32_t s_MapWidth = 24;
+static constexpr const char* s_MapTiles =
+"WWWWWWWWWWWWWWWWWWWWWWWW"
+"WWWWWWWWDDDDDDDDDWWWWWWW"
+"WWWWWWDDDDDDDDDDDDDWWWWW"
+"WWWWWDDDDDDDDDDDDDDDWWWW"
+"WWWWDDDDDDDWDDDDDDDDDWWW"
+"WWWDDDDDDWWWWDDDDDWDDDWW"
+"WWDDDDDDDDWWWDDDDWWWDDDW"
+"WWDDDDDDDDDWDDDDDWWDDDDW"
+"WWWDDDDDDDDDDDDDDDDDDDWW"
+"WWWWDDDDDDDDWWWDDDDDDWWW"
+"WWWWWDDDDDDDDWWDDDDDWWWW"
+"WWWWWWWDDDDDDDDDDDWWWWWW"
+"WWWWWWWWWWWWWWWWWWWWWWWW";
+
+
 Sandbox2D::Sandbox2D() :
 	Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f, true),
 	m_SquareColor(Sparky::ColorToVec4(Sparky::Color::LightBlue)),
@@ -12,9 +30,16 @@ void Sandbox2D::OnAttach()
 	m_GridTexture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 	m_SpriteSheet = Sparky::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
 
-	m_Stairs = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, m_SpriteSize);
-	m_Barrel = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 8, 2 }, m_SpriteSize);
+	m_Stairs = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 0, 11 }, m_SpriteSize);
 	m_Tree = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, m_SpriteSize, {1, 2});
+
+	m_MapWidth = s_MapWidth;
+	m_MapHeight = strlen(s_MapTiles) / s_MapWidth;
+
+	m_TextureMap['D'] = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, {6, 11}, m_SpriteSize);
+	m_TextureMap['W'] = Sparky::SubTexture2D::CreateFromCoords(m_SpriteSheet, {11, 11}, m_SpriteSize);
+
+	m_CameraController.SetZoomLevel(5.0f);
 }
 
 void Sandbox2D::OnDetach() { }
@@ -63,10 +88,26 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 #endif // 0
 
 		Sparky::Renderer2D::BeginScene(m_CameraController.GetCamera());
-		Sparky::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(10.0f), 1.0f, m_SpriteSheet);
-		Sparky::Renderer2D::DrawQuad({ -10.0f, 5.0f }, Math::vec2(5.0f), 1.0f, m_Stairs);
-		Sparky::Renderer2D::DrawQuad({ -10.0f, -5.0f }, Math::vec2(5.0f), 1.0f, m_Barrel);
-		Sparky::Renderer2D::DrawQuad({ -15.0f, 0.0f }, Math::vec2(5.0f, 10.0f), 1.0f, m_Tree);
+
+		for (uint32_t y = 0; y < m_MapHeight; y++)
+		{
+			for (uint32_t x = 0; x < m_MapWidth; x++)
+			{
+				char tileType = s_MapTiles[x + y * m_MapWidth];
+				Sparky::SharedRef<Sparky::SubTexture2D> texture;
+
+				if (m_TextureMap.find(tileType) != m_TextureMap.end())
+					texture = m_TextureMap[tileType];
+				else
+					texture = m_Tree;
+
+				Sparky::Renderer2D::DrawQuad({ x - m_MapWidth / 2.0f, m_MapHeight - y - m_MapHeight / 2.0f }, Math::vec2(1.0f), 1.0f, texture);
+			}
+		}
+
+		//Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f }, Math::vec2(1), 1, m_Stairs);
+		//Sparky::Renderer2D::DrawQuad({ 1.0f, 0.0f }, Math::vec2(1), 1, m_Barrel);
+		//Sparky::Renderer2D::DrawQuad({ -2.0f, 0.0f }, Math::vec2(1, 2), 1, m_Tree);
 		Sparky::Renderer2D::EndScene();
 	}
 }

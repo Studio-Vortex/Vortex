@@ -31,4 +31,7 @@ private:
 
 	Math::vec4 m_GridColor;
 	float m_GridScale;
+
+	uint32_t m_MapWidth, m_MapHeight;
+	std::unordered_map<char, Sparky::SharedRef<Sparky::SubTexture2D>> m_TextureMap;
 };

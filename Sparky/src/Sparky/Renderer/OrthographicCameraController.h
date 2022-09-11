@@ -39,11 +39,13 @@ namespace Sparky {
 		inline void SetRotationSpeed(float speed) { m_CameraRotationSpeed = speed; }
 
 		inline float GetZoomLevel() const { return m_ZoomLevel; }
-		inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; }
+		inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; CalculateView(); }
 
 		inline const OrthographicCameraBounds& GetBounds() const { return m_Bounds; }
 
 	private:
+		void CalculateView();
+
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 

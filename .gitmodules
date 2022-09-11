@@ -1,0 +1,12 @@
+[submodule "Sparky/vendor/spdlog"]
+	path = Sparky/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "Sparky/vendor/GLFW"]
+	path = Sparky/vendor/GLFW
+	url = https://github.com/TheCherno/glfw.git
+[submodule "Sparky/vendor/imgui"]
+	path = Sparky/vendor/imgui
+	url = https://github.com/TheCherno/imgui.git
+[submodule "Sparky/vendor/glm"]
+	path = Sparky/vendor/glm
+	url = https://github.com/g-truc/glm.git

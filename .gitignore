@@ -1,0 +1,17 @@
+// Directories
+
+/.vs
+/bin
+/bin-int
+Sparky/resources/images
+Testbed/assets/textures
+Testbed/assets/game/textures
+
+// Files
+
+*.user
+*.vcxproj
+*.filters
+*.sln
+*.json
+Testbed/imgui.ini
