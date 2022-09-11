@@ -5,6 +5,9 @@
 #include "Sparky/Events/MouseEvent.h"
 #include "Sparky/Events/KeyEvent.h"
 
+#include "Sparky/Core/Input.h"
+#include "Sparky/Renderer/Renderer.h"
+
 #include "Platform/OpenGL/OpenGLContext.h"
 
 namespace Sparky {
@@ -14,11 +17,6 @@ namespace Sparky {
 	static void GLFWErrorCallback(int error, const char* description)
 	{
 		SP_CORE_ERROR("GLFW Error: ({}): {}", error, description);
-	}
-
-	UniqueRef<Window> Window::Create(const WindowProps& props)
-	{
-		return CreateUnique<WindowsWindow>(props);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
@@ -56,6 +54,11 @@ namespace Sparky {
 		{
 			SP_PROFILE_SCOPE("glfwCreateWindow");
 
+#ifdef SP_DEBUG
+			if (Renderer::GetGraphicsAPI() == RendererAPI::API::OpenGL)
+				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif // SP_DEBUG
+
 			m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
 			s_GLFWWindowCount++;
 		}
@@ -92,19 +95,19 @@ namespace Sparky {
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event(static_cast<KeyCode>(key), 0);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(key);
+					KeyReleasedEvent event(static_cast<KeyCode>(key));
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event(static_cast<KeyCode>(key), 1);
 					data.EventCallback(event);
 					break;
 				}
@@ -115,7 +118,7 @@ namespace Sparky {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event((int)keycode);
+			KeyTypedEvent event(static_cast<KeyCode>(keycode));
 			data.EventCallback(event);
 		});
 
@@ -127,19 +130,13 @@ namespace Sparky {
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressedEvent event(static_cast<MouseCode>(button));
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_REPEAT:
-				{
-					MouseButtonPressedEvent event(button);
+					MouseButtonReleasedEvent event(static_cast<MouseCode>(button));
 					data.EventCallback(event);
 					break;
 				}

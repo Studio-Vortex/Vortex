@@ -26,7 +26,7 @@ namespace Gui = ImGui;
 
 #include "Sparky/Core/Input.h"
 #include "Sparky/Core/KeyCodes.h"
-#include "Sparky/Core/MouseButtonCodes.h"
+#include "Sparky/Core/MouseCodes.h"
 #include "Sparky/Renderer/OrthographicCameraController.h"
 /// ---------------------------------------------------
 
