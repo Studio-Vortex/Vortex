@@ -22,7 +22,7 @@ namespace Sparky {
 		m_ActiveScene = CreateShared<Scene>();
 
 		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
-		m_SquareEntity.AddComponent<Sprite2DComponent>(ColorToVec4(Color::Purple));
+		m_SquareEntity.AddComponent<SpriteComponent>(ColorToVec4(Color::Purple));
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
 		m_CameraEntity.AddComponent<CameraComponent>();
@@ -156,7 +156,7 @@ namespace Sparky {
 
 		m_SceneHierarchyPanel.OnGuiRender();
 
-		Gui::Begin("Inspector", &show);
+		Gui::Begin("Settings", &show);
 		Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));
 		Gui::SliderFloat("Grid Scale", &m_GridScale, 1, 20, "%.2f");
 		Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");
@@ -167,7 +167,7 @@ namespace Sparky {
 			Gui::Separator();
 			auto& tag = m_SquareEntity.GetComponent<TagComponent>().Tag;
 			Gui::Text("%s", tag.c_str());
-			auto& sprite = m_SquareEntity.GetComponent<Sprite2DComponent>();
+			auto& sprite = m_SquareEntity.GetComponent<SpriteComponent>();
 			Gui::ColorEdit4("Square Color", Math::ValuePtr(sprite.SpriteColor));
 			Gui::Separator();
 		}

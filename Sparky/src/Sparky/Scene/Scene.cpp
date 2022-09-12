@@ -69,11 +69,11 @@ namespace Sparky {
 		{
 			Renderer2D::BeginScene(*mainCamera, *cameraTransform);
 
-			auto view = m_Registry.view<TransformComponent, Sprite2DComponent>();
+			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
 
 			for (auto entity : view)
 			{
-				auto [transformComponent, spriteComponent] = view.get<TransformComponent, Sprite2DComponent>(entity);
+				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteComponent>(entity);
 
 				Renderer2D::DrawQuad(transformComponent, spriteComponent.SpriteColor);
 			}

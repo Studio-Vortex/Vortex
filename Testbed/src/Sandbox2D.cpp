@@ -62,7 +62,7 @@ void Sandbox2D::OnGuiRender()
 	SP_PROFILE_FUNCTION();
 
 	static bool show = true;
-	Gui::Begin("Demo Window", &show);
+	Gui::Begin("Settings", &show);
 	Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));
 	Gui::SliderFloat("Grid Scale", &m_GridScale, 1, 20, "%.2f");
 	Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");

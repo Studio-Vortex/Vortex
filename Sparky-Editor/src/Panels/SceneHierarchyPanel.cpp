@@ -27,6 +27,16 @@ namespace Sparky {
 			}
 		});
 
+		if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
+			m_SelectedEntity = {};
+
+		Gui::End();
+
+		Gui::Begin("Inspector");
+
+		if (m_SelectedEntity)
+			DrawComponents(m_SelectedEntity);
+
 		Gui::End();
 	}
 
@@ -49,6 +59,50 @@ namespace Sparky {
 				Gui::TreePop();
 
 			Gui::TreePop();
+		}
+	}
+
+	void SceneHierarchyPanel::DrawComponents(Entity entity)
+	{
+		if (m_SelectedEntity.HasComponent<TagComponent>())
+		{
+			auto& tag = entity.GetComponent<TagComponent>().Tag;
+
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), tag.c_str());
+			Gui::Text("Tag"); Gui::SameLine();
+			if (Gui::InputText(" ", buffer, sizeof(buffer)))
+			{
+				tag = std::string(buffer);
+			}
+
+			Gui::Separator();
+		}
+
+		if (m_SelectedEntity.HasComponent<TransformComponent>())
+		{
+			if (Gui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
+			{
+				auto& transform = entity.GetComponent<TransformComponent>().Transform;
+				Gui::DragFloat3(" ", Math::ValuePtr(transform[3]), 0.1f);
+				Gui::TreePop();
+			}
+		}
+
+		if (m_SelectedEntity.HasComponent<SpriteComponent>())
+		{
+
+		}
+
+		if (m_SelectedEntity.HasComponent<TransformComponent>())
+		{
+
+		}
+
+		if (m_SelectedEntity.HasComponent<TransformComponent>())
+		{
+
 		}
 	}
 

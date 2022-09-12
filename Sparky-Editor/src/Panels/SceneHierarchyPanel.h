@@ -16,6 +16,7 @@ namespace Sparky {
 
 	private:
 		void DrawEntityNode(Entity entity);
+		void DrawComponents(Entity entity);
 
 	private:
 		SharedRef<Scene> m_ContextScene;

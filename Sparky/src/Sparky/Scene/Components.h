@@ -29,13 +29,13 @@ namespace Sparky {
 		operator const Math::mat4& () const { return Transform; }
 	};
 
-	struct Sprite2DComponent
+	struct SpriteComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 
-		Sprite2DComponent() = default;
-		Sprite2DComponent(const Sprite2DComponent&) = default;
-		Sprite2DComponent(const Math::vec4& color)
+		SpriteComponent() = default;
+		SpriteComponent(const SpriteComponent&) = default;
+		SpriteComponent(const Math::vec4& color)
 			: SpriteColor(color) { }
 	};
 
