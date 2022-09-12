@@ -56,6 +56,8 @@ namespace Sparky {
 
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -151,6 +153,8 @@ namespace Sparky {
 
 			Gui::EndMenuBar();
 		}
+
+		m_SceneHierarchyPanel.OnGuiRender();
 
 		Gui::Begin("Inspector", &show);
 		Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));

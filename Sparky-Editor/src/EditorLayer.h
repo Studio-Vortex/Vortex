@@ -2,6 +2,8 @@
 
 #include <Sparky.h>
 
+#include "Panels/SceneHierarchyPanel.h"
+
 namespace Sparky {
 
 	class EditorLayer : public Layer
@@ -43,6 +45,10 @@ namespace Sparky {
 
 		Math::vec4 m_GridColor;
 		float m_GridScale;
+
+		// Panels
+
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 	};
 
 }

@@ -43,7 +43,18 @@ namespace Sparky {
 			return m_Scene->m_Registry.all_of<TComponents...>(m_EntityID);
 		}
 
-		operator bool() const { return m_EntityID != entt::null; }
+		inline bool operator==(const Entity& other) const
+		{
+			return m_EntityID == other.m_EntityID && m_Scene == other.m_Scene;
+		}
+
+		inline bool operator!=(const Entity& other) const
+		{
+			return !(*this == other);
+		}
+
+		inline operator bool () const { return m_EntityID != entt::null; }
+		inline operator uint32_t () const{ return (uint32_t)m_EntityID; }
 
 	private:
 		entt::entity m_EntityID = entt::null;
