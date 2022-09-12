@@ -13,34 +13,34 @@ namespace Sparky {
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity&) = default;
 		
-		template <typename T, typename... Args>
-		inline T& AddComponent(Args&&... args)
+		template <typename TComponent, typename... Args>
+		inline TComponent& AddComponent(Args&&... args)
 		{
-			SP_CORE_ASSERT(!HasComponent<T>(), "Entity already has this Component!");
+			SP_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already has this Component!");
 
-			return m_Scene->m_Registry.emplace<T>(m_EntityID, std::forward<Args>(args)...);
+			return m_Scene->m_Registry.emplace<TComponent>(m_EntityID, std::forward<Args>(args)...);
 		}
 
-		template <typename... T>
+		template <typename... TComponents>
 		inline void RemoveComponent()
 		{
-			SP_CORE_ASSERT(HasComponent<T...>(), "Entity does not have this Component!");
+			SP_CORE_ASSERT(HasComponent<TComponents...>(), "Entity does not have this Component!");
 
-			m_Scene->m_Registry.remove<T...>(m_EntityID);
+			m_Scene->m_Registry.remove<TComponents...>(m_EntityID);
 		}
 
-		template <typename T>
-		inline T& GetComponent()
+		template <typename TComponent>
+		inline TComponent& GetComponent()
 		{
-			SP_CORE_ASSERT(HasComponent<T>(), "Entity does not have this Component!");
+			SP_CORE_ASSERT(HasComponent<TComponent>(), "Entity does not have this Component!");
 
-			return m_Scene->m_Registry.get<T>(m_EntityID);
+			return m_Scene->m_Registry.get<TComponent>(m_EntityID);
 		}
 
-		template <typename... T>
+		template <typename... TComponents>
 		inline bool HasComponent()
 		{
-			return m_Scene->m_Registry.all_of<T...>(m_EntityID);
+			return m_Scene->m_Registry.all_of<TComponents...>(m_EntityID);
 		}
 
 		operator bool() const { return m_EntityID != entt::null; }

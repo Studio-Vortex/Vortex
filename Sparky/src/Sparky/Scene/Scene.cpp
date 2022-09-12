@@ -28,6 +28,23 @@ namespace Sparky {
 
 	void Scene::OnUpdate(TimeStep delta)
 	{
+		// Update Scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.InstantiateFunction();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					if (nsc.OnCreateFunction)
+						nsc.OnCreateFunction(nsc.Instance);
+				}
+
+				if (nsc.OnUpdateFunction)
+					nsc.OnUpdateFunction(nsc.Instance, delta);
+			});
+		}
+
 		// Render 2D
 		Camera* mainCamera = nullptr;
 		Math::mat4* cameraTransform = nullptr;

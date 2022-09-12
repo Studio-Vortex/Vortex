@@ -22,6 +22,7 @@ namespace Gui = ImGui;
 /// Scene
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"
+#include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scene/Components.h"
 /// ---------------------------------------------------
 
