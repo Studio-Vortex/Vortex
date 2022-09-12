@@ -11,7 +11,7 @@ layout (location = 4) in float a_TexScale;
 
 out vec4 f_Color;
 out vec2 f_TexCoord;
-out float f_TexIndex;
+out flat float f_TexIndex;
 out float f_TexScale;
 
 uniform mat4 u_ViewProjection;
@@ -33,7 +33,7 @@ layout (location = 0) out vec4 gl_Color;
 
 in vec4 f_Color;
 in vec2 f_TexCoord;
-in float f_TexIndex;
+in flat float f_TexIndex;
 in float f_TexScale;
 
 uniform sampler2D u_Textures[32];

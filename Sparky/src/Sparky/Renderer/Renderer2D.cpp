@@ -160,7 +160,7 @@ namespace Sparky
 	void Renderer2D::CopyDataToVertexBuffer()
 	{
 		// Calculate the size of the vertex buffer
-		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
+		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 		// Copy data to GPU buffer
 		s_Data.QuadVB->SetData(s_Data.QuadVertexBufferBase, dataSize);
 	}
@@ -368,6 +368,71 @@ namespace Sparky
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
 
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec3& color)
+	{
+		DrawRotatedQuad(transform, { color.r, color.g, color.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color)
+	{
+		SP_PROFILE_FUNCTION();
+
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+			StartNewBatch();
+
+		static constexpr float textureIndex = 0.0f; // Our White Texture
+		static constexpr float textureScale = 1.0f;
+
+		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+
+		AddToVertexBuffer(transform, color, textureCoords, textureIndex, textureScale);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, Color color)
+	{
+		DrawRotatedQuad(transform, ColorToVec4(color));
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor)
+	{
+		DrawRotatedQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	{
+		SP_PROFILE_FUNCTION();
+
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+			StartNewBatch();
+
+		float textureIndex = 0.0f;
+
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.TextureSlotIndex;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+			s_Data.TextureSlotIndex++;
+		}
+
+		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+
+		AddToVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
+	}
+
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	{
+		DrawRotatedQuad(transform, texture, scale, ColorToVec4(tintColor));
+	}
+
 	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, { color.r, color.g, color.b, 1.0f });
@@ -385,18 +450,8 @@ namespace Sparky
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color)
 	{
-		SP_PROFILE_FUNCTION();
-
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
-
-		static constexpr float textureIndex = 0.0f; // Our White Texture
-		static constexpr float textureScale = 1.0f;
-
 		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-
-		AddToVertexBuffer(transform, color, textureCoords, textureIndex, textureScale);
+		DrawRotatedQuad(transform, color);
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color)
@@ -426,33 +481,8 @@ namespace Sparky
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
 	{
-		SP_PROFILE_FUNCTION();
-
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
-
-		float textureIndex = 0.0f;
-
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
-		}
-
 		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-
-		AddToVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
+		DrawRotatedQuad(transform, texture, scale, tintColor);
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec3& tintColor)

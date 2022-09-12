@@ -54,6 +54,14 @@ namespace Sparky
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 
 		// Rotation is in radians
+		static void DrawRotatedQuad(const Math::mat4& transform, const Math::vec3& color);
+		static void DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color);
+		static void DrawRotatedQuad(const Math::mat4& transform, Color color = Color::White);
+
+		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor);
+		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor);
+		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor = Color::White);
+
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color);
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color);

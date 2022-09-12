@@ -83,7 +83,7 @@
 
 #define SP_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
 
-#define SP_BIND_CALLBACK(ident) std::bind(&ident, this, std::placeholders::_1)
+#define SP_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #define BIT(x) (1 << x)
 

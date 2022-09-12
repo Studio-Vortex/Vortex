@@ -21,6 +21,7 @@ namespace Sparky {
 
 	private:
 		uint32_t m_RendererID = 0;
+		uint32_t m_VertexBufferIndex = 0;
 		std::vector<SharedRef<VertexBuffer>> m_VertexBuffers;
 		SharedRef<IndexBuffer> m_IndexBuffer;
 	};

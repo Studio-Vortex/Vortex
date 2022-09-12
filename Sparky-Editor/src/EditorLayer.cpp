@@ -31,6 +31,15 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		// Resize
+		if (Sparky::FramebufferProperties spec = m_Framebuffer->GetProperties();
+			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_CameraController.OnResize(m_ViewportSize);
+		}
+
 		// Update
 		if (m_ViewportFocused)
 			m_CameraController.OnUpdate(delta);
@@ -146,13 +155,7 @@ namespace Sparky {
 		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
-		if (m_ViewportSize != *((Math::vec2*)&scenePanelSize) && scenePanelSize.x > 0 && scenePanelSize.y > 0)
-		{
-			m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
-			m_CameraController.OnResize(m_ViewportSize);
-		}
+		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image((void*)textureID, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
