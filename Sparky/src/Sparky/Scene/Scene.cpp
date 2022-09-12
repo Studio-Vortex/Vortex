@@ -33,17 +33,17 @@ namespace Sparky {
 		Math::mat4* cameraTransform = nullptr;
 
 		{
-			auto group = m_Registry.view<TransformComponent, CameraComponent>();
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();
 
-			for (auto& entity : group)
+			for (auto& entity : view)
 			{
-				auto& transform = group.get<TransformComponent>(entity);
-				auto& camera = group.get<CameraComponent>(entity);
+				auto& transformComponent = view.get<TransformComponent>(entity);
+				auto& cameraComponent = view.get<CameraComponent>(entity);
 
-				if (camera.Primary)
+				if (cameraComponent.Primary)
 				{
-					mainCamera = &camera.Camera;
-					cameraTransform = &transform.Transform;
+					mainCamera = &cameraComponent.Camera;
+					cameraTransform = &transformComponent.Transform;
 					break;
 				}
 			}
@@ -57,12 +57,29 @@ namespace Sparky {
 
 			for (auto entity : view)
 			{
-				const auto& [transform, sprite] = view.get<TransformComponent, Sprite2DComponent>(entity);
+				const auto& [transformComponent, spriteComponent] = view.get<TransformComponent, Sprite2DComponent>(entity);
 
-				Renderer2D::DrawQuad(transform, sprite.SpriteColor);
+				Renderer2D::DrawQuad(transformComponent, spriteComponent.SpriteColor);
 			}
 
 			Renderer2D::EndScene();
+		}
+	}
+
+	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+
+		auto view = m_Registry.view<CameraComponent>();
+
+		// Resize non-FixedAspectRatio cameras
+		for (auto& entity : view)
+		{
+			auto& cameraComponent = view.get<CameraComponent>(entity);
+
+			if (!cameraComponent.FixedAspectRatio)
+				cameraComponent.Camera.SetViewportSize(width, height);
 		}
 	}
 

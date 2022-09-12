@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Sparky/Core/Math.h"
-#include "Sparky/Renderer/Camera.h"
+#include "Sparky/Scene/SceneCamera.h"
 
 namespace Sparky {
 
@@ -40,13 +40,12 @@ namespace Sparky {
 
 	struct CameraComponent
 	{
-		Sparky::Camera Camera;
+		SceneCamera Camera;
 		bool Primary = true;
+		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
-		CameraComponent(const Math::mat4& projection)
-			: Camera(projection) { }
 	};
 
 }

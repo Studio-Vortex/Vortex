@@ -25,10 +25,10 @@ namespace Sparky {
 		m_SquareEntity.AddComponent<Sprite2DComponent>(ColorToVec4(Color::Purple));
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-		m_CameraEntity.AddComponent<CameraComponent>(Math::Ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+		m_CameraEntity.AddComponent<CameraComponent>();
 
 		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Camera");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>(Math::Ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
 		cc.Primary = false;
 	}
 
@@ -45,6 +45,8 @@ namespace Sparky {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_CameraController.OnResize(m_ViewportSize);
+
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		// Update
@@ -144,6 +146,13 @@ namespace Sparky {
 		{
 			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
 			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
+		}
+
+		{
+			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
+			static float size = camera.GetOrthographicSize();
+			if (Gui::DragFloat("Second Camera Ortho Size", &size, 1.0f, 1.0f, 50.0f))
+				camera.SetOrthographicSize(size);
 		}
 
 		Gui::DragFloat3("Camera Transform", Math::ValuePtr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
