@@ -21,10 +21,14 @@ namespace Sparky {
 		OrthographicCameraController m_CameraController;
 
 		SharedRef<Framebuffer> m_Framebuffer;
-
 		SharedRef<Texture2D> m_GridTexture;
 
+		SharedRef<Scene> m_ActiveScene;
+
 		Math::vec2 m_ViewportSize{};
+
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 
 		float m_RotatedQuadRotation = 0.0f;
 		float m_RotatedQuadRotationSpeed = 25.0f;
@@ -32,11 +36,10 @@ namespace Sparky {
 
 		Math::vec4 m_SquareColor;
 
+		entt::entity m_Square;
+
 		Math::vec4 m_GridColor;
 		float m_GridScale;
-
-		bool m_ViewportFocused = false;
-		bool m_ViewportHovered = false;
 	};
 
 }

@@ -7,6 +7,9 @@
 #include "Sparky/Core/TimeStep.h"
 /// ---------------------------------------------------
 
+#include "Sparky/Scene/Scene.h"
+#include "Sparky/Scene/Components.h"
+
 /// Math
 #include "Sparky/Core/Math.h"
 namespace Math = Sparky::Math;
