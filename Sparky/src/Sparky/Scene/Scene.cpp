@@ -23,6 +23,7 @@ namespace Sparky {
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
+
 		return entity;
 	}
 
@@ -32,16 +33,15 @@ namespace Sparky {
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
+				// TODO: Move to Scene::OnScenePlay
 				if (!nsc.Instance)
 				{
-					nsc.InstantiateFunction();
+					nsc.Instance = nsc.InstantiateScript();
 					nsc.Instance->m_Entity = Entity{ entity, this };
-					if (nsc.OnCreateFunction)
-						nsc.OnCreateFunction(nsc.Instance);
+					nsc.Instance->OnCreate();
 				}
 
-				if (nsc.OnUpdateFunction)
-					nsc.OnUpdateFunction(nsc.Instance, delta);
+				nsc.Instance->OnUpdate(delta);
 			});
 		}
 
@@ -54,8 +54,7 @@ namespace Sparky {
 
 			for (auto& entity : view)
 			{
-				auto& transformComponent = view.get<TransformComponent>(entity);
-				auto& cameraComponent = view.get<CameraComponent>(entity);
+				auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
 				if (cameraComponent.Primary)
 				{
@@ -74,7 +73,7 @@ namespace Sparky {
 
 			for (auto entity : view)
 			{
-				const auto& [transformComponent, spriteComponent] = view.get<TransformComponent, Sprite2DComponent>(entity);
+				auto [transformComponent, spriteComponent] = view.get<TransformComponent, Sprite2DComponent>(entity);
 
 				Renderer2D::DrawQuad(transformComponent, spriteComponent.SpriteColor);
 			}
