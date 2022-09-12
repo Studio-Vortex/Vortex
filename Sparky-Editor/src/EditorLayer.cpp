@@ -27,6 +27,9 @@ namespace Sparky {
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
 		m_CameraEntity.AddComponent<CameraComponent>();
 
+		auto redSquare = m_ActiveScene->CreateEntity("Red Square");
+		redSquare.AddComponent<SpriteComponent>(ColorToVec4(Color::LightRed));
+
 		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Camera");
 		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
 		cc.Primary = false;

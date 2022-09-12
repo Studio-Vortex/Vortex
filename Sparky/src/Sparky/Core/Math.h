@@ -26,6 +26,12 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Perspective(T verticalFOV, T aspectRatio, T zNear, T zFar)
+	{
+		return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
+	}
+
+	template <typename T>
 	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
 	{
 		return glm::ortho<T>(left, right, bottom, top, zNear, zFar);
