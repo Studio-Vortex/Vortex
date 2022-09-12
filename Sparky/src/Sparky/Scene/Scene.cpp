@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Sparky/Scene/Components.h"
+#include "Sparky/Scene/Entity.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Core/Math.h"
 
@@ -16,9 +17,13 @@ namespace Sparky {
 	{
 	}
 
-	entt::entity Scene::CreateEntity()
+	Entity Scene::CreateEntity(const std::string& name)
 	{
-		return m_Registry.create();
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<TransformComponent>();
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Tag = name.empty() ? "Entity" : name;
+		return entity;
 	}
 
 	void Scene::OnUpdate(TimeStep delta)
@@ -27,7 +32,7 @@ namespace Sparky {
 
 		for (auto entity : group)
 		{
-			const auto& [transform, sprite] = group.get<TransformComponent, Sprite2DComponent>(entity);
+			const auto& [transform, sprite] = m_Registry.get<TransformComponent, Sprite2DComponent>(entity);
 
 			Renderer2D::DrawQuad(transform, sprite.SpriteColor);
 		}

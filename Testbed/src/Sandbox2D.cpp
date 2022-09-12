@@ -41,8 +41,8 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 		Sparky::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(1.0f), m_SquareColor);
 		Sparky::Renderer2D::DrawQuad(Math::vec2(1.5f), Math::vec2(2.0f, 1.0f), Sparky::Color::Purple);
 		Sparky::Renderer2D::DrawRotatedQuad(m_RotatedQuadPos, Math::vec2(2.0f), Math::Deg2Rad(m_RotatedQuadRotation -= m_RotatedQuadRotationSpeed * delta), Sparky::Color::LightYellow);
-		Sparky::Renderer2D::DrawRotatedQuad({ -2.0f, 2.0f }, Math::vec2(2.0f), Math::Deg2Rad(45.0f), 1.0f, m_GridTexture);
-		Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, Math::vec2(20.0f), m_GridScale, m_GridTexture, m_GridColor);
+		Sparky::Renderer2D::DrawRotatedQuad({ -2.0f, 2.0f }, Math::vec2(2.0f), Math::Deg2Rad(45.0f), m_GridTexture, 1.0f);
+		Sparky::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, Math::vec2(20.0f), m_GridTexture, m_GridScale, m_GridColor);
 		
 		for (float y = -5.0f; y < 5.0f; y += 0.5f)
 		{

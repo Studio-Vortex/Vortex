@@ -36,7 +36,7 @@ namespace Sparky {
 
 		Math::vec4 m_SquareColor;
 
-		entt::entity m_Square;
+		Entity m_Square;
 
 		Math::vec4 m_GridColor;
 		float m_GridScale;

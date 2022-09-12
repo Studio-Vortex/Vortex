@@ -21,11 +21,8 @@ namespace Sparky {
 
 		m_ActiveScene = CreateShared<Scene>();
 
-		auto square = m_ActiveScene->CreateEntity();
-		m_ActiveScene->Fuck().emplace<TransformComponent>(square);
-		m_ActiveScene->Fuck().emplace<Sprite2DComponent>(square, m_SquareColor);
-
-		m_Square = square;
+		m_Square = m_ActiveScene->CreateEntity("Square");
+		m_Square.AddComponent<Sprite2DComponent>(ColorToVec4(Color::Orange));
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -120,8 +117,16 @@ namespace Sparky {
 		Gui::SliderFloat("Grid Scale", &m_GridScale, 1, 20, "%.2f");
 		Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");
 		Gui::SliderFloat("Quad Rotation Speed", &m_RotatedQuadRotationSpeed, -150.0f, 150.0f, "%.2f");
-		auto& color = m_ActiveScene->Fuck().get<Sprite2DComponent>(m_Square).SpriteColor;
-		Gui::ColorEdit4("Square Color", Math::ValuePtr(color));
+
+		if (m_Square.HasComponent<TransformComponent, Sprite2DComponent, TagComponent>())
+		{
+			Gui::Separator();
+			auto& tag = m_Square.GetComponent<TagComponent>().Tag;
+			Gui::Text("%s", tag.c_str());
+			auto& sprite = m_Square.GetComponent<Sprite2DComponent>();
+			Gui::ColorEdit4("Square Color", Math::ValuePtr(sprite.SpriteColor));
+			Gui::Separator();
+		}
 
 		auto stats = Renderer2D::GetStats();
 

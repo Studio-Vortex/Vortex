@@ -4,6 +4,16 @@
 
 namespace Sparky {
 
+	struct TagComponent
+	{
+		std::string Tag;
+
+		TagComponent() = default;
+		TagComponent(const TagComponent&) = default;
+		TagComponent(const std::string& tag)
+			: Tag(tag) { }
+	};
+
 	struct TransformComponent
 	{
 		Math::mat4 Transform{ 1.0f };
@@ -11,7 +21,7 @@ namespace Sparky {
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const Math::mat4& transform)
-			: Transform(transform) {}
+			: Transform(transform) { }
 
 		operator Math::mat4& () { return Transform; }
 		operator const Math::mat4& () const { return Transform; }
@@ -24,7 +34,7 @@ namespace Sparky {
 		Sprite2DComponent() = default;
 		Sprite2DComponent(const Sprite2DComponent&) = default;
 		Sprite2DComponent(const Math::vec4& color)
-			: SpriteColor(color) {}
+			: SpriteColor(color) { }
 	};
 
 }

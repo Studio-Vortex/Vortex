@@ -7,9 +7,6 @@
 #include "Sparky/Core/TimeStep.h"
 /// ---------------------------------------------------
 
-#include "Sparky/Scene/Scene.h"
-#include "Sparky/Scene/Components.h"
-
 /// Math
 #include "Sparky/Core/Math.h"
 namespace Math = Sparky::Math;
@@ -20,6 +17,12 @@ namespace Math = Sparky::Math;
 #include <imgui.h>
 // Re Exporting ImGui as Gui in Client
 namespace Gui = ImGui;
+/// ---------------------------------------------------
+
+/// Scene
+#include "Sparky/Scene/Scene.h"
+#include "Sparky/Scene/Entity.h"
+#include "Sparky/Scene/Components.h"
 /// ---------------------------------------------------
 
 /// Input & Events
