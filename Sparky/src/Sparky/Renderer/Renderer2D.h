@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sparky/Renderer/OrthographicCamera.h"
+#include "Sparky/Renderer/Camera.h"
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Renderer/SubTexture2D.h"
 #include "Sparky/Renderer/Color.h"
@@ -21,6 +22,7 @@ namespace Sparky
 		static void Init();
 		static void Shutdown();
 
+		static void BeginScene(const Camera& camera, const Math::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();

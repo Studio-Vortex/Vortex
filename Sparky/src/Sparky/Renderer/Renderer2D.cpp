@@ -118,6 +118,24 @@ namespace Sparky
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
+	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
+	{
+		SP_PROFILE_FUNCTION();
+
+		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
+
+		s_Data.TextureShader->Enable();
+		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProjection);
+
+		// Set the index count to 0 for the new batch
+		s_Data.QuadIndexCount = 0;
+		// Set the pointer to the beggining of the vertex buffer
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		// Reset the starting frame texture slot past the White Texture
+		s_Data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sparky/Core/Math.h"
+#include "Sparky/Renderer/Camera.h"
 
 namespace Sparky {
 
@@ -35,6 +36,17 @@ namespace Sparky {
 		Sprite2DComponent(const Sprite2DComponent&) = default;
 		Sprite2DComponent(const Math::vec4& color)
 			: SpriteColor(color) { }
+	};
+
+	struct CameraComponent
+	{
+		Sparky::Camera Camera;
+		bool Primary = true;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(const Math::mat4& projection)
+			: Camera(projection) { }
 	};
 
 }

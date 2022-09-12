@@ -28,13 +28,41 @@ namespace Sparky {
 
 	void Scene::OnUpdate(TimeStep delta)
 	{
-		auto group = m_Registry.group<TransformComponent>(entt::get<Sprite2DComponent>);
+		// Render 2D
+		Camera* mainCamera = nullptr;
+		Math::mat4* cameraTransform = nullptr;
 
-		for (auto entity : group)
 		{
-			const auto& [transform, sprite] = m_Registry.get<TransformComponent, Sprite2DComponent>(entity);
+			auto group = m_Registry.view<TransformComponent, CameraComponent>();
 
-			Renderer2D::DrawQuad(transform, sprite.SpriteColor);
+			for (auto& entity : group)
+			{
+				auto& transform = group.get<TransformComponent>(entity);
+				auto& camera = group.get<CameraComponent>(entity);
+
+				if (camera.Primary)
+				{
+					mainCamera = &camera.Camera;
+					cameraTransform = &transform.Transform;
+					break;
+				}
+			}
+		}
+
+		if (mainCamera)
+		{
+			Renderer2D::BeginScene(*mainCamera, *cameraTransform);
+
+			auto view = m_Registry.view<TransformComponent, Sprite2DComponent>();
+
+			for (auto entity : view)
+			{
+				const auto& [transform, sprite] = view.get<TransformComponent, Sprite2DComponent>(entity);
+
+				Renderer2D::DrawQuad(transform, sprite.SpriteColor);
+			}
+
+			Renderer2D::EndScene();
 		}
 	}
 

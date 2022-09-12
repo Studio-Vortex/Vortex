@@ -21,8 +21,15 @@ namespace Sparky {
 
 		m_ActiveScene = CreateShared<Scene>();
 
-		m_Square = m_ActiveScene->CreateEntity("Square");
-		m_Square.AddComponent<Sprite2DComponent>(ColorToVec4(Color::Orange));
+		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
+		m_SquareEntity.AddComponent<Sprite2DComponent>(ColorToVec4(Color::Purple));
+
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
+		m_CameraEntity.AddComponent<CameraComponent>(Math::Ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+
+		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Camera");
+		auto& cc = m_SecondCamera.AddComponent<CameraComponent>(Math::Ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+		cc.Primary = false;
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -32,9 +39,9 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		// Resize
-		if (Sparky::FramebufferProperties spec = m_Framebuffer->GetProperties();
+		if (FramebufferProperties props = m_Framebuffer->GetProperties();
 			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
-			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_CameraController.OnResize(m_ViewportSize);
@@ -53,12 +60,8 @@ namespace Sparky {
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		RenderCommand::Clear();
 
-		Renderer2D::BeginScene(m_CameraController.GetCamera());
-
 		// Update Scene
 		m_ActiveScene->OnUpdate(delta);
-
-		Renderer2D::EndScene();
 
 		m_Framebuffer->Unbind();
 	}
@@ -127,15 +130,23 @@ namespace Sparky {
 		Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");
 		Gui::SliderFloat("Quad Rotation Speed", &m_RotatedQuadRotationSpeed, -150.0f, 150.0f, "%.2f");
 
-		if (m_Square.HasComponent<TransformComponent, Sprite2DComponent, TagComponent>())
+		if (m_SquareEntity)
 		{
 			Gui::Separator();
-			auto& tag = m_Square.GetComponent<TagComponent>().Tag;
+			auto& tag = m_SquareEntity.GetComponent<TagComponent>().Tag;
 			Gui::Text("%s", tag.c_str());
-			auto& sprite = m_Square.GetComponent<Sprite2DComponent>();
+			auto& sprite = m_SquareEntity.GetComponent<Sprite2DComponent>();
 			Gui::ColorEdit4("Square Color", Math::ValuePtr(sprite.SpriteColor));
 			Gui::Separator();
 		}
+
+		if (Gui::Checkbox("Primary Camera", &m_PrimaryCamera))
+		{
+			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
+			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
+		}
+
+		Gui::DragFloat3("Camera Transform", Math::ValuePtr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
 
 		auto stats = Renderer2D::GetStats();
 

@@ -24,6 +24,11 @@ namespace Sparky {
 		SharedRef<Texture2D> m_GridTexture;
 
 		SharedRef<Scene> m_ActiveScene;
+		Entity m_SquareEntity;
+		Entity m_CameraEntity;
+		Entity m_SecondCamera;
+
+		bool m_PrimaryCamera = true;
 
 		Math::vec2 m_ViewportSize{};
 
@@ -35,8 +40,6 @@ namespace Sparky {
 		Math::vec3 m_RotatedQuadPos{ 3.0f, -3.0f, -0.1f };
 
 		Math::vec4 m_SquareColor;
-
-		Entity m_Square;
 
 		Math::vec4 m_GridColor;
 		float m_GridScale;
