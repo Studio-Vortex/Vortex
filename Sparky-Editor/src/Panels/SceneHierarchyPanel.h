@@ -18,6 +18,16 @@ namespace Sparky {
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 
+		template <typename TComponent>
+		void DrawComponent(const char* name, void (*callback)(Entity))
+		{
+			if (Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, name))
+			{
+				callback(m_SelectedEntity);
+				Gui::TreePop();
+			}
+		}
+
 	private:
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;

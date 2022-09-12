@@ -3,9 +3,7 @@
 namespace Sparky {
 
 	EditorLayer::EditorLayer() :
-		Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true),
-		m_SquareColor(ColorToVec4(Color::LightBlue)), m_GridColor(ColorToVec4(Color::White)),
-		m_GridScale(5) { }
+		Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true) { }
 
 	void EditorLayer::OnAttach()
 	{
@@ -17,28 +15,24 @@ namespace Sparky {
 
 		m_Framebuffer = Framebuffer::Create(properties);
 
-		m_GridTexture = Texture2D::Create("assets/textures/Checkerboard.png");
-
 		m_ActiveScene = CreateShared<Scene>();
 
-		m_SquareEntity = m_ActiveScene->CreateEntity("Square");
-		m_SquareEntity.AddComponent<SpriteComponent>(ColorToVec4(Color::Purple));
+		m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
+		m_SquareEntity.AddComponent<SpriteComponent>(ColorToVec4(Color::Green));
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
 		m_CameraEntity.AddComponent<CameraComponent>();
+
+		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
+		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
+		cc.Primary = false;
 
 		auto redSquare = m_ActiveScene->CreateEntity("Red Square");
 		redSquare.AddComponent<SpriteComponent>(ColorToVec4(Color::LightRed));
 
-		m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Space Camera");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
-
 		class CameraController : public ScriptableEntity
 		{
 		public:
-			void OnCreate() { }
-
 			void OnUpdate(TimeStep delta)
 			{
 				auto& transform = GetComponent<TransformComponent>().Transform;
@@ -53,8 +47,6 @@ namespace Sparky {
 				if (Input::IsKeyPressed(Key::D))
 					transform[3][0] += speed * delta;
 			}
-
-			void OnDestroy() { }
 		};
 
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
@@ -159,39 +151,9 @@ namespace Sparky {
 
 		m_SceneHierarchyPanel.OnGuiRender();
 
-		Gui::Begin("Settings", &show);
-		Gui::ColorEdit4("Grid Color", Math::ValuePtr(m_GridColor));
-		Gui::SliderFloat("Grid Scale", &m_GridScale, 1, 20, "%.2f");
-		Gui::SliderFloat3("Quad Position", Math::ValuePtr(m_RotatedQuadPos), -5.0f, 5.0f, "%.2f");
-		Gui::SliderFloat("Quad Rotation Speed", &m_RotatedQuadRotationSpeed, -150.0f, 150.0f, "%.2f");
-
-		if (m_SquareEntity)
-		{
-			Gui::Separator();
-			auto& tag = m_SquareEntity.GetComponent<TagComponent>().Tag;
-			Gui::Text("%s", tag.c_str());
-			auto& sprite = m_SquareEntity.GetComponent<SpriteComponent>();
-			Gui::ColorEdit4("Square Color", Math::ValuePtr(sprite.SpriteColor));
-			Gui::Separator();
-		}
-
-		if (Gui::Checkbox("Primary Camera", &m_PrimaryCamera))
-		{
-			m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
-			m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
-		}
-
-		{
-			auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
-			static float size = camera.GetOrthographicSize();
-			if (Gui::DragFloat("Second Camera Ortho Size", &size, 1.0f, 1.0f, 50.0f))
-				camera.SetOrthographicSize(size);
-		}
-
-		Gui::DragFloat3("Camera Transform", Math::ValuePtr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
-
 		auto stats = Renderer2D::GetStats();
 
+		Gui::Begin("Stats", &show);
 		Gui::Text("Renderer2D Stats:");
 		Gui::Text("Draw Calls: %i", stats.DrawCalls);
 		Gui::Text("Quads:      %i", stats.QuadCount);

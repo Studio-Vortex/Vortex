@@ -82,29 +82,27 @@ namespace Sparky {
 
 		if (m_SelectedEntity.HasComponent<TransformComponent>())
 		{
-			if (Gui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
+			DrawComponent<TransformComponent>("Transform", [](Entity e)
 			{
-				auto& transform = entity.GetComponent<TransformComponent>().Transform;
+				auto& transform = e.GetComponent<TransformComponent>().Transform;
 				Gui::DragFloat3("Position", Math::ValuePtr(transform[3]), 0.1f);
-				Gui::TreePop();
-			}
+			});
 		}
 
 		if (m_SelectedEntity.HasComponent<SpriteComponent>())
 		{
-			if (Gui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Sprite"))
+			DrawComponent<SpriteComponent>("Sprite", [](Entity e)
 			{
-				auto& spriteComponent = entity.GetComponent<SpriteComponent>();
-				Gui::DragFloat4("Color", Math::ValuePtr(spriteComponent.SpriteColor), 0.1f, 0.0f, 1.0f);
-				Gui::TreePop();
-			}
+				auto& spriteComponent = e.GetComponent<SpriteComponent>();
+				Gui::ColorEdit4("Color", Math::ValuePtr(spriteComponent.SpriteColor));
+			});
 		}
 
 		if (m_SelectedEntity.HasComponent<CameraComponent>())
 		{
-			if (Gui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Camera"))
+			DrawComponent<CameraComponent>("Camera", [](Entity e)
 			{
-				auto& cameraComponent = entity.GetComponent<CameraComponent>();
+				auto& cameraComponent = e.GetComponent<CameraComponent>();
 				auto& camera = cameraComponent.Camera;
 
 				Gui::Checkbox("Primary", &cameraComponent.Primary);
@@ -161,14 +159,15 @@ namespace Sparky {
 
 					Gui::Checkbox("Fixed Aspect Ratio", &cameraComponent.FixedAspectRatio);
 				}
-
-				Gui::TreePop();
-			}
+			});
 		}
 
 		if (m_SelectedEntity.HasComponent<NativeScriptComponent>())
 		{
+			DrawComponent<NativeScriptComponent>("Native Script", [](Entity e)
+			{
 
+			});
 		}
 	}
 
