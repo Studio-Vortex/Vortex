@@ -131,11 +131,16 @@ namespace Sparky {
 			Gui::PopStyleVar(2);
 
 		ImGuiIO& io = Gui::GetIO();
+		ImGuiStyle& style = Gui::GetStyle();
+		float minWinSize = style.WindowMinSize.x;
+		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = Gui::GetID("MyDockSpace");
 			Gui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+
+		style.WindowMinSize.x = minWinSize;
 
 		if (Gui::BeginMenuBar())
 		{

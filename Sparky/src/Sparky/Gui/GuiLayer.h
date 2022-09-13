@@ -23,6 +23,10 @@ namespace Sparky {
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
+		void SetDarkThemeColors();
+		void SetSpecialDarkThemeColors();
+		void SetLightGrayThemeColors();
+
 	private:
 		bool m_BlockEvents = true;
 		float m_Time = 0.0f;

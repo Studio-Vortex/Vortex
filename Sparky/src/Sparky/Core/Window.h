@@ -16,7 +16,7 @@ namespace Sparky {
 
 		WindowProps(
 			const std::string& title = "Sparky Engine",
-			const Math::vec2& size = Math::vec2(1280.0f, 720.0f)
+			const Math::vec2& size = Math::vec2(1600.0f, 900.0f)
 		) : Title(title), Size(size) {}
 	};
 

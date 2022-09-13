@@ -32,7 +32,8 @@ namespace Sparky {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		
-		ImGui::StyleColorsDark();
+		io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Regular.ttf", 18.0f);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -41,6 +42,8 @@ namespace Sparky {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+
+		SetSpecialDarkThemeColors();
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindowHandle());
@@ -97,6 +100,87 @@ namespace Sparky {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backupContext);
 		}
+	}
+
+	void GuiLayer::SetDarkThemeColors()
+	{
+		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_Text] = ImVec4(1, 1, 1, 1);
+		colors[ImGuiCol_WindowBg] = ImVec4(.1, .105, .11, .90);
+		colors[ImGuiCol_MenuBarBg] = ImVec4(.15, .15, .15, 1);
+
+		colors[ImGuiCol_Header] = ImVec4(.2, .205, .21, 1);
+		colors[ImGuiCol_HeaderHovered] = ImVec4(.3, .305, .31, 1);
+		colors[ImGuiCol_HeaderActive] = ImVec4(.15, .1505, .151, 1);
+
+		colors[ImGuiCol_Button] = ImVec4(.2, .205, .21, 1);
+		colors[ImGuiCol_ButtonHovered] = ImVec4(.3, .305, .31, 1);
+		colors[ImGuiCol_ButtonActive] = ImVec4(.15, .1505, .151, 1);
+
+		colors[ImGuiCol_FrameBg] = ImVec4(.2, .205, .21, 1);
+		colors[ImGuiCol_FrameBgHovered] = ImVec4(.3, .305, .31, 1);
+		colors[ImGuiCol_FrameBgActive] = ImVec4(.15, .1505, .151, 1);
+
+		colors[ImGuiCol_Tab] = ImVec4(.15, .1505, .151, 1);
+		colors[ImGuiCol_TabHovered] = ImVec4(.38, .3805, .381, 1);
+		colors[ImGuiCol_TabActive] = ImVec4(.28, .2805, .281, 1);
+		colors[ImGuiCol_TabUnfocused] = ImVec4(.15, .1505, .151, 1);
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.2, .205, .21, 1);
+
+		colors[ImGuiCol_PopupBg] = ImVec4(.15, .15, .15, 1);
+
+		colors[ImGuiCol_TitleBg] = ImVec4(.15, .1505, .151, 1);
+		colors[ImGuiCol_TitleBgActive] = ImVec4(.15, .1505, .151, 1);
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.15, .1505, .151, 1);
+	}
+
+	void GuiLayer::SetSpecialDarkThemeColors()
+	{
+		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
+
+		// Headers
+		colors[ImGuiCol_Header] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+		colors[ImGuiCol_HeaderHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+		colors[ImGuiCol_HeaderActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+		// Buttons
+		colors[ImGuiCol_Button] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+		colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+		colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+		// Frame BG
+		colors[ImGuiCol_FrameBg] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+		colors[ImGuiCol_FrameBgHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+		colors[ImGuiCol_FrameBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+		// Tabs
+		colors[ImGuiCol_Tab] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
+		colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+		colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+
+		// Title
+		colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+	}
+
+	void GuiLayer::SetLightGrayThemeColors()
+	{
+		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_Text] = ImVec4(1, 1, 1, 1);
+		colors[ImGuiCol_WindowBg] = ImVec4(.2, .2, .2, .95);
+		colors[ImGuiCol_PopupBg] = ImVec4(.15, .15, .15, 1);
+		colors[ImGuiCol_Button] = ImVec4(.2, .4, .75, .65);
+		colors[ImGuiCol_TitleBg] = ImVec4(.1, .1, .1, 1);
+		colors[ImGuiCol_TitleBgActive] = ImVec4(.15, .15, .15, 1);
+		colors[ImGuiCol_Tab] = ImVec4(.2, .4, .75, .5);
+		colors[ImGuiCol_TabActive] = ImVec4(.2, .4, .75, 1);
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.2, .4, .75, .65);
+		colors[ImGuiCol_FrameBg] = ImVec4(.5, .5, .5, .25);
+		colors[ImGuiCol_MenuBarBg] = ImVec4(.15, .15, .15, 1);
 	}
 
 }
