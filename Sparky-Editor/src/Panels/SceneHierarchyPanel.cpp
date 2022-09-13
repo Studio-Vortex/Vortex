@@ -12,6 +12,7 @@ namespace Sparky {
 	void SceneHierarchyPanel::SetContext(const SharedRef<Scene>& context)
 	{
 		m_ContextScene = context;
+		m_SelectedEntity = {};
 	}
 
 	void SceneHierarchyPanel::OnGuiRender()

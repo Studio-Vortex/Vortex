@@ -4,11 +4,11 @@ Entities:
     TagComponent:
       Tag: Red Square
     TransformComponent:
-      Translation: [0, -1.39999998, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [0.200000003, -4.9000001, 0]
+      Rotation: [0, 0, -1.57254159]
+      Scale: [0.800000012, 21.2000008, 1]
     SpriteComponent:
-      Color: [0.800000012, 0.200000003, 0.200000003, 1]
+      Color: [1, 0.372549027, 0.352941185, 1]
   - Entity: 1237483227498
     TagComponent:
       Tag: Camera
@@ -31,8 +31,8 @@ Entities:
     TagComponent:
       Tag: Player
     TransformComponent:
-      Translation: [-4.0999999, 1.70000005, 0]
-      Rotation: [0, 0, -0.801106155]
+      Translation: [3.5999999, 1.70000005, 0]
+      Rotation: [0, 0, -1.37182879]
       Scale: [2, 2, 1]
     SpriteComponent:
       Color: [0, 0.432432413, 1, 1]
@@ -45,3 +45,12 @@ Entities:
       Scale: [0.600000024, 6.19999981, 1]
     SpriteComponent:
       Color: [0.911196709, 0, 1, 1]
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [-6, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]

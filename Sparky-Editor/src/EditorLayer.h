@@ -20,6 +20,13 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
+		bool OnKeyPressedEvent(KeyPressedEvent& e);
+
+		void CreateNewScene();
+		void OpenExistingScene();
+		void SaveSceneAs();
+
+	private:
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;

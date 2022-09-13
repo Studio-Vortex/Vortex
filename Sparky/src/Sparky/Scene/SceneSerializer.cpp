@@ -223,9 +223,9 @@ namespace Sparky {
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 
-					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["OrthographicSize"].as<float>());
-					cc.Camera.SetPerspectiveNearClip(cameraProps["OrthographicNear"].as<float>());
-					cc.Camera.SetPerspectiveFarClip(cameraProps["OrthographicFar"].as<float>());
+					cc.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
+					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
+					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();

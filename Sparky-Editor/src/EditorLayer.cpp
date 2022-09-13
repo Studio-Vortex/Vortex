@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <Sparky/Scene/SceneSerializer.h>
+#include <Sparky/Utils/PlatformUtils.h>
 
 namespace Sparky {
 
@@ -153,17 +154,18 @@ namespace Sparky {
 		{
 			if (Gui::BeginMenu("File"))
 			{
-				SceneSerializer serializer(m_ActiveScene);
-				std::string filepath = "assets/scenes/Example.sparky";
+				if (Gui::MenuItem("New Scene", "Ctrl+N"))
+					CreateNewScene();
+				Gui::Separator();
 
-				if (Gui::MenuItem("Serialize"))
-				{
-					serializer.Serialize(filepath);
-				}
-				if (Gui::MenuItem("Deserialize"))
-				{
-					serializer.Deserialize(filepath);
-				}
+				if (Gui::MenuItem("Open Scene...", "Ctrl+O"))
+					OpenExistingScene();
+				Gui::Separator();
+
+				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
+					SaveSceneAs();
+				Gui::Separator();
+
 				if (Gui::MenuItem("Exit"))
 					Application::Get().Close();
 
@@ -206,21 +208,84 @@ namespace Sparky {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		if (e.GetEventType() == EventType::KeyPressed)
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
+	}
+
+	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
+	{
+		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (e.GetKeyCode())
 		{
-			static bool wireframe{};
-
-			auto& event = (KeyPressedEvent&)e;
-
-			if (event.GetKeyCode() == Key::Space)
+			case Key::Space:
 			{
+				static bool wireframe{};
 				wireframe = !wireframe;
 
 				if (wireframe)
 					RenderCommand::SetWireframe(true);
 				else
 					RenderCommand::SetWireframe(false);
+				break;
 			}
+
+			case Key::N:
+			{
+				if (controlPressed)
+					CreateNewScene();
+				break;
+			}
+		
+			case Key::O:
+			{
+				if (controlPressed)
+					OpenExistingScene();
+				break;
+			}
+
+			case Key::S:
+			{
+				if (controlPressed && shiftPressed)
+					SaveSceneAs();
+				break;
+			}
+		}
+
+		return true;
+	}
+
+	void EditorLayer::CreateNewScene()
+	{
+		m_ActiveScene = CreateShared<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OpenExistingScene()
+	{
+		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
+
+		if (!filepath.empty())
+		{
+			m_ActiveScene = CreateShared<Scene>();
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Deserialize(filepath);
+		}
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = FileSystem::SaveFile("Sparky Scene (*.sparky)\0*.sparky\0");
+
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(filepath);
 		}
 	}
 
