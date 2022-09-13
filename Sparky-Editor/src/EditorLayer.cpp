@@ -2,30 +2,32 @@
 
 namespace Sparky {
 
-	EditorLayer::EditorLayer() :
-		Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true) { }
+	EditorLayer::EditorLayer()
+		: Layer("EditorLayer") { }
 
 	void EditorLayer::OnAttach()
 	{
 		SP_PROFILE_FUNCTION();
 
 		FramebufferProperties properties;
-		properties.Width = 1280.0f;
-		properties.Height = 720.0f;
+		properties.Width = 1600;
+		properties.Height = 900;
 
 		m_Framebuffer = Framebuffer::Create(properties);
 
 		m_ActiveScene = CreateShared<Scene>();
 
+		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
+		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
+		cc.Primary = false;
+
 		m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
+		auto& squareTranslation = m_SquareEntity.GetComponent<TransformComponent>().Translation;
+		squareTranslation = { -2.0f, 2.0f, 0.0f };
 		m_SquareEntity.AddComponent<SpriteComponent>(ColorToVec4(Color::Green));
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
 		m_CameraEntity.AddComponent<CameraComponent>();
-
-		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
 
 		auto redSquare = m_ActiveScene->CreateEntity("Red Square");
 		redSquare.AddComponent<SpriteComponent>(ColorToVec4(Color::LightRed));
@@ -33,19 +35,22 @@ namespace Sparky {
 		class CameraController : public ScriptableEntity
 		{
 		public:
-			void OnUpdate(TimeStep delta)
+			void OnUpdate(TimeStep delta) override
 			{
 				auto& translation = GetComponent<TransformComponent>().Translation;
 				float speed = 5.0f;
 
-				if (Input::IsKeyPressed(Key::W))
-					translation.y += speed * delta;
-				if (Input::IsKeyPressed(Key::A))
-					translation.x -= speed * delta;
-				if (Input::IsKeyPressed(Key::S))
-					translation.y -= speed * delta;
-				if (Input::IsKeyPressed(Key::D))
-					translation.x += speed * delta;
+				if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+				{
+					if (Input::IsKeyPressed(Key::W))
+						translation.y += speed * delta;
+					if (Input::IsKeyPressed(Key::A))
+						translation.x -= speed * delta;
+					if (Input::IsKeyPressed(Key::S))
+						translation.y -= speed * delta;
+					if (Input::IsKeyPressed(Key::D))
+						translation.x += speed * delta;
+				}
 			}
 		};
 
@@ -67,14 +72,11 @@ namespace Sparky {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_CameraController.OnResize(m_ViewportSize);
 
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		// Update
-		if (m_ViewportFocused)
-			m_CameraController.OnUpdate(delta);
 
 		if (Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Application::Get().Close();
@@ -114,9 +116,7 @@ namespace Sparky {
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 		else
-		{
 			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-		}
 
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
 			window_flags |= ImGuiWindowFlags_NoBackground;
@@ -132,15 +132,18 @@ namespace Sparky {
 
 		ImGuiIO& io = Gui::GetIO();
 		ImGuiStyle& style = Gui::GetStyle();
-		float minWinSize = style.WindowMinSize.x;
+		float minWinSizeX = style.WindowMinSize.x;
+		float minWinSizeY = style.WindowMinSize.y;
 		style.WindowMinSize.x = 370.0f;
+		style.WindowMinSize.y = 325.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = Gui::GetID("MyDockSpace");
 			Gui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		style.WindowMinSize.x = minWinSize;
+		style.WindowMinSize.x = minWinSizeX;
+		style.WindowMinSize.y = minWinSizeY;
 
 		if (Gui::BeginMenuBar())
 		{
@@ -187,8 +190,6 @@ namespace Sparky {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_CameraController.OnEvent(e);
-
 		if (e.GetEventType() == EventType::KeyPressed)
 		{
 			static bool wireframe{};

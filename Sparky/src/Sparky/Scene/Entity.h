@@ -12,7 +12,7 @@ namespace Sparky {
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity&) = default;
-		
+
 		template <typename TComponent, typename... Args>
 		inline TComponent& AddComponent(Args&&... args)
 		{

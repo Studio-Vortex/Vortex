@@ -17,6 +17,7 @@ namespace Sparky {
 	void SceneHierarchyPanel::OnGuiRender()
 	{
 		Gui::Begin("Scene Hierarchy");
+
 		m_ContextScene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity{ entityID, m_ContextScene.get() };
@@ -30,7 +31,17 @@ namespace Sparky {
 		if (Gui::BeginPopupContextWindow(0, 1, false))
 		{
 			if (Gui::MenuItem("Add Empty Entity"))
-				m_ContextScene->CreateEntity("Empty Entity");
+				m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
+
+			if (Gui::BeginMenu("Add 2D Entity"))
+			{
+				if (Gui::MenuItem("Add Quad"))
+				{
+					m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
+					m_SelectedEntity.AddComponent<SpriteComponent>();
+				}
+				Gui::EndMenu();
+			}
 
 			Gui::EndPopup();
 		}
@@ -38,6 +49,7 @@ namespace Sparky {
 		Gui::End();
 
 		Gui::Begin("Inspector");
+
 		if (m_SelectedEntity)
 		{
 			DrawComponents(m_SelectedEntity);
@@ -71,7 +83,7 @@ namespace Sparky {
 		if (opened)
 		{
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = Gui::TreeNodeEx((void*)8373456, flags, tag.c_str());
+			bool opened = Gui::TreeNodeEx((void*)9817239, flags, tag.c_str());
 			if (opened)
 				Gui::TreePop();
 			Gui::TreePop();
@@ -88,66 +100,70 @@ namespace Sparky {
 
 	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
-		ImGuiIO& io = Gui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
-		Gui::PushID(label.c_str());
-		Gui::Columns(2);
-		Gui::SetColumnWidth(0, columnWidth);
-		Gui::Text(label.c_str());
-		Gui::NextColumn();
+		ImGui::PushID(label.c_str());
 
-		Gui::PushMultiItemsWidths(3, Gui::CalcItemWidth());
-		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3, lineHeight };
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("X", buttonSize))
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
 			values.x = resetValue;
-		Gui::PopFont();
-		Gui::SameLine();
-		Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
-		Gui::PopItemWidth();
-		Gui::SameLine();
-		Gui::PopStyleColor(3);
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
 
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("Y", buttonSize))
+		ImGui::SameLine();
+		ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
 			values.y = resetValue;
-		Gui::PopFont();
-		Gui::SameLine();
-		Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
-		Gui::PopItemWidth();
-		Gui::SameLine();
-		Gui::PopStyleColor(3);
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
 
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("Z", buttonSize))
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Z", buttonSize))
 			values.z = resetValue;
-		Gui::PopFont();
-		Gui::SameLine();
-		Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
-		Gui::PopItemWidth();
-		Gui::PopStyleColor(3);
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
 
-		Gui::PopStyleVar();
-		Gui::Columns(1);
-		Gui::PopID();
+		ImGui::SameLine();
+		ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
 	}
 
 	template <typename TComponent, typename UIFunction>
-	void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback)
+	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback)
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
@@ -161,9 +177,8 @@ namespace Sparky {
 			ImGui::Separator();
 			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
 			Gui::PopStyleVar();
-
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (Gui::Button("...", ImVec2{ lineHeight, lineHeight }))
+			if (Gui::Button("+", ImVec2{ lineHeight, lineHeight }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
@@ -207,23 +222,9 @@ namespace Sparky {
 
 		if (Gui::BeginPopup("AddComponent"))
 		{
-			if (!m_SelectedEntity.HasComponent<CameraComponent>())
-			{
-				if (Gui::MenuItem("Camera"))
-				{
-					m_SelectedEntity.AddComponent<CameraComponent>();
-					Gui::CloseCurrentPopup();
-				}
-			}
-
-			if (!m_SelectedEntity.HasComponent<SpriteComponent>())
-			{
-				if (Gui::MenuItem("Sprite"))
-				{
-					m_SelectedEntity.AddComponent<SpriteComponent>();
-					Gui::CloseCurrentPopup();
-				}
-			}
+			DisplayAddComponentPopup<TransformComponent>("Transform");
+			DisplayAddComponentPopup<SpriteComponent>("Sprite");
+			DisplayAddComponentPopup<CameraComponent>("Camera");
 
 			if (Gui::MenuItem("Native Script"))
 			{
@@ -247,7 +248,13 @@ namespace Sparky {
 
 		DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
 		{
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
+			Gui::Columns(2);
+			Gui::SetColumnWidth(0, 100.0f);
+			Gui::Text("Color");
+			Gui::NextColumn();
+			Gui::ColorEdit4("##Color", Math::ValuePtr(component.SpriteColor));
+			Gui::SameLine();
+			Gui::Columns(1);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

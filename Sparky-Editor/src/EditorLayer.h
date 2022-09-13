@@ -20,8 +20,6 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
-		OrthographicCameraController m_CameraController;
-
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;

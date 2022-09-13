@@ -73,11 +73,11 @@ namespace Sparky {
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+			auto group = m_Registry.group<TransformComponent, SpriteComponent>();
 
-			for (auto entity : view)
+			for (auto entity : group)
 			{
-				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+				auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
 
 				Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.SpriteColor);
 			}
@@ -91,9 +91,9 @@ namespace Sparky {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
+		// Resize non-FixedAspectRatio cameras
 		auto view = m_Registry.view<CameraComponent>();
 
-		// Resize non-FixedAspectRatio cameras
 		for (auto& entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);

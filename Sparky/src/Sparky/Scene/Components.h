@@ -61,8 +61,8 @@ namespace Sparky {
 	{
 		ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity* (*InstantiateScript)();
-		void (* DestroyInstanceScript)(NativeScriptComponent*);
+		ScriptableEntity* (*InstantiateScript)() = nullptr;
+		void (* DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
 
 		template <typename T>
 		void Bind()

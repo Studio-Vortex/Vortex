@@ -15,6 +15,19 @@ namespace Sparky {
 		void OnGuiRender();
 
 	private:
+		template <typename TComponent>
+		void DisplayAddComponentPopup(const std::string& name)
+		{
+			if (!m_SelectedEntity.HasComponent<TComponent>())
+			{
+				if (Gui::MenuItem(name.c_str()))
+				{
+					m_SelectedEntity.AddComponent<TComponent>();
+					Gui::CloseCurrentPopup();
+				}
+			}
+		}
+
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 

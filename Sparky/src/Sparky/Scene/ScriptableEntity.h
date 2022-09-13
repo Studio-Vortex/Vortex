@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sparky/Scene/Entity.h"
+#include "Sparky/Events/MouseEvent.h"
 
 #include <entt/entt.hpp>
 
