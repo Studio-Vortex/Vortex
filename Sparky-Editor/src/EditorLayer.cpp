@@ -35,17 +35,17 @@ namespace Sparky {
 		public:
 			void OnUpdate(TimeStep delta)
 			{
-				auto& transform = GetComponent<TransformComponent>().Transform;
+				auto& translation = GetComponent<TransformComponent>().Translation;
 				float speed = 5.0f;
 
 				if (Input::IsKeyPressed(Key::W))
-					transform[3][1] += speed * delta;
+					translation.y += speed * delta;
 				if (Input::IsKeyPressed(Key::A))
-					transform[3][0] -= speed * delta;
+					translation.x -= speed * delta;
 				if (Input::IsKeyPressed(Key::S))
-					transform[3][1] -= speed * delta;
+					translation.y -= speed * delta;
 				if (Input::IsKeyPressed(Key::D))
-					transform[3][0] += speed * delta;
+					translation.x += speed * delta;
 			}
 		};
 
@@ -190,7 +190,7 @@ namespace Sparky {
 
 			auto& event = (KeyPressedEvent&)e;
 
-			if (event.GetKeyCode() == SP_KEY_SPACE)
+			if (event.GetKeyCode() == Key::Space)
 			{
 				wireframe = !wireframe;
 

@@ -18,15 +18,23 @@ namespace Sparky {
 
 	struct TransformComponent
 	{
-		Math::mat4 Transform{ 1.0f };
+		Math::vec3 Translation = Math::vec3(0.0f);
+		Math::vec3 Rotation = Math::vec3(0.0f);
+		Math::vec3 Scale = Math::vec3(1.0f);
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const Math::mat4& transform)
-			: Transform(transform) { }
+		TransformComponent(const Math::vec3& translation)
+			: Translation(translation) { }
 
-		operator Math::mat4& () { return Transform; }
-		operator const Math::mat4& () const { return Transform; }
+		Math::mat4 GetTransform() const
+		{
+			Math::mat4 rotation = Math::Rotate(Rotation.x, { 1.0f, 0.0f, 0.0f })
+				* Math::Rotate(Rotation.y, { 0.0f, 1.0f, 0.0f })
+				* Math::Rotate(Rotation.z, { 0.0f, 0.0f, 1.0f });
+
+			return Math::Translate(Translation) * rotation * Math::Scale(Scale);
+		}
 	};
 
 	struct SpriteComponent

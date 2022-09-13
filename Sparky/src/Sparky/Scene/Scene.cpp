@@ -47,7 +47,7 @@ namespace Sparky {
 
 		// Render 2D
 		Camera* mainCamera = nullptr;
-		Math::mat4* cameraTransform = nullptr;
+		Math::mat4 cameraTransform;
 
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
@@ -59,7 +59,7 @@ namespace Sparky {
 				if (cameraComponent.Primary)
 				{
 					mainCamera = &cameraComponent.Camera;
-					cameraTransform = &transformComponent.Transform;
+					cameraTransform = transformComponent.GetTransform();
 					break;
 				}
 			}
@@ -67,7 +67,7 @@ namespace Sparky {
 
 		if (mainCamera)
 		{
-			Renderer2D::BeginScene(*mainCamera, *cameraTransform);
+			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
 
@@ -75,7 +75,7 @@ namespace Sparky {
 			{
 				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteComponent>(entity);
 
-				Renderer2D::DrawQuad(transformComponent, spriteComponent.SpriteColor);
+				Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.SpriteColor);
 			}
 
 			Renderer2D::EndScene();

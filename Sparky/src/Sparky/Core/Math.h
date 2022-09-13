@@ -15,12 +15,14 @@ namespace Sparky::Math {
 	typedef glm::mat3 mat3;
 	typedef glm::mat4 mat4;
 
-	static auto Deg2Rad(float degrees)
+	template <typename T>
+	static auto Deg2Rad(T degrees)
 	{
 		return glm::radians(degrees);
 	}
 
-	static auto Rad2Deg(float radians)
+	template <typename T>
+	static auto Rad2Deg(T radians)
 	{
 		return glm::degrees(radians);
 	}

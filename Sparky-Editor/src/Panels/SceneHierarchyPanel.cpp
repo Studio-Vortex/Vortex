@@ -1,5 +1,7 @@
 #include "SceneHierarchyPanel.h"
 
+#include <imgui_internal.h>
+
 namespace Sparky {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
@@ -62,6 +64,57 @@ namespace Sparky {
 		}
 	}
 
+	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
+	{
+		Gui::PushID(label.c_str());
+		Gui::Columns(2);
+		Gui::SetColumnWidth(0, columnWidth);
+		Gui::Text(label.c_str());
+		Gui::NextColumn();
+
+		Gui::PushMultiItemsWidths(3, Gui::CalcItemWidth());
+		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3, lineHeight };
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		if (Gui::Button("X", buttonSize))
+			values.x = resetValue;
+		Gui::SameLine();
+		Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
+		Gui::SameLine();
+		Gui::PopStyleColor(3);
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		if (Gui::Button("Y", buttonSize))
+			values.y = resetValue;
+		Gui::SameLine();
+		Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
+		Gui::SameLine();
+		Gui::PopStyleColor(3);
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+		if (Gui::Button("Z", buttonSize))
+			values.z = resetValue;
+		Gui::SameLine();
+		Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
+		Gui::PopStyleColor(3);
+
+		Gui::PopStyleVar();
+		Gui::Columns(1);
+		Gui::PopID();
+	}
+
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
 		if (m_SelectedEntity.HasComponent<TagComponent>())
@@ -84,8 +137,12 @@ namespace Sparky {
 		{
 			DrawComponent<TransformComponent>("Transform", [](Entity e)
 			{
-				auto& transform = e.GetComponent<TransformComponent>().Transform;
-				Gui::DragFloat3("Position", Math::ValuePtr(transform[3]), 0.1f);
+				auto& transformComponent = e.GetComponent<TransformComponent>();
+				DrawVec3Controls("Translation", transformComponent.Translation);
+				Math::vec3 rotation = Math::Rad2Deg(transformComponent.Rotation);
+				DrawVec3Controls("Rotation", rotation);
+				transformComponent.Rotation = Math::Deg2Rad(rotation);
+				DrawVec3Controls("Scale", transformComponent.Scale, 1.0f);
 			});
 		}
 
