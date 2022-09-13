@@ -17,27 +17,55 @@ namespace Sparky {
 	void SceneHierarchyPanel::OnGuiRender()
 	{
 		Gui::Begin("Scene Hierarchy");
-
 		m_ContextScene->m_Registry.each([&](auto entityID)
 		{
-			bool entityIsValid = m_ContextScene->m_Registry.valid(entityID);
-
-			if (entityIsValid)
-			{
-				Entity entity{ entityID, m_ContextScene.get() };
-				DrawEntityNode(entity);
-			}
+			Entity entity{ entityID, m_ContextScene.get() };
+			DrawEntityNode(entity);
 		});
 
 		if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 			m_SelectedEntity = {};
 
+		// Right-click on blank space
+		if (Gui::BeginPopupContextWindow(0, 1, false))
+		{
+			if (Gui::MenuItem("Add Empty Entity"))
+				m_ContextScene->CreateEntity("Empty Entity");
+
+			Gui::EndPopup();
+		}
+
 		Gui::End();
 
 		Gui::Begin("Inspector");
-
 		if (m_SelectedEntity)
+		{
 			DrawComponents(m_SelectedEntity);
+
+			if (Gui::Button("Add Component"))
+				Gui::OpenPopup("AddComponent");
+
+			if (Gui::BeginPopup("AddComponent"))
+			{
+				if (Gui::MenuItem("Camera"))
+				{
+					m_SelectedEntity.AddComponent<CameraComponent>();
+					Gui::CloseCurrentPopup();
+				}
+				if (Gui::MenuItem("Sprite"))
+				{
+					m_SelectedEntity.AddComponent<SpriteComponent>();
+					Gui::CloseCurrentPopup();
+				}
+				if (Gui::MenuItem("Native Script"))
+				{
+					m_SelectedEntity.AddComponent<NativeScriptComponent>();
+					Gui::CloseCurrentPopup();
+				}
+
+				Gui::EndPopup();
+			}
+		}
 
 		Gui::End();
 	}
@@ -52,15 +80,31 @@ namespace Sparky {
 		if (Gui::IsItemClicked())
 			m_SelectedEntity = entity;
 
+		bool entityShouldBeDeleted = false;
+
+		if (Gui::BeginPopupContextItem())
+		{
+			if (Gui::MenuItem("Delete Entity"))
+				entityShouldBeDeleted = true;
+
+			Gui::EndPopup();
+		}
+
 		if (opened)
 		{
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
 			bool opened = Gui::TreeNodeEx((void*)8373456, flags, tag.c_str());
-
 			if (opened)
 				Gui::TreePop();
-
 			Gui::TreePop();
+		}
+
+		if (entityShouldBeDeleted)
+		{
+			m_ContextScene->DestroyEntity(entity);
+
+			if (m_SelectedEntity == entity)
+				m_SelectedEntity = {};
 		}
 	}
 
@@ -135,7 +179,7 @@ namespace Sparky {
 
 		if (m_SelectedEntity.HasComponent<TransformComponent>())
 		{
-			DrawComponent<TransformComponent>("Transform", [](Entity e)
+			DrawComponent<TransformComponent>("Transform", false, [](auto& e)
 			{
 				auto& transformComponent = e.GetComponent<TransformComponent>();
 				DrawVec3Controls("Translation", transformComponent.Translation);
@@ -148,7 +192,7 @@ namespace Sparky {
 
 		if (m_SelectedEntity.HasComponent<SpriteComponent>())
 		{
-			DrawComponent<SpriteComponent>("Sprite", [](Entity e)
+			DrawComponent<SpriteComponent>("Sprite", true, [](auto& e)
 			{
 				auto& spriteComponent = e.GetComponent<SpriteComponent>();
 				Gui::ColorEdit4("Color", Math::ValuePtr(spriteComponent.SpriteColor));
@@ -157,7 +201,7 @@ namespace Sparky {
 
 		if (m_SelectedEntity.HasComponent<CameraComponent>())
 		{
-			DrawComponent<CameraComponent>("Camera", [](Entity e)
+			DrawComponent<CameraComponent>("Camera", true, [](auto& e)
 			{
 				auto& cameraComponent = e.GetComponent<CameraComponent>();
 				auto& camera = cameraComponent.Camera;
@@ -221,7 +265,7 @@ namespace Sparky {
 
 		if (m_SelectedEntity.HasComponent<NativeScriptComponent>())
 		{
-			DrawComponent<NativeScriptComponent>("Native Script", [](Entity e)
+			DrawComponent<NativeScriptComponent>("Native Script", true, [](auto& e)
 			{
 
 			});

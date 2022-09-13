@@ -17,8 +17,9 @@ namespace Sparky {
 		inline TComponent& AddComponent(Args&&... args)
 		{
 			SP_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already has this Component!");
-
-			return m_Scene->m_Registry.emplace<TComponent>(m_EntityID, std::forward<Args>(args)...);
+			TComponent& component = m_Scene->m_Registry.emplace<TComponent>(m_EntityID, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
 		}
 
 		template <typename... TComponents>
@@ -53,8 +54,9 @@ namespace Sparky {
 			return !(*this == other);
 		}
 
-		inline operator bool () const { return m_EntityID != entt::null; }
-		inline operator uint32_t () const{ return (uint32_t)m_EntityID; }
+		inline operator bool() const { return m_EntityID != entt::null; }
+		inline operator uint32_t() const { return (uint32_t)m_EntityID; }
+		inline operator entt::entity() const { return m_EntityID; }
 
 	private:
 		entt::entity m_EntityID = entt::null;
