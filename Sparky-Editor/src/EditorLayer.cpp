@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
 
+#include <Sparky/Scene/SceneSerializer.h>
+
 namespace Sparky {
 
 	EditorLayer::EditorLayer()
@@ -17,6 +19,7 @@ namespace Sparky {
 
 		m_ActiveScene = CreateShared<Scene>();
 
+#if 0
 		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
 		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
 		cc.Primary = false;
@@ -57,6 +60,7 @@ namespace Sparky {
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
+#endif
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
@@ -149,8 +153,20 @@ namespace Sparky {
 		{
 			if (Gui::BeginMenu("File"))
 			{
+				SceneSerializer serializer(m_ActiveScene);
+				std::string filepath = "assets/scenes/Example.sparky";
+
+				if (Gui::MenuItem("Serialize"))
+				{
+					serializer.Serialize(filepath);
+				}
+				if (Gui::MenuItem("Deserialize"))
+				{
+					serializer.Deserialize(filepath);
+				}
 				if (Gui::MenuItem("Exit"))
 					Application::Get().Close();
+
 				Gui::EndMenu();
 			}
 

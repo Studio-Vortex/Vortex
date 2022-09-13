@@ -1,0 +1,47 @@
+Scene: Untitled
+Entities:
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Red Square
+    TransformComponent:
+      Translation: [0, -1.39999998, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.800000012, 0.200000003, 0.200000003, 1]
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 1
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-4.0999999, 1.70000005, 0]
+      Rotation: [0, 0, -0.801106155]
+      Scale: [2, 2, 1]
+    SpriteComponent:
+      Color: [0, 0.432432413, 1, 1]
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Purple Square
+    TransformComponent:
+      Translation: [6.69999981, -3.70000005, 0]
+      Rotation: [0, 0, -0.75049156]
+      Scale: [0.600000024, 6.19999981, 1]
+    SpriteComponent:
+      Color: [0.911196709, 0, 1, 1]

@@ -9,6 +9,11 @@ workspace "Sparky"
 		"Dist"
 	}
 
+	flags
+	{
+		"MultiProcessorCompile",
+	}
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
@@ -19,11 +24,13 @@ IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["entt"] = "Sparky/vendor/entt/include"
+IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
 
 group "Vendor"
 	include "Sparky/vendor/GLFW"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
+	include "Sparky/vendor/yaml-cpp"
 group ""
 
 project "Sparky"
@@ -64,6 +71,7 @@ project "Sparky"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.yaml_cpp}",
 	}
 
 	links
@@ -72,6 +80,7 @@ project "Sparky"
 		"Glad",
 		"ImGui",
 		"opengl32.lib",
+		"yaml-cpp",
 	}
 
 	filter "system:windows"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene.h"
+#include "Sparky/Scene/Scene.h"
 
 #include <entt/entt.hpp>
 

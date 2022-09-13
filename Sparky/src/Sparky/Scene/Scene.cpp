@@ -56,7 +56,7 @@ namespace Sparky {
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
 
-			for (auto& entity : view)
+			for (auto entity : view)
 			{
 				auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
