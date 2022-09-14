@@ -15,6 +15,9 @@ namespace Sparky
 		Math::vec2 TexCoord;
 		float TexIndex;
 		float TexScale;
+
+		// Editor-only
+		int EntityID;
 	};
 
 	struct Renderer2DData
@@ -56,6 +59,7 @@ namespace Sparky
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Float,  "a_TexScale" },
+			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 
 		s_Data.QuadVA->AddVertexBuffer(s_Data.QuadVB);
@@ -204,7 +208,7 @@ namespace Sparky
 		s_Data.Stats.DrawCalls++;
 	}
 
-	void Renderer2D::AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale)
+	void Renderer2D::AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
 	{
 		for (uint32_t i = 0; i < 4; i++)
 		{
@@ -213,6 +217,7 @@ namespace Sparky
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -228,7 +233,7 @@ namespace Sparky
 		DrawQuad(transform, { color.r, color.g, color.b, 1.0f });
     }
 
-    void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec4& color)
+    void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec4& color, int entityID)
     {
 		SP_PROFILE_FUNCTION();
 
@@ -240,7 +245,7 @@ namespace Sparky
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
-		AddToVertexBuffer(transform, color, textureCoords, textureIndex, textureScale);
+		AddToVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
     }
 
 	void Renderer2D::DrawQuad(const Math::mat4& transform, Color color)
@@ -253,7 +258,7 @@ namespace Sparky
 		DrawQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -580,6 +585,11 @@ namespace Sparky
 	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, ColorToVec4(tintColor));
+	}
+
+	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID)
+	{
+		DrawQuad(transform, sprite.SpriteColor, entityID);
 	}
 
 	void Renderer2D::ResetStats()

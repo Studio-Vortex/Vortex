@@ -115,7 +115,7 @@ namespace Sparky {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			SP_CORE_WARN("Pixel Data = {}", pixelData);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
 
 		m_Framebuffer->Unbind();
@@ -203,6 +203,13 @@ namespace Sparky {
 		auto stats = Renderer2D::GetStats();
 
 		Gui::Begin("Stats", &show);
+		
+		const char* name = "None";
+		if (m_HoveredEntity)
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
+
+		Gui::Text("Hovered Entity: %s", name);
+
 		Gui::Text("Renderer2D Stats:");
 		Gui::Text("Draw Calls: %i", stats.DrawCalls);
 		Gui::Text("Quads:      %i", stats.QuadCount);
@@ -213,7 +220,11 @@ namespace Sparky {
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene");
-		auto viewportOffset = Gui::GetCursorPos(); // Includes the tab bar
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 		
 		m_ViewportFocused = Gui::IsWindowFocused();
 		m_ViewportHovered = Gui::IsWindowHovered();
@@ -225,25 +236,14 @@ namespace Sparky {
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		auto windowSize = Gui::GetWindowSize();
-		ImVec2 minBound = Gui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			
-			float windowWidth = Gui::GetWindowWidth();
-			float windowHeight = Gui::GetWindowHeight();
-			ImGuizmo::SetRect(Gui::GetWindowPos().x, Gui::GetWindowPos().y, windowWidth, windowHeight);
+
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 			// Camera
 			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
@@ -261,16 +261,17 @@ namespace Sparky {
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f;
-			// Snap to 45 degrees for rotation only
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
+			// Snap to 45 degrees for rotation only, otherwise snap by half one unit
+			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? 45.0f : 0.5f;
 
-			float snapValues[3] = { snapValue };
+			std::array<float, 3> snapValues{};
+			snapValues.fill(snapValue);
 
-			ImGuizmo::Manipulate(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
+			ImGuizmo::Manipulate(
+				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(transform),
-				nullptr, snap ? snapValues : nullptr);
+				nullptr, snap ? snapValues.data() : nullptr
+			);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -295,6 +296,7 @@ namespace Sparky {
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
@@ -337,10 +339,41 @@ namespace Sparky {
 				break;
 			}
 
-			case Key::Q: m_GizmoType = -1; break;
-			case Key::W: m_GizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
-			case Key::E: m_GizmoType = ImGuizmo::OPERATION::ROTATE;    break;
-			case Key::R: m_GizmoType = ImGuizmo::OPERATION::SCALE;     break;
+			case Key::Q:
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = -1;
+					break;
+				}
+			case Key::W:
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+					break;
+				}
+			case Key::E:
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+					break;
+				}
+			case Key::R:
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::SCALE;
+					break;
+				}
+		}
+
+		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
+	{
+		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		{
+			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 		}
 
 		return false;

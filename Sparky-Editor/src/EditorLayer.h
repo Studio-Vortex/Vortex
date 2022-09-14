@@ -21,6 +21,7 @@ namespace Sparky {
 
 	private:
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
+		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 
 		void CreateNewScene();
 		void OpenExistingScene();
@@ -31,6 +32,7 @@ namespace Sparky {
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;
+		Entity m_HoveredEntity;
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;
 		Entity m_SecondCamera;

@@ -79,7 +79,7 @@ namespace Sparky {
 			{
 				auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
 
-				Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.SpriteColor);
+				Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
 			}
 
 			Renderer2D::EndScene();
@@ -96,7 +96,7 @@ namespace Sparky {
 		{
 			auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
 
-			Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.SpriteColor);
+			Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
 		}
 
 		Renderer2D::EndScene();

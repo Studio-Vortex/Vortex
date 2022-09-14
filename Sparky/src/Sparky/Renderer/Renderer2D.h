@@ -8,6 +8,8 @@
 #include "Sparky/Renderer/Color.h"
 #include "Sparky/Core/Math.h"
 
+#include "Sparky/Scene/Components.h"
+
 namespace Sparky
 {
 	#ifdef SP_DEBUG
@@ -32,11 +34,11 @@ namespace Sparky
 		// Primitives
 
 		static void DrawQuad(const Math::mat4& transform, const Math::vec3& color);
-		static void DrawQuad(const Math::mat4& transform, const Math::vec4& color);
+		static void DrawQuad(const Math::mat4& transform, const Math::vec4& color, int entityID = -1);
 		static void DrawQuad(const Math::mat4& transform, Color color = Color::White);
 
 		static void DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor);
-		static void DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor);
+		static void DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor, int entityID = -1);
 		static void DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor = Color::White);
 
 		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const Math::vec3& color);
@@ -90,6 +92,8 @@ namespace Sparky
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 
+		static void DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID);
+
 		struct Statistics
 		{
 			uint32_t DrawCalls;
@@ -107,7 +111,7 @@ namespace Sparky
 		static void StartBatch();
 		static void FlushAndReset();
 		static void CopyDataToBuffer();
-		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale);
+		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID = -1);
 	};
 
 }

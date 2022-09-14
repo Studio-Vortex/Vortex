@@ -8,11 +8,13 @@ layout (location = 1) in vec4 a_Color;
 layout (location = 2) in vec2 a_TexCoord;
 layout (location = 3) in float a_TexIndex;
 layout (location = 4) in float a_TexScale;
+layout (location = 5) in int a_EntityID;
 
-out vec4 f_Color;
-out vec2 f_TexCoord;
+out vec4       f_Color;
+out vec2       f_TexCoord;
 out flat float f_TexIndex;
-out float f_TexScale;
+out float      f_TexScale;
+out flat int   f_EntityID;
 
 uniform mat4 u_ViewProjection;
 
@@ -22,6 +24,7 @@ void main()
 	f_TexCoord = a_TexCoord;
 	f_TexIndex = a_TexIndex;
 	f_TexScale = a_TexScale;
+	f_EntityID = a_EntityID;
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 }
 
@@ -29,13 +32,14 @@ void main()
 #type fragment
 #version 460 core
 
-layout (location = 0) out vec4 gl_Color;
+layout (location = 0) out vec4 colorAttachment;
 layout (location = 1) out int entityIDAttachment;
 
-in vec4 f_Color;
-in vec2 f_TexCoord;
+in vec4       f_Color;
+in vec2       f_TexCoord;
 in flat float f_TexIndex;
-in float f_TexScale;
+in float      f_TexScale;
+in flat int   f_EntityID;
 
 uniform sampler2D u_Textures[32];
 
@@ -79,7 +83,7 @@ void main()
 		case 31: texColor *= texture(u_Textures[31], f_TexCoord * f_TexScale); break;
 	 }
 
-	gl_Color = texColor;
+	colorAttachment = texColor;
 
-	entityIDAttachment = 50; // placeholder for entity ID
+	entityIDAttachment = f_EntityID; // placeholder for entity ID
 }
