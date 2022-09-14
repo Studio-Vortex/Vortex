@@ -15,6 +15,7 @@ namespace Sparky
 		Math::vec2 TexCoord;
 		float TexIndex;
 		float TexScale;
+		int EntityID;
 	};
 
 	struct Renderer2DData
@@ -56,6 +57,7 @@ namespace Sparky
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Float,  "a_TexScale" },
+			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 
 		s_Data.QuadVA->AddVertexBuffer(s_Data.QuadVB);
@@ -102,9 +104,9 @@ namespace Sparky
 
 		// Create a quad's set of vertices at the origin
 		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[2] = { 0.5f, 0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -204,7 +206,7 @@ namespace Sparky
 		s_Data.Stats.DrawCalls++;
 	}
 
-	void Renderer2D::AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale)
+	void Renderer2D::AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
 	{
 		for (uint32_t i = 0; i < 4; i++)
 		{
@@ -213,6 +215,7 @@ namespace Sparky
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 

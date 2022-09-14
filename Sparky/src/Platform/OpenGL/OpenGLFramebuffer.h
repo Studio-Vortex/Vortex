@@ -14,6 +14,7 @@ namespace Sparky {
 		void Unbind() const override;
 
 		void Resize(uint32_t width, uint32_t height) override;
+		int ReadPixel(uint32_t attachmentIndex, int x, int y) const override;
 
 		inline uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override
 		{
