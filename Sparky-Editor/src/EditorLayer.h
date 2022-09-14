@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Sparky.h>
-
+#include <Sparky/Renderer/EditorCamera.h>
 #include "Panels/SceneHierarchyPanel.h"
 
 namespace Sparky {
@@ -27,6 +27,7 @@ namespace Sparky {
 		void SaveSceneAs();
 
 	private:
+		EditorCamera m_EditorCamera;
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;

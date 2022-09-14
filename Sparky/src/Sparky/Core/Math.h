@@ -17,6 +17,7 @@ namespace Sparky::Math {
 	typedef glm::mat2 mat2;
 	typedef glm::mat3 mat3;
 	typedef glm::mat4 mat4;
+	typedef glm::quat quaternion;
 
 	template <typename T>
 	static auto Deg2Rad(T degrees)
@@ -45,6 +46,11 @@ namespace Sparky::Math {
 	static auto Translate(const vec3& translation)
 	{
 		return glm::translate(mat4(1.0f), translation);
+	}
+
+	static auto Rotate(quaternion v, const vec3& axis)
+	{
+		return glm::rotate(v, axis);
 	}
 
 	static auto Rotate(float rotation, const vec3& axis)
@@ -91,7 +97,7 @@ namespace Sparky::Math {
 		return glm::value_ptr(value);
 	}
 
-	static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
+	static bool DecomposeTransform(const mat4& transform, vec3& translation, vec3& rotation, vec3& scale)
 	{
 		// From glm::decompose in matrix_decompose.inl
 

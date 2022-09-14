@@ -2,6 +2,15 @@ Scene: Untitled
 Entities:
   - Entity: 1237483227498
     TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -1.5, 2.37276363]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [18.75, 19.9995594, 0.999985993]
+    SpriteComponent:
+      Color: [0.822393835, 0.822393835, 0.822393835, 1]
+  - Entity: 1237483227498
+    TagComponent:
       Tag: Left
     TransformComponent:
       Translation: [-0.349999994, 0, 0.349999994]
@@ -28,7 +37,7 @@ Entities:
     CameraComponent:
       Camera:
         ProjectionType: 0
-        PerspectiveFOV: 0.785398185
+        PerspectiveFOV: 1000
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 1000
         OrthographicSize: 10
@@ -45,3 +54,12 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Color: [0, 0.521131039, 0.876447856, 1]
+  - Entity: 1237483227498
+    TagComponent:
+      Tag: Backdrop
+    TransformComponent:
+      Translation: [0, 0, -4]
+      Rotation: [0, 0, 0]
+      Scale: [100, 100, 1]
+    SpriteComponent:
+      Color: [0.386100411, 0.386100411, 0.386100411, 1]

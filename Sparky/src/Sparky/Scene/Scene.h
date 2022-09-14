@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sparky/Core/TimeStep.h"
+#include "Sparky/Renderer/EditorCamera.h"
 
 #include <entt/entt.hpp>
 
@@ -17,7 +18,8 @@ namespace Sparky {
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
-		void OnUpdate(TimeStep delta);
+		void OnUpdateRuntime(TimeStep delta);
+		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 

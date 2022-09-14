@@ -21,6 +21,7 @@ namespace Sparky {
 		m_Framebuffer = Framebuffer::Create(properties);
 
 		m_ActiveScene = CreateShared<Scene>();
+		m_EditorCamera = EditorCamera(30.0f, 0.1778f, 0.1f, 1000.0f);
 
 #if 0
 		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
@@ -62,8 +63,8 @@ namespace Sparky {
 
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-
 #endif
+
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
@@ -79,11 +80,13 @@ namespace Sparky {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		// Update
+		if (m_ViewportFocused)
+			m_EditorCamera.OnUpdate(delta);
 
 		if (Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Application::Get().Close();
@@ -95,7 +98,7 @@ namespace Sparky {
 		RenderCommand::Clear();
 
 		// Update Scene
-		m_ActiveScene->OnUpdate(delta);
+		m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 
 		m_Framebuffer->Unbind();
 	}
@@ -215,10 +218,14 @@ namespace Sparky {
 			ImGuizmo::SetRect(Gui::GetWindowPos().x, Gui::GetWindowPos().y, windowWidth, windowHeight);
 
 			// Camera
-			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			const Math::mat4& cameraProjection = camera.GetProjection();
-			Math::mat4 cameraView = Math::Inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			//const Math::mat4& cameraProjection = camera.GetProjection();
+			//Math::mat4 cameraView = Math::Inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+			// Editor camera
+			const Math::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			Math::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -256,6 +263,8 @@ namespace Sparky {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
+		m_EditorCamera.OnEvent(e);
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
 	}

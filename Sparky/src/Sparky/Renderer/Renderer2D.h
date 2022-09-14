@@ -2,6 +2,7 @@
 
 #include "Sparky/Renderer/OrthographicCamera.h"
 #include "Sparky/Renderer/Camera.h"
+#include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Renderer/SubTexture2D.h"
 #include "Sparky/Renderer/Color.h"
@@ -23,6 +24,7 @@ namespace Sparky
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const Math::mat4& transform);
+		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();
@@ -102,8 +104,9 @@ namespace Sparky
 		static Statistics GetStats();
 
 	private:
-		static void StartNewBatch();
-		static void CopyDataToVertexBuffer();
+		static void StartBatch();
+		static void FlushAndReset();
+		static void CopyDataToBuffer();
 		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale);
 	};
 

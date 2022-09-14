@@ -136,6 +136,18 @@ namespace Sparky
 		s_Data.TextureSlotIndex = 1;
 	}
 
+    void Renderer2D::BeginScene(const EditorCamera& camera)
+    {
+		SP_PROFILE_FUNCTION();
+
+		Math::mat4 viewProjection = camera.GetViewProjection();
+
+		s_Data.TextureShader->Enable();
+		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProjection);
+
+		StartBatch();
+    }
+
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
@@ -143,6 +155,11 @@ namespace Sparky
 		s_Data.TextureShader->Enable();
 		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 
+		StartBatch();
+	}
+
+	void Renderer2D::StartBatch()
+	{
 		// Set the index count to 0 for the new batch
 		s_Data.QuadIndexCount = 0;
 		// Set the pointer to the beggining of the vertex buffer
@@ -152,30 +169,24 @@ namespace Sparky
 		s_Data.TextureSlotIndex = 1;
 	}
 
-	void Renderer2D::StartNewBatch()
+	void Renderer2D::FlushAndReset()
 	{
 		EndScene();
 
-		// Set the index count to 0 for the new batch
-		s_Data.QuadIndexCount = 0;
-		// Set the pointer to the beggining of the vertex buffer
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		// Reset the starting frame texture slot past the White Texture
-		s_Data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 
 	void Renderer2D::EndScene()
 	{
 		SP_PROFILE_FUNCTION();
 
-		CopyDataToVertexBuffer();
+		CopyDataToBuffer();
 
 		// Render vertices as a batch
 		Flush();
 	}
 
-	void Renderer2D::CopyDataToVertexBuffer()
+	void Renderer2D::CopyDataToBuffer()
 	{
 		// Calculate the size of the vertex buffer
 		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
@@ -222,7 +233,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		constexpr float textureIndex = 0.0f; // Our White Texture
 		constexpr float textureScale = 1.0f;
@@ -247,7 +258,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		float textureIndex = 0.0f;
 
@@ -346,7 +357,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		float textureIndex = 0.0f;
 
@@ -396,7 +407,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		static constexpr float textureIndex = 0.0f; // Our White Texture
 		static constexpr float textureScale = 1.0f;
@@ -421,7 +432,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		float textureIndex = 0.0f;
 
@@ -523,7 +534,7 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			StartNewBatch();
+			FlushAndReset();
 
 		float textureIndex = 0.0f;
 

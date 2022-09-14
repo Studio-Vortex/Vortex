@@ -31,7 +31,7 @@ namespace Sparky {
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::OnUpdate(TimeStep delta)
+	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
 		// Update Scripts
 		{
@@ -73,7 +73,7 @@ namespace Sparky {
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent, SpriteComponent>();
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
 
 			for (auto entity : group)
 			{
@@ -84,6 +84,22 @@ namespace Sparky {
 
 			Renderer2D::EndScene();
 		}
+	}
+
+	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
+	{
+		Renderer2D::BeginScene(camera);
+
+		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+
+		for (auto entity : group)
+		{
+			auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
+
+			Renderer2D::DrawQuad(transformComponent.GetTransform(), spriteComponent.SpriteColor);
+		}
+
+		Renderer2D::EndScene();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
