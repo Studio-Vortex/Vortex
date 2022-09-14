@@ -21,7 +21,7 @@ namespace Sparky {
 
 	void EditorCamera::UpdateView()
 	{
-		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
+		//m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalcualtePosition(); 
 
 		Math::quaternion orientation = GetOrientation();

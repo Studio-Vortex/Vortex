@@ -4,11 +4,44 @@
 
 namespace Sparky {
 
+	enum class FrambufferTextureFormat
+	{
+		None = 0,
+
+		// Color
+		RGBA8,
+
+		// Depth/stencil
+		DEPTH24STENCIL8,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8,
+	};
+
+	struct FramebufferTextureProperties
+	{
+		FramebufferTextureProperties() = default;
+		FramebufferTextureProperties(FrambufferTextureFormat format)
+			: TextureFormat(format) { }
+
+		FrambufferTextureFormat TextureFormat = FrambufferTextureFormat::None;
+		// TODO: filtering/wrap
+	};
+
+	struct FramebufferAttachmentProperties
+	{
+		FramebufferAttachmentProperties() = default;
+		FramebufferAttachmentProperties(std::initializer_list<FramebufferTextureProperties> attachments)
+			: Attachments(attachments) { }
+
+		std::vector<FramebufferTextureProperties> Attachments;
+	};
+
 	struct FramebufferProperties
 	{
 		uint32_t Width;
 		uint32_t Height;
-		// FramebufferFormat Format = 
+		FramebufferAttachmentProperties Attachments;
 		uint32_t Samples = 1;
 
 		bool SwapChainTarget = false;
@@ -24,7 +57,7 @@ namespace Sparky {
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		virtual uint32_t GetColorAttachmentRendererID() const = 0;
+		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 
 		virtual const FramebufferProperties& GetProperties() const = 0;
 

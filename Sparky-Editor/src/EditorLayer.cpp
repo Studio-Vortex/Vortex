@@ -15,6 +15,7 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		FramebufferProperties properties;
+		properties.Attachments = { FrambufferTextureFormat::RGBA8, FrambufferTextureFormat::RGBA8, FrambufferTextureFormat::Depth };
 		properties.Width = 1600;
 		properties.Height = 900;
 
@@ -85,8 +86,7 @@ namespace Sparky {
 		}
 
 		// Update
-		if (m_ViewportFocused)
-			m_EditorCamera.OnUpdate(delta);
+		m_EditorCamera.OnUpdate(delta);
 
 		if (Input::IsKeyPressed(SP_KEY_ESCAPE))
 			Application::Get().Close();
@@ -203,7 +203,7 @@ namespace Sparky {
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID(1);
 		Gui::Image(reinterpret_cast<void*>(textureID), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Render Gizmos

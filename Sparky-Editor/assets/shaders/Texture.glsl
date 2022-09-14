@@ -30,6 +30,7 @@ void main()
 #version 460 core
 
 layout (location = 0) out vec4 gl_Color;
+layout (location = 1) out vec4 color2;
 
 in vec4 f_Color;
 in vec2 f_TexCoord;
@@ -79,4 +80,5 @@ void main()
 	 }
 
 	gl_Color = texColor;
+	color2 = vec4(0.8, 0.2, 0.2, 1.0);
 }
