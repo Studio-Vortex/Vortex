@@ -16,6 +16,8 @@ namespace Sparky {
 		void Resize(uint32_t width, uint32_t height) override;
 		int ReadPixel(uint32_t attachmentIndex, int x, int y) const override;
 
+		void ClearAttachment(uint32_t attachmentIndex, int clearValue) const override;
+
 		inline uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override
 		{
 			SP_CORE_ASSERT(index < m_ColorAttachments.size(), "Index out of bounds!");

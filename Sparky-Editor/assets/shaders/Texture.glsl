@@ -30,7 +30,7 @@ void main()
 #version 460 core
 
 layout (location = 0) out vec4 gl_Color;
-layout (location = 1) out int color2;
+layout (location = 1) out int entityIDAttachment;
 
 in vec4 f_Color;
 in vec2 f_TexCoord;
@@ -45,16 +45,16 @@ void main()
 	 
 	 switch (int(f_TexIndex))
 	 {
-		case 0:  texColor *= texture(u_Textures[0],  f_TexCoord * f_TexScale); break;
-		case 1:  texColor *= texture(u_Textures[1],  f_TexCoord * f_TexScale); break;
-		case 2:  texColor *= texture(u_Textures[2],  f_TexCoord * f_TexScale); break;
-		case 3:  texColor *= texture(u_Textures[3],  f_TexCoord * f_TexScale); break;
-		case 4:  texColor *= texture(u_Textures[4],  f_TexCoord * f_TexScale); break;
-		case 5:  texColor *= texture(u_Textures[5],  f_TexCoord * f_TexScale); break;
-		case 6:  texColor *= texture(u_Textures[6],  f_TexCoord * f_TexScale); break;
-		case 7:  texColor *= texture(u_Textures[7],  f_TexCoord * f_TexScale); break;
-		case 8:  texColor *= texture(u_Textures[8],  f_TexCoord * f_TexScale); break;
-		case 9:  texColor *= texture(u_Textures[9],  f_TexCoord * f_TexScale); break;
+		case  0: texColor *= texture(u_Textures[ 0], f_TexCoord * f_TexScale); break;
+		case  1: texColor *= texture(u_Textures[ 1], f_TexCoord * f_TexScale); break;
+		case  2: texColor *= texture(u_Textures[ 2], f_TexCoord * f_TexScale); break;
+		case  3: texColor *= texture(u_Textures[ 3], f_TexCoord * f_TexScale); break;
+		case  4: texColor *= texture(u_Textures[ 4], f_TexCoord * f_TexScale); break;
+		case  5: texColor *= texture(u_Textures[ 5], f_TexCoord * f_TexScale); break;
+		case  6: texColor *= texture(u_Textures[ 6], f_TexCoord * f_TexScale); break;
+		case  7: texColor *= texture(u_Textures[ 7], f_TexCoord * f_TexScale); break;
+		case  8: texColor *= texture(u_Textures[ 8], f_TexCoord * f_TexScale); break;
+		case  9: texColor *= texture(u_Textures[ 9], f_TexCoord * f_TexScale); break;
 		case 10: texColor *= texture(u_Textures[10], f_TexCoord * f_TexScale); break;
 		case 11: texColor *= texture(u_Textures[11], f_TexCoord * f_TexScale); break;
 		case 12: texColor *= texture(u_Textures[12], f_TexCoord * f_TexScale); break;
@@ -81,5 +81,5 @@ void main()
 
 	gl_Color = texColor;
 
-	color2 = 50; // placeholder for entity ID
+	entityIDAttachment = 50; // placeholder for entity ID
 }

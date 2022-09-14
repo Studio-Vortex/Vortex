@@ -68,14 +68,26 @@ namespace Sparky {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FrambufferTextureFormat format)
+		static bool IsDepthFormat(FramebufferTextureFormat format)
 		{
 			switch (format)
 			{
-				case Sparky::FrambufferTextureFormat::DEPTH24STENCIL8: return true;
+				case Sparky::FramebufferTextureFormat::DEPTH24STENCIL8: return true;
 			}
 
 			return false;
+		}
+
+		static GLenum SparkyFBTextureFormatToGL(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+				case Sparky::FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+				case Sparky::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+			}
+
+			SP_CORE_ASSERT(false, "Unknown texture format!");
+			return 0;
 		}
 	}
 
@@ -133,30 +145,30 @@ namespace Sparky {
 				Utils::BindTexture(multisample, m_ColorAttachments[i]);
 				switch (m_ColorAttachmentProperties[i].TextureFormat)
 				{
-					case FrambufferTextureFormat::RGBA8:
+					case FramebufferTextureFormat::RGBA8:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA8, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
-					case FrambufferTextureFormat::RED_INTEGER:
+					case FramebufferTextureFormat::RED_INTEGER:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_R32I, GL_RED_INTEGER, m_Properties.Width, m_Properties.Height, i);
 						break;
 				}
 			}
 		}
 
-		if (m_DepthAttachmentProperty.TextureFormat != FrambufferTextureFormat::None)
+		if (m_DepthAttachmentProperty.TextureFormat != FramebufferTextureFormat::None)
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
 			switch (m_DepthAttachmentProperty.TextureFormat)
 			{
-				case FrambufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::DEPTH24STENCIL8:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Properties.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Properties.Width, m_Properties.Height);
 			}
 		}
 
 		if (m_ColorAttachments.size() > 1)
 		{
-			SP_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Cannot have more than 4 Color Attachments!");
+			SP_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Too many Color Attacments");
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_ColorAttachments.size(), buffers);
 		}
@@ -183,20 +195,8 @@ namespace Sparky {
 		m_Properties.Width = width;
 		m_Properties.Height = height;
 
-		// Destroy and recreate the framebuffer
+		// Destroy and recreate the framebuffer because the size has changed
 		Invalidate();
-	}
-
-	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y) const
-	{
-		SP_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
-		
-		int pixelData;
-
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
-
-		return pixelData;
 	}
 
 	void OpenGLFramebuffer::Bind() const
@@ -208,6 +208,28 @@ namespace Sparky {
 	void OpenGLFramebuffer::Unbind() const
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+	}
+
+	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y) const
+	{
+		SP_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
+
+		int pixelData;
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+
+		return pixelData;
+	}
+
+	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int clearValue) const
+	{
+		SP_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
+
+		auto& props = m_ColorAttachmentProperties[attachmentIndex];
+
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
+			Utils::SparkyFBTextureFormatToGL(props.TextureFormat), GL_INT, &clearValue);
 	}
 
 }

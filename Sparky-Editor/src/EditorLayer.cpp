@@ -15,7 +15,7 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		FramebufferProperties properties;
-		properties.Attachments = { FrambufferTextureFormat::RGBA8, FrambufferTextureFormat::RED_INTEGER, FrambufferTextureFormat::Depth };
+		properties.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		properties.Width = 1600;
 		properties.Height = 900;
 
@@ -96,6 +96,9 @@ namespace Sparky {
 		m_Framebuffer->Bind();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		RenderCommand::Clear();
+
+		// Clear entityID attachment to -1
+		m_Framebuffer->ClearAttachment(1, -1);
 
 		// Update Scene
 		m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);

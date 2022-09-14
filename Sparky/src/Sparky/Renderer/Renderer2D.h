@@ -107,7 +107,7 @@ namespace Sparky
 		static void StartBatch();
 		static void FlushAndReset();
 		static void CopyDataToBuffer();
-		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID);
+		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale);
 	};
 
 }
