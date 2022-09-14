@@ -13,3 +13,6 @@
 [submodule "Sparky/vendor/yaml-cpp"]
 	path = Sparky/vendor/yaml-cpp
 	url = https://github.com/TheCherno/yaml-cpp.git
+[submodule "Sparky/vendor/ImGuizmo"]
+	path = Sparky/vendor/ImGuizmo
+	url = https://github.com/TheCherno/ImGuizmo.git

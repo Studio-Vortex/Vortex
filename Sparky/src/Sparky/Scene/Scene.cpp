@@ -103,6 +103,20 @@ namespace Sparky {
 		}
 	}
 
+    Entity Scene::GetPrimaryCameraEntity()
+    {
+		auto view = m_Registry.view<CameraComponent>();
+
+		for (auto& entity : view)
+		{
+			auto& cc = view.get<CameraComponent>(entity);
+			if (cc.Primary)
+				return { entity, this };
+		}
+
+		return {};
+    }
+
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{

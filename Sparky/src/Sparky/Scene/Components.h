@@ -29,9 +29,7 @@ namespace Sparky {
 
 		Math::mat4 GetTransform() const
 		{
-			Math::mat4 rotation = Math::Rotate(Rotation.x, { 1.0f, 0.0f, 0.0f })
-				* Math::Rotate(Rotation.y, { 0.0f, 1.0f, 0.0f })
-				* Math::Rotate(Rotation.z, { 0.0f, 0.0f, 1.0f });
+			Math::mat4 rotation = Math::ToMat4(Math::Quaternion(Rotation));
 
 			return Math::Translate(Translation) * rotation * Math::Scale(Scale);
 		}

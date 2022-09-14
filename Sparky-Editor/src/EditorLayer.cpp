@@ -3,6 +3,8 @@
 #include <Sparky/Scene/SceneSerializer.h>
 #include <Sparky/Utils/PlatformUtils.h>
 
+#include <ImGuizmo.h>
+
 namespace Sparky {
 
 	EditorLayer::EditorLayer()
@@ -193,13 +195,59 @@ namespace Sparky {
 		
 		m_ViewportFocused = Gui::IsWindowFocused();
 		m_ViewportHovered = Gui::IsWindowHovered();
-		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image((void*)textureID, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		Gui::Image(reinterpret_cast<void*>(textureID), { m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// Render Gizmos
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		if (selectedEntity && m_GizmoType != -1)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			
+			float windowWidth = Gui::GetWindowWidth();
+			float windowHeight = Gui::GetWindowHeight();
+			ImGuizmo::SetRect(Gui::GetWindowPos().x, Gui::GetWindowPos().y, windowWidth, windowHeight);
+
+			// Camera
+			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			const Math::mat4& cameraProjection = camera.GetProjection();
+			Math::mat4 cameraView = Math::Inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+			// Entity transform
+			auto& tc = selectedEntity.GetComponent<TransformComponent>();
+			Math::mat4 transform = tc.GetTransform();
+
+			// Snapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = 0.5f;
+			// Snap to 45 degrees for rotation only
+			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+
+			float snapValues[3] = { snapValue };
+
+			ImGuizmo::Manipulate(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(transform),
+				nullptr, snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				Math::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+				Math::vec3 deltaRotation = rotation - tc.Rotation;
+				tc.Translation = translation;
+				tc.Rotation += deltaRotation;
+				tc.Scale = scale;
+			}
+		}
+
 		Gui::End();
 		Gui::PopStyleVar();
 
@@ -251,9 +299,14 @@ namespace Sparky {
 					SaveSceneAs();
 				break;
 			}
+
+			case Key::Q: m_GizmoType = -1; break;
+			case Key::W: m_GizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
+			case Key::E: m_GizmoType = ImGuizmo::OPERATION::ROTATE;    break;
+			case Key::R: m_GizmoType = ImGuizmo::OPERATION::SCALE;     break;
 		}
 
-		return true;
+		return false;
 	}
 
 	void EditorLayer::CreateNewScene()

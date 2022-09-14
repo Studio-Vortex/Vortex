@@ -14,6 +14,9 @@ namespace Sparky {
 
 		void OnGuiRender();
 
+		Entity& GetSelectedEntity() { return m_SelectedEntity; }
+		const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
+
 	private:
 		template <typename TComponent>
 		void DisplayAddComponentPopup(const std::string& name)

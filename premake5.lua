@@ -25,6 +25,7 @@ IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["entt"] = "Sparky/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
+IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
 
 group "Vendor"
 	include "Sparky/vendor/GLFW"
@@ -54,6 +55,9 @@ project "Sparky"
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/stb_image/**.h",
 		"%{prj.name}/vendor/stb_image/**.cpp",
+
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 	}
 
 	defines
@@ -72,6 +76,7 @@ project "Sparky"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.ImGuizmo}",
 	}
 
 	links
@@ -82,6 +87,9 @@ project "Sparky"
 		"opengl32.lib",
 		"yaml-cpp",
 	}
+
+	filter "files:Sparky/vendor/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -129,6 +137,7 @@ project "Testbed"
 		"Sparky/src",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 	}
@@ -178,6 +187,7 @@ project "Sparky-Editor"
 		"Sparky/src",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 	}
