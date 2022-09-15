@@ -23,6 +23,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(status, "Failed to initialize Glad!");
 
 		Renderer::SetGraphicsAPIInfo({
+			"OpenGL",
 			glGetString(GL_RENDERER),
 			glGetString(GL_VENDOR),
 			glGetString(GL_VERSION),

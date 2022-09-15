@@ -17,17 +17,19 @@ workspace "Sparky"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
+IncludeDir["Box2D"] = "Sparky/vendor/Box2D/include"
+IncludeDir["entt"] = "Sparky/vendor/entt/include"
 IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
 IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
-IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["glm"] = "Sparky/vendor/glm"
-IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
-IncludeDir["entt"] = "Sparky/vendor/entt/include"
-IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
+IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
+IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
+IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
+IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
 
-group "Vendor"
+group "External Dependencies"
+	include "Sparky/vendor/Box2D"
 	include "Sparky/vendor/GLFW"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
@@ -68,21 +70,23 @@ project "Sparky"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.yaml_cpp}",
 	}
 
 	links
 	{
-		"GLFW",
+		"Box2D",
 		"Glad",
+		"GLFW",
 		"ImGui",
 		"opengl32.lib",
 		"yaml-cpp",
@@ -135,11 +139,11 @@ project "Testbed"
 	includedirs
 	{
 		"Sparky/src",
-		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.entt}",
+		"%{IncludeDir.spdlog}",
 	}
 
 	links
@@ -185,11 +189,11 @@ project "Sparky-Editor"
 	includedirs
 	{
 		"Sparky/src",
-		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.entt}",
+		"%{IncludeDir.spdlog}",
 	}
 
 	links

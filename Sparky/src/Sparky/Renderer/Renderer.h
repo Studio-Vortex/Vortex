@@ -24,7 +24,7 @@ namespace Sparky {
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }
 
-		inline static RendererAPI::RendererInfo GetGraphicsAPIInfo() { return RendererAPI::GetAPIInfo(); }
+		inline static const RendererAPI::RendererInfo& GetGraphicsAPIInfo() { return RendererAPI::GetAPIInfo(); }
 		inline static void SetGraphicsAPIInfo(const RendererAPI::RendererInfo& info) { RendererAPI::SetAPIInfo(info); }
 
 	private:

@@ -190,7 +190,7 @@ namespace Sparky {
 
 		Gui::Text("Hovered Entity: %s", name);
 		Gui::Separator();
-
+		
 		auto stats = Renderer2D::GetStats();
 		Gui::PushFont(boldFont);
 		Gui::Text("Renderer2D Stats:");
@@ -202,10 +202,11 @@ namespace Sparky {
 		Gui::Text("Indices:    %i", stats.GetIndexCount());
 		Gui::Separator();
 
-		const auto& rendererInfo = RendererAPI::GetAPIInfo();
+		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
 		Gui::PushFont(boldFont);
 		Gui::Text("Graphics API Info:");
 		Gui::PopFont();
+		Gui::Text("API:     %s", rendererInfo.API);
 		Gui::Text("GPU:     %s", rendererInfo.GPU);
 		Gui::Text("Vendor:  %s", rendererInfo.Vendor);
 		Gui::Text("Version: %s", rendererInfo.Version);
@@ -217,9 +218,6 @@ namespace Sparky {
 		Gui::PopFont();
 		Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
 		Gui::Text("FPS:  %.1f", io.Framerate);
-
-		//Gui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-
 		Gui::End();
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });

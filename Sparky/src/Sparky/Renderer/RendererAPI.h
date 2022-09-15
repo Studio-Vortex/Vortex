@@ -25,6 +25,7 @@ namespace Sparky {
 
 		struct RendererInfo
 		{
+			const char* API;
 			const unsigned char* GPU;
 			const unsigned char* Vendor;
 			const unsigned char* Version;

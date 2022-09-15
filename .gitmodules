@@ -16,3 +16,6 @@
 [submodule "Sparky/vendor/ImGuizmo"]
 	path = Sparky/vendor/ImGuizmo
 	url = https://github.com/TheCherno/ImGuizmo.git
+[submodule "Sparky/vendor/Box2D"]
+	path = Sparky/vendor/Box2D
+	url = https://github.com/TheCherno/box2d.git
