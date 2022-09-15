@@ -34,7 +34,9 @@ namespace Sparky {
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		
 		io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Bold.ttf", 18.0f);
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Regular.ttf", 18.0f);
+		io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Regular.ttf", 22.0f);
+		const auto& regular = io.Fonts->AddFontFromFileTTF("assets/fonts/opensans/OpenSans-Regular.ttf", 18.0f);
+		io.FontDefault = regular;
 
 		ImGuiStyle& style = ImGui::GetStyle();
 

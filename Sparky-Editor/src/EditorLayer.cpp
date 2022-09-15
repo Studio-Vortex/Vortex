@@ -195,10 +195,15 @@ namespace Sparky {
 				Gui::EndMenu();
 			}
 
+			if (Gui::MenuItem("About"))
+				m_AboutPanel.ShowPanel();
+
 			Gui::EndMenuBar();
 		}
 
 		m_SceneHierarchyPanel.OnGuiRender();
+		m_ContentBrowserPanel.OnGuiRender();
+		m_AboutPanel.OnGuiRender();
 
 		auto stats = Renderer2D::GetStats();
 

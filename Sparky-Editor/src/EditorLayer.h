@@ -2,7 +2,10 @@
 
 #include <Sparky.h>
 #include <Sparky/Renderer/EditorCamera.h>
+
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+#include "Panels/AboutPanel.h"
 
 namespace Sparky {
 
@@ -50,6 +53,8 @@ namespace Sparky {
 		// Panels
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
+		AboutPanel m_AboutPanel;
 	};
 
 }
