@@ -15,6 +15,9 @@ namespace Sparky {
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
+
+		SharedRef<Texture2D> m_DirectoryIcon;
+		SharedRef<Texture2D> m_FileIcon;
 	};
 
 }
