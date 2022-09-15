@@ -12,8 +12,6 @@ namespace Sparky {
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer") { }
 
-	// TODO: f12 to maximize
-
 	void EditorLayer::OnAttach()
 	{
 		SP_PROFILE_FUNCTION();
@@ -25,50 +23,11 @@ namespace Sparky {
 
 		m_Framebuffer = Framebuffer::Create(properties);
 
+		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
+		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
+
 		m_ActiveScene = CreateShared<Scene>();
 		m_EditorCamera = EditorCamera(30.0f, 0.1778f, 0.1f, 1000.0f);
-
-#if 0
-		m_SecondCamera = m_ActiveScene->CreateEntity("Camera B");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
-
-		m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
-		auto& squareTranslation = m_SquareEntity.GetComponent<TransformComponent>().Translation;
-		squareTranslation = { -2.0f, 2.0f, 0.0f };
-		m_SquareEntity.AddComponent<SpriteComponent>(ColorToVec4(Color::Green));
-
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
-		m_CameraEntity.AddComponent<CameraComponent>();
-
-		auto redSquare = m_ActiveScene->CreateEntity("Red Square");
-		redSquare.AddComponent<SpriteComponent>(ColorToVec4(Color::LightRed));
-
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnUpdate(TimeStep delta) override
-			{
-				auto& translation = GetComponent<TransformComponent>().Translation;
-				float speed = 5.0f;
-
-				if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-				{
-					if (Input::IsKeyPressed(Key::W))
-						translation.y += speed * delta;
-					if (Input::IsKeyPressed(Key::A))
-						translation.x -= speed * delta;
-					if (Input::IsKeyPressed(Key::S))
-						translation.y -= speed * delta;
-					if (Input::IsKeyPressed(Key::D))
-						translation.x += speed * delta;
-				}
-			}
-		};
-
-		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-#endif
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -89,12 +48,6 @@ namespace Sparky {
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		// Update
-		m_EditorCamera.OnUpdate(delta);
-
-		if (Input::IsKeyPressed(SP_KEY_ESCAPE))
-			Application::Get().Close();
-
 		// Render
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
@@ -105,7 +58,25 @@ namespace Sparky {
 		m_Framebuffer->ClearAttachment(1, -1);
 
 		// Update Scene
-		m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
+		switch (m_SceneState)
+		{
+			case Sparky::EditorLayer::SceneState::Edit:
+			{
+				if (m_ViewportHovered)
+					m_EditorCamera.OnUpdate(delta);
+
+				if (Input::IsKeyPressed(SP_KEY_ESCAPE))
+					Application::Get().Close();
+
+				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
+				break;
+			}
+			case Sparky::EditorLayer::SceneState::Play:
+			{
+				m_ActiveScene->OnUpdateRuntime(delta);
+				break;
+			}
+		}
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -165,9 +136,7 @@ namespace Sparky {
 		ImGuiIO& io = Gui::GetIO();
 		ImGuiStyle& style = Gui::GetStyle();
 		float minWinSizeX = style.WindowMinSize.x;
-		float minWinSizeY = style.WindowMinSize.y;
 		style.WindowMinSize.x = 370.0f;
-		style.WindowMinSize.y = 325.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = Gui::GetID("MyDockSpace");
@@ -175,7 +144,6 @@ namespace Sparky {
 		}
 
 		style.WindowMinSize.x = minWinSizeX;
-		style.WindowMinSize.y = minWinSizeY;
 
 		if (Gui::BeginMenuBar())
 		{
@@ -257,7 +225,7 @@ namespace Sparky {
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GizmoType != -1)
+		if (selectedEntity && m_GizmoType != -1 && m_SceneState != SceneState::Play)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
@@ -305,6 +273,38 @@ namespace Sparky {
 
 		Gui::End();
 		Gui::PopStyleVar();
+
+		UI_Toolbar();
+
+		Gui::End();
+	}
+
+	void EditorLayer::UI_Toolbar()
+	{
+		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 2.0f });
+		Gui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 0.0f, 0.0f });
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+		auto& colors = Gui::GetStyle().Colors;
+		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ buttonActive.x, buttonActive.y, buttonActive.z, 0.5f });
+		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
+
+		Gui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		SharedRef<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayIcon : m_StopIcon;
+		float size = Gui::GetWindowHeight() - 4.0f;
+		Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f)  - (size * 0.5f));
+		if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2{ size, size }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, 0))
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+
+		Gui::PopStyleVar(2);
+		Gui::PopStyleColor(3);
 
 		Gui::End();
 	}
@@ -356,6 +356,20 @@ namespace Sparky {
 				if (controlPressed && shiftPressed)
 					SaveSceneAs();
 				break;
+			}
+
+			case Key::P:
+			{
+				if (controlPressed && m_SceneState == SceneState::Edit)
+				{
+					m_SceneState = SceneState::Play;
+					break;
+				}
+				if (controlPressed && m_SceneState == SceneState::Play)
+				{
+					m_SceneState = SceneState::Edit;
+					break;
+				}
 			}
 
 			case Key::Q:
@@ -432,6 +446,16 @@ namespace Sparky {
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.Serialize(filepath);
 		}
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
 	}
 
 }

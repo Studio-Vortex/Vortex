@@ -69,8 +69,8 @@ namespace Sparky {
 
 		Gui::Columns(1);
 
-		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 32.0f, 512.0f);
-		Gui::SliderFloat("Padding", &padding, 0.0f, 32.0f);
+		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f);
+		Gui::SliderFloat("Padding", &padding, 4.0f, 64.0f);
 
 		Gui::End();
 	}

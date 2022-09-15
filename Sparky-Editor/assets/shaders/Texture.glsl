@@ -32,8 +32,8 @@ void main()
 #type fragment
 #version 460 core
 
-layout (location = 0) out vec4 colorAttachment;
-layout (location = 1) out int entityIDAttachment;
+layout (location = 0) out vec4 o_Color;
+layout (location = 1) out int o_EntityID;
 
 in vec4       f_Color;
 in vec2       f_TexCoord;
@@ -47,8 +47,8 @@ void main()
 {
 	vec4 texColor = f_Color;
 	 
-	 switch (int(f_TexIndex))
-	 {
+	switch (int(f_TexIndex))
+	{
 		case  0: texColor *= texture(u_Textures[ 0], f_TexCoord * f_TexScale); break;
 		case  1: texColor *= texture(u_Textures[ 1], f_TexCoord * f_TexScale); break;
 		case  2: texColor *= texture(u_Textures[ 2], f_TexCoord * f_TexScale); break;
@@ -81,9 +81,11 @@ void main()
 		case 29: texColor *= texture(u_Textures[29], f_TexCoord * f_TexScale); break;
 		case 30: texColor *= texture(u_Textures[30], f_TexCoord * f_TexScale); break;
 		case 31: texColor *= texture(u_Textures[31], f_TexCoord * f_TexScale); break;
-	 }
+	}
 
-	colorAttachment = texColor;
+	if (texColor.a == 0.0)
+		discard;
 
-	entityIDAttachment = f_EntityID; // placeholder for entity ID
+	o_Color = texColor;
+	o_EntityID = f_EntityID;
 }

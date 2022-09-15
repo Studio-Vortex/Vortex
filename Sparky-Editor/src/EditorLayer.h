@@ -31,15 +31,19 @@ namespace Sparky {
 		void OpenExistingScene(const std::filesystem::path& path);
 		void SaveSceneAs();
 
+		void OnScenePlay();
+		void OnSceneStop();
+
+		// Panels
+
+		void UI_Toolbar();
+
 	private:
 		EditorCamera m_EditorCamera;
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;
 		Entity m_HoveredEntity;
-		Entity m_SquareEntity;
-		Entity m_CameraEntity;
-		Entity m_SecondCamera;
 
 		bool m_PrimaryCamera = true;
 
@@ -51,11 +55,22 @@ namespace Sparky {
 
 		int m_GizmoType = -1;
 
+		enum class SceneState
+		{
+			Edit = 0, Play = 1,
+		};
+
+		// Editor resources
+		SharedRef<Texture2D> m_PlayIcon;
+		SharedRef<Texture2D> m_StopIcon;
+
 		// Panels
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 		AboutPanel m_AboutPanel;
+
+		SceneState m_SceneState = SceneState::Edit;
 	};
 
 }
