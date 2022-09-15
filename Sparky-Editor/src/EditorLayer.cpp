@@ -7,8 +7,12 @@
 
 namespace Sparky {
 
+	extern const std::filesystem::path g_AssetPath;
+
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer") { }
+
+	// TODO: f12 to maximize
 
 	void EditorLayer::OnAttach()
 	{
@@ -208,7 +212,6 @@ namespace Sparky {
 		auto stats = Renderer2D::GetStats();
 
 		Gui::Begin("Stats", &show);
-		
 		const char* name = "None";
 		if (m_HoveredEntity)
 			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
@@ -240,6 +243,17 @@ namespace Sparky {
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		// Accept data from the content browser
+		if (Gui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				OpenExistingScene(std::filesystem::path(g_AssetPath) / path);
+			}
+			Gui::EndDragDropTarget();
+		}
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -396,14 +410,17 @@ namespace Sparky {
 		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
 
 		if (!filepath.empty())
-		{
-			m_ActiveScene = CreateShared<Scene>();
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			OpenExistingScene(filepath);
+	}
 
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(filepath);
-		}
+	void EditorLayer::OpenExistingScene(const std::filesystem::path& path)
+	{
+		m_ActiveScene = CreateShared<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Deserialize(path.string());
 	}
 
 	void EditorLayer::SaveSceneAs()

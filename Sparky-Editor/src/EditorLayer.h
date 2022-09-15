@@ -28,6 +28,7 @@ namespace Sparky {
 
 		void CreateNewScene();
 		void OpenExistingScene();
+		void OpenExistingScene(const std::filesystem::path& path);
 		void SaveSceneAs();
 
 	private:

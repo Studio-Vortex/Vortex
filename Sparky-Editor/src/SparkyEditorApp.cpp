@@ -8,8 +8,8 @@ namespace Sparky {
 	class SparkyEditor : public Application
 	{
 	public:
-		SparkyEditor()
-			: Application("Sparky Editor")
+		SparkyEditor(const ApplicationProperties& props)
+			: Application(props)
 		{
 			PushLayer(new EditorLayer());
 		}
@@ -18,6 +18,11 @@ namespace Sparky {
 	};
 
 	Application* CreateApplication() {
-		return new SparkyEditor();
+		ApplicationProperties props;
+		props.Name = "Sparky Editor";
+		props.GraphicsAPI = RendererAPI::API::OpenGL;
+		props.MaxmizeWindow = false;
+
+		return new SparkyEditor(props);
 	}
 }

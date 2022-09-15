@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Sparky/Core/Base.h"
+
 #include "Sparky/Core/Math.h"
 #include "Sparky/Renderer/VertexArray.h"
 
@@ -13,10 +15,10 @@ namespace Sparky {
 		uint32_t Height;
 	};
 
-	class RendererAPI
+	class SPARKY_API RendererAPI
 	{
 	public:
-		enum class API
+		enum class SPARKY_API API
 		{
 			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
 		};

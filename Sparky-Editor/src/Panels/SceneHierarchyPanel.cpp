@@ -1,8 +1,12 @@
 #include "SceneHierarchyPanel.h"
 
+#include <filesystem>
+
 #include <imgui_internal.h>
 
 namespace Sparky {
+
+	extern const std::filesystem::path g_AssetPath;
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
 	{
@@ -249,13 +253,27 @@ namespace Sparky {
 
 		DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
 		{
-			Gui::Columns(2);
-			Gui::SetColumnWidth(0, 100.0f);
-			Gui::Text("Color");
-			Gui::NextColumn();
 			Gui::ColorEdit4("##Color", Math::ValuePtr(component.SpriteColor));
-			Gui::SameLine();
-			Gui::Columns(1);
+
+			SharedRef<Texture2D> texture;
+
+			if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+				component.Texture = nullptr;
+
+			// Accept data from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+					texture = Texture2D::Create(texturePath.string());
+					component.Texture = texture;
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::DragFloat("##Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

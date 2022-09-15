@@ -3,6 +3,7 @@
 #include "Sparky/Core/Math.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Scene/ScriptableEntity.h"
+#include "Sparky/Renderer/Texture.h"
 
 namespace Sparky {
 
@@ -38,6 +39,8 @@ namespace Sparky {
 	struct SpriteComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
+		SharedRef<Texture2D> Texture = nullptr;
+		float Scale = 1.0f;
 
 		SpriteComponent() = default;
 		SpriteComponent(const SpriteComponent&) = default;

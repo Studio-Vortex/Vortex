@@ -136,6 +136,7 @@ namespace Sparky {
 			auto& spriteComponent = entity.GetComponent<SpriteComponent>();
 
 			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
+			//out << YAML::Key << "Texture" << YAML::Value << spriteComponent.SpriteColor;
 
 			out << YAML::EndMap; // SpriteComponent
 		}

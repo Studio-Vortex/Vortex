@@ -5,6 +5,7 @@
 #include "Sparky/Core/Window.h"
 #include "Sparky/Core/LayerStack.h"
 #include "Sparky/Events/ApplicationEvent.h"
+#include "Sparky/Renderer/RendererAPI.h"
 
 #include "Sparky/Gui/GuiLayer.h"
 
@@ -12,10 +13,19 @@ int main(int argc, char* argv[]);
 
 namespace Sparky {
 
+	struct SPARKY_API ApplicationProperties
+	{
+		std::string Name = "Sparky App";
+		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
+		bool MaxmizeWindow = false;
+
+		ApplicationProperties() = default;
+	};
+
 	class SPARKY_API Application
 	{
 	public:
-		Application(const std::string& name = "Sparky App");
+		Application(const ApplicationProperties& props = ApplicationProperties());
 		virtual ~Application();
 
 		void PushLayer(Layer* layer);
@@ -39,6 +49,7 @@ namespace Sparky {
 		UniqueRef<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
+
 		float m_LastFrameTime = 0.0f;
 		bool m_Running = true;
 		bool m_Minimized = false;

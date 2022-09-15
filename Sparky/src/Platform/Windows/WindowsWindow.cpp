@@ -168,10 +168,17 @@ namespace Sparky {
 		m_Context->SwapFrameBuffers();
 	}
 
-	void WindowsWindow::SetVSync(bool enabled)
+    void WindowsWindow::SetMaximized(bool maximized) const
+    {
+		if (maximized)
+			glfwMaximizeWindow(m_Window);
+		else
+			glfwRestoreWindow(m_Window);
+    }
+
+    void WindowsWindow::SetVSync(bool enabled)
 	{
 		SP_PROFILE_FUNCTION();
-
 		glfwSwapInterval((int)enabled);
 		m_Data.VSync = enabled;
 	}

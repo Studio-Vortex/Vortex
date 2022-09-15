@@ -589,7 +589,10 @@ namespace Sparky
 
 	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID)
 	{
-		DrawQuad(transform, sprite.SpriteColor, entityID);
+		if (sprite.Texture)
+			DrawQuad(transform, sprite.Texture, sprite.Scale, sprite.SpriteColor, entityID);
+		else
+			DrawQuad(transform, sprite.SpriteColor, entityID);
 	}
 
 	void Renderer2D::ResetStats()
