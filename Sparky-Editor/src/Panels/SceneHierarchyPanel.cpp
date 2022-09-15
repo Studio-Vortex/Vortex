@@ -106,7 +106,7 @@ namespace Sparky {
 	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
+		const auto& boldFont = io.Fonts->Fonts[0];
 
 		ImGui::PushID(label.c_str());
 

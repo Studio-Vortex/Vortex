@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Sparky/Core/Math.h"
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)
@@ -24,6 +25,36 @@ namespace Sparky {
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
 	};
 
+}
+
+template <typename OStream>
+inline OStream& operator<<(OStream& os, const glm::vec2& vector)
+{
+	return os << "vec2(" << vector.x << ", " << vector.y << ")";
+}
+
+template <typename OStream>
+inline OStream& operator<<(OStream& os, const glm::vec3& vector)
+{
+	return os << "vec3(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
+}
+
+template <typename OStream>
+inline OStream& operator<<(OStream& os, const glm::vec4& vector)
+{
+	return os << "vec4(" << vector.x << ", " << vector.y << ", " << vector.z << ", " << vector.w << ")";
+}
+
+template <typename OStream, glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
+inline OStream& operator<<(OStream& os, const glm::mat<C, R, T, Q>& matrix)
+{
+	return os << glm::to_string(matrix);
+}
+
+template <typename OStream, typename T, glm::qualifier Q>
+inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
+{
+	return os << glm::to_string(quaternion);
 }
 
 // Core log macros

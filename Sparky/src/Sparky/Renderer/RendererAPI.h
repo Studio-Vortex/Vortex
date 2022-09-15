@@ -23,6 +23,14 @@ namespace Sparky {
 			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
 		};
 
+		struct RendererInfo
+		{
+			const unsigned char* GPU;
+			const unsigned char* Vendor;
+			const unsigned char* Version;
+			const unsigned char* ShadingLanguageVersion;
+		};
+
 	public:
 		virtual void Init() const = 0;
 
@@ -39,8 +47,12 @@ namespace Sparky {
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }
 
+		inline static const RendererInfo& GetAPIInfo() { return s_RendererInfo; }
+		inline static void SetAPIInfo(const RendererInfo& info) { s_RendererInfo = info; }
+
 	private:
 		static API s_API;
+		static RendererInfo s_RendererInfo;
 	};
 
 }

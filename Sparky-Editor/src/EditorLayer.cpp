@@ -181,7 +181,7 @@ namespace Sparky {
 		m_ContentBrowserPanel.OnGuiRender();
 		m_AboutPanel.OnGuiRender();
 
-		auto stats = Renderer2D::GetStats();
+		const auto& boldFont = io.Fonts->Fonts[0];
 
 		Gui::Begin("Stats", &show);
 		const char* name = "None";
@@ -189,13 +189,37 @@ namespace Sparky {
 			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
 
 		Gui::Text("Hovered Entity: %s", name);
+		Gui::Separator();
 
+		auto stats = Renderer2D::GetStats();
+		Gui::PushFont(boldFont);
 		Gui::Text("Renderer2D Stats:");
+		Gui::PopFont();
 		Gui::Text("Draw Calls: %i", stats.DrawCalls);
 		Gui::Text("Quads:      %i", stats.QuadCount);
 		Gui::Text("Triangles:  %i", stats.GetTriangleCount());
 		Gui::Text("Vertices:   %i", stats.GetVertexCount());
 		Gui::Text("Indices:    %i", stats.GetIndexCount());
+		Gui::Separator();
+
+		const auto& rendererInfo = RendererAPI::GetAPIInfo();
+		Gui::PushFont(boldFont);
+		Gui::Text("Graphics API Info:");
+		Gui::PopFont();
+		Gui::Text("GPU:     %s", rendererInfo.GPU);
+		Gui::Text("Vendor:  %s", rendererInfo.Vendor);
+		Gui::Text("Version: %s", rendererInfo.Version);
+		Gui::Text("GLSL:    %s", rendererInfo.ShadingLanguageVersion);
+		Gui::Separator();
+
+		Gui::PushFont(boldFont);
+		Gui::Text("Benchmark:");
+		Gui::PopFont();
+		Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
+		Gui::Text("FPS:  %.1f", io.Framerate);
+
+		//Gui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
 		Gui::End();
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
@@ -377,29 +401,29 @@ namespace Sparky {
 			}
 
 			case Key::Q:
-				{
-					if (!ImGuizmo::IsUsing())
-						m_GizmoType = -1;
-					break;
-				}
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = -1; // Invalid Gizmo
+				break;
+			}
 			case Key::W:
-				{
-					if (!ImGuizmo::IsUsing())
-						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-					break;
-				}
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			}
 			case Key::E:
-				{
-					if (!ImGuizmo::IsUsing())
-						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-					break;
-				}
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				break;
+			}
 			case Key::R:
-				{
-					if (!ImGuizmo::IsUsing())
-						m_GizmoType = ImGuizmo::OPERATION::SCALE;
-					break;
-				}
+			{
+				if (!ImGuizmo::IsUsing())
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+				break;
+			}
 		}
 
 		return false;
@@ -447,15 +471,6 @@ namespace Sparky {
 			m_ActiveScene = newScene;
 			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		}
-
-		/*SharedRef<Scene> newScene = CreateShared<Scene>();
-		SceneSerializer serializer(newScene);
-		if (serializer.Deserialize(path.string()))
-		{
-			m_ActiveScene = newScene;
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		}*/
 	}
 
 	void EditorLayer::SaveSceneAs()

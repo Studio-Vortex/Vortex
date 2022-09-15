@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "OpenGLContext.h"
 
+#include "Sparky/Renderer/Renderer.h"
+
 #include <GLFW/glfw3.h>
 #include <Glad/glad.h>
 
@@ -19,6 +21,13 @@ namespace Sparky {
 		glfwMakeContextCurrent(m_WindowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		SP_CORE_ASSERT(status, "Failed to initialize Glad!");
+
+		Renderer::SetGraphicsAPIInfo({
+			glGetString(GL_RENDERER),
+			glGetString(GL_VENDOR),
+			glGetString(GL_VERSION),
+			glGetString(GL_SHADING_LANGUAGE_VERSION),
+		});
 
 #ifdef SP_DEBUG
 		SP_CORE_INFO("OpenGL Info:");

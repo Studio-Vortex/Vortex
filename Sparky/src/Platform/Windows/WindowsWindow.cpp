@@ -40,7 +40,7 @@ namespace Sparky {
 		m_Data.Title = props.Title;
 		m_Data.Size = props.Size;
 
-		SP_CORE_INFO("Creating window named '{}' with size: ({}, {})", props.Title, props.Size.x, props.Size.y);
+		SP_CORE_INFO("Creating window named '{}' with size: {}", props.Title, props.Size);
 
 		if (s_GLFWWindowCount == 0)
 		{

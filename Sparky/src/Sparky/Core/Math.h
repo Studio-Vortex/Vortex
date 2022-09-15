@@ -8,6 +8,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Sparky::Math {
 
@@ -168,21 +169,6 @@ namespace Sparky::Math {
 		}
 
 		return true;
-	}
-
-	inline std::ostream& operator<<(std::ostream& stream, const vec2& vec)
-	{
-		return stream << "(" << vec.x << ", " << vec.y << ')';
-	}
-		
-	inline std::ostream& operator<<(std::ostream& stream, const vec3& vec)
-	{
-		return stream << "(" << vec.x << ", " << vec.y << ", " << vec.z << ')';
-	}
-		
-	inline std::ostream& operator<<(std::ostream& stream, const vec4& vec)
-	{
-		return stream << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ')';
 	}
 
 }
