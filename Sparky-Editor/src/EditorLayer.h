@@ -49,6 +49,7 @@ namespace Sparky {
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
+		Math::vec2 m_MousePosLastFrame = Math::vec2();
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

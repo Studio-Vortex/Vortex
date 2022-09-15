@@ -21,6 +21,8 @@ namespace Sparky {
 		void Bind(uint32_t slot) const override;
 		void Unbind() const override;
 
+		bool IsLoaded() const override { return m_IsLoaded; }
+
 		inline uint32_t GetRendererID() const override { return m_RendererID; }
 
 		inline bool operator==(const Texture& other) const override
@@ -35,6 +37,7 @@ namespace Sparky {
 		uint32_t m_Height;
 		uint32_t m_RendererID = 0;
 		GLenum m_InternalFormat, m_DataFormat;
+		bool m_IsLoaded = false;
 	};
 
 }

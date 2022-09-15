@@ -253,9 +253,7 @@ namespace Sparky {
 
 		DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
 		{
-			Gui::ColorEdit4("##Color", Math::ValuePtr(component.SpriteColor));
-
-			SharedRef<Texture2D> texture;
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
 
 			if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
 				component.Texture = nullptr;
@@ -267,13 +265,16 @@ namespace Sparky {
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
-					texture = Texture2D::Create(texturePath.string());
-					component.Texture = texture;
+					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+					if (texture->IsLoaded())
+						component.Texture = texture;
+					else
+						SP_WARN("Could not load texture {}", texturePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat("##Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

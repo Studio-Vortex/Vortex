@@ -62,7 +62,9 @@ namespace Sparky {
 		{
 			case Sparky::EditorLayer::SceneState::Edit:
 			{
-				if (m_ViewportHovered)
+				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
+				const Math::vec2& mousePos = Input::GetMousePosition();
+				if (m_ViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
 
 				if (Input::IsKeyPressed(SP_KEY_ESCAPE))
@@ -77,6 +79,8 @@ namespace Sparky {
 				break;
 			}
 		}
+
+		m_MousePosLastFrame = Input::GetMousePosition();
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -429,12 +433,29 @@ namespace Sparky {
 
 	void EditorLayer::OpenExistingScene(const std::filesystem::path& path)
 	{
-		m_ActiveScene = CreateShared<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		if (path.extension().string() != ".sparky")
+		{
+			SP_WARN("Could not load {} - not a scene file", path.filename().string());
+			return;
+		}
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.Deserialize(path.string());
+		SharedRef<Scene> newScene = CreateShared<Scene>();
+		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SceneSerializer serializer(newScene);
+		if (serializer.Deserialize(path.string()))
+		{
+			m_ActiveScene = newScene;
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		}
+
+		/*SharedRef<Scene> newScene = CreateShared<Scene>();
+		SceneSerializer serializer(newScene);
+		if (serializer.Deserialize(path.string()))
+		{
+			m_ActiveScene = newScene;
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		}*/
 	}
 
 	void EditorLayer::SaveSceneAs()
