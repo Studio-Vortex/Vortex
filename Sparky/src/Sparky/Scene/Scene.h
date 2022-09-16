@@ -5,6 +5,8 @@
 
 #include <entt/entt.hpp>
 
+class b2World;
+
 namespace Sparky {
 
 	class Entity;
@@ -17,6 +19,9 @@ namespace Sparky {
 
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
+
+		void OnRuntimeStart();
+		void OnRuntimeStop();
 
 		void OnUpdateRuntime(TimeStep delta);
 		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
@@ -33,6 +38,8 @@ namespace Sparky {
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+
+		b2World* m_PhysicsWorld = nullptr;
 
 	private:
 		friend class Entity;

@@ -230,6 +230,8 @@ namespace Sparky {
 			DisplayAddComponentPopup<TransformComponent>("Transform");
 			DisplayAddComponentPopup<SpriteComponent>("Sprite");
 			DisplayAddComponentPopup<CameraComponent>("Camera");
+			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
+			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 
 			if (Gui::MenuItem("Native Script"))
 			{
@@ -335,6 +337,42 @@ namespace Sparky {
 
 				Gui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 			}
+		});
+
+		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)
+		{
+			const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyType = bodyTypes[(uint32_t)component.Type];
+
+			if (Gui::BeginCombo("Body Type", currentBodyType))
+			{
+				for (uint32_t i = 0; i < 3; i++)
+				{
+					bool isSelected = strcmp(currentBodyType, bodyTypes[i]) == 0;
+					if (Gui::Selectable(bodyTypes[i], isSelected))
+					{
+						currentBodyType = bodyTypes[i];
+						component.Type = static_cast<RigidBody2DComponent::BodyType>(i);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+				}
+
+				Gui::EndCombo();
+			}
+
+			Gui::Checkbox("Fixed Rotation", &component.FixedRotation);
+		});
+
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
+		{
+			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset));
+			Gui::DragFloat2("Size", Math::ValuePtr(component.Size));
+			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
 		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component)
