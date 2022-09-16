@@ -78,6 +78,7 @@ namespace Sparky {
 		// Copy components (except IDComponent and TagComponent)
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -219,13 +220,26 @@ namespace Sparky {
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
-
-			for (auto entity : group)
+			// Render Sprites
 			{
-				auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
+				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+				for (auto entity : group)
+				{
+					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
 
-				Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+				}
+			}
+
+			// Render Circles
+			{
+				auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+				for (auto entity : view)
+				{
+					auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+
+					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				}
 			}
 
 			Renderer2D::EndScene();
@@ -236,13 +250,26 @@ namespace Sparky {
 	{
 		Renderer2D::BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
-
-		for (auto entity : group)
+		// Render Sprites
 		{
-			auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
+			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+			for (auto entity : view)
+			{
+				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteComponent>(entity);
 
-			Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+				Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+			}
+		}
+
+		// Render Circles
+		{
+			auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
+
+				Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			}
 		}
 
 		Renderer2D::EndScene();
@@ -274,6 +301,7 @@ namespace Sparky {
 		// Copy components (except IDComponent and TagComponent)
 		CopyComponentIfExists<TransformComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<SpriteComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<CircleRendererComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<CameraComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
@@ -313,6 +341,9 @@ namespace Sparky {
 	
 	template <>
 	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component) { }
+
+	template <>
+	void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
 	
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

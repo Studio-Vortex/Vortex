@@ -1,14 +1,17 @@
-// Basic Texture Shader
+//-------------------------
+// - Sparky Game Engine -
+// Renderer2D Quad Shader with Texturing
+//-------------------------
 
 #type vertex
 #version 460 core
 
-layout (location = 0) in vec3 a_Position;
-layout (location = 1) in vec4 a_Color;
-layout (location = 2) in vec2 a_TexCoord;
+layout (location = 0) in vec3  a_Position;
+layout (location = 1) in vec4  a_Color;
+layout (location = 2) in vec2  a_TexCoord;
 layout (location = 3) in float a_TexIndex;
 layout (location = 4) in float a_TexScale;
-layout (location = 5) in int a_EntityID;
+layout (location = 5) in int   a_EntityID;
 
 out vec4       f_Color;
 out vec2       f_TexCoord;
@@ -24,7 +27,9 @@ void main()
 	f_TexCoord = a_TexCoord;
 	f_TexIndex = a_TexIndex;
 	f_TexScale = a_TexScale;
+	
 	f_EntityID = a_EntityID;
+	
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 }
 

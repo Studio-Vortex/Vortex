@@ -230,6 +230,7 @@ namespace Sparky {
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
 			DisplayAddComponentPopup<SpriteComponent>("Sprite");
+			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentPopup<CameraComponent>("Camera");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
@@ -275,6 +276,13 @@ namespace Sparky {
 			}
 
 			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+		});
+
+		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
+		{
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
+			Gui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+			Gui::DragFloat("Fade", &component.Fade, 0.00025f, 0.0f, 1.0f);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

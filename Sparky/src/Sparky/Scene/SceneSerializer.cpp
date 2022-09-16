@@ -167,8 +167,7 @@ namespace Sparky {
 			auto& cameraComponent = entity.GetComponent<CameraComponent>();
 			auto& camera = cameraComponent.Camera;
 
-			out << YAML::Key << "Camera" << YAML::Value;
-			out << YAML::BeginMap; // Camera
+			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
@@ -195,11 +194,23 @@ namespace Sparky {
 
 			out << YAML::EndMap; // SpriteComponent
 		}
+		
+		if (entity.HasComponent<CircleRendererComponent>())
+		{
+			out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
+			
+			auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
+
+			out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
+			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
+			out << YAML::Key << "Fade" << YAML::Value << circleComponent.Fade;
+
+			out << YAML::EndMap; // CircleRendererComponent
+		}
 
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{
-			out << YAML::Key << "Rigidbody2DComponent";
-			out << YAML::BeginMap; // Rigidbody2DComponent
+			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
 
 			auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << RigidBody2DBodyTypeToString(rb2dComponent.Type);
@@ -210,8 +221,7 @@ namespace Sparky {
 
 		if (entity.HasComponent<BoxCollider2DComponent>())
 		{
-			out << YAML::Key << "BoxCollider2DComponent";
-			out << YAML::BeginMap; // BoxCollider2DComponent
+			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
 
 			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
@@ -283,7 +293,9 @@ namespace Sparky {
 				std::string name;
 				auto tagComponent = entity["TagComponent"];
 				if (tagComponent)
+				{
 					name = tagComponent["Tag"].as<std::string>();
+				}
 
 				SP_CORE_TRACE("Deserialized Entity with ID = {}, name = {}", uuid, name);
 
@@ -326,6 +338,16 @@ namespace Sparky {
 					auto& sprite = deserializedEntity.AddComponent<SpriteComponent>();
 
 					sprite.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
+				}
+				
+				auto circleComponent = entity["CircleRendererComponent"];
+				if (circleComponent)
+				{
+					auto& circle = deserializedEntity.AddComponent<CircleRendererComponent>();
+
+					circle.Color = circleComponent["Color"].as<Math::vec4>();
+					circle.Thickness = circleComponent["Thickness"].as<float>();
+					circle.Fade = circleComponent["Fade"].as<float>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

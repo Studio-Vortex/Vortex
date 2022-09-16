@@ -166,7 +166,7 @@ namespace Sparky {
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
 
 			glDeleteProgram(program);
-
+			
 			for (auto id : glShaderIDs)
 				glDeleteShader(id);
 

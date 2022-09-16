@@ -92,6 +92,8 @@ namespace Sparky
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 
+		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
+
 		static void DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID);
 
 		struct Statistics
@@ -109,9 +111,9 @@ namespace Sparky
 
 	private:
 		static void StartBatch();
-		static void FlushAndReset();
-		static void CopyDataToBuffer();
-		static void AddToVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID = -1);
+		static void NextBatch();
+		static void AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID = -1);
+		static void AddToCircleVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID = -1);
 	};
 
 }

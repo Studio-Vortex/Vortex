@@ -4,7 +4,7 @@ Entities:
     TagComponent:
       Tag: Quad
     TransformComponent:
-      Translation: [-10.9872866, 10.3251133, 0]
+      Translation: [-10.5782318, 10.1371593, 0]
       Rotation: [0, 0, -0.392064869]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -16,8 +16,8 @@ Entities:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.5
-      Restitution: 0.5
+      Friction: 0.280000001
+      Restitution: 1
       RestitutionThreshold: 0.5
   - Entity: 1146390100554574168
     TagComponent:
@@ -75,24 +75,3 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 3953448411852851219
-    TagComponent:
-      Tag: Circle
-    TransformComponent:
-      Translation: [0, -5.79212189, -0.229330063]
-      Rotation: [0, 0, 0]
-      Scale: [7.8119998, 7.8119998, 2.0999999]
-    CircleRendererComponent:
-      Color: [1, 0.741312683, 0, 1]
-      Thickness: 0.125
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
