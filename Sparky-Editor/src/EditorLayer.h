@@ -39,6 +39,12 @@ namespace Sparky {
 
 		void DuplicateSelectedEntity();
 
+		// Gizmos
+		void OnNoGizmoSelected();
+		void OnTranslationToolSelected();
+		void OnRotationToolSelected();
+		void OnScaleToolSelected();
+
 		// Panels
 
 		void UI_Toolbar();

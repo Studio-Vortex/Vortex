@@ -164,18 +164,56 @@ namespace Sparky {
 					OpenExistingScene();
 				Gui::Separator();
 
+				if (Gui::MenuItem("Save", "Ctrl+S"))
+					SaveScene();
+				Gui::Separator();
+
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
 					SaveSceneAs();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Exit"))
+				if (Gui::MenuItem("Close Editor", "Esc"))
 					Application::Get().Close();
 
 				Gui::EndMenu();
 			}
+			
+			if (Gui::BeginMenu("Edit"))
+			{
+				if (Gui::MenuItem("Play Scene", "Ctrl+P"))
+					OnScenePlay();
+				Gui::Separator();
 
-			if (Gui::MenuItem("About"))
-				m_AboutPanel.ShowPanel();
+				if (Gui::BeginMenu("Tools"))
+				{
+					if (Gui::MenuItem("No Selection", "Q"))
+						OnNoGizmoSelected();
+					Gui::Separator();
+
+					if (Gui::MenuItem("Translation Tool", "W"))
+						OnTranslationToolSelected();
+					Gui::Separator();
+
+					if (Gui::MenuItem("Rotation Tool", "E"))
+						OnRotationToolSelected();
+					Gui::Separator();
+
+					if (Gui::MenuItem("Scale Tool", "R"))
+						OnScaleToolSelected();
+					
+					Gui::EndMenu();
+				}
+
+				Gui::EndMenu();
+			}
+			
+			if (Gui::BeginMenu("Help"))
+			{
+				if (Gui::MenuItem("About"))
+					m_AboutPanel.ShowPanel();
+
+				Gui::EndMenu();
+			}
 
 			Gui::EndMenuBar();
 		}
@@ -419,28 +457,28 @@ namespace Sparky {
 			case Key::Q:
 			{
 				if (!ImGuizmo::IsUsing())
-					m_GizmoType = -1; // Invalid Gizmo
+					OnNoGizmoSelected();
 
 				break;
 			}
 			case Key::W:
 			{
 				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+					OnTranslationToolSelected();
 
 				break;
 			}
 			case Key::E:
 			{
 				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+					OnRotationToolSelected();
 
 				break;
 			}
 			case Key::R:
 			{
 				if (!ImGuizmo::IsUsing())
-					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+					OnScaleToolSelected();
 
 				break;
 			}
@@ -529,6 +567,9 @@ namespace Sparky {
 
 	void EditorLayer::OnScenePlay()
 	{
+		if (!m_EditorScene)
+			return;
+
 		m_SceneState = SceneState::Play;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -559,6 +600,26 @@ namespace Sparky {
 			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
 		}
+	}
+
+	void EditorLayer::OnNoGizmoSelected()
+	{
+		m_GizmoType = -1; // Invalid gizmo
+	}
+
+	void EditorLayer::OnTranslationToolSelected()
+	{
+		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+	}
+
+	void EditorLayer::OnRotationToolSelected()
+	{
+		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+	}
+
+	void EditorLayer::OnScaleToolSelected()
+	{
+		m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
 
 }

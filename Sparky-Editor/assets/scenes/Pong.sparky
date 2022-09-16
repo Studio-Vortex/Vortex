@@ -1,23 +1,5 @@
 Scene: Untitled
 Entities:
-  - Entity: 2443077591911723002
-    TagComponent:
-      Tag: Left Paddle
-    TransformComponent:
-      Translation: [-4, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.300000012, 3, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-  - Entity: 1115156194335372768
-    TagComponent:
-      Tag: Right Paddle
-    TransformComponent:
-      Translation: [4, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.300000012, 3, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
   - Entity: 6557463846137196497
     TagComponent:
       Tag: Camera
@@ -36,3 +18,41 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+  - Entity: 1115156194335372768
+    TagComponent:
+      Tag: Right Paddle
+    TransformComponent:
+      Translation: [4, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.300000012, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2443077591911723002
+    TagComponent:
+      Tag: Left Paddle
+    TransformComponent:
+      Translation: [-4, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.300000012, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
