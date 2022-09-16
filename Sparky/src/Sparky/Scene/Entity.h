@@ -24,6 +24,14 @@ namespace Sparky {
 			return component;
 		}
 
+		template <typename TComponent, typename... Args>
+		inline TComponent& AddOrReplaceComponent(Args&&... args)
+		{
+			TComponent& component = m_Scene->m_Registry.emplace_or_replace<TComponent>(m_EntityID, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
+		}
+
 		template <typename... TComponents>
 		inline void RemoveComponent()
 		{
@@ -47,6 +55,8 @@ namespace Sparky {
 		}
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
+		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
 		inline bool operator==(const Entity& other) const
 		{

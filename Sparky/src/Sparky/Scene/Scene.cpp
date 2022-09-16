@@ -27,12 +27,63 @@ namespace Sparky {
 		return b2_staticBody;
 	}
 
-	Scene::Scene()
+	Scene::Scene() { }
+
+	Scene::~Scene() { }
+
+	template <typename TComponent>
+	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
+		auto view = src.view<TComponent>();
+
+		for (auto& e : view)
+		{
+			UUID uuid = src.get<IDComponent>(e).ID;
+			SP_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity's UUID was not found in enttMap!")
+			entt::entity dstEnttID = enttMap.at(uuid);
+
+			auto& component = src.get<TComponent>(e);
+			dst.emplace_or_replace<TComponent>(dstEnttID, component);
+		}
 	}
 
-	Scene::~Scene()
+	template <typename TComponent>
+	static void CopyComponentIfExists(Entity dst, Entity src)
 	{
+		if (src.HasComponent<TComponent>())
+			dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+	}
+
+	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
+	{
+		SharedRef<Scene> destination = CreateShared<Scene>();
+
+		destination->m_ViewportWidth = source->m_ViewportWidth;
+		destination->m_ViewportHeight = source->m_ViewportHeight;
+
+		auto& srcSceneRegistry = source->m_Registry;
+		auto& dstSceneRegistry = destination->m_Registry;
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		// Create entites in new scene
+		auto idView = srcSceneRegistry.view<IDComponent>();
+		for (auto& e : idView)
+		{
+			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name);
+			enttMap[uuid] = (entt::entity)copiedEntity;
+		}
+		
+		// Copy components (except IDComponent and TagComponent)
+		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		return destination;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -214,6 +265,23 @@ namespace Sparky {
 		}
 	}
 
+	Entity Scene::DuplicateEntity(Entity source)
+	{
+		std::string name = source.GetName();
+		name.append(" Copy"); // Allow the user to tell the difference between original entity and copy
+		Entity duplicatedEntity = CreateEntity(name);
+
+		// Copy components (except IDComponent and TagComponent)
+		CopyComponentIfExists<TransformComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<SpriteComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<CameraComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<BoxCollider2DComponent>(duplicatedEntity, source);
+
+		return duplicatedEntity;
+	}
+
     Entity Scene::GetPrimaryCameraEntity()
     {
 		auto view = m_Registry.view<CameraComponent>();
@@ -235,24 +303,16 @@ namespace Sparky {
 	}
 
 	template <>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	
 	template <>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) { }
 
 	template <>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
 	
 	template <>
-	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component) { }
 	
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
@@ -261,18 +321,12 @@ namespace Sparky {
 	}
 	
 	template <>
-	void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
 
 	template <>
-	void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }
 
 	template <>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
-	}
+	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
 }

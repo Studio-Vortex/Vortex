@@ -30,9 +30,14 @@ namespace Sparky {
 		void OpenExistingScene();
 		void OpenExistingScene(const std::filesystem::path& path);
 		void SaveSceneAs();
+		void SaveScene();
+
+		void SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path);
 
 		void OnScenePlay();
 		void OnSceneStop();
+
+		void DuplicateSelectedEntity();
 
 		// Panels
 
@@ -43,6 +48,8 @@ namespace Sparky {
 		SharedRef<Framebuffer> m_Framebuffer;
 
 		SharedRef<Scene> m_ActiveScene;
+		SharedRef<Scene> m_EditorScene;
+		std::filesystem::path m_EditorScenePath;
 		Entity m_HoveredEntity;
 
 		bool m_PrimaryCamera = true;

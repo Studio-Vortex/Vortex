@@ -63,6 +63,7 @@ namespace Sparky {
 			case Sparky::EditorLayer::SceneState::Edit:
 			{
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
+				// this allows the user to manipulate the editor camera while they are holding the left mouse button even if the cursor is outside the scene viewport
 				const Math::vec2& mousePos = Input::GetMousePosition();
 				if (m_ViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
@@ -105,6 +106,8 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		static bool show = true;
+		
+		// Dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
@@ -145,7 +148,7 @@ namespace Sparky {
 		{
 			ImGuiID dockspace_id = Gui::GetID("MyDockSpace");
 			Gui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-		}
+		} // End Dockspace
 
 		style.WindowMinSize.x = minWinSizeX;
 
@@ -238,7 +241,7 @@ namespace Sparky {
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		// Accept data from the content browser
+		// Accept a Scene from the content browser
 		if (Gui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -351,6 +354,41 @@ namespace Sparky {
 
 		switch (e.GetKeyCode())
 		{
+			case Key::N:
+			{
+				if (controlPressed)
+					CreateNewScene();
+
+				break;
+			}
+			case Key::O:
+			{
+				if (controlPressed)
+					OpenExistingScene();
+
+				break;
+			}
+			case Key::S:
+			{
+				if (controlPressed)
+				{
+					if (shiftPressed)
+						SaveSceneAs();
+					else
+						SaveScene();
+				}
+
+				break;
+			}
+
+			case Key::D:
+			{
+				if (controlPressed)
+					DuplicateSelectedEntity();
+
+				break;
+			}
+
 			case Key::Space:
 			{
 				static bool wireframe{};
@@ -360,66 +398,50 @@ namespace Sparky {
 					RenderCommand::SetWireframe(true);
 				else
 					RenderCommand::SetWireframe(false);
-				break;
-			}
 
-			case Key::N:
-			{
-				if (controlPressed)
-					CreateNewScene();
-				break;
-			}
-		
-			case Key::O:
-			{
-				if (controlPressed)
-					OpenExistingScene();
-				break;
-			}
-
-			case Key::S:
-			{
-				if (controlPressed && shiftPressed)
-					SaveSceneAs();
 				break;
 			}
 
 			case Key::P:
 			{
-				if (controlPressed && m_SceneState == SceneState::Edit)
+				if (controlPressed)
 				{
-					m_SceneState = SceneState::Play;
-					break;
+					switch (m_SceneState)
+					{
+						case Sparky::EditorLayer::SceneState::Edit: OnScenePlay(); break;
+						case Sparky::EditorLayer::SceneState::Play: OnSceneStop(); break;
+					}
 				}
-				if (controlPressed && m_SceneState == SceneState::Play)
-				{
-					m_SceneState = SceneState::Edit;
-					break;
-				}
+
+				break;
 			}
 
 			case Key::Q:
 			{
 				if (!ImGuizmo::IsUsing())
 					m_GizmoType = -1; // Invalid Gizmo
+
 				break;
 			}
 			case Key::W:
 			{
 				if (!ImGuizmo::IsUsing())
 					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
 				break;
 			}
 			case Key::E:
 			{
 				if (!ImGuizmo::IsUsing())
 					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+
 				break;
 			}
 			case Key::R:
 			{
 				if (!ImGuizmo::IsUsing())
 					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+
 				break;
 			}
 		}
@@ -443,6 +465,8 @@ namespace Sparky {
 		m_ActiveScene = CreateShared<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 	}
 
 	void EditorLayer::OpenExistingScene()
@@ -455,6 +479,9 @@ namespace Sparky {
 
 	void EditorLayer::OpenExistingScene(const std::filesystem::path& path)
 	{
+		if (m_SceneState != SceneState::Edit)
+			OnSceneStop();
+
 		if (path.extension().string() != ".sparky")
 		{
 			SP_WARN("Could not load {} - not a scene file", path.filename().string());
@@ -466,8 +493,11 @@ namespace Sparky {
 		SceneSerializer serializer(newScene);
 		if (serializer.Deserialize(path.string()))
 		{
-			m_ActiveScene = newScene;
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			m_EditorScene = newScene;
+			m_SceneHierarchyPanel.SetContext(m_EditorScene);
+
+			m_ActiveScene = m_EditorScene;
+			m_EditorScenePath = path;
 		}
 	}
 
@@ -477,21 +507,58 @@ namespace Sparky {
 
 		if (!filepath.empty())
 		{
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(filepath);
+			m_EditorScenePath = filepath;
+			
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
 		}
+	}
+
+	void EditorLayer::SaveScene()
+	{
+		if (!m_EditorScenePath.empty())
+			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		else
+			SaveSceneAs();
+	}
+
+	void EditorLayer::SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(scene);
+		serializer.Serialize(path.string());
 	}
 
 	void EditorLayer::OnScenePlay()
 	{
-		m_ActiveScene->OnRuntimeStart();
 		m_SceneState = SceneState::Play;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnRuntimeStart();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
-		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
+
+		m_ActiveScene->OnRuntimeStop();
+		m_ActiveScene = m_EditorScene;
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::DuplicateSelectedEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+
+		if (selectedEntity)
+		{
+			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
+			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
+		}
 	}
 
 }

@@ -23,32 +23,35 @@ namespace Sparky {
 	{
 		Gui::Begin("Scene Hierarchy");
 
-		m_ContextScene->m_Registry.each([&](auto entityID)
+		if (m_ContextScene)
 		{
-			Entity entity{ entityID, m_ContextScene.get() };
-			DrawEntityNode(entity);
-		});
-
-		if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
-			m_SelectedEntity = {};
-
-		// Right-click on blank space
-		if (Gui::BeginPopupContextWindow(0, 1, false))
-		{
-			if (Gui::MenuItem("Add Empty Entity"))
-				m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
-
-			if (Gui::BeginMenu("Add 2D Entity"))
-			{
-				if (Gui::MenuItem("Add Quad"))
+			m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
-					m_SelectedEntity.AddComponent<SpriteComponent>();
-				}
-				Gui::EndMenu();
-			}
+					Entity entity{ entityID, m_ContextScene.get() };
+					DrawEntityNode(entity);
+				});
 
-			Gui::EndPopup();
+			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
+				m_SelectedEntity = {};
+
+			// Right-click on blank space
+			if (Gui::BeginPopupContextWindow(0, 1, false))
+			{
+				if (Gui::MenuItem("Add Empty Entity"))
+					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
+
+				if (Gui::BeginMenu("Add 2D Entity"))
+				{
+					if (Gui::MenuItem("Add Quad"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
+						m_SelectedEntity.AddComponent<SpriteComponent>();
+					}
+					Gui::EndMenu();
+				}
+
+				Gui::EndPopup();
+			}
 		}
 
 		Gui::End();
@@ -56,9 +59,7 @@ namespace Sparky {
 		Gui::Begin("Inspector");
 
 		if (m_SelectedEntity)
-		{
 			DrawComponents(m_SelectedEntity);
-		}
 
 		Gui::End();
 	}
@@ -233,11 +234,8 @@ namespace Sparky {
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 
-			if (Gui::MenuItem("Native Script"))
-			{
-				m_SelectedEntity.AddComponent<NativeScriptComponent>();
-				Gui::CloseCurrentPopup();
-			}
+			// Allow for multiple Native Scripts on an entity
+			DisplayAddComponentPopup<NativeScriptComponent>("C++ Native Script", true);
 
 			Gui::EndPopup();
 		}
@@ -260,7 +258,7 @@ namespace Sparky {
 			if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
 				component.Texture = nullptr;
 
-			// Accept data from the content browser
+			// Accept textures from the content browser
 			if (Gui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))

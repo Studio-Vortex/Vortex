@@ -21,9 +21,9 @@ namespace Sparky {
 
 	private:
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name)
+		void DisplayAddComponentPopup(const std::string& name, bool allowMultiple = false)
 		{
-			if (!m_SelectedEntity.HasComponent<TComponent>())
+			if (!m_SelectedEntity.HasComponent<TComponent>() || allowMultiple)
 			{
 				if (Gui::MenuItem(name.c_str()))
 				{

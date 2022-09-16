@@ -18,6 +18,8 @@ namespace Sparky {
 		Scene();
 		~Scene();
 
+		static SharedRef<Scene> Copy(SharedRef<Scene> source);
+
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
@@ -29,6 +31,8 @@ namespace Sparky {
 		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		Entity DuplicateEntity(Entity entity);
 
 		Entity GetPrimaryCameraEntity();
 
