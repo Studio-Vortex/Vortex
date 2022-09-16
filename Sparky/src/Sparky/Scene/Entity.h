@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Sparky/Scene/Scene.h"
+#include "Sparky/Core/UUID.h"
+#include "Sparky/Scene/Components.h"
 
 #include <entt/entt.hpp>
 
@@ -43,6 +45,8 @@ namespace Sparky {
 		{
 			return m_Scene->m_Registry.all_of<TComponents...>(m_EntityID);
 		}
+
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
 		inline bool operator==(const Entity& other) const
 		{

@@ -2,10 +2,20 @@
 
 #include "Sparky/Core/Math.h"
 #include "Sparky/Scene/SceneCamera.h"
-#include "Sparky/Scene/ScriptableEntity.h"
+#include "Sparky/Core/UUID.h"
 #include "Sparky/Renderer/Texture.h"
 
 namespace Sparky {
+
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+		IDComponent(UUID uuid)
+			: ID(uuid) { }
+	};
 
 	struct TagComponent
 	{
@@ -57,6 +67,9 @@ namespace Sparky {
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
 	};
+
+	// Forward declaration
+	class ScriptableEntity;
 
 	struct NativeScriptComponent
 	{

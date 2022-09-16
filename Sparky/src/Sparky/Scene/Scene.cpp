@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Sparky/Scene/Components.h"
+#include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Core/Math.h"
@@ -36,7 +37,13 @@ namespace Sparky {
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
+		return CreateEntityWithUUID(UUID(), name);
+	}
+
+	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
@@ -224,9 +231,14 @@ namespace Sparky {
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		SP_CORE_ASSERT(false, "Should not be calling base template function!");
+		//SP_CORE_ASSERT(false, "Should not be calling base template function!");
 	}
 
+	template <>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
+	}
+	
 	template <>
 	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
 	{

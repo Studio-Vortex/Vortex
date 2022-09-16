@@ -1,15 +1,24 @@
 Scene: Untitled
 Entities:
-  - Entity: 1237483227498
+  - Entity: 2366115232929302760
     TagComponent:
-      Tag: Top
+      Tag: Left
     TransformComponent:
-      Translation: [-3.7252903e-09, 0.5, 0]
-      Rotation: [1.57079613, 0.785398245, -4.21468513e-08]
-      Scale: [0.999999881, 0.999999285, 0.99999851]
+      Translation: [-0.349999994, -2.98023224e-08, 0.349999964]
+      Rotation: [0, -0.785398245, 0]
+      Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0, 0.521131039, 0.876447856, 1]
-  - Entity: 1237483227498
+      Color: [0.181467175, 0.402692318, 1, 1]
+  - Entity: 16498726574936382530
+    TagComponent:
+      Tag: Right
+    TransformComponent:
+      Translation: [0.351999998, 0, 0.349999994]
+      Rotation: [0, 0.785398245, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.160784319, 0.294117659, 0.619607866, 1]
+  - Entity: 2770695311370114190
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -19,7 +28,7 @@ Entities:
     CameraComponent:
       Camera:
         ProjectionType: 0
-        PerspectiveFOV: 0.785398185
+        PerspectiveFOV: 1000
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 1000
         OrthographicSize: 25
@@ -27,21 +36,12 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1237483227498
+  - Entity: 1979468409428114623
     TagComponent:
-      Tag: Right
+      Tag: Top
     TransformComponent:
-      Translation: [0.351999998, 0, 0.349999994]
-      Rotation: [0, 0.785398245, 0]
-      Scale: [1, 1, 1]
+      Translation: [-3.7252903e-09, 0.5, 0]
+      Rotation: [1.57079613, 0.785398245, -4.21468513e-08]
+      Scale: [0.999999881, 0.999999285, 0.99999851]
     SpriteComponent:
-      Color: [0.160784319, 0.294117659, 0.619607866, 1]
-  - Entity: 1237483227498
-    TagComponent:
-      Tag: Left
-    TransformComponent:
-      Translation: [-0.349999994, -2.98023224e-08, 0.349999964]
-      Rotation: [0, -0.785398245, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [0.181467175, 0.402692318, 1, 1]
+      Color: [0, 0.521131039, 0.876447856, 1]

@@ -1,33 +1,24 @@
 Scene: Untitled
 Entities:
-  - Entity: 1237483227498
+  - Entity: 1526650983602685266
     TagComponent:
-      Tag: Floor
+      Tag: Backdrop
     TransformComponent:
-      Translation: [0, -1.5, 2.37276363]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [18.75, 19.9995594, 0.999985993]
+      Translation: [0, 0, -4]
+      Rotation: [0, 0, 0]
+      Scale: [100, 100, 1]
     SpriteComponent:
-      Color: [0.822393835, 0.822393835, 0.822393835, 1]
-  - Entity: 1237483227498
+      Color: [0.386100411, 0.386100411, 0.386100411, 1]
+  - Entity: 1227115799316562115
     TagComponent:
-      Tag: Left
+      Tag: Top
     TransformComponent:
-      Translation: [-0.349999994, 0, 0.349999994]
-      Rotation: [0, -0.785398185, 0]
+      Translation: [0, 0.5, 0]
+      Rotation: [1.57079637, 0.785398185, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0.181467175, 0.402692318, 1, 1]
-  - Entity: 1237483227498
-    TagComponent:
-      Tag: Right
-    TransformComponent:
-      Translation: [0.351999998, 0, 0.349999994]
-      Rotation: [0, 0.785398185, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [0.160784319, 0.294117659, 0.619607866, 1]
-  - Entity: 1237483227498
+      Color: [0, 0.521131039, 0.876447856, 1]
+  - Entity: 6949508144411093171
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -45,21 +36,30 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1237483227498
+  - Entity: 4837476222634533122
     TagComponent:
-      Tag: Top
+      Tag: Right
     TransformComponent:
-      Translation: [0, 0.5, 0]
-      Rotation: [1.57079637, 0.785398185, 0]
+      Translation: [0.351999998, 0, 0.349999994]
+      Rotation: [0, 0.785398185, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0, 0.521131039, 0.876447856, 1]
-  - Entity: 1237483227498
+      Color: [0.160784319, 0.294117659, 0.619607866, 1]
+  - Entity: 14272317649843350604
     TagComponent:
-      Tag: Backdrop
+      Tag: Left
     TransformComponent:
-      Translation: [0, 0, -4]
-      Rotation: [0, 0, 0]
-      Scale: [100, 100, 1]
+      Translation: [-0.349999994, 0, 0.349999994]
+      Rotation: [0, -0.785398185, 0]
+      Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0.386100411, 0.386100411, 0.386100411, 1]
+      Color: [0.181467175, 0.402692318, 1, 1]
+  - Entity: 4874765786777590804
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -1.5, 2.37276363]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [18.75, 19.9995594, 0.999985993]
+    SpriteComponent:
+      Color: [0.822393835, 0.822393835, 0.822393835, 1]

@@ -1,6 +1,24 @@
 Scene: Untitled
 Entities:
-  - Entity: 1237483227498
+  - Entity: 2443077591911723002
+    TagComponent:
+      Tag: Left Paddle
+    TransformComponent:
+      Translation: [-4, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.300000012, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 1115156194335372768
+    TagComponent:
+      Tag: Right Paddle
+    TransformComponent:
+      Translation: [4, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.300000012, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 6557463846137196497
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -10,7 +28,7 @@ Entities:
     CameraComponent:
       Camera:
         ProjectionType: 0
-        PerspectiveFOV: 0.785398185
+        PerspectiveFOV: 1000
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 1000
         OrthographicSize: 10
@@ -18,21 +36,3 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1237483227498
-    TagComponent:
-      Tag: Right Paddle
-    TransformComponent:
-      Translation: [4, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.300000012, 3, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-  - Entity: 1237483227498
-    TagComponent:
-      Tag: Left Paddle
-    TransformComponent:
-      Translation: [-4, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.300000012, 3, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]

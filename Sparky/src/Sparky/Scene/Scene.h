@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Core/UUID.h"
 #include "Sparky/Core/TimeStep.h"
 #include "Sparky/Renderer/EditorCamera.h"
 
@@ -18,6 +19,7 @@ namespace Sparky {
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = std::string());
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
 		void OnRuntimeStart();
