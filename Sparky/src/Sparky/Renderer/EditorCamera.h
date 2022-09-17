@@ -22,6 +22,9 @@ namespace Sparky {
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 
+		inline float GetFOV() const { return m_FOV; }
+		inline void SetFOV(float fov) { m_FOV = fov; UpdateProjection(); }
+
 		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
 		const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }

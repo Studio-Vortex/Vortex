@@ -25,9 +25,9 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
+		void OnOverlayRender();
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
-		void OnOverlayRender();
 
 		void CreateNewScene();
 		void OpenExistingScene();
@@ -40,6 +40,9 @@ namespace Sparky {
 		void OnScenePlay();
 		void OnSceneStop();
 		void RestartScene();
+
+		void OnSceneSimulate();
+		void RestartSceneSimulation();
 
 		void DuplicateSelectedEntity();
 
@@ -67,7 +70,10 @@ namespace Sparky {
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
+		Math::vec4 m_PhysicsColliderColor = ColorToVec4(Color::Green);
 
+		float m_EditorCameraFOV = 30.0f;
+		float m_EditorCameraFOVLastFrame = 0.0f;
 		int m_GizmoType = -1;
 
 		bool m_ShowPhysicsColliders = false;
@@ -80,12 +86,13 @@ namespace Sparky {
 
 		enum class SceneState
 		{
-			Edit = 0, Play = 1,
+			Edit = 0, Play = 1, Simulate = 2,
 		};
-
+		
 		// Editor resources
 		SharedRef<Texture2D> m_PlayIcon;
 		SharedRef<Texture2D> m_StopIcon;
+		SharedRef<Texture2D> m_SimulateIcon;
 
 		// Panels
 
@@ -96,7 +103,7 @@ namespace Sparky {
 
 		// Settings
 
-		SettingsPanel::Settings m_Settings{ m_ShowPhysicsColliders };
+		SettingsPanel::Settings m_Settings{ m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders };
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 
 		SceneState m_SceneState = SceneState::Edit;

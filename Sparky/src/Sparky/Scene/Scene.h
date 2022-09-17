@@ -27,7 +27,11 @@ namespace Sparky {
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
+		void OnSimulationStart();
+		void OnSimulationStop();
+
 		void OnUpdateRuntime(TimeStep delta);
+		void OnUpdateSimulation(TimeStep delta, EditorCamera& camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
@@ -45,6 +49,11 @@ namespace Sparky {
 	private:
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);
+
+		void OnPhysics2DStart();
+		void OnPhysics2DStop();
+
+		void RenderScene(EditorCamera& camera);
 
 	private:
 		entt::registry m_Registry;

@@ -25,9 +25,11 @@ namespace Sparky {
 
 		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
 		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
+		m_SimulateIcon = Texture2D::Create("Resources/Icons/SimulateButton.png");
 
-		m_ActiveScene = CreateShared<Scene>();
-		m_EditorCamera = EditorCamera(30.0f, 0.1778f, 0.1f, 1000.0f);
+		m_EditorScene = CreateShared<Scene>();
+		m_ActiveScene = m_EditorScene;
+		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -61,7 +63,7 @@ namespace Sparky {
 		// Update Scene
 		switch (m_SceneState)
 		{
-			case Sparky::EditorLayer::SceneState::Edit:
+			case SceneState::Edit:
 			{
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
 				// this allows the user to manipulate the editor camera while they are holding the left mouse button even if the cursor is outside the scene viewport
@@ -69,20 +71,38 @@ namespace Sparky {
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
 
+				float editorCameraFOV = m_EditorCamera.GetFOV();
+				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
+					m_EditorCamera.SetFOV(m_EditorCameraFOV);
+
 				if (Input::IsKeyPressed(SP_KEY_ESCAPE))
 					Application::Get().Close();
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 				break;
 			}
-			case Sparky::EditorLayer::SceneState::Play:
+			case SceneState::Play:
 			{
 				m_ActiveScene->OnUpdateRuntime(delta);
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				const Math::vec2& mousePos = Input::GetMousePosition();
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
+					m_EditorCamera.OnUpdate(delta);
+
+				float editorCameraFOV = m_EditorCamera.GetFOV();
+				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
+					m_EditorCamera.SetFOV(m_EditorCameraFOV);
+
+				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
 			}
 		}
 
 		m_MousePosLastFrame = Input::GetMousePosition();
+		m_EditorCameraFOVLastFrame = m_EditorCameraFOV;
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -188,14 +208,31 @@ namespace Sparky {
 				{
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
 						OnScenePlay();
+					Gui::Separator();
+
+					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
+						OnSceneSimulate();
 				}
 				else
 				{
-					if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
-						OnSceneStop();
-					Gui::Separator();
-					if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
-						RestartScene();
+					if (m_SceneState == SceneState::Play)
+					{
+						if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
+							OnSceneStop();
+						Gui::Separator();
+
+						if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
+							RestartScene();
+					}
+					else if (m_SceneState == SceneState::Simulate)
+					{
+						if (Gui::MenuItem("Stop Simulation", "Ctrl+X"))
+							OnSceneStop();
+						Gui::Separator();
+
+						if (Gui::MenuItem("Restart Simulation", "Ctrl+Shift+X"))
+							RestartSceneSimulation();
+					}
 				}
 
 				Gui::EndMenu();
@@ -366,21 +403,90 @@ namespace Sparky {
 
 		Gui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		SharedRef<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayIcon : m_StopIcon;
+		bool toolbarEnabled = (bool)m_ActiveScene;
+
+		ImVec4 tintColor = ImVec4(1, 1, 1, 1);
+		if (!toolbarEnabled)
+			tintColor.w = 0.5f;
+
 		float size = Gui::GetWindowHeight() - 4.0f;
-		Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f)  - (size * 0.5f));
-		if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2{ size, size }, ImVec2{ 0, 0 }, ImVec2{ 1, 1 }, 0))
+
 		{
-			if (m_SceneState == SceneState::Edit)
-				OnScenePlay();
-			else if (m_SceneState == SceneState::Play)
-				OnSceneStop();
+			SharedRef<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_PlayIcon : m_StopIcon;
+			Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			{
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+					OnScenePlay();
+				else if (m_SceneState == SceneState::Play)
+					OnSceneStop();
+			}
+		}
+
+		Gui::SameLine();
+
+		{
+			SharedRef<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_SimulateIcon : m_StopIcon;
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			{
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+					OnSceneSimulate();
+				else if (m_SceneState == SceneState::Simulate)
+					OnSceneStop();
+			}
 		}
 
 		Gui::PopStyleVar(2);
 		Gui::PopStyleColor(3);
 
 		Gui::End();
+	}
+
+	void EditorLayer::OnOverlayRender()
+	{
+		if (m_SceneState == SceneState::Play)
+		{
+			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
+		}
+		else
+		{
+			Renderer2D::BeginScene(m_EditorCamera);
+		}
+
+		// Render Box Colliders
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+			for (auto entity : view)
+			{
+				auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+
+				Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, 0.009f);
+				Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
+
+				Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
+
+				Renderer2D::DrawRect(transform, m_PhysicsColliderColor);
+			}
+		}
+
+		// Render Circle Colliders
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+			for (auto entity : view)
+			{
+				auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+
+				Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, 0.009f);
+				Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.01f);
+
+				Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
+
+				Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, 0.03f);
+			}
+		}
+
+		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -461,11 +567,30 @@ namespace Sparky {
 
 				if (controlPressed)
 				{
-					switch (m_SceneState)
-					{
-						case Sparky::EditorLayer::SceneState::Edit: OnScenePlay(); break;
-						case Sparky::EditorLayer::SceneState::Play: OnSceneStop(); break;
-					}
+					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+						OnScenePlay();
+					else if (m_SceneState == SceneState::Play)
+						OnSceneStop();
+
+					break;
+				}
+			}
+			case Key::X:
+			{
+				if (controlPressed && shiftPressed)
+				{
+					if (m_SceneState == SceneState::Simulate)
+						RestartSceneSimulation();
+
+					break;
+				}
+
+				if (controlPressed)
+				{
+					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+						OnSceneSimulate();
+					else if (m_SceneState == SceneState::Simulate)
+						OnSceneStop();
 
 					break;
 				}
@@ -521,53 +646,6 @@ namespace Sparky {
 		}
 
 		return false;
-	}
-
-	void EditorLayer::OnOverlayRender()
-	{
-		if (m_SceneState == SceneState::Play)
-		{
-			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
-		}
-		else
-		{
-			Renderer2D::BeginScene(m_EditorCamera);
-		}
-
-		// Render Box Colliders
-		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-			for (auto entity : view)
-			{
-				auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
-
-				Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, 0.001f);
-				Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
-
-				Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
-
-				Renderer2D::DrawRect(transform, ColorToVec4(Color::Green));
-			}
-		}
-
-		// Render Circle Colliders
-		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-			for (auto entity : view)
-			{
-				auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
-
-				Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, 0.001f);
-				Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.0f);
-
-				Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
-
-				Renderer2D::DrawCircle(transform, ColorToVec4(Color::Green), 0.01f);
-			}
-		}
-
-		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::CreateNewScene()
@@ -640,8 +718,8 @@ namespace Sparky {
 
 	void EditorLayer::OnScenePlay()
 	{
-		if (!m_EditorScene)
-			return;
+		if (m_SceneState == SceneState::Simulate)
+			OnSceneStop();
 
 		m_SceneState = SceneState::Play;
 
@@ -653,9 +731,15 @@ namespace Sparky {
 
 	void EditorLayer::OnSceneStop()
 	{
+		SP_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
+
+		if (m_SceneState == SceneState::Play)
+			m_ActiveScene->OnRuntimeStop();
+		else if (m_SceneState == SceneState::Simulate)
+			m_ActiveScene->OnSimulationStop();
+
 		m_SceneState = SceneState::Edit;
 
-		m_ActiveScene->OnRuntimeStop();
 		m_ActiveScene = m_EditorScene;
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -664,6 +748,24 @@ namespace Sparky {
 	void EditorLayer::RestartScene()
 	{
 		OnScenePlay();
+	}
+
+	void EditorLayer::OnSceneSimulate()
+	{
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+
+		m_SceneState = SceneState::Simulate;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnSimulationStart();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::RestartSceneSimulation()
+	{
+		OnSceneSimulate();
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

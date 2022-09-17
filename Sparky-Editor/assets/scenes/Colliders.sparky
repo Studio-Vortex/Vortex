@@ -1,90 +1,10 @@
 Scene: Untitled
 Entities:
-  - Entity: 4176335146847336134
-    TagComponent:
-      Tag: Circle Copy Copy Copy Copy
-    TransformComponent:
-      Translation: [-8.58933735, 12.5097542, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.799227834, 0.114175402, 0.590273857, 1]
-      Thickness: 1
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.389999986
-      Restitution: 1
-      RestitutionThreshold: 0.5
-  - Entity: 6699901861535795608
-    TagComponent:
-      Tag: Quad Copy
-    TransformComponent:
-      Translation: [2.77421737, 10.7521467, -1.86264515e-09]
-      Rotation: [0, 0, -0.392064869]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [0.157935753, 0.911196887, 0.0738808364, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.280000001
-      Restitution: 1
-      RestitutionThreshold: 0.5
-  - Entity: 5014371631958186775
-    TagComponent:
-      Tag: Quad Copy Copy
-    TransformComponent:
-      Translation: [-1.79880297, 8.67931747, -1.86264515e-09]
-      Rotation: [0, 0, -0.392064869]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.280000001
-      Restitution: 1
-      RestitutionThreshold: 0.5
-  - Entity: 4832001615350295185
+  - Entity: 16707011585131414227
     TagComponent:
       Tag: Circle Copy Copy Copy
     TransformComponent:
-      Translation: [-3.34697175, 12.5097542, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.536629319, 0.114130758, 0.895752907, 1]
-      Thickness: 1
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.389999986
-      Restitution: 1
-      RestitutionThreshold: 0.5
-  - Entity: 7591572415301537333
-    TagComponent:
-      Tag: Circle Copy Copy
-    TransformComponent:
-      Translation: [0.544388294, 12.5097542, 0]
+      Translation: [2.73855424, 40.6515312, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CircleRendererComponent:
@@ -101,11 +21,11 @@ Entities:
       Friction: 0.389999986
       Restitution: 1
       RestitutionThreshold: 0.5
-  - Entity: 14994594406735733495
+  - Entity: 7183621799537606145
     TagComponent:
-      Tag: Circle Copy
+      Tag: Circle Copy Copy
     TransformComponent:
-      Translation: [6.35388327, 12.5097542, 0]
+      Translation: [8.94140816, 46.0089569, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CircleRendererComponent:
@@ -122,15 +42,469 @@ Entities:
       Friction: 0.389999986
       Restitution: 1
       RestitutionThreshold: 0.5
-  - Entity: 3414370644223279980
+  - Entity: 10711900410624093306
     TagComponent:
-      Tag: Quad Copy
+      Tag: Circle Copy
     TransformComponent:
-      Translation: [-5.38958645, 10.1639977, -1.86264515e-09]
+      Translation: [9.93086243, 7.61946201, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.972972989, 0.472424418, 0.0788897127, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 12155424114083759606
+    TagComponent:
+      Tag: Circle Copy Copy
+    TransformComponent:
+      Translation: [6.35388327, 11.3192825, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.841053367, 0.934362948, 0.101012208, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 8307402769031033416
+    TagComponent:
+      Tag: Circle Copy Copy Copy
+    TransformComponent:
+      Translation: [0.544388294, 10.9051189, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.849420846, 0.131184697, 0.131184697, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 7488257692604758910
+    TagComponent:
+      Tag: Quad Copy Copy
+    TransformComponent:
+      Translation: [2.19087505, 9.34130192, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.157935753, 0.911196887, 0.0738808364, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 17485239279694137430
+    TagComponent:
+      Tag: Quad Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-3.4556644, 4.70473194, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 5443470824941162276
+    TagComponent:
+      Tag: Quad Copy Copy Copy
+    TransformComponent:
+      Translation: [-7.17972612, 5.83445072, -1.86264515e-09]
       Rotation: [0, 0, -0.392064869]
       Scale: [1, 1, 1]
     SpriteComponent:
       Color: [0.0489706248, 0.845559835, 0.374987692, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 2943889373912767621
+    TagComponent:
+      Tag: Quad Copy Copy
+    TransformComponent:
+      Translation: [7.11615276, 40.4097519, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.0489706248, 0.845559835, 0.374987692, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 11504667829098694830
+    TagComponent:
+      Tag: Circle Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-3.34697175, 11.1408548, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.536629319, 0.114130758, 0.895752907, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 11353311074672631642
+    TagComponent:
+      Tag: Circle Copy Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-8.58933735, 10.9350767, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.799227834, 0.114175402, 0.590273857, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 17345614783238851519
+    TagComponent:
+      Tag: Quad Copy
+    TransformComponent:
+      Translation: [-11.9024353, 8.14456654, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.151548117, 0.682590067, 0.853281856, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 11441967840468913253
+    TagComponent:
+      Tag: Quad Copy Copy
+    TransformComponent:
+      Translation: [-9.50582695, 6.9974885, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.151548117, 0.682590067, 0.853281856, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 9652191783841564911
+    TagComponent:
+      Tag: Quad Copy Copy Copy
+    TransformComponent:
+      Translation: [7.10903072, 53.0593109, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 13067378129791462574
+    TagComponent:
+      Tag: Circle Copy
+    TransformComponent:
+      Translation: [12.298727, 45.0338173, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.972972989, 0.472424418, 0.0788897127, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 16540678805344665383
+    TagComponent:
+      Tag: Quad Copy Copy Copy
+    TransformComponent:
+      Translation: [7.14374733, 8.94547367, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.157935753, 0.911196887, 0.0738808364, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 3725573718027548616
+    TagComponent:
+      Tag: Quad Copy Copy Copy
+    TransformComponent:
+      Translation: [0.414358884, 7.76424313, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 15756200449583396498
+    TagComponent:
+      Tag: Quad Copy Copy
+    TransformComponent:
+      Translation: [5.09879971, 9.79099751, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.157935753, 0.911196887, 0.0738808364, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 13268840661580140660
+    TagComponent:
+      Tag: Circle Copy Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-7.12101269, 42.8172531, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.799227834, 0.114175402, 0.590273857, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 5908788507538528249
+    TagComponent:
+      Tag: Circle Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-1.87287521, 43.9087982, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.536629319, 0.114130758, 0.895752907, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 7482750570580234029
+    TagComponent:
+      Tag: Quad Copy
+    TransformComponent:
+      Translation: [-1.94928885, 49.2269325, -1.86264404e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.151548117, 0.682590067, 0.853281856, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 3953448411852851219
+    TagComponent:
+      Tag: Big Circle
+    TransformComponent:
+      Translation: [0, -7, -0.0500000007]
+      Rotation: [0, 0, 0]
+      Scale: [10, 10, 1]
+    CircleRendererComponent:
+      Color: [1, 0.741312683, 0, 1]
+      Thickness: 0.125
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.5
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 2469467324833117594
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 25]
+      Rotation: [-0.0872664601, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 6391125301688614166
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-7, 0, 0]
+      Rotation: [0, 0, -0.785398245]
+      Scale: [20.0000114, 0.5, 1]
+    SpriteComponent:
+      Color: [0.254901975, 0.301960796, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 1146390100554574168
+    TagComponent:
+      Tag: Wall Copy
+    TransformComponent:
+      Translation: [7, 0, 0]
+      Rotation: [0, 0, 0.785398185]
+      Scale: [20.0000114, 0.5, 1]
+    SpriteComponent:
+      Color: [0.254826248, 0.300860226, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 1104094057528534934
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [4.62599182, 65.4341431, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.151548117, 0.682590067, 0.853281856, 1]
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: false
@@ -162,15 +536,15 @@ Entities:
       Friction: 0.389999986
       Restitution: 1
       RestitutionThreshold: 0.5
-  - Entity: 1104094057528534934
+  - Entity: 3414370644223279980
     TagComponent:
-      Tag: Quad
+      Tag: Quad Copy
     TransformComponent:
-      Translation: [-10.9872866, 10.3251133, -1.86264515e-09]
+      Translation: [-5.38958645, 10.1639977, -1.86264515e-09]
       Rotation: [0, 0, -0.392064869]
       Scale: [1, 1, 1]
     SpriteComponent:
-      Color: [0.151548117, 0.682590067, 0.853281856, 1]
+      Color: [0.0489706248, 0.845559835, 0.374987692, 1]
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: false
@@ -181,80 +555,125 @@ Entities:
       Friction: 0.280000001
       Restitution: 1
       RestitutionThreshold: 0.5
-  - Entity: 1146390100554574168
+  - Entity: 14994594406735733495
     TagComponent:
-      Tag: Wall Copy
+      Tag: Circle Copy
     TransformComponent:
-      Translation: [7, 0, 0]
-      Rotation: [0, 0, 0.785398185]
-      Scale: [20.0000114, 0.5, 1]
-    SpriteComponent:
-      Color: [0.254826248, 0.300860226, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 6391125301688614166
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-7, 0, 0]
-      Rotation: [0, 0, -0.785398245]
-      Scale: [20.0000114, 0.5, 1]
-    SpriteComponent:
-      Color: [0.254901975, 0.301960796, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 2469467324833117594
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 25]
-      Rotation: [-0.0872664601, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 3953448411852851219
-    TagComponent:
-      Tag: Big Circle
-    TransformComponent:
-      Translation: [0, -7, -0.0500000007]
+      Translation: [6.35388327, 47.7990265, 0]
       Rotation: [0, 0, 0]
-      Scale: [10, 10, 1]
+      Scale: [1, 1, 1]
     CircleRendererComponent:
-      Color: [1, 0.741312683, 0, 1]
-      Thickness: 0.125
+      Color: [0.841053367, 0.934362948, 0.101012208, 1]
+      Thickness: 1
       Fade: 0.00499999989
     Rigidbody2DComponent:
-      BodyType: Static
+      BodyType: Dynamic
       FixedRotation: false
     CircleCollider2DComponent:
       Offset: [0, 0]
-      Radius: 0.670000017
+      Radius: 0.5
       Density: 1
-      Friction: 0.5
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 7591572415301537333
+    TagComponent:
+      Tag: Circle Copy Copy
+    TransformComponent:
+      Translation: [0.544388294, 47.7130051, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.849420846, 0.131184697, 0.131184697, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 4832001615350295185
+    TagComponent:
+      Tag: Circle Copy Copy Copy
+    TransformComponent:
+      Translation: [-3.34697175, 58.261467, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.536629319, 0.114130758, 0.895752907, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 5014371631958186775
+    TagComponent:
+      Tag: Quad Copy Copy
+    TransformComponent:
+      Translation: [-1.79880297, 8.71193695, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 6699901861535795608
+    TagComponent:
+      Tag: Quad Copy
+    TransformComponent:
+      Translation: [4.59379005, 58.2195206, -1.86264515e-09]
+      Rotation: [0, 0, -0.392064869]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [0.157935753, 0.911196887, 0.0738808364, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.280000001
+      Restitution: 1
+      RestitutionThreshold: 0.5
+  - Entity: 4176335146847336134
+    TagComponent:
+      Tag: Circle Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-8.58933735, 41.0877228, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.799227834, 0.114175402, 0.590273857, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
       Restitution: 1
       RestitutionThreshold: 0.5
