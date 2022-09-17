@@ -34,18 +34,46 @@ namespace Sparky {
 			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 				m_SelectedEntity = {};
 
-			// Right-click on blank space
+			// Right-click on blank space in scene hierarchy panel
 			if (Gui::BeginPopupContextWindow(0, 1, false))
 			{
-				if (Gui::MenuItem("Add Empty Entity"))
+				if (Gui::MenuItem("New Empty Entity"))
 					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
+				Gui::Separator();
 
-				if (Gui::BeginMenu("Add 2D Entity"))
+				if (Gui::BeginMenu("New 2D Entity"))
 				{
-					if (Gui::MenuItem("Add Quad"))
+					if (Gui::MenuItem("Quad"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
 						m_SelectedEntity.AddComponent<SpriteComponent>();
+					}
+					Gui::Separator();
+
+					if (Gui::MenuItem("Circle"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
+						m_SelectedEntity.AddComponent<CircleRendererComponent>();
+					}
+					Gui::EndMenu();
+				}
+				Gui::Separator();
+
+				if (Gui::BeginMenu("New Camera Entity"))
+				{
+					if (Gui::MenuItem("Perspective"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Perspective Camera");
+						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+					}
+					Gui::Separator();
+
+					if (Gui::MenuItem("Orthographic"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Orthographic Camera");
+						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 					}
 					Gui::EndMenu();
 				}
@@ -236,7 +264,7 @@ namespace Sparky {
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 
 			// Allow for multiple Native Scripts on an entity
-			DisplayAddComponentPopup<NativeScriptComponent>("C++ Native Script", true);
+			DisplayAddComponentPopup<NativeScriptComponent>("C++ Native Script", true, true);
 
 			Gui::EndPopup();
 		}

@@ -28,7 +28,7 @@ namespace Sparky {
 
 		void CreateNewScene();
 		void OpenExistingScene();
-		void OpenExistingScene(const std::filesystem::path& path);
+		void OpenScene(const std::filesystem::path& path);
 		void SaveSceneAs();
 		void SaveScene();
 
@@ -36,6 +36,7 @@ namespace Sparky {
 
 		void OnScenePlay();
 		void OnSceneStop();
+		void RestartScene();
 
 		void DuplicateSelectedEntity();
 

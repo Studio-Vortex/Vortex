@@ -21,7 +21,7 @@ namespace Sparky {
 
 	private:
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name, bool allowMultiple = false)
+		void DisplayAddComponentPopup(const std::string& name, bool allowMultiple = false, bool lastComponent = false)
 		{
 			if (!m_SelectedEntity.HasComponent<TComponent>() || allowMultiple)
 			{
@@ -30,6 +30,9 @@ namespace Sparky {
 					m_SelectedEntity.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();
 				}
+
+				if (!lastComponent)
+					Gui::Separator();
 			}
 		}
 

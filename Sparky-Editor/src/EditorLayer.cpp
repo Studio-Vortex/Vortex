@@ -30,6 +30,8 @@ namespace Sparky {
 		m_EditorCamera = EditorCamera(30.0f, 0.1778f, 0.1f, 1000.0f);
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		CreateNewScene(); // Start the editor off with a fresh scene
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -172,7 +174,7 @@ namespace Sparky {
 					SaveSceneAs();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Close Editor", "Esc"))
+				if (Gui::MenuItem("Close Editor"))
 					Application::Get().Close();
 
 				Gui::EndMenu();
@@ -180,8 +182,19 @@ namespace Sparky {
 			
 			if (Gui::BeginMenu("Edit"))
 			{
-				if (Gui::MenuItem("Play Scene", "Ctrl+P"))
-					OnScenePlay();
+				if (m_SceneState == SceneState::Edit)
+				{
+					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
+						OnScenePlay();
+				}
+				else
+				{
+					if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
+						OnSceneStop();
+					Gui::Separator();
+					if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
+						RestartScene();
+				}
 				Gui::Separator();
 
 				if (Gui::BeginMenu("Tools"))
@@ -285,7 +298,7 @@ namespace Sparky {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				OpenExistingScene(std::filesystem::path(g_AssetPath) / path);
+				OpenScene(std::filesystem::path(g_AssetPath) / path);
 			}
 			Gui::EndDragDropTarget();
 		}
@@ -442,6 +455,14 @@ namespace Sparky {
 
 			case Key::P:
 			{
+				if (controlPressed && shiftPressed)
+				{
+					if (m_SceneState == SceneState::Play)
+						RestartScene();
+
+					break;
+				}
+
 				if (controlPressed)
 				{
 					switch (m_SceneState)
@@ -449,9 +470,9 @@ namespace Sparky {
 						case Sparky::EditorLayer::SceneState::Edit: OnScenePlay(); break;
 						case Sparky::EditorLayer::SceneState::Play: OnSceneStop(); break;
 					}
-				}
 
-				break;
+					break;
+				}
 			}
 
 			case Key::Q:
@@ -505,6 +526,7 @@ namespace Sparky {
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
+		m_EditorScene = m_ActiveScene; // Set the editors scene
 	}
 
 	void EditorLayer::OpenExistingScene()
@@ -512,10 +534,10 @@ namespace Sparky {
 		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
 
 		if (!filepath.empty())
-			OpenExistingScene(filepath);
+			OpenScene(filepath);
 	}
 
-	void EditorLayer::OpenExistingScene(const std::filesystem::path& path)
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
@@ -586,6 +608,11 @@ namespace Sparky {
 		m_ActiveScene = m_EditorScene;
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::RestartScene()
+	{
+		OnScenePlay();
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()
