@@ -14,6 +14,10 @@ namespace Sparky {
 		{
 			Gui::Begin("Settings", &s_ShowPanel);
 
+			if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Settings.ClearColor)))
+				RenderCommand::SetClearColor(m_Settings.ClearColor);
+			Gui::Separator();
+
 			static bool showColliders = false;
 			if (Gui::Checkbox("Show physics colliders", &showColliders))
 				m_Settings.ShowColliders = showColliders;

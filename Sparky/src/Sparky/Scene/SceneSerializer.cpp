@@ -111,9 +111,9 @@ namespace Sparky {
 	{
 		switch (bodyType)
 		{
-		case RigidBody2DComponent::BodyType::Static:    return "Static";
-		case RigidBody2DComponent::BodyType::Dynamic:   return "Dynamic";
-		case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
+			case RigidBody2DComponent::BodyType::Static:    return "Static";
+			case RigidBody2DComponent::BodyType::Dynamic:   return "Dynamic";
+			case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
 		}
 
 		SP_CORE_ASSERT(false, "Unknown body type!");
@@ -162,12 +162,13 @@ namespace Sparky {
 
 		if (entity.HasComponent<CameraComponent>())
 		{
-			out << YAML::Key << "CameraComponent" << YAML::Value << YAML::BeginMap; // CameraComponent
+			out << YAML::Key << "CameraComponent" << YAML::BeginMap; // CameraComponent
 
 			auto& cameraComponent = entity.GetComponent<CameraComponent>();
 			auto& camera = cameraComponent.Camera;
 
-			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap; // Camera
+			out << YAML::Key << "Camera" << YAML::Value;
+			out << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
@@ -289,6 +290,7 @@ namespace Sparky {
 		}
 		catch (YAML::ParserException e)
 		{
+			SP_CORE_ERROR("Failed to load .sparky file '{}'\n     {}", filepath, e.what());
 			return false;
 		}
 
@@ -332,7 +334,6 @@ namespace Sparky {
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 					auto cameraProps = cameraComponent["Camera"];
-
 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());

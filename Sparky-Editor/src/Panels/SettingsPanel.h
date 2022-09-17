@@ -10,6 +10,7 @@ namespace Sparky {
 		struct Settings
 		{
 			bool& ShowColliders;
+			Math::vec3 ClearColor = Math::vec3{ 0.1f, 0.1f, 0.1f };
 		};
 
 		SettingsPanel() = default;

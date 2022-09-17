@@ -53,7 +53,6 @@ namespace Sparky {
 		// Render
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		RenderCommand::Clear();
 
 		// Clear entityID attachment to -1
