@@ -32,6 +32,9 @@ namespace Sparky {
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		CreateNewScene(); // Start the editor off with a fresh scene
+
+		SettingsPanel::Settings settings;
+		m_SettingsPanel = SettingsPanel(settings);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -67,7 +70,7 @@ namespace Sparky {
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
 				// this allows the user to manipulate the editor camera while they are holding the left mouse button even if the cursor is outside the scene viewport
 				const Math::vec2& mousePos = Input::GetMousePosition();
-				if (m_ViewportHovered || mousePos != m_MousePosLastFrame)
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
 
 				if (Input::IsKeyPressed(SP_KEY_ESCAPE))
@@ -174,7 +177,7 @@ namespace Sparky {
 					SaveSceneAs();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Close Editor"))
+				if (Gui::MenuItem("Exit"))
 					Application::Get().Close();
 
 				Gui::EndMenu();
@@ -195,27 +198,53 @@ namespace Sparky {
 					if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
 						RestartScene();
 				}
+
+				Gui::EndMenu();
+			}
+
+			if (Gui::BeginMenu("View"))
+			{
+				if (m_SceneViewportMaximized)
+				{
+					if (Gui::MenuItem("Minimize Scene", "Shift+F12"))
+						m_SceneViewportMaximized = false;
+				}
+				else
+				{
+					if (Gui::MenuItem("Maximize Scene", "Shift+F12"))
+						m_SceneViewportMaximized = true;
+				}
+
+				Gui::EndMenu();
+			}
+
+			if (Gui::BeginMenu("Tools"))
+			{
+				if (Gui::MenuItem("No Selection", "Q"))
+					OnNoGizmoSelected();
 				Gui::Separator();
 
-				if (Gui::BeginMenu("Tools"))
-				{
-					if (Gui::MenuItem("No Selection", "Q"))
-						OnNoGizmoSelected();
-					Gui::Separator();
+				if (Gui::MenuItem("Translation Tool", "W"))
+					OnTranslationToolSelected();
+				Gui::Separator();
 
-					if (Gui::MenuItem("Translation Tool", "W"))
-						OnTranslationToolSelected();
-					Gui::Separator();
+				if (Gui::MenuItem("Rotation Tool", "E"))
+					OnRotationToolSelected();
+				Gui::Separator();
 
-					if (Gui::MenuItem("Rotation Tool", "E"))
-						OnRotationToolSelected();
-					Gui::Separator();
+				if (Gui::MenuItem("Scale Tool", "R"))
+					OnScaleToolSelected();
 
-					if (Gui::MenuItem("Scale Tool", "R"))
-						OnScaleToolSelected();
-					
-					Gui::EndMenu();
-				}
+				Gui::EndMenu();
+			}
+
+			if (Gui::BeginMenu("Window"))
+			{
+				if (Gui::MenuItem("Stats"))
+					m_StatsPanel.ShowPanel();
+				Gui::Separator();
+				if (Gui::MenuItem("Settings"))
+					m_SettingsPanel.ShowPanel();
 
 				Gui::EndMenu();
 			}
@@ -231,48 +260,14 @@ namespace Sparky {
 			Gui::EndMenuBar();
 		}
 
-		m_SceneHierarchyPanel.OnGuiRender();
-		m_ContentBrowserPanel.OnGuiRender();
-		m_AboutPanel.OnGuiRender();
-
-		const auto& boldFont = io.Fonts->Fonts[0];
-
-		Gui::Begin("Stats", &show);
-		const char* name = "None";
-		if (m_HoveredEntity)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
-
-		Gui::Text("Hovered Entity: %s", name);
-		Gui::Separator();
-		
-		auto stats = Renderer2D::GetStats();
-		Gui::PushFont(boldFont);
-		Gui::Text("Renderer2D Stats:");
-		Gui::PopFont();
-		Gui::Text("Draw Calls: %i", stats.DrawCalls);
-		Gui::Text("Quads:      %i", stats.QuadCount);
-		Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-		Gui::Text("Vertices:   %i", stats.GetVertexCount());
-		Gui::Text("Indices:    %i", stats.GetIndexCount());
-		Gui::Separator();
-
-		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
-		Gui::PushFont(boldFont);
-		Gui::Text("Graphics API Info:");
-		Gui::PopFont();
-		Gui::Text("API:     %s", rendererInfo.API);
-		Gui::Text("GPU:     %s", rendererInfo.GPU);
-		Gui::Text("Vendor:  %s", rendererInfo.Vendor);
-		Gui::Text("Version: %s", rendererInfo.Version);
-		Gui::Text("GLSL:    %s", rendererInfo.ShadingLanguageVersion);
-		Gui::Separator();
-
-		Gui::PushFont(boldFont);
-		Gui::Text("Benchmark:");
-		Gui::PopFont();
-		Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
-		Gui::Text("FPS:  %.1f", io.Framerate);
-		Gui::End();
+		if (!m_SceneViewportMaximized)
+		{
+			m_SceneHierarchyPanel.OnGuiRender();
+			m_ContentBrowserPanel.OnGuiRender();
+			m_SettingsPanel.OnGuiRender(true);
+			m_StatsPanel.OnGuiRender(m_HoveredEntity, true);
+			m_AboutPanel.OnGuiRender();
+		}
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene");
@@ -282,9 +277,9 @@ namespace Sparky {
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 		
-		m_ViewportFocused = Gui::IsWindowFocused();
-		m_ViewportHovered = Gui::IsWindowHovered();
-		Application::Get().GetGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+		m_SceneViewportFocused = Gui::IsWindowFocused();
+		m_SceneViewportHovered = Gui::IsWindowHovered();
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SceneViewportHovered);
 
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
@@ -405,6 +400,7 @@ namespace Sparky {
 
 		switch (e.GetKeyCode())
 		{
+			// File
 			case Key::N:
 			{
 				if (controlPressed)
@@ -432,6 +428,7 @@ namespace Sparky {
 				break;
 			}
 
+			// Tools
 			case Key::D:
 			{
 				if (controlPressed)
@@ -475,6 +472,14 @@ namespace Sparky {
 				}
 			}
 
+			case Key::F12:
+			{
+				if (shiftPressed)
+					m_SceneViewportMaximized = !m_SceneViewportMaximized;
+
+				break;
+			}
+
 			case Key::Q:
 			{
 				if (!ImGuizmo::IsUsing())
@@ -512,7 +517,7 @@ namespace Sparky {
 	{
 		if (e.GetMouseButton() == Mouse::ButtonLeft)
 		{
-			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+			if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 		}
 

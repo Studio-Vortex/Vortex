@@ -10,6 +10,7 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
+#include <box2d/b2_circle_shape.h>
 #include <box2d/b2_polygon_shape.h>
 
 namespace Sparky {
@@ -83,6 +84,7 @@ namespace Sparky {
 		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return destination;
 	}
@@ -108,8 +110,8 @@ namespace Sparky {
 		m_Registry.destroy(entity);
 	}
 
-    void Scene::OnRuntimeStart()
-    {
+	void Scene::OnRuntimeStart()
+	{
 		b2Vec2 gravity = { 0.0f, -9.8f };
 		m_PhysicsWorld = new b2World(gravity);
 		
@@ -147,14 +149,32 @@ namespace Sparky {
 
 				body->CreateFixture(&fixtureDef);
 			}
-		}
-    }
 
-    void Scene::OnRuntimeStop()
-    {
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+
+				b2CircleShape circleShape;
+				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
+				circleShape.m_radius = cc2d.Radius;
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = cc2d.Density;
+				fixtureDef.friction = cc2d.Friction;
+				fixtureDef.restitution = cc2d.Restitution;
+				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+
+				body->CreateFixture(&fixtureDef);
+			}
+		}
+	}
+
+	void Scene::OnRuntimeStop()
+	{
 		delete m_PhysicsWorld;
 		m_PhysicsWorld = nullptr;
-    }
+	}
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
@@ -220,7 +240,7 @@ namespace Sparky {
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			// Render Sprites
+			/// Render Sprites
 			{
 				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
 				for (auto entity : group)
@@ -231,7 +251,7 @@ namespace Sparky {
 				}
 			}
 
-			// Render Circles
+			/// Render Circles
 			{
 				auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
 				for (auto entity : view)
@@ -250,7 +270,7 @@ namespace Sparky {
 	{
 		Renderer2D::BeginScene(camera);
 
-		// Render Sprites
+		/// Render Sprites
 		{
 			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
 			for (auto entity : view)
@@ -261,7 +281,7 @@ namespace Sparky {
 			}
 		}
 
-		// Render Circles
+		/// Render Circles
 		{
 			auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
 			for (auto entity : group)
@@ -306,12 +326,13 @@ namespace Sparky {
 		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<BoxCollider2DComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<CircleCollider2DComponent>(duplicatedEntity, source);
 
 		return duplicatedEntity;
 	}
 
-    Entity Scene::GetPrimaryCameraEntity()
-    {
+	Entity Scene::GetPrimaryCameraEntity()
+	{
 		auto view = m_Registry.view<CameraComponent>();
 
 		for (auto& entity : view)
@@ -322,7 +343,7 @@ namespace Sparky {
 		}
 
 		return {};
-    }
+	}
 
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
@@ -330,20 +351,15 @@ namespace Sparky {
 		//SP_CORE_ASSERT(false, "Should not be calling base template function!");
 	}
 
-	template <>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
+	template <> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	
-	template <>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) { }
+	template <> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) { }
 
-	template <>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
+	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
 	
-	template <>
-	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component) { }
+	template <> void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component) { }
 
-	template <>
-	void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
+	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
 	
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
@@ -351,13 +367,12 @@ namespace Sparky {
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 	
-	template <>
-	void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
+	template <> void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
 
-	template <>
-	void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }
+	template <> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }
 
-	template <>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
+	template <> void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
 }

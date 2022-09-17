@@ -92,17 +92,27 @@ namespace Sparky
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 
+		static void DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID);
+
 		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
 
-		static void DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID);
+		static void DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID = -1);
+
+		static void DrawRect(const Math::mat4& transform, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
+		// Position is the center, Size is the full size of the entity
+		static void DrawRect(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
+
+		static float GetLineWidth();
+		static void SetLineWidth(float width);
 
 		struct Statistics
 		{
 			uint32_t DrawCalls;
 			uint32_t QuadCount;
+			uint32_t LineCount;
 
 			uint32_t GetTriangleCount() const { return QuadCount * 2; }
-			uint32_t GetVertexCount() const { return QuadCount * VERTICES_PER_QUAD; }
+			uint32_t GetVertexCount() const { return (QuadCount * VERTICES_PER_QUAD) + (LineCount * 2); }
 			uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD; }
 		};
 
@@ -112,6 +122,7 @@ namespace Sparky
 	private:
 		static void StartBatch();
 		static void NextBatch();
+
 		static void AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID = -1);
 		static void AddToCircleVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID = -1);
 	};

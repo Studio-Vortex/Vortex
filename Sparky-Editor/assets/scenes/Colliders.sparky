@@ -1,10 +1,31 @@
 Scene: Untitled
 Entities:
+  - Entity: 2211240212980618679
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [9.93086243, 9.22665596, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 1, 1, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.389999986
+      Restitution: 1
+      RestitutionThreshold: 0.5
   - Entity: 1104094057528534934
     TagComponent:
       Tag: Quad
     TransformComponent:
-      Translation: [-10.9872866, 10.3251133, 0]
+      Translation: [-10.9872866, 10.3251133, -1.86264515e-09]
       Rotation: [0, 0, -0.392064869]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -16,8 +37,8 @@ Entities:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.5
-      Restitution: 0.5
+      Friction: 0.280000001
+      Restitution: 1
       RestitutionThreshold: 0.5
   - Entity: 1146390100554574168
     TagComponent:
@@ -62,7 +83,7 @@ Entities:
       Tag: Camera
     TransformComponent:
       Translation: [0, 0, 20]
-      Rotation: [0, 0, 0]
+      Rotation: [-0.0872664601, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
@@ -77,11 +98,11 @@ Entities:
       FixedAspectRatio: false
   - Entity: 3953448411852851219
     TagComponent:
-      Tag: Circle
+      Tag: Big Circle
     TransformComponent:
-      Translation: [0, -5.79212189, -0.229330063]
+      Translation: [0, -7, -0.5]
       Rotation: [0, 0, 0]
-      Scale: [7.8119998, 7.8119998, 2.0999999]
+      Scale: [10, 10, 1]
     CircleRendererComponent:
       Color: [1, 0.741312683, 0, 1]
       Thickness: 0.125
@@ -89,9 +110,9 @@ Entities:
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
-    BoxCollider2DComponent:
+    CircleCollider2DComponent:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Radius: 5
       Density: 1
       Friction: 0.5
       Restitution: 0

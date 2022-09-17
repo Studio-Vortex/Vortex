@@ -39,6 +39,16 @@ namespace Sparky {
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
 
+		inline static void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount)
+		{
+			s_RendererAPI->DrawLines(vertexArray, vertexCount);
+		}
+
+		inline static void SetLineSize(float thickness)
+		{
+			s_RendererAPI->SetLineWidth(thickness);
+		}
+
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

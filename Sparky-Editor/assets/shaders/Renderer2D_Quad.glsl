@@ -6,12 +6,12 @@
 #type vertex
 #version 460 core
 
-layout (location = 0) in vec3  a_Position;
-layout (location = 1) in vec4  a_Color;
-layout (location = 2) in vec2  a_TexCoord;
-layout (location = 3) in float a_TexIndex;
-layout (location = 4) in float a_TexScale;
-layout (location = 5) in int   a_EntityID;
+layout (location = 0) in vec3  a_Position; // Vertex position
+layout (location = 1) in vec4  a_Color; // Vertex color
+layout (location = 2) in vec2  a_TexCoord; // Vertex texture coordinate
+layout (location = 3) in float a_TexIndex; // Texture index out of 32
+layout (location = 4) in float a_TexScale; // Texture scale
+layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out vec4       f_Color;
 out vec2       f_TexCoord;
@@ -88,9 +88,12 @@ void main()
 		case 31: texColor *= texture(u_Textures[31], f_TexCoord * f_TexScale); break;
 	}
 
+	// Discard the pixel/fragment if it has an alpha of zero
 	if (texColor.a == 0.0)
 		discard;
 
+	// Set output color
 	o_Color = texColor;
+
 	o_EntityID = f_EntityID;
 }

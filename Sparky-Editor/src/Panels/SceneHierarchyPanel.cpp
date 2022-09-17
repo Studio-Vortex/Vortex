@@ -262,6 +262,7 @@ namespace Sparky {
 			DisplayAddComponentPopup<CameraComponent>("Camera");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
+			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
 
 			// Allow for multiple Native Scripts on an entity
 			DisplayAddComponentPopup<NativeScriptComponent>("C++ Native Script", true, true);
@@ -403,6 +404,16 @@ namespace Sparky {
 		{
 			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset));
 			Gui::DragFloat2("Size", Math::ValuePtr(component.Size));
+			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
+		{
+			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset));
+			Gui::DragFloat("Radius", &component.Radius);
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);

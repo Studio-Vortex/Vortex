@@ -6,12 +6,12 @@
 #type vertex
 #version 460 core
 
-layout (location = 0) in vec3  a_WorldPosition;
-layout (location = 1) in vec3  a_LocalPosition;
-layout (location = 2) in vec4  a_Color;
-layout (location = 3) in float a_Thickness;
-layout (location = 4) in float a_Fade;
-layout (location = 5) in int   a_EntityID;
+layout (location = 0) in vec3  a_WorldPosition; // Vertex position in world space
+layout (location = 1) in vec3  a_LocalPosition; // Vertex position in local space
+layout (location = 2) in vec4  a_Color; // Vertex color
+layout (location = 3) in float a_Thickness; // Circle thickness
+layout (location = 4) in float a_Fade; // Circle fade out
+layout (location = 5) in int   a_EntityID; // Vertex entity ID
 
 out vec3     f_LocalPosition;
 out vec4     f_Color;
@@ -53,6 +53,7 @@ void main()
     float circle = smoothstep(0.0, f_Fade, distance);
     circle *= smoothstep(f_Thickness + f_Fade, f_Thickness, distance);
 
+    // Discard the pixel/fragment if there is nothing to render
     if (circle == 0.0)
         discard;
 

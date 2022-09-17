@@ -7,8 +7,9 @@
 
 namespace Sparky
 {
-	static constexpr const char* QUAD_SHADER_PATH = "assets/shaders/Renderer2D_Quad.glsl";
+	static constexpr const char* QUAD_SHADER_PATH   = "assets/shaders/Renderer2D_Quad.glsl";
 	static constexpr const char* CIRCLE_SHADER_PATH = "assets/shaders/Renderer2D_Circle.glsl";
+	static constexpr const char* LINE_SHADER_PATH   = "assets/shaders/Renderer2D_Line.glsl";
 
 	struct QuadVertex
 	{
@@ -34,6 +35,15 @@ namespace Sparky
 		int EntityID;
 	};
 
+	struct LineVertex
+	{
+		Math::vec3 Position;
+		Math::vec4 Color;
+
+		// Editor-only
+		int EntityID;
+	};
+
 	struct Renderer2DData
 	{
 		static constexpr inline uint32_t MaxQuads = 20'000;
@@ -50,6 +60,10 @@ namespace Sparky
 		SharedRef<VertexBuffer> CircleVB;
 		SharedRef<Shader> CircleShader;
 
+		SharedRef<VertexArray> LineVA;
+		SharedRef<VertexBuffer> LineVB;
+		SharedRef<Shader> LineShader;
+
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
@@ -57,6 +71,12 @@ namespace Sparky
 		uint32_t CircleIndexCount = 0;
 		CircleVertex* CircleVertexBufferBase = nullptr;
 		CircleVertex* CircleVertexBufferPtr = nullptr;
+
+		uint32_t LineVertexCount = 0;
+		LineVertex* LineVertexBufferBase = nullptr;
+		LineVertex* LineVertexBufferPtr = nullptr;
+
+		float LineWidth = 2.0f;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
@@ -72,7 +92,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		// Quads
+		/// Quads
 		s_Data.QuadVA = VertexArray::Create();
 
 		s_Data.QuadVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(QuadVertex));
@@ -92,7 +112,7 @@ namespace Sparky
 		uint32_t* quadIndices = new uint32_t[Renderer2DData::MaxIndices];
 
 		uint32_t offset = 0;
-		for (uint32_t i = 0; i < Renderer2DData::MaxIndices; i += INDICES_PER_QUAD)
+		for (size_t i = 0; i < Renderer2DData::MaxIndices; i += INDICES_PER_QUAD)
 		{
 			quadIndices[i + 0] = offset + 0;
 			quadIndices[i + 1] = offset + 1;
@@ -109,7 +129,7 @@ namespace Sparky
 		s_Data.QuadVA->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
-		// Circles
+		/// Circles
 		s_Data.CircleVA = VertexArray::Create();
 
 		s_Data.CircleVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(CircleVertex));
@@ -126,12 +146,25 @@ namespace Sparky
 		s_Data.CircleVA->SetIndexBuffer(quadIB); // Use quad IB
 		s_Data.CircleVertexBufferBase = new CircleVertex[Renderer2DData::MaxVertices];
 
+		/// Lines
+		s_Data.LineVA = VertexArray::Create();
+
+		s_Data.LineVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(LineVertex));
+		s_Data.LineVB->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Color"    },
+			{ ShaderDataType::Int,    "a_EntityID" },
+		});
+
+		s_Data.LineVA->AddVertexBuffer(s_Data.LineVB);
+		s_Data.LineVertexBufferBase = new LineVertex[Renderer2DData::MaxVertices];
+
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		int32_t samplers[s_Data.MaxTextureSlots];
-		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
+		for (size_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
 		// Set the first texture slot to out default white texture
@@ -143,12 +176,15 @@ namespace Sparky
 		s_Data.QuadShader->SetIntArray("u_Textures", samplers, Renderer2DData::MaxTextureSlots);
 
 		s_Data.CircleShader = Shader::Create(CIRCLE_SHADER_PATH);
+		s_Data.LineShader = Shader::Create(LINE_SHADER_PATH);
 
-		// Create a quad's set of vertices at the origin
+		// Create a quad's set of vertices at the origin in ndc
 		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+
+		SetLineWidth(s_Data.LineWidth);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -160,6 +196,8 @@ namespace Sparky
 		SP_PROFILE_FUNCTION();
 
 		delete[] s_Data.QuadVertexBufferBase;
+		delete[] s_Data.CircleVertexBufferBase;
+		delete[] s_Data.LineVertexBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
@@ -168,6 +206,10 @@ namespace Sparky
 
 		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
 
+		// Reset the starting frame texture slot past the White Texture
+		s_Data.TextureSlotIndex = 1;
+
+		/// Quads
 		s_Data.QuadShader->Enable();
 		s_Data.QuadShader->SetMat4("u_ViewProjection", viewProjection);
 
@@ -176,15 +218,21 @@ namespace Sparky
 		// Set the pointer to the beggining of the vertex buffer
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
-		// Reset the starting frame texture slot past the White Texture
-		s_Data.TextureSlotIndex = 1;
-
+		/// Circles
 		s_Data.CircleShader->Enable();
 		s_Data.CircleShader->SetMat4("u_ViewProjection", viewProjection);
 
 		// Same for circles
 		s_Data.CircleIndexCount = 0;
 		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+
+		/// Lines
+		s_Data.LineShader->Enable();
+		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		// and lines
+		s_Data.LineVertexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
@@ -199,6 +247,9 @@ namespace Sparky
 		s_Data.CircleShader->Enable();
 		s_Data.CircleShader->SetMat4("u_ViewProjection", viewProjection);
 
+		s_Data.LineShader->Enable();
+		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
 		StartBatch();
 	}
 
@@ -211,6 +262,9 @@ namespace Sparky
 
 		s_Data.CircleShader->Enable();
 		s_Data.CircleShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+		
+		s_Data.LineShader->Enable();
+		s_Data.LineShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 
 		StartBatch();
 	}
@@ -228,6 +282,10 @@ namespace Sparky
 		// Same for circles
 		s_Data.CircleIndexCount = 0;
 		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+
+		// and lines
+		s_Data.LineVertexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 	}
 
 	void Renderer2D::NextBatch()
@@ -247,7 +305,7 @@ namespace Sparky
 
 	void Renderer2D::Flush()
 	{
-		// Quads
+		/// Quads
 		if (s_Data.QuadIndexCount)
 		{
 			// Calculate the size of the vertex buffer
@@ -255,7 +313,7 @@ namespace Sparky
 			// Copy data to GPU buffer
 			s_Data.QuadVB->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
-			// Bind all textures that were used in queue
+			// Bind all textures used in the batch
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 				s_Data.TextureSlots[i]->Bind(i);
 
@@ -265,7 +323,7 @@ namespace Sparky
 			s_Data.Stats.DrawCalls++;
 		}
 
-		// Circles
+		/// Circles
 		if (s_Data.CircleIndexCount)
 		{
 			// Calculate the size of the vertex buffer
@@ -278,11 +336,25 @@ namespace Sparky
 			RenderCommand::DrawIndexed(s_Data.CircleVA, s_Data.CircleIndexCount);
 			s_Data.Stats.DrawCalls++;
 		}
+
+		/// Lines
+		if (s_Data.LineVertexCount)
+		{
+			// Calculate the size of the vertex buffer
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
+			// Copy data to GPU buffer
+			s_Data.LineVB->SetData(s_Data.LineVertexBufferBase, dataSize);
+
+			// Bind a shader and make a draw call
+			s_Data.LineShader->Enable();
+			RenderCommand::DrawLines(s_Data.LineVA, s_Data.LineVertexCount);
+			s_Data.Stats.DrawCalls++;
+		}
 	}
 
 	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
 	{
-		for (uint32_t i = 0; i < 4; i++)
+		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
@@ -302,7 +374,7 @@ namespace Sparky
 
 	void Renderer2D::AddToCircleVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID)
 	{
-		for (uint32_t i = 0; i < 4; i++)
+		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i]; // Use quad vertex positions
 			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f; // Multiply by 2 to get the coordinates in a -1 -> 1 space
@@ -360,7 +432,7 @@ namespace Sparky
 		float textureIndex = 0.0f;
 
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
@@ -464,7 +536,7 @@ namespace Sparky
 		const SharedRef<Texture2D>& texture = subtexture->GetTexure();
 
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
@@ -539,7 +611,7 @@ namespace Sparky
 
 		float textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
@@ -646,7 +718,7 @@ namespace Sparky
 
 		const SharedRef<Texture2D>& texture = subtexture->GetTexure();
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
@@ -691,6 +763,14 @@ namespace Sparky
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, ColorToVec4(tintColor));
 	}
 
+	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID)
+	{
+		if (sprite.Texture)
+			DrawQuad(transform, sprite.Texture, sprite.Scale, sprite.SpriteColor, entityID);
+		else
+			DrawQuad(transform, sprite.SpriteColor, entityID);
+	}
+
 	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
@@ -702,12 +782,58 @@ namespace Sparky
 		AddToCircleVertexBuffer(transform, color, thickness, fade, entityID);
 	}
 
-	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID)
+	void Renderer2D::DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID)
 	{
-		if (sprite.Texture)
-			DrawQuad(transform, sprite.Texture, sprite.Scale, sprite.SpriteColor, entityID);
-		else
-			DrawQuad(transform, sprite.SpriteColor, entityID);
+		for (size_t i = 0; i < 2; i++)
+		{
+			s_Data.LineVertexBufferPtr->Position = i == 0 ? start : end;
+			s_Data.LineVertexBufferPtr->Color = color;
+			s_Data.LineVertexBufferPtr->EntityID = entityID;
+			s_Data.LineVertexBufferPtr++;
+		}
+
+		s_Data.LineVertexCount += 2;
+
+#if SP_RENDERER_STATISTICS
+		s_Data.Stats.LineCount++;
+#endif // SP_RENDERER_STATISTICS
+	}
+
+	void Renderer2D::DrawRect(const Math::mat4& transform, const Math::vec4& color, int entityID)
+	{
+		Math::vec3 lineVertices[4];
+
+		for (size_t i = 0; i < 4; i++)
+			lineVertices[i] = transform * s_Data.QuadVertexPositions[i];
+
+		DrawLine(lineVertices[0], lineVertices[1], color, entityID);
+		DrawLine(lineVertices[1], lineVertices[2], color, entityID);
+		DrawLine(lineVertices[2], lineVertices[3], color, entityID);
+		DrawLine(lineVertices[3], lineVertices[0], color, entityID);
+	}
+
+	void Renderer2D::DrawRect(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, int entityID)
+	{
+		Math::vec3 bottomLeft = { position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z };
+		Math::vec3 bottomRight = { position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z };
+		Math::vec3 topRight = { position.x + size.x * 0.5f, position.y + size.y * 0.5f, position.z };
+		Math::vec3 topLeft = { position.x - size.x * 0.5f, position.y + size.y * 0.5f, position.z };
+
+		DrawLine(bottomLeft, bottomRight, color, entityID);
+		DrawLine(bottomRight, topRight, color, entityID);
+		DrawLine(topRight, topLeft, color, entityID);
+		DrawLine(topLeft, bottomLeft, color, entityID);
+	}
+
+	float Renderer2D::GetLineWidth()
+	{
+		return s_Data.LineWidth;
+	}
+
+	void Renderer2D::SetLineWidth(float width)
+	{
+		s_Data.LineWidth = width;
+		RenderCommand::SetLineSize(width);
 	}
 
 	void Renderer2D::ResetStats()

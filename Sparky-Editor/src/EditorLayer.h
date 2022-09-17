@@ -5,6 +5,8 @@
 
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/SettingsPanel.h"
+#include "Panels/StatsPanel.h"
 #include "Panels/AboutPanel.h"
 
 namespace Sparky {
@@ -56,19 +58,22 @@ namespace Sparky {
 
 		SharedRef<Scene> m_ActiveScene;
 		SharedRef<Scene> m_EditorScene;
+		
 		std::filesystem::path m_EditorScenePath;
-		Entity m_HoveredEntity;
 
-		bool m_PrimaryCamera = true;
+		Entity m_HoveredEntity;
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 
-		bool m_ViewportFocused = false;
-		bool m_ViewportHovered = false;
-
 		int m_GizmoType = -1;
+
+		bool m_PrimaryCamera = true;
+
+		bool m_SceneViewportFocused = false;
+		bool m_SceneViewportHovered = false;
+		bool m_SceneViewportMaximized = false;
 
 		enum class SceneState
 		{
@@ -83,6 +88,8 @@ namespace Sparky {
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+		SettingsPanel m_SettingsPanel;
+		StatsPanel m_StatsPanel;
 		AboutPanel m_AboutPanel;
 
 		SceneState m_SceneState = SceneState::Edit;

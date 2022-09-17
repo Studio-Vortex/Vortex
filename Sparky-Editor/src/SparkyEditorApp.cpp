@@ -21,7 +21,7 @@ namespace Sparky {
 		ApplicationProperties props;
 		props.Name = "Sparky Editor";
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
-		props.MaxmizeWindow = true;
+		props.MaxmizeWindow = false;
 
 		return new SparkyEditor(props);
 	}

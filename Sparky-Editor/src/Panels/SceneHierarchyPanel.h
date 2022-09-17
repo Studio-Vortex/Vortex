@@ -21,20 +21,7 @@ namespace Sparky {
 
 	private:
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name, bool allowMultiple = false, bool lastComponent = false)
-		{
-			if (!m_SelectedEntity.HasComponent<TComponent>() || allowMultiple)
-			{
-				if (Gui::MenuItem(name.c_str()))
-				{
-					m_SelectedEntity.AddComponent<TComponent>();
-					Gui::CloseCurrentPopup();
-				}
-
-				if (!lastComponent)
-					Gui::Separator();
-			}
-		}
+		void DisplayAddComponentPopup(const std::string& name, bool allowMultiple = false, bool lastComponent = false);
 
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
@@ -43,5 +30,21 @@ namespace Sparky {
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;
 	};
+
+	template <typename TComponent>
+	void SceneHierarchyPanel::DisplayAddComponentPopup(const std::string& name, bool allowMultiple, bool lastComponent)
+	{
+		if (!m_SelectedEntity.HasComponent<TComponent>() || allowMultiple)
+		{
+			if (Gui::MenuItem(name.c_str()))
+			{
+				m_SelectedEntity.AddComponent<TComponent>();
+				Gui::CloseCurrentPopup();
+			}
+
+			if (!lastComponent)
+				Gui::Separator();
+		}
+	}
 
 }
