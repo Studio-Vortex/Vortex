@@ -335,8 +335,9 @@ namespace Sparky {
 		}
 
 		// Render Gizmos
+		bool isInEditMode = m_SceneState != SceneState::Play && m_SceneState != SceneState::Simulate;
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GizmoType != -1 && m_SceneState != SceneState::Play)
+		if (selectedEntity && m_GizmoType != -1 && isInEditMode)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
@@ -484,6 +485,14 @@ namespace Sparky {
 
 				Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, 0.03f);
 			}
+		}
+
+		// Draw selected entity outline 
+		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity()) {
+			TransformComponent transform = selectedEntity.GetComponent<TransformComponent>();
+
+			//Red
+			Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Red));
 		}
 
 		Renderer2D::EndScene();
