@@ -36,6 +36,12 @@ namespace Sparky {
 
 		Entity GetPrimaryCameraEntity();
 
+		template <typename... TComponents>
+		auto GetAllEntitiesWith()
+		{
+			return m_Registry.view<TComponents...>();
+		}
+
 	private:
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);

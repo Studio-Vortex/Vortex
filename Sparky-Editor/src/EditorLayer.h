@@ -27,6 +27,7 @@ namespace Sparky {
 	private:
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
+		void OnOverlayRender();
 
 		void CreateNewScene();
 		void OpenExistingScene();
@@ -69,6 +70,8 @@ namespace Sparky {
 
 		int m_GizmoType = -1;
 
+		bool m_ShowPhysicsColliders = false;
+
 		bool m_PrimaryCamera = true;
 
 		bool m_SceneViewportFocused = false;
@@ -88,9 +91,13 @@ namespace Sparky {
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-		SettingsPanel m_SettingsPanel;
 		StatsPanel m_StatsPanel;
 		AboutPanel m_AboutPanel;
+
+		// Settings
+
+		SettingsPanel::Settings m_Settings{ m_ShowPhysicsColliders };
+		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 
 		SceneState m_SceneState = SceneState::Edit;
 	};

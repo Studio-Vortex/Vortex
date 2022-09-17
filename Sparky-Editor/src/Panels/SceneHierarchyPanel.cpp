@@ -402,8 +402,8 @@ namespace Sparky {
 
 		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
 		{
-			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset));
-			Gui::DragFloat2("Size", Math::ValuePtr(component.Size));
+			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
+			Gui::DragFloat2("Size", Math::ValuePtr(component.Size), 0.01f);
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
@@ -412,8 +412,8 @@ namespace Sparky {
 
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
 		{
-			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset));
-			Gui::DragFloat("Radius", &component.Radius);
+			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
+			Gui::DragFloat("Radius", &component.Radius, 0.01, 0.01f);
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);

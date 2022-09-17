@@ -32,9 +32,6 @@ namespace Sparky {
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		CreateNewScene(); // Start the editor off with a fresh scene
-
-		SettingsPanel::Settings settings;
-		m_SettingsPanel = SettingsPanel(settings);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -102,6 +99,9 @@ namespace Sparky {
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
+
+		if (m_ShowPhysicsColliders)
+			OnOverlayRender();
 
 		m_Framebuffer->Unbind();
 	}
@@ -522,6 +522,53 @@ namespace Sparky {
 		}
 
 		return false;
+	}
+
+	void EditorLayer::OnOverlayRender()
+	{
+		if (m_SceneState == SceneState::Play)
+		{
+			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
+		}
+		else
+		{
+			Renderer2D::BeginScene(m_EditorCamera);
+		}
+
+		// Render Box Colliders
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+			for (auto entity : view)
+			{
+				auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+
+				Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, 0.001f);
+				Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
+
+				Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
+
+				Renderer2D::DrawRect(transform, ColorToVec4(Color::Green));
+			}
+		}
+
+		// Render Circle Colliders
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+			for (auto entity : view)
+			{
+				auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+
+				Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, 0.001f);
+				Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.0f);
+
+				Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
+
+				Renderer2D::DrawCircle(transform, ColorToVec4(Color::Green), 0.01f);
+			}
+		}
+
+		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::CreateNewScene()

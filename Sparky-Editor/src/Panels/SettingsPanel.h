@@ -9,7 +9,7 @@ namespace Sparky {
 	public:
 		struct Settings
 		{
-
+			bool& ShowColliders;
 		};
 
 		SettingsPanel() = default;
