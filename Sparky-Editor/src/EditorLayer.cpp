@@ -335,7 +335,24 @@ namespace Sparky {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				OpenScene(std::filesystem::path(g_AssetPath) / path);
+				std::filesystem::path filePath = std::filesystem::path(path);
+
+				if (filePath.extension().string() == ".hazel")
+				{
+					OpenScene(std::filesystem::path(g_AssetPath) / path);
+				}
+				else if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg")
+				{
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+					if (texture->IsLoaded())
+					{
+						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteComponent>())
+							m_HoveredEntity.GetComponent<SpriteComponent>().Texture = texture;
+					}
+					else
+						SP_WARN("Could not load texture {}", texturePath.filename().string());
+				}
 			}
 			Gui::EndDragDropTarget();
 		}
@@ -667,6 +684,9 @@ namespace Sparky {
 
 	void EditorLayer::CreateNewScene()
 	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
 		m_ActiveScene = CreateShared<Scene>();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
