@@ -343,7 +343,7 @@ namespace Sparky {
 		// Render Gizmos
 		bool isInEditMode = m_SceneState != SceneState::Play && m_SceneState != SceneState::Simulate;
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GizmoType != -1 && isInEditMode)
+		if (selectedEntity && m_GizmoType != -1 && isInEditMode && !Input::IsKeyPressed(Key::LeftAlt))
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
