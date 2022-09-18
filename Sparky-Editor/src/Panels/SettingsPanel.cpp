@@ -20,17 +20,14 @@ namespace Sparky {
 				RenderCommand::SetClearColor(m_Settings.ClearColor);
 			Gui::Separator();
 
-			Gui::Checkbox("Show physics colliders", &m_Settings.ShowColliders);
-			float lineWidth = Renderer2D::GetLineWidth();
-			if (Gui::DragFloat("Collider width", &lineWidth, 0.1f, 0.01f, 5.0f))
-				Renderer2D::SetLineWidth(lineWidth);
-			Gui::ColorEdit4("Collider color", Math::ValuePtr(m_Settings.ColliderColor));
-			Gui::Separator();
-
 			static bool wireframeMode = false;
 			if (Gui::Checkbox("Show wireframe", &wireframeMode))
 				RenderCommand::SetWireframe(wireframeMode);
-
+			Gui::Checkbox("Show physics colliders", &m_Settings.ShowColliders);
+			float lineWidth = Renderer2D::GetLineWidth();
+			if (Gui::DragFloat("Line width", &lineWidth, 0.25f, 0.25f, 4.0f, "%.2f"))
+				Renderer2D::SetLineWidth(lineWidth);
+			Gui::ColorEdit4("Collider color", Math::ValuePtr(m_Settings.ColliderColor));
 			Gui::Separator();
 
 			static bool vsync = true;

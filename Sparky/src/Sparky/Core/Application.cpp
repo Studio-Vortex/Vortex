@@ -3,24 +3,27 @@
 
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Core/TimeStep.h"
-#include "Sparky/Core/KeyCodes.h"
 #include "Sparky/Core/Input.h"
 
-#include <Glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "Sparky/Utils/PlatformUtils.h"
 
 namespace Sparky {
 
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationProperties& props)
+		: m_Properties(props)
 	{
 		SP_PROFILE_FUNCTION();
 
 		SP_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Window::Create(WindowProps(props.Name));
+		// Set working directory here
+		if (!m_Properties.WorkingDirectory.empty())
+			std::filesystem::current_path(m_Properties.WorkingDirectory);
+
+		m_Window = Window::Create(WindowProps(m_Properties.Name));
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 		m_Window->SetMaximized(props.MaxmizeWindow);
 
@@ -67,7 +70,7 @@ namespace Sparky {
 		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
-		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); it++)
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			if (e.Handled)
 				break;
@@ -84,7 +87,7 @@ namespace Sparky {
 		{
 			SP_PROFILE_SCOPE("Game Loop");
 
-			float time = (float)glfwGetTime();
+			float time = Time::GetTime();
 			TimeStep delta = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
@@ -96,14 +99,14 @@ namespace Sparky {
 					layer->OnUpdate(delta);
 			}
 
+			m_GuiLayer->BeginFrame();
 			{
 				SP_PROFILE_SCOPE("LayerStack OnGuiRender");
 
-				m_GuiLayer->BeginFrame();
 				for (Layer* layer : m_LayerStack)
 					layer->OnGuiRender();
-				m_GuiLayer->EndFrame();
 			}
+			m_GuiLayer->EndFrame();
 
 			m_Window->OnUpdate();
 		}
@@ -119,7 +122,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == NULL || e.GetHeight() == NULL)
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
 			return false;

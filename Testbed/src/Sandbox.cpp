@@ -7,7 +7,8 @@
 class Sandbox : public Sparky::Application
 {
 public:
-	Sandbox()
+	Sandbox(const Sparky::ApplicationProperties& properties)
+		: Application(properties)
 	{
 		//PushLayer(new ExampleLayer());
 		PushLayer(new Sandbox2D());
@@ -19,6 +20,12 @@ public:
 	}
 };
 
-Sparky::Application* Sparky::CreateApplication() {
-	return new Sandbox();
+Sparky::Application* Sparky::CreateApplication(ApplicationCommandLineArgs args)
+{
+	ApplicationProperties props;
+	props.Name = "Sandbox";
+	props.WorkingDirectory = "../Sparky-Editor";
+	props.CommandLineArgs = args;
+
+	return new Sandbox(props);
 }

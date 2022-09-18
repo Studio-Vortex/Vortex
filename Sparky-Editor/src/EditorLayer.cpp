@@ -119,8 +119,7 @@ namespace Sparky {
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
 
-		if (m_ShowPhysicsColliders)
-			OnOverlayRender();
+		OnOverlayRender();
 
 		m_Framebuffer->Unbind();
 	}
@@ -448,6 +447,10 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Play)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+
+			if (!cameraEntity) // No entity with a camera component was found so don't try to render
+				return;
+
 			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
 		}
 		else
@@ -455,44 +458,51 @@ namespace Sparky {
 			Renderer2D::BeginScene(m_EditorCamera);
 		}
 
-		// Render Box Colliders
+		if (m_ShowPhysicsColliders)
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-			for (auto entity : view)
+			float colliderDistance = 0.009f; // Editor camera will be looking at the origin of the world on the first frame
+			if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
+				colliderDistance = -colliderDistance;
+
+			// Render Box Colliders
 			{
-				auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+				for (auto entity : view)
+				{
+					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
 
-				Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, 0.009f);
-				Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
+					Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, colliderDistance);
+					Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
-				Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
+					Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
 
-				Renderer2D::DrawRect(transform, m_PhysicsColliderColor);
+					Renderer2D::DrawRect(transform, m_PhysicsColliderColor);
+				}
 			}
-		}
 
-		// Render Circle Colliders
-		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-			for (auto entity : view)
+			// Render Circle Colliders
 			{
-				auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+				for (auto entity : view)
+				{
+					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
 
-				Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, 0.009f);
-				Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.01f);
+					Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, colliderDistance);
+					Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.01f);
 
-				Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
+					Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
 
-				Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, 0.03f);
+					Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, Renderer2D::GetLineWidth() / 100.0f);
+				}
 			}
 		}
 
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity()) {
-			TransformComponent transform = selectedEntity.GetComponent<TransformComponent>();
+			const auto& transform = selectedEntity.GetComponent<TransformComponent>();
 
-			//Red
-			Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Red));
+			//Orange
+			Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Orange));
 		}
 
 		Renderer2D::EndScene();
@@ -547,19 +557,6 @@ namespace Sparky {
 			{
 				if (controlPressed)
 					DuplicateSelectedEntity();
-
-				break;
-			}
-
-			case Key::Space:
-			{
-				static bool wireframe{};
-				wireframe = !wireframe;
-
-				if (wireframe)
-					RenderCommand::SetWireframe(true);
-				else
-					RenderCommand::SetWireframe(false);
 
 				break;
 			}

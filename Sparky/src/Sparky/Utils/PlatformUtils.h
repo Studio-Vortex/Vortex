@@ -11,4 +11,10 @@ namespace Sparky {
 		static std::string SaveFile(const char* fileFilter);
 	};
 
+	class Time
+	{
+	public:
+		static float GetTime();
+	};
+
 }

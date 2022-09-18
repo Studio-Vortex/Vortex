@@ -2,8 +2,6 @@
 
 #include <Sparky.h>
 
-#include <filesystem>
-
 namespace Sparky {
 
 	class ContentBrowserPanel

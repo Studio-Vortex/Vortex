@@ -13,10 +13,24 @@ int main(int argc, char* argv[]);
 
 namespace Sparky {
 
+	struct SPARKY_API ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char** Args = nullptr;
+
+		const char* operator[](int index) const
+		{
+			SP_CORE_ASSERT(index < Count, "Index out of bounds!");
+			return Args[index];
+		}
+	};
+
 	struct SPARKY_API ApplicationProperties
 	{
-		std::string Name = "Sparky App";
+		std::string Name = "Sparky Application";
+		std::string WorkingDirectory;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
+		ApplicationCommandLineArgs CommandLineArgs;
 		bool MaxmizeWindow = false;
 
 		ApplicationProperties() = default;
@@ -38,6 +52,8 @@ namespace Sparky {
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
 
+		const ApplicationProperties& GetProperties() const { return m_Properties; }
+
 		void Close();
 
 	private:
@@ -46,6 +62,7 @@ namespace Sparky {
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 	private:
+		ApplicationProperties m_Properties;
 		UniqueRef<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
@@ -60,6 +77,6 @@ namespace Sparky {
 	};
 
 	// To be defined in CLIENT
-	Application* CreateApplication();
+	Application* CreateApplication(ApplicationCommandLineArgs args);
 
 }

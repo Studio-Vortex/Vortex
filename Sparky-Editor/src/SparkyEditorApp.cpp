@@ -17,11 +17,13 @@ namespace Sparky {
 		~SparkyEditor() override = default;
 	};
 
-	Application* CreateApplication() {
+	Application* CreateApplication(ApplicationCommandLineArgs args)
+	{
 		ApplicationProperties props;
 		props.Name = "Sparky Editor";
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 		props.MaxmizeWindow = false;
+		props.CommandLineArgs = args;
 
 		return new SparkyEditor(props);
 	}
