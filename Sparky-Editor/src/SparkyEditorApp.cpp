@@ -13,8 +13,6 @@ namespace Sparky {
 		{
 			PushLayer(new EditorLayer());
 		}
-
-		~SparkyEditor() override = default;
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)

@@ -29,9 +29,16 @@ namespace Sparky {
 
 		m_EditorScene = CreateShared<Scene>();
 		m_ActiveScene = m_EditorScene;
-		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		auto commandLineArgs = Application::Get().GetProperties().CommandLineArgs;
+		if (commandLineArgs.Count > 1)
+		{
+			auto sceneFilePath = commandLineArgs[1];
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Deserialize(sceneFilePath);
+		}
+
+		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 
 		CreateNewScene(); // Start the editor off with a fresh scene
 	}

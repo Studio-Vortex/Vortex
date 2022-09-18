@@ -191,7 +191,9 @@ namespace Sparky {
 			auto& spriteComponent = entity.GetComponent<SpriteComponent>();
 
 			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
-			//out << YAML::Key << "Texture" << YAML::Value << spriteComponent.SpriteColor;
+			if (spriteComponent.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
+			out << YAML::Key << "Scale" << YAML::Value << spriteComponent.Scale;
 
 			out << YAML::EndMap; // SpriteComponent
 		}
@@ -354,6 +356,11 @@ namespace Sparky {
 					auto& sprite = deserializedEntity.AddComponent<SpriteComponent>();
 
 					sprite.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
+					if (spriteComponent["TexturePath"])
+						sprite.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
+
+					if (spriteComponent["Scale"])
+					sprite.Scale = spriteComponent["Scale"].as<float>();
 				}
 				
 				auto circleComponent = entity["CircleRendererComponent"];

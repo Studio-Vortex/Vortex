@@ -14,7 +14,7 @@ namespace Sparky {
 		{
 			Gui::Begin("Settings", &s_ShowPanel);
 
-			Gui::DragFloat("Editor FOV", &m_Settings.EditorCameraFOV, 0.0f, 4.0f, 120.0f);
+			Gui::DragFloat("Editor FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
 			if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Settings.ClearColor)))
 				RenderCommand::SetClearColor(m_Settings.ClearColor);
