@@ -153,12 +153,34 @@ namespace Sparky {
 
 		// Physics
 		{
+			// Copies transform from Sparky to Box2D
+			auto view = m_Registry.view<RigidBody2DComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				glm::vec3 translation = transform.Translation;
+				float angle = transform.Rotation.z;
+
+				const auto& bodyPosition = body->GetPosition();
+				const float bodyAngle = body->GetAngle();
+
+				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
+
+				body->SetTransform({ translation.x, translation.y }, angle);
+
+				if (awake)
+					body->SetAwake(true);
+			}
+
 			const int32_t velocityIterations = 6; // TODO: Expose in editor settings
 			const int32_t positionIterations = 2; // TODO: Expose in editor settings
 			m_PhysicsWorld->Step(delta, velocityIterations, positionIterations);
 
 			// Get transform from Box2D
-			auto view = m_Registry.view<RigidBody2DComponent>();
 			for (auto e : view)
 			{
 				Entity entity{ e, this };
@@ -227,12 +249,34 @@ namespace Sparky {
     {
 		// Physics
 		{
+			// Copies transform from Hazel to Box2D
+			auto view = m_Registry.view<RigidBody2DComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				glm::vec3 translation = transform.Translation;
+				float angle = transform.Rotation.z;
+
+				const auto& bodyPosition = body->GetPosition();
+				const float bodyAngle = body->GetAngle();
+
+				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
+
+				body->SetTransform({ translation.x, translation.y }, angle);
+
+				if (awake)
+					body->SetAwake(true);
+			}
+
 			const int32_t velocityIterations = 6; // TODO: Expose in editor settings
 			const int32_t positionIterations = 2; // TODO: Expose in editor settings
 			m_PhysicsWorld->Step(delta, velocityIterations, positionIterations);
 
 			// Get transform from Box2D
-			auto view = m_Registry.view<RigidBody2DComponent>();
 			for (auto e : view)
 			{
 				Entity entity{ e, this };
