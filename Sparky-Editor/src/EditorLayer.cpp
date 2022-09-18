@@ -467,7 +467,7 @@ namespace Sparky {
 
 		if (m_ShowPhysicsColliders)
 		{
-			float colliderDistance = 0.009f; // Editor camera will be looking at the origin of the world on the first frame
+			float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
 			if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
 				colliderDistance = -colliderDistance;
 
@@ -478,10 +478,12 @@ namespace Sparky {
 				{
 					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
 
-					Math::vec3 translation = tc.Translation + Math::vec3(bc2d.Offset, colliderDistance);
 					Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
-					Math::mat4 transform = Math::Translate(translation) * Math::Rotate(tc.Rotation.z, { 0.0f, 0.0f, 1.0f }) * Math::Scale(scale);
+					Math::mat4 transform = Math::Translate(tc.Translation)
+						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
+						* Math::Scale(scale);
 
 					Renderer2D::DrawRect(transform, m_PhysicsColliderColor);
 				}
@@ -494,10 +496,12 @@ namespace Sparky {
 				{
 					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
 
-					Math::vec3 translation = tc.Translation + Math::vec3(cc2d.Offset, colliderDistance);
-					Math::vec3 scale = tc.Scale * Math::vec3(cc2d.Radius * 2.01f);
+					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
 
-					Math::mat4 transform = Math::Translate(translation) * Math::Scale(scale);
+					Math::mat4 transform = Math::Translate(tc.Translation)
+						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
+						* Math::Scale(Math::vec3(scale.x, scale.x, scale.z));
 
 					Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, Renderer2D::GetLineWidth() / 100.0f);
 				}
