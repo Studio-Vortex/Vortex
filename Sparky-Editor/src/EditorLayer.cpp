@@ -337,7 +337,7 @@ namespace Sparky {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".hazel")
+				if (filePath.extension().string() == ".sparky")
 				{
 					OpenScene(std::filesystem::path(g_AssetPath) / path);
 				}

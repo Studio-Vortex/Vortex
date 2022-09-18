@@ -204,40 +204,25 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
+		StartBatch();
+
 		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
 
-		// Reset the starting frame texture slot past the White Texture
-		s_Data.TextureSlotIndex = 1;
-
-		/// Quads
 		s_Data.QuadShader->Enable();
 		s_Data.QuadShader->SetMat4("u_ViewProjection", viewProjection);
 
-		// Set the index count to 0 for the new batch
-		s_Data.QuadIndexCount = 0;
-		// Set the pointer to the beggining of the vertex buffer
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		/// Circles
 		s_Data.CircleShader->Enable();
 		s_Data.CircleShader->SetMat4("u_ViewProjection", viewProjection);
 
-		// Same for circles
-		s_Data.CircleIndexCount = 0;
-		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
-
-		/// Lines
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
-
-		// and lines
-		s_Data.LineVertexCount = 0;
-		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
+
+		StartBatch();
 
 		Math::mat4 viewProjection = camera.GetViewProjection();
 
@@ -249,24 +234,24 @@ namespace Sparky
 
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
-
-		StartBatch();
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
 
+		StartBatch();
+
+		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
+
 		s_Data.QuadShader->Enable();
-		s_Data.QuadShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+		s_Data.QuadShader->SetMat4("u_ViewProjection", viewProjection);
 
 		s_Data.CircleShader->Enable();
-		s_Data.CircleShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+		s_Data.CircleShader->SetMat4("u_ViewProjection", viewProjection);
 		
 		s_Data.LineShader->Enable();
-		s_Data.LineShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
-
-		StartBatch();
+		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
 	}
 
 	void Renderer2D::StartBatch()
