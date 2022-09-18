@@ -23,6 +23,15 @@ namespace Sparky {
 			}
 		}
 
+		// Make sure cached texture icons exist, if they dont remove them from cache
+		for (auto it = m_ImageMap.cbegin(), next_it = it; it != m_ImageMap.cend(); it = next_it)
+		{
+			++next_it;
+
+			if (!std::filesystem::exists((*it).first))
+				m_ImageMap.erase(it);
+		}
+
 		static float padding = 16.0f;
 		static float thumbnailSize = 128.0f;
 		float cellSize = thumbnailSize + padding;
@@ -40,7 +49,16 @@ namespace Sparky {
 			std::string filenameString = relativePath.filename().string();
 
 			Gui::PushID(filenameString.c_str());
+
 			SharedRef<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+			if (path.extension().string() == ".png" || path.extension().string() == ".jpg")
+			{
+				if (m_ImageMap.find(path.string()) == m_ImageMap.end())
+					m_ImageMap[path.string()] = Texture2D::Create(path.string());
+
+				icon = m_ImageMap[path.string()];
+			}
+
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 

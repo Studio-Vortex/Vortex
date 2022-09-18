@@ -16,6 +16,7 @@ namespace Sparky {
 
 		SharedRef<Texture2D> m_DirectoryIcon;
 		SharedRef<Texture2D> m_FileIcon;
+		std::unordered_map<std::string, SharedRef<Texture2D>> m_ImageMap;
 	};
 
 }
