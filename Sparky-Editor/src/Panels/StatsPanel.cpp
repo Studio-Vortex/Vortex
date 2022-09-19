@@ -32,6 +32,13 @@ namespace Sparky {
 			Gui::Text("Indices:    %i", stats.GetIndexCount());
 			Gui::Separator();
 
+			Gui::PushFont(boldFont);
+			Gui::Text("Benchmark:");
+			Gui::PopFont();
+			Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
+			Gui::Text("FPS:  %.1f", io.Framerate);
+			Gui::Separator();
+
 			const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
 			Gui::PushFont(boldFont);
 			Gui::Text("Graphics API Info:");
@@ -41,13 +48,6 @@ namespace Sparky {
 			Gui::Text("Vendor:  %s", rendererInfo.Vendor);
 			Gui::Text("Version: %s", rendererInfo.Version);
 			Gui::Text("GLSL:    %s", rendererInfo.ShadingLanguageVersion);
-			Gui::Separator();
-
-			Gui::PushFont(boldFont);
-			Gui::Text("Benchmark:");
-			Gui::PopFont();
-			Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
-			Gui::Text("FPS:  %.1f", io.Framerate);
 			Gui::End();
 		}
 	}

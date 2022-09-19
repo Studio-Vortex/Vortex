@@ -33,6 +33,23 @@ namespace Sparky {
 			static bool vsync = true;
 			if (Gui::Checkbox("Use VSync", &vsync))
 				Application::Get().GetWindow().SetVSync(vsync);
+			Gui::Separator();
+
+			if (Gui::BeginMenu("Editor Theme"))
+			{
+				if (Gui::MenuItem("Dark"))
+					Application::Get().GetGuiLayer()->SetDarkThemeColors();
+				if (Gui::MenuItem("Light Gray"))
+					Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
+				if (Gui::MenuItem("Default"))
+					Gui::StyleColorsDark();
+				if (Gui::MenuItem("Classic"))
+					Gui::StyleColorsClassic();
+				if (Gui::MenuItem("Light"))
+					Gui::StyleColorsLight();
+
+				Gui::EndMenu();
+			}
 
 			Gui::End();
 		}

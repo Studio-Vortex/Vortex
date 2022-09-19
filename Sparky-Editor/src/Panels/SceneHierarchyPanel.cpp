@@ -26,13 +26,16 @@ namespace Sparky {
 		if (m_ContextScene)
 		{
 			m_ContextScene->m_Registry.each([&](auto entityID)
-				{
-					Entity entity{ entityID, m_ContextScene.get() };
-					DrawEntityNode(entity);
-				});
+			{
+				Entity entity{ entityID, m_ContextScene.get() };
+				DrawEntityNode(entity);
+			});
 
 			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
+			{
 				m_SelectedEntity = {};
+				m_EntityShouldBeRenamed = false;
+			}
 
 			// Right-click on blank space in scene hierarchy panel
 			if (Gui::BeginPopupContextWindow(0, 1, false))
@@ -95,19 +98,27 @@ namespace Sparky {
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
-		
+
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		bool opened = Gui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 
 		if (Gui::IsItemClicked())
+		{
 			m_SelectedEntity = entity;
+			m_EntityShouldBeRenamed = false;
+		}
 
 		bool entityShouldBeDeleted = false;
 
 		if (Gui::BeginPopupContextItem())
 		{
+			if (Gui::MenuItem("Rename"))
+			{
+				m_SelectedEntity = entity;
+				m_EntityShouldBeRenamed = true;
+			}
 			if (Gui::MenuItem("Delete Entity"))
 				entityShouldBeDeleted = true;
 
@@ -197,7 +208,7 @@ namespace Sparky {
 	}
 
 	template <typename TComponent, typename UIFunction>
-	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback)
+	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback, bool removeable = true)
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
@@ -218,7 +229,7 @@ namespace Sparky {
 			bool componentShouldBeRemoved = false;
 			if (Gui::BeginPopup("ComponentSettings"))
 			{
-				if (Gui::MenuItem("Remove Component"))
+				if (removeable && Gui::MenuItem("Remove Component"))
 					componentShouldBeRemoved = true;
 
 				Gui::EndPopup();
@@ -244,8 +255,17 @@ namespace Sparky {
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
-			if (Gui::InputText("##Tag", buffer, sizeof(buffer)))
+
+			ImGuiInputTextFlags flags = (m_EntityShouldBeRenamed && m_SelectedEntity == entity) ?
+				ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
+
+			if (m_SelectedEntity == entity && m_EntityShouldBeRenamed)
+				Gui::SetKeyboardFocusHere();
+			if (Gui::InputText("##Tag", buffer, sizeof(buffer), flags))
+			{
 				tag = std::string(buffer);
+				m_EntityShouldBeRenamed = false;
+			}
 		}
 
 		Gui::SameLine();
@@ -265,7 +285,7 @@ namespace Sparky {
 			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
 
 			// Allow for multiple Native Scripts on an entity
-			DisplayAddComponentPopup<NativeScriptComponent>("C++ Native Script", true, true);
+			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true, true);
 
 			Gui::EndPopup();
 		}
@@ -279,7 +299,7 @@ namespace Sparky {
 			DrawVec3Controls("Rotation", rotation);
 			component.Rotation = Math::Deg2Rad(rotation);
 			DrawVec3Controls("Scale", component.Scale, 1.0f);
-		});
+		}, false);
 
 		DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
 		{

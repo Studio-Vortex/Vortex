@@ -1,6 +1,6 @@
 workspace "Sparky"
 	architecture "x64"
-	startproject "Testbed"
+	startproject "Sparky-Editor"
 
 	configurations
 	{
@@ -24,9 +24,22 @@ IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
+IncludeDir["mono"] = "Sparky/vendor/mono/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
+
+LibraryDir = {}
+LibraryDir["mono"] = "%{wks.location}/Sparky/vendor/mono/lib/%{cfg.buildcfg}"
+
+Library = {}
+Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
+
+-- Windows
+Library["WinSock"] = "Ws2_32.lib"
+Library["WinMM"] = "Winmm.lib"
+Library["WinVersion"] = "Version.lib"
+Library["BCrypt"] = "Bcrypt.lib"
 
 group "External Dependencies"
 	include "Sparky/vendor/Box2D"
@@ -36,6 +49,8 @@ group "External Dependencies"
 	include "Sparky/vendor/yaml-cpp"
 group ""
 
+
+group "Core"
 project "Sparky"
 	location "Sparky"
 	kind "StaticLib"
@@ -77,6 +92,7 @@ project "Sparky"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.mono}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.yaml_cpp}",
@@ -88,6 +104,7 @@ project "Sparky"
 		"Glad",
 		"GLFW",
 		"ImGui",
+		"%{Library.mono}",
 		"opengl32.lib",
 		"yaml-cpp",
 	}
@@ -102,6 +119,14 @@ project "Sparky"
 		{
 			"SP_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
+		}
+
+		links
+		{
+			"%{Library.WinSock}",
+			"%{Library.WinMM}",
+			"%{Library.WinVersion}",
+			"%{Library.BCrypt}",
 		}
 
 	filter "configurations:Debug"
@@ -120,56 +145,36 @@ project "Sparky"
 		optimize "on"
 
 
-project "Testbed"
-	location "Testbed"
-	kind "ConsoleApp"
-	language "C++"
-	cppdialect "C++20"
-	staticruntime "on"
+project "Sparky-ScriptCore"
+	location "Sparky-ScriptCore"
+	kind "SharedLib"
+	language "C#"
+	dotnetframework "4.7.2"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir ("Sparky-Editor/Resources/Scripts")
+	objdir ("Sparky-Editor/Resources/Scripts/Intermediates")
 
 	files
 	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/Source/**.cs",
+		"%{prj.name}/Properties/**.cs",
 	}
-
-	includedirs
-	{
-		"Sparky/src",
-		"%{IncludeDir.entt}",
-		"%{IncludeDir.glm}",
-		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.spdlog}",
-	}
-
-	links
-	{
-		"Sparky",
-	}
-
-	filter "system:windows"
-		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
-		runtime "Debug"
-		symbols "on"
+		optimize "off"
+		symbols "default"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
-		runtime "Release"
 		optimize "on"
+		symbols "default"
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
-		runtime "Release"
-		optimize "on"
+		optimize "full"
+		symbols "off"
+group ""
 
 
+group "Tools"
 project "Sparky-Editor"
 	location "Sparky-Editor"
 	kind "ConsoleApp"
@@ -218,3 +223,56 @@ project "Sparky-Editor"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+group ""
+
+
+group "Misc"
+project "Testbed"
+	location "Testbed"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp",
+	}
+
+	includedirs
+	{
+		"Sparky/src",
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.spdlog}",
+	}
+
+	links
+	{
+		"Sparky",
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		defines "SP_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "SP_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "SP_DIST"
+		runtime "Release"
+		optimize "on"
+group ""

@@ -44,6 +44,7 @@ namespace Sparky {
 		void OnSceneSimulate();
 		void RestartSceneSimulation();
 
+		void AddEmptyEntity();
 		void DuplicateSelectedEntity();
 
 		// Gizmos

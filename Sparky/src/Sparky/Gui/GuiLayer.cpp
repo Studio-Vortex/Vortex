@@ -46,7 +46,7 @@ namespace Sparky {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		SetSpecialDarkThemeColors();
+		SetDarkThemeColors();
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindowHandle());
@@ -109,39 +109,10 @@ namespace Sparky {
 	void GuiLayer::SetDarkThemeColors()
 	{
 		auto& colors = ImGui::GetStyle().Colors;
-		colors[ImGuiCol_Text] = ImVec4(1, 1, 1, 1);
-		colors[ImGuiCol_WindowBg] = ImVec4(.1, .105, .11, .90);
-		colors[ImGuiCol_MenuBarBg] = ImVec4(.15, .15, .15, 1);
-
-		colors[ImGuiCol_Header] = ImVec4(.2, .205, .21, 1);
-		colors[ImGuiCol_HeaderHovered] = ImVec4(.3, .305, .31, 1);
-		colors[ImGuiCol_HeaderActive] = ImVec4(.15, .1505, .151, 1);
-
-		colors[ImGuiCol_Button] = ImVec4(.2, .205, .21, 1);
-		colors[ImGuiCol_ButtonHovered] = ImVec4(.3, .305, .31, 1);
-		colors[ImGuiCol_ButtonActive] = ImVec4(.15, .1505, .151, 1);
-
-		colors[ImGuiCol_FrameBg] = ImVec4(.2, .205, .21, 1);
-		colors[ImGuiCol_FrameBgHovered] = ImVec4(.3, .305, .31, 1);
-		colors[ImGuiCol_FrameBgActive] = ImVec4(.15, .1505, .151, 1);
-
-		colors[ImGuiCol_Tab] = ImVec4(.15, .1505, .151, 1);
-		colors[ImGuiCol_TabHovered] = ImVec4(.38, .3805, .381, 1);
-		colors[ImGuiCol_TabActive] = ImVec4(.28, .2805, .281, 1);
-		colors[ImGuiCol_TabUnfocused] = ImVec4(.15, .1505, .151, 1);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.2, .205, .21, 1);
-
-		colors[ImGuiCol_PopupBg] = ImVec4(.15, .15, .15, 1);
-
-		colors[ImGuiCol_TitleBg] = ImVec4(.15, .1505, .151, 1);
-		colors[ImGuiCol_TitleBgActive] = ImVec4(.15, .1505, .151, 1);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.15, .1505, .151, 1);
-	}
-
-	void GuiLayer::SetSpecialDarkThemeColors()
-	{
-		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_Text] = ImVec4{ 1, 1, 1, 1 };
 		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
+		colors[ImGuiCol_PopupBg] = ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f };
+		colors[ImGuiCol_MenuBarBg] = ImVec4{ 0.14f, 0.14f, 0.14f, 1.0f };
 
 		// Headers
 		colors[ImGuiCol_Header] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };

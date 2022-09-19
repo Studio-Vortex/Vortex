@@ -29,6 +29,7 @@ namespace Sparky {
 	private:
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;
+		bool m_EntityShouldBeRenamed = false;
 	};
 
 	template <typename TComponent>

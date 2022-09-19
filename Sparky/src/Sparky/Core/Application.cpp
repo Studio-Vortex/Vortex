@@ -2,8 +2,8 @@
 #include "Application.h"
 
 #include "Sparky/Renderer/Renderer.h"
-#include "Sparky/Core/TimeStep.h"
-#include "Sparky/Core/Input.h"
+
+#include "Sparky/Scripting/ScriptEngine.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
 
@@ -29,6 +29,7 @@ namespace Sparky {
 
 		Renderer::SetGraphicsAPI(props.GraphicsAPI);
 		Renderer::Init();
+		ScriptEngine::Init();
 
 		m_GuiLayer = new GuiLayer();
 		PushOverlay(m_GuiLayer);
@@ -38,6 +39,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}
 

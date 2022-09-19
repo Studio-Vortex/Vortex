@@ -72,18 +72,15 @@ namespace Sparky {
 		{
 			case SceneState::Edit:
 			{
+				const Math::vec2& mousePos = Input::GetMousePosition();
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
 				// this allows the user to manipulate the editor camera while they are holding the left mouse button even if the cursor is outside the scene viewport
-				const Math::vec2& mousePos = Input::GetMousePosition();
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
 
 				float editorCameraFOV = m_EditorCamera.GetFOV();
 				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
 					m_EditorCamera.SetFOV(m_EditorCameraFOV);
-
-				if (Input::IsKeyPressed(SP_KEY_ESCAPE))
-					Application::Get().Close();
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 				break;
@@ -134,8 +131,6 @@ namespace Sparky {
 	void EditorLayer::OnGuiRender()
 	{
 		SP_PROFILE_FUNCTION();
-
-		static bool show = true;
 		
 		// Dockspace
 		static bool dockspaceOpen = true;
@@ -218,6 +213,17 @@ namespace Sparky {
 
 					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
 						OnSceneSimulate();
+					Gui::Separator();
+
+					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+
+					if (Gui::MenuItem("Add Empty Entity", "Ctrl+A"))
+						AddEmptyEntity();
+					if (selectedEntity)
+						Gui::Separator();
+
+					if (selectedEntity && Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
+						DuplicateSelectedEntity();
 				}
 				else
 				{
@@ -302,12 +308,13 @@ namespace Sparky {
 			Gui::EndMenuBar();
 		}
 
+		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
 			m_SceneHierarchyPanel.OnGuiRender();
 			m_ContentBrowserPanel.OnGuiRender();
-			m_SettingsPanel.OnGuiRender(true);
-			m_StatsPanel.OnGuiRender(m_HoveredEntity, true);
+			m_SettingsPanel.OnGuiRender();
+			m_StatsPanel.OnGuiRender(m_HoveredEntity);
 			m_AboutPanel.OnGuiRender();
 		}
 
@@ -366,12 +373,6 @@ namespace Sparky {
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-
-			// Camera
-			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			//const Math::mat4& cameraProjection = camera.GetProjection();
-			//Math::mat4 cameraView = Math::Inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			// Editor camera
 			const Math::mat4& cameraProjection = m_EditorCamera.GetProjection();
@@ -555,21 +556,21 @@ namespace Sparky {
 			// File
 			case Key::N:
 			{
-				if (controlPressed)
+				if (controlPressed && m_SceneState == SceneState::Edit)
 					CreateNewScene();
 
 				break;
 			}
 			case Key::O:
 			{
-				if (controlPressed)
+				if (controlPressed && m_SceneState == SceneState::Edit)
 					OpenExistingScene();
 
 				break;
 			}
 			case Key::S:
 			{
-				if (controlPressed)
+				if (controlPressed && m_SceneState == SceneState::Edit)
 				{
 					if (shiftPressed)
 						SaveSceneAs();
@@ -581,6 +582,13 @@ namespace Sparky {
 			}
 
 			// Tools
+			case Key::A:
+			{
+				if (controlPressed)
+					AddEmptyEntity();
+
+				break;
+			}
 			case Key::D:
 			{
 				if (controlPressed)
@@ -803,6 +811,15 @@ namespace Sparky {
 	void EditorLayer::RestartSceneSimulation()
 	{
 		OnSceneSimulate();
+	}
+
+	void EditorLayer::AddEmptyEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		Entity newEntity = m_ActiveScene->CreateEntity();
+		m_SceneHierarchyPanel.SetSelectedEntity(newEntity);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

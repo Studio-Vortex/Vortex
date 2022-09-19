@@ -10,7 +10,11 @@
 
 #include "Platform/OpenGL/OpenGLContext.h"
 
+#include <stb_image.h>
+
 namespace Sparky {
+
+	static constexpr const char* WINDOW_ICON_PATH = "Resources/Images/SparkyLogo.jpg";
 
 	static uint8_t s_GLFWWindowCount = 0;
 
@@ -107,7 +111,7 @@ namespace Sparky {
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), 1);
+					KeyPressedEvent event(static_cast<KeyCode>(key), true);
 					data.EventCallback(event);
 					break;
 				}
@@ -158,6 +162,21 @@ namespace Sparky {
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
 		});
+
+		LoadWindowIcon();
+	}
+
+	void WindowsWindow::LoadWindowIcon()
+	{
+		int width, height, nrChannels;
+		stbi_uc* textureData = stbi_load(WINDOW_ICON_PATH, &width, &height, &nrChannels, STBI_rgb_alpha);
+
+		GLFWimage image{};
+		image.width = width;
+		image.height = height;
+		image.pixels = textureData;
+		glfwSetWindowIcon(m_Window, 1, &image);
+		stbi_image_free(textureData);
 	}
 
 	void WindowsWindow::OnUpdate()

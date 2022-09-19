@@ -32,6 +32,8 @@ namespace Sparky {
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 
+		void LoadWindowIcon();
+
 	private:
 		GLFWwindow* m_Window;
 		UniqueRef<GraphicsContext> m_Context;

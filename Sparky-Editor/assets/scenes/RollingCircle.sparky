@@ -1,0 +1,122 @@
+Scene: Untitled
+Entities:
+  - Entity: 17949475389044620620
+    TagComponent:
+      Tag: Quad Copy
+    TransformComponent:
+      Translation: [-8.59011364, -4.42728186, 0]
+      Rotation: [0, 0, -0.637011826]
+      Scale: [8.82629871, 0.434776217, 1]
+    SpriteComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3175000352247353765
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [-1.58354211, -10.5305405, 0.00999999978]
+      Rotation: [0, 0, 0]
+      Scale: [9.61999989, 9.61999989, 9.61999989]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\OpenGL.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8153005416412897779
+    TagComponent:
+      Tag: Perspective Camera
+    TransformComponent:
+      Translation: [0, -5, 15]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 9109015351923922035
+    TagComponent:
+      Tag: Quad Copy
+    TransformComponent:
+      Translation: [6.07142639, -3.1268661, 0]
+      Rotation: [0, 0, 0.680270255]
+      Scale: [8.82630634, 0.434776098, 1]
+    SpriteComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 4783997698825489462
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [-1.47205949, -1.46524465, 0]
+      Rotation: [0, 0, -0.216810092]
+      Scale: [8.82630157, 0.434776336, 1]
+    SpriteComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 7803932296406148519
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [-4.48414612, 3.5613966, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.274131298, 0.274131298, 1]
+      Thickness: 0.224999994
+      Fade: 0.151999995
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.400000006
+      RestitutionThreshold: 0.699999988
