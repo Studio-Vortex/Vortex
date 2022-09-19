@@ -479,9 +479,7 @@ namespace Sparky {
 			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
 		}
 		else
-		{
 			Renderer2D::BeginScene(m_EditorCamera);
-		}
 
 		if (m_ShowPhysicsColliders)
 		{

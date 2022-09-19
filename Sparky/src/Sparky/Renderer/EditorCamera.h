@@ -46,6 +46,7 @@ namespace Sparky {
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
 
 		void MousePan(const Math::vec2& delta);
+		void MousePanHorizontal(float delta);
 		void MouseRotate(const Math::vec2& delta);
 		void MouseZoom(float delta);
 

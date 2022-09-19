@@ -56,7 +56,7 @@ namespace Sparky {
 
 	void EditorCamera::OnUpdate(TimeStep delta)
 	{
-		if (Input::IsKeyPressed(Key::LeftAlt))
+		if (Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt))
 		{
 			const Math::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			Math::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
@@ -82,7 +82,9 @@ namespace Sparky {
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
 		float delta = e.GetYOffset() * 0.1f;
+		float horizontalDelta = e.GetXOffset() * 0.1f;
 		MouseZoom(delta);
+		MousePanHorizontal(horizontalDelta);
 		UpdateView();
 		return false;
 	}
@@ -92,6 +94,12 @@ namespace Sparky {
 		auto [xSpeed, ySpeed] = PanSpeed();
 		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
 		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+	}
+
+	void EditorCamera::MousePanHorizontal(float delta)
+	{
+		auto [xSpeed, ySpeed] = PanSpeed();
+		m_FocalPoint += GetRightDirection() * delta * xSpeed * m_Distance;
 	}
 
 	void EditorCamera::MouseRotate(const Math::vec2& delta)
