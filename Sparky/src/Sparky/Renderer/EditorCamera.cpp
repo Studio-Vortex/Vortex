@@ -81,10 +81,14 @@ namespace Sparky {
 
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
-		float delta = e.GetYOffset() * 0.1f;
-		float horizontalDelta = e.GetXOffset() * 0.1f;
-		MouseZoom(delta);
-		MousePanHorizontal(horizontalDelta);
+		float deltaX = e.GetXOffset() * 0.1f;
+		float deltaY = e.GetYOffset() * 0.1f;
+		
+		// Poll x scrolling
+		MousePanHorizontal(deltaX);
+		// Poll y scrolling
+		MouseZoom(deltaY);
+
 		UpdateView();
 		return false;
 	}
@@ -98,8 +102,11 @@ namespace Sparky {
 
 	void EditorCamera::MousePanHorizontal(float delta)
 	{
-		auto [xSpeed, ySpeed] = PanSpeed();
-		m_FocalPoint += GetRightDirection() * delta * xSpeed * m_Distance;
+		if (!Input::IsMouseButtonPressed(Mouse::ButtonLeft)) // user could be clicking on a gizmo
+		{
+			auto [xSpeed, ySpeed] = PanSpeed();
+			m_FocalPoint += GetRightDirection() * delta * xSpeed * m_Distance;
+		}
 	}
 
 	void EditorCamera::MouseRotate(const Math::vec2& delta)
@@ -111,11 +118,14 @@ namespace Sparky {
 
 	void EditorCamera::MouseZoom(float delta)
 	{
-		m_Distance -= delta * ZoomSpeed();
-		if (m_Distance < 1.0f)
+		if (!Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
-			m_FocalPoint += GetForwardDirection();
-			m_Distance = 1.0f;
+			m_Distance -= delta * ZoomSpeed();
+			if (m_Distance < 1.0f)
+			{
+				m_FocalPoint += GetForwardDirection();
+				m_Distance = 1.0f;
+			}
 		}
 	}
 
