@@ -7,7 +7,7 @@
 
 namespace Sparky
 {
-	UniqueRef<Window> Window::Create(const WindowProps& props)
+	UniqueRef<Window> Window::Create(const WindowProperties& props)
 	{
 #ifdef SP_PLATFORM_WINDOWS
 		return CreateUnique<WindowsWindow>(props);

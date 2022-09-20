@@ -23,7 +23,7 @@ namespace Sparky {
 		SP_CORE_ERROR("GLFW Error: ({}): {}", error, description);
 	}
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	WindowsWindow::WindowsWindow(const WindowProperties& props)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -37,12 +37,15 @@ namespace Sparky {
 		Shutdown();
 	}
 
-	void WindowsWindow::Init(const WindowProps& props)
+	void WindowsWindow::Init(const WindowProperties& props)
 	{
 		SP_PROFILE_FUNCTION();
 
 		m_Data.Title = props.Title;
 		m_Data.Size = props.Size;
+		m_Data.StartMaximized = props.StartMaximized;
+		m_Data.VSync = props.VSync;
+		m_Data.Decorated = props.Decorated;
 
 		SP_CORE_INFO("Creating window named '{}' with size: {}", props.Title, props.Size);
 
@@ -63,6 +66,16 @@ namespace Sparky {
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // SP_DEBUG
 
+			if (m_Data.StartMaximized)
+				glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+			else
+				glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
+
+			if (m_Data.Decorated)
+				glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+			else
+				glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
 			m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
 			s_GLFWWindowCount++;
 		}
@@ -71,7 +84,7 @@ namespace Sparky {
 		m_Context->Init();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
+		SetVSync(m_Data.VSync);
 
 		// Set GLFW Callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)

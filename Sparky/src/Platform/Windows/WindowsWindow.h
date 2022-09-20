@@ -11,7 +11,7 @@ namespace Sparky {
 	class WindowsWindow : public Window
 	{
 	public:
-		WindowsWindow(const WindowProps& props);
+		WindowsWindow(const WindowProperties& props);
 		virtual ~WindowsWindow();
 
 		void OnUpdate() override;
@@ -29,7 +29,7 @@ namespace Sparky {
 		inline void* GetNativeWindowHandle() const override { return m_Window; }
 
 	private:
-		virtual void Init(const WindowProps& props);
+		virtual void Init(const WindowProperties& props);
 		virtual void Shutdown();
 
 		void LoadWindowIcon();
@@ -42,7 +42,9 @@ namespace Sparky {
 		{
 			std::string Title;
 			Math::vec2 Size;
+			bool StartMaximized;
 			bool VSync;
+			bool Decorated;
 
 			EventCallbackFn EventCallback;
 		};

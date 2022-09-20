@@ -23,11 +23,16 @@ namespace Sparky {
 		if (!m_Properties.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Properties.WorkingDirectory);
 
-		m_Window = Window::Create(WindowProps(m_Properties.Name));
-		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
-		m_Window->SetMaximized(props.MaxmizeWindow);
+		WindowProperties windowProps;
+		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
+		windowProps.Title = m_Properties.Name;
+		windowProps.StartMaximized = m_Properties.MaximizeWindow;
+		windowProps.VSync = m_Properties.VSync;
+		windowProps.Decorated = m_Properties.WindowDecorated;
 
-		Renderer::SetGraphicsAPI(props.GraphicsAPI);
+		m_Window = Window::Create(windowProps);
+		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
+
 		Renderer::Init();
 		ScriptEngine::Init();
 
@@ -87,13 +92,13 @@ namespace Sparky {
 
 		while (m_Running)
 		{
-			SP_PROFILE_SCOPE("Game Loop");
+			SP_PROFILE_SCOPE("Application Loop");
 
 			float time = Time::GetTime();
 			TimeStep delta = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			if (!m_Minimized)
+			if (!m_ApplicationMinimized)
 			{
 				SP_PROFILE_SCOPE("LayerStack OnUpdate");
 
@@ -101,14 +106,17 @@ namespace Sparky {
 					layer->OnUpdate(delta);
 			}
 
-			m_GuiLayer->BeginFrame();
+			if (m_Properties.EnableGUI)
 			{
-				SP_PROFILE_SCOPE("LayerStack OnGuiRender");
+				m_GuiLayer->BeginFrame();
+				{
+					SP_PROFILE_SCOPE("LayerStack OnGuiRender");
 
-				for (Layer* layer : m_LayerStack)
-					layer->OnGuiRender();
+					for (Layer* layer : m_LayerStack)
+						layer->OnGuiRender();
+				}
+				m_GuiLayer->EndFrame();
 			}
-			m_GuiLayer->EndFrame();
 
 			m_Window->OnUpdate();
 		}
@@ -126,12 +134,19 @@ namespace Sparky {
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
-			m_Minimized = true;
+			m_ApplicationMinimized = true;
 			return false;
 		}
 
-		m_Minimized = false;
-		Renderer::OnWindowResize({ 0, 0, e.GetWidth(), e.GetHeight() });
+		m_ApplicationMinimized = false;
+
+		Viewport viewport;
+		viewport.XPos = 0;
+		viewport.YPos = 0;
+		viewport.Width = e.GetWidth();
+		viewport.Height = e.GetHeight();
+
+		Renderer::OnWindowResize(viewport);
 
 		return false;
 	}

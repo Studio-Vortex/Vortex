@@ -316,7 +316,7 @@ namespace Sparky {
 		{
 			m_SceneHierarchyPanel.OnGuiRender();
 			m_ContentBrowserPanel.OnGuiRender();
-			m_ShaderEditorPanel.OnGuiRender(true);
+			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_StatsPanel.OnGuiRender(m_HoveredEntity);
 			m_AboutPanel.OnGuiRender();

@@ -28,12 +28,14 @@ namespace Sparky {
 	struct SPARKY_API ApplicationProperties
 	{
 		std::string Name = "Sparky Application";
+		uint16_t WindowWidth = 1600;
+		uint16_t WindowHeight = 900;
+		bool MaximizeWindow = false;
+		bool WindowDecorated = true;
+		bool VSync = true;
+		bool EnableGUI = false;
 		std::string WorkingDirectory;
-		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
 		ApplicationCommandLineArgs CommandLineArgs;
-		bool MaxmizeWindow = false;
-
-		ApplicationProperties() = default;
 	};
 
 	class SPARKY_API Application
@@ -69,7 +71,7 @@ namespace Sparky {
 
 		float m_LastFrameTime = 0.0f;
 		bool m_Running = true;
-		bool m_Minimized = false;
+		bool m_ApplicationMinimized = false;
 
 	private:
 		static Application* s_Instance;

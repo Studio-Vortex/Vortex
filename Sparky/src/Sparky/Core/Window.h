@@ -9,15 +9,13 @@
 
 namespace Sparky {
 
-	struct WindowProps
+	struct WindowProperties
 	{
 		std::string Title;
 		Math::vec2 Size;
-
-		WindowProps(
-			const std::string& title = "Sparky Engine",
-			const Math::vec2& size = Math::vec2(1600.0f, 900.0f)
-		) : Title(title), Size(size) {}
+		bool StartMaximized;
+		bool VSync;
+		bool Decorated;
 	};
 
 	// Interface representing a desktop system based window
@@ -42,7 +40,7 @@ namespace Sparky {
 
 		virtual void* GetNativeWindowHandle() const = 0;
 
-		static UniqueRef<Window> Create(const WindowProps& props = WindowProps());
+		static UniqueRef<Window> Create(const WindowProperties& props = WindowProperties());
 	};
 
 }

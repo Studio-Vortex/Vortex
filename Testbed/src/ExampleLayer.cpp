@@ -52,7 +52,7 @@ ExampleLayer::ExampleLayer()
 
 	m_TriangleShader = m_ShaderLibrary.Load("assets/shaders/VertexPosColor.glsl");
 	m_FlatColorShader = m_ShaderLibrary.Load("assets/shaders/FlatColor.glsl");
-	auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
+	auto textureShader = m_ShaderLibrary.Load("assets/shaders/Renderer2D_Quad.glsl");
 
 	m_Texture = Sparky::Texture2D::Create("assets/textures/Checkerboard.png");
 	m_LinuxLogo = Sparky::Texture2D::Create("assets/textures/AwesomeFace.png");
