@@ -6,6 +6,11 @@
 
 #include <GLFW/glfw3.h>
 
+#ifdef SP_PLATFORM_WINDOWS
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#include <GLFW/glfw3native.h>
+#endif
+
 namespace Sparky {
 
 	class WindowsWindow : public Window
@@ -27,6 +32,7 @@ namespace Sparky {
 		bool IsVSync() const override;
 
 		inline void* GetNativeWindowHandle() const override { return m_Window; }
+		const HWND& GetWin32WindowHandle() const override;
 
 	private:
 		virtual void Init(const WindowProperties& props);

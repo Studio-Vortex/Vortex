@@ -39,6 +39,7 @@ namespace Sparky {
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindowHandle() const = 0;
+		virtual const HWND& GetWin32WindowHandle() const = 0;
 
 		static UniqueRef<Window> Create(const WindowProperties& props = WindowProperties());
 	};

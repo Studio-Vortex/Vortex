@@ -21,8 +21,8 @@ namespace Sparky {
 		props.Name = "Sparky Editor";
 		props.WindowWidth = 1280;
 		props.WindowHeight = 720;
-		props.MaximizeWindow = true;
-		props.WindowDecorated = false;
+		props.MaximizeWindow = false;
+		props.WindowDecorated = true;
 		props.VSync = true;
 		props.EnableGUI = true;
 
