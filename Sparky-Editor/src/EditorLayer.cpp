@@ -288,6 +288,9 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Window"))
 			{
+				if (Gui::MenuItem("Shader Editor"))
+					m_ShaderEditorPanel.ShowPanel();
+				Gui::Separator();
 				if (Gui::MenuItem("Stats"))
 					m_StatsPanel.ShowPanel();
 				Gui::Separator();
@@ -313,6 +316,7 @@ namespace Sparky {
 		{
 			m_SceneHierarchyPanel.OnGuiRender();
 			m_ContentBrowserPanel.OnGuiRender();
+			m_ShaderEditorPanel.OnGuiRender(true);
 			m_SettingsPanel.OnGuiRender();
 			m_StatsPanel.OnGuiRender(m_HoveredEntity);
 			m_AboutPanel.OnGuiRender();
@@ -365,7 +369,7 @@ namespace Sparky {
 		}
 
 		// Render Gizmos
-		bool isInEditMode = m_SceneState != SceneState::Play && m_SceneState != SceneState::Simulate;
+		bool isInEditMode = m_SceneState != SceneState::Play;
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1 && isInEditMode && !Input::IsKeyPressed(Key::LeftAlt))
 		{
@@ -597,10 +601,9 @@ namespace Sparky {
 
 			case Key::P:
 			{
-				if (controlPressed && shiftPressed)
+				if (controlPressed && shiftPressed && m_SceneState == SceneState::Play)
 				{
-					if (m_SceneState == SceneState::Play)
-						RestartScene();
+					RestartScene();
 
 					break;
 				}

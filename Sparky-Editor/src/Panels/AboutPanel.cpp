@@ -2,8 +2,6 @@
 
 namespace Sparky {
 
-	bool AboutPanel::s_ShowPanel = false;
-
 	void AboutPanel::OnGuiRender()
 	{
 		ImGuiIO& io = ImGui::GetIO();

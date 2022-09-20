@@ -2,8 +2,6 @@
 
 namespace Sparky {
 
-	bool StatsPanel::s_ShowPanel = false;
-
 	void StatsPanel::OnGuiRender(Entity hoveredEntity, bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();

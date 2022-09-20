@@ -329,10 +329,10 @@ namespace Sparky {
 		CopyComponentIfExists<SpriteComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<CircleRendererComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<CameraComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<BoxCollider2DComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<CircleCollider2DComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
 
 		return duplicatedEntity;
 	}

@@ -1,7 +1,5 @@
 #include "SceneHierarchyPanel.h"
 
-#include <filesystem>
-
 #include <imgui_internal.h>
 
 namespace Sparky {
@@ -308,7 +306,7 @@ namespace Sparky {
 			if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
 				component.Texture = nullptr;
 
-			// Accept textures from the content browser
+			// Accept a Texture from the content browser
 			if (Gui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -363,9 +361,9 @@ namespace Sparky {
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				float verticalFov = camera.GetPerspectiveVerticalFOV();
+				float verticalFov = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
 				if (Gui::DragFloat("Vertical FOV", &verticalFov))
-					camera.SetPerspectiveVerticalFOV(verticalFov);
+					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(verticalFov));
 
 				float nearClip = camera.GetPerspectiveNearClip();
 				if (Gui::DragFloat("Near", &nearClip))
@@ -439,10 +437,7 @@ namespace Sparky {
 			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
-		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component)
-		{
-
-		});
+		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component) {});
 	}
 
 }

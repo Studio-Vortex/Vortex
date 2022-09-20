@@ -19,9 +19,10 @@ namespace Sparky {
 	{
 		ApplicationProperties props;
 		props.Name = "Sparky Editor";
+		props.WorkingDirectory = "C:/dev/Sparky Editor Resources";
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 		props.CommandLineArgs = args;
-		props.MaxmizeWindow = false;
+		props.MaxmizeWindow = true;
 
 		return new SparkyEditor(props);
 	}

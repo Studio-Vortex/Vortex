@@ -32,6 +32,7 @@ namespace Sparky {
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		SP_CORE_ASSERT(width > 0 && height > 0, "Invalid Resize!");
 		m_AspectRatio = (float)width / (float)height;
 		ReCalculateProjection();
 	}
@@ -39,7 +40,9 @@ namespace Sparky {
 	void SceneCamera::ReCalculateProjection()
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
+		{
 			m_ProjectionMatrix = Math::Perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+		}
 		else
 		{
 			float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;

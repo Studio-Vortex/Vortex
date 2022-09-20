@@ -13,7 +13,7 @@ Entities:
       Scale: 7
   - Entity: 1526650983602685266
     TagComponent:
-      Tag: Backdrop
+      Tag: Backdrop Front
     TransformComponent:
       Translation: [0, 0, -15]
       Rotation: [0, 0, 0]
@@ -26,9 +26,9 @@ Entities:
     TagComponent:
       Tag: Top
     TransformComponent:
-      Translation: [0, 0.5, 0]
+      Translation: [1.49011612e-08, 0.5, 0]
       Rotation: [1.57079613, 0.785398245, -4.21468513e-08]
-      Scale: [0.999999881, 0.999999285, 0.999994874]
+      Scale: [0.999999881, 0.999999285, 0.999994099]
     SpriteComponent:
       Color: [0, 0.521131039, 0.876447856, 1]
       Scale: 1
@@ -64,7 +64,7 @@ Entities:
     TagComponent:
       Tag: Left
     TransformComponent:
-      Translation: [-0.349999994, 1.49011612e-08, 0.348604262]
+      Translation: [-0.349999994, 0, 0.348604262]
       Rotation: [0, -0.785398245, 0]
       Scale: [1, 1, 1]
     SpriteComponent:
@@ -171,3 +171,25 @@ Entities:
       Friction: 0.5
       Restitution: 1
       RestitutionThreshold: 23.2000008
+  - Entity: 11220115898173391739
+    TagComponent:
+      Tag: Backdrop Right
+    TransformComponent:
+      Translation: [25, 0, 10]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [50, 50, 1]
+    SpriteComponent:
+      Color: [0.6409266, 0.6409266, 0.6409266, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 7
+  - Entity: 6914990807036438930
+    TagComponent:
+      Tag: Backdrop Left
+    TransformComponent:
+      Translation: [-25, 0, 9.99999714]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [49.9989624, 50, 0.999983788]
+    SpriteComponent:
+      Color: [0.6409266, 0.6409266, 0.6409266, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 7
