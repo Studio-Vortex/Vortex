@@ -3,9 +3,8 @@
 /.vs
 /bin
 /bin-int
-Sparky/resources/images
-Testbed/assets/textures
-Testbed/assets/game/textures
+Sparky-Editor/assets/textures/game
+Sparky-Editor/Resources/Scripts/Intermediates
 
 // Files
 
@@ -14,4 +13,5 @@ Testbed/assets/game/textures
 *.filters
 *.sln
 *.json
+*.csproj
 Testbed/imgui.ini

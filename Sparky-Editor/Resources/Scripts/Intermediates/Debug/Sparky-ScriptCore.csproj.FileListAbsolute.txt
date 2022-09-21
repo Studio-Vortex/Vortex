@@ -1,6 +1,0 @@
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Debug\Sparky-ScriptCore.csproj.AssemblyReference.cache
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Debug\Sparky-ScriptCore.csproj.CoreCompileInputs.cache
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Debug\Sparky-ScriptCore.dll
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Debug\Sparky-ScriptCore.pdb
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Sparky-ScriptCore.dll
-C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Sparky-ScriptCore.pdb
