@@ -14,23 +14,23 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (Input::IsKeyPressed(SP_KEY_A))
+		if (Input::IsKeyPressed(Key::A))
 		{
 			m_CameraPosition.x -= cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y -= sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
-		else if (Input::IsKeyPressed(SP_KEY_D))
+		else if (Input::IsKeyPressed(Key::D))
 		{
 			m_CameraPosition.x += cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y += sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
 
-		if (Input::IsKeyPressed(SP_KEY_W))
+		if (Input::IsKeyPressed(Key::W))
 		{
 			m_CameraPosition.x += -sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y += cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
-		else if (Input::IsKeyPressed(SP_KEY_S))
+		else if (Input::IsKeyPressed(Key::S))
 		{
 			m_CameraPosition.x -= -sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y -= cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
@@ -38,9 +38,9 @@ namespace Sparky {
 
 		if (m_Rotation)
 		{
-			if (Input::IsKeyPressed(SP_KEY_Q))
+			if (Input::IsKeyPressed(Key::Q))
 				m_CameraRotation += m_CameraRotationSpeed * ts;
-			else if (Input::IsKeyPressed(SP_KEY_E))
+			else if (Input::IsKeyPressed(Key::E))
 				m_CameraRotation -= m_CameraRotationSpeed * ts;
 
 			if (m_CameraRotation > 180.0f)
@@ -48,13 +48,13 @@ namespace Sparky {
 			else if (m_CameraRotation <= -180.0f)
 				m_CameraRotation += 360.0f;
 
-			if (Input::IsKeyPressed(SP_KEY_R))
+			if (Input::IsKeyPressed(Key::R))
 				ResetRotation();
 
 			m_Camera.SetRotation(m_CameraRotation);
 		}
 
-		if (Input::IsKeyPressed(SP_KEY_LEFT_SHIFT))
+		if (Input::IsKeyPressed(Key::LeftShift))
 			m_CameraTranslationSpeed = m_ZoomLevel * m_ShiftKeyModiferSpeed;
 		else
 			m_CameraTranslationSpeed = m_ZoomLevel;

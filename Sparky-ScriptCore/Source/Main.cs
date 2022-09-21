@@ -7,11 +7,30 @@ namespace Sparky {
 	{
 		public float X, Y, Z;
 
+		public static Vector3 Zero => new Vector3(0.0f);
+
+		public Vector3(float scalar)
+		{
+			X = scalar;
+			Y = scalar;
+			Z = scalar;
+		}
+
 		public Vector3(float x, float y, float z)
 		{
 			X = x;
 			Y = y;
 			Z = z;
+		}
+
+		public static Vector3 operator +(Vector3 vector, Vector3 other)
+		{
+			return new Vector3(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z);
+		}
+
+		public static Vector3 operator *(Vector3 vector, float scalar)
+		{
+			return new Vector3(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
 		}
 	}
 
@@ -22,53 +41,40 @@ namespace Sparky {
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void NativeLog_Vector(ref Vector3 parameter, out Vector3 result);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Entity_GetTranslation(ulong uuid, out Vector3 result);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Entity_SetTranslation(ulong uuid, ref Vector3 translation);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyDown(KeyCode key);
 	}
 
 	public class Entity
 	{
-		public float FloatVar { get; set; }
+        protected Entity() { ID = 0; }
 
-		public Entity()
+		internal Entity(ulong id)
 		{
-			Console.WriteLine("Main Constructor!");
-			Log("Jackson", 24);
-
-			Vector3 pos = new Vector3(5, 2.5f, 1);
-
-			Vector3 result = Log(pos);
-			Console.WriteLine($"{result.X}, {result.Y}, {result.Z}");
+            ID = id;
 		}
 
-		public void PrintMessage()
-		{
-			Console.WriteLine("Hello World from C#!");
-		}
+        public readonly ulong ID;
 
-		public void PrintInt(int number)
-		{
-			Console.WriteLine($"Number in C# from C++ {number}");
-		}
-
-		public void PrintInts(int number, int number2)
-		{
-			Console.WriteLine($"Number in C# from C++ {number} and {number2}");
-		}
-
-		public void PrintCustomMessage(string message)
-		{
-			Console.WriteLine($"C# says: {message}");
-		}
-
-		public void Log(string message, int parameter)
-		{
-			InternalCalls.NativeLog(message, parameter);
-		}
-
-		public Vector3 Log(Vector3 parameter)
-		{
-			InternalCalls.NativeLog_Vector(ref parameter, out Vector3 result);
-			return result;
-		}
+        public Vector3 Translation
+        {
+            get
+            {
+                InternalCalls.Entity_GetTranslation(ID, out Vector3 translation);
+                return translation;
+            }
+            set
+            {
+                InternalCalls.Entity_SetTranslation(ID, ref value);
+            }
+        }
 	}
 
 }

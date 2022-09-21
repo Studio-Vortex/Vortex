@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "ScriptEngine.h"
 
+#include "Sparky/Scene/Entity.h"
+#include "Sparky/Scene/Components.h"
 #include "Sparky/Scripting/ScriptRegistry.h"
 
 #include <mono/metadata/assembly.h>
@@ -79,7 +81,6 @@ namespace Sparky {
 
 				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
 				SP_CORE_TRACE("{}.{}", nameSpace, name);
 			}
 		}
@@ -95,6 +96,11 @@ namespace Sparky {
 		MonoImage* CoreAssemblyImage = nullptr;
 
 		ScriptClass EntityClass;
+
+		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
+
+		Scene* ContextScene = nullptr;
 	};
 
 	static ScriptEngineData* s_Data = nullptr;
@@ -105,39 +111,11 @@ namespace Sparky {
 
 		InitMono();
 		LoadAssembly("Resources/Scripts/Sparky-ScriptCore.dll");
+		LoadAssemblyClasses(s_Data->CoreAssembly);
 
 		ScriptRegistry::RegisterMethods();
 
-		// Retrieve and instantiate class (with contructor)
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity");
-
-		MonoObject* instance = s_Data->EntityClass.Instantiate();
-
-		// Call method
-		MonoMethod* printMessageFunc = s_Data->EntityClass.GetMethod("PrintMessage", 0);
-		s_Data->EntityClass.InvokeMethod(instance, printMessageFunc);
-
-		// Call method with param
-		MonoMethod* printIntFunc = s_Data->EntityClass.GetMethod("PrintInt", 1);
-		int number = 10;
-		void* param = &number;
-		s_Data->EntityClass.InvokeMethod(instance, printIntFunc, &param);
-
-		MonoMethod* printIntsFunc = s_Data->EntityClass.GetMethod("PrintInts", 2);
-		int number2 = 434;
-		void* params[2] =
-		{
-			&number,
-			&number2
-		};
-		s_Data->EntityClass.InvokeMethod(instance, printIntsFunc, params);
-
-		MonoMethod* printCustomMessageFunc = s_Data->EntityClass.GetMethod("PrintCustomMessage", 1);
-		MonoString* monoString = mono_string_new(s_Data->AppDomain, "Hello from C++");
-		void* stringParam = monoString;
-		s_Data->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
-
-		//SP_CORE_ASSERT(false, "Failed");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -180,6 +158,89 @@ namespace Sparky {
 		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
 	}
 
+	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
+	{
+		s_Data->ContextScene = contextScene;
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		s_Data->ContextScene = nullptr;
+
+		s_Data->EntityInstances.clear();
+	}
+
+	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	{
+		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
+	}
+
+	void ScriptEngine::OnCreateEntity(Entity entity)
+	{
+		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+		if (EntityClassExists(scriptComponent.ClassName))
+		{
+			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
+
+			s_Data->EntityInstances[entity.GetUUID()] = instance;
+			instance->InvokeOnCreate();
+		}
+	}
+
+	void ScriptEngine::OnUpdateEntity(Entity entity, TimeStep delta)
+	{
+		UUID uuid = entity.GetUUID();
+
+		SP_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end(), "Instance should be in map check order of function calls!");
+
+		s_Data->EntityInstances[uuid]->InvokeOnUpdate(delta);
+	}
+
+	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
+	{
+		return s_Data->EntityClasses;
+	}
+
+	Scene* ScriptEngine::GetContextScene()
+	{
+		return s_Data->ContextScene;
+	}
+
+	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly)
+	{
+		s_Data->EntityClasses.clear();
+
+		MonoImage* image = mono_assembly_get_image(assembly);
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		MonoClass* entityClass = mono_class_from_name(image, "Sparky", "Entity");
+
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			std::string fullName;
+			if (strlen(nameSpace) != 0)
+				fullName = fmt::format("{}.{}", nameSpace, name);
+			else
+				fullName = name;
+
+			MonoClass* monoClass = mono_class_from_name(s_Data->CoreAssemblyImage, nameSpace, name);
+
+			if (monoClass == entityClass)
+				continue;
+
+			bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
+
+			if (isEntityClass)
+				s_Data->EntityClasses[fullName] = CreateShared<ScriptClass>(nameSpace, name);
+		}
+	}
+
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
 		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
@@ -206,6 +267,34 @@ namespace Sparky {
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
 		return mono_runtime_invoke(method, instance, params, nullptr);
+	}
+
+	ScriptInstance::ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity)
+		: m_ScriptClass(scriptClass)
+	{
+		m_Instance = m_ScriptClass->Instantiate();
+
+		m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
+		m_OnCreateFunc = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdateFunc = m_ScriptClass->GetMethod("OnUpdate", 1);
+
+		// Call Entity constructor
+		{
+			UUID entitytUUID = entity.GetUUID();
+			void* param = &entitytUUID;
+			scriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
+		}
+	}
+
+	void Sparky::ScriptInstance::InvokeOnCreate()
+	{
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
+	}
+
+	void ScriptInstance::InvokeOnUpdate(float delta)
+	{
+		void* param = &delta;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 	}
 
 }

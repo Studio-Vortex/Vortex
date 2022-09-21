@@ -38,6 +38,7 @@ namespace Sparky {
 
 		Entity DuplicateEntity(Entity entity);
 
+		Entity GetEntityWithUUID(UUID uuid);
 		Entity GetPrimaryCameraEntity();
 
 		template <typename... TComponents>
@@ -61,6 +62,8 @@ namespace Sparky {
 		uint32_t m_ViewportHeight = 0;
 
 		b2World* m_PhysicsWorld = nullptr;
+
+		std::unordered_map<UUID, entt::entity> m_EntityMap;
 
 	private:
 		friend class Entity;

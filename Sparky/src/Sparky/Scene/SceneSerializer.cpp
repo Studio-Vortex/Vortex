@@ -255,6 +255,16 @@ namespace Sparky {
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
 
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
+
+			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "ClassName" << YAML::Value << scriptComponent.ClassName;
+
+			out << YAML::EndMap; // ScriptComponent
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 
@@ -409,6 +419,13 @@ namespace Sparky {
 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 				}
 			}
 		}

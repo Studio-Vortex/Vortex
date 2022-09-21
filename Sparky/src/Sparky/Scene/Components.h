@@ -78,24 +78,6 @@ namespace Sparky {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	// Forward declaration
-	class ScriptableEntity;
-
-	struct NativeScriptComponent
-	{
-		ScriptableEntity* Instance = nullptr;
-
-		ScriptableEntity* (*InstantiateScript)() = nullptr;
-		void (* DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
-
-		template <typename T>
-		void Bind()
-		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyInstanceScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
-		}
-	};
-
 	// Physics components
 
 	struct RigidBody2DComponent
@@ -145,6 +127,34 @@ namespace Sparky {
 
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
+	};
+
+	// Script components
+
+	struct ScriptComponent
+	{
+		std::string ClassName;
+		 
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+	};
+
+	// Forward declaration
+	class ScriptableEntity;
+
+	struct NativeScriptComponent
+	{
+		ScriptableEntity* Instance = nullptr;
+
+		ScriptableEntity* (*InstantiateScript)() = nullptr;
+		void (* DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
+
+		template <typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyInstanceScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		}
 	};
 
 }

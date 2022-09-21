@@ -6,6 +6,7 @@
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Core/Math.h"
+#include "Sparky/Scripting/ScriptEngine.h"
 
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
@@ -88,6 +89,7 @@ namespace Sparky {
 		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return destination;
 	}
@@ -105,21 +107,46 @@ namespace Sparky {
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 
+		// Store the entity's UUID and the entt handle in our map
+		// entity will be implicitly converted to an entt handle
+		m_EntityMap[uuid] = entity;
+
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+
+		SP_CORE_ASSERT(m_EntityMap.find(entity.GetUUID()) != m_EntityMap.end(), "UUID was not found in Entity Map!");
+
+		// Remove the entity from our internal map
+		m_EntityMap.erase(entity.GetUUID());
+
 	}
 
 	void Scene::OnRuntimeStart()
 	{
 		OnPhysics2DStart();
+
+		// Scripting
+		{
+			ScriptEngine::OnRuntimeStart(this);
+
+			// Instantiate all script entities
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::OnCreateEntity(entity);
+			}
+		}
 	}
 
 	void Scene::OnRuntimeStop()
 	{
+		ScriptEngine::OnRuntimeStop();
+
 		OnPhysics2DStop();
 	}
 
@@ -137,6 +164,12 @@ namespace Sparky {
 	{
 		// Update Scripts
 		{
+			// C# Entity OnUpdate
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto entityID : view)
+				ScriptEngine::OnUpdateEntity(Entity{ entityID, this }, delta);
+
+			// C++ Entity OnUpdate
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				// TODO: Move to Scene::OnScenePlay
@@ -332,9 +365,17 @@ namespace Sparky {
 		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<BoxCollider2DComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<CircleCollider2DComponent>(duplicatedEntity, source);
+		CopyComponentIfExists<ScriptComponent>(duplicatedEntity, source);
 		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
 
 		return duplicatedEntity;
+	}
+
+	Entity Scene::GetEntityWithUUID(UUID uuid)
+	{
+		SP_CORE_ASSERT(m_EntityMap.find(uuid) != m_EntityMap.end(), "UUID was not present in Entity Map!");
+
+		return Entity{ m_EntityMap.at(uuid), this};
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -450,7 +491,7 @@ namespace Sparky {
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		//SP_CORE_ASSERT(false, "Should not be calling base template function!");
+		static_assert(sizeof(T) == 0);
 	}
 
 	template <> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
@@ -474,6 +515,8 @@ namespace Sparky {
 	template <> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 

@@ -1,11 +1,14 @@
-#pragma once
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Sparky
 {
 
-	typedef enum class KeyCode : uint16_t
+	public enum KeyCode
 	{
-		// From glfw3.h
 		Space                            = 32,
 		Apostrophe                       = 39, /* ' */
 		Comma                            = 44, /* , */
@@ -135,12 +138,6 @@ namespace Sparky
 		RightAlt                         = 346,
 		RightSuper                       = 347,
 		Menu                             = 348
-	} Key;
-
-	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
-	{
-		os << static_cast<int32_t>(keyCode);
-		return os;
 	}
 
 }

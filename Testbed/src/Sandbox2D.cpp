@@ -21,7 +21,7 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 	// Update
 	m_CameraController.OnUpdate(delta);
 
-	if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
+	if (Sparky::Input::IsKeyPressed(Sparky::Key::Escape))
 		Sparky::Application::Get().Close();
 
 	// Render
@@ -90,7 +90,7 @@ void Sandbox2D::OnEvent(Sparky::Event& e)
 
 		auto& event = (Sparky::KeyPressedEvent&)e;
 
-		if (event.GetKeyCode() == SP_KEY_SPACE)
+		if (event.GetKeyCode() == Sparky::Key::Space)
 		{
 			wireframe = !wireframe;
 			

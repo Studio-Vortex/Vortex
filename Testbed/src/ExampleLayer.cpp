@@ -64,7 +64,7 @@ ExampleLayer::ExampleLayer()
 void ExampleLayer::OnUpdate(Sparky::TimeStep delta)
 {
 	// Update
-	if (Sparky::Input::IsKeyPressed(SP_KEY_ESCAPE))
+	if (Sparky::Input::IsKeyPressed(Sparky::Key::Escape))
 		Sparky::Application::Get().Close();
 
 	m_CameraController.OnUpdate(delta);

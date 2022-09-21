@@ -2,6 +2,7 @@
 
 namespace Sparky
 {
+
 	typedef enum class MouseCode : uint16_t
 	{
 		// From glfw3.h
@@ -25,17 +26,5 @@ namespace Sparky
 		os << static_cast<int32_t>(mouseCode);
 		return os;
 	}
-}
 
-#define SP_MOUSE_BUTTON_0      ::Sparky::Mouse::Button0
-#define SP_MOUSE_BUTTON_1      ::Sparky::Mouse::Button1
-#define SP_MOUSE_BUTTON_2      ::Sparky::Mouse::Button2
-#define SP_MOUSE_BUTTON_3      ::Sparky::Mouse::Button3
-#define SP_MOUSE_BUTTON_4      ::Sparky::Mouse::Button4
-#define SP_MOUSE_BUTTON_5      ::Sparky::Mouse::Button5
-#define SP_MOUSE_BUTTON_6      ::Sparky::Mouse::Button6
-#define SP_MOUSE_BUTTON_7      ::Sparky::Mouse::Button7
-#define SP_MOUSE_BUTTON_LAST   ::Sparky::Mouse::ButtonLast
-#define SP_MOUSE_BUTTON_LEFT   ::Sparky::Mouse::ButtonLeft
-#define SP_MOUSE_BUTTON_RIGHT  ::Sparky::Mouse::ButtonRight
-#define SP_MOUSE_BUTTON_MIDDLE ::Sparky::Mouse::ButtonMiddle
+}

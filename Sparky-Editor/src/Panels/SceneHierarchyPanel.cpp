@@ -1,5 +1,7 @@
 #include "SceneHierarchyPanel.h"
 
+#include "Sparky/Scripting/ScriptEngine.h"
+
 #include <imgui_internal.h>
 
 namespace Sparky {
@@ -282,7 +284,8 @@ namespace Sparky {
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
 
-			// Allow for multiple Native Scripts on an entity
+			// Allow for multiple Scripts on an entity
+			DisplayAddComponentPopup<ScriptComponent>("C# Script", true);
 			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true, true);
 
 			Gui::EndPopup();
@@ -435,6 +438,23 @@ namespace Sparky {
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<ScriptComponent>("C# Script", entity, [](auto& component)
+		{
+			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+
+			static char buffer[64];
+			strcpy(buffer, component.ClassName.c_str());
+
+			if (!scriptClassExists)
+				Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.2f, 0.2f, 1));
+
+			if (Gui::InputText("Class", buffer, sizeof(buffer)))
+				component.ClassName = buffer;
+
+			if (!scriptClassExists)
+				Gui::PopStyleColor();
 		});
 
 		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component) {});
