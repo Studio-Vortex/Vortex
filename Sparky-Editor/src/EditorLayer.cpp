@@ -179,6 +179,10 @@ namespace Sparky {
 
 		if (Gui::BeginMenuBar())
 		{
+			bool inEditMode = m_SceneState == SceneState::Edit;
+			bool inPlayMode = m_SceneState == SceneState::Play;
+			bool inSimulateMode = m_SceneState == SceneState::Simulate;
+
 			if (Gui::BeginMenu("File"))
 			{
 				if (Gui::MenuItem("New Scene", "Ctrl+N"))
@@ -205,7 +209,7 @@ namespace Sparky {
 			
 			if (Gui::BeginMenu("Edit"))
 			{
-				if (m_SceneState == SceneState::Edit)
+				if (inEditMode)
 				{
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
 						OnScenePlay();
@@ -227,7 +231,7 @@ namespace Sparky {
 				}
 				else
 				{
-					if (m_SceneState == SceneState::Play)
+					if (inPlayMode)
 					{
 						if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
 							OnSceneStop();
@@ -236,7 +240,7 @@ namespace Sparky {
 						if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
 							RestartScene();
 					}
-					else if (m_SceneState == SceneState::Simulate)
+					else if (inSimulateMode)
 					{
 						if (Gui::MenuItem("Stop Simulation", "Ctrl+X"))
 							OnSceneStop();
@@ -261,6 +265,15 @@ namespace Sparky {
 				{
 					if (Gui::MenuItem("Maximize Scene", "Shift+F12"))
 						m_SceneViewportMaximized = true;
+				}
+
+				if (inEditMode)
+					Gui::Separator();
+
+				if (inEditMode)
+				{
+					if (Gui::MenuItem("Center Editor Camera"))
+						m_EditorCamera.ResetAtOrigin();
 				}
 
 				Gui::EndMenu();

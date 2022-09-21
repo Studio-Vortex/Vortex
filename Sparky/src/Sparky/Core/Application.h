@@ -34,6 +34,7 @@ namespace Sparky {
 		bool WindowDecorated = true;
 		bool VSync = true;
 		bool EnableGUI = false;
+		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
 		std::string WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};

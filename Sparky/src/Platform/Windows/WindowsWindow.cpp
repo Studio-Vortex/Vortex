@@ -220,12 +220,6 @@ namespace Sparky {
 		return m_Data.VSync;
 	}
 
-	const HWND& WindowsWindow::GetWin32WindowHandle() const
-	{
-		HWND hWnd = glfwGetWin32Window(m_Window);
-		return hWnd;
-	}
-
 	void WindowsWindow::Shutdown()
 	{
 		SP_PROFILE_FUNCTION();

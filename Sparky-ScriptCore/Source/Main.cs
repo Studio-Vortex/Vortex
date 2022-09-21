@@ -17,7 +17,17 @@ namespace Sparky {
 			Console.WriteLine("Hello World from C#!");
 		}
 
-		public void PrintCustomMessage(string message)
+        public void PrintInt(int number)
+        {
+            Console.WriteLine($"Number in C# from C++ {number}");
+        }
+
+        public void PrintInts(int number, int number2)
+        {
+            Console.WriteLine($"Number in C# from C++ {number} and {number2}");
+        }
+
+        public void PrintCustomMessage(string message)
 		{
 			Console.WriteLine($"C# says: {message}");
 		}

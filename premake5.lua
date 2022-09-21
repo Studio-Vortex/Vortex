@@ -24,22 +24,17 @@ IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
-IncludeDir["mono"] = "Sparky/vendor/mono/include"
+IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
 
 LibraryDir = {}
-LibraryDir["mono"] = "%{wks.location}/Sparky/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["Mono"] = "%{wks.location}/Sparky/vendor/mono/lib/%{cfg.buildcfg}"
 
 Library = {}
-Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
-
--- Windows
-Library["WinSock"] = "Ws2_32.lib"
-Library["WinMM"] = "Winmm.lib"
-Library["WinVersion"] = "Version.lib"
-Library["BCrypt"] = "Bcrypt.lib"
+Library["mono"] = "%{LibraryDir.Mono}/mono-2.0-sgen.lib" -- dll binary must be included in build
+--Library["mono"] = "%{LibraryDir.Mono}/libmono-static-sgen.lib"
 
 group "External Dependencies"
 	include "Sparky/vendor/Box2D"
@@ -119,14 +114,6 @@ project "Sparky"
 		{
 			"SP_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
-		}
-
-		links
-		{
-			"%{Library.WinSock}",
-			"%{Library.WinMM}",
-			"%{Library.WinVersion}",
-			"%{Library.BCrypt}",
 		}
 
 	filter "configurations:Debug"

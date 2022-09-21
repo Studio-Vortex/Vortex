@@ -39,6 +39,8 @@ namespace Sparky {
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
 
+		void ResetAtOrigin();
+
 	private:
 		void UpdateProjection();
 		void UpdateView();
@@ -63,7 +65,7 @@ namespace Sparky {
 		Math::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		Math::vec3 m_FocalPoint = Math::vec3(0.0f);
 
-		Math::vec2 m_InitialMousePosition;
+		Math::vec2 m_InitialMousePosition = Math::vec2(0.0f);
 
 		float m_Distance = 10.0f;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;

@@ -32,7 +32,6 @@ namespace Sparky {
 		bool IsVSync() const override;
 
 		inline void* GetNativeWindowHandle() const override { return m_Window; }
-		const HWND& GetWin32WindowHandle() const override;
 
 	private:
 		virtual void Init(const WindowProperties& props);

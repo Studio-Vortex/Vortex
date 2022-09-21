@@ -29,6 +29,15 @@ namespace Sparky {
 		m_ViewMatrix = Math::Inverse(m_ViewMatrix);
 	}
 
+	void EditorCamera::ResetAtOrigin()
+	{
+		m_Distance = 10.0f;
+		m_Pitch = 0.0f;
+		m_Yaw = 0.0f;
+
+		UpdateView();
+	}
+
 	std::pair<float, float> EditorCamera::PanSpeed() const
 	{
 		float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
@@ -105,7 +114,7 @@ namespace Sparky {
 		if (!Input::IsMouseButtonPressed(Mouse::ButtonLeft)) // user could be clicking on a gizmo
 		{
 			auto [xSpeed, ySpeed] = PanSpeed();
-			m_FocalPoint += GetRightDirection() * delta * xSpeed * m_Distance;
+			m_FocalPoint += -GetRightDirection() * delta * xSpeed * m_Distance;
 		}
 	}
 

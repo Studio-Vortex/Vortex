@@ -33,6 +33,8 @@ namespace Sparky {
 		m_Window = Window::Create(windowProps);
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
+		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
+
 		Renderer::Init();
 		ScriptEngine::Init();
 
