@@ -71,6 +71,12 @@ namespace Sparky::Math {
 	}
 	
 	template <typename T>
+	static auto Cross(T v1, T v2)
+	{
+		return glm::cross(v1, v2);
+	}
+
+	template <typename T>
 	static auto Quaternion(T v)
 	{
 		return glm::quat(v);
