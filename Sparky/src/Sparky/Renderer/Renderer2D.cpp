@@ -204,8 +204,6 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		StartBatch();
-
 		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
 
 		s_Data.QuadShader->Enable();
@@ -216,13 +214,13 @@ namespace Sparky
 
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		StartBatch();
 	}
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
-
-		StartBatch();
 
 		Math::mat4 viewProjection = camera.GetViewProjection();
 
@@ -234,13 +232,13 @@ namespace Sparky
 
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		StartBatch();
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
-
-		StartBatch();
 
 		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
 
@@ -252,6 +250,8 @@ namespace Sparky
 		
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		StartBatch();
 	}
 
 	void Renderer2D::StartBatch()
@@ -275,8 +275,7 @@ namespace Sparky
 
 	void Renderer2D::NextBatch()
 	{
-		EndScene();
-
+		Flush();
 		StartBatch();
 	}
 

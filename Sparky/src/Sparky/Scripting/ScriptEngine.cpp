@@ -113,6 +113,7 @@ namespace Sparky {
 		LoadAssembly("Resources/Scripts/Sparky-ScriptCore.dll");
 		LoadAssemblyClasses(s_Data->CoreAssembly);
 
+		ScriptRegistry::RegisterComponents();
 		ScriptRegistry::RegisterMethods();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity");
@@ -207,6 +208,11 @@ namespace Sparky {
 		return s_Data->ContextScene;
 	}
 
+	MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	{
+		return s_Data->CoreAssemblyImage;
+	}
+
 	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly)
 	{
 		s_Data->EntityClasses.clear();
@@ -288,13 +294,17 @@ namespace Sparky {
 
 	void Sparky::ScriptInstance::InvokeOnCreate()
 	{
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
+		if (m_OnCreateFunc)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
 	}
 
 	void ScriptInstance::InvokeOnUpdate(float delta)
 	{
-		void* param = &delta;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
+		if (m_OnUpdateFunc)
+		{
+			void* param = &delta;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
+		}
 	}
 
 }

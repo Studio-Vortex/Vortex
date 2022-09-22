@@ -157,4 +157,15 @@ namespace Sparky {
 		}
 	};
 
+	template<typename... Component>
+	struct ComponentGroup
+	{
+	};
+
+	using AllComponents =
+		ComponentGroup<TransformComponent,
+		SpriteComponent, CircleRendererComponent, CameraComponent,
+		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		ScriptComponent, NativeScriptComponent>;
+
 }

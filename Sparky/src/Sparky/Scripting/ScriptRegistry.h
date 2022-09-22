@@ -6,6 +6,7 @@ namespace Sparky {
 	{
 	public:
 		static void RegisterMethods();
+		static void RegisterComponents();
 	private:
 	};
 

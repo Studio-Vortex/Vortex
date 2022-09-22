@@ -4,21 +4,12 @@ using Sparky;
 
 namespace Sandbox {
 
-	public class Player : Entity
+	public class Camera : Entity
 	{
-		private RigidBody2D m_RigidBody;
-
-		void OnCreate()
-		{
-			Console.WriteLine($"Player.OnCreate - {ID}");
-
-			m_RigidBody = GetComponent<RigidBody2D>();
-		}
-
 		void OnUpdate(float delta)
 		{
 			Vector3 velocity = Vector3.Zero;
-			float speed = 0.25f;
+			float speed = 5.0f;
 
 			if (Input.IsKeyDown(KeyCode.W))
 				velocity.Y = 1.0f;
@@ -30,11 +21,8 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D))
 				velocity.X = 1.0f;
 
-			if (Transform.Translation.Y < -5.0f)
-				Transform.Translation = Vector3.Zero;
-
-			velocity *= speed;
-			m_RigidBody.ApplyLinearImpulse(velocity.XY, true);
+			velocity *= speed * delta;
+			Transform.Translation += velocity;
 		}
 	}
 

@@ -36,27 +36,42 @@ namespace Sparky {
 		delete m_PhysicsWorld;
 	}
 
-	template <typename TComponent>
-	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	template<typename... Component>
+	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
-		auto view = src.view<TComponent>();
-
-		for (auto& e : view)
-		{
-			UUID uuid = src.get<IDComponent>(e).ID;
-			SP_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity's UUID was not found in enttMap!")
-			entt::entity dstEnttID = enttMap.at(uuid);
-
-			auto& component = src.get<TComponent>(e);
-			dst.emplace_or_replace<TComponent>(dstEnttID, component);
-		}
+		CopyComponent<Component...>(dst, src, enttMap);
 	}
 
-	template <typename TComponent>
+	template <typename... TComponents>
+	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		([&]()
+		{
+			auto view = src.view<TComponents>();
+			for (auto srcEntity : view)
+			{
+				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+
+				auto& srcComponent = src.get<TComponents>(srcEntity);
+				dst.emplace_or_replace<TComponents>(dstEntity, srcComponent);
+			}
+		}(), ...);
+	}
+
+	template<typename... TComponents>
 	static void CopyComponentIfExists(Entity dst, Entity src)
 	{
-		if (src.HasComponent<TComponent>())
-			dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+		([&]()
+		{
+			if (src.HasComponent<TComponents>())
+				dst.AddOrReplaceComponent<TComponents>(src.GetComponent<TComponents>());
+		}(), ...);
+	}
+
+	template<typename... TComponents>
+	static void CopyComponentIfExists(ComponentGroup<TComponents...>, Entity dst, Entity src)
+	{
+		CopyComponentIfExists<TComponents...>(dst, src);
 	}
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
@@ -81,15 +96,7 @@ namespace Sparky {
 		}
 		
 		// Copy components (except IDComponent and TagComponent)
-		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<RigidBody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return destination;
 	}
@@ -351,24 +358,16 @@ namespace Sparky {
 		}
 	}
 
-	Entity Scene::DuplicateEntity(Entity source)
+	Entity Scene::DuplicateEntity(Entity src)
 	{
-		std::string name = source.GetName();
+		std::string name = src.GetName();
 		name.append(" Copy"); // Allow the user to tell the difference between original entity and copy
-		Entity duplicatedEntity = CreateEntity(name);
+		Entity dest = CreateEntity(name);
 
 		// Copy components (except IDComponent and TagComponent)
-		CopyComponentIfExists<TransformComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<SpriteComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<CircleRendererComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<CameraComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<RigidBody2DComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<BoxCollider2DComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<CircleCollider2DComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<ScriptComponent>(duplicatedEntity, source);
-		CopyComponentIfExists<NativeScriptComponent>(duplicatedEntity, source);
+		CopyComponentIfExists(AllComponents{}, dest, src);
 
-		return duplicatedEntity;
+		return dest;
 	}
 
 	Entity Scene::GetEntityWithUUID(UUID uuid)

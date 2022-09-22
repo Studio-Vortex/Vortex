@@ -8,6 +8,7 @@
 extern "C"
 {
 	typedef struct _MonoClass MonoClass;
+	typedef struct _MonoImage MonoImage;
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoMethod MonoMethod;
 	typedef struct _MonoAssembly MonoAssembly;
@@ -70,6 +71,7 @@ namespace Sparky {
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 
 		static Scene* GetContextScene();
+		static MonoImage* GetCoreAssemblyImage();
 
 		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
 
@@ -80,7 +82,9 @@ namespace Sparky {
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void LoadAssemblyClasses(MonoAssembly* assembly);
 
+	private:
 		friend class ScriptClass;
+		friend class ScriptRegistry;
 	};
 
 }
