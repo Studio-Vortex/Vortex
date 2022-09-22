@@ -263,3 +263,55 @@ project "Testbed"
 		runtime "Release"
 		optimize "on"
 group ""
+
+
+workspace "Sandbox"
+	architecture "x64"
+	startproject "Sandbox"
+	location "Sparky-Editor/SandboxProject/Assets/Scripts"
+
+	configurations
+	{
+		"Debug",
+		"Release",
+		"Dist"
+	}
+
+	flags
+	{
+		"MultiProcessorCompile",
+	}
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+project "Sandbox"
+	location "Sparky-Editor/SandboxProject/Assets/Scripts"
+	kind "SharedLib"
+	language "C#"
+	dotnetframework "4.7.2"
+
+	targetdir ("Sparky-Editor/SandboxProject/Assets/Scripts/Binaries")
+	objdir ("Sparky-Editor/SandboxProject/Assets/Scripts/Intermediates")
+
+	files
+	{
+		"Source/**.cs",
+		"Properties/**.cs",
+	}
+
+	links
+	{
+		"Sparky-ScriptCore",
+	}
+
+	filter "configurations:Debug"
+		optimize "off"
+		symbols "default"
+
+	filter "configurations:Release"
+		optimize "on"
+		symbols "default"
+
+	filter "configurations:Dist"
+		optimize "full"
+		symbols "off"

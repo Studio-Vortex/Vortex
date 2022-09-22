@@ -1,35 +1,12 @@
 Scene: Untitled
 Entities:
-  - Entity: 3825041463410785755
+  - Entity: 6450904762643112357
     TagComponent:
-      Tag: Player
+      Tag: Floor Copy
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.Player
-  - Entity: 13060669707877940025
-    TagComponent:
-      Tag: Floor
-    TransformComponent:
-      Translation: [0, -1.53865337, 0]
-      Rotation: [0, 0, 0]
-      Scale: [13.8199053, 0.717466831, 1]
+      Translation: [6.5519886, 5.05007696, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [13.8189983, 0.71740979, 1]
     SpriteComponent:
       Color: [0.29904145, 0.35103935, 0.911196887, 1]
       Scale: 1
@@ -61,3 +38,46 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+  - Entity: 13060669707877940025
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -1.53865337, 0]
+      Rotation: [0, 0, 0]
+      Scale: [13.8199053, 0.717466831, 1]
+    SpriteComponent:
+      Color: [0.29904145, 0.35103935, 0.911196887, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3825041463410785755
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.Player
