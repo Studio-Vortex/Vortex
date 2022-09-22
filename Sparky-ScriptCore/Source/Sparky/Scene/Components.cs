@@ -34,4 +34,5 @@
 			InternalCalls.RigidBody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
 		}
 	}
+
 }

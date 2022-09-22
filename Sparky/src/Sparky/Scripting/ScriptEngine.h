@@ -12,9 +12,27 @@ extern "C"
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoMethod MonoMethod;
 	typedef struct _MonoAssembly MonoAssembly;
+	typedef struct _MonoClassField MonoClassField;
 }
 
 namespace Sparky {
+
+	enum class ScriptFieldType
+	{
+		None = 0,
+		Float, Double,
+		Bool, Char, Short, Int, Long,
+		Byte, UShort, UInt, ULong,
+		Vector2, Vector3, Vector4,
+		Entity,
+	};
+
+	struct ScriptField
+	{
+		ScriptFieldType Type;
+		std::string Name;
+		MonoClassField* ClassField;
+	};
 
 	class ScriptClass
 	{
@@ -26,11 +44,18 @@ namespace Sparky {
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
+		inline std::map<std::string, ScriptField> GetFields() { return m_Fields; }
+
 	private:
 		std::string m_ClassNamespace;
 		std::string m_ClassName;
 
+		std::map<std::string, ScriptField> m_Fields;
+
 		MonoClass* m_MonoClass = nullptr;
+
+	private:
+		friend class ScriptEngine;
 	};
 
 	class ScriptInstance
@@ -40,6 +65,29 @@ namespace Sparky {
 
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
+
+		inline SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
+
+		template <typename T>
+		T GetFieldValue(const std::string& fieldName)
+		{
+			bool success = GetFieldValueInternal(fieldName, s_FieldValueBuffer);
+			if (!success)
+				return T();
+
+			return *(T*)s_FieldValueBuffer;
+		}
+
+		template <typename T>
+		void SetFieldValue(const std::string& fieldName, const T& value)
+		{
+			SetFieldValueInternal(fieldName, &value);
+		}
+
+	private:
+		bool GetFieldValueInternal(const std::string& fieldName, void* buffer);
+		bool SetFieldValueInternal(const std::string& fieldName, const void* value);
+
 	private:
 		SharedRef<ScriptClass> m_ScriptClass;
 
@@ -47,6 +95,8 @@ namespace Sparky {
 		MonoMethod* m_Constructor = nullptr;
 		MonoMethod* m_OnCreateFunc = nullptr;
 		MonoMethod* m_OnUpdateFunc = nullptr;
+
+		inline static char s_FieldValueBuffer[8];
 	};
 
 	// Forward declaration
@@ -74,6 +124,8 @@ namespace Sparky {
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
+
+		static SharedRef<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
 		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
 

@@ -1,180 +1,16 @@
 Scene: Untitled
 Entities:
-  - Entity: 2898347239060630950
-    TagComponent:
-      Tag: Awesome Face
-    TransformComponent:
-      Translation: [-0.973144174, 9.13862133, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\AwesomeFace.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.460000008
-      RestitutionThreshold: 0.5
-  - Entity: 3707406287764467808
+  - Entity: 12379397938819032220
     TagComponent:
       Tag: Floor Copy Copy Copy
     TransformComponent:
-      Translation: [-5.74668312, -17.5200005, 0]
-      Rotation: [0, 0, 1.63266826]
-      Scale: [10.9499998, 0.499974996, 1]
+      Translation: [8.28456783, -8.96592331, -9.31322575e-10]
+      Rotation: [0, 0, 0.754923522]
+      Scale: [10.0000134, 0.49999994, 1]
     SpriteComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 5103447956716193801
-    TagComponent:
-      Tag: Floor Copy Copy
-    TransformComponent:
-      Translation: [14.6800222, -17.5190964, 1.86264515e-09]
-      Rotation: [0, 0, 1.53101707]
-      Scale: [10.9504385, 0.5, 1]
-    SpriteComponent:
-      Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 5535681464154465421
-    TagComponent:
-      Tag: Floor Copy Copy Copy
-    TransformComponent:
-      Translation: [4.52682877, -23.1027393, 0]
-      Rotation: [0, 0, 0]
-      Scale: [20.0000172, 0.500002325, 1]
-    SpriteComponent:
-      Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 7748295293345013776
-    TagComponent:
-      Tag: Floor Copy Copy
-    TransformComponent:
-      Translation: [0.169299513, -5.86205626, -9.31322575e-10]
-      Rotation: [0, 0, 2.59624267]
-      Scale: [10.0000172, 0.500000238, 1]
-    SpriteComponent:
-      Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 4285240457193817724
-    TagComponent:
-      Tag: Floor Copy
-    TransformComponent:
-      Translation: [10.6135111, -1.18635654, 0.00249483064]
-      Rotation: [0, 0, 0.722976923]
-      Scale: [12.8847733, 0.49999994, 1]
-    SpriteComponent:
-      Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 13684215819934714478
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [-0.800000012, 1.94000006, 27.1100006]
-      Rotation: [0.0872664601, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.200000003, 0.200000003]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.230000004
-      RestitutionThreshold: 0.5
-  - Entity: 2825480067577396721
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [3.45103502, 4.64303875, -3.7252903e-09]
-      Rotation: [0, 0, -0.434400648]
-      Scale: [0.99999994, 0.99999994, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn.png
       Scale: 1
     Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 0.980000019
-      Friction: 0.25999999
-      Restitution: 0.829999983
-      RestitutionThreshold: 0.5
-  - Entity: 4313244150249464643
-    TagComponent:
-      Tag: Floor
-    TransformComponent:
-      Translation: [0.819316506, 0.335592687, 0]
-      Rotation: [0, 0, -0.56703794]
-      Scale: [10.0000029, 0.5, 1]
-    SpriteComponent:
-      Color: [0.142857134, 0.473800242, 1, 1]
-    Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
@@ -183,27 +19,6 @@ Entities:
       Density: 1
       Friction: 0.5
       Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 10063852708572326114
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [1.65690804, 4.44840097, 0]
-      Rotation: [0, 0, -0.721056223]
-      Scale: [1, 1, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.5
       RestitutionThreshold: 0.5
   - Entity: 7079859016798743755
     TagComponent:
@@ -226,15 +41,37 @@ Entities:
       Friction: 0.50999999
       Restitution: 0.579999983
       RestitutionThreshold: 0.800000012
-  - Entity: 12379397938819032220
+  - Entity: 10063852708572326114
     TagComponent:
-      Tag: Floor Copy Copy Copy
+      Tag: Sprite
     TransformComponent:
-      Translation: [8.28456783, -8.96592331, -9.31322575e-10]
-      Rotation: [0, 0, 0.754923522]
-      Scale: [10.0000134, 0.49999994, 1]
+      Translation: [1.65690804, 4.44840097, 0]
+      Rotation: [0, 0, -0.721056223]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.5
+      RestitutionThreshold: 0.5
+  - Entity: 4313244150249464643
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0.819316506, 0.335592687, 0]
+      Rotation: [0, 0, -0.56703794]
+      Scale: [10.0000029, 0.5, 1]
     SpriteComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -244,4 +81,166 @@ Entities:
       Density: 1
       Friction: 0.5
       Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2825480067577396721
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [3.45103502, 4.64303875, -3.7252903e-09]
+      Rotation: [0, 0, -0.434400648]
+      Scale: [0.99999994, 0.99999994, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 0.980000019
+      Friction: 0.25999999
+      Restitution: 0.829999983
+      RestitutionThreshold: 0.5
+  - Entity: 13684215819934714478
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-3.11103821, 3.62376094, 27.2573147]
+      Rotation: [0.0872664601, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera
+  - Entity: 4285240457193817724
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [10.6135111, -1.18635654, 0.00249483064]
+      Rotation: [0, 0, 0.722976923]
+      Scale: [12.8847733, 0.49999994, 1]
+    SpriteComponent:
+      Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 7748295293345013776
+    TagComponent:
+      Tag: Floor Copy Copy
+    TransformComponent:
+      Translation: [0.169299513, -5.86205626, -9.31322575e-10]
+      Rotation: [0, 0, 2.59624267]
+      Scale: [10.0000172, 0.500000238, 1]
+    SpriteComponent:
+      Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5535681464154465421
+    TagComponent:
+      Tag: Floor Copy Copy Copy
+    TransformComponent:
+      Translation: [4.52682877, -23.1027393, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20.0000172, 0.500002325, 1]
+    SpriteComponent:
+      Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5103447956716193801
+    TagComponent:
+      Tag: Floor Copy Copy
+    TransformComponent:
+      Translation: [14.6800222, -17.5190964, 1.86264515e-09]
+      Rotation: [0, 0, 1.53101707]
+      Scale: [10.9504385, 0.5, 1]
+    SpriteComponent:
+      Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3707406287764467808
+    TagComponent:
+      Tag: Floor Copy Copy Copy
+    TransformComponent:
+      Translation: [-5.74668312, -17.5200005, 0]
+      Rotation: [0, 0, 1.63266826]
+      Scale: [10.9499998, 0.499974996, 1]
+    SpriteComponent:
+      Color: [0.142857134, 0.473800242, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2898347239060630950
+    TagComponent:
+      Tag: Awesome Face
+    TransformComponent:
+      Translation: [-0.973144174, 9.13862133, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\AwesomeFace.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.460000008
       RestitutionThreshold: 0.5

@@ -440,7 +440,7 @@ namespace Sparky {
 			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
-		DrawComponent<ScriptComponent>("C# Script", entity, [](auto& component)
+		DrawComponent<ScriptComponent>("C# Script", entity, [entity](auto& component)
 		{
 			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
 
@@ -452,6 +452,26 @@ namespace Sparky {
 
 			if (Gui::InputText("Class", buffer, sizeof(buffer)))
 				component.ClassName = buffer;
+
+			// Fields
+			SharedRef<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+
+			if (scriptInstance)
+			{
+				const auto& fields = scriptInstance->GetScriptClass()->GetFields();
+
+				for (const auto& [name, field] : fields)
+				{
+					if (field.Type == ScriptFieldType::Float)
+					{
+						float data = scriptInstance->GetFieldValue<float>(name);
+						if (Gui::DragFloat(name.c_str(), &data))
+						{
+							scriptInstance->SetFieldValue(name, data);
+						}
+					}
+				}
+			}
 
 			if (!scriptClassExists)
 				Gui::PopStyleColor();

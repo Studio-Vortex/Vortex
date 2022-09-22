@@ -7,9 +7,30 @@
 
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
+#include <mono/metadata/attrdefs.h>
+#include <mono/metadata/class.h>
 #include <mono/jit/jit.h>
 
 namespace Sparky {
+
+	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
+	{
+		{ "System.Single", ScriptFieldType::Float },
+		{ "System.Double", ScriptFieldType::Double },
+		{ "System.Boolean", ScriptFieldType::Bool },
+		{ "System.Char", ScriptFieldType::Char },
+		{ "System.Int16", ScriptFieldType::Short },
+		{ "System.Int32", ScriptFieldType::Int },
+		{ "System.Int64", ScriptFieldType::Long },
+		{ "System.Byte", ScriptFieldType::Byte },
+		{ "System.UInt16", ScriptFieldType::UShort },
+		{ "System.UInt32", ScriptFieldType::UInt },
+		{ "System.UInt64", ScriptFieldType::ULong },
+		{ "Sparky.Vector2", ScriptFieldType::Vector2 },
+		{ "Sparky.Vector3", ScriptFieldType::Vector3 },
+		{ "Sparky.Vector4", ScriptFieldType::Vector4 },
+		{ "Sparky.Entity", ScriptFieldType::Entity },
+	};
 
 	namespace Utils {
 
@@ -83,6 +104,41 @@ namespace Sparky {
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 				SP_CORE_TRACE("{}.{}", nameSpace, name);
 			}
+		}
+
+		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
+		{
+			std::string typeName = mono_type_get_name(monoType);
+
+			auto it = s_ScriptFieldTypeMap.find(typeName);
+			if (it == s_ScriptFieldTypeMap.end())
+				return ScriptFieldType::None;
+
+			return it->second;
+		}
+
+		const char* ScriptFieldTypeToString(ScriptFieldType type)
+		{
+			switch (type)
+			{
+				case Sparky::ScriptFieldType::Float:   return "Float";
+				case Sparky::ScriptFieldType::Double:  return "Double";
+				case Sparky::ScriptFieldType::Bool:    return "Bool";
+				case Sparky::ScriptFieldType::Char:    return "Char";
+				case Sparky::ScriptFieldType::Short:   return "Short";
+				case Sparky::ScriptFieldType::Int:     return "Int";
+				case Sparky::ScriptFieldType::Long:    return "Long";
+				case Sparky::ScriptFieldType::Byte:    return "Byte";
+				case Sparky::ScriptFieldType::UShort:  return "UShort";
+				case Sparky::ScriptFieldType::UInt:    return "UInt";
+				case Sparky::ScriptFieldType::ULong:   return "ULong";
+				case Sparky::ScriptFieldType::Vector2: return "Vector2";
+				case Sparky::ScriptFieldType::Vector3: return "Vector3";
+				case Sparky::ScriptFieldType::Vector4: return "Vector4";
+				case Sparky::ScriptFieldType::Entity:  return "Entity";
+			}
+
+			return "<Invalid>";
 		}
 
 	}
@@ -195,7 +251,6 @@ namespace Sparky {
 		if (EntityClassExists(scriptComponent.ClassName))
 		{
 			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
-
 			s_Data->EntityInstances[entity.GetUUID()] = instance;
 			instance->InvokeOnCreate();
 		}
@@ -208,6 +263,16 @@ namespace Sparky {
 		SP_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end(), "Instance should be in map check order of function calls!");
 
 		s_Data->EntityInstances[uuid]->InvokeOnUpdate(delta);
+	}
+
+	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
+	{
+		auto it = s_Data->EntityInstances.find(uuid);
+
+		if (it == s_Data->EntityInstances.end())
+			return nullptr;
+
+		return it->second;
 	}
 
 	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
@@ -239,23 +304,48 @@ namespace Sparky {
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
 			const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* name = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+			const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 			std::string fullName;
 			if (strlen(nameSpace) != 0)
-				fullName = fmt::format("{}.{}", nameSpace, name);
+				fullName = fmt::format("{}.{}", nameSpace, className);
 			else
-				fullName = name;
+				fullName = className;
 
-			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, name);
+			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
 			if (monoClass == entityClass)
 				continue;
 
 			bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
 
-			if (isEntityClass)
-				s_Data->EntityClasses[fullName] = CreateShared<ScriptClass>(nameSpace, name);
+			if (!isEntityClass)
+				continue;
+
+			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
+			s_Data->EntityClasses[fullName] = scriptClass;
+
+			int fieldCount = mono_class_num_fields(monoClass);
+			SP_CORE_WARN("{} has {} fields: ", className, fieldCount);
+			void* iterator = nullptr;
+			while (MonoClassField* classField = mono_class_get_fields(monoClass, &iterator))
+			{
+				const char* fieldName = mono_field_get_name(classField);
+				uint32_t flags = mono_field_get_flags(classField);
+
+				if (flags & MONO_FIELD_ATTR_PUBLIC)
+				{
+					MonoType* type = mono_field_get_type(classField);
+					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+					SP_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+
+					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
+				}
+			}
 		}
+
+		auto& entityClasses = s_Data->EntityClasses;
+
+		//mono_field_get_value()
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
@@ -316,6 +406,32 @@ namespace Sparky {
 			void* param = &delta;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 		}
+	}
+
+	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
+	{
+		const auto& fields = m_ScriptClass->GetFields();
+		auto it = fields.find(fieldName);
+
+		if (it == fields.end())
+			return false;
+
+		const ScriptField& field = it->second;
+		mono_field_get_value(m_Instance, field.ClassField, buffer);
+		return true;
+	}
+
+	bool ScriptInstance::SetFieldValueInternal(const std::string& fieldName, const void* value)
+	{
+		const auto& fields = m_ScriptClass->GetFields();
+		auto it = fields.find(fieldName);
+
+		if (it == fields.end())
+			return false;
+
+		const ScriptField& field = it->second;
+		mono_field_set_value(m_Instance, field.ClassField, (void*)value);
+		return true;
 	}
 
 }

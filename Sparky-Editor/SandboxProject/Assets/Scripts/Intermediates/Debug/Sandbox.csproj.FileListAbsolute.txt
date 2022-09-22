@@ -6,3 +6,4 @@ C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Int
 C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Intermediates\Debug\Sandbox.csproj.CopyComplete
 C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Intermediates\Debug\Sandbox.dll
 C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Intermediates\Debug\Sandbox.pdb
+C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Binaries\Sparky-ScriptCore.dll
