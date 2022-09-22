@@ -31,8 +31,42 @@ namespace Sparky {
 	{
 		ScriptFieldType Type;
 		std::string Name;
+
 		MonoClassField* ClassField;
 	};
+
+	struct ScriptFieldInstance
+	{
+		ScriptField Field;
+
+		ScriptFieldInstance()
+		{
+			memset(m_Buffer, 0, sizeof(m_Buffer));
+		}
+
+		template <typename T>
+		T GetValue()
+		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+			return *(T*)m_Buffer;
+		}
+
+		template <typename T>
+		void SetValue(T value)
+		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+			memcpy(m_Buffer, &value, sizeof(T));
+		}
+
+	private:
+		uint8_t m_Buffer[8];
+
+	private:
+		friend class ScriptEngine;
+		friend class ScriptInstance;
+	};
+
+	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
 	class ScriptClass
 	{
@@ -71,6 +105,8 @@ namespace Sparky {
 		template <typename T>
 		T GetFieldValue(const std::string& fieldName)
 		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+
 			bool success = GetFieldValueInternal(fieldName, s_FieldValueBuffer);
 			if (!success)
 				return T();
@@ -79,8 +115,10 @@ namespace Sparky {
 		}
 
 		template <typename T>
-		void SetFieldValue(const std::string& fieldName, const T& value)
+		void SetFieldValue(const std::string& fieldName, T value)
 		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+
 			SetFieldValueInternal(fieldName, &value);
 		}
 
@@ -97,6 +135,10 @@ namespace Sparky {
 		MonoMethod* m_OnUpdateFunc = nullptr;
 
 		inline static char s_FieldValueBuffer[8];
+
+	private:
+		friend class ScriptEngine;
+		friend struct ScriptFieldInstance;
 	};
 
 	// Forward declaration
@@ -127,7 +169,9 @@ namespace Sparky {
 
 		static SharedRef<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
+		static SharedRef<ScriptClass> GetEntityClass(const std::string& name);
 		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
+		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
 
 	private:
 		static void InitMono();

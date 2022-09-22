@@ -36,6 +36,8 @@ namespace Sparky {
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
+		bool IsRunning() const { return m_IsRunning; }
+
 		Entity DuplicateEntity(Entity entity);
 
 		Entity GetEntityWithUUID(UUID uuid);
@@ -60,6 +62,7 @@ namespace Sparky {
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+		bool m_IsRunning = false;
 
 		b2World* m_PhysicsWorld = nullptr;
 

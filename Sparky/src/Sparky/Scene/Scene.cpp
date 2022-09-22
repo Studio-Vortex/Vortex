@@ -123,17 +123,19 @@ namespace Sparky {
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
 
-		SP_CORE_ASSERT(m_EntityMap.find(entity.GetUUID()) != m_EntityMap.end(), "UUID was not found in Entity Map!");
+		SP_CORE_ASSERT(it != m_EntityMap.end(), "Enitiy was not found in Entity Map!");
 
 		// Remove the entity from our internal map
-		m_EntityMap.erase(entity.GetUUID());
-
+		m_EntityMap.erase(it->first);
 	}
 
 	void Scene::OnRuntimeStart()
 	{
+		m_IsRunning = true;
+
 		OnPhysics2DStart();
 
 		// Scripting
@@ -152,6 +154,8 @@ namespace Sparky {
 
 	void Scene::OnRuntimeStop()
 	{
+		m_IsRunning = false;
+
 		ScriptEngine::OnRuntimeStop();
 
 		OnPhysics2DStop();

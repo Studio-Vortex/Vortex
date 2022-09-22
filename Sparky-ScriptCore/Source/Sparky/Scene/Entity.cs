@@ -9,11 +9,11 @@ namespace Sparky {
 		internal Entity(ulong id)
 		{
             ID = id;
-			Transform = GetComponent<Transform>();
+			transform = GetComponent<Transform>();
 		}
 
         public readonly ulong ID;
-		public Transform Transform;
+		public Transform transform;
 
 		public Vector3 Translation
 		{

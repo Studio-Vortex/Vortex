@@ -81,6 +81,11 @@ namespace Sparky {
 	{
 		return Input::IsKeyPressed(key);
 	}
+	
+	static bool Input_IsKeyUp(KeyCode key)
+	{
+		return Input::IsKeyReleased(key);
+	}
 
 	template <typename... TComponent>
 	static void RegisterComponent()
@@ -127,6 +132,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
+		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
 	}
 
 }

@@ -11,7 +11,6 @@ namespace Sandbox {
 
 		void OnUpdate(float delta)
 		{
-
 			if (Input.IsKeyDown(KeyCode.W))
 				Velocity.Y = 1.0f;
 			else if (Input.IsKeyDown(KeyCode.S))
@@ -23,7 +22,7 @@ namespace Sandbox {
 				Velocity.X = 1.0f;
 
 			Velocity *= Speed * delta;
-			Transform.Translation += Velocity;
+			transform.Translation += Velocity;
 		}
 	}
 

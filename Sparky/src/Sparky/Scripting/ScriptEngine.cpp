@@ -158,7 +158,9 @@ namespace Sparky {
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
+		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 
+		// Runtime
 		Scene* ContextScene = nullptr;
 	};
 
@@ -250,8 +252,20 @@ namespace Sparky {
 
 		if (EntityClassExists(scriptComponent.ClassName))
 		{
+			UUID uuid = entity.GetUUID();
+
 			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
-			s_Data->EntityInstances[entity.GetUUID()] = instance;
+			s_Data->EntityInstances[uuid] = instance;
+
+			// Copy field values
+			auto it = s_Data->EntityScriptFields.find(uuid);
+			if (it != s_Data->EntityScriptFields.end())
+			{
+				const ScriptFieldMap& fields = it->second;
+				for (const auto& [name, fieldInstance] : fields)
+					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+			}
+
 			instance->InvokeOnCreate();
 		}
 	}
@@ -259,10 +273,11 @@ namespace Sparky {
 	void ScriptEngine::OnUpdateEntity(Entity entity, TimeStep delta)
 	{
 		UUID uuid = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(uuid);
 
-		SP_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end(), "Instance should be in map check order of function calls!");
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instances Map!");
 
-		s_Data->EntityInstances[uuid]->InvokeOnUpdate(delta);
+		it->second->InvokeOnUpdate(delta);
 	}
 
 	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
@@ -275,9 +290,26 @@ namespace Sparky {
 		return it->second;
 	}
 
+	SharedRef<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	{
+		auto it = s_Data->EntityClasses.find(name);
+
+		if (it == s_Data->EntityClasses.end())
+			return nullptr;
+
+		return it->second;
+	}
+
 	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
 	{
 		return s_Data->EntityClasses;
+	}
+
+	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		SP_CORE_ASSERT(entity, "Entity was invalid!");
+
+		return s_Data->EntityScriptFields[entity.GetUUID()];
 	}
 
 	Scene* ScriptEngine::GetContextScene()
