@@ -38,6 +38,10 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera
+      ScriptFields:
+        []
   - Entity: 13060669707877940025
     TagComponent:
       Tag: Floor
@@ -81,3 +85,7 @@ Entities:
       RestitutionThreshold: 0.5
     ScriptComponent:
       ClassName: Sandbox.Player
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 25

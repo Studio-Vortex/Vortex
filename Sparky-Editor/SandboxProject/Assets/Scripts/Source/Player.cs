@@ -11,13 +11,13 @@ namespace Sandbox {
 		public float Time;
 		public RigidBody2D rb;
 
-		void OnCreate()
+		public void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
 		}
 
-		void OnUpdate(float delta)
+		public void OnUpdate(float delta)
 		{
 			Time += delta;
 

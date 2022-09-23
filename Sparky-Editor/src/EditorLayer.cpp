@@ -16,12 +16,12 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		FramebufferProperties properties;
-		properties.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
-		properties.Width = 1600;
-		properties.Height = 900;
+		FramebufferProperties fbProps;
+		fbProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		fbProps.Width = 1600;
+		fbProps.Height = 900;
 
-		m_Framebuffer = Framebuffer::Create(properties);
+		m_Framebuffer = Framebuffer::Create(fbProps);
 
 		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
 		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
@@ -30,17 +30,21 @@ namespace Sparky {
 		m_EditorScene = CreateShared<Scene>();
 		m_ActiveScene = m_EditorScene;
 
-		auto commandLineArgs = Application::Get().GetProperties().CommandLineArgs;
+		const auto& appProps = Application::Get().GetProperties();
+		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
+
+		auto commandLineArgs = appProps.CommandLineArgs;
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(sceneFilePath);
+			OpenScene(std::filesystem::path(sceneFilePath));
+		}
+		else
+		{
+			CreateNewScene(); // Start the editor off with a fresh scene
 		}
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
-
-		CreateNewScene(); // Start the editor off with a fresh scene
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -258,12 +262,12 @@ namespace Sparky {
 			{
 				if (m_SceneViewportMaximized)
 				{
-					if (Gui::MenuItem("Minimize Scene", "Shift+F12"))
+					if (Gui::MenuItem("Minimize Scene", "Ctrl+Space"))
 						m_SceneViewportMaximized = false;
 				}
 				else
 				{
-					if (Gui::MenuItem("Maximize Scene", "Shift+F12"))
+					if (Gui::MenuItem("Maximize Scene", "Ctrl+Space"))
 						m_SceneViewportMaximized = true;
 				}
 
@@ -345,7 +349,7 @@ namespace Sparky {
 		
 		m_SceneViewportFocused = Gui::IsWindowFocused();
 		m_SceneViewportHovered = Gui::IsWindowHovered();
-		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SceneViewportHovered);
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
 
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
@@ -652,9 +656,9 @@ namespace Sparky {
 				}
 			}
 
-			case Key::F12:
+			case Key::Space:
 			{
-				if (shiftPressed)
+				if (controlPressed)
 					m_SceneViewportMaximized = !m_SceneViewportMaximized;
 
 				break;

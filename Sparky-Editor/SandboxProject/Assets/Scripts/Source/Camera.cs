@@ -9,16 +9,16 @@ namespace Sandbox {
 		public Vector3 Velocity = Vector3.Zero;
 		public float Speed;
 
-		void OnUpdate(float delta)
+		public void OnUpdate(float delta)
 		{
-			if (Input.IsKeyDown(KeyCode.W))
+			if (Input.IsKeyDown(KeyCode.Up))
 				Velocity.Y = 1.0f;
-			else if (Input.IsKeyDown(KeyCode.S))
+			else if (Input.IsKeyDown(KeyCode.Down))
 				Velocity.Y = -1.0f;
 
-			if (Input.IsKeyDown(KeyCode.A))
+			if (Input.IsKeyDown(KeyCode.Left))
 				Velocity.X = -1.0f;
-			else if (Input.IsKeyDown(KeyCode.D))
+			else if (Input.IsKeyDown(KeyCode.Right))
 				Velocity.X = 1.0f;
 
 			Velocity *= Speed * delta;

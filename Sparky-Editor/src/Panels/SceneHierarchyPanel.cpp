@@ -440,12 +440,12 @@ namespace Sparky {
 			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
-		DrawComponent<ScriptComponent>("C# Script", entity, [entity, this](auto& component)
+		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)
 		{
 			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
 
 			static char buffer[64];
-			strcpy(buffer, component.ClassName.c_str());
+			strcpy_s(buffer, sizeof(buffer), component.ClassName.c_str());
 
 			if (!scriptClassExists)
 				Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.2f, 0.2f, 1));
@@ -454,7 +454,7 @@ namespace Sparky {
 				component.ClassName = buffer;
 
 			// Fields
-			bool sceneRunning = m_ContextScene->IsRunning();
+			bool sceneRunning = scene->IsRunning();
 
 			if (sceneRunning)
 			{

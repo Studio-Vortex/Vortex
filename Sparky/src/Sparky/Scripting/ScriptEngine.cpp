@@ -4,6 +4,7 @@
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Scripting/ScriptRegistry.h"
+#include "Sparky/Scripting/ScriptEngine.h"
 
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
@@ -15,21 +16,21 @@ namespace Sparky {
 
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
-		{ "System.Single", ScriptFieldType::Float },
-		{ "System.Double", ScriptFieldType::Double },
-		{ "System.Boolean", ScriptFieldType::Bool },
-		{ "System.Char", ScriptFieldType::Char },
-		{ "System.Int16", ScriptFieldType::Short },
-		{ "System.Int32", ScriptFieldType::Int },
-		{ "System.Int64", ScriptFieldType::Long },
-		{ "System.Byte", ScriptFieldType::Byte },
-		{ "System.UInt16", ScriptFieldType::UShort },
-		{ "System.UInt32", ScriptFieldType::UInt },
-		{ "System.UInt64", ScriptFieldType::ULong },
+		{ "System.Single",  ScriptFieldType::Float   },
+		{ "System.Double",  ScriptFieldType::Double  },
+		{ "System.Boolean", ScriptFieldType::Bool    },
+		{ "System.Char",    ScriptFieldType::Char    },
+		{ "System.Int16",   ScriptFieldType::Short   },
+		{ "System.Int32",   ScriptFieldType::Int     },
+		{ "System.Int64",   ScriptFieldType::Long    },
+		{ "System.Byte",    ScriptFieldType::Byte    },
+		{ "System.UInt16",  ScriptFieldType::UShort  },
+		{ "System.UInt32",  ScriptFieldType::UInt    },
+		{ "System.UInt64",  ScriptFieldType::ULong   },
 		{ "Sparky.Vector2", ScriptFieldType::Vector2 },
 		{ "Sparky.Vector3", ScriptFieldType::Vector3 },
 		{ "Sparky.Vector4", ScriptFieldType::Vector4 },
-		{ "Sparky.Entity", ScriptFieldType::Entity },
+		{ "Sparky.Entity",  ScriptFieldType::Entity  },
 	};
 
 	namespace Utils {
@@ -115,30 +116,6 @@ namespace Sparky {
 				return ScriptFieldType::None;
 
 			return it->second;
-		}
-
-		const char* ScriptFieldTypeToString(ScriptFieldType type)
-		{
-			switch (type)
-			{
-				case Sparky::ScriptFieldType::Float:   return "Float";
-				case Sparky::ScriptFieldType::Double:  return "Double";
-				case Sparky::ScriptFieldType::Bool:    return "Bool";
-				case Sparky::ScriptFieldType::Char:    return "Char";
-				case Sparky::ScriptFieldType::Short:   return "Short";
-				case Sparky::ScriptFieldType::Int:     return "Int";
-				case Sparky::ScriptFieldType::Long:    return "Long";
-				case Sparky::ScriptFieldType::Byte:    return "Byte";
-				case Sparky::ScriptFieldType::UShort:  return "UShort";
-				case Sparky::ScriptFieldType::UInt:    return "UInt";
-				case Sparky::ScriptFieldType::ULong:   return "ULong";
-				case Sparky::ScriptFieldType::Vector2: return "Vector2";
-				case Sparky::ScriptFieldType::Vector3: return "Vector3";
-				case Sparky::ScriptFieldType::Vector4: return "Vector4";
-				case Sparky::ScriptFieldType::Entity:  return "Entity";
-			}
-
-			return "<Invalid>";
 		}
 
 	}
