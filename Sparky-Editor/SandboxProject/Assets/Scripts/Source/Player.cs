@@ -6,7 +6,7 @@ namespace Sandbox {
 
 	public class Player : Entity
 	{
-		public Vector3 Velocity = Vector3.Zero;
+		public Vector3 Velocity;
 		public float Speed;
 		public float Time;
 		public RigidBody2D rb;

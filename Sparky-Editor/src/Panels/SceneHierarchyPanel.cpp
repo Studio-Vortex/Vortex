@@ -472,6 +472,90 @@ namespace Sparky {
 							if (Gui::DragFloat(name.c_str(), &data))
 								scriptInstance->SetFieldValue(name, data);
 						}
+						if (field.Type == ScriptFieldType::Double)
+						{
+							double data = scriptInstance->GetFieldValue<double>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Vector2)
+						{
+							Math::vec2 data = scriptInstance->GetFieldValue<Math::vec2>(name);
+							if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Vector3)
+						{
+							Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
+							if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Vector4)
+						{
+							Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
+							if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Bool)
+						{
+							bool data = scriptInstance->GetFieldValue<bool>(name);
+							if (Gui::Checkbox(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Char)
+						{
+							char data = scriptInstance->GetFieldValue<char>(name);
+							if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Short)
+						{
+							short data = scriptInstance->GetFieldValue<short>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Int)
+						{
+							int data = scriptInstance->GetFieldValue<int>(name);
+							if (Gui::DragInt(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Long)
+						{
+							long long data = scriptInstance->GetFieldValue<long long>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Byte)
+						{
+							unsigned char data = scriptInstance->GetFieldValue<unsigned char>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::UShort)
+						{
+							unsigned short data = scriptInstance->GetFieldValue<unsigned short>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::UInt)
+						{
+							unsigned int data = scriptInstance->GetFieldValue<unsigned int>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::ULong)
+						{
+							unsigned long long data = scriptInstance->GetFieldValue<unsigned long long>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Entity)
+						{
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
 					}
 				}
 			}
@@ -485,16 +569,102 @@ namespace Sparky {
 					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
 					for (const auto& [name, field] : fields)
 					{
+						auto it = entityFields.find(name);
+
 						// Field has been set in editor
-						if (entityFields.find(name) != entityFields.end())
+						if (it != entityFields.end())
 						{
-							ScriptFieldInstance& scriptField = entityFields.at(name);
+							ScriptFieldInstance& scriptField = it->second;
 
 							// Display controls to set it
 							if (field.Type == ScriptFieldType::Float)
 							{
 								float data = scriptField.GetValue<float>();
 								if (Gui::DragFloat(name.c_str(), &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Double)
+							{
+								double data = scriptField.GetValue<double>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Vector2)
+							{
+								Math::vec2 data = scriptField.GetValue<Math::vec2>();
+								if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Vector3)
+							{
+								Math::vec3 data = scriptField.GetValue<Math::vec3>();
+								if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Vector4)
+							{
+								Math::vec4 data = scriptField.GetValue<Math::vec4>();
+								if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Bool)
+							{
+								bool data = scriptField.GetValue<bool>();
+								if (Gui::Checkbox(name.c_str(), &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Char)
+							{
+								char data = scriptField.GetValue<char>();
+								if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Short)
+							{
+								short data = scriptField.GetValue<short>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Int)
+							{
+								int data = scriptField.GetValue<int>();
+								if (Gui::DragInt(name.c_str(), &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Long)
+							{
+								long long data = scriptField.GetValue<long long>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Byte)
+							{
+								unsigned char data = scriptField.GetValue<unsigned char>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::UShort)
+							{
+								unsigned short data = scriptField.GetValue<unsigned short>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::UInt)
+							{
+								unsigned int data = scriptField.GetValue<unsigned int>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::ULong)
+							{
+								unsigned long long data = scriptField.GetValue<unsigned long long>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Entity)
+							{
+								uint64_t data = scriptField.GetValue<uint64_t>();
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
 									scriptField.SetValue(data);
 							}
 						}
@@ -505,6 +675,146 @@ namespace Sparky {
 							{
 								float data = 0.0f;
 								if (Gui::DragFloat(name.c_str(), &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Double)
+							{
+								double data = 0.0f;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector2)
+							{
+								Math::vec2 data = Math::vec2(0.0f);
+								if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector3)
+							{
+								Math::vec3 data = Math::vec3(0.0f);
+								if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector4)
+							{
+								Math::vec4 data = Math::vec4(0.0f);
+								if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Bool)
+							{
+								bool data = false;
+								if (Gui::Checkbox(name.c_str(), &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Char)
+							{
+								char data = 0;
+								if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Short)
+							{
+								short data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Int)
+							{
+								int data = 0;
+								if (Gui::DragInt(name.c_str(), &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Long)
+							{
+								long long data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Byte)
+							{
+								unsigned char data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::UShort)
+							{
+								unsigned short data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::UInt)
+							{
+								unsigned int data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::ULong)
+							{
+								unsigned long long data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Entity)
+							{
+								uint64_t data = 0;
+								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;

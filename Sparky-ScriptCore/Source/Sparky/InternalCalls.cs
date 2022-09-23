@@ -15,6 +15,18 @@ namespace Sparky {
 		internal extern static void TransformComponent_SetTranslation(ulong entityID, ref Vector3 translation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 scale);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_ApplyLinearImpulse(ulong entityID, ref Vector2 impulse, ref Vector2 point, bool wake);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -14,6 +14,8 @@ namespace Sparky
 {
 	#ifdef SP_DEBUG
 		#define SP_RENDERER_STATISTICS 1;
+	#elif SP_RELEASE
+		#define SP_RENDERER_STATISTICS 1; // Temporary
 	#endif // SP_DEBUG
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;

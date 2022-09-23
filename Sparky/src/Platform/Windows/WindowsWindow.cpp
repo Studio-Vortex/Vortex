@@ -49,6 +49,10 @@ namespace Sparky {
 
 		SP_CORE_INFO("Creating window named '{}' with size: {}", props.Title, props.Size);
 
+#ifdef SP_PLATFORM_WINDOWS
+		SetConsoleTitleA(props.Title.c_str());
+#endif // SP_PLATFORM_WINDOWS
+
 		if (s_GLFWWindowCount == 0)
 		{
 			SP_PROFILE_SCOPE("glfwInit");
@@ -200,15 +204,15 @@ namespace Sparky {
 		m_Context->SwapFrameBuffers();
 	}
 
-    void WindowsWindow::SetMaximized(bool maximized) const
-    {
+	void WindowsWindow::SetMaximized(bool maximized) const
+	{
 		if (maximized)
 			glfwMaximizeWindow(m_Window);
 		else
 			glfwRestoreWindow(m_Window);
-    }
+	}
 
-    void WindowsWindow::SetVSync(bool enabled)
+	void WindowsWindow::SetVSync(bool enabled)
 	{
 		SP_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);

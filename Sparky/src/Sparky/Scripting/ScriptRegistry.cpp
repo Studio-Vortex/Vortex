@@ -41,6 +41,46 @@ namespace Sparky {
 		entity.GetComponent<TransformComponent>().Translation = *translation;
 	}
 
+	static void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outScale = entity.GetComponent<TransformComponent>().Scale;
+	}
+
+	static void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TransformComponent>().Scale = *scale;
+	}
+	
+	static void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outRotation = entity.GetComponent<TransformComponent>().Scale;
+	}
+
+	static void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TransformComponent>().Scale = *rotation;
+	}
+
 	static void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -125,6 +165,10 @@ namespace Sparky {
 	{
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
+		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
+		SP_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
 
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
