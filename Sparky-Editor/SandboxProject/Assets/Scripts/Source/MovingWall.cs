@@ -36,6 +36,11 @@ namespace Sandbox {
 
 			transform.Translation += m_Velocity;
 		}
+
+		public void OnDestroy()
+		{
+			Console.WriteLine("MovingWall.OnDestroy() Called!");
+		}
 	}
 
 }

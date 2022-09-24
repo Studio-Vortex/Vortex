@@ -18,6 +18,14 @@ namespace Sandbox {
 		{
 			if (m_Player != null)
 				transform.Translation = new Vector3(m_Player.transform.Translation.XY, DistanceToPlayer);
+			
+			if (Input.IsKeyDown(KeyCode.Space))
+			{
+				Entity enemy = FindEntityByName("Background");
+
+				if (enemy != null)
+					enemy.Destroy();
+			}
 		}
 	}
 

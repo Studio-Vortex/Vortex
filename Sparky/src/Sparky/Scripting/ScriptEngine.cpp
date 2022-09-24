@@ -252,9 +252,22 @@ namespace Sparky {
 		UUID uuid = entity.GetUUID();
 		auto it = s_Data->EntityInstances.find(uuid);
 
-		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instances Map!");
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
 		it->second->InvokeOnUpdate(delta);
+	}
+
+	void ScriptEngine::OnDestroyEntity(Entity entity)
+	{
+		UUID uuid = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(uuid);
+
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+
+		it->second->InvokeOnDestroy();
+
+		// Remove the instance from the map because it is no longer an active instance of a class
+		s_Data->EntityInstances.erase(it);
 	}
 
 	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
@@ -402,6 +415,7 @@ namespace Sparky {
 		m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
 		m_OnCreateFunc = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc = m_ScriptClass->GetMethod("OnUpdate", 1);
+		m_OnDestroyFunc = m_ScriptClass->GetMethod("OnDestroy", 0);
 
 		// Call Entity constructor
 		{
@@ -424,6 +438,12 @@ namespace Sparky {
 			void* param = &delta;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 		}
+	}
+
+	void ScriptInstance::InvokeOnDestroy()
+	{
+		if (m_OnDestroyFunc)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)

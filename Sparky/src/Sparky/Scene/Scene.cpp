@@ -123,6 +123,9 @@ namespace Sparky {
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		// Call the entitys OnDestroy function
+		ScriptEngine::OnDestroyEntity(entity);
+
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
 
@@ -161,15 +164,15 @@ namespace Sparky {
 		OnPhysics2DStop();
 	}
 
-    void Scene::OnSimulationStart()
-    {
+	void Scene::OnSimulationStart()
+	{
 		OnPhysics2DStart();
-    }
+	}
 
-    void Scene::OnSimulationStop()
-    {
+	void Scene::OnSimulationStop()
+	{
 		OnPhysics2DStop();
-    }
+	}
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
@@ -289,8 +292,8 @@ namespace Sparky {
 		}
 	}
 
-    void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
-    {
+	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
+	{
 		// Physics
 		{
 			// Copies transform from Hazel to Box2D
@@ -337,7 +340,7 @@ namespace Sparky {
 
 		// Render
 		RenderScene(camera);
-    }
+	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
@@ -384,8 +387,8 @@ namespace Sparky {
 		return Entity{ m_EntityMap.at(uuid), this};
 	}
 
-    Entity Scene::FindEntityByName(std::string_view name)
-    {
+	Entity Scene::FindEntityByName(std::string_view name)
+	{
 		auto view = m_Registry.view<TagComponent>();
 
 		for (auto& entity : view)
@@ -397,7 +400,7 @@ namespace Sparky {
 		}
 
 		return Entity{};
-    }
+	}
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{

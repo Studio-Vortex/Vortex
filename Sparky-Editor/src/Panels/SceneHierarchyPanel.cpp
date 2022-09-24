@@ -285,8 +285,8 @@ namespace Sparky {
 			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
 
 			// Allow for multiple Scripts on an entity
-			DisplayAddComponentPopup<ScriptComponent>("C# Script", true);
-			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true, true);
+			DisplayAddComponentPopup<ScriptComponent>("C# Script");
+			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", false, true);
 
 			Gui::EndPopup();
 		}
