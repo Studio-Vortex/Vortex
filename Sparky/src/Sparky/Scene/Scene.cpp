@@ -347,6 +347,9 @@ namespace Sparky {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
+		if (m_ViewportWidth == width && m_ViewportHeight == height)
+			return;
+
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
@@ -380,6 +383,21 @@ namespace Sparky {
 
 		return Entity{ m_EntityMap.at(uuid), this};
 	}
+
+    Entity Scene::FindEntityByName(std::string_view name)
+    {
+		auto view = m_Registry.view<TagComponent>();
+
+		for (auto& entity : view)
+		{
+			const auto& tag = view.get<TagComponent>(entity).Tag;
+
+			if (strcmp(name.data(), tag.c_str()) == 0)
+				return Entity{ entity, this };
+		}
+
+		return Entity{};
+    }
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{

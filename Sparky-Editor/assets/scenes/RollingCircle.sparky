@@ -1,12 +1,12 @@
 Scene: Untitled
 Entities:
-  - Entity: 5704309532960651157
+  - Entity: 17949475389044620620
     TagComponent:
-      Tag: Quad Copy Copy
+      Tag: Quad Copy
     TransformComponent:
-      Translation: [-5.02444267, 3.11482453, 0]
-      Rotation: [0, 0, -0.335401803]
-      Scale: [8.82630348, 0.434776098, 1]
+      Translation: [-8.5609169, -4.38782263, 0]
+      Rotation: [0, 0, -0.637011826]
+      Scale: [8.82629871, 0.434776217, 1]
     SpriteComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
@@ -20,13 +20,78 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 11392921505039630826
+  - Entity: 3175000352247353765
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [-1.58354211, -10.5305405, 0.00999999978]
+      Rotation: [0, 0, 0]
+      Scale: [9.61999989, 9.61999989, 9.61999989]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8153005416412897779
+    TagComponent:
+      Tag: Orthographic Camera
+    TransformComponent:
+      Translation: [-10, 15, 5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 10
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 10
+  - Entity: 9109015351923922035
     TagComponent:
       Tag: Quad Copy
     TransformComponent:
-      Translation: [1.58161259, 7.01038218, -1.86264515e-09]
-      Rotation: [0, 0, 0.399862528]
-      Scale: [8.82629013, 0.434776217, 1]
+      Translation: [6.35454178, -3.47677612, 0]
+      Rotation: [0, 0, 0.680270255]
+      Scale: [8.82630634, 0.434776098, 1]
+    SpriteComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 4783997698825489462
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [-6.93226814, 9.92407799, 0]
+      Rotation: [0, 0, -0.216810092]
+      Scale: [8.82630157, 0.434776336, 1]
     SpriteComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
@@ -61,13 +126,13 @@ Entities:
       Friction: 0
       Restitution: 0.400000006
       RestitutionThreshold: 0.699999988
-  - Entity: 4783997698825489462
+  - Entity: 11392921505039630826
     TagComponent:
-      Tag: Quad
+      Tag: Quad Copy
     TransformComponent:
-      Translation: [-6.93226814, 9.92407799, 0]
-      Rotation: [0, 0, -0.216810092]
-      Scale: [8.82630157, 0.434776336, 1]
+      Translation: [1.58161259, 7.01038218, -1.86264515e-09]
+      Rotation: [0, 0, 0.399862528]
+      Scale: [8.82629013, 0.434776217, 1]
     SpriteComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
@@ -81,82 +146,13 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 9109015351923922035
+  - Entity: 5704309532960651157
     TagComponent:
-      Tag: Quad Copy
+      Tag: Quad Copy Copy
     TransformComponent:
-      Translation: [6.35454178, -3.47677612, 0]
-      Rotation: [0, 0, 0.680270255]
-      Scale: [8.82630634, 0.434776098, 1]
-    SpriteComponent:
-      Color: [0.231660247, 0.492717624, 1, 1]
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 8153005416412897779
-    TagComponent:
-      Tag: Perspective Camera
-    TransformComponent:
-      Translation: [-10.6803617, 15.9172392, 6.22351742]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.25, 0.25]
-      Density: 1
-      Friction: 0.0250000004
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 3175000352247353765
-    TagComponent:
-      Tag: Quad
-    TransformComponent:
-      Translation: [-1.58354211, -10.5305405, 0.00999999978]
-      Rotation: [0, 0, 0]
-      Scale: [9.61999989, 9.61999989, 9.61999989]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 17949475389044620620
-    TagComponent:
-      Tag: Quad Copy
-    TransformComponent:
-      Translation: [-8.5609169, -4.38782263, 0]
-      Rotation: [0, 0, -0.637011826]
-      Scale: [8.82629871, 0.434776217, 1]
+      Translation: [-5.02444267, 3.11482453, 0]
+      Rotation: [0, 0, -0.335401803]
+      Scale: [8.82630348, 0.434776098, 1]
     SpriteComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1

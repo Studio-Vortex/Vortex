@@ -21,6 +21,49 @@ namespace Sparky {
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
+	static bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		SP_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Function Map!");
+		return s_EntityHasComponentFuncs.at(managedType)(entity);
+	}
+	
+	static uint64_t Entity_FindEntityByName(MonoString* name)
+	{
+		char* nameCStr = mono_string_to_utf8(name);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->FindEntityByName(nameCStr);
+		mono_free(nameCStr);
+
+		if (!entity)
+			return 0;
+
+		return entity.GetUUID();
+	}
+
+	static MonoObject* Entity_GetScriptInstance(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		return ScriptEngine::GetManagedInstance(entityUUID);
+	}
+
+	static void Entity_Destroy(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		contextScene->DestroyEntity(entity);
+	}
+
 	static void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -39,6 +82,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TransformComponent>().Translation = *translation;
+	}
+
+	static void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
+	}
+
+	static void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TransformComponent>().Rotation = *rotation;
 	}
 
 	static void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
@@ -60,25 +123,45 @@ namespace Sparky {
 
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
-	
-	static void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+
+	static void SpriteComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRotation = entity.GetComponent<TransformComponent>().Scale;
+		*outColor = entity.GetComponent<SpriteComponent>().SpriteColor;
 	}
 
-	static void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+	static void SpriteComponent_SetColor(UUID entityUUID, Math::vec4* color)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<TransformComponent>().Scale = *rotation;
+		entity.GetComponent<SpriteComponent>().SpriteColor = *color;
+	}
+
+	static void SpriteComponent_GetScale(UUID entityUUID, float outScale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		outScale = entity.GetComponent<SpriteComponent>().Scale;
+	}
+
+	static void SpriteComponent_SetScale(UUID entityUUID, float scale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<SpriteComponent>().Scale = scale;
 	}
 
 	static void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
@@ -105,16 +188,10 @@ namespace Sparky {
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
 	}
 
-	static bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
+	static Math::vec3* Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right)
 	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		SP_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Function Map!");
-		return s_EntityHasComponentFuncs.at(managedType)(entity);
+		Math::vec3 result = Math::Cross(*left, *right);
+		return &result;
 	}
 
 	static bool Input_IsKeyDown(KeyCode key)
@@ -163,20 +240,44 @@ namespace Sparky {
 
 	void ScriptRegistry::RegisterMethods()
 	{
+
+#pragma region Entity
+		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
+		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
+		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
+		SP_ADD_INTERNAL_CALL(Entity_Destroy);
+#pragma endregion
+
+#pragma region Transform Component
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
-		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
-		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
+		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+#pragma endregion
 
+#pragma region Sprite Component
+		SP_ADD_INTERNAL_CALL(SpriteComponent_GetColor);
+		SP_ADD_INTERNAL_CALL(SpriteComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(SpriteComponent_GetScale);
+		SP_ADD_INTERNAL_CALL(SpriteComponent_SetScale);
+#pragma endregion
+
+#pragma region RigidBody2D Component
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
+#pragma endregion
 
-		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
+#pragma region Algebra
+		SP_ADD_INTERNAL_CALL(Algebra_CrossProductVec3);
+#pragma endregion
 
+#pragma region Input
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+#pragma endregion
+
 	}
 
 }

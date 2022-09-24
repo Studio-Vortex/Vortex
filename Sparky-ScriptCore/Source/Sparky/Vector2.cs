@@ -5,6 +5,10 @@
 		public float X, Y;
 
 		public static Vector2 Zero => new Vector2(0.0f);
+		public static Vector2 Up => new Vector2(0.0f, 1.0f);
+		public static Vector2 Down => new Vector2(0.0f, -1.0f);
+		public static Vector2 Left => new Vector2(-1.0f, 0.0f);
+		public static Vector2 Right => new Vector2(1.0f, 0.0f);
 
 		public Vector2(float scalar)
 		{
@@ -21,6 +25,11 @@
 		public static Vector2 operator +(Vector2 vector, Vector2 other)
 		{
 			return new Vector2(vector.X + other.X, vector.Y + other.Y);
+		}
+
+		public static Vector2 operator *(Vector2 vector, Vector2 other)
+		{
+			return new Vector2(vector.X * other.X, vector.Y * other.Y);
 		}
 
 		public static Vector2 operator *(Vector2 vector, float scalar)

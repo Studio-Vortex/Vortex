@@ -53,6 +53,8 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
 		// Resize
 		if (FramebufferProperties props = m_Framebuffer->GetProperties();
 			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
@@ -60,7 +62,6 @@ namespace Sparky {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		// Render
@@ -741,8 +742,9 @@ namespace Sparky {
 		}
 
 		SharedRef<Scene> newScene = CreateShared<Scene>();
-		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		SceneSerializer serializer(newScene);
+		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
 		if (serializer.Deserialize(path.string()))
 		{
 			m_EditorScene = newScene;

@@ -10,11 +10,13 @@ namespace Sandbox {
 		public float Speed;
 		public float Time;
 		public RigidBody2D rb;
+		private Camera2D m_Camera;
 
 		public void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
+			m_Camera = FindEntityByName("Camera").As<Camera2D>();
 		}
 
 		public void OnUpdate(float delta)
@@ -31,8 +33,10 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D))
 				Velocity.X = 1.0f;
 
-			if (transform.Translation.Y < -5.0f)
-				transform.Translation = Vector3.Zero;
+			if (Input.IsKeyDown(KeyCode.Q))
+				m_Camera.DistanceToPlayer += 2.0f * delta;
+			if (Input.IsKeyDown(KeyCode.E))
+				m_Camera.DistanceToPlayer -= 2.0f * delta;
 
 			Velocity *= Speed * delta;
 			rb.ApplyLinearImpulse(Velocity.XY, true);

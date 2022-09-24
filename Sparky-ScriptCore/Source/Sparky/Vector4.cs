@@ -5,6 +5,12 @@
 		public float X, Y, Z, W;
 
 		public static Vector4 Zero => new Vector4(0.0f);
+		public static Vector4 Forward => new Vector4(0.0f, 0.0f, -1.0f, 0.0f); // In OpenGL forward is negative on the Z axis
+		public static Vector4 Back => new Vector4(0.0f, 0.0f, 1.0f, 0.0f);
+		public static Vector4 Up => new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+		public static Vector4 Down => new Vector4(0.0f, -1.0f, 0.0f, 0.0f);
+		public static Vector4 Left => new Vector4(-1.0f, 0.0f, 0.0f, 0.0f);
+		public static Vector4 Right => new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
 
 		public Vector4(float scalar)
 		{
@@ -46,6 +52,11 @@
 		public static Vector4 operator +(Vector4 vector, Vector4 other)
 		{
 			return new Vector4(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z, vector.W + other.W);
+		}
+
+		public static Vector4 operator *(Vector4 vector, Vector4 other)
+		{
+			return new Vector4(vector.X * other.X, vector.Y * other.Y, vector.Z * other.Z, vector.W * other.W);
 		}
 
 		public static Vector4 operator *(Vector4 vector, float scalar)

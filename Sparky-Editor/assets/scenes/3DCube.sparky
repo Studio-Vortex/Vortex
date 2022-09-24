@@ -162,7 +162,14 @@ Entities:
       Primary: true
       FixedAspectRatio: false
     ScriptComponent:
-      ClassName: Sandbox.Camera
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: RotationSpeed
+          Type: Vector3
+          Data: [0, 2.25, 0]
+        - Name: Speed
+          Type: Vector3
+          Data: [5, 5, 5]
   - Entity: 1227115799316562115
     TagComponent:
       Tag: Top

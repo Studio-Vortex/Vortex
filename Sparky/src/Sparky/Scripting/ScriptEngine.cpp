@@ -289,6 +289,15 @@ namespace Sparky {
 		return s_Data->EntityScriptFields[entity.GetUUID()];
 	}
 
+	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	{
+		auto it = s_Data->EntityInstances.find(uuid);
+
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Entity was not found in Entity Instance Map!");
+
+		return it->second->GetManagedObject();
+	}
+
 	Scene* ScriptEngine::GetContextScene()
 	{
 		return s_Data->ContextScene;

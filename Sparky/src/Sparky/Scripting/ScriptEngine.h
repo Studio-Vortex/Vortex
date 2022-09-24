@@ -122,6 +122,8 @@ namespace Sparky {
 			SetFieldValueInternal(fieldName, &value);
 		}
 
+		MonoObject* GetManagedObject() const { return m_Instance; }
+
 	private:
 		bool GetFieldValueInternal(const std::string& fieldName, void* buffer);
 		bool SetFieldValueInternal(const std::string& fieldName, const void* value);
@@ -172,6 +174,8 @@ namespace Sparky {
 		static SharedRef<ScriptClass> GetEntityClass(const std::string& name);
 		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
 		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
+
+		static MonoObject* GetManagedInstance(UUID uuid);
 
 	private:
 		static void InitMono();

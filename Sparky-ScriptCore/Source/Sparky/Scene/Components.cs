@@ -50,6 +50,37 @@
 		}
 	}
 
+	public class Sprite : Component
+	{
+		public Vector4 Color
+		{
+			get
+			{
+				InternalCalls.SpriteComponent_GetColor(Entity.ID, out Vector4 color);
+				return color;
+			}
+
+			set
+			{
+				InternalCalls.SpriteComponent_SetColor(Entity.ID, ref value);
+			}
+		}
+
+		public float Scale
+		{
+			get
+			{
+				InternalCalls.SpriteComponent_GetScale(Entity.ID, out float scale);
+				return scale;
+			}
+
+			set
+			{
+				InternalCalls.SpriteComponent_SetScale(Entity.ID, value);
+			}
+		}
+	}
+
 	public class RigidBody2D : Component
 	{
 		public void ApplyLinearImpulse(Vector2 impulse, Vector2 worldPosition, bool wake)

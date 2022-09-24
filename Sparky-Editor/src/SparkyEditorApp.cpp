@@ -18,16 +18,21 @@ namespace Sparky {
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
 		ApplicationProperties props;
-		props.Name = "Sparky Editor";
+		// TODO: Remove this, just for convenience
+#ifdef SP_DEBUG
+		props.Name = "Sparky Editor - (Debug devel x64)";
+#elif SP_RELEASE
+		props.Name = "Sparky Editor - (Release x64)";
+#endif
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
-		props.MaximizeWindow = false;
-		props.WindowDecorated = true;
+		props.MaximizeWindow = true;
+		props.WindowDecorated = false;
 		props.VSync = true;
 		props.EnableGUI = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		props.WorkingDirectory = "C:/dev/Sparky Engine";
+		//props.WorkingDirectory = "C:/dev/Sparky Engine";
 		props.CommandLineArgs = args;
 
 		return new SparkyEditor(props);

@@ -41,6 +41,8 @@ namespace Sparky {
 		Entity DuplicateEntity(Entity entity);
 
 		Entity GetEntityWithUUID(UUID uuid);
+		Entity FindEntityByName(std::string_view name);
+
 		Entity GetPrimaryCameraEntity();
 
 		template <typename... TComponents>

@@ -1,0 +1,183 @@
+Scene: Untitled
+Entities:
+  - Entity: 10801644474773246805
+    TagComponent:
+      Tag: Wall Copy Copy Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [6.00000095, 0, -15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 6550522526454473535
+    TagComponent:
+      Tag: Wall Copy Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-5.99999905, 0, -15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 18428411088641571955
+    TagComponent:
+      Tag: Floor Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [6, -3.00000119, -18]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99917793, 0.999897242]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 508415035568362136
+    TagComponent:
+      Tag: Floor Copy Copy Copy
+    TransformComponent:
+      Translation: [-6, -3.00000119, -18]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99946499, 0.999933124]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 1698596960246396733
+    TagComponent:
+      Tag: Floor Copy Copy
+    TransformComponent:
+      Translation: [0, -3.00000119, -18]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99960089, 0.999950111]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 16332431377059947396
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [0, -3.00000072, -12]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99983501, 0.999979377]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 9877398207365800879
+    TagComponent:
+      Tag: Wall Copy Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [3.00000095, 0, -12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99927378, 6, 0.999909222]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 11310440172590609485
+    TagComponent:
+      Tag: Wall Copy Copy Copy Copy
+    TransformComponent:
+      Translation: [-2.99999905, 0, -12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 18214206172307656434
+    TagComponent:
+      Tag: Wall Copy Copy Copy
+    TransformComponent:
+      Translation: [-2.99999952, 0, -6.00000048]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99966431, 6, 0.999958038]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 3127092491974662784
+    TagComponent:
+      Tag: Wall Copy Copy
+    TransformComponent:
+      Translation: [3.00000048, 0, -6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99980021, 6, 0.999975026]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 1497077094255837486
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [0, -3, -5.99773979]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99974203, 0.999967754]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 12695346280655060362
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 6, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 11761243949373089932
+    TagComponent:
+      Tag: Perspective Camera
+    TransformComponent:
+      Translation: [0, 0, 3.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: RotationSpeed
+          Type: Vector3
+          Data: [0, 2, 0]
+        - Name: Speed
+          Type: Vector3
+          Data: [2.5, 3, 3]
+  - Entity: 3595857843733065218
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [6, 6, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 10979268923613723867
+    TagComponent:
+      Tag: Wall Copy
+    TransformComponent:
+      Translation: [3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [6, 6, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
