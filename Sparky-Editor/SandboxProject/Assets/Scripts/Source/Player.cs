@@ -11,12 +11,14 @@ namespace Sandbox {
 		public float Time;
 		public RigidBody2D rb;
 		private Camera2D m_Camera;
+		private bool m_Alive;
 
 		public void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
 			m_Camera = FindEntityByName("Camera").As<Camera2D>();
+			m_Alive = true;
 		}
 
 		public void OnUpdate(float delta)
@@ -38,8 +40,23 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.E))
 				m_Camera.DistanceToPlayer -= 2.0f * delta;
 
+			if (Input.IsKeyDown(KeyCode.Space))
+			{
+				Entity enemy = FindEntityByName("Enemy");
+
+				if (enemy != null)
+					enemy.Destroy();
+			}
+
 			Velocity *= Speed * delta;
 			rb.ApplyLinearImpulse(Velocity.XY, true);
+		}
+
+		public bool IsAlive() { return m_Alive; }
+
+		public void OnDestroy()
+		{
+			m_Alive = false;
 		}
 	}
 

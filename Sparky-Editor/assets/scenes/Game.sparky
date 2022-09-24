@@ -1,0 +1,151 @@
+Scene: Untitled
+Entities:
+  - Entity: 17769384478999425618
+    TagComponent:
+      Tag: Background
+    TransformComponent:
+      Translation: [0, 0, -20]
+      Rotation: [0, 0, 0]
+      Scale: [45, 30, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 3
+  - Entity: 16254187111586950158
+    TagComponent:
+      Tag: Floor Right
+    TransformComponent:
+      Translation: [13.4099998, 3.41000009, -1.86264515e-09]
+      Rotation: [0, 0, 0.785398245]
+      Scale: [10.0000019, 0.400000304, 1]
+    SpriteComponent:
+      Color: [0.463320434, 0.463320434, 0.463320434, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5798833744462034608
+    TagComponent:
+      Tag: Floor Left
+    TransformComponent:
+      Translation: [-13.4121189, 3.4121263, 0]
+      Rotation: [0, 0, -0.785398245]
+      Scale: [10.0000019, 0.400000304, 1]
+    SpriteComponent:
+      Color: [0.463320434, 0.463320434, 0.463320434, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2464561450783675199
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.400000006, 1]
+    SpriteComponent:
+      Color: [0.463320434, 0.463320434, 0.463320434, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5976272739239994659
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 10
+  - Entity: 8879436456339160905
+    TagComponent:
+      Tag: Enemy
+    TransformComponent:
+      Translation: [2.88010406, 0.699999988, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\AwesomeFace.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.Enemy
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 1
+  - Entity: 7151607900805703679
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-3.28334975, 0.740942419, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1.10000002, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn.jpg
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.Player
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 15

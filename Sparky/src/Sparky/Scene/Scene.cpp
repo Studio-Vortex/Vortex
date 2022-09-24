@@ -121,10 +121,13 @@ namespace Sparky {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void Scene::DestroyEntity(Entity entity, bool isEntityInstance)
 	{
-		// Call the entitys OnDestroy function
-		ScriptEngine::OnDestroyEntity(entity);
+		if (isEntityInstance)
+		{
+			// Call the entitys OnDestroy function
+			ScriptEngine::OnDestroyEntity(entity);
+		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);

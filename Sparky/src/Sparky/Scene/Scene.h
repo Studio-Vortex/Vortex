@@ -22,7 +22,7 @@ namespace Sparky {
 
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
-		void DestroyEntity(Entity entity);
+		void DestroyEntity(Entity entity, bool isEntityInstance = false);
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();

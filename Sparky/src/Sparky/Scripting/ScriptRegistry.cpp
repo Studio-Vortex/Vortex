@@ -61,7 +61,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-		contextScene->DestroyEntity(entity);
+		contextScene->DestroyEntity(entity, true);
 	}
 
 	static void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)

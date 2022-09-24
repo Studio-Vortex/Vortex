@@ -57,6 +57,16 @@
 		{
 			return new Vector3(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
 		}
+
+		public static bool operator ==(Vector3 vector, Vector3 other)
+		{
+			return vector.X == other.X && vector.Y == other.Y && vector.Z == other.Z;
+		}
+
+		public static bool operator !=(Vector3 vector, Vector3 other)
+		{
+			return !(vector == other);
+		}
 	}
 
 }

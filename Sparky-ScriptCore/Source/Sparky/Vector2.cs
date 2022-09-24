@@ -36,6 +36,16 @@
 		{
 			return new Vector2(vector.X * scalar, vector.Y * scalar);
 		}
+
+		public static bool operator ==(Vector2 vector, Vector2 other)
+		{
+			return vector.X == other.X && vector.Y == other.Y;
+		}
+
+		public static bool operator !=(Vector2 vector, Vector2 other)
+		{
+			return !(vector == other);
+		}
 	}
 
 }

@@ -33,6 +33,9 @@ namespace Sandbox {
 					m_Rotation.Y = -1.0f;
 			}
 
+			if (Input.IsKeyDown(KeyCode.LeftShift))
+				Velocity *= 2.0f;
+
 			Velocity *= Speed * delta;
 			m_Rotation *= RotationSpeed * delta;
 
