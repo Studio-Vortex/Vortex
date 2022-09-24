@@ -1,5 +1,4 @@
 ﻿using System;
-
 using Sparky;
 
 namespace Sandbox {
@@ -10,11 +9,13 @@ namespace Sandbox {
 		private Entity m_Target;
 		private Vector3 m_Velocity;
 		private Transform m_TargetTransform;
+		private RigidBody2D m_RigidBody;
 
 		public void OnCreate()
 		{
 			m_Target = FindEntityByName("Player");
 			m_TargetTransform = m_Target.GetComponent<Transform>();
+			m_RigidBody = GetComponent<RigidBody2D>();
 		}
 
 		public void OnUpdate(float delta)
@@ -31,8 +32,7 @@ namespace Sandbox {
 				m_Target.Destroy();
 
 			m_Velocity *= Speed * delta;
-
-			transform.Translation += m_Velocity;
+			m_RigidBody.ApplyForce(m_Velocity.XY, true);
 		}
 
 		public void OnDestroy()

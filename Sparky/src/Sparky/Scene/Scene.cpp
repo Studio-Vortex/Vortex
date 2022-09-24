@@ -299,7 +299,7 @@ namespace Sparky {
 	{
 		// Physics
 		{
-			// Copies transform from Hazel to Box2D
+			// Copies transform from Sparky to Box2D
 			auto view = m_Registry.view<RigidBody2DComponent>();
 			for (auto e : view)
 			{
@@ -456,7 +456,7 @@ namespace Sparky {
 				fixtureDef.friction = bc2d.Friction;
 				fixtureDef.restitution = bc2d.Restitution;
 				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-
+				
 				body->CreateFixture(&fixtureDef);
 			}
 
