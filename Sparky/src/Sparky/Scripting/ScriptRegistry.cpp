@@ -14,6 +14,7 @@
 #include <mono/metadata/reflection.h>
 
 #include <box2d/b2_body.h>
+#include <box2d/b2_collision.h>
 
 namespace Sparky {
 

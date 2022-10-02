@@ -6,6 +6,9 @@
 #include "Sparky/Scripting/ScriptEngine.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
+#include "Sparky/Events/KeyEvent.h"
+
+extern bool g_ApplicationRunning;
 
 namespace Sparky {
 
@@ -38,8 +41,11 @@ namespace Sparky {
 		Renderer::Init();
 		ScriptEngine::Init();
 
-		m_GuiLayer = new GuiLayer();
-		PushOverlay(m_GuiLayer);
+		if (m_Properties.EnableGUI)
+		{
+			m_GuiLayer = new GuiLayer();
+			PushOverlay(m_GuiLayer);
+		}
 	}
 
 	Application::~Application()
@@ -69,6 +75,7 @@ namespace Sparky {
 	void Application::Close()
 	{
 		m_Running = false;
+		g_ApplicationRunning = false;
 	}
 
 	void Application::OnEvent(Event& e)
@@ -85,6 +92,14 @@ namespace Sparky {
 				break;
 
 			(*it)->OnEvent(e);
+		}
+
+		// TODO: REMOVE TEMPORARY!!!
+		if (e.GetEventType() == EventType::KeyPressed)
+		{
+			auto& event = (KeyPressedEvent&)e;
+			if (event.GetKeyCode() == Key::Escape)
+				Application::Get().Close();
 		}
 	}
 
@@ -127,6 +142,7 @@ namespace Sparky {
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
 		m_Running = false;
+		g_ApplicationRunning = false;
 		return true;
 	}
 
@@ -143,8 +159,8 @@ namespace Sparky {
 		m_ApplicationMinimized = false;
 
 		Viewport viewport;
-		viewport.XPos = 0;
-		viewport.YPos = 0;
+		viewport.TopLeftXPos = 0;
+		viewport.TopLeftYPos = 0;
 		viewport.Width = e.GetWidth();
 		viewport.Height = e.GetHeight();
 

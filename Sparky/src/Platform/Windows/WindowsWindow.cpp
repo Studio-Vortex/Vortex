@@ -94,7 +94,7 @@ namespace Sparky {
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Size = Math::vec2(width, height);
+			data.Size = Math::vec2((float)width, (float)height);
 
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
@@ -204,12 +204,25 @@ namespace Sparky {
 		m_Context->SwapFrameBuffers();
 	}
 
-	void WindowsWindow::SetMaximized(bool maximized) const
+	void WindowsWindow::SetMaximized(bool maximized)
 	{
+		auto getWindowSize = [&]() {
+			int width;
+			int height;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Data.Size = Math::vec2((float)width, (float)height);
+		};
+
 		if (maximized)
+		{
 			glfwMaximizeWindow(m_Window);
+			getWindowSize();
+		}
 		else
+		{
 			glfwRestoreWindow(m_Window);
+			getWindowSize();
+		}
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)

@@ -46,7 +46,7 @@ namespace Sparky {
 
     void OpenGLRendererAPI::SetViewport(const Viewport& viewport) const
     {
-		glViewport(viewport.XPos, viewport.YPos, viewport.Width, viewport.Height);
+		glViewport(viewport.TopLeftXPos, viewport.TopLeftYPos, viewport.Width, viewport.Height);
     }
 
     void OpenGLRendererAPI::SetClearColor(const Math::vec3& color) const

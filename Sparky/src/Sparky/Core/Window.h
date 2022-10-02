@@ -31,7 +31,7 @@ namespace Sparky {
 		virtual Math::vec2 GetSize() const = 0;
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
-		virtual void SetMaximized(bool maximized) const = 0;
+		virtual void SetMaximized(bool maximized) = 0;
 
 		// Window Attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;

@@ -215,7 +215,12 @@ namespace Sparky {
 	{
 		s_Data->ContextScene = nullptr;
 
-		s_Data->EntityInstances.clear();
+		// TODO: REMOVE THIS
+		if (s_Data->EntityInstances.size() > INT_MAX)
+			return;
+
+		if (!s_Data->EntityInstances.empty())
+			s_Data->EntityInstances.clear();
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
@@ -274,20 +279,20 @@ namespace Sparky {
 	{
 		auto it = s_Data->EntityInstances.find(uuid);
 
-		if (it == s_Data->EntityInstances.end())
+		if (it != s_Data->EntityInstances.end())
+			return it->second;
+		else
 			return nullptr;
-
-		return it->second;
 	}
 
 	SharedRef<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
 		auto it = s_Data->EntityClasses.find(name);
 
-		if (it == s_Data->EntityClasses.end())
+		if (it != s_Data->EntityClasses.end())
+			return it->second;
+		else
 			return nullptr;
-
-		return it->second;
 	}
 
 	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
@@ -375,8 +380,6 @@ namespace Sparky {
 		}
 
 		auto& entityClasses = s_Data->EntityClasses;
-
-		//mono_field_get_value()
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)

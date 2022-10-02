@@ -6,22 +6,26 @@
 #ifdef SP_PLATFORM_WINDOWS
 
 	extern Sparky::Application* Sparky::CreateApplication(Sparky::ApplicationCommandLineArgs);
+	bool g_ApplicationRunning = true;
 
 	int main(int argc, char* argv[])
 	{
 		Sparky::Log::Init();
 
-		SP_PROFILE_BEGIN_SESSION("Startup", "SparkyProfile-Startup.json");
-		auto app = Sparky::CreateApplication({ argc, argv });
-		SP_PROFILE_END_SESSION();
+		while (g_ApplicationRunning)
+		{
+			SP_PROFILE_BEGIN_SESSION("Startup", "SparkyProfile-Startup.json");
+			auto app = Sparky::CreateApplication({ argc, argv });
+			SP_PROFILE_END_SESSION();
 
-		SP_PROFILE_BEGIN_SESSION("Runtime", "SparkyProfile-Runtime.json");
-		app->Run();
-		SP_PROFILE_END_SESSION();
+			SP_PROFILE_BEGIN_SESSION("Runtime", "SparkyProfile-Runtime.json");
+			app->Run();
+			SP_PROFILE_END_SESSION();
 
-		SP_PROFILE_BEGIN_SESSION("Shutdown", "SparkyProfile-Shutdown.json");
-		delete app;
-		SP_PROFILE_END_SESSION();
+			SP_PROFILE_BEGIN_SESSION("Shutdown", "SparkyProfile-Shutdown.json");
+			delete app;
+			SP_PROFILE_END_SESSION();
+		}
 	}
 
 #elif SP_PLATFORM_MACOS

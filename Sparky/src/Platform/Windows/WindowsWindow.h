@@ -24,7 +24,7 @@ namespace Sparky {
 		inline Math::vec2 GetSize() const override { return { (float)GetWidth(), (float)GetHeight() }; }
 		inline unsigned int GetWidth() const override { return (unsigned int)m_Data.Size.x; }
 		inline unsigned int GetHeight() const override { return (unsigned int)m_Data.Size.y; }
-		void SetMaximized(bool maximized) const override;
+		void SetMaximized(bool maximized) override;
 
 		// Window Attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }

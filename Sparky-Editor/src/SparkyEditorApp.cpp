@@ -26,13 +26,13 @@ namespace Sparky {
 #endif
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
-		props.MaximizeWindow = true;
+		props.MaximizeWindow = false;
 		props.WindowDecorated = true;
 		props.VSync = true;
 		props.EnableGUI = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		//props.WorkingDirectory = "C:/dev/Sparky Engine";
+		props.WorkingDirectory = "C:/dev/Sparky Engine";
 		props.CommandLineArgs = args;
 
 		return new SparkyEditor(props);

@@ -7,10 +7,10 @@
 
 namespace Sparky {
 
-	struct Viewport
+	struct SPARKY_API Viewport
 	{
-		uint32_t XPos = 0;
-		uint32_t YPos = 0;
+		uint32_t TopLeftXPos = 0;
+		uint32_t TopLeftYPos = 0;
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 	};

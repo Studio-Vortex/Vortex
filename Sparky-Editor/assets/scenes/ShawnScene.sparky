@@ -1,8 +1,96 @@
 Scene: Untitled
 Entities:
+  - Entity: 17308322078944251873
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.99999905, 0, 5.99999952]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904299, 6, 0.999880314]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 4526310078429830445
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [3.00000095, 0, 6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99921513, 6, 0.999901831]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 10336005176151312800
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, 15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 17593536354058450071
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -2.99999952, 6]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99985981, 0.999982476]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 6082851487787691474
+    TagComponent:
+      Tag: Decoration
+    TransformComponent:
+      Translation: [12, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn.jpg
+      Scale: 1
+  - Entity: 17994718396331423145
+    TagComponent:
+      Tag: Decoration
+    TransformComponent:
+      Translation: [6, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn.png
+      Scale: 1
+  - Entity: 1455431635273936739
+    TagComponent:
+      Tag: Decoration
+    TransformComponent:
+      Translation: [-12, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn4.jpg
+      Scale: 1
+  - Entity: 17473160336394363675
+    TagComponent:
+      Tag: Decoration
+    TransformComponent:
+      Translation: [-6, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn2.jpg
+      Scale: 1
   - Entity: 10801644474773246805
     TagComponent:
-      Tag: Wall Copy Copy Copy Copy Copy Copy
+      Tag: Wall
     TransformComponent:
       Translation: [6.00000095, 0, -15]
       Rotation: [0, 0, 0]
@@ -13,7 +101,7 @@ Entities:
       Scale: 1
   - Entity: 6550522526454473535
     TagComponent:
-      Tag: Wall Copy Copy Copy Copy Copy
+      Tag: Wall
     TransformComponent:
       Translation: [-5.99999905, 0, -15]
       Rotation: [0, 0, 0]
@@ -22,53 +110,53 @@ Entities:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 18428411088641571955
+  - Entity: 13379850710425556943
     TagComponent:
-      Tag: Floor Copy Copy Copy Copy
+      Tag: Floor
     TransformComponent:
-      Translation: [6, -3.00000119, -18]
+      Translation: [0, -3.00000048, -11.9977398]
       Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99917793, 0.999897242]
+      Scale: [6, 5.99960852, 0.999951065]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Checkerboard.png
       Scale: 3
-  - Entity: 508415035568362136
+  - Entity: 11842337086880304669
     TagComponent:
-      Tag: Floor Copy Copy Copy
+      Tag: Floor
     TransformComponent:
-      Translation: [-6, -3.00000119, -18]
+      Translation: [0, -3.00000167, -29.9984646]
       Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99946499, 0.999933124]
+      Scale: [30, 29.9991283, 0.99990344]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Checkerboard.png
-      Scale: 3
-  - Entity: 1698596960246396733
+      Scale: 14
+  - Entity: 8899026784796974534
     TagComponent:
-      Tag: Floor Copy Copy
+      Tag: Wall
     TransformComponent:
-      Translation: [0, -3.00000119, -18]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99960089, 0.999950111]
+      Translation: [-11.999999, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
     SpriteComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Checkerboard.png
-      Scale: 3
-  - Entity: 16332431377059947396
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13466472008640886397
     TagComponent:
-      Tag: Floor Copy
+      Tag: Wall
     TransformComponent:
-      Translation: [0, -3.00000072, -12]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99983501, 0.999979377]
+      Translation: [-11.999999, 0, -15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
     SpriteComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Checkerboard.png
-      Scale: 3
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
   - Entity: 9877398207365800879
     TagComponent:
-      Tag: Wall Copy Copy Copy Copy Copy
+      Tag: Wall
     TransformComponent:
       Translation: [3.00000095, 0, -12]
       Rotation: [0, 1.57079637, 0]
@@ -79,7 +167,7 @@ Entities:
       Scale: 1
   - Entity: 11310440172590609485
     TagComponent:
-      Tag: Wall Copy Copy Copy Copy
+      Tag: Wall
     TransformComponent:
       Translation: [-2.99999905, 0, -12]
       Rotation: [0, 1.57079637, 0]
@@ -88,20 +176,20 @@ Entities:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 18214206172307656434
+  - Entity: 3737315805751857442
     TagComponent:
-      Tag: Wall Copy Copy Copy
+      Tag: Wall
     TransformComponent:
-      Translation: [-2.99999952, 0, -6.00000048]
+      Translation: [-2.99999952, 0, -6]
       Rotation: [0, 1.57079637, 0]
-      Scale: [5.99966431, 6, 0.999958038]
+      Scale: [5.99923944, 6, 0.999904931]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
   - Entity: 3127092491974662784
     TagComponent:
-      Tag: Wall Copy Copy
+      Tag: Wall
     TransformComponent:
       Translation: [3.00000048, 0, -6]
       Rotation: [0, 1.57079637, 0]
@@ -112,7 +200,7 @@ Entities:
       Scale: 1
   - Entity: 1497077094255837486
     TagComponent:
-      Tag: Floor Copy
+      Tag: Floor
     TransformComponent:
       Translation: [0, -3, -5.99773979]
       Rotation: [1.57079637, 0, 0]
@@ -136,7 +224,7 @@ Entities:
     TagComponent:
       Tag: Perspective Camera
     TransformComponent:
-      Translation: [0, 0, 3.5]
+      Translation: [0, 0, 7]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -155,10 +243,10 @@ Entities:
       ScriptFields:
         - Name: RotationSpeed
           Type: Vector3
-          Data: [0, 2, 0]
+          Data: [0, 1.75, 0]
         - Name: Speed
           Type: Vector3
-          Data: [2.5, 3, 3]
+          Data: [4, 0, 4]
   - Entity: 3595857843733065218
     TagComponent:
       Tag: Wall
@@ -172,11 +260,209 @@ Entities:
       Scale: 1
   - Entity: 10979268923613723867
     TagComponent:
-      Tag: Wall Copy
+      Tag: Wall
     TransformComponent:
       Translation: [3, 0, 0]
       Rotation: [0, 1.57079637, 0]
       Scale: [6, 6, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16771871323697545717
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-5.99999905, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 12203353731547809384
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 17411119356335989129
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [6.00000095, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 1442064695184392604
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [12.000001, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 11922301292536089024
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [12.000001, 0, -15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 12500489238410509122
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99930811, 6, 0.999913514]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 3265642486940015494
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99918461, 6, 0.999898076]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16814097676382012400
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904537, 6, 0.999880672]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13433524093796689811
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99891186, 6, 0.999863982]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 4442265412268408688
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99879551, 6, 0.999849439]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 9882156585222821317
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-14.999999, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99865675, 6, 0.999832094]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 9428068541018271585
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.9984498, 6, 0.999806225]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13314154941646148803
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99834538, 6, 0.999793172]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16539471845452048877
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99822617, 6, 0.999778271]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 15580036536962080154
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99812317, 6, 0.999765396]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13563620352720788320
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -2.99999905, 12]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99959373, 0.999949217]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 3
+  - Entity: 8979682953223822376
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [3.00000048, 0, 12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99912357, 6, 0.999890387]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 10360928567936502819
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.99999952, 0, 12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904442, 6, 0.999880493]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png

@@ -16,12 +16,12 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		FramebufferProperties fbProps;
-		fbProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
-		fbProps.Width = 1600;
-		fbProps.Height = 900;
+		FramebufferProperties framebufferProps;
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		framebufferProps.Width = 1600;
+		framebufferProps.Height = 900;
 
-		m_Framebuffer = Framebuffer::Create(fbProps);
+		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
 		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
 		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
