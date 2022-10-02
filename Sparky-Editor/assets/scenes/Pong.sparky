@@ -1,12 +1,52 @@
 Scene: Untitled
 Entities:
+  - Entity: 451101217983068239
+    TagComponent:
+      Tag: Right Wall
+    TransformComponent:
+      Translation: [9.75, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 10, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14128749575890305120
+    TagComponent:
+      Tag: Left Wall
+    TransformComponent:
+      Translation: [-9.75, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 10, 1]
+    SpriteComponent:
+      Color: [1, 1, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
   - Entity: 2435663995064499279
     TagComponent:
       Tag: Bottom Wall
     TransformComponent:
       Translation: [-2.98023252e-07, -5, 0]
-      Rotation: [0, 0, 1.57079637]
-      Scale: [0.499962479, 15.9995689, 1]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.5, 1]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -24,49 +64,9 @@ Entities:
     TagComponent:
       Tag: Top Wall
     TransformComponent:
-      Translation: [2.98023252e-07, 5, 0]
-      Rotation: [0, 0, 1.57079637]
-      Scale: [0.499969035, 15.9997787, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 15503261928591718764
-    TagComponent:
-      Tag: Right Wall
-    TransformComponent:
-      Translation: [8, 0, 0]
+      Translation: [2.38418579e-07, 5, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 10, 1]
-    SpriteComponent:
-      Color: [1, 1, 1, 1]
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 15621534777695526901
-    TagComponent:
-      Tag: Left Wall
-    TransformComponent:
-      Translation: [-8, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.5, 10, 1]
+      Scale: [20, 0.5, 1]
     SpriteComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -84,7 +84,7 @@ Entities:
     TagComponent:
       Tag: Perspective Camera
     TransformComponent:
-      Translation: [0, 0, 10]
+      Translation: [0, -2.19345093e-05, 10]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -125,11 +125,8 @@ Entities:
       Restitution: 0
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ClassName: Sandbox.PongPaddle
+      ClassName: Sandbox.Paddle
       ScriptFields:
-        - Name: LeftPaddle
-          Type: Bool
-          Data: true
         - Name: Speed
           Type: Float
           Data: 5
@@ -154,11 +151,8 @@ Entities:
       Restitution: 0
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ClassName: Sandbox.PongPaddle
+      ClassName: Sandbox.AIPaddle
       ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 5
   - Entity: 12910335349000657238
     TagComponent:
       Tag: Ball
@@ -182,10 +176,3 @@ Entities:
       RestitutionThreshold: 0.5
     ScriptComponent:
       ClassName: Sandbox.PongBall
-      ScriptFields:
-        - Name: Left
-          Type: Bool
-          Data: true
-        - Name: Speed
-          Type: Float
-          Data: 7

@@ -309,6 +309,9 @@ namespace Sparky {
 				if (Gui::MenuItem("Shader Editor"))
 					m_ShaderEditorPanel.ShowPanel();
 				Gui::Separator();
+				if (Gui::MenuItem("Console"))
+					m_ConsolePanel.ShowPanel();
+				Gui::Separator();
 				if (Gui::MenuItem("Stats"))
 					m_StatsPanel.ShowPanel();
 				Gui::Separator();
@@ -336,6 +339,7 @@ namespace Sparky {
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
+			m_ConsolePanel.OnGuiRender();
 			m_StatsPanel.OnGuiRender(m_HoveredEntity);
 			m_AboutPanel.OnGuiRender();
 		}

@@ -93,14 +93,6 @@ namespace Sparky {
 
 			(*it)->OnEvent(e);
 		}
-
-		// TODO: REMOVE TEMPORARY!!!
-		if (e.GetEventType() == EventType::KeyPressed)
-		{
-			auto& event = (KeyPressedEvent&)e;
-			if (event.GetKeyCode() == Key::Escape)
-				Application::Get().Close();
-		}
 	}
 
 	void Application::Run()

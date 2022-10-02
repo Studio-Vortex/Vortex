@@ -10,6 +10,8 @@
 #include "Sparky/Core/KeyCodes.h"
 #include "Sparky/Core/Input.h"
 
+#include "Sparky/Renderer/RenderCommand.h"
+
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>
 
@@ -439,6 +441,14 @@ namespace Sparky {
 		return &result;
 	}
 
+	static void Renderer_SetClearColor(Math::vec3* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		RenderCommand::SetClearColor(*color);
+	}
+
 	static bool Input_IsKeyDown(KeyCode key)
 	{
 		return Input::IsKeyPressed(key);
@@ -549,6 +559,10 @@ namespace Sparky {
 
 #pragma region Algebra
 		SP_ADD_INTERNAL_CALL(Algebra_CrossProductVec3);
+#pragma endregion
+
+#pragma region Renderer
+		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
 #pragma endregion
 
 #pragma region Input

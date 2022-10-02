@@ -161,6 +161,13 @@ namespace Sparky {
 
 		#endregion
 
+		#region Renderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Renderer_SetClearColor(ref Vector3 color);
+
+		#endregion
+
 		#region Input
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

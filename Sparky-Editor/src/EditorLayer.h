@@ -7,6 +7,7 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/SettingsPanel.h"
+#include "Panels/ConsolePanel.h"
 #include "Panels/StatsPanel.h"
 #include "Panels/AboutPanel.h"
 
@@ -101,6 +102,7 @@ namespace Sparky {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;
+		ConsolePanel m_ConsolePanel;
 		StatsPanel m_StatsPanel;
 		AboutPanel m_AboutPanel;
 
