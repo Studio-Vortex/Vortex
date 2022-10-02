@@ -14,9 +14,9 @@ namespace Sparky {
 		{
 			Gui::Begin("Console", &s_ShowPanel);
 
-			auto logMessages = Log::GetMessages();
+			const auto logMessages = Log::GetMessages(128);
 
-			for (auto& message : logMessages)
+			for (const auto& message : logMessages)
 			{
 				ImVec4 red = { 1.0f, 0.0f, 0.0f, 1.0f };
 				ImVec4 green = { 0.0f, 1.0f, 0.0f, 1.0f };

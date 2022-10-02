@@ -8,6 +8,15 @@ namespace Sandbox {
 		public float Speed;
 		private Vector3 m_Velocity;
 
+		public void OnCreate()
+		{
+			Debug.Log("Welcome to Sparky!");
+			Debug.Info("Welcome to Sparky!");
+			Debug.Warn("Welcome to Sparky!");
+			Debug.Error("Welcome to Sparky!");
+			Debug.Critical("Welcome to Sparky!");
+		}
+
 		public void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.W))

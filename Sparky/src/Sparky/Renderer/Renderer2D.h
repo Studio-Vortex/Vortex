@@ -94,7 +94,7 @@ namespace Sparky
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor = Color::White);
 
-		static void DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID);
+		static void DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, int entityID);
 
 		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
 

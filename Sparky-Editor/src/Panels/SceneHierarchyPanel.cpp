@@ -49,7 +49,7 @@ namespace Sparky {
 					if (Gui::MenuItem("Quad"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
-						m_SelectedEntity.AddComponent<SpriteComponent>();
+						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 					}
 					Gui::Separator();
 
@@ -277,7 +277,7 @@ namespace Sparky {
 		if (Gui::BeginPopup("AddComponent"))
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
-			DisplayAddComponentPopup<SpriteComponent>("Sprite");
+			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentPopup<CameraComponent>("Camera");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
@@ -302,7 +302,7 @@ namespace Sparky {
 			DrawVec3Controls("Scale", component.Scale, 1.0f);
 		}, false);
 
-		DrawComponent<SpriteComponent>("Sprite", entity, [](auto& component)
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
 

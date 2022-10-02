@@ -7,7 +7,7 @@ Entities:
       Translation: [9.75, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 10, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -27,7 +27,7 @@ Entities:
       Translation: [-9.75, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 10, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -47,7 +47,7 @@ Entities:
       Translation: [-2.98023252e-07, -5, 0]
       Rotation: [0, 0, 0]
       Scale: [20, 0.5, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -67,7 +67,7 @@ Entities:
       Translation: [2.38418579e-07, 5, 0]
       Rotation: [0, 0, 0]
       Scale: [20, 0.5, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -111,7 +111,7 @@ Entities:
       Translation: [-6, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 3, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -137,7 +137,7 @@ Entities:
       Translation: [6, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 3, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -160,7 +160,7 @@ Entities:
       Translation: [0, 0.429245234, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 0.5, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\AwesomeFace.png
       Scale: 1

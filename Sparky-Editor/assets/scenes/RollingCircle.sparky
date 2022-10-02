@@ -1,4 +1,4 @@
-Scene: Untitled
+SpriteRendererComponent: Untitled
 Entities:
   - Entity: 5704309532960651157
     TagComponent:
@@ -7,7 +7,7 @@ Entities:
       Translation: [-5.02444267, 3.11482453, 0]
       Rotation: [0, 0, -0.335401803]
       Scale: [8.82630348, 0.434776098, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -27,7 +27,7 @@ Entities:
       Translation: [1.58161259, 7.01038218, -1.86264515e-09]
       Rotation: [0, 0, 0.399862528]
       Scale: [8.82629013, 0.434776217, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -68,7 +68,7 @@ Entities:
       Translation: [-6.93226814, 9.92407799, 0]
       Rotation: [0, 0, -0.216810092]
       Scale: [8.82630157, 0.434776336, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -88,7 +88,7 @@ Entities:
       Translation: [6.35454178, -3.47677612, 0]
       Rotation: [0, 0, 0.680270255]
       Scale: [8.82630634, 0.434776098, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -132,7 +132,7 @@ Entities:
       Translation: [-1.58354211, -10.5305405, 0.00999999978]
       Rotation: [0, 0, 0]
       Scale: [9.61999989, 9.61999989, 9.61999989]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
@@ -153,7 +153,7 @@ Entities:
       Translation: [-8.5609169, -4.38782263, 0]
       Rotation: [0, 0, -0.637011826]
       Scale: [8.82629871, 0.434776217, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.231660247, 0.492717624, 1, 1]
       Scale: 1
     Rigidbody2DComponent:

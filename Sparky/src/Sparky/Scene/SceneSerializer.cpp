@@ -218,18 +218,18 @@ namespace Sparky {
 			out << YAML::EndMap; // CameraComponent
 		}
 
-		if (entity.HasComponent<SpriteComponent>())
+		if (entity.HasComponent<SpriteRendererComponent>())
 		{
-			out << YAML::Key << "SpriteComponent" << YAML::Value << YAML::BeginMap; // SpriteComponent
+			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
 			
-			auto& spriteComponent = entity.GetComponent<SpriteComponent>();
+			auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
 
 			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
 			if (spriteComponent.Texture)
 				out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
 			out << YAML::Key << "Scale" << YAML::Value << spriteComponent.Scale;
 
-			out << YAML::EndMap; // SpriteComponent
+			out << YAML::EndMap; // SpriteRendererComponent
 		}
 		
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -443,10 +443,10 @@ namespace Sparky {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
-				auto spriteComponent = entity["SpriteComponent"];
+				auto spriteComponent = entity["SpriteRendererComponent"];
 				if (spriteComponent)
 				{
-					auto& sprite = deserializedEntity.AddComponent<SpriteComponent>();
+					auto& sprite = deserializedEntity.AddComponent<SpriteRendererComponent>();
 
 					sprite.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 					if (spriteComponent["TexturePath"])

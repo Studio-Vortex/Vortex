@@ -46,15 +46,15 @@ namespace Sparky {
 		}
 	};
 
-	struct SpriteComponent
+	struct SpriteRendererComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 		SharedRef<Texture2D> Texture = nullptr;
 		float Scale = 1.0f;
 
-		SpriteComponent() = default;
-		SpriteComponent(const SpriteComponent&) = default;
-		SpriteComponent(const Math::vec4& color)
+		SpriteRendererComponent() = default;
+		SpriteRendererComponent(const SpriteRendererComponent&) = default;
+		SpriteRendererComponent(const Math::vec4& color)
 			: SpriteColor(color) { }
 	};
 
@@ -164,7 +164,7 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		SpriteComponent, CircleRendererComponent, CameraComponent,
+		SpriteRendererComponent, CircleRendererComponent, CameraComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 

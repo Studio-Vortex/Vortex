@@ -178,6 +178,25 @@ namespace Sparky {
 
 		#endregion
 
+		#region Debug
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Debug_Log(string message);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Debug_Info(string message);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Debug_Warn(string message);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Debug_Error(string message);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Debug_Critical(string message);
+
+		#endregion
+
 	}
 
 }

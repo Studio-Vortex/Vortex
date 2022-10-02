@@ -7,7 +7,7 @@ Entities:
       Translation: [8.73114914e-08, -0.5, 1.8090941e-07]
       Rotation: [1.57079613, 0.785398245, 0]
       Scale: [0.999999881, 0.999999285, 0.999970615]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.122762047, 0.29507491, 0.521235526, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -27,7 +27,7 @@ Entities:
       Translation: [-0.349999994, 0, -0.353888363]
       Rotation: [0, 0.785398245, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.160784319, 0.294117659, 0.619607866, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -47,7 +47,7 @@ Entities:
       Translation: [0.349999994, 0, -0.349999994]
       Rotation: [0, -0.785398245, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.181467175, 0.402692318, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -67,7 +67,7 @@ Entities:
       Translation: [-0.349999994, 0, 0.349999964]
       Rotation: [0, -0.785398185, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.181467175, 0.364767969, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -87,7 +87,7 @@ Entities:
       Translation: [0.349999994, 0, 0.353218347]
       Rotation: [0, 0.785398245, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.180392146, 0.515830159, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -125,7 +125,7 @@ Entities:
       Translation: [0, 0.5, 0]
       Rotation: [1.57079613, 0.785398245, 0]
       Scale: [0.999999881, 0.999999285, 0.999997914]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0, 0.561738729, 0.876447856, 1]
       Scale: 1
     Rigidbody2DComponent:

@@ -7,7 +7,7 @@ Entities:
       Translation: [-25, 0, 9.99999714]
       Rotation: [0, 1.57079637, 0]
       Scale: [49.9989624, 50, 0.999983788]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.6409266, 0.6409266, 0.6409266, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 7
@@ -18,7 +18,7 @@ Entities:
       Translation: [25, 0, 10]
       Rotation: [0, 1.57079637, 0]
       Scale: [50, 50, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.6409266, 0.6409266, 0.6409266, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 7
@@ -130,7 +130,7 @@ Entities:
       Translation: [-0.349999994, 0, 0.348604262]
       Rotation: [0, -0.785398245, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.181467175, 0.402692318, 1, 1]
       Scale: 1
   - Entity: 4837476222634533122
@@ -140,7 +140,7 @@ Entities:
       Translation: [0.351999998, 0, 0.349999994]
       Rotation: [0, 0.785398245, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.160784319, 0.294117659, 0.619607866, 1]
       Scale: 1
   - Entity: 6949508144411093171
@@ -177,7 +177,7 @@ Entities:
       Translation: [1.49011612e-08, 0.5, 0]
       Rotation: [1.57079613, 0.785398245, -4.21468513e-08]
       Scale: [0.999999881, 0.999999285, 0.999994099]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0, 0.521131039, 0.876447856, 1]
       Scale: 1
   - Entity: 1526650983602685266
@@ -187,7 +187,7 @@ Entities:
       Translation: [0, 0, -15]
       Rotation: [0, 0, 0]
       Scale: [50, 50, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.6409266, 0.6409266, 0.6409266, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 7
@@ -198,7 +198,7 @@ Entities:
       Translation: [0, -3.5, 0]
       Rotation: [1.57079637, 0, 0]
       Scale: [20, 20, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Checkerboard.png
       Scale: 7

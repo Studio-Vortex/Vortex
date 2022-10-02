@@ -69,7 +69,7 @@ Entities:
       Translation: [2, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\AwesomeFace.png
       Scale: 1

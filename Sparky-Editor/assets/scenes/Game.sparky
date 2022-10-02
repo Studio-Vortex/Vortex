@@ -7,7 +7,7 @@ Entities:
       Translation: [0, 0, -20]
       Rotation: [0, 0, 0]
       Scale: [45, 30, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 3
@@ -18,7 +18,7 @@ Entities:
       Translation: [13.4099998, 3.41000009, -1.86264515e-09]
       Rotation: [0, 0, 0.785398245]
       Scale: [10.0000019, 0.400000304, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.463320434, 0.463320434, 0.463320434, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -38,7 +38,7 @@ Entities:
       Translation: [-13.4121189, 3.4121263, 0]
       Rotation: [0, 0, -0.785398245]
       Scale: [10.0000019, 0.400000304, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.463320434, 0.463320434, 0.463320434, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -58,7 +58,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [20, 0.400000006, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.463320434, 0.463320434, 0.463320434, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -102,7 +102,7 @@ Entities:
       Translation: [2.88010406, 0.699999988, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\AwesomeFace.png
       Scale: 1
@@ -129,7 +129,7 @@ Entities:
       Translation: [-3.28334975, 0.740942419, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1.10000002, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Shawn\Shawn4.jpg
       Scale: 1

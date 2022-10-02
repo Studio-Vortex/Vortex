@@ -7,7 +7,7 @@ Entities:
       Translation: [-0.973144174, 9.13862133, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\AwesomeFace.png
       Scale: 1
@@ -28,7 +28,7 @@ Entities:
       Translation: [-5.74668312, -17.5200005, 0]
       Rotation: [0, 0, 1.63266826]
       Scale: [10.9499998, 0.499974996, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -48,7 +48,7 @@ Entities:
       Translation: [14.6800222, -17.5190964, 1.86264515e-09]
       Rotation: [0, 0, 1.53101707]
       Scale: [10.9504385, 0.5, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -68,7 +68,7 @@ Entities:
       Translation: [4.52682877, -23.1027393, 0]
       Rotation: [0, 0, 0]
       Scale: [20.0000172, 0.500002325, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -88,7 +88,7 @@ Entities:
       Translation: [0.169299513, -5.86205626, -9.31322575e-10]
       Rotation: [0, 0, 2.59624267]
       Scale: [10.0000172, 0.500000238, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -108,7 +108,7 @@ Entities:
       Translation: [10.6135111, -1.18635654, 0.00249483064]
       Rotation: [0, 0, 0.722976923]
       Scale: [12.8847733, 0.49999994, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -152,7 +152,7 @@ Entities:
       Translation: [3.45103502, 4.64303875, -3.7252903e-09]
       Rotation: [0, 0, -0.434400648]
       Scale: [0.99999994, 0.99999994, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Shawn\Shawn.png
       Scale: 1
@@ -173,7 +173,7 @@ Entities:
       Translation: [0.819316506, 0.335592687, 0]
       Rotation: [0, 0, -0.56703794]
       Scale: [10.0000029, 0.5, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
@@ -193,7 +193,7 @@ Entities:
       Translation: [1.65690804, 4.44840097, 0]
       Rotation: [0, 0, -0.721056223]
       Scale: [1, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
@@ -214,7 +214,7 @@ Entities:
       Translation: [2.48770165, 2.82854319, 0.111919321]
       Rotation: [0.0276023205, 0.00618626643, -0.941477597]
       Scale: [0.999999821, 1, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\OpenGL.png
       Scale: 1
@@ -235,7 +235,7 @@ Entities:
       Translation: [8.28456783, -8.96592331, -9.31322575e-10]
       Rotation: [0, 0, 0.754923522]
       Scale: [10.0000134, 0.49999994, 1]
-    SpriteComponent:
+    SpriteRendererComponent:
       Color: [0.142857134, 0.473800242, 1, 1]
       Scale: 1
     Rigidbody2DComponent:

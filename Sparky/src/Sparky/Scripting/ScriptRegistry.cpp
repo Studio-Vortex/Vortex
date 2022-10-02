@@ -1,16 +1,18 @@
 #include "sppch.h"
 #include "ScriptRegistry.h"
 
-#include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
+#include "Sparky/Core/UUID.h"
 #include "Sparky/Core/MouseCodes.h"
 #include "Sparky/Core/KeyCodes.h"
 #include "Sparky/Core/Input.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
+
+#include "Sparky/Core/Log.h"
 
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>
@@ -23,6 +25,8 @@ namespace Sparky {
 #define SP_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Sparky.InternalCalls::" #icall, icall)
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
+
+#pragma region Entity
 
 	static bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
 	{
@@ -66,6 +70,10 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 		contextScene->DestroyEntity(entity, true);
 	}
+
+#pragma endregion
+
+#pragma region Transform Component
 
 	static void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 	{
@@ -127,6 +135,10 @@ namespace Sparky {
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
+#pragma endregion
+
+#pragma region Sprite Renderer Component
+
 	static void SpriteComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -134,7 +146,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColor = entity.GetComponent<SpriteComponent>().SpriteColor;
+		*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
 	}
 
 	static void SpriteComponent_SetColor(UUID entityUUID, Math::vec4* color)
@@ -144,7 +156,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteComponent>().SpriteColor = *color;
+		entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
 	}
 
 	static void SpriteComponent_GetScale(UUID entityUUID, float outScale)
@@ -154,7 +166,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outScale = entity.GetComponent<SpriteComponent>().Scale;
+		outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
 	}
 
 	static void SpriteComponent_SetScale(UUID entityUUID, float scale)
@@ -164,8 +176,12 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteComponent>().Scale = scale;
+		entity.GetComponent<SpriteRendererComponent>().Scale = scale;
 	}
+
+#pragma endregion
+
+#pragma region Circle Renderer Component
 
 	static void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 	{
@@ -227,6 +243,10 @@ namespace Sparky {
 		entity.GetComponent<CircleRendererComponent>().Fade = fade;
 	}
 
+#pragma endregion
+
+#pragma region Rigidbody2D Component
+
 	static void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -262,7 +282,7 @@ namespace Sparky {
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
 	}
-	
+
 	static void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -274,6 +294,10 @@ namespace Sparky {
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
 	}
+
+#pragma endregion
+
+#pragma region Box Collider2D Component
 
 	static void BoxCollider2D_GetDensity(UUID entityUUID, float outDensity)
 	{
@@ -355,6 +379,10 @@ namespace Sparky {
 		entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
 	}
 
+#pragma endregion
+
+#pragma region Circle Collider2D Component
+
 	static void CircleCollider2D_GetDensity(UUID entityUUID, float outDensity)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -435,6 +463,10 @@ namespace Sparky {
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
 	}
 
+#pragma endregion
+
+#pragma region Algebra
+
 	static Math::vec3* Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right)
 	{
 		Math::vec3 result = Math::Cross(*left, *right);
@@ -449,6 +481,10 @@ namespace Sparky {
 		RenderCommand::SetClearColor(*color);
 	}
 
+#pragma endregion
+
+#pragma region Input
+
 	static bool Input_IsKeyDown(KeyCode key)
 	{
 		return Input::IsKeyPressed(key);
@@ -458,6 +494,67 @@ namespace Sparky {
 	{
 		return Input::IsKeyReleased(key);
 	}
+
+#pragma endregion
+
+#pragma region Debug
+
+	static void Debug_Log(MonoString* message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		SP_TRACE("{}", managedString);
+
+		mono_free(managedString);
+	}
+	
+	static void Debug_Info(MonoString * message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		SP_INFO("{}", managedString);
+
+		mono_free(managedString);
+	}
+	
+	static void Debug_Warn(MonoString * message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		SP_WARN("{}", managedString);
+
+		mono_free(managedString);
+	}
+	
+	static void Debug_Error(MonoString * message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		SP_ERROR("{}", managedString);
+
+		mono_free(managedString);
+	}
+	
+	static void Debug_Critical(MonoString * message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		SP_CRITICAL("{}", managedString);
+
+		mono_free(managedString);
+	}
+
+#pragma endregion
 
 	template <typename... TComponent>
 	static void RegisterComponent()
@@ -512,7 +609,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 #pragma endregion
 
-#pragma region Sprite Component
+#pragma region Sprite Renderer Component
 		SP_ADD_INTERNAL_CALL(SpriteComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(SpriteComponent_GetScale);
@@ -535,7 +632,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
 #pragma endregion
 
-#pragma region BoxCollider2D Component
+#pragma region Box Collider2D Component
 		SP_ADD_INTERNAL_CALL(BoxCollider2D_GetDensity);
 		SP_ADD_INTERNAL_CALL(BoxCollider2D_SetDensity);
 		SP_ADD_INTERNAL_CALL(BoxCollider2D_GetFriction);
@@ -546,7 +643,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(BoxCollider2D_SetRestitutionThreshold);
 #pragma endregion
 
-#pragma region CircleCollider2D Component
+#pragma region Circle Collider2D Component
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_GetDensity);
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_SetDensity);
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_GetFriction);
@@ -568,6 +665,14 @@ namespace Sparky {
 #pragma region Input
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+#pragma endregion
+
+#pragma region Debug
+		SP_ADD_INTERNAL_CALL(Debug_Log);
+		SP_ADD_INTERNAL_CALL(Debug_Info);
+		SP_ADD_INTERNAL_CALL(Debug_Warn);
+		SP_ADD_INTERNAL_CALL(Debug_Error);
+		SP_ADD_INTERNAL_CALL(Debug_Critical);
 #pragma endregion
 
 	}

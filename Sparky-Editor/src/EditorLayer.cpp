@@ -380,8 +380,8 @@ namespace Sparky {
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 					if (texture->IsLoaded())
 					{
-						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteComponent>())
-							m_HoveredEntity.GetComponent<SpriteComponent>().Texture = texture;
+						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
+							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
 					}
 					else
 						SP_WARN("Could not load texture {}", texturePath.filename().string());

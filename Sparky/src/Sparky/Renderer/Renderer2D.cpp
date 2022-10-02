@@ -747,7 +747,7 @@ namespace Sparky
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteComponent& sprite, int entityID)
+	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, int entityID)
 	{
 		if (sprite.Texture)
 			DrawQuad(transform, sprite.Texture, sprite.Scale, sprite.SpriteColor, entityID);

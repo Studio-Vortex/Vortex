@@ -271,10 +271,10 @@ namespace Sparky {
 
 			/// Render Sprites
 			{
-				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 				for (auto entity : group)
 				{
-					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteComponent>(entity);
+					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
 					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
 				}
@@ -492,10 +492,10 @@ namespace Sparky {
 
 		/// Render Sprites
 		{
-			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 			for (auto entity : view)
 			{
-				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
 				Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
 			}
@@ -527,7 +527,7 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
 	
-	template <> void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component) { }
+	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
 	
