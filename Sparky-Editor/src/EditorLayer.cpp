@@ -495,6 +495,11 @@ namespace Sparky {
 		Gui::End();
 	}
 
+	void EditorLayer::OnLaunchRuntime()
+	{
+		FileSystem::LaunchApplication("game\\Debug\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
+	}
+
 	void EditorLayer::OnOverlayRender()
 	{
 		if (m_SceneState == SceneState::Play)

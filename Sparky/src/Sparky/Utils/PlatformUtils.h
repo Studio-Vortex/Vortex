@@ -10,6 +10,7 @@ namespace Sparky {
 		static std::string OpenFile(const char* fileFilter);
 		static std::string SaveFile(const char* fileFilter);
 		static void OpenDirectory(const char* directoryName);
+		static void LaunchApplication(const char* binaryPath, const char* args);
 	};
 
 	class Time

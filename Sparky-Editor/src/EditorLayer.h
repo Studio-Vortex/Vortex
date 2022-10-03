@@ -50,6 +50,7 @@ namespace Sparky {
 		void DuplicateSelectedEntity();
 
 		// Gizmos
+
 		void OnNoGizmoSelected();
 		void OnTranslationToolSelected();
 		void OnRotationToolSelected();
@@ -58,6 +59,10 @@ namespace Sparky {
 		// Panels
 
 		void UI_Toolbar();
+
+		// Editor Callbacks
+
+		void OnLaunchRuntime();
 
 	private:
 		EditorCamera m_EditorCamera;
@@ -77,7 +82,7 @@ namespace Sparky {
 
 		float m_EditorCameraFOV = 30.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
-		int m_GizmoType = -1;
+		int32_t m_GizmoType = -1;
 
 		bool m_ShowPhysicsColliders = false;
 
@@ -93,6 +98,7 @@ namespace Sparky {
 		};
 		
 		// Editor resources
+
 		SharedRef<Texture2D> m_PlayIcon;
 		SharedRef<Texture2D> m_StopIcon;
 		SharedRef<Texture2D> m_SimulateIcon;
@@ -108,7 +114,7 @@ namespace Sparky {
 
 		// Settings
 
-		SettingsPanel::Settings m_Settings{ m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders };
+		SettingsPanel::Settings m_Settings{ m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime) };
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 
 		SceneState m_SceneState = SceneState::Edit;

@@ -38,6 +38,15 @@ namespace Sparky {
 
 		bool IsRunning() const { return m_IsRunning; }
 
+		static int32_t GetPhysicsWorldVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }
+		static void SetPhysicsWorldVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorldVeloctityIterations = veloctiyIterations; }
+
+		static int32_t GetPhysicsWorldPositionIterations() { return s_PhysicsWorldPositionIterations; }
+		static void SetPhysicsWorldPositionIterations(int32_t positionIterations) { s_PhysicsWorldPositionIterations = positionIterations; }
+		
+		static Math::vec2 GetPhysicsWorldGravity() { return s_PhysicsWorldGravity; }
+		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorldGravity = gravity; }
+
 		Entity DuplicateEntity(Entity entity);
 
 		Entity GetEntityWithUUID(UUID uuid);
@@ -56,6 +65,7 @@ namespace Sparky {
 		void OnComponentAdded(Entity entity, T& component);
 
 		void OnPhysics2DStart();
+		void OnPhysics2DUpdate(TimeStep delta);
 		void OnPhysics2DStop();
 
 		void RenderScene(EditorCamera& camera);
@@ -67,6 +77,10 @@ namespace Sparky {
 		bool m_IsRunning = false;
 
 		b2World* m_PhysicsWorld = nullptr;
+		
+		inline static Math::vec2 s_PhysicsWorldGravity = Math::vec2(0.0f, -9.8f);
+		inline static int32_t s_PhysicsWorldVeloctityIterations = 6;
+		inline static int32_t s_PhysicsWorldPositionIterations = 2;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

@@ -57,6 +57,11 @@ namespace Sparky {
 		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
 	}
 
+	void FileSystem::LaunchApplication(const char* binaryPath, const char* args)
+	{
+		ShellExecuteA(NULL, "open", binaryPath, args, NULL, SW_SHOWDEFAULT);
+	}
+
 	float Time::GetTime()
 	{
 		return glfwGetTime();

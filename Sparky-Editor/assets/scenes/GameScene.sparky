@@ -64,3 +64,7 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Paddle
+      ScriptFields:
+        []

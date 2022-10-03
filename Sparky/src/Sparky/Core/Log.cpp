@@ -18,6 +18,7 @@ namespace Sparky {
 
 		// Ringbuffer sink allows us to retrives a certain number of logged messages
 		s_RingbufferSink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(128);
+		s_RingbufferSink->set_pattern("%^[%T] [%l] %n: %v%$");
 
 		// Add the sink to both loggers to retrive messages later on
 		s_CoreLogger->sinks().push_back(s_RingbufferSink);

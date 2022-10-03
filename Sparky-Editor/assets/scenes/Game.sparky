@@ -1,50 +1,63 @@
 Scene: Untitled
 Entities:
-  - Entity: 7151607900805703679
+  - Entity: 8879436456339160905
     TagComponent:
-      Tag: Player
+      Tag: Enemy
     TransformComponent:
-      Translation: [-3.28334975, 0.740942419, 0]
+      Translation: [2.88010406, 0.699999988, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1.10000002, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn4.jpg
+      TexturePath: assets\textures\AwesomeFace.png
       Scale: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: false
-    BoxCollider2DComponent:
+    CircleCollider2DComponent:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Radius: 0.5
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ClassName: Sandbox.Player
+      ClassName: Sandbox.Enemy
       ScriptFields:
         - Name: Speed
           Type: Float
-          Data: 2000
-  - Entity: 17769384478999425618
+          Data: 350
+  - Entity: 5976272739239994659
     TagComponent:
-      Tag: Background
+      Tag: Camera
     TransformComponent:
-      Translation: [0, 0, -20]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [45, 30, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 3
-  - Entity: 16254187111586950158
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 10
+  - Entity: 2464561450783675199
     TagComponent:
-      Tag: Floor Right
+      Tag: Floor
     TransformComponent:
-      Translation: [13.4099998, 3.41000009, -1.86264515e-09]
-      Rotation: [0, 0, 0.785398245]
-      Scale: [10.0000019, 0.400000304, 1]
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.400000006, 1]
     SpriteRendererComponent:
       Color: [0.463320434, 0.463320434, 0.463320434, 1]
       Scale: 1
@@ -78,13 +91,13 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 2464561450783675199
+  - Entity: 16254187111586950158
     TagComponent:
-      Tag: Floor
+      Tag: Floor Right
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [20, 0.400000006, 1]
+      Translation: [13.4099998, 3.41000009, -1.86264515e-09]
+      Rotation: [0, 0, 0.785398245]
+      Scale: [10.0000019, 0.400000304, 1]
     SpriteRendererComponent:
       Color: [0.463320434, 0.463320434, 0.463320434, 1]
       Scale: 1
@@ -98,54 +111,41 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 5976272739239994659
+  - Entity: 17769384478999425618
     TagComponent:
-      Tag: Camera
+      Tag: Background
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 0, -20]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-    ScriptComponent:
-      ClassName: Sandbox.Camera2D
-      ScriptFields:
-        - Name: DistanceToPlayer
-          Type: Float
-          Data: 10
-  - Entity: 8879436456339160905
-    TagComponent:
-      Tag: Enemy
-    TransformComponent:
-      Translation: [2.88010406, 0.699999988, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [45, 30, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\AwesomeFace.png
+      TexturePath: assets\textures\Crate.png
+      Scale: 3
+  - Entity: 7151607900805703679
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-3.28334975, 0.740942419, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1.10000002, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn4.jpg
       Scale: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: false
-    CircleCollider2DComponent:
+    BoxCollider2DComponent:
       Offset: [0, 0]
-      Radius: 0.5
+      Size: [0.5, 0.5]
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ClassName: Sandbox.Enemy
+      ClassName: Sandbox.Player
       ScriptFields:
         - Name: Speed
           Type: Float
-          Data: 350
+          Data: 2000

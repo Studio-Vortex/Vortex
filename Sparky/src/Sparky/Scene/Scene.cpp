@@ -201,49 +201,7 @@ namespace Sparky {
 			});
 		}
 
-		// Physics
-		{
-			// Copies transform from Sparky to Box2D
-			auto view = m_Registry.view<RigidBody2DComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				glm::vec3 translation = transform.Translation;
-				float angle = transform.Rotation.z;
-
-				const auto& bodyPosition = body->GetPosition();
-				const float bodyAngle = body->GetAngle();
-
-				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
-
-				body->SetTransform({ translation.x, translation.y }, angle);
-
-				if (awake)
-					body->SetAwake(true);
-			}
-
-			const int32_t velocityIterations = 6; // TODO: Expose in editor settings
-			const int32_t positionIterations = 2; // TODO: Expose in editor settings
-			m_PhysicsWorld->Step(delta, velocityIterations, positionIterations);
-
-			// Get transform from Box2D
-			for (auto e : view)
-			{
-				Entity entity{ e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
-			}
-		}
+		OnPhysics2DUpdate(delta);
 
 		// Render 2D
 		Camera* mainCamera = nullptr;
@@ -297,49 +255,7 @@ namespace Sparky {
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
 	{
-		// Physics
-		{
-			// Copies transform from Sparky to Box2D
-			auto view = m_Registry.view<RigidBody2DComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				glm::vec3 translation = transform.Translation;
-				float angle = transform.Rotation.z;
-
-				const auto& bodyPosition = body->GetPosition();
-				const float bodyAngle = body->GetAngle();
-
-				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
-
-				body->SetTransform({ translation.x, translation.y }, angle);
-
-				if (awake)
-					body->SetAwake(true);
-			}
-
-			const int32_t velocityIterations = 6; // TODO: Expose in editor settings
-			const int32_t positionIterations = 2; // TODO: Expose in editor settings
-			m_PhysicsWorld->Step(delta, velocityIterations, positionIterations);
-
-			// Get transform from Box2D
-			for (auto e : view)
-			{
-				Entity entity{ e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
-			}
-		}
+		OnPhysics2DUpdate(delta);
 
 		// Render
 		RenderScene(camera);
@@ -421,7 +337,7 @@ namespace Sparky {
 
 	void Scene::OnPhysics2DStart()
 	{
-		b2Vec2 gravity = { 0.0f, -9.8f };
+		b2Vec2 gravity = { s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y };
 		m_PhysicsWorld = new b2World(gravity);
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
@@ -447,8 +363,7 @@ namespace Sparky {
 
 				b2PolygonShape boxShape;
 				// Automatically set the collider size to the scale of the entity
-				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,
-					b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
+				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &boxShape;
@@ -476,6 +391,51 @@ namespace Sparky {
 				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
 
 				body->CreateFixture(&fixtureDef);
+			}
+		}
+	}
+
+	void Scene::OnPhysics2DUpdate(TimeStep delta)
+	{
+		// Physics
+		{
+			// Copies transform from Sparky to Box2D
+			auto view = m_Registry.view<RigidBody2DComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				glm::vec3 translation = transform.Translation;
+				float angle = transform.Rotation.z;
+
+				const auto& bodyPosition = body->GetPosition();
+				const float bodyAngle = body->GetAngle();
+
+				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
+
+				body->SetTransform({ translation.x, translation.y }, angle);
+
+				if (awake)
+					body->SetAwake(true);
+			}
+
+			m_PhysicsWorld->Step(delta, s_PhysicsWorldVeloctityIterations, s_PhysicsWorldPositionIterations);
+
+			// Get transform from Box2D
+			for (auto e : view)
+			{
+				Entity entity{ e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				const auto& position = body->GetPosition();
+				transform.Translation.x = position.x;
+				transform.Translation.y = position.y;
+				transform.Rotation.z = body->GetAngle();
 			}
 		}
 	}

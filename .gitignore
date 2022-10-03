@@ -1,0 +1,22 @@
+// Directories
+
+/.vs
+/bin
+/bin-int
+Sparky-Editor/assets/textures/game
+Sparky-Editor/Resources/Scripts/Intermediates
+Sparky-Editor/SandboxProject/.vs
+Sparky-Editor/SandboxProject/Assets/Scripts/Binaries
+Sparky-Editor/SandboxProject/Assets/Scripts/Intermediates
+Sparky-Editor/Resources/Logs
+Sparky-Runtime/Resources/Logs
+
+// Files
+
+*.user
+*.vcxproj
+*.filters
+*.sln
+*.json
+*.csproj
+Testbed/imgui.ini
