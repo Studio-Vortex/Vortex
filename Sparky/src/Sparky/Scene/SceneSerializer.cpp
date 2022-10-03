@@ -286,7 +286,9 @@ namespace Sparky {
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
 
-		if (entity.HasComponent<ScriptComponent>())
+		// TODO: This may need reworking, specifically the random empty() check
+		// if the script class name is empty don't even try to serialize, just move on
+		if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
 		{
 			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 

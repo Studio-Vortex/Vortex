@@ -10965,4 +10965,55 @@
 [2022-10-03 08:13:41.673] [SPARKY] [trace] Deserialized Entity with ID = 11842337086880304669, name = Floor
 [2022-10-03 08:13:41.674] [SPARKY] [trace] Deserialized Entity with ID = 8899026784796974534, name = Wall
 [2022-10-03 08:13:41.707] [SPARKY] [trace] Deserialized Entity with ID = 13466472008640886397, name = Wall
-[2022-10-03 08:13:41.741] [SPARKY] [trace] Deserialized Enti
+[2022-10-03 08:13:41.741] [SPARKY] [trace] Deserialized Enti[2022-10-03 12:46:23.905] [SPARKY] [info] Creating window named 'ShawnScene' with size: vec2(1600, 900)
+[2022-10-03 12:46:24.259] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:46:24.259] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:46:24.260] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:46:24.260] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:46:24.260] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:46:24.355] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:46:24.355] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:46:24.356] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:46:24.356] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:46:24.356] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:46:24.356] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:46:24.356] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:46:24.356] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:46:24.356] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:46:24.357] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.357] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:46:24.358] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:46:24.358] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:46:24.358] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.359] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:46:24.359] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:46:24.359] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:46:24.359] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:46:24.359] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:46:24.359] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:46:24.433] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:46:24.434] [SPARKY] [trace] Deserialized Entity with ID = 17308322078944251873, name = Wall
+[2022-10-03 12:46:24.472] [SPARKY] [trace] Deserialized Entity with ID = 4526310078429830445, name = Wall
+[2022-10-03 12:46:24.506] [SPARKY] [trace] Deserialized Entity with ID = 10336005176151312800, name = Wall
+[2022-10-03 12:46:24.540] [SPARKY] [trace] Deserialized Entity with ID = 17593536354058450071, name = Floor
+[2022-10-03 12:46:24.542] [SPARKY] [trace] Deserialized Entity with ID = 6082851487787691474, name = Decoration
+[2022-10-03 12:46:24.822] [SPARKY] [trace] Deserialized Entity with ID = 17994718396331423145, name = Decoration
+[2022-10-03 12:46:25.089] [SPARKY] [trace] Deserialized Entity with ID = 1455431635273936739, name = Decoration
+[2022-10-03 12:46:25.110] [SPARKY] [trace] Deserialized Entity with ID = 17473160336394363675, name = Decoration
+[2022-10-03 12:46:25.127] [SPARKY] [trace] Deserialized Entity with ID = 10801644474773246805, name = Wall
+[2022-10-03 12:46:25.161] [SPARKY] [trace] Deserialized Entity with ID = 6550522526454473535, name = Wall
+[2022-10-03 12:46:25.197] [SPARKY] [trace] Deserialized Entity with ID = 1337985071

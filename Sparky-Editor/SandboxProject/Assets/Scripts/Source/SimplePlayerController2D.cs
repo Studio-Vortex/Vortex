@@ -6,22 +6,33 @@ namespace Sandbox {
 	public class SimplePlayerController2D : Entity
 	{
 		public float Speed;
-		private RigidBody2D m_Rigidbody;
+		public Vector3 StartPos;
 		private Vector3 m_Velocity;
 
 		public override void OnCreate()
 		{
-			m_Rigidbody = GetComponent<RigidBody2D>();
+			StartPos = transform.Translation;
 		}
 
 		public override void OnUpdate(float delta)
 		{
+			m_Velocity = Vector3.Zero;
+
 			if (Input.IsKeyDown(KeyCode.A))
 				m_Velocity.X = -Speed;
 			else if (Input.IsKeyDown(KeyCode.D))
 				m_Velocity.X = Speed;
 
-			m_Rigidbody.ApplyForce(m_Velocity.XY * delta, true);
+			transform.Translation += m_Velocity * delta;
+
+			if (Input.IsKeyDown(KeyCode.R))
+				RestartGame();
+		}
+
+		public void RestartGame()
+		{
+			transform.Translation = StartPos;
+			m_Velocity = Vector3.Zero;
 		}
 
 		public override void OnDestroy()

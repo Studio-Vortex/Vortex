@@ -10864,3 +10864,1065 @@
 [2022-10-03 11:42:15.429] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
 [2022-10-03 11:42:19.355] [SPARKY] [trace] Deserializing Scene 'Untitled'
 [2022-10-03 11:42:19.356] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 11:43:25.767] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:43:26.058] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:43:26.058] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:43:26.058] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:43:26.058] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:43:26.059] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:43:26.156] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:43:26.157] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:43:26.157] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:43:26.157] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:43:26.157] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:43:26.157] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:43:26.157] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:43:26.158] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.158] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.158] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.158] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:43:26.158] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:43:26.159] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.159] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 11:43:26.159] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:43:26.160] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:43:26.160] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:43:26.160] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:43:26.200] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:43:26.201] [SPARKY] [trace] Deserialized Entity with ID = 451101217983068239, name = Right Wall
+[2022-10-03 11:43:26.203] [SPARKY] [trace] Deserialized Entity with ID = 14128749575890305120, name = Left Wall
+[2022-10-03 11:43:26.203] [SPARKY] [trace] Deserialized Entity with ID = 2435663995064499279, name = Bottom Wall
+[2022-10-03 11:43:26.204] [SPARKY] [trace] Deserialized Entity with ID = 14617265967978248286, name = Top Wall
+[2022-10-03 11:43:26.204] [SPARKY] [trace] Deserialized Entity with ID = 17854921238768044091, name = Perspective Camera
+[2022-10-03 11:43:26.205] [SPARKY] [trace] Deserialized Entity with ID = 4077357939924341436, name = Left Paddle
+[2022-10-03 11:43:26.206] [SPARKY] [trace] Deserialized Entity with ID = 1772233635840414015, name = Right Paddle
+[2022-10-03 11:43:26.207] [SPARKY] [trace] Deserialized Entity with ID = 12910335349000657238, name = Ball
+[2022-10-03 11:43:26.221] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:43:28.031] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:43:28.031] [SPARKY] [trace] Deserialized Entity with ID = 3825041463410785755, name = Player
+[2022-10-03 11:43:28.299] [SPARKY] [trace] Deserialized Entity with ID = 6652532743582125763, name = Background
+[2022-10-03 11:43:28.303] [SPARKY] [trace] Deserialized Entity with ID = 13060669707877940025, name = Floor
+[2022-10-03 11:43:28.303] [SPARKY] [trace] Deserialized Entity with ID = 4104031008597304098, name = Camera
+[2022-10-03 11:43:28.304] [SPARKY] [trace] Deserialized Entity with ID = 6450904762643112357, name = Floor Copy
+[2022-10-03 11:43:28.305] [SPARKY] [trace] Deserialized Entity with ID = 10601686713063396623, name = Floor Copy
+[2022-10-03 11:43:28.306] [SPARKY] [trace] Deserialized Entity with ID = 18246835854998696931, name = Floor Copy Copy
+[2022-10-03 11:43:30.218] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:43:30.218] [SPARKY] [trace] Deserialized Entity with ID = 16707011585131414227, name = Circle Copy Copy Copy
+[2022-10-03 11:43:30.220] [SPARKY] [trace] Deserialized Entity with ID = 7183621799537606145, name = Circle Copy Copy
+[2022-10-03 11:43:30.221] [SPARKY] [trace] Deserialized Entity with ID = 10711900410624093306, name = Circle Copy
+[2022-10-03 11:43:30.221] [SPARKY] [trace] Deserialized Entity with ID = 12155424114083759606, name = Circle Copy Copy
+[2022-10-03 11:43:30.222] [SPARKY] [trace] Deserialized Entity with ID = 8307402769031033416, name = Circle Copy Copy Copy
+[2022-10-03 11:43:30.223] [SPARKY] [trace] Deserialized Entity with ID = 7488257692604758910, name = Quad Copy Copy
+[2022-10-03 11:43:30.224] [SPARKY] [trace] Deserialized Entity with ID = 17485239279694137430, name = Quad Copy Copy Copy Copy
+[2022-10-03 11:43:30.224] [SPARKY] [trace] Deserialized Entity with ID = 5443470824941162276, name = Quad Copy Copy Copy
+[2022-10-03 11:43:30.225] [SPARKY] [trace] Deserialized Entity with ID = 2943889373912767621, name = Quad Copy Copy
+[2022-10-03 11:43:30.226] [SPARKY] [trace] Deserialized Entity with ID = 11504667829098694830, name = Circle Copy Copy Copy Copy
+[2022-10-03 11:43:30.226] [SPARKY] [trace] Deserialized Entity with ID = 11353311074672631642, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 11:43:30.227] [SPARKY] [trace] Deserialized Entity with ID = 17345614783238851519, name = Quad Copy
+[2022-10-03 11:43:30.228] [SPARKY] [trace] Deserialized Entity with ID = 11441967840468913253, name = Quad Copy Copy
+[2022-10-03 11:43:30.228] [SPARKY] [trace] Deserialized Entity with ID = 9652191783841564911, name = Quad Copy Copy Copy
+[2022-10-03 11:43:30.229] [SPARKY] [trace] Deserialized Entity with ID = 13067378129791462574, name = Circle Copy
+[2022-10-03 11:43:30.230] [SPARKY] [trace] Deserialized Entity with ID = 16540678805344665383, name = Quad Copy Copy Copy
+[2022-10-03 11:43:30.230] [SPARKY] [trace] Deserialized Entity with ID = 3725573718027548616, name = Quad Copy Copy Copy
+[2022-10-03 11:43:30.231] [SPARKY] [trace] Deserialized Entity with ID = 15756200449583396498, name = Quad Copy Copy
+[2022-10-03 11:43:30.232] [SPARKY] [trace] Deserialized Entity with ID = 13268840661580140660, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 11:43:30.232] [SPARKY] [trace] Deserialized Entity with ID = 5908788507538528249, name = Circle Copy Copy Copy Copy
+[2022-10-03 11:43:30.233] [SPARKY] [trace] Deserialized Entity with ID = 7482750570580234029, name = Quad Copy
+[2022-10-03 11:43:30.233] [SPARKY] [trace] Deserialized Entity with ID = 3953448411852851219, name = Big Circle
+[2022-10-03 11:43:30.234] [SPARKY] [trace] Deserialized Entity with ID = 2469467324833117594, name = Camera
+[2022-10-03 11:43:30.235] [SPARKY] [trace] Deserialized Entity with ID = 6391125301688614166, name = Wall
+[2022-10-03 11:43:30.236] [SPARKY] [trace] Deserialized Entity with ID = 1146390100554574168, name = Wall Copy
+[2022-10-03 11:43:30.237] [SPARKY] [trace] Deserialized Entity with ID = 1104094057528534934, name = Quad
+[2022-10-03 11:43:30.238] [SPARKY] [trace] Deserialized Entity with ID = 2211240212980618679, name = Circle
+[2022-10-03 11:43:30.238] [SPARKY] [trace] Deserialized Entity with ID = 3414370644223279980, name = Quad Copy
+[2022-10-03 11:43:30.239] [SPARKY] [trace] Deserialized Entity with ID = 14994594406735733495, name = Circle Copy
+[2022-10-03 11:43:30.240] [SPARKY] [trace] Deserialized Entity with ID = 7591572415301537333, name = Circle Copy Copy
+[2022-10-03 11:43:30.240] [SPARKY] [trace] Deserialized Entity with ID = 4832001615350295185, name = Circle Copy Copy Copy
+[2022-10-03 11:43:30.241] [SPARKY] [trace] Deserialized Entity with ID = 5014371631958186775, name = Quad Copy Copy
+[2022-10-03 11:43:30.241] [SPARKY] [trace] Deserialized Entity with ID = 6699901861535795608, name = Quad Copy
+[2022-10-03 11:43:30.242] [SPARKY] [trace] Deserialized Entity with ID = 4176335146847336134, name = Circle Copy Copy Copy Copy
+[2022-10-03 11:43:31.801] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:43:31.801] [SPARKY] [trace] Deserialized Entity with ID = 7488324038300435154, name = Purple Square Copy
+[2022-10-03 11:43:31.802] [SPARKY] [trace] Deserialized Entity with ID = 11444934311413781198, name = Purple Square
+[2022-10-03 11:43:31.803] [SPARKY] [trace] Deserialized Entity with ID = 2718485551354616782, name = Player
+[2022-10-03 11:43:31.804] [SPARKY] [trace] Deserialized Entity with ID = 15445422792345118792, name = Camera
+[2022-10-03 11:43:31.805] [SPARKY] [trace] Deserialized Entity with ID = 3297559064913475722, name = Red Square
+[2022-10-03 11:43:33.190] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:43:33.191] [SPARKY] [trace] Deserialized Entity with ID = 16707011585131414227, name = Circle Copy Copy Copy
+[2022-10-03 11:43:33.192] [SPARKY] [trace] Deserialized Entity with ID = 7183621799537606145, name = Circle Copy Copy
+[2022-10-03 11:43:33.193] [SPARKY] [trace] Deserialized Entity with ID = 10711900410624093306, name = Circle Copy
+[2022-10-03 11:43:33.194] [SPARKY] [trace] Deserialized Entity with ID = 12155424114083759606, name = Circle Copy Copy
+[2022-10-03 11:43:33.194] [SPARKY] [trace] Deserialized Entity with ID = 8307402769031033416, name = Circle Copy Copy Copy
+[2022-10-03 11:43:33.195] [SPARKY] [trace] Deserialized Entity with ID = 7488257692604758910, name = Quad Copy Copy
+[2022-10-03 11:43:33.196] [SPARKY] [trace] Deserialized Entity with ID = 17485239279694137430, name = Quad Copy Copy Copy Copy
+[2022-10-03 11:43:33.197] [SPARKY] [trace] Deserialized Entity with ID = 5443470824941162276, name = Quad Copy Copy Copy
+[2022-10-03 11:43:33.197] [SPARKY] [trace] Deserialized Entity with ID = 2943889373912767621, name = Quad Copy Copy
+[2022-10-03 11:43:33.198] [SPARKY] [trace] Deserialized Entity with ID = 11504667829098694830, name = Circle Copy Copy Copy Copy
+[2022-10-03 11:43:33.199] [SPARKY] [trace] Deserialized Entity with ID = 11353311074672631642, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 11:43:33.199] [SPARKY] [trace] Deserialized Entity with ID = 17345614783238851519, name = Quad Copy
+[2022-10-03 11:43:33.200] [SPARKY] [trace] Deserialized Entity with ID = 11441967840468913253, name = Quad Copy Copy
+[2022-10-03 11:43:33.201] [SPARKY] [trace] Deserialized Entity with ID = 9652191783841564911, name = Quad Copy Copy Copy
+[2022-10-03 11:43:33.201] [SPARKY] [trace] Deserialized Entity with ID = 13067378129791462574, name = Circle Copy
+[2022-10-03 11:43:33.202] [SPARKY] [trace] Deserialized Entity with ID = 16540678805344665383, name = Quad Copy Copy Copy
+[2022-10-03 11:43:33.203] [SPARKY] [trace] Deserialized Entity with ID = 3725573718027548616, name = Quad Copy Copy Copy
+[2022-10-03 11:43:33.203] [SPARKY] [trace] Deserialized Entity with ID = 15756200449583396498, name = Quad Copy Copy
+[2022-10-03 11:43:33.204] [SPARKY] [trace] Deserialized Entity with ID = 13268840661580140660, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 11:43:33.204] [SPARKY] [trace] Deserialized Entity with ID = 5908788507538528249, name = Circle Copy Copy Copy Copy
+[2022-10-03 11:43:33.205] [SPARKY] [trace] Deserialized Entity with ID = 7482750570580234029, name = Quad Copy
+[2022-10-03 11:43:33.206] [SPARKY] [trace] Deserialized Entity with ID = 3953448411852851219, name = Big Circle
+[2022-10-03 11:43:33.206] [SPARKY] [trace] Deseri[2022-10-03 11:44:19.606] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:44:19.934] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:44:19.934] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:44:19.934] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:44:19.934] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:44:19.934] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:44:20.038] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:44:20.039] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:44:20.039] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:44:20.039] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:44:20.039] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.040] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:44:20.040] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.040] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:44:20.040] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:44:20.040] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.040] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:44:20.040] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.040] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:44:20.041] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:44:20.041] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.041] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 11:44:20.041] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:44:20.042] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:44:20.042] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:44:20.042] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:44:20.083] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:44:20.083] [SPARKY] [trace] Deserialized Entity with ID = 451101217983068239, name = Right Wall
+[2022-10-03 11:44:20.085] [SPARKY] [trace] Deserialized Entity with ID = 14128749575890305120, name = Left Wall
+[2022-10-03 11:44:20.086] [SPARKY] [trace] Deserialized Entity with ID = 2435663995064499279, name = Bottom Wall
+[2022-10-03 11:44:20.087] [SPARKY] [trace] Deserialized Entity with ID = 14617265967978248286, name = Top Wall
+[2022-10-03 11:44:20.087] [SPARKY] [trace] Deserialized Entity with ID = 17854921238768044091, name = Perspective Camera
+[2022-10-03 11:44:20.088] [SPARKY] [trace] Deserialized Entity with ID = 4077357939924341436, name = Left Paddle
+[2022-10-03 11:44:20.089] [SPARKY] [trace] Deserialized Entity with ID = 1772233635840414015, name = Right Paddle
+[2022-10-03 11:44:20.090] [SPARKY] [trace] Deserialized Entity with ID = 12910335349000657238, name = Ball
+[2022-10-03 11:44:20.103] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:44:24.730] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:44:24.730] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 11:48:15.416] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:48:15.704] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:48:15.704] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:48:15.704] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:48:15.704] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:48:15.704] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:48:15.994] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:48:15.995] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:48:15.995] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:48:15.995] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:48:15.996] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:48:15.996] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.996] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.996] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:48:15.996] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:48:15.997] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:48:15.997] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:48:15.997] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.998] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 11:48:15.998] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:48:15.998] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:48:15.998] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:48:15.998] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:48:16.053] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:48:16.053] [SPARKY] [trace] Deserialized Entity with ID = 451101217983068239, name = Right Wall
+[2022-10-03 11:48:16.055] [SPARKY] [trace] Deserialized Entity with ID = 14128749575890305120, name = Left Wall
+[2022-10-03 11:48:16.056] [SPARKY] [trace] Deserialized Entity with ID = 2435663995064499279, name = Bottom Wall
+[2022-10-03 11:48:16.056] [SPARKY] [trace] Deserialized Entity with ID = 14617265967978248286, name = Top Wall
+[2022-10-03 11:48:16.057] [SPARKY] [trace] Deserialized Entity with ID = 17854921238768044091, name = Perspective Camera
+[2022-10-03 11:48:16.058] [SPARKY] [trace] Deserialized Entity with ID = 4077357939924341436, name = Left Paddle
+[2022-10-03 11:48:16.059] [SPARKY] [trace] Deserialized Entity with ID = 1772233635840414015, name = Right Paddle
+[2022-10-03 11:48:16.059] [SPARKY] [trace] Deserialized Entity with ID = 12910335349000657238, name = Ball
+[2022-10-03 11:48:16.077] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:48:21.441] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:48:21.441] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 11:48:21.442] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 11:50:34.787] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:50:35.080] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:50:35.080] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:50:35.081] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:50:35.081] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:50:35.081] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:50:35.184] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:50:35.184] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:50:35.184] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:50:35.184] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:50:35.184] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:50:35.184] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:50:35.185] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.185] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.185] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:50:35.185] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:50:35.186] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:50:35.186] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:50:35.186] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.187] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 11:50:35.187] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:50:35.187] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:50:35.187] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:50:35.187] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:50:35.229] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:50:35.229] [SPARKY] [trace] Deserialized Entity with ID = 451101217983068239, name = Right Wall
+[2022-10-03 11:50:35.231] [SPARKY] [trace] Deserialized Entity with ID = 14128749575890305120, name = Left Wall
+[2022-10-03 11:50:35.232] [SPARKY] [trace] Deserialized Entity with ID = 2435663995064499279, name = Bottom Wall
+[2022-10-03 11:50:35.232] [SPARKY] [trace] Deserialized Entity with ID = 14617265967978248286, name = Top Wall
+[2022-10-03 11:50:35.233] [SPARKY] [trace] Deserialized Entity with ID = 17854921238768044091, name = Perspective Camera
+[2022-10-03 11:50:35.234] [SPARKY] [trace] Deserialized Entity with ID = 4077357939924341436, name = Left Paddle
+[2022-10-03 11:50:35.235] [SPARKY] [trace] Deserialized Entity with ID = 1772233635840414015, name = Right Paddle
+[2022-10-03 11:50:35.235] [SPARKY] [trace] Deserialized Entity with ID = 12910335349000657238, name = Ball
+[2022-10-03 11:50:35.250] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:52:34.381] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:52:34.677] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:52:34.677] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:52:34.677] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:52:34.677] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:52:34.677] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:52:34.961] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:52:34.962] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:52:34.962] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:52:34.962] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:52:34.963] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:52:34.963] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.963] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.963] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:52:34.963] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.963] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:52:34.964] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.964] [SPARKY] [warning] SimplePlayerController2D has 2 fields: 
+[2022-10-03 11:52:34.964] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:34.965] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:52:34.965] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:52:34.965] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:52:35.018] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:52:35.019] [SPARKY] [trace] Deserialized Entity with ID = 451101217983068239, name = Right Wall
+[2022-10-03 11:52:35.021] [SPARKY] [trace] Deserialized Entity with ID = 14128749575890305120, name = Left Wall
+[2022-10-03 11:52:35.022] [SPARKY] [trace] Deserialized Entity with ID = 2435663995064499279, name = Bottom Wall
+[2022-10-03 11:52:35.023] [SPARKY] [trace] Deserialized Entity with ID = 14617265967978248286, name = Top Wall
+[2022-10-03 11:52:35.024] [SPARKY] [trace] Deserialized Entity with ID = 17854921238768044091, name = Perspective Camera
+[2022-10-03 11:52:35.025] [SPARKY] [trace] Deserialized Entity with ID = 4077357939924341436, name = Left Paddle
+[2022-10-03 11:52:35.026] [SPARKY] [trace] Deserialized Entity with ID = 1772233635840414015, name = Right Paddle
+[2022-10-03 11:52:35.026] [SPARKY] [trace] Deserialized Entity with ID = 12910335349000657238, name = Ball
+[2022-10-03 11:52:35.043] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:52:56.762] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:52:57.033] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:52:57.033] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:52:57.033] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:52:57.033] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:52:57.033] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:52:57.133] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:52:57.133] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:52:57.133] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:52:57.134] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:52:57.134] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:52:57.134] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:52:57.134] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:52:57.134] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:52:57.134] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.135] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.135] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.135] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.135] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:52:57.135] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:52:57.136] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [warning] SimplePlayerController2D has 2 fields: 
+[2022-10-03 11:52:57.136] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:52:57.136] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:52:57.137] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:52:57.137] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:52:57.160] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:52:57.161] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 11:52:57.162] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 11:52:57.175] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 11:54:51.096] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 11:54:51.396] [SPARKY] [info] OpenGL Info:
+[2022-10-03 11:54:51.396] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 11:54:51.396] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 11:54:51.396] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 11:54:51.396] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 11:54:51.682] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 11:54:51.682] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:54:51.683] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 11:54:51.683] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 11:54:51.683] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 11:54:51.683] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 11:54:51.683] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 11:54:51.683] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 11:54:51.683] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 11:54:51.683] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.684] [SPARKY] [warning]   Time (Float)
+[2022-10-03 11:54:51.685] [SPARKY] [warning]   rb (None)
+[2022-10-03 11:54:51.685] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 11:54:51.685] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.685] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 11:54:51.685] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 11:54:51.685] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.685] [SPARKY] [warning] SimplePlayerController2D has 2 fields: 
+[2022-10-03 11:54:51.685] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 11:54:51.686] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 11:54:51.686] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 11:54:51.686] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 11:54:51.723] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 11:54:51.724] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 11:54:51.725] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 11:54:51.743] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:04:34.228] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:04:34.527] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:04:34.527] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:04:34.527] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:04:34.527] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:04:34.527] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:04:34.632] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:04:34.633] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:04:34.633] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:04:34.633] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:04:34.633] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:04:34.634] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.634] [SPARKY] [warning] EnemyBox has 4 fields: 
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.634] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.634] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:04:34.634] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:04:34.635] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:04:34.635] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.635] [SPARKY] [warning] SimplePlayerController2D has 2 fields: 
+[2022-10-03 12:04:34.636] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:04:34.636] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:04:34.636] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:04:34.636] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:04:34.660] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:04:34.660] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:04:34.661] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 12:04:34.675] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:04:41.879] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:04:41.879] [SPARKY] [trace] Deserialized Entity with ID = 16707011585131414227, name = Circle Copy Copy Copy
+[2022-10-03 12:04:41.881] [SPARKY] [trace] Deserialized Entity with ID = 7183621799537606145, name = Circle Copy Copy
+[2022-10-03 12:04:41.881] [SPARKY] [trace] Deserialized Entity with ID = 10711900410624093306, name = Circle Copy
+[2022-10-03 12:04:41.882] [SPARKY] [trace] Deserialized Entity with ID = 12155424114083759606, name = Circle Copy Copy
+[2022-10-03 12:04:41.883] [SPARKY] [trace] Deserialized Entity with ID = 8307402769031033416, name = Circle Copy Copy Copy
+[2022-10-03 12:04:41.883] [SPARKY] [trace] Deserialized Entity with ID = 7488257692604758910, name = Quad Copy Copy
+[2022-10-03 12:04:41.884] [SPARKY] [trace] Deserialized Entity with ID = 17485239279694137430, name = Quad Copy Copy Copy Copy
+[2022-10-03 12:04:41.885] [SPARKY] [trace] Deserialized Entity with ID = 5443470824941162276, name = Quad Copy Copy Copy
+[2022-10-03 12:04:41.886] [SPARKY] [trace] Deserialized Entity with ID = 2943889373912767621, name = Quad Copy Copy
+[2022-10-03 12:04:41.886] [SPARKY] [trace] Deserialized Entity with ID = 11504667829098694830, name = Circle Copy Copy Copy Copy
+[2022-10-03 12:04:41.887] [SPARKY] [trace] Deserialized Entity with ID = 11353311074672631642, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 12:04:41.888] [SPARKY] [trace] Deserialized Entity with ID = 17345614783238851519, name = Quad Copy
+[2022-10-03 12:04:41.888] [SPARKY] [trace] Deserialized Entity with ID = 11441967840468913253, name = Quad Copy Copy
+[2022-10-03 12:04:41.889] [SPARKY] [trace] Deserialized Entity with ID = 9652191783841564911, name = Quad Copy Copy Copy
+[2022-10-03 12:04:41.890] [SPARKY] [trace] Deserialized Entity with ID = 13067378129791462574, name = Circle Copy
+[2022-10-03 12:04:41.890] [SPARKY] [trace] Deserialized Entity with ID = 16540678805344665383, name = Quad Copy Copy Copy
+[2022-10-03 12:04:41.891] [SPARKY] [trace] Deserialized Entity with ID = 3725573718027548616, name = Quad Copy Copy Copy
+[2022-10-03 12:04:41.892] [SPARKY] [trace] Deserialized Entity with ID = 15756200449583396498, name = Quad Copy Copy
+[2022-10-03 12:04:41.892] [SPARKY] [trace] Deserialized Entity with ID = 13268840661580140660, name = Circle Copy Copy Copy Copy Copy
+[2022-10-03 12:04:41.893] [SPARKY] [trace] Deserialized Entity with ID = 5908788507538528249, name = Circle Copy Copy Copy Copy
+[2022-10-03 12:04:41.894] [SPARKY] [trace] Deserialized Entity with ID = 7482750570580234029, name = Quad Copy
+[2022-10-03 12:04:41.894] [SPARKY] [trace] Deserialized Entity with ID = 3953448411852851219, name = Big Circle
+[2022-10-03 12:04:41.895] [SPARKY] [trace] Deserialized Entity with ID = 2469467324833117594, name = Camera
+[2022-10-03 12:04:41.896] [SPARKY] [trace] Deserialized Entity with ID = 6391125301688614166, name = Wall
+[2022-10-03 12:04:41.896] [SPARKY] [trace] Deserialized Entity with ID = 1146390100554574168, name = Wall Copy
+[2022-10-03 12:04:41.897] [SPARKY] [trace] Deserialized Entity with ID = 1104094057528534934, name = Quad
+[2022-10-03 12:04:41.898] [SPARKY] [trace] Deserialized Entity with ID = 2211240212980618679, name = Circle
+[2022-10-03 12:04:41.898] [SPARKY] [trace] Deserialized Entity with ID = 3414370644223279980, name = Quad Copy
+[2022-10-03 12:04:41.899] [SPARKY] [trace] Deserialized Entity with ID = 14994594406735733495, name = Circle Copy
+[2022-10-03 12:04:41.900] [SPARKY] [trace] Deserialized Entity with ID = 7591572415301537333, name = Circle Copy Copy
+[2022-10-03 12:04:41.901] [SPARKY] [trace] Deserialized Entity with ID = 4832001615350295185, name = Circle Copy Copy Copy
+[2022-10-03 12:04:41.902] [SPARKY] [trace] Deserialized Entity with ID = 5014371631958186775, name = Quad Copy Copy
+[2022-10-03 12:04:41.902] [SPARKY] [trace] Deserialized Entity with ID = 6699901861535795608, name = Quad Copy
+[2022-10-03 12:04:41.903] [SPARKY] [trace] Deserialized Entity with ID = 4176335146847336134, name = Circle Copy Copy Copy Copy
+[2022-10-03 12:11:32.073] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:11:32.390] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:11:32.390] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:11:32.390] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:11:32.390] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:11:32.390] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:11:32.489] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:11:32.490] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:11:32.490] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:11:32.490] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:11:32.490] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:11:32.490] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:11:32.490] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:11:32.491] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.491] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:11:32.491] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:11:32.491] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.491] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:11:32.492] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.492] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:11:32.492] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:11:32.493] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:11:32.493] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:11:32.493] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:11:32.493] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:11:32.518] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:11:32.519] [SPARKY] [trace] Deserialized Entity with ID = 10448220042807284058, name = Quad
+[2022-10-03 12:11:32.520] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:11:32.532] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:11:32.534] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:12:21.934] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:12:22.202] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:12:22.202] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:12:22.202] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:12:22.202] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:12:22.202] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:12:22.301] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:12:22.301] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:12:22.302] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:12:22.302] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:12:22.302] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:12:22.302] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:12:22.303] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.303] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:12:22.303] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:12:22.303] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.304] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.304] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:12:22.304] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:12:22.304] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.305] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:12:22.305] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:12:22.305] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.305] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:12:22.305] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:12:22.305] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:12:22.305] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:12:22.305] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:12:22.305] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:12:22.331] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:12:22.331] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:12:22.333] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:12:22.346] [SPARKY] [trace] Deserialized Entity with ID = 10448220042807284058, name = Quad
+[2022-10-03 12:12:22.348] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:17:16.457] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:17:16.756] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:17:16.756] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:17:16.756] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:17:16.756] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:17:16.756] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:17:16.858] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:17:16.858] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:17:16.859] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:17:16.859] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:17:16.859] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.859] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.859] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:17:16.859] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:17:16.860] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.860] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:17:16.861] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:17:16.861] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.861] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:17:16.861] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:17:16.861] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:17:16.861] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:17:16.861] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:17:16.861] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:17:16.887] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:17:16.887] [SPARKY] [trace] Deserialized Entity with ID = 10448220042807284058, name = Enemy
+[2022-10-03 12:17:16.889] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:17:16.902] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:17:16.904] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:23:43.446] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:23:43.726] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:23:43.726] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:23:43.726] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:23:43.727] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:23:43.727] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:23:43.840] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:23:43.840] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:23:43.840] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:23:43.841] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:23:43.841] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.841] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.841] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:23:43.841] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.842] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.842] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:23:43.842] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:23:43.843] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:23:43.843] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.843] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:23:43.843] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:23:43.843] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.843] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:23:43.843] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:23:43.843] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:23:43.844] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:23:43.844] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:23:43.844] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:23:43.871] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:23:43.871] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:23:43.872] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:23:43.883] [SPARKY] [trace] Deserialized Entity with ID = 10448220042807284058, name = Enemy
+[2022-10-03 12:23:43.885] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:24:01.715] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:24:01.996] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:24:01.996] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:24:01.996] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:24:01.996] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:24:01.996] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:24:02.095] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:24:02.095] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:24:02.095] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:24:02.095] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:24:02.096] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:24:02.096] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.096] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.096] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:24:02.097] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:24:02.097] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:24:02.097] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.097] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.098] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:24:02.098] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.098] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:24:02.099] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:24:02.099] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.099] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:24:02.099] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:02.099] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:24:02.099] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:24:02.099] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:24:02.099] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:24:02.124] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:24:02.125] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:24:02.126] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:24:02.138] [SPARKY] [trace] Deserialized Entity with ID = 10448220042807284058, name = Enemy
+[2022-10-03 12:24:02.140] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:24:40.164] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:24:40.453] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:24:40.453] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:24:40.453] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:24:40.453] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:24:40.453] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:24:40.747] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:24:40.747] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:24:40.748] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:24:40.748] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:24:40.748] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:24:40.748] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:24:40.748] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:24:40.748] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:24:40.748] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.749] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:24:40.749] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:24:40.750] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:24:40.750] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:24:40.750] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.751] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:24:40.751] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:24:40.751] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:24:40.751] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:24:40.751] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:24:40.751] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:24:40.788] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:24:40.788] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:24:40.790] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Quad
+[2022-10-03 12:24:40.807] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:26:00.094] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:26:00.360] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:26:00.361] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:26:00.361] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:26:00.361] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:26:00.361] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:26:00.458] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:26:00.458] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:26:00.459] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:26:00.459] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:26:00.459] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:26:00.459] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:26:00.459] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:26:00.459] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:26:00.459] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:26:00.459] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.459] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:26:00.460] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:26:00.461] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:26:00.461] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.461] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:26:00.461] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:26:00.461] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.461] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:26:00.461] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:00.461] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:26:00.462] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:26:00.462] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:26:00.462] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:26:00.487] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:26:00.488] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Quad
+[2022-10-03 12:26:00.489] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:26:00.503] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:26:00.504] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:26:49.800] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:26:50.074] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:26:50.074] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:26:50.074] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:26:50.074] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:26:50.074] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:26:50.173] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:26:50.173] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:26:50.173] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:26:50.173] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:26:50.173] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:26:50.173] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:26:50.173] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:26:50.174] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.174] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:26:50.174] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:26:50.174] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.174] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.175] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:26:50.175] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.175] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:26:50.175] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:26:50.176] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.176] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:26:50.176] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:26:50.176] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:26:50.176] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:26:50.176] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:26:50.176] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:26:50.201] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:26:50.201] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:26:50.203] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:26:50.216] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Quad
+[2022-10-03 12:26:50.217] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:27:12.198] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:27:12.494] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:27:12.494] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:27:12.494] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:27:12.495] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:27:12.495] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:27:12.595] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:27:12.595] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:27:12.596] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:27:12.596] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:27:12.596] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:27:12.596] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:27:12.596] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:27:12.597] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:27:12.597] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:27:12.597] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.597] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:27:12.597] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.597] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:27:12.598] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.598] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.598] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.598] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:27:12.599] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:27:12.599] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:27:12.599] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.599] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:27:12.599] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:27:12.599] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.599] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:27:12.599] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:27:12.600] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:27:12.600] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:27:12.600] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:27:12.600] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:27:12.626] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:27:12.626] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Enemy
+[2022-10-03 12:27:12.628] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:27:12.641] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:27:12.643] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 12:35:17.190] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 12:35:17.492] [SPARKY] [info] OpenGL Info:
+[2022-10-03 12:35:17.492] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 12:35:17.492] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 12:35:17.492] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 12:35:17.492] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 12:35:17.589] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 12:35:17.590] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:35:17.590] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 12:35:17.590] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 12:35:17.591] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 12:35:17.591] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 12:35:17.591] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 12:35:17.591] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 12:35:17.591] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 12:35:17.592] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.592] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 12:35:17.592] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.592] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:35:17.593] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 12:35:17.593] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 12:35:17.593] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.593] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.594] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   Time (Float)
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   rb (None)
+[2022-10-03 12:35:17.594] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 12:35:17.594] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.595] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 12:35:17.595] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 12:35:17.595] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.595] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 12:35:17.595] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 12:35:17.595] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 12:35:17.595] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 12:35:17.595] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 12:35:17.596] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 12:35:17.622] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 12:35:17.623] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 12:35:17.625] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 12:35:17.637] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Enemy
+[2022-10-03 12:35:17.639] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 13:11:02.680] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 13:11:02.974] [SPARKY] [info] OpenGL Info:
+[2022-10-03 13:11:02.974] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 13:11:02.974] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 13:11:02.975] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 13:11:02.975] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 13:11:03.075] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 13:11:03.076] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:03.076] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 13:11:03.076] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 13:11:03.077] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 13:11:03.077] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.077] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:03.077] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:03.077] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.078] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.078] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   Time (Float)
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   rb (None)
+[2022-10-03 13:11:03.078] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.078] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:03.079] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 13:11:03.079] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.079] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 13:11:03.079] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:03.079] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 13:11:03.079] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 13:11:03.079] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 13:11:03.079] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 13:11:03.106] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 13:11:03.106] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Enemy
+[2022-10-03 13:11:03.108] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 13:11:03.121] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 13:11:03.124] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 13:11:41.269] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 13:11:41.559] [SPARKY] [info] OpenGL Info:
+[2022-10-03 13:11:41.560] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 13:11:41.560] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 13:11:41.560] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 13:11:41.560] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 13:11:41.661] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 13:11:41.661] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:41.662] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 13:11:41.662] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 13:11:41.662] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 13:11:41.662] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 13:11:41.662] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 13:11:41.662] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 13:11:41.663] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.663] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 13:11:41.663] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   Time (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   rb (None)
+[2022-10-03 13:11:41.664] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:41.664] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 13:11:41.664] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 13:11:41.665] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 13:11:41.665] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 13:11:41.691] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 13:11:41.691] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 13:11:41.693] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 13:11:41.705] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Enemy
+[2022-10-03 13:11:41.707] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
+[2022-10-03 13:11:58.119] [SPARKY] [info] Creating window named 'Sparky Editor - (Debug devel x64)' with size: vec2(1600, 900)
+[2022-10-03 13:11:58.416] [SPARKY] [info] OpenGL Info:
+[2022-10-03 13:11:58.416] [SPARKY] [info]   Hardware:     NVIDIA GeForce GTX 1660 Ti/PCIe/SSE2
+[2022-10-03 13:11:58.416] [SPARKY] [info]   Vendor:       NVIDIA Corporation
+[2022-10-03 13:11:58.416] [SPARKY] [info]   Version:      4.6.0 NVIDIA 516.40
+[2022-10-03 13:11:58.416] [SPARKY] [info]   GLSL Version: 4.60 NVIDIA
+[2022-10-03 13:11:58.516] [SPARKY] [warning] AIPaddle has 5 fields: 
+[2022-10-03 13:11:58.517] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:58.517] [SPARKY] [warning] Camera2D has 2 fields: 
+[2022-10-03 13:11:58.518] [SPARKY] [warning]   DistanceToPlayer (Float)
+[2022-10-03 13:11:58.518] [SPARKY] [warning] CameraController3D has 5 fields: 
+[2022-10-03 13:11:58.518] [SPARKY] [warning]   Speed (Vector3)
+[2022-10-03 13:11:58.518] [SPARKY] [warning]   RotationSpeed (Vector3)
+[2022-10-03 13:11:58.518] [SPARKY] [warning]   FixedRotation (Bool)
+[2022-10-03 13:11:58.518] [SPARKY] [warning] Enemy has 5 fields: 
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning] EnemyBox has 5 fields: 
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning] MovingWall has 4 fields: 
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Bounds (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning] PlatformerPlayer has 4 fields: 
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.519] [SPARKY] [warning] Player has 5 fields: 
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Velocity (Vector3)
+[2022-10-03 13:11:58.519] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   Time (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   rb (None)
+[2022-10-03 13:11:58.520] [SPARKY] [warning] PongBall has 4 fields: 
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   MaxSpeed (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning] Paddle has 2 fields: 
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning] SimplePlayerController2D has 3 fields: 
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   Speed (Float)
+[2022-10-03 13:11:58.520] [SPARKY] [warning]   StartPos (Vector3)
+[2022-10-03 13:11:58.520] [SPARKY] [error] Could not find Component type Sparky.Camera
+[2022-10-03 13:11:58.521] [SPARKY] [error] Could not find Component type Sparky.Script
+[2022-10-03 13:11:58.521] [SPARKY] [error] Could not find Component type Sparky.NativeScript
+[2022-10-03 13:11:58.547] [SPARKY] [trace] Deserializing Scene 'Untitled'
+[2022-10-03 13:11:58.547] [SPARKY] [trace] Deserialized Entity with ID = 15744137901275221584, name = Enemy
+[2022-10-03 13:11:58.549] [SPARKY] [trace] Deserialized Entity with ID = 2481003340590416045, name = Player
+[2022-10-03 13:11:58.563] [SPARKY] [trace] Deserialized Entity with ID = 3549368526987956075, name = Perspective Camera
+[2022-10-03 13:11:58.565] [SPARKY] [error] Program/shader state performance warning: Vertex shader in program 1 is being recompiled based on GL state.
