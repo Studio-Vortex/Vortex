@@ -3,10 +3,12 @@
 
 #include "Sparky/Core/Application.h"
 
-#include <commdlg.h>
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+
+#include <commdlg.h>
+#include <shellapi.h>
 
 namespace Sparky {
 
@@ -48,6 +50,11 @@ namespace Sparky {
 			return ofn.lpstrFile;
 
 		return std::string();
+	}
+
+	void FileSystem::OpenDirectory(const char* directoryName)
+	{
+		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
 	}
 
 	float Time::GetTime()

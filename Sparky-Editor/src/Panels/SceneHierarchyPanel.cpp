@@ -31,6 +31,7 @@ namespace Sparky {
 				DrawEntityNode(entity);
 			});
 
+			// Left click anywhere on the panel to deselect entity
 			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 			{
 				m_SelectedEntity = {};
@@ -145,66 +146,66 @@ namespace Sparky {
 
 	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = Gui::GetIO();
 		const auto& boldFont = io.Fonts->Fonts[0];
 
-		ImGui::PushID(label.c_str());
+		Gui::PushID(label.c_str());
 
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, columnWidth);
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		Gui::Columns(2);
+		Gui::SetColumnWidth(0, columnWidth);
+		Gui::Text(label.c_str());
+		Gui::NextColumn();
 
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+		Gui::PushMultiItemsWidths(3, Gui::CalcItemWidth());
+		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("X", buttonSize))
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		Gui::PushFont(boldFont);
+		if (Gui::Button("X", buttonSize))
 			values.x = resetValue;
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
+		Gui::PopFont();
+		Gui::PopStyleColor(3);
 
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
+		Gui::SameLine();
+		Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
+		Gui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Y", buttonSize))
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		Gui::PushFont(boldFont);
+		if (Gui::Button("Y", buttonSize))
 			values.y = resetValue;
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
+		Gui::PopFont();
+		Gui::PopStyleColor(3);
 
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
+		Gui::SameLine();
+		Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
+		Gui::SameLine();
 
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		ImGui::PushFont(boldFont);
-		if (ImGui::Button("Z", buttonSize))
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
+		Gui::PushFont(boldFont);
+		if (Gui::Button("Z", buttonSize))
 			values.z = resetValue;
-		ImGui::PopFont();
-		ImGui::PopStyleColor(3);
+		Gui::PopFont();
+		Gui::PopStyleColor(3);
 
-		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
-		ImGui::PopItemWidth();
+		Gui::SameLine();
+		Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		Gui::PopItemWidth();
 
-		ImGui::PopStyleVar();
-		ImGui::Columns(1);
-		ImGui::PopID();
+		Gui::PopStyleVar();
+		Gui::Columns(1);
+		Gui::PopID();
 	}
 
 	template <typename TComponent, typename UIFunction>
@@ -219,7 +220,7 @@ namespace Sparky {
 
 			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImGui::Separator();
+			Gui::Separator();
 			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);

@@ -1,5 +1,7 @@
 #include "ContentBrowserPanel.h"
 
+#include "Sparky/Utils/PlatformUtils.h"
+
 namespace Sparky {
 
 	extern const std::filesystem::path g_AssetPath = "assets";
@@ -24,12 +26,12 @@ namespace Sparky {
 		}
 
 		// Make sure cached texture icons exist, if they dont remove them from cache
-		for (auto it = m_ImageMap.cbegin(), next_it = it; it != m_ImageMap.cend(); it = next_it)
+		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
 		{
 			++next_it;
 
-			if (!std::filesystem::exists((*it).first))
-				m_ImageMap.erase(it);
+			if (!std::filesystem::exists(it->first))
+				m_TextureMap.erase(it);
 		}
 
 		static float padding = 16.0f;
@@ -53,14 +55,55 @@ namespace Sparky {
 			SharedRef<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
 			if (path.extension().string() == ".png" || path.extension().string() == ".jpg")
 			{
-				if (m_ImageMap.find(path.string()) == m_ImageMap.end())
-					m_ImageMap[path.string()] = Texture2D::Create(path.string());
+				if (m_TextureMap.find(path.string()) == m_TextureMap.end())
+					m_TextureMap[path.string()] = Texture2D::Create(path.string());
 
-				icon = m_ImageMap[path.string()];
+				icon = m_TextureMap[path.string()];
 			}
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
+
+			static bool renameDirectoryEntry = false;
+
+			static bool openPopup = false;
+
+			// Right click to rename
 			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+			Gui::PopStyleColor();
+
+			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
+				Gui::OpenPopup("Utils");
+
+			if (Gui::BeginPopup("Utils"))
+			{
+				if (Gui::MenuItem("Rename"))
+				{
+					renameDirectoryEntry = true;
+					Gui::CloseCurrentPopup();
+				}
+				if (Gui::MenuItem("Open in File Explorer"))
+				{
+					FileSystem::OpenDirectory(m_CurrentDirectory.string().c_str());
+					Gui::CloseCurrentPopup();
+				}
+
+				Gui::EndPopup();
+			}
+
+			if (renameDirectoryEntry)
+			{
+				char buffer[256];
+				memset(buffer, 0, sizeof(buffer));
+
+				if (Gui::InputText("##RenameInputText", buffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					renameDirectoryEntry = false;
+
+					if (strlen(buffer) != 0)
+						std::filesystem::rename(path, m_CurrentDirectory / std::filesystem::path(buffer));
+				}
+			}
 
 			if (Gui::BeginDragDropSource())
 			{
@@ -69,19 +112,16 @@ namespace Sparky {
 				Gui::EndDragDropSource();
 			}
 
-			Gui::PopStyleColor();
 			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				if (directoryEntry.is_directory())
 				{
 					m_CurrentDirectory /= path.filename();
 				}
-
 			}
+
 			Gui::TextWrapped(filenameString.c_str());
-
 			Gui::NextColumn();
-
 			Gui::PopID();
 		}
 
