@@ -442,27 +442,44 @@ namespace Sparky {
 
 		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)
 		{
-			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+			static bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+			static bool allEntityClassNamesCollected = false;
 
-			static char buffer[64];
-			strcpy_s(buffer, sizeof(buffer), component.ClassName.c_str());
+			static std::vector<std::string> entityClassNameStrings;
 
-			if (!scriptClassExists)
+			// Retrieve all entity class names to display them in combo box
+			if (!allEntityClassNamesCollected)
 			{
-				auto entityClasses = ScriptEngine::GetClasses();
-				
+				static auto entityClasses = ScriptEngine::GetClasses();
+
 				for (auto& [className, entityScriptClass] : entityClasses)
-				{
-					// TODO: Dropdown for
+					entityClassNameStrings.push_back(className);
 
-					Gui::Text(className.c_str());
-				}
-
-				Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.2f, 0.2f, 1));
+				allEntityClassNamesCollected = true;
 			}
 
-			if (Gui::InputText("Class", buffer, sizeof(buffer)))
-				component.ClassName = buffer;
+			static const char* currentClassName = component.ClassName.c_str();
+
+			// Display available entity classes to choose from
+			if (allEntityClassNamesCollected && Gui::BeginCombo("Class", currentClassName))
+			{
+				for (uint32_t i = 0; i < entityClassNameStrings.size(); i++)
+				{
+					const char* currentEntityClassNameString = entityClassNameStrings[i].c_str();
+					bool isSelected = strcmp(currentClassName, currentEntityClassNameString) == 0;
+
+					if (Gui::Selectable(currentEntityClassNameString, isSelected))
+					{
+						currentClassName = currentEntityClassNameString;
+						component.ClassName = currentClassName;
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+				}
+
+				Gui::EndCombo();
+			}
 
 			// Fields
 			bool sceneRunning = scene->IsRunning();
@@ -836,9 +853,6 @@ namespace Sparky {
 					}
 				}
 			}
-
-			if (!scriptClassExists)
-				Gui::PopStyleColor();
 		});
 
 		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component) {});
