@@ -12,6 +12,11 @@
 		public static Vector3 Left => new Vector3(-1.0f, 0.0f, 0.0f);
 		public static Vector3 Right => new Vector3(1.0f, 0.0f, 0.0f);
 
+		public override string ToString()
+		{
+			return $"Vector3: {X}, {Y}, {Z}";
+		}
+
 		public Vector3(float scalar)
 		{
 			X = scalar;

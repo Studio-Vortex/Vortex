@@ -15,6 +15,10 @@ namespace Sparky {
 			transform = GetComponent<Transform>();
 		}
 
+		public virtual void OnCreate() { }
+		public virtual void OnUpdate(float delta) { }
+		public virtual void OnDestroy() { }
+
 		public bool HasComponent<T>()
 			where T : Component, new()
 		{

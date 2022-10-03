@@ -5,7 +5,6 @@ namespace Sparky {
 
 	internal static class InternalCalls
 	{
-
 		#region Entity
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -154,6 +153,16 @@ namespace Sparky {
 
 		#endregion
 
+		#region Random
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static int Random_Range_Int32(int min, int max);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Random_Range_Float(float min, float max);
+
+		#endregion
+
 		#region Algebra
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -196,7 +205,6 @@ namespace Sparky {
 		internal extern static bool Debug_Critical(string message);
 
 		#endregion
-
 	}
 
 }

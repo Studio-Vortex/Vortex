@@ -20,10 +20,10 @@ namespace Sparky {
 		const char* sceneFilepath = args[1];
 		std::string path(sceneFilepath);
 		std::string sceneName = path.substr(0, path.find('.'));
-		std::string appName = sceneName.substr(sceneName.find_last_of('\\') + 1, sceneName.length());
+		std::string applicationName = sceneName.substr(sceneName.find_last_of('\\') + 1, sceneName.length());
 
 		ApplicationProperties props;
-		props.Name = appName;
+		props.Name = applicationName;
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
 		props.MaximizeWindow = true;

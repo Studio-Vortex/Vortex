@@ -20,6 +20,9 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_collision.h>
 
+#include <cstdlib>
+#include <ctime>
+
 namespace Sparky {
 
 #define SP_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Sparky.InternalCalls::" #icall, icall)
@@ -465,6 +468,45 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Random
+
+	static int Random_Range_Int32(int min, int max)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		std::random_device randomDevice;
+		std::mt19937 engine(randomDevice());
+		std::uniform_int_distribution<int> uniformDistribution(min, max);
+
+		return uniformDistribution(engine);
+	}
+
+	static float Random_Range_Float(float min, float max)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		static bool seedGenerated = false;
+
+		if (!seedGenerated)
+		{
+			srand((uint32_t)time(0));
+			seedGenerated = true;
+		}
+
+		auto createRandomFloat = [max]() { return (float)rand() / (float)RAND_MAX * (max); };
+
+		float randomValue = createRandomFloat();
+
+		while (randomValue < min)
+			randomValue = createRandomFloat();
+
+		return randomValue;
+	}
+
+#pragma endregion
+
 #pragma region Algebra
 
 	static Math::vec3* Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right)
@@ -652,6 +694,11 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_SetRestitution);
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(CircleCollider2D_SetRestitutionThreshold);
+#pragma endregion
+
+#pragma region Random
+		SP_ADD_INTERNAL_CALL(Random_Range_Int32);
+		SP_ADD_INTERNAL_CALL(Random_Range_Float);
 #pragma endregion
 
 #pragma region Algebra

@@ -10,12 +10,12 @@ namespace Sandbox {
 		private Vector3 m_Velocity;
 		private bool m_Left;
 
-		public void OnCreate()
+		public override void OnCreate()
 		{
 			m_Left = true;
 		}
 
-		public void OnUpdate(float delta)
+		public override void OnUpdate(float delta)
 		{
 			if (m_Left)
 			{
@@ -36,9 +36,9 @@ namespace Sandbox {
 			transform.Translation += m_Velocity;
 		}
 
-		public void OnDestroy()
+		public override void OnDestroy()
 		{
-			Console.WriteLine("MovingWall.OnDestroy() Called!");
+			Debug.Log("MovingWall OnDestroy() Called!");
 		}
 	}
 

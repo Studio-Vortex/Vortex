@@ -1,8 +1,8 @@
-#include "StatsPanel.h"
+#include "PerformancePanel.h"
 
 namespace Sparky {
 
-	void StatsPanel::OnGuiRender(Entity hoveredEntity, bool showDefault)
+	void PerformancePanel::OnGuiRender(Entity hoveredEntity, bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -10,7 +10,7 @@ namespace Sparky {
 
 		if (s_ShowPanel || showDefault)
 		{
-			Gui::Begin("Stats", &s_ShowPanel);
+			Gui::Begin("Performance", &s_ShowPanel);
 			const char* name = "None";
 			if (hoveredEntity)
 				name = hoveredEntity.GetComponent<TagComponent>().Tag.c_str();

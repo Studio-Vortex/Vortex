@@ -448,7 +448,18 @@ namespace Sparky {
 			strcpy_s(buffer, sizeof(buffer), component.ClassName.c_str());
 
 			if (!scriptClassExists)
+			{
+				auto entityClasses = ScriptEngine::GetClasses();
+				
+				for (auto& [className, entityScriptClass] : entityClasses)
+				{
+					// TODO: Dropdown for
+
+					Gui::Text(className.c_str());
+				}
+
 				Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.2f, 0.2f, 1));
+			}
 
 			if (Gui::InputText("Class", buffer, sizeof(buffer)))
 				component.ClassName = buffer;

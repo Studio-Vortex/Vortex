@@ -37,4 +37,5 @@ namespace Sparky {
 
 		return new SparkyEditor(props);
 	}
+
 }

@@ -1,5 +1,32 @@
 Scene: Untitled
 Entities:
+  - Entity: 7151607900805703679
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-3.28334975, 0.740942419, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1.10000002, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Shawn\Shawn4.jpg
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.Player
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 2000
   - Entity: 17769384478999425618
     TagComponent:
       Tag: Background
@@ -122,30 +149,3 @@ Entities:
         - Name: Speed
           Type: Float
           Data: 350
-  - Entity: 7151607900805703679
-    TagComponent:
-      Tag: Player
-    TransformComponent:
-      Translation: [-3.28334975, 0.740942419, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1.10000002, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn4.jpg
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.Player
-      ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 2000

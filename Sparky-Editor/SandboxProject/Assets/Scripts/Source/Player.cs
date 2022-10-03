@@ -11,14 +11,14 @@ namespace Sandbox {
 		public RigidBody2D rb;
 		private Camera2D m_Camera;
 
-		public void OnCreate()
+		public override void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
 			m_Camera = FindEntityByName("Camera").As<Camera2D>();
 		}
 
-		public void OnUpdate(float delta)
+		public override void OnUpdate(float delta)
 		{
 			Time += delta;
 
@@ -43,7 +43,7 @@ namespace Sandbox {
 			rb.ApplyForce(Velocity.XY, true);
 		}
 
-		public void OnDestroy()
+		public override void OnDestroy()
 		{
 
 		}

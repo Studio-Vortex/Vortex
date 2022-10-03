@@ -98,12 +98,6 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-    ScriptComponent:
-      ClassName: Sandbox.Camera2D
-      ScriptFields:
-        - Name: DistanceToPlayer
-          Type: Float
-          Data: 10
   - Entity: 4077357939924341436
     TagComponent:
       Tag: Left Paddle
@@ -153,11 +147,14 @@ Entities:
     ScriptComponent:
       ClassName: Sandbox.AIPaddle
       ScriptFields:
+        - Name: MaxSpeed
+          Type: Float
+          Data: 20
   - Entity: 12910335349000657238
     TagComponent:
       Tag: Ball
     TransformComponent:
-      Translation: [0, 0.429245234, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.5, 0.5, 1]
     SpriteRendererComponent:
@@ -169,10 +166,17 @@ Entities:
       FixedRotation: true
     CircleCollider2DComponent:
       Offset: [0, 0]
-      Radius: 0.5
+      Radius: 0.479999989
       Density: 1
       Friction: 0.5
       Restitution: 1
       RestitutionThreshold: 0.5
     ScriptComponent:
       ClassName: Sandbox.PongBall
+      ScriptFields:
+        - Name: MaxSpeed
+          Type: Float
+          Data: 200
+        - Name: Speed
+          Type: Float
+          Data: 100

@@ -4,10 +4,10 @@
 
 namespace Sparky {
 
-	class StatsPanel
+	class PerformancePanel
 	{
 	public:
-		StatsPanel() = default;
+		PerformancePanel() = default;
 
 		void OnGuiRender(Entity hoveredEntity, bool showDefault = false);
 		void ShowPanel() { s_ShowPanel = true; }

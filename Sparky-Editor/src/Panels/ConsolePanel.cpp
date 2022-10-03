@@ -16,26 +16,29 @@ namespace Sparky {
 
 			const auto logMessages = Log::GetMessages(128);
 
-			for (const auto& message : logMessages)
+			if (!logMessages.empty())
 			{
-				ImVec4 red = { 1.0f, 0.0f, 0.0f, 1.0f };
-				ImVec4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
-				ImVec4 yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
+				for (const auto& message : logMessages)
+				{
+					ImVec4 red = { 1.0f, 0.0f, 0.0f, 1.0f };
+					ImVec4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
+					ImVec4 yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
 
-				if (message.find("[trace]") != std::string::npos)
-					Gui::Text(message.c_str());
+					if (message.find("[trace]") != std::string::npos)
+						Gui::Text(message.c_str());
 
-				if (message.find("[info]") != std::string::npos)
-					Gui::TextColored(green, message.c_str());
+					if (message.find("[info]") != std::string::npos)
+						Gui::TextColored(green, message.c_str());
 
-				if (message.find("[warning]") != std::string::npos)
-					Gui::TextColored(yellow, message.c_str());
+					if (message.find("[warning]") != std::string::npos)
+						Gui::TextColored(yellow, message.c_str());
 
-				if (message.find("[error]") != std::string::npos)
-					Gui::TextColored(red, message.c_str());
+					if (message.find("[error]") != std::string::npos)
+						Gui::TextColored(red, message.c_str());
 
-				if (message.find("[critical]") != std::string::npos)
-					Gui::TextColored(red, message.c_str());
+					if (message.find("[critical]") != std::string::npos)
+						Gui::TextColored(red, message.c_str());
+				}
 			}
 
 			Gui::End();

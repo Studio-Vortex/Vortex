@@ -39,7 +39,7 @@ namespace Sparky {
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
 
-		void ResetAtOrigin();
+		void ResetPositionToWorldOrigin();
 
 	private:
 		void UpdateProjection();
@@ -61,7 +61,7 @@ namespace Sparky {
 	private:
 		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
-		Math::mat4 m_ViewMatrix;
+		Math::mat4 m_ViewMatrix = Math::Identity();
 		Math::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		Math::vec3 m_FocalPoint = Math::vec3(0.0f);
 

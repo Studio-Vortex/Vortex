@@ -12,7 +12,6 @@ namespace Sparky {
 	void RuntimeLayer::OnAttach()
 	{
 		const auto& appProps = Application::Get().GetProperties();
-
 		const auto& commandLineArgs = appProps.CommandLineArgs;
 
 		if (commandLineArgs.Count > 1)
@@ -62,19 +61,23 @@ namespace Sparky {
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		bool open = true;
+		static bool open = true;
 
-		const auto& window = Application::Get().GetWindow();
+		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
-		Gui::Begin("Game", &open, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
 
-		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
-		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
+		Gui::Begin("Game", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{0, 1}, ImVec2{1, 0});
 		
 		Gui::End();
+		Gui::PopStyleVar(2);
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)
@@ -96,6 +99,7 @@ namespace Sparky {
 			SP_WARN("Could not load {} - not a scene file", filepath.filename().string());
 			system("pause");
 			exit(0);
+			return false;
 		}
 
 		return false;

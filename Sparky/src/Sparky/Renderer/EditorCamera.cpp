@@ -29,7 +29,7 @@ namespace Sparky {
 		m_ViewMatrix = Math::Inverse(m_ViewMatrix);
 	}
 
-	void EditorCamera::ResetAtOrigin()
+	void EditorCamera::ResetPositionToWorldOrigin()
 	{
 		m_Distance = 10.0f;
 		m_Pitch = 0.0f;

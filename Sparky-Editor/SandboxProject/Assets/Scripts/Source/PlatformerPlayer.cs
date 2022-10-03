@@ -10,12 +10,12 @@ namespace Sandbox {
 		private RigidBody2D m_Rigidbody;
 		private CircleCollider2D m_CircleCollider;
 
-		public void OnCreate()
+		public override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 		}
 
-		public void OnUpdate(float delta)
+		public override void OnUpdate(float delta)
 		{
 			m_Velocity = Vector2.Zero;
 
@@ -34,7 +34,7 @@ namespace Sandbox {
 			m_Rigidbody.ApplyForce(m_Velocity, true);
 		}
 
-		public void OnDestroy()
+		public override void OnDestroy()
 		{
 
 		}

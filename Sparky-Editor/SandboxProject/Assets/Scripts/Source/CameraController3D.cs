@@ -12,7 +12,7 @@ namespace Sandbox {
 		
 		public bool FixedRotation;
 
-		public void OnUpdate(float delta)
+		public override void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.W))
 				Velocity = Vector3.Forward;

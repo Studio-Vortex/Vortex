@@ -16,7 +16,6 @@ namespace Sparky {
 		s_ClientLogger = spdlog::stdout_color_mt("APP");
 		s_ClientLogger->set_level(spdlog::level::trace);
 
-#ifdef SP_DEBUG
 		// Ringbuffer sink allows us to retrives a certain number of logged messages
 		s_RingbufferSink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(128);
 
@@ -28,8 +27,6 @@ namespace Sparky {
 
 		s_CoreLogger->sinks().push_back(fileSink);
 		s_ClientLogger->sinks().push_back(fileSink);
-#endif
-
 	}
 
 	std::vector<std::string> Log::GetMessages(size_t messageCount)

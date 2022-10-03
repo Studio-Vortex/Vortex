@@ -1,1 +1,2 @@
-﻿  Glad.vcxproj -> C:\dev\Sparky_Game_Engine\Sparky\Sparky\vendor\Glad\bin\Release-windows-x86_64\Glad\Glad.lib
+﻿  glad.c
+  Glad.vcxproj -> C:\dev\Sparky_Game_Engine\Sparky\Sparky\vendor\Glad\bin\Release-windows-x86_64\Glad\Glad.lib

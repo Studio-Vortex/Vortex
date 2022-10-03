@@ -278,7 +278,7 @@ namespace Sparky {
 				if (inEditMode)
 				{
 					if (Gui::MenuItem("Center Editor Camera"))
-						m_EditorCamera.ResetAtOrigin();
+						m_EditorCamera.ResetPositionToWorldOrigin();
 				}
 
 				Gui::EndMenu();
@@ -306,15 +306,18 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Window"))
 			{
-				if (Gui::MenuItem("Shader Editor"))
-					m_ShaderEditorPanel.ShowPanel();
-				Gui::Separator();
 				if (Gui::MenuItem("Console"))
 					m_ConsolePanel.ShowPanel();
 				Gui::Separator();
-				if (Gui::MenuItem("Stats"))
-					m_StatsPanel.ShowPanel();
+
+				if (Gui::MenuItem("Performance"))
+					m_PerformancePanel.ShowPanel();
 				Gui::Separator();
+
+				if (Gui::MenuItem("Shader Editor"))
+					m_ShaderEditorPanel.ShowPanel();
+				Gui::Separator();
+
 				if (Gui::MenuItem("Settings"))
 					m_SettingsPanel.ShowPanel();
 
@@ -340,7 +343,7 @@ namespace Sparky {
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
-			m_StatsPanel.OnGuiRender(m_HoveredEntity);
+			m_PerformancePanel.OnGuiRender(m_HoveredEntity);
 			m_AboutPanel.OnGuiRender();
 		}
 
@@ -370,11 +373,11 @@ namespace Sparky {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".sparky")
+				if (filePath.extension().string() != ".png" || filePath.extension().string() != ".jpg")
 				{
 					OpenScene(std::filesystem::path(g_AssetPath) / path);
 				}
-				else if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg")
+				else
 				{
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
@@ -387,6 +390,7 @@ namespace Sparky {
 						SP_WARN("Could not load texture {}", texturePath.filename().string());
 				}
 			}
+
 			Gui::EndDragDropTarget();
 		}
 

@@ -50,7 +50,7 @@
 		}
 	}
 
-	public class Sprite : Component
+	public class SpriteRenderer: Component
 	{
 		public Vector4 Color
 		{
