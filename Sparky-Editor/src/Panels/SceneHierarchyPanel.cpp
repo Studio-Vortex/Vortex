@@ -442,15 +442,14 @@ namespace Sparky {
 
 		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)
 		{
+			static std::vector<std::string> entityClassNameStrings;
 			static bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
 			static bool allEntityClassNamesCollected = false;
-
-			static std::vector<std::string> entityClassNameStrings;
 
 			// Retrieve all entity class names to display them in combo box
 			if (!allEntityClassNamesCollected)
 			{
-				static auto entityClasses = ScriptEngine::GetClasses();
+				auto entityClasses = ScriptEngine::GetClasses();
 
 				for (auto& [className, entityScriptClass] : entityClasses)
 					entityClassNameStrings.push_back(className);

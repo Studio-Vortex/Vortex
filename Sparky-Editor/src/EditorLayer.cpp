@@ -373,11 +373,7 @@ namespace Sparky {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() != ".png" || filePath.extension().string() != ".jpg")
-				{
-					OpenScene(std::filesystem::path(g_AssetPath) / path);
-				}
-				else
+				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg")
 				{
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
@@ -389,6 +385,8 @@ namespace Sparky {
 					else
 						SP_WARN("Could not load texture {}", texturePath.filename().string());
 				}
+				else
+					OpenScene(std::filesystem::path(g_AssetPath) / path);
 			}
 
 			Gui::EndDragDropTarget();

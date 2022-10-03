@@ -1,0 +1,12 @@
+Scene: Untitled
+Entities:
+  - Entity: 2481003340590416045
+    TagComponent:
+      Tag: Quad
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Scale: 1

@@ -22,8 +22,6 @@ namespace Sandbox {
 			if (m_YPosLastFrame < transform.Translation.Y)
 				m_Velocity.Y = 1.0f * Speed;
 
-
-
 			m_YPosLastFrame = transform.Translation.Y;
 		}
 	}
