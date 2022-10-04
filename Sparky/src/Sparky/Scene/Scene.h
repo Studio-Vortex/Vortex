@@ -2,6 +2,7 @@
 
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Core/TimeStep.h"
+#include "Sparky/Scene/Components.h"
 #include "Sparky/Renderer/EditorCamera.h"
 
 #include <entt/entt.hpp>
@@ -63,6 +64,8 @@ namespace Sparky {
 	private:
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);
+
+		void CreatePhysicsBodyAndFixture(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
 
 		void OnPhysics2DStart();
 		void OnPhysics2DUpdate(TimeStep delta);

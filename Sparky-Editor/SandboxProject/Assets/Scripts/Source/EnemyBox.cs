@@ -15,13 +15,17 @@ namespace Sandbox {
 		{
 			m_TargetPlayer = FindEntityByName("Player");
 			m_IsMovingUp = true;
+
+			
+			RemoveComponent<SpriteRenderer>();
 		}
 
 		public override void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.Space))
 			{
-				RemoveComponent<SpriteRenderer>();
+				AddComponent<SpriteRenderer>();
+				GetComponent<SpriteRenderer>().Color = new Vector4(0.8f, 0.2f, 0.2f, 1.0f);
 			}
 
 			if (m_IsMovingUp)

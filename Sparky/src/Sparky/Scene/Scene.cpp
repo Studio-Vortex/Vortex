@@ -1,7 +1,6 @@
 #include "sppch.h"
 #include "Scene.h"
 
-#include "Sparky/Scene/Components.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Renderer/Renderer2D.h"
@@ -335,6 +334,54 @@ namespace Sparky {
 		return Entity{};
 	}
 
+	void Scene::CreatePhysicsBodyAndFixture(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
+	{
+		b2BodyDef bodyDef;
+		bodyDef.type = RigidBody2DTypeToBox2DBody(rb2d.Type);
+		bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+		bodyDef.angle = transform.Rotation.z;
+
+		b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+		body->SetFixedRotation(rb2d.FixedRotation);
+		rb2d.RuntimeBody = body;
+
+		if (entity.HasComponent<BoxCollider2DComponent>())
+		{
+			auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+
+			b2PolygonShape boxShape;
+			// Automatically set the collider size to the scale of the entity
+			boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
+
+			b2FixtureDef fixtureDef;
+			fixtureDef.shape = &boxShape;
+			fixtureDef.density = bc2d.Density;
+			fixtureDef.friction = bc2d.Friction;
+			fixtureDef.restitution = bc2d.Restitution;
+			fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
+
+			body->CreateFixture(&fixtureDef);
+		}
+
+		if (entity.HasComponent<CircleCollider2DComponent>())
+		{
+			auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+
+			b2CircleShape circleShape;
+			circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
+			circleShape.m_radius = transform.Scale.x * cc2d.Radius;
+
+			b2FixtureDef fixtureDef;
+			fixtureDef.shape = &circleShape;
+			fixtureDef.density = cc2d.Density;
+			fixtureDef.friction = cc2d.Friction;
+			fixtureDef.restitution = cc2d.Restitution;
+			fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+
+			body->CreateFixture(&fixtureDef);
+		}
+	}
+
 	void Scene::OnPhysics2DStart()
 	{
 		b2Vec2 gravity = { s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y };
@@ -348,50 +395,7 @@ namespace Sparky {
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-			b2BodyDef bodyDef;
-			bodyDef.type = RigidBody2DTypeToBox2DBody(rb2d.Type);
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-			bodyDef.angle = transform.Rotation.z;
-
-			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
-			body->SetFixedRotation(rb2d.FixedRotation);
-			rb2d.RuntimeBody = body;
-
-			if (entity.HasComponent<BoxCollider2DComponent>())
-			{
-				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-
-				b2PolygonShape boxShape;
-				// Automatically set the collider size to the scale of the entity
-				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = bc2d.Density;
-				fixtureDef.friction = bc2d.Friction;
-				fixtureDef.restitution = bc2d.Restitution;
-				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-				
-				body->CreateFixture(&fixtureDef);
-			}
-
-			if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
-
-				b2CircleShape circleShape;
-				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &circleShape;
-				fixtureDef.density = cc2d.Density;
-				fixtureDef.friction = cc2d.Friction;
-				fixtureDef.restitution = cc2d.Restitution;
-				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-
-				body->CreateFixture(&fixtureDef);
-			}
+			CreatePhysicsBodyAndFixture(entity, transform, rb2d);
 		}
 	}
 
@@ -406,6 +410,9 @@ namespace Sparky {
 				Entity entity = { e, this };
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				if (rb2d.RuntimeBody == nullptr)
+					CreatePhysicsBodyAndFixture(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				glm::vec3 translation = transform.Translation;
@@ -430,6 +437,9 @@ namespace Sparky {
 				Entity entity{ e, this };
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+				if (rb2d.RuntimeBody == nullptr)
+					CreatePhysicsBodyAndFixture(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
