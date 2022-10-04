@@ -101,7 +101,7 @@ namespace Sparky
 		static void DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID = -1);
 
 		static void DrawRect(const Math::mat4& transform, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
-		// Position is the center, Size is the full size of the entity
+		// position is the center, size is the full size of the entity
 		static void DrawRect(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
 
 		static float GetLineWidth();

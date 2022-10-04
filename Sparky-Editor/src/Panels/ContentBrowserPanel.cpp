@@ -2,6 +2,8 @@
 
 #include "Sparky/Utils/PlatformUtils.h"
 
+#include <imgui_internal.h>
+
 namespace Sparky {
 
 	extern const std::filesystem::path g_AssetPath = "assets";
@@ -15,12 +17,42 @@ namespace Sparky {
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
 		Gui::Begin("Content Browser");
 
 		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
 		{
-			if (Gui::Button("<--"))
+			if (Gui::Button(" <-- "))
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
+
+			Gui::SameLine();
+		}
+
+		if (Gui::Button(" + "))
+			Gui::OpenPopup("CreateList");
+
+		if (Gui::BeginPopup("CreateList"))
+		{
+			if (Gui::MenuItem("New Folder"))
+			{
+				std::filesystem::create_directory(m_CurrentDirectory / std::filesystem::path("New Folder"));
+				Gui::CloseCurrentPopup();
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("New Scene"))
+			{
+				std::ofstream newSceneFile(m_CurrentDirectory / std::filesystem::path("Untitled.sparky"));
+				newSceneFile << "Scene: Untitled\nEntities:";
+				newSceneFile.close();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
 		}
 
 		// Make sure cached texture icons exist, if they dont remove them from cache
@@ -59,49 +91,23 @@ namespace Sparky {
 				icon = m_TextureMap[path.string()];
 			}
 
-			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
-
 			static bool renameDirectoryEntry = false;
-
 			static bool openPopup = false;
 
+			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
-
 			Gui::PopStyleColor();
-
-			bool isUsingFileUtilitiesPopup = false;
 
 			// Right-click on item for file utilities popup
 			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
-			{
 				Gui::OpenPopup("FileUtilities");
-				isUsingFileUtilitiesPopup = true;
-			}
 
 			if (Gui::BeginPopup("FileUtilities"))
 			{
-				if (Gui::BeginMenu("Create"))
-				{
-					if (Gui::MenuItem("New Folder"))
-						std::filesystem::create_directory(m_CurrentDirectory / std::filesystem::path("New Folder"));
-					Gui::Separator();
-
-					if (Gui::MenuItem("New Scene"))
-					{
-						std::ofstream newSceneFile(m_CurrentDirectory / std::filesystem::path("Untitled.sparky"));
-						newSceneFile << "Scene: Untitled\nEntities:";
-						newSceneFile.close();
-					}
-
-					Gui::EndMenu();
-				}
-				Gui::Separator();
-
 				if (Gui::MenuItem("Rename"))
 				{
 					renameDirectoryEntry = true;
 					Gui::CloseCurrentPopup();
-					isUsingFileUtilitiesPopup = false;
 				}
 				Gui::Separator();
 
@@ -109,20 +115,24 @@ namespace Sparky {
 				{
 					FileSystem::OpenDirectory(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
-					isUsingFileUtilitiesPopup = false;
 				}
 				Gui::Separator();
+
+				static bool deleteEntry = false;
 
 				if (Gui::MenuItem("Delete"))
 				{
 					if (directoryEntry.is_directory())
 					{
+						SP_CORE_WARN("Directory to be deleted: {}/", path);
 						// TODO: Delete directory with some form of confirmation
+						Gui::CloseCurrentPopup();
 					}
 					else
+					{
 						std::filesystem::remove(path); // ALSO CONFIRM HERE
-					Gui::CloseCurrentPopup();
-					isUsingFileUtilitiesPopup = false;
+						Gui::CloseCurrentPopup();
+					}
 				}
 
 				Gui::EndPopup();
@@ -169,6 +179,8 @@ namespace Sparky {
 
 		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f);
 		Gui::SliderFloat("Padding", &padding, 4.0f, 64.0f);
+
+		Gui::ShowDemoWindow();
 
 		Gui::End();
 	}

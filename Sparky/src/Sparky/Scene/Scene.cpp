@@ -113,8 +113,8 @@ namespace Sparky {
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 
-		// Store the entity's UUID and the entt handle in our map
-		// entity will be implicitly converted to an entt handle
+		// Store the entity's UUID and the entt handle in our Entity map
+		// entity here will be implicitly converted to an entt handle
 		m_EntityMap[uuid] = entity;
 
 		return entity;
@@ -327,6 +327,7 @@ namespace Sparky {
 		for (auto& entity : view)
 		{
 			auto& cc = view.get<CameraComponent>(entity);
+
 			if (cc.Primary)
 				return { entity, this };
 		}

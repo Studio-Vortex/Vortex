@@ -60,13 +60,42 @@ namespace Sparky {
 						m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
 						m_SelectedEntity.AddComponent<CircleRendererComponent>();
 					}
+
+					Gui::EndMenu();
+				}
+				Gui::Separator();
+
+				if (Gui::BeginMenu("Create Physics 2D Entity"))
+				{
+					if (Gui::MenuItem("Empty RigidBody"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Empty RigidBody2D");
+						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+					}
+					Gui::Separator();
+
+					if (Gui::MenuItem("Empty Box Collider"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Empty BoxCollider2D");
+						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+						m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+					}
+					Gui::Separator();
+
+					if (Gui::MenuItem("Empty Circle Collider"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Empty CircleCollider2D");
+						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+						m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+					}
+
 					Gui::EndMenu();
 				}
 				Gui::Separator();
 
 				if (Gui::BeginMenu("Create Camera Entity"))
 				{
-					if (Gui::MenuItem("Perspective"))
+					if (Gui::MenuItem("Perspective Camera"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
@@ -74,7 +103,7 @@ namespace Sparky {
 					}
 					Gui::Separator();
 
-					if (Gui::MenuItem("Orthographic"))
+					if (Gui::MenuItem("Orthographic Camera"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
@@ -237,6 +266,14 @@ namespace Sparky {
 			bool componentShouldBeRemoved = false;
 			if (Gui::BeginPopup("ComponentSettings"))
 			{
+				if (Gui::MenuItem("Copy Component"))
+				{
+					// TODO: Copy Component
+					Gui::CloseCurrentPopup();
+				}
+				if (removeable)
+					Gui::Separator();
+
 				if (removeable && Gui::MenuItem("Remove Component"))
 					componentShouldBeRemoved = true;
 
@@ -269,7 +306,7 @@ namespace Sparky {
 
 			if (m_SelectedEntity == entity && m_EntityShouldBeRenamed)
 				Gui::SetKeyboardFocusHere();
-			if (Gui::InputText("##Tag", buffer, sizeof(buffer), flags))
+			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
 			{
 				tag = std::string(buffer);
 				m_EntityShouldBeRenamed = false;

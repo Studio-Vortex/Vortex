@@ -24,6 +24,9 @@ namespace Sparky {
 		void ShowPanel() { s_ShowPanel = true; }
 
 	private:
+		void RenderSettingOptions(uint32_t selectedSetting);
+
+	private:
 		Settings m_Settings;
 		inline static bool s_ShowPanel = false;
 	};
