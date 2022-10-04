@@ -11,6 +11,36 @@ namespace Sparky {
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_AddSpriteRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_RemoveSpriteRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_AddCircleRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_RemoveCircleRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_AddRigidBody2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_RemoveRigidBody2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_AddBoxCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_RemoveBoxCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_AddCircleCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Entity_RemoveCircleCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_FindEntityByName(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -100,56 +130,56 @@ namespace Sparky {
 		#region BoxCollider2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_GetDensity(ulong entityID, out float result);
+		internal extern static void BoxCollider2DComponent_GetDensity(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_SetDensity(ulong entityID, float density);
+		internal extern static void BoxCollider2DComponent_SetDensity(ulong entityID, float density);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_GetFriction(ulong entityID, out float result);
+		internal extern static void BoxCollider2DComponent_GetFriction(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_SetFriction(ulong entityID, float friction);
+		internal extern static void BoxCollider2DComponent_SetFriction(ulong entityID, float friction);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_GetRestitution(ulong entityID, out float result);
+		internal extern static void BoxCollider2DComponent_GetRestitution(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_SetRestitution(ulong entityID, float restitution);
+		internal extern static void BoxCollider2DComponent_SetRestitution(ulong entityID, float restitution);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_GetRestitutionThreshold(ulong entityID, out float result);
+		internal extern static void BoxCollider2DComponent_GetRestitutionThreshold(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void BoxCollider2D_SetRestitutionThreshold(ulong entityID, float restitutionThreshold);
+		internal extern static void BoxCollider2DComponent_SetRestitutionThreshold(ulong entityID, float restitutionThreshold);
 
 		#endregion
 
 		#region CircleCollider2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_GetDensity(ulong entityID, out float result);
+		internal extern static void CircleCollider2DComponent_GetDensity(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_SetDensity(ulong entityID, float density);
+		internal extern static void CircleCollider2DComponent_SetDensity(ulong entityID, float density);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_GetFriction(ulong entityID, out float result);
+		internal extern static void CircleCollider2DComponent_GetFriction(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_SetFriction(ulong entityID, float friction);
+		internal extern static void CircleCollider2DComponent_SetFriction(ulong entityID, float friction);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_GetRestitution(ulong entityID, out float result);
+		internal extern static void CircleCollider2DComponent_GetRestitution(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_SetRestitution(ulong entityID, float restitution);
+		internal extern static void CircleCollider2DComponent_SetRestitution(ulong entityID, float restitution);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_GetRestitutionThreshold(ulong entityID, out float result);
+		internal extern static void CircleCollider2DComponent_GetRestitutionThreshold(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2D_SetRestitutionThreshold(ulong entityID, float restitutionThreshold);
+		internal extern static void CircleCollider2DComponent_SetRestitutionThreshold(ulong entityID, float restitutionThreshold);
 
 		#endregion
 

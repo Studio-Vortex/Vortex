@@ -36,6 +36,42 @@ namespace Sparky {
 			return component;
 		}
 
+		public void AddComponent<T>()
+			where T : Component, new()
+		{
+			if (!HasComponent<T>())
+			{
+				string componentName = typeof(T).ToString();
+
+				switch (componentName)
+				{
+					case "Sparky.SpriteRenderer":   InternalCalls.Entity_AddSpriteRenderer(ID);   break;
+					case "Sparky.CircleRenderer":   InternalCalls.Entity_AddCircleRenderer(ID);   break;
+					case "Sparky.RigidBody2D":      InternalCalls.Entity_AddRigidBody2D(ID);      break;
+					case "Sparky.BoxCollider2D":    InternalCalls.Entity_AddBoxCollider2D(ID);    break;
+					case "Sparky.CircleCollider2D": InternalCalls.Entity_AddCircleCollider2D(ID); break;
+				}
+			}
+		}
+
+		public void RemoveComponent<T>()
+			where T : Component, new()
+		{
+			if (HasComponent<T>())
+			{
+				string componentName = typeof(T).ToString();
+
+				switch (componentName)
+				{
+					case "Sparky.SpriteRenderer":   InternalCalls.Entity_RemoveSpriteRenderer(ID);   break;
+					case "Sparky.CircleRenderer":   InternalCalls.Entity_RemoveCircleRenderer(ID);   break;
+					case "Sparky.RigidBody2D":      InternalCalls.Entity_RemoveRigidBody2D(ID);      break;
+					case "Sparky.BoxCollider2D":    InternalCalls.Entity_RemoveBoxCollider2D(ID);    break;
+					case "Sparky.CircleCollider2D": InternalCalls.Entity_RemoveCircleCollider2D(ID); break;
+				}
+			}
+		}
+
 		public Entity FindEntityByName(string name)
 		{
 			ulong entityID = InternalCalls.Entity_FindEntityByName(name);

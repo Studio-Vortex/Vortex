@@ -155,13 +155,13 @@
 		{
 			get
 			{
-				InternalCalls.BoxCollider2D_GetDensity(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetDensity(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.BoxCollider2D_SetDensity(Entity.ID, value);
+				InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, value);
 			}
 		}
 
@@ -169,13 +169,13 @@
 		{
 			get
 			{
-				InternalCalls.BoxCollider2D_GetFriction(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetFriction(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.BoxCollider2D_SetFriction(Entity.ID, value);
+				InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, value);
 			}
 		}
 
@@ -183,13 +183,13 @@
 		{
 			get
 			{
-				InternalCalls.BoxCollider2D_GetRestitution(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetRestitution(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.BoxCollider2D_SetRestitution(Entity.ID, value);
+				InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, value);
 			}
 		}
 
@@ -197,13 +197,13 @@
 		{
 			get
 			{
-				InternalCalls.BoxCollider2D_GetRestitutionThreshold(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetRestitutionThreshold(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.BoxCollider2D_SetRestitutionThreshold(Entity.ID, value);
+				InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
 			}
 		}
 	}
@@ -214,13 +214,13 @@
 		{
 			get
 			{
-				InternalCalls.CircleCollider2D_GetDensity(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetDensity(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.CircleCollider2D_SetDensity(Entity.ID, value);
+				InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, value);
 			}
 		}
 
@@ -228,13 +228,13 @@
 		{
 			get
 			{
-				InternalCalls.CircleCollider2D_GetFriction(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetFriction(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.CircleCollider2D_SetFriction(Entity.ID, value);
+				InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, value);
 			}
 		}
 
@@ -242,13 +242,13 @@
 		{
 			get
 			{
-				InternalCalls.CircleCollider2D_GetRestitution(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetRestitution(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.CircleCollider2D_SetRestitution(Entity.ID, value);
+				InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, value);
 			}
 		}
 
@@ -256,13 +256,13 @@
 		{
 			get
 			{
-				InternalCalls.CircleCollider2D_GetRestitutionThreshold(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetRestitutionThreshold(Entity.ID, out float result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.CircleCollider2D_SetRestitutionThreshold(Entity.ID, value);
+				InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
 			}
 		}
 	}

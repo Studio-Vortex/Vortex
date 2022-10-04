@@ -19,6 +19,11 @@ namespace Sandbox {
 
 		public override void OnUpdate(float delta)
 		{
+			if (Input.IsKeyDown(KeyCode.Space))
+			{
+				RemoveComponent<SpriteRenderer>();
+			}
+
 			if (m_IsMovingUp)
 			{
 				m_Velocity.Y = 1.0f;
