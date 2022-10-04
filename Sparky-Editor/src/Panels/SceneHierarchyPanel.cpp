@@ -1,6 +1,7 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Scene/Scene.h"
 
 #include <imgui_internal.h>
 
@@ -41,11 +42,11 @@ namespace Sparky {
 			// Right-click on blank space in scene hierarchy panel
 			if (Gui::BeginPopupContextWindow(0, 1, false))
 			{
-				if (Gui::MenuItem("New Empty Entity"))
+				if (Gui::MenuItem("Create Empty Entity"))
 					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
 				Gui::Separator();
 
-				if (Gui::BeginMenu("New 2D Entity"))
+				if (Gui::BeginMenu("Create 2D Entity"))
 				{
 					if (Gui::MenuItem("Quad"))
 					{
@@ -63,11 +64,11 @@ namespace Sparky {
 				}
 				Gui::Separator();
 
-				if (Gui::BeginMenu("New Camera Entity"))
+				if (Gui::BeginMenu("Create Camera Entity"))
 				{
 					if (Gui::MenuItem("Perspective"))
 					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Perspective Camera");
+						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
 						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 					}
@@ -75,7 +76,7 @@ namespace Sparky {
 
 					if (Gui::MenuItem("Orthographic"))
 					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Orthographic Camera");
+						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
 						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 					}
@@ -120,6 +121,12 @@ namespace Sparky {
 				m_SelectedEntity = entity;
 				m_EntityShouldBeRenamed = true;
 			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Duplicate Entity"))
+				m_ContextScene->DuplicateEntity(entity);
+			Gui::Separator();
+
 			if (Gui::MenuItem("Delete Entity"))
 				entityShouldBeDeleted = true;
 

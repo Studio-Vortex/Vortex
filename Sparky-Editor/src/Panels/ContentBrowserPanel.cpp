@@ -20,9 +20,7 @@ namespace Sparky {
 		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
 		{
 			if (Gui::Button("<--"))
-			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
-			}
 		}
 
 		// Make sure cached texture icons exist, if they dont remove them from cache
@@ -67,25 +65,64 @@ namespace Sparky {
 
 			static bool openPopup = false;
 
-			// Right click to rename
 			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 			Gui::PopStyleColor();
 
-			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
-				Gui::OpenPopup("Utils");
+			bool isUsingFileUtilitiesPopup = false;
 
-			if (Gui::BeginPopup("Utils"))
+			// Right-click on item for file utilities popup
+			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
 			{
+				Gui::OpenPopup("FileUtilities");
+				isUsingFileUtilitiesPopup = true;
+			}
+
+			if (Gui::BeginPopup("FileUtilities"))
+			{
+				if (Gui::BeginMenu("Create"))
+				{
+					if (Gui::MenuItem("New Folder"))
+						std::filesystem::create_directory(m_CurrentDirectory / std::filesystem::path("New Folder"));
+					Gui::Separator();
+
+					if (Gui::MenuItem("New Scene"))
+					{
+						std::ofstream newSceneFile(m_CurrentDirectory / std::filesystem::path("Untitled.sparky"));
+						newSceneFile << "Scene: Untitled\nEntities:";
+						newSceneFile.close();
+					}
+
+					Gui::EndMenu();
+				}
+				Gui::Separator();
+
 				if (Gui::MenuItem("Rename"))
 				{
 					renameDirectoryEntry = true;
 					Gui::CloseCurrentPopup();
+					isUsingFileUtilitiesPopup = false;
 				}
+				Gui::Separator();
+
 				if (Gui::MenuItem("Open in File Explorer"))
 				{
 					FileSystem::OpenDirectory(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
+					isUsingFileUtilitiesPopup = false;
+				}
+				Gui::Separator();
+
+				if (Gui::MenuItem("Delete"))
+				{
+					if (directoryEntry.is_directory())
+					{
+						// TODO: Delete directory with some form of confirmation
+					}
+					else
+						std::filesystem::remove(path); // ALSO CONFIRM HERE
+					Gui::CloseCurrentPopup();
+					isUsingFileUtilitiesPopup = false;
 				}
 
 				Gui::EndPopup();
@@ -112,12 +149,11 @@ namespace Sparky {
 				Gui::EndDragDropSource();
 			}
 
+			// Double click to enter into a directory
 			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				if (directoryEntry.is_directory())
-				{
 					m_CurrentDirectory /= path.filename();
-				}
 			}
 
 			Gui::TextWrapped(filenameString.c_str());
