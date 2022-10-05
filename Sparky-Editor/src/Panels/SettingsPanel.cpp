@@ -19,11 +19,6 @@ namespace Sparky {
 				"Build",
 			};
 
-			static bool renderer2DSettings = false;
-			static bool physics2DSettings = false;
-			static bool editorSettings = false;
-			static bool buildSettings = false;
-
 			// Left
 			static uint32_t selectedSetting = 0;
 			Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
@@ -41,16 +36,9 @@ namespace Sparky {
 
 			// Right
 			Gui::BeginGroup();
-			Gui::BeginChild("Right Pane", ImVec2(0, -Gui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
 			if (Gui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
 			{
-				switch (selectedSetting)
-				{
-					case 0: renderer2DSettings = true; break;
-					case 1: physics2DSettings  = true; break;
-					case 2: editorSettings     = true; break;
-					case 3: buildSettings      = true; break;
-				}
 				if (Gui::BeginTabItem(settingChoices[selectedSetting]))
 				{
 					RenderSettingOptions(selectedSetting);
@@ -67,7 +55,7 @@ namespace Sparky {
 
 	void SettingsPanel::RenderSettingOptions(uint32_t selectedSetting)
 	{
-		if (selectedSetting == 0)
+		if (selectedSetting == 0) // Renderer 2D Settings
 		{
 			if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Settings.ClearColor)))
 				RenderCommand::SetClearColor(m_Settings.ClearColor);
@@ -85,7 +73,7 @@ namespace Sparky {
 				Application::Get().GetWindow().SetVSync(vsync);
 		}
 
-		if (selectedSetting == 1)
+		if (selectedSetting == 1) // Physics 2D Settings
 		{
 			Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Settings.ColliderColor));
 
@@ -104,30 +92,67 @@ namespace Sparky {
 			Gui::Checkbox("Show Physics Colliders", &m_Settings.ShowColliders);
 		}
 
-		if (selectedSetting == 2)
+		if (selectedSetting == 2) // Editor Settings
 		{
-			Gui::DragFloat("Editor FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
+			Gui::DragFloat("Camera FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
 			Gui::Spacing();
 
-			if (Gui::BeginMenu("Theme"))
+			static const char* themes[] = {
+				"Dark",
+				"Light Gray",
+				"Default",
+				"Classic",
+				"Light",
+			};
+
+			static const char* currentTheme = themes[0];
+
+			if (Gui::BeginCombo("Editor Theme", currentTheme))
 			{
-				if (Gui::MenuItem("Dark"))
-					Application::Get().GetGuiLayer()->SetDarkThemeColors();
-				if (Gui::MenuItem("Light Gray"))
-					Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
-				if (Gui::MenuItem("Default"))
-					Gui::StyleColorsDark();
-				if (Gui::MenuItem("Classic"))
-					Gui::StyleColorsClassic();
-				if (Gui::MenuItem("Light"))
-					Gui::StyleColorsLight();
+				for (uint32_t i = 0; i < SP_ARRAYCOUNT(themes); i++)
+				{
+					bool isSelected = strcmp(currentTheme, themes[i]) == 0;
+					if (Gui::Selectable(themes[i], isSelected))
+					{
+						currentTheme = themes[i];
+
+						if (currentTheme == themes[0])
+							Application::Get().GetGuiLayer()->SetDarkThemeColors();
+						if (currentTheme == themes[1])
+							Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
+						if (currentTheme == themes[2])
+							Gui::StyleColorsDark();
+						if (currentTheme == themes[3])
+							Gui::StyleColorsClassic();
+						if (currentTheme == themes[4])
+							Gui::StyleColorsLight();
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+				}
 
 				Gui::EndMenu();
 			}
+
+			ImGuiIO& io = Gui::GetIO();
+			ImFont* currentFont = Gui::GetFont();
+			if (Gui::BeginCombo("Editor Font", currentFont->GetDebugName()))
+			{
+				for (uint32_t i = 0; i < io.Fonts->Fonts.Size; i++)
+				{
+					ImFont* font = io.Fonts->Fonts[i];
+					Gui::PushID((void*)font);
+					if (Gui::Selectable(font->GetDebugName(), font == currentFont))
+						io.FontDefault = font;
+					Gui::PopID();
+				}
+				Gui::EndCombo();
+			}
 		}
 
-		if (selectedSetting == 3)
+		if (selectedSetting == 3) // Build Settings
 		{
 			char buffer[256];
 			strcpy(buffer, m_Settings.CurrentEditorScenePath.string().c_str());

@@ -340,7 +340,7 @@ namespace Sparky {
 		{
 			m_SceneHierarchyPanel.OnGuiRender();
 			m_ContentBrowserPanel.OnGuiRender();
-			m_ShaderEditorPanel.OnGuiRender();
+			m_ShaderEditorPanel.OnGuiRender(true);
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
 			m_PerformancePanel.OnGuiRender(m_HoveredEntity);

@@ -23,6 +23,9 @@ namespace Sparky {
 
 		Gui::Begin("Content Browser");
 
+		// Left
+		static uint32_t selectedSetting = 0;
+		Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
 		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
 		{
 			if (Gui::Button(" <-- "))
@@ -54,7 +57,30 @@ namespace Sparky {
 
 			Gui::EndPopup();
 		}
+		Gui::EndChild();
 
+		Gui::SameLine();
+
+		// Right
+		Gui::BeginGroup();
+		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
+		if (Gui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+		{
+			if (Gui::BeginTabItem(m_CurrentDirectory.string().c_str()))
+			{
+				RenderFileExplorer();
+				Gui::EndTabItem();
+			}
+			Gui::EndTabBar();
+		}
+		Gui::EndChild();
+		Gui::EndGroup();
+
+		Gui::End();
+	}
+
+	void ContentBrowserPanel::RenderFileExplorer()
+	{
 		// Make sure cached texture icons exist, if they dont remove them from cache
 		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
 		{
@@ -126,6 +152,7 @@ namespace Sparky {
 					{
 						SP_CORE_WARN("Directory to be deleted: {}/", path);
 						// TODO: Delete directory with some form of confirmation
+						
 						Gui::CloseCurrentPopup();
 					}
 					else
@@ -181,8 +208,6 @@ namespace Sparky {
 		Gui::SliderFloat("Padding", &padding, 4.0f, 64.0f);
 
 		Gui::ShowDemoWindow();
-
-		Gui::End();
 	}
 
 }

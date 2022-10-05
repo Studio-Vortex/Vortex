@@ -12,6 +12,9 @@ namespace Sparky {
 		void OnGuiRender();
 
 	private:
+		void RenderFileExplorer();
+
+	private:
 		std::filesystem::path m_CurrentDirectory;
 
 		SharedRef<Texture2D> m_DirectoryIcon;

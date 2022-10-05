@@ -4,7 +4,7 @@
 
 namespace Sparky {
 
-	static constexpr size_t SHADER_BUFFER_SIZE = 5'000;
+	static constexpr size_t SHADER_BUFFER_SIZE = 50'000;
 
 	class ShaderEditorPanel
 	{
@@ -14,6 +14,9 @@ namespace Sparky {
 		void OnGuiRender(bool showDefault = false);
 		void ShowPanel() { s_ShowPanel = true; }
 		void LoadShaderFile(const std::filesystem::path& path);
+
+	private:
+		void RenderShaderCodeEditor();
 
 	private:
 		char m_CodeBuffer[SHADER_BUFFER_SIZE] = "";
