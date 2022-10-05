@@ -128,6 +128,10 @@ namespace Sparky {
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
@@ -142,18 +146,23 @@ namespace Sparky {
 		}
 
 		bool entityShouldBeDeleted = false;
-
+		
+		// Right-click on entity for utilities popup
 		if (Gui::BeginPopupContextItem())
 		{
 			if (Gui::MenuItem("Rename"))
 			{
 				m_SelectedEntity = entity;
 				m_EntityShouldBeRenamed = true;
+				Gui::CloseCurrentPopup();
 			}
 			Gui::Separator();
 
 			if (Gui::MenuItem("Duplicate Entity"))
+			{
 				m_ContextScene->DuplicateEntity(entity);
+				Gui::CloseCurrentPopup();
+			}
 			Gui::Separator();
 
 			if (Gui::MenuItem("Delete Entity"))

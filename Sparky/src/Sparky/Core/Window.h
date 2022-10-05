@@ -13,7 +13,7 @@ namespace Sparky {
 	{
 		std::string Title;
 		Math::vec2 Size;
-		bool StartMaximized;
+		bool Maximized;
 		bool VSync;
 		bool Decorated;
 	};
@@ -31,6 +31,7 @@ namespace Sparky {
 		virtual Math::vec2 GetSize() const = 0;
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
+		virtual bool IsMaximized() const = 0;
 		virtual void SetMaximized(bool maximized) = 0;
 
 		// Window Attributes
@@ -39,6 +40,8 @@ namespace Sparky {
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindowHandle() const = 0;
+
+		virtual void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const = 0;
 
 		static UniqueRef<Window> Create(const WindowProperties& props = WindowProperties());
 	};

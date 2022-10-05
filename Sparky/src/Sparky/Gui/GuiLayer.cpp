@@ -46,6 +46,10 @@ namespace Sparky {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		style.WindowTitleAlign = { 0.5f, 0.5f };
+		style.WindowMenuButtonPosition = ImGuiDir_Right;
+		style.GrabRounding = 2.5f;
+
 		SetDarkThemeColors();
 
 		Application& app = Application::Get();
@@ -156,6 +160,20 @@ namespace Sparky {
 		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.2, .4, .75, .65);
 		colors[ImGuiCol_FrameBg] = ImVec4(.5, .5, .5, .25);
 		colors[ImGuiCol_MenuBarBg] = ImVec4(.15, .15, .15, 1);
+	}
+
+}
+
+namespace ImGui {
+
+	void TextCentered(const char* text, float y, ...)
+	{
+		va_list args;
+		va_start(args, text);
+		ImVec2 textSize = CalcTextSize(text);
+		SetCursorPos({ (GetWindowWidth() / 2.0f) - (textSize.x / 2.0f), y });
+		TextV(text, args);
+		va_end(args);
 	}
 
 }

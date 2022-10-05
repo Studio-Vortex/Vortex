@@ -31,4 +31,11 @@ namespace Sparky {
 		float m_Time = 0.0f;
 	};
 
+
+}
+
+namespace ImGui {
+
+	void TextCentered(const char* text, float y = 0.0f, ...);
+
 }

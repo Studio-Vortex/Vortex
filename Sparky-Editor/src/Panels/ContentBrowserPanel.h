@@ -16,6 +16,7 @@ namespace Sparky {
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
+		std::filesystem::path m_PathToBeRenamed;
 
 		SharedRef<Texture2D> m_DirectoryIcon;
 		SharedRef<Texture2D> m_FileIcon;

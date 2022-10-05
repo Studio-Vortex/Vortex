@@ -6,7 +6,7 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath = "assets";
+	extern const std::filesystem::path g_AssetPath = "Assets";
 
 	ContentBrowserPanel::ContentBrowserPanel()
 		: m_CurrentDirectory(g_AssetPath)
@@ -18,14 +18,21 @@ namespace Sparky {
 	void ContentBrowserPanel::OnGuiRender()
 	{
 		Gui::Begin("Content Browser");
-
 		// Left
 		static uint32_t selectedSetting = 0;
 		Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
+		Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
+		Gui::Separator();
 		for (auto& assetDirectoryFolder : std::filesystem::directory_iterator(g_AssetPath))
 		{
 			if (Gui::Button(assetDirectoryFolder.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+			{
+				// Clear the search input text so it does not interfere with the child directory
+				memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+				m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+
 				m_CurrentDirectory = assetDirectoryFolder.path();
+			}
 		}
 		Gui::EndChild();
 
@@ -34,6 +41,31 @@ namespace Sparky {
 		// Right
 		Gui::BeginGroup();
 		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
+
+		// Right-click on blank space in content browser panel
+		if (Gui::BeginPopupContextWindow(0, 1, false))
+		{
+			if (Gui::MenuItem("New Folder"))
+			{
+				m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("New Folder");
+				std::filesystem::create_directory(m_PathToBeRenamed);
+				Gui::CloseCurrentPopup();
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("New Scene"))
+			{
+				m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.sparky");
+				std::ofstream newSceneFile(m_PathToBeRenamed);
+				newSceneFile << "Scene: Untitled\nEntities:";
+				newSceneFile.close();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
+		}
+
 		RenderFileExplorer();
 		Gui::EndChild();
 		Gui::EndGroup();
@@ -57,6 +89,8 @@ namespace Sparky {
 		}
 
 		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(g_AssetPath));
+		float originalFrameRounding = Gui::GetStyle().FrameRounding;
+		Gui::GetStyle().FrameRounding = 5.0f;
 		if (Gui::Button("  <--  "))
 		{
 			// Clear the search input text so it does not interfere with the parent directory
@@ -65,33 +99,8 @@ namespace Sparky {
 
 			m_CurrentDirectory = m_CurrentDirectory.parent_path();
 		}
+		Gui::GetStyle().FrameRounding = originalFrameRounding;
 		Gui::EndDisabled();
-
-		Gui::SameLine();
-
-		if (Gui::Button("  +  "))
-			Gui::OpenPopup("CreateList");
-
-		if (Gui::BeginPopup("CreateList"))
-		{
-			if (Gui::MenuItem("New Folder"))
-			{
-				std::filesystem::create_directory(m_CurrentDirectory / std::filesystem::path("New Folder"));
-				Gui::CloseCurrentPopup();
-			}
-			Gui::Separator();
-
-			if (Gui::MenuItem("New Scene"))
-			{
-				std::ofstream newSceneFile(m_CurrentDirectory / std::filesystem::path("Untitled.sparky"));
-				newSceneFile << "Scene: Untitled\nEntities:";
-				newSceneFile.close();
-
-				Gui::CloseCurrentPopup();
-			}
-
-			Gui::EndPopup();
-		}
 
 		Gui::SameLine();
 		Gui::Text(m_CurrentDirectory.string().c_str());
@@ -104,6 +113,7 @@ namespace Sparky {
 		if (isSearching)
 			m_InputTextFilter.Build();
 
+		Gui::Spacing();
 		Gui::Separator();
 
 		static float padding = 16.0f;
@@ -140,24 +150,18 @@ namespace Sparky {
 				icon = m_TextureMap[path.string()];
 			}
 
-			static bool renameDirectoryEntry = false;
-			static bool openPopup = false;
-
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 			Gui::PopStyleColor();
 
-			// Right-click on item for file utilities popup
-			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
-				Gui::OpenPopup("FileUtilities");
-
 			static bool confirmDeletionPopupOpen = false;
 
-			if (Gui::BeginPopup("FileUtilities"))
+			// Right-click on directory or file for utilities popup
+			if (Gui::BeginPopupContextItem())
 			{
 				if (Gui::MenuItem("Rename"))
 				{
-					renameDirectoryEntry = true;
+					m_PathToBeRenamed = path;
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();
@@ -187,23 +191,32 @@ namespace Sparky {
 			ImVec2 windowSize = { 500, 200 };
 			Gui::SetNextWindowSize(windowSize);
 			Gui::SetNextWindowPos({ (io.DisplaySize.x / 2.0f) - (windowSize.x / 2.0f), (io.DisplaySize.y / 2.0f) - (windowSize.y / 2.0f) });
+			ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
+			
 			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 			{
-				Gui::Spacing();
 				Gui::Separator();
 				Gui::Spacing();
 
-				Gui::Text("Are you sure you want to permanently delete '%s'?", path.filename().string().c_str());
+				Gui::Text("Are you sure you want to permanently delete '%s' ?", path.filename().string().c_str());
 				Gui::Text("This cannot be undone.");
 
+				Gui::Spacing();
 				Gui::Separator();
 
-				ImVec2 button_size(Gui::GetFontSize() * 12.0f, 0.0f);
+				for (uint32_t i = 0; i < 18; i++)
+					Gui::Spacing();
+
 				if (Gui::Button("Yes", button_size))
 				{
 					std::filesystem::remove(path);
 					Gui::CloseCurrentPopup();
 				}
+
+				Gui::SameLine();
+
+				if (Gui::Button("No", button_size))
+					Gui::CloseCurrentPopup();
 
 				Gui::SameLine();
 
@@ -214,17 +227,20 @@ namespace Sparky {
 				Gui::EndPopup();
 			}
 
-			if (renameDirectoryEntry)
+			if (path == m_PathToBeRenamed)
 			{
 				char buffer[256];
-				memset(buffer, 0, sizeof(buffer));
+				size_t pos = path.string().find_last_of('\\');
+				std::string pathToCopy = path.string().substr(pos + 1, path.string().length());
+				memcpy(buffer, pathToCopy.c_str(), sizeof(buffer));
 
-				if (Gui::InputText("##RenameInputText", buffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+				Gui::SetKeyboardFocusHere();
+				if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 				{
-					renameDirectoryEntry = false;
-
 					if (strlen(buffer) != 0)
 						std::filesystem::rename(path, m_CurrentDirectory / std::filesystem::path(buffer));
+
+					m_PathToBeRenamed = "";
 				}
 			}
 
@@ -248,7 +264,10 @@ namespace Sparky {
 				}
 			}
 
-			Gui::TextWrapped(filenameString.c_str());
+			// If we are not renaming the current entry we can show the path
+			if (path != m_PathToBeRenamed)
+				Gui::TextWrapped(filenameString.c_str());
+
 			Gui::NextColumn();
 			Gui::PopID();
 		}

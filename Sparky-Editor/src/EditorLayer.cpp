@@ -456,6 +456,13 @@ namespace Sparky {
 
 		Gui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
+		const char* name = "None";
+		if (m_HoveredEntity && m_ActiveScene)
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
+
+		Gui::Text(" Hovered Entity: %s", name);
+		Gui::SameLine();
+
 		bool toolbarEnabled = (bool)m_ActiveScene;
 
 		ImVec4 tintColor = ImVec4(1, 1, 1, 1);
@@ -571,6 +578,15 @@ namespace Sparky {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_EditorCamera.OnEvent(e);
+
+		// Set cursor position
+		Math::vec2 mousePosition = Input::GetMousePosition();
+		Math::vec2 windowSize = Application::Get().GetWindow().GetSize();
+
+		if (m_MousePosLastFrame.x == 0)
+			Application::Get().GetWindow().SetCursorPosition(windowSize.x, m_MousePosLastFrame.y);
+		if (m_MousePosLastFrame.x == windowSize.x - 1.0f)
+			Application::Get().GetWindow().SetCursorPosition(0, m_MousePosLastFrame.y);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
@@ -711,10 +727,15 @@ namespace Sparky {
 
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		switch (e.GetMouseButton())
 		{
-			if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
-				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+			case Mouse::ButtonLeft:
+			{
+				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+
+				break;
+			}
 		}
 
 		return false;
@@ -744,6 +765,8 @@ namespace Sparky {
 	{
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
+
+		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
 		if (path.extension().string() != ".sparky")
 		{

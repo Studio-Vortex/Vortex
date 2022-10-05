@@ -1,17 +1,17 @@
 Scene: Untitled
 Entities:
-  - Entity: 17328271711174587764
+  - Entity: 1892526480779130454
     TagComponent:
-      Tag: Player
+      Tag: Floor
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, -1.70400727, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [8.10801125, 0.326045752, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
@@ -38,18 +38,18 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 1892526480779130454
+  - Entity: 17328271711174587764
     TagComponent:
-      Tag: Floor
+      Tag: Player
     TransformComponent:
-      Translation: [0, -1.70400727, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [8.10801125, 0.326045752, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
     Rigidbody2DComponent:
-      BodyType: Static
+      BodyType: Dynamic
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]

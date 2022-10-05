@@ -41,11 +41,11 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		m_Data.Title = props.Title;
-		m_Data.Size = props.Size;
-		m_Data.StartMaximized = props.StartMaximized;
-		m_Data.VSync = props.VSync;
-		m_Data.Decorated = props.Decorated;
+		m_Properties.Title = props.Title;
+		m_Properties.Size = props.Size;
+		m_Properties.Maximized = props.Maximized;
+		m_Properties.VSync = props.VSync;
+		m_Properties.Decorated = props.Decorated;
 
 		SP_CORE_INFO("Creating window named '{}' with size: {}", props.Title, props.Size);
 
@@ -70,25 +70,34 @@ namespace Sparky {
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // SP_DEBUG
 
-			if (m_Data.StartMaximized)
+			if (m_Properties.Maximized)
 				glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 			else
 				glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
 
-			if (m_Data.Decorated)
+			if (m_Properties.Decorated)
 				glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 			else
 				glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
-			m_Window = glfwCreateWindow((int)m_Data.Size.x, (int)m_Data.Size.y, m_Data.Title.c_str(), nullptr, nullptr);
+			m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
+
+			// Set the correct window height if maximized
+			if (m_Properties.Maximized)
+			{
+				int maximzedWidth, maximizedHeight;
+				glfwGetWindowSize(m_Window, &maximzedWidth, &maximizedHeight);
+				m_Properties.Size = Math::vec2((float)maximzedWidth, (float)maximizedHeight);
+			}
+
 			s_GLFWWindowCount++;
 		}
 
 		m_Context = GraphicsContext::Create(m_Window);
 		m_Context->Init();
 
-		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(m_Data.VSync);
+		glfwSetWindowUserPointer(m_Window, &m_Properties);
+		SetVSync(m_Properties.VSync);
 
 		// Set GLFW Callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -210,8 +219,10 @@ namespace Sparky {
 			int width;
 			int height;
 			glfwGetWindowSize(m_Window, &width, &height);
-			m_Data.Size = Math::vec2((float)width, (float)height);
+			m_Properties.Size = Math::vec2((float)width, (float)height);
 		};
+
+		m_Properties.Maximized = maximized;
 
 		if (maximized)
 		{
@@ -229,12 +240,17 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);
-		m_Data.VSync = enabled;
+		m_Properties.VSync = enabled;
 	}
 
 	bool WindowsWindow::IsVSync() const
 	{
-		return m_Data.VSync;
+		return m_Properties.VSync;
+	}
+
+	void WindowsWindow::SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const
+	{
+		glfwSetCursorPos(m_Window, (double)mouseCursorX, (double)mouseCursorY);
 	}
 
 	void WindowsWindow::Shutdown()
