@@ -163,7 +163,7 @@ namespace Sparky {
 
 		if (!opt_padding)
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		Gui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+		Gui::Begin("Engine Dockspace", &dockspaceOpen, window_flags);
 		if (!opt_padding)
 			Gui::PopStyleVar();
 
@@ -340,7 +340,7 @@ namespace Sparky {
 		{
 			m_SceneHierarchyPanel.OnGuiRender();
 			m_ContentBrowserPanel.OnGuiRender();
-			m_ShaderEditorPanel.OnGuiRender(true);
+			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
 			m_PerformancePanel.OnGuiRender(m_HoveredEntity);
@@ -454,7 +454,7 @@ namespace Sparky {
 		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
 
-		Gui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		Gui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 		bool toolbarEnabled = (bool)m_ActiveScene;
 

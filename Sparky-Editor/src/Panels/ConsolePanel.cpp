@@ -20,9 +20,9 @@ namespace Sparky {
 			{
 				for (auto& message : logMessages)
 				{
-					ImVec4 red = { 1.0f, 0.0f, 0.0f, 1.0f };
-					ImVec4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
-					ImVec4 yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
+					ImVec4 red = { 0.9f, 0.1f, 0.1f, 1.0f };
+					ImVec4 green = { 0.1f, 0.9f, 0.1f, 1.0f };
+					ImVec4 yellow = { 0.9f, 0.9f, 0.1f, 1.0f };
 
 					auto removeLogLevelFromMessage = [&]() {
 						size_t leftBracketPos = message.find_last_of('[');

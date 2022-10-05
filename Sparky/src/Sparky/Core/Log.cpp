@@ -6,9 +6,9 @@ namespace Sparky {
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
 	std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> Log::s_RingbufferSink;
 
-	void Log::Init()
+	void Log::Init(bool enableFileOutput)
 	{
-		spdlog::set_pattern("%^[%T] %n: %v%$");
+		spdlog::set_pattern("%^[%r] %n: %v%$");
 
 		s_CoreLogger = spdlog::stdout_color_mt("SPARKY");
 		s_CoreLogger->set_level(spdlog::level::trace);
@@ -18,16 +18,19 @@ namespace Sparky {
 
 		// Ringbuffer sink allows us to retrives a certain number of logged messages
 		s_RingbufferSink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(128);
-		s_RingbufferSink->set_pattern("%^[%T] [%l] %n: %v%$");
+		s_RingbufferSink->set_pattern("%^[%r] [%l] %n: %v%$");
 
 		// Add the sink to both loggers to retrive messages later on
 		s_CoreLogger->sinks().push_back(s_RingbufferSink);
 		s_ClientLogger->sinks().push_back(s_RingbufferSink);
 
-		auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/Log.txt");
+		if (enableFileOutput)
+		{
+			auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/Log.txt");
 
-		s_CoreLogger->sinks().push_back(fileSink);
-		s_ClientLogger->sinks().push_back(fileSink);
+			s_CoreLogger->sinks().push_back(fileSink);
+			s_ClientLogger->sinks().push_back(fileSink);
+		}
 	}
 
 	std::vector<std::string> Log::GetMessages(size_t messageCount)

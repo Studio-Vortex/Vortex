@@ -30,6 +30,7 @@ namespace Sparky {
 		auto lastDot = filepath.rfind('.');
 		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
+		SP_CORE_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
@@ -41,6 +42,7 @@ namespace Sparky {
 		sources[GL_VERTEX_SHADER] = vertexSrc;
 		sources[GL_FRAGMENT_SHADER] = fragmentSrc;
 		Compile(sources);
+		SP_CORE_INFO("Shader Loaded: {}", m_Name);
 	}
 
 	OpenGLShader::~OpenGLShader()

@@ -17,10 +17,6 @@ namespace Sparky {
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		Gui::Begin("Content Browser");
 
 		// Left
@@ -29,7 +25,13 @@ namespace Sparky {
 		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
 		{
 			if (Gui::Button(" <-- "))
+			{
+				// Clear the search input text so it does not interfere with the parent directory
+				memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+				m_InputTextFilter.Build();
+
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
+			}
 
 			Gui::SameLine();
 		}
@@ -81,6 +83,10 @@ namespace Sparky {
 
 	void ContentBrowserPanel::RenderFileExplorer()
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
 		// Make sure cached texture icons exist, if they dont remove them from cache
 		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
 		{
@@ -89,6 +95,14 @@ namespace Sparky {
 			if (!std::filesystem::exists(it->first))
 				m_TextureMap.erase(it);
 		}
+
+		// Search Bar + Filtering
+		float inputTextSize = Gui::GetWindowWidth() / 2.0f - Gui::CalcTextSize(m_CurrentDirectory.string().c_str()).x;
+		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
+		Gui::SetNextItemWidth(inputTextSize);
+		bool isSearching = Gui::InputTextWithHint("##Search", "Search", m_InputTextFilter.InputBuf, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+		if (isSearching)
+			m_InputTextFilter.Build();
 
 		static float padding = 16.0f;
 		static float thumbnailSize = 128.0f;
@@ -105,6 +119,13 @@ namespace Sparky {
 			const auto& path = directoryEntry.path();
 			auto relativePath = std::filesystem::relative(path, g_AssetPath);
 			std::string filenameString = relativePath.filename().string();
+			bool skipDirectoryEntry = false;
+
+			if (!m_InputTextFilter.PassFilter(relativePath.string().c_str()))
+				skipDirectoryEntry = true;
+
+			if (skipDirectoryEntry)
+				continue;
 
 			Gui::PushID(filenameString.c_str());
 
@@ -128,6 +149,8 @@ namespace Sparky {
 			if (Gui::IsItemHovered() && Gui::IsItemClicked(ImGuiMouseButton_Right))
 				Gui::OpenPopup("FileUtilities");
 
+			static bool confirmDeletionPopupOpen = false;
+
 			if (Gui::BeginPopup("FileUtilities"))
 			{
 				if (Gui::MenuItem("Rename"))
@@ -144,24 +167,48 @@ namespace Sparky {
 				}
 				Gui::Separator();
 
-				static bool deleteEntry = false;
-
 				if (Gui::MenuItem("Delete"))
 				{
-					if (directoryEntry.is_directory())
-					{
-						SP_CORE_WARN("Directory to be deleted: {}/", path);
-						// TODO: Delete directory with some form of confirmation
-						
-						Gui::CloseCurrentPopup();
-					}
-					else
-					{
-						std::filesystem::remove(path); // ALSO CONFIRM HERE
-						Gui::CloseCurrentPopup();
-					}
+					confirmDeletionPopupOpen = true;
+					Gui::CloseCurrentPopup();
 				}
 
+				Gui::EndPopup();
+			}
+
+			if (confirmDeletionPopupOpen)
+			{
+				Gui::OpenPopup("Confirm");
+				confirmDeletionPopupOpen = false;
+			}
+
+			ImVec2 windowSize = { 500, 200 };
+			Gui::SetNextWindowSize(windowSize);
+			Gui::SetNextWindowPos({ (io.DisplaySize.x / 2.0f) - (windowSize.x / 2.0f), (io.DisplaySize.y / 2.0f) - (windowSize.y / 2.0f) });
+			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+			{
+				Gui::Spacing();
+				Gui::Separator();
+				Gui::Spacing();
+
+				Gui::Text("Are you sure you want to permanently delete '%s'?", path.filename().string().c_str());
+				Gui::Text("This cannot be undone.");
+
+				Gui::Separator();
+
+				ImVec2 button_size(Gui::GetFontSize() * 12.0f, 0.0f);
+				if (Gui::Button("Yes", button_size))
+				{
+					std::filesystem::remove(path);
+					Gui::CloseCurrentPopup();
+				}
+
+				Gui::SameLine();
+
+				if (Gui::Button("Cancel", button_size))
+					Gui::CloseCurrentPopup();
+
+				Gui::Spacing();
 				Gui::EndPopup();
 			}
 
@@ -190,7 +237,13 @@ namespace Sparky {
 			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				if (directoryEntry.is_directory())
+				{
 					m_CurrentDirectory /= path.filename();
+
+					// We also need to reset the search input text here
+					memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+					m_InputTextFilter.Build();
+				}
 			}
 
 			Gui::TextWrapped(filenameString.c_str());
@@ -206,8 +259,6 @@ namespace Sparky {
 
 		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f);
 		Gui::SliderFloat("Padding", &padding, 4.0f, 64.0f);
-
-		Gui::ShowDemoWindow();
 	}
 
 }
