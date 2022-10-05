@@ -22,21 +22,54 @@ namespace Sparky {
 		// Left
 		static uint32_t selectedSetting = 0;
 		Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
-		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
+		for (auto& assetDirectoryFolder : std::filesystem::directory_iterator(g_AssetPath))
 		{
-			if (Gui::Button(" <-- "))
-			{
-				// Clear the search input text so it does not interfere with the parent directory
-				memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
-				m_InputTextFilter.Build();
+			if (Gui::Button(assetDirectoryFolder.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+				m_CurrentDirectory = assetDirectoryFolder.path();
+		}
+		Gui::EndChild();
 
-				m_CurrentDirectory = m_CurrentDirectory.parent_path();
-			}
+		Gui::SameLine();
 
-			Gui::SameLine();
+		// Right
+		Gui::BeginGroup();
+		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
+		RenderFileExplorer();
+		Gui::EndChild();
+		Gui::EndGroup();
+
+		Gui::End();
+	}
+
+	void ContentBrowserPanel::RenderFileExplorer()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
+		// Make sure cached texture icons exist, if they dont remove them from cache
+		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
+		{
+			++next_it;
+
+			if (!std::filesystem::exists(it->first))
+				m_TextureMap.erase(it);
 		}
 
-		if (Gui::Button(" + "))
+		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(g_AssetPath));
+		if (Gui::Button("  <--  "))
+		{
+			// Clear the search input text so it does not interfere with the parent directory
+			memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+			m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+
+			m_CurrentDirectory = m_CurrentDirectory.parent_path();
+		}
+		Gui::EndDisabled();
+
+		Gui::SameLine();
+
+		if (Gui::Button("  +  "))
 			Gui::OpenPopup("CreateList");
 
 		if (Gui::BeginPopup("CreateList"))
@@ -59,42 +92,9 @@ namespace Sparky {
 
 			Gui::EndPopup();
 		}
-		Gui::EndChild();
 
 		Gui::SameLine();
-
-		// Right
-		Gui::BeginGroup();
-		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
-		if (Gui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
-		{
-			if (Gui::BeginTabItem(m_CurrentDirectory.string().c_str()))
-			{
-				RenderFileExplorer();
-				Gui::EndTabItem();
-			}
-			Gui::EndTabBar();
-		}
-		Gui::EndChild();
-		Gui::EndGroup();
-
-		Gui::End();
-	}
-
-	void ContentBrowserPanel::RenderFileExplorer()
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
-		// Make sure cached texture icons exist, if they dont remove them from cache
-		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
-		{
-			++next_it;
-
-			if (!std::filesystem::exists(it->first))
-				m_TextureMap.erase(it);
-		}
+		Gui::Text(m_CurrentDirectory.string().c_str());
 
 		// Search Bar + Filtering
 		float inputTextSize = Gui::GetWindowWidth() / 2.0f - Gui::CalcTextSize(m_CurrentDirectory.string().c_str()).x;
@@ -103,6 +103,8 @@ namespace Sparky {
 		bool isSearching = Gui::InputTextWithHint("##Search", "Search", m_InputTextFilter.InputBuf, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
 		if (isSearching)
 			m_InputTextFilter.Build();
+
+		Gui::Separator();
 
 		static float padding = 16.0f;
 		static float thumbnailSize = 128.0f;
@@ -121,7 +123,7 @@ namespace Sparky {
 			std::string filenameString = relativePath.filename().string();
 			bool skipDirectoryEntry = false;
 
-			if (!m_InputTextFilter.PassFilter(relativePath.string().c_str()))
+			if (!m_InputTextFilter.PassFilter(relativePath.string().c_str())) // If the search box text doesn't match up we can skip the directory entry
 				skipDirectoryEntry = true;
 
 			if (skipDirectoryEntry)
@@ -242,7 +244,7 @@ namespace Sparky {
 
 					// We also need to reset the search input text here
 					memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
-					m_InputTextFilter.Build();
+					m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 				}
 			}
 
@@ -257,8 +259,10 @@ namespace Sparky {
 		Gui::Separator();
 		Gui::Spacing();
 
-		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f);
-		Gui::SliderFloat("Padding", &padding, 4.0f, 64.0f);
+		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
+		static float newPadding = padding / 4.0f;
+		if (Gui::SliderFloat("Padding", &newPadding, 1.0f, 16.0f, "%.0f"))
+			padding = newPadding * 4.0f;
 	}
 
 }
