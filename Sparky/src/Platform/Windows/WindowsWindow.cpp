@@ -253,6 +253,14 @@ namespace Sparky {
 		glfwSetCursorPos(m_Window, (double)mouseCursorX, (double)mouseCursorY);
 	}
 
+	void WindowsWindow::ShowMouseCursor(bool enabled) const
+	{
+		if (enabled)
+			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		else
+			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
 	void WindowsWindow::Shutdown()
 	{
 		SP_PROFILE_FUNCTION();

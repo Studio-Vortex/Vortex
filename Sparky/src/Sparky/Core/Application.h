@@ -76,10 +76,10 @@ namespace Sparky {
 
 	private:
 		static Application* s_Instance;
-		friend int ::main(int argc, char* argv[]);
+		friend int ::main(int argc, char** argv);
 	};
 
-	// To be defined in CLIENT
+	// To be defined in CLIENT as part of Application Initialization
 	Application* CreateApplication(ApplicationCommandLineArgs args);
 
 }

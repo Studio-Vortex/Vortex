@@ -850,6 +850,7 @@ namespace Sparky {
 
 		m_ActiveScene = m_EditorScene;
 
+		m_HoveredEntity = Entity{};
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 

@@ -36,6 +36,8 @@ namespace Sparky {
 
 		void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const override;
 
+		void ShowMouseCursor(bool enabled) const override;
+
 	private:
 		virtual void Init(const WindowProperties& props);
 		virtual void Shutdown();

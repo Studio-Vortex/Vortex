@@ -16,6 +16,7 @@ namespace Sparky {
 				"Renderer 2D",
 				"Physics 2D",
 				"Editor",
+				"Runtime",
 				"Build",
 			};
 
@@ -150,9 +151,18 @@ namespace Sparky {
 				}
 				Gui::EndCombo();
 			}
+
+			static bool lockEditorCameraRotation = false;
+			if (Gui::Checkbox("Lock Camera Rotation", &lockEditorCameraRotation))
+				EditorCamera::LockCameraRotation(lockEditorCameraRotation);
 		}
 
-		if (selectedSetting == 3) // Build Settings
+		if (selectedSetting == 3) // Runtime Settings
+		{
+
+		}
+
+		if (selectedSetting == 4) // Build Settings
 		{
 			char buffer[256];
 			strcpy(buffer, m_Settings.CurrentEditorScenePath.string().c_str());

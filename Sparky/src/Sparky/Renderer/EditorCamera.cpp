@@ -21,7 +21,9 @@ namespace Sparky {
 
 	void EditorCamera::UpdateView()
 	{
-		//m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
+		if (s_LockEditorCameraRotation)
+			m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
+
 		m_Position = CalcualtePosition(); 
 
 		Math::quaternion orientation = GetOrientation();
@@ -90,12 +92,12 @@ namespace Sparky {
 
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
-		float deltaX = e.GetXOffset() * 0.1f;
+		float deltaX = e.GetXOffset() * 0.15f;
 		float deltaY = e.GetYOffset() * 0.1f;
 		
-		// Poll x scrolling
+		// Handle X Scrolling
 		MousePanHorizontal(deltaX);
-		// Poll y scrolling
+		// Handle Y Scrolling
 		MouseZoom(deltaY);
 
 		UpdateView();

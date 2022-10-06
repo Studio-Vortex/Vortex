@@ -41,6 +41,8 @@ namespace Sparky {
 
 		void ResetPositionToWorldOrigin();
 
+		static void LockCameraRotation(bool lockRotation) { s_LockEditorCameraRotation = lockRotation; }
+
 	private:
 		void UpdateProjection();
 		void UpdateView();
@@ -71,6 +73,8 @@ namespace Sparky {
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
+
+		inline static bool s_LockEditorCameraRotation = false;
 
 	};
 
