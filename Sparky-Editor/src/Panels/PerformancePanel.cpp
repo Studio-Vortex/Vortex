@@ -2,7 +2,7 @@
 
 namespace Sparky {
 
-	void PerformancePanel::OnGuiRender(Entity hoveredEntity, bool showDefault)
+	void PerformancePanel::OnGuiRender(bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];

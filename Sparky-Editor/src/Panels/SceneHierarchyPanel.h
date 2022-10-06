@@ -12,12 +12,14 @@ namespace Sparky {
 
 		void SetContext(const SharedRef<Scene>& context);
 
-		void OnGuiRender();
+		void OnGuiRender(Entity hoveredEntity);
 
 		Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
 
 		void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
+
+		void SetEntityToBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
 	private:
 		template <typename TComponent>

@@ -163,6 +163,7 @@ namespace Sparky
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
+		// Gpu Sampler2D Array
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (size_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
@@ -261,9 +262,6 @@ namespace Sparky
 		// Set the pointer to the beggining of the vertex buffer
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
-		// Reset the starting frame texture slot past the White Texture
-		s_Data.TextureSlotIndex = 1;
-
 		// Same for circles
 		s_Data.CircleIndexCount = 0;
 		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
@@ -271,6 +269,9 @@ namespace Sparky
 		// and lines
 		s_Data.LineVertexCount = 0;
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+
+		// Reset the starting frame texture slot past the White Texture
+		s_Data.TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::NextBatch()
@@ -331,6 +332,7 @@ namespace Sparky
 
 			// Bind a shader and make a draw call
 			s_Data.LineShader->Enable();
+			RenderCommand::SetLineSize(s_Data.LineWidth);
 			RenderCommand::DrawLines(s_Data.LineVA, s_Data.LineVertexCount);
 			s_Data.Stats.DrawCalls++;
 		}
@@ -438,7 +440,7 @@ namespace Sparky
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		// Vertex Descriptions
-		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
+		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale, entityID);
 	}
 
 	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor)

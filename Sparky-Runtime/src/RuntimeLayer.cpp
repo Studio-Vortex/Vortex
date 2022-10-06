@@ -61,23 +61,23 @@ namespace Sparky {
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		static bool open = true;
-
-		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
 
-		Gui::Begin("Game", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+
+		Gui::Begin("Game", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{0, 1}, ImVec2{1, 0});
+		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
 		
 		Gui::End();
-		Gui::PopStyleVar(2);
+
+		Gui::PopStyleVar(3);
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)

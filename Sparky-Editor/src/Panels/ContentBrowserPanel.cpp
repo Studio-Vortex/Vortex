@@ -23,15 +23,18 @@ namespace Sparky {
 		Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
 		Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
 		Gui::Separator();
-		for (auto& assetDirectoryFolder : std::filesystem::directory_iterator(g_AssetPath))
+		for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
 		{
-			if (Gui::Button(assetDirectoryFolder.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+			if (!assetDirectoryEntry.is_directory())
+				continue;
+
+			if (Gui::Button(assetDirectoryEntry.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
 			{
 				// Clear the search input text so it does not interfere with the child directory
 				memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
 				m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 
-				m_CurrentDirectory = assetDirectoryFolder.path();
+				m_CurrentDirectory = assetDirectoryEntry.path();
 			}
 		}
 		Gui::EndChild();
@@ -45,23 +48,61 @@ namespace Sparky {
 		// Right-click on blank space in content browser panel
 		if (Gui::BeginPopupContextWindow(0, 1, false))
 		{
-			if (Gui::MenuItem("New Folder"))
+			if (Gui::BeginMenu("Create"))
 			{
-				m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("New Folder");
-				std::filesystem::create_directory(m_PathToBeRenamed);
-				Gui::CloseCurrentPopup();
-			}
-			Gui::Separator();
+				if (Gui::MenuItem("Folder"))
+				{
+					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("New Folder");
+					std::filesystem::create_directory(m_PathToBeRenamed);
+					Gui::CloseCurrentPopup();
+				}
+				Gui::Separator();
 
-			if (Gui::MenuItem("New Scene"))
-			{
-				m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.sparky");
-				std::ofstream newSceneFile(m_PathToBeRenamed);
-				newSceneFile << "Scene: Untitled\nEntities:";
-				newSceneFile.close();
+				if (Gui::MenuItem("Scene"))
+				{
+					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.sparky");
+					std::ofstream newSceneFile(m_PathToBeRenamed);
+					newSceneFile << "Scene: Untitled\nEntities:";
+					newSceneFile.close();
 
-				Gui::CloseCurrentPopup();
+					Gui::CloseCurrentPopup();
+				}
+				Gui::Separator();
+
+				if (Gui::MenuItem("C# Script"))
+				{
+					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
+					std::ofstream newScriptFile(m_PathToBeRenamed);
+					newScriptFile << R"(
+using System;
+using Sparky;
+
+public class Untitled : Entity
+{
+	public void override OnCreate()
+	{
+		// Called once before the first frame
+	}
+
+	public void override OnUpdate(float delta)
+	{
+		// Called once every frame
+	}
+
+	public void override OnDestroy()
+	{
+		
+	}
+}
+)";
+					newScriptFile.close();
+
+					Gui::CloseCurrentPopup();
+				}
+
+				Gui::EndMenu();
 			}
+
 
 			Gui::EndPopup();
 		}

@@ -6,37 +6,43 @@ namespace Sandbox {
 	public class PlatformerPlayer : Entity
 	{
 		public float Speed;
-		private Vector2 m_Velocity;
+		public float JumpForce;
+		public bool IsGrounded;
+		public float Friction;
+		private Vector3 m_Velocity;
 		private RigidBody2D m_Rigidbody;
-		private CircleCollider2D m_CircleCollider;
 
 		public override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
+			Debug.Info("Sandbox.PlatformerPlayer::OnCreate()");
 		}
 
 		public override void OnUpdate(float delta)
 		{
-			m_Velocity = Vector2.Zero;
+			IsGrounded = false;
 
 			if (Input.IsKeyDown(KeyCode.A))
 				m_Velocity.X = -1.0f;
 			if (Input.IsKeyDown(KeyCode.D))
 				m_Velocity.X = 1.0f;
 
-			if (Input.IsKeyDown(KeyCode.P))
-				m_CircleCollider.Restitution += 0.1f * delta;
-			if (Input.IsKeyDown(KeyCode.L))
-				m_CircleCollider.Restitution -= 0.1f * delta;
+			if (transform.Translation.Y == 0.0f)
+				IsGrounded = true;
 
-			m_Velocity *= Speed * 5.0f * delta;
+			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
+				m_Velocity.Y = 1.0f;
 
-			m_Rigidbody.ApplyForce(m_Velocity, true);
+			//if (!IsGrounded)
+				//m_Velocity.Y /= Friction;
+
+			m_Velocity *= Speed * delta;
+			m_Rigidbody.ApplyLinearImpulse(m_Velocity.XY, true);
 		}
 
 		public override void OnDestroy()
 		{
-
+			Debug.Info("Sandbox.PlatformerPlayer::OnDestroy()");
 		}
 	}
 

@@ -7,7 +7,7 @@ namespace Sandbox {
 	{
 		public Vector3 Speed;
 		public Vector3 RotationSpeed;
-		private Vector3 Velocity;
+		private Vector3 m_Velocity;
 		private Vector3 m_Rotation;
 		
 		public bool FixedRotation;
@@ -15,30 +15,35 @@ namespace Sandbox {
 		public override void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.W))
-				Velocity = Vector3.Forward;
+				m_Velocity = Vector3.Forward;
 			else if (Input.IsKeyDown(KeyCode.S))
-				Velocity = Vector3.Back;
+				m_Velocity = Vector3.Back;
 
 			if (Input.IsKeyDown(KeyCode.A))
-				Velocity = Vector3.Left;
+				m_Velocity = Vector3.Left;
 			else if (Input.IsKeyDown(KeyCode.D))
-				Velocity = Vector3.Right;
+				m_Velocity = Vector3.Right;
 
 			if (!FixedRotation)
 			{
-				if (Input.IsKeyDown(KeyCode.Q))
+				if (Input.IsKeyDown(KeyCode.Left))
 					m_Rotation.Y = 1.0f;
-				if (Input.IsKeyDown(KeyCode.E))
+				if (Input.IsKeyDown(KeyCode.Right))
 					m_Rotation.Y = -1.0f;
+
+				if (Input.IsKeyDown(KeyCode.Up))
+					m_Rotation.X = 1.0f;
+				if (Input.IsKeyDown(KeyCode.Down))
+					m_Rotation.X = -1.0f;
 			}
 
 			if (Input.IsKeyDown(KeyCode.LeftShift))
-				Velocity *= 2.0f;
+				m_Velocity *= 2.0f;
 
-			Velocity *= Speed * delta;
+			m_Velocity *= Speed * delta;
 			m_Rotation *= RotationSpeed * delta;
 
-			transform.Translation += Velocity;
+			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
 		}
 	}

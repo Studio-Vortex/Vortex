@@ -9,7 +9,7 @@ namespace Sparky {
 	public:
 		PerformancePanel() = default;
 
-		void OnGuiRender(Entity hoveredEntity, bool showDefault = false);
+		void OnGuiRender(bool showDefault = false);
 		void ShowPanel() { s_ShowPanel = true; }
 
 	private:

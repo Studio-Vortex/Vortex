@@ -4,7 +4,7 @@ Entities:
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [0, -1.70400727, 0]
+      Translation: [2.32830644e-10, -0.680000007, 0]
       Rotation: [0, 0, 0]
       Scale: [8.10801125, 0.326045752, 1]
     SpriteRendererComponent:
@@ -42,7 +42,7 @@ Entities:
     TagComponent:
       Tag: Player
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [-2.98023224e-08, 1.1920929e-07, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
@@ -58,3 +58,15 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.PlatformerPlayer
+      ScriptFields:
+        - Name: Friction
+          Type: Float
+          Data: 2
+        - Name: JumpForce
+          Type: Float
+          Data: 50
+        - Name: Speed
+          Type: Float
+          Data: 10

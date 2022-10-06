@@ -338,12 +338,12 @@ namespace Sparky {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			m_SceneHierarchyPanel.OnGuiRender();
+			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
-			m_PerformancePanel.OnGuiRender(m_HoveredEntity);
+			m_PerformancePanel.OnGuiRender();
 			m_AboutPanel.OnGuiRender();
 		}
 
@@ -455,13 +455,6 @@ namespace Sparky {
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
 
 		Gui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-		const char* name = "None";
-		if (m_HoveredEntity && m_ActiveScene)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str();
-
-		Gui::Text(" Hovered Entity: %s", name);
-		Gui::SameLine();
 
 		bool toolbarEnabled = (bool)m_ActiveScene;
 
@@ -629,6 +622,16 @@ namespace Sparky {
 			}
 
 			// Tools
+			case Key::F2:
+			{
+				Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+
+				if (selectedEntity)
+					m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+
+				break;
+			}
+
 			case Key::A:
 			{
 				if (controlPressed)
@@ -732,7 +735,14 @@ namespace Sparky {
 			case Mouse::ButtonLeft:
 			{
 				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+				{
+					// TODO: Fix renaming when pressing F2 and selecting another entity
+					// Currently this will rename the clicked entity to whatever the previous entity's name was
+					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
+						m_SceneHierarchyPanel.SetEntityToBeRenamed(false);
+
 					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+				}
 
 				break;
 			}

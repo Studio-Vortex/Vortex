@@ -20,7 +20,7 @@ namespace Sparky {
 		m_SelectedEntity = {};
 	}
 
-	void SceneHierarchyPanel::OnGuiRender()
+	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
 	{
 		Gui::Begin("Scene Hierarchy");
 
@@ -122,6 +122,15 @@ namespace Sparky {
 
 		if (m_SelectedEntity)
 			DrawComponents(m_SelectedEntity);
+		else
+		{
+			const char* name = "None";
+			if (hoveredEntity && m_ContextScene)
+				name = hoveredEntity.GetComponent<TagComponent>().Tag.c_str();
+
+			Gui::SetCursorPosX(10.0f);
+			Gui::Text("Hovered Entity: %s", name);
+		}
 
 		Gui::End();
 	}
@@ -150,7 +159,7 @@ namespace Sparky {
 		// Right-click on entity for utilities popup
 		if (Gui::BeginPopupContextItem())
 		{
-			if (Gui::MenuItem("Rename"))
+			if (Gui::MenuItem("Rename", "F2"))
 			{
 				m_SelectedEntity = entity;
 				m_EntityShouldBeRenamed = true;
@@ -158,14 +167,14 @@ namespace Sparky {
 			}
 			Gui::Separator();
 
-			if (Gui::MenuItem("Duplicate Entity"))
+			if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
 			{
 				m_ContextScene->DuplicateEntity(entity);
 				Gui::CloseCurrentPopup();
 			}
 			Gui::Separator();
 
-			if (Gui::MenuItem("Delete Entity"))
+			if (Gui::MenuItem("Delete Entity", "Del"))
 				entityShouldBeDeleted = true;
 
 			Gui::EndPopup();
@@ -496,9 +505,9 @@ namespace Sparky {
 
 		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)
 		{
-			static std::vector<std::string> entityClassNameStrings;
-			static bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
-			static bool allEntityClassNamesCollected = false;
+			std::vector<std::string> entityClassNameStrings;
+			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+			bool allEntityClassNamesCollected = false;
 
 			// Retrieve all entity class names to display them in combo box
 			if (!allEntityClassNamesCollected)
@@ -511,7 +520,7 @@ namespace Sparky {
 				allEntityClassNamesCollected = true;
 			}
 
-			static const char* currentClassName = component.ClassName.c_str();
+			const char* currentClassName = component.ClassName.c_str();
 
 			// Display available entity classes to choose from
 			if (allEntityClassNamesCollected && Gui::BeginCombo("Class", currentClassName))
@@ -524,7 +533,7 @@ namespace Sparky {
 					if (Gui::Selectable(currentEntityClassNameString, isSelected))
 					{
 						currentClassName = currentEntityClassNameString;
-						component.ClassName = currentClassName;
+						component.ClassName = std::string(currentClassName);
 					}
 
 					if (isSelected)
