@@ -39,6 +39,8 @@ namespace Sparky {
 
 		bool IsRunning() const { return m_IsRunning; }
 
+		b2World* GetPhysicsWorld() { return m_PhysicsWorld; }
+
 		static int32_t GetPhysicsWorldVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }
 		static void SetPhysicsWorldVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorldVeloctityIterations = veloctiyIterations; }
 
@@ -92,7 +94,6 @@ namespace Sparky {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};
-
 
 
 }

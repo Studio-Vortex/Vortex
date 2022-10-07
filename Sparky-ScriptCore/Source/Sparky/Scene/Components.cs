@@ -196,6 +196,34 @@
 
 	public class BoxCollider2D : Component
 	{
+		public Vector2 Offset
+		{
+			get
+			{
+				InternalCalls.BoxCollider2DComponent_GetOffset(Entity.ID, out Vector2 result);
+				return result;
+			}
+
+			set
+			{
+				InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, ref value);
+			}
+		}
+
+		public Vector2 Size
+		{
+			get
+			{
+				InternalCalls.BoxCollider2DComponent_GetSize(Entity.ID, out Vector2 result);
+				return result;
+			}
+
+			set
+			{
+				InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, ref value);
+			}
+		}
+
 		public float Density
 		{
 			get
@@ -255,6 +283,34 @@
 
 	public class CircleCollider2D : Component
 	{
+		public Vector2 Offset
+		{
+			get
+			{
+				InternalCalls.CircleCollider2DComponent_GetOffset(Entity.ID, out Vector2 result);
+				return result;
+			}
+
+			set
+			{
+				InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, ref value);
+			}
+		}
+
+		public float Radius
+		{
+			get
+			{
+				InternalCalls.CircleCollider2DComponent_GetRadius(Entity.ID, out float result);
+				return result;
+			}
+
+			set
+			{
+				InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, value);
+			}
+		}
+
 		public float Density
 		{
 			get

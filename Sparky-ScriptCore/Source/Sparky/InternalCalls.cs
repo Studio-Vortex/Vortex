@@ -139,6 +139,13 @@ namespace Sparky {
 
 		#endregion
 
+		#region Physics2D
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Physics2D_Raycast(ref Vector2 start, ref Vector2 end);
+
+		#endregion
+
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -156,6 +163,18 @@ namespace Sparky {
 		#endregion
 
 		#region BoxCollider2D
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxCollider2DComponent_GetOffset(ulong entityID, out Vector2 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxCollider2DComponent_SetOffset(ulong entityID, ref Vector2 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxCollider2DComponent_GetSize(ulong entityID, out Vector2 size);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxCollider2DComponent_SetSize(ulong entityID, ref Vector2 size);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void BoxCollider2DComponent_GetDensity(ulong entityID, out float result);
@@ -184,6 +203,18 @@ namespace Sparky {
 		#endregion
 
 		#region CircleCollider2D
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleCollider2DComponent_GetOffset(ulong entityID, out Vector2 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleCollider2DComponent_SetOffset(ulong entityID, ref Vector2 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleCollider2DComponent_GetRadius(ulong entityID, out float radius);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleCollider2DComponent_SetRadius(ulong entityID, float radius);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CircleCollider2DComponent_GetDensity(ulong entityID, out float result);

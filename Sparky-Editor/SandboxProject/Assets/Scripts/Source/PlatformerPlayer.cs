@@ -6,42 +6,41 @@ namespace Sandbox {
 	public class PlatformerPlayer : Entity
 	{
 		public float AnimationWaitTime = 1.0f;
-		public float Friction = 2.0f;
 		public float JumpForce;
 		public float PlayerResetYAxis = -50.0f;
 		public float Speed;
-		public float YPosLastFrame;
 		public float WaitTime;
 		public Vector3 StartPosition;
 		public Vector3 Velocity;
 
-		public bool DisableRunAnimation;
 		public bool IsGrounded;
+		public bool AnimationReady;
+		public bool IsRunning;
 
 		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
 		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
 		private RigidBody2D m_Rigidbody;
+		private BoxCollider2D m_BoxCollider;
 		private SpriteRenderer m_Sprite;
-		private bool m_AnimationReady;
 
 		public override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
+			m_BoxCollider = GetComponent<BoxCollider2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
 			StartPosition = transform.Translation;
 		}
 
 		public override void OnUpdate(float delta)
 		{
-			IsGrounded = false;
+			Vector2 playerFootPoint = new Vector2(transform.Translation.X, (transform.Translation.Y - m_BoxCollider.Size.Y) + m_BoxCollider.Offset.Y);
+			Vector2 groundPoint = playerFootPoint;
+			groundPoint.Y -= 0.1f;
 
-			if (WaitTime <= 0.0f)
-			{
-				WaitTime = AnimationWaitTime;
-				m_AnimationReady = true;
-			}
-
-			WaitTime -= delta;
+			if (Physics2D.Raycast(playerFootPoint, groundPoint))
+				IsGrounded = true;
+			else
+				IsGrounded = false;
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{
@@ -51,51 +50,59 @@ namespace Sandbox {
 
 			if (Input.IsKeyDown(KeyCode.A))
 			{
+				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
 				Velocity.X = -1.0f;
 
-				PlayRunningAnimation();
+				PlayRunningAnimation(delta);
 			}
 			else if (Input.IsKeyDown(KeyCode.D))
 			{
+				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 180.0f, 0.0f);
 				Velocity.X = 1.0f;
 
-				PlayRunningAnimation();
+				PlayRunningAnimation(delta);
 			}
-
-			if (YPosLastFrame == transform.Translation.Y)
-				IsGrounded = true;
-
-			if (!IsGrounded)
-				m_Sprite.Texture = m_JumpTextureString;
 			else
-				m_Sprite.Texture = m_NormalTextureString;
+				IsRunning = false;
 
 			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
 				Velocity.Y = 1.0f;
 
 			if (!IsGrounded)
-				Velocity.Y /= Friction;
-
-			YPosLastFrame = transform.Translation.Y;
+				m_Sprite.Texture = m_JumpTextureString;
+			else
+				m_Sprite.Texture = m_NormalTextureString;
 
 			Velocity.X *= Speed * delta;
 			Velocity.Y *= JumpForce * delta;
 			m_Rigidbody.ApplyLinearImpulse(Velocity.XY, true);
 		}
 
-		private void PlayRunningAnimation()
+		private void PlayRunningAnimation(float delta)
 		{
-			if (!IsGrounded && !m_AnimationReady && !DisableRunAnimation)
+			if (IsGrounded)
+				WaitTime -= delta;
+
+			if (WaitTime <= 0.0f)
+			{
+				WaitTime = AnimationWaitTime;
+				AnimationReady = true;
+			}
+
+			if (!IsGrounded && !AnimationReady)
 				return;
 
 			if (m_Sprite.Texture == m_NormalTextureString)
+			{
 				m_Sprite.Texture = m_JumpTextureString;
+				Debug.Log("setting texture");
+			}
 			else
 				m_Sprite.Texture = m_NormalTextureString;
 
-			m_AnimationReady = false;
+			AnimationReady = false;
 		}
 
 		public override void OnDestroy()

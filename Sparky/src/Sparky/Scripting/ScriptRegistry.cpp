@@ -18,10 +18,32 @@
 #include <mono/metadata/reflection.h>
 
 #include <box2d/b2_body.h>
-#include <box2d/b2_collision.h>
+#include <box2d/b2_world.h>
+#include <box2d/b2_fixture.h>
 
 #include <cstdlib>
 #include <ctime>
+
+// Derived class of Box2D RayCastCallback
+class RayCastCallback : public b2RayCastCallback
+{
+public:
+	RayCastCallback() : fixture(nullptr) { }
+
+	float ReportFixture(b2Fixture* fixture_, const b2Vec2& point_, const b2Vec2& normal_, float fraction_) override
+	{
+		fixture = fixture_;
+		point = point_;
+		normal = normal_;
+		fraction = fraction_;
+		return fraction;
+	}
+
+	b2Fixture* fixture;
+	b2Vec2 point;
+	b2Vec2 normal;
+	float fraction;
+};
 
 namespace Sparky {
 
@@ -40,6 +62,7 @@ namespace Sparky {
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		SP_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Function Map!");
+		
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
@@ -273,14 +296,14 @@ namespace Sparky {
 
 #pragma region Camera Component
 
-	static void CameraComponent_GetPrimary(UUID entityUUID, bool* primary)
+	static void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*primary = entity.GetComponent<CameraComponent>().Primary;
+		*outPrimary = entity.GetComponent<CameraComponent>().Primary;
 	}
 
 	static void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
@@ -293,14 +316,14 @@ namespace Sparky {
 		entity.GetComponent<CameraComponent>().Primary = primary;
 	}
 	
-	static void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* fixedAspectRatio)
+	static void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*fixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
+		*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
 	}
 	
 	static void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
@@ -501,7 +524,69 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Physics2D
+
+	static bool Physics2D_Raycast(Math::vec2* start, Math::vec2* end)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		
+		// Create an instance of the callback
+		RayCastCallback raycastCallback;
+
+		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
+
+		if (raycastCallback.fixture != nullptr)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+#pragma endregion
+
 #pragma region Box Collider2D Component
+
+	static void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+	}
+
+	static void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
+	}
+	
+	static void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
+	}
+	
+	static void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
+	}
 
 	static void BoxCollider2DComponent_GetDensity(UUID entityUUID, float outDensity)
 	{
@@ -520,7 +605,9 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().Density = density;
+		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+		// Since we changed the density we must recalculate the mass data according to box2d
+		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
 	}
 
 	static void BoxCollider2DComponent_GetFriction(UUID entityUUID, float outFriction)
@@ -540,7 +627,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().Friction = friction;
+		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
 	}
 
 	static void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float outRestitution)
@@ -560,7 +647,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().Restitution = restitution;
+		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
 	}
 
 	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float outRestitutionThreshold)
@@ -580,12 +667,52 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
+		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitutionThreshold(restitutionThreshold);
 	}
 
 #pragma endregion
 
 #pragma region Circle Collider2D Component
+
+	static void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
+	}
+
+	static void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
+	}
+
+	static void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
+	}
+
+	static void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
+	}
 
 	static void CircleCollider2DComponent_GetDensity(UUID entityUUID, float outDensity)
 	{
@@ -604,7 +731,9 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().Density = density;
+		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+		// Since we changed the density we must recalculate the mass data according to box2d
+		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
 	}
 
 	static void CircleCollider2DComponent_GetFriction(UUID entityUUID, float outFriction)
@@ -624,7 +753,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().Friction = friction;
+		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
 	}
 
 	static void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float outRestitution)
@@ -644,7 +773,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().Restitution = restitution;
+		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
 	}
 
 	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float outRestitutionThreshold)
@@ -664,7 +793,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
+		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
 	}
 
 #pragma endregion
@@ -737,6 +866,8 @@ namespace Sparky {
 	{
 		return Input::IsKeyReleased(key);
 	}
+
+	// TODO Input_Mouse functions
 
 #pragma endregion
 
@@ -837,6 +968,7 @@ namespace Sparky {
 	{
 
 #pragma region Entity
+
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
 		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
@@ -853,50 +985,72 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		SP_ADD_INTERNAL_CALL(Entity_Destroy);
+
 #pragma endregion
 
 #pragma region Transform Component
+
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+
 #pragma endregion
 
 #pragma region Transform Component
+
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+
 #pragma endregion
 
 #pragma region Sprite Renderer Component
+
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetTexture);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetTexture);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetScale);
+
 #pragma endregion
 
 #pragma region Circle Renderer Component
+
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetThickness);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_SetThickness);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetFade);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_SetFade);
+
+#pragma endregion
+
+#pragma region Physics2D
+
+		SP_ADD_INTERNAL_CALL(Physics2D_Raycast);
+
 #pragma endregion
 
 #pragma region RigidBody2D Component
+
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
+
 #pragma endregion
 
 #pragma region Box Collider2D Component
+
+		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);
+		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetSize);
+		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetSize);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetDensity);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetDensity);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetFriction);
@@ -905,9 +1059,15 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetRestitution);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetRestitutionThreshold);
+
 #pragma endregion
 
 #pragma region Circle Collider2D Component
+
+		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetOffset);
+		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetRadius);
+		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRadius);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetDensity);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetDensity);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetFriction);
@@ -916,32 +1076,43 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitution);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
+
 #pragma endregion
 
 #pragma region RandomDevice
+
 		SP_ADD_INTERNAL_CALL(RandomDevice_NewInt32);
 		SP_ADD_INTERNAL_CALL(RandomDevice_NewFloat);
+
 #pragma endregion
 
 #pragma region Algebra
+
 		SP_ADD_INTERNAL_CALL(Algebra_CrossProductVec3);
+
 #pragma endregion
 
 #pragma region Renderer
+
 		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
+
 #pragma endregion
 
 #pragma region Input
+
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+
 #pragma endregion
 
 #pragma region Debug
+
 		SP_ADD_INTERNAL_CALL(Debug_Log);
 		SP_ADD_INTERNAL_CALL(Debug_Info);
 		SP_ADD_INTERNAL_CALL(Debug_Warn);
 		SP_ADD_INTERNAL_CALL(Debug_Error);
 		SP_ADD_INTERNAL_CALL(Debug_Critical);
+
 #pragma endregion
 
 	}
