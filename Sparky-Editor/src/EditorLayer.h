@@ -115,8 +115,20 @@ namespace Sparky {
 
 		// Settings
 
+		bool m_GizmosEnabled = true;
+		bool m_GizmoSnapEnabled = true;
+		bool m_OrthographicGizmos = false;
+		float m_SnapValue = 0.5f;
+		float m_RotationSnapValue = 45.0f;
+		bool m_DrawGizmoGrid = true;
+		float m_GizmoGridSize = 1.0f;
+
+		SettingsPanel::Settings::GizmoSettings m_GizmoSettings{
+			m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize
+		};
+
 		SettingsPanel::Settings m_Settings{ 
-			m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders, m_EditorClearColor, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+			m_PhysicsColliderColor, m_ShowPhysicsColliders, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
 		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 

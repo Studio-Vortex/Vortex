@@ -191,6 +191,22 @@ namespace Sparky {
 			static bool lockEditorCameraRotation = false;
 			if (Gui::Checkbox("Lock Camera Rotation", &lockEditorCameraRotation))
 				EditorCamera::LockCameraRotation(lockEditorCameraRotation);
+
+			Gui::Spacing();
+
+			// Gizmo Settings
+			Gui::Text("Gizmos");
+			Gui::Separator();
+			Gui::Spacing();
+
+			// Minimums don't work here for some reason
+			Gui::Checkbox("Enabled", &m_Settings.Gizmos.Enabled);
+			Gui::Checkbox("Orthographic Gizmos", &m_Settings.Gizmos.IsOrthographic);
+			Gui::Checkbox("Snap", &m_Settings.Gizmos.SnapEnabled);
+			Gui::DragFloat("Snap Value", &m_Settings.Gizmos.SnapValue, 0.05f, 0.05f, 0.0f, "%.2f");
+			Gui::DragFloat("Rotation Snap Value", &m_Settings.Gizmos.RotationSnapValue, 1.0f, 1.0f, 0.0f, "%.2f");
+			Gui::Checkbox("Draw Grid", &m_Settings.Gizmos.DrawGrid);
+			Gui::DragFloat("Grid Size", &m_Settings.Gizmos.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
 		}
 
 		if (selectedSetting == 3) // Runtime Settings

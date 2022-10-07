@@ -10,9 +10,23 @@ namespace Sparky {
 		struct Settings
 		{
 			Math::vec4& ColliderColor;
-			float& EditorCameraFOV;
 			bool& ShowColliders;
+			float& EditorCameraFOV;
 			Math::vec3& ClearColor;
+
+			struct GizmoSettings
+			{
+				bool& Enabled;
+				bool& IsOrthographic;
+				bool& SnapEnabled;
+				float& SnapValue;
+				float& RotationSnapValue;
+				bool& DrawGrid;
+				float& GridSize;
+			};
+
+			GizmoSettings& Gizmos;
+
 			const std::filesystem::path& CurrentEditorScenePath;
 			std::function<void()> LaunchRuntimeCallback;
 		};

@@ -28,23 +28,18 @@ namespace Sparky {
 
 		if (m_ContextScene)
 		{
-			if (m_EntityShouldBeDestroyed)
+			if (m_EntityShouldBeDestroyed && m_SelectedEntity)
 			{
-				auto view = m_ContextScene->GetAllEntitiesWith<IDComponent>();
-				for (auto& e : view)
-				{
-					if (Entity entity{ e, m_ContextScene.get() }; m_SelectedEntity == entity)
-					{
-						m_SelectedEntity = {};
-						m_EntityShouldBeDestroyed = false;
-						
-						// If we are hovering on the entity we must reset it otherwise entt will complain
-						if (hoveredEntity == entity)
-							hoveredEntity = Entity{};
+				Entity entityToBeDestroyed = m_SelectedEntity;
 
-						m_ContextScene->DestroyEntity(entity);
-					}
-				}
+				m_SelectedEntity = {};
+				m_EntityShouldBeDestroyed = false;
+						
+				// If we are hovering on the entity we must reset it otherwise entt will complain
+				if (hoveredEntity == entityToBeDestroyed)
+					hoveredEntity = Entity{};
+
+				m_ContextScene->DestroyEntity(entityToBeDestroyed);
 			}
 
 			m_ContextScene->m_Registry.each([&](auto entityID)

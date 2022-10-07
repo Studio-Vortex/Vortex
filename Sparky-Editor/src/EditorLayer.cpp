@@ -406,7 +406,8 @@ namespace Sparky {
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1 && isInEditMode && !Input::IsKeyPressed(Key::LeftAlt))
 		{
-			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::Enable(m_GizmosEnabled);
+			ImGuizmo::SetOrthographic(m_OrthographicGizmos);
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
@@ -416,13 +417,12 @@ namespace Sparky {
 			Math::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
-			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			Math::mat4 transform = tc.GetTransform();
+			auto& transformComponent = selectedEntity.GetComponent<TransformComponent>();
+			Math::mat4 transform = transformComponent.GetTransform();
 
 			// Snapping
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			// Snap to 45 degrees for rotation only, otherwise snap by half one unit
-			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? 45.0f : 0.5f; // EXPOSE IN SETTINGS ///////////////////////////////////////////////////////////////////////////
+			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? m_RotationSnapValue : m_SnapValue;
 
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
@@ -430,20 +430,23 @@ namespace Sparky {
 			ImGuizmo::Manipulate(
 				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(transform),
-				nullptr, snap ? snapValues.data() : nullptr
+				nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
 			);
 
-			ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), 5);// expose in settings/////////////////////////
-			//ImGuizmo::Enable(false); expose in settings/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			if (m_DrawGizmoGrid)
+				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), m_GizmoGridSize);
 
 			if (ImGuizmo::IsUsing())
 			{
-				Math::vec3 translation, rotation, scale;
+				Math::vec3 translation;
+				Math::vec3 rotation;
+				Math::vec3 scale;
+
 				Math::DecomposeTransform(transform, translation, rotation, scale);
-				Math::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
+				Math::vec3 deltaRotation = rotation - transformComponent.Rotation;
+				transformComponent.Translation = translation;
+				transformComponent.Rotation += deltaRotation;
+				transformComponent.Scale = scale;
 			}
 		}
 
