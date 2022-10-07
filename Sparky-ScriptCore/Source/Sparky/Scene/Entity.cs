@@ -36,7 +36,7 @@ namespace Sparky {
 			return component;
 		}
 
-		public void AddComponent<T>()
+		public T AddComponent<T>()
 			where T : Component, new()
 		{
 			if (!HasComponent<T>())
@@ -45,13 +45,18 @@ namespace Sparky {
 
 				switch (componentName)
 				{
+					case "Sparky.Camera":           InternalCalls.Entity_AddCamera(ID);           break;
 					case "Sparky.SpriteRenderer":   InternalCalls.Entity_AddSpriteRenderer(ID);   break;
 					case "Sparky.CircleRenderer":   InternalCalls.Entity_AddCircleRenderer(ID);   break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_AddRigidBody2D(ID);      break;
 					case "Sparky.BoxCollider2D":    InternalCalls.Entity_AddBoxCollider2D(ID);    break;
 					case "Sparky.CircleCollider2D": InternalCalls.Entity_AddCircleCollider2D(ID); break;
 				}
+
+				return GetComponent<T>();
 			}
+
+			return null;
 		}
 
 		public void RemoveComponent<T>()
@@ -63,6 +68,7 @@ namespace Sparky {
 
 				switch (componentName)
 				{
+					case "Sparky.Camera":           InternalCalls.Entity_RemoveCamera(ID);           break;
 					case "Sparky.SpriteRenderer":   InternalCalls.Entity_RemoveSpriteRenderer(ID);   break;
 					case "Sparky.CircleRenderer":   InternalCalls.Entity_RemoveCircleRenderer(ID);   break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_RemoveRigidBody2D(ID);      break;

@@ -50,19 +50,64 @@
 		}
 	}
 
+	public class Camera : Component
+	{
+		public bool Primary
+		{
+			get
+			{
+				InternalCalls.CameraComponent_GetPrimary(Entity.ID, out bool primary);
+				return primary;
+			}
+
+			set
+			{
+				InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
+			}
+		}
+
+		public bool FixedAspectRatio
+		{
+			get
+			{
+				InternalCalls.CameraComponent_GetFixedAspectRatio(Entity.ID, out bool fixedAspectRatio);
+				return fixedAspectRatio;
+			}
+
+			set
+			{
+				InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
+			}
+		}
+	}
+
 	public class SpriteRenderer: Component
 	{
 		public Vector4 Color
 		{
 			get
 			{
-				InternalCalls.SpriteComponent_GetColor(Entity.ID, out Vector4 color);
+				InternalCalls.SpriteRendererComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
 
 			set
 			{
-				InternalCalls.SpriteComponent_SetColor(Entity.ID, ref value);
+				InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
+			}
+		}
+
+		public string Texture
+		{
+			get
+			{
+				InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID, out string texturePath);
+				return texturePath;
+			}
+
+			set
+			{
+				InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value);
 			}
 		}
 
@@ -70,13 +115,13 @@
 		{
 			get
 			{
-				InternalCalls.SpriteComponent_GetScale(Entity.ID, out float scale);
+				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out float scale);
 				return scale;
 			}
 
 			set
 			{
-				InternalCalls.SpriteComponent_SetScale(Entity.ID, value);
+				InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, value);
 			}
 		}
 	}

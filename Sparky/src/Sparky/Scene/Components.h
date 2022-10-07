@@ -46,6 +46,16 @@ namespace Sparky {
 		}
 	};
 
+	struct CameraComponent
+	{
+		SceneCamera Camera;
+		bool Primary = true;
+		bool FixedAspectRatio = false;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+	};
+
 	struct SpriteRendererComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
@@ -66,16 +76,6 @@ namespace Sparky {
 
 		CircleRendererComponent() = default;
 		CircleRendererComponent(const CircleRendererComponent&) = default;
-	};
-
-	struct CameraComponent
-	{
-		SceneCamera Camera;
-		bool Primary = true;
-		bool FixedAspectRatio = false;
-
-		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
 	};
 
 	// Physics components
@@ -164,7 +164,7 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		SpriteRendererComponent, CircleRendererComponent, CameraComponent,
+		CameraComponent, SpriteRendererComponent, CircleRendererComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 

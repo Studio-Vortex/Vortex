@@ -43,6 +43,26 @@ namespace Sparky {
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
+	static void Entity_AddCamera(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<CameraComponent>();
+	}
+
+	static void Entity_RemoveCamera(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<CameraComponent>();
+	}
+
 	static void Entity_AddSpriteRenderer(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -207,6 +227,11 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
+
+		// Since we store rotation in radians we must convert to degrees here
+		outRotation->x = Math::Rad2Deg(outRotation->x);
+		outRotation->y = Math::Rad2Deg(outRotation->y);
+		outRotation->z = Math::Rad2Deg(outRotation->z);
 	}
 
 	static void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
@@ -215,6 +240,11 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		// Since we store rotation in radians we must convert to radians here
+		rotation->x = Math::Deg2Rad(rotation->x);
+		rotation->y = Math::Deg2Rad(rotation->y);
+		rotation->z = Math::Deg2Rad(rotation->z);
 
 		entity.GetComponent<TransformComponent>().Rotation = *rotation;
 	}
@@ -241,9 +271,53 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Camera Component
+
+	static void CameraComponent_GetPrimary(UUID entityUUID, bool* primary)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*primary = entity.GetComponent<CameraComponent>().Primary;
+	}
+
+	static void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CameraComponent>().Primary = primary;
+	}
+	
+	static void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* fixedAspectRatio)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*fixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
+	}
+	
+	static void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
+	}
+
+#pragma endregion
+
 #pragma region Sprite Renderer Component
 
-	static void SpriteComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+	static void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -253,7 +327,7 @@ namespace Sparky {
 		*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
 	}
 
-	static void SpriteComponent_SetColor(UUID entityUUID, Math::vec4* color)
+	static void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -263,7 +337,7 @@ namespace Sparky {
 		entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
 	}
 
-	static void SpriteComponent_GetScale(UUID entityUUID, float outScale)
+	static void SpriteRendererComponent_GetScale(UUID entityUUID, float outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -273,7 +347,33 @@ namespace Sparky {
 		outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
 	}
 
-	static void SpriteComponent_SetScale(UUID entityUUID, float scale)
+	static void SpriteRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
+
+		outTexturePathString = mono_string_new_wrapper(texturePath.c_str());
+	}
+
+	static void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
+	{
+		char* texturePathCStr = mono_string_to_utf8(texturePathString);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
+
+		mono_free(texturePathCStr);
+	}
+
+	static void SpriteRendererComponent_SetScale(UUID entityUUID, float scale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -571,7 +671,7 @@ namespace Sparky {
 
 #pragma region Random
 
-	static int Random_Range_Int32(int min, int max)
+	static int RandomDevice_NewInt32(int min, int max)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -583,7 +683,7 @@ namespace Sparky {
 		return uniformDistribution(engine);
 	}
 
-	static float Random_Range_Float(float min, float max)
+	static float RandomDevice_NewFloat(float min, float max)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -738,6 +838,8 @@ namespace Sparky {
 
 #pragma region Entity
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
+		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
 		SP_ADD_INTERNAL_CALL(Entity_AddSpriteRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveSpriteRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleRenderer);
@@ -762,11 +864,20 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 #pragma endregion
 
+#pragma region Transform Component
+		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
+		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
+		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
+		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+#pragma endregion
+
 #pragma region Sprite Renderer Component
-		SP_ADD_INTERNAL_CALL(SpriteComponent_GetColor);
-		SP_ADD_INTERNAL_CALL(SpriteComponent_SetColor);
-		SP_ADD_INTERNAL_CALL(SpriteComponent_GetScale);
-		SP_ADD_INTERNAL_CALL(SpriteComponent_SetScale);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetTexture);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetTexture);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetScale);
+		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetScale);
 #pragma endregion
 
 #pragma region Circle Renderer Component
@@ -807,9 +918,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
 #pragma endregion
 
-#pragma region Random
-		SP_ADD_INTERNAL_CALL(Random_Range_Int32);
-		SP_ADD_INTERNAL_CALL(Random_Range_Float);
+#pragma region RandomDevice
+		SP_ADD_INTERNAL_CALL(RandomDevice_NewInt32);
+		SP_ADD_INTERNAL_CALL(RandomDevice_NewFloat);
 #pragma endregion
 
 #pragma region Algebra

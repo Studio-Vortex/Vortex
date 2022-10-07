@@ -11,34 +11,40 @@ namespace Sparky {
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_AddSpriteRenderer(ulong entityID);
+		internal extern static void Entity_AddCamera(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_RemoveSpriteRenderer(ulong entityID);
+		internal extern static void Entity_RemoveCamera(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_AddCircleRenderer(ulong entityID);
+		internal extern static void Entity_AddSpriteRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_RemoveCircleRenderer(ulong entityID);
+		internal extern static void Entity_RemoveSpriteRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_AddRigidBody2D(ulong entityID);
+		internal extern static void Entity_AddCircleRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_RemoveRigidBody2D(ulong entityID);
+		internal extern static void Entity_RemoveCircleRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_AddBoxCollider2D(ulong entityID);
+		internal extern static void Entity_AddRigidBody2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_RemoveBoxCollider2D(ulong entityID);
+		internal extern static void Entity_RemoveRigidBody2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_AddCircleCollider2D(ulong entityID);
+		internal extern static void Entity_AddBoxCollider2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Entity_RemoveCircleCollider2D(ulong entityID);
+		internal extern static void Entity_RemoveBoxCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddCircleCollider2D(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveCircleCollider2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_FindEntityByName(string name);
@@ -73,19 +79,41 @@ namespace Sparky {
 
 		#endregion
 
-		#region Sprite
+		#region Camera
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteComponent_GetColor(ulong entityID, out Vector4 result);
+		internal extern static void CameraComponent_GetPrimary(ulong entityID, out bool outPrimary);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteComponent_SetColor(ulong entityID, ref Vector4 color);
+		internal extern static void CameraComponent_SetPrimary(ulong entityID, bool primary);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteComponent_GetScale(ulong entityID, out float result);
+		internal extern static void CameraComponent_GetFixedAspectRatio(ulong entityID, out bool outFixedAspectRatio);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteComponent_SetScale(ulong entityID, float scale);
+		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
+
+		#endregion
+
+		#region SpriteRenderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_GetColor(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetColor(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_GetTexture(ulong entityID, out string texturePathString);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, string texturePathString);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out float result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetScale(ulong entityID, float scale);
 
 		#endregion
 
@@ -183,13 +211,13 @@ namespace Sparky {
 
 		#endregion
 
-		#region Random
+		#region RandomDevice
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static int Random_Range_Int32(int min, int max);
+		internal extern static int RandomDevice_NewInt32(int min, int max);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Random_Range_Float(float min, float max);
+		internal extern static float RandomDevice_NewFloat(float min, float max);
 
 		#endregion
 

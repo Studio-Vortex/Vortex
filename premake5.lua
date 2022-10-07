@@ -210,8 +210,10 @@ project "Sparky-Editor"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+group ""
 
 
+group "Runtime"
 project "Sparky-Runtime"
 	location "Sparky-Runtime"
 	kind "ConsoleApp"

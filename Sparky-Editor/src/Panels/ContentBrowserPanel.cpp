@@ -73,25 +73,19 @@ namespace Sparky {
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
 					std::ofstream newScriptFile(m_PathToBeRenamed);
-					newScriptFile << R"(
-using System;
+					newScriptFile << R"(using System;
 using Sparky;
 
 public class Untitled : Entity
 {
-	public void override OnCreate()
+	public override void OnCreate()
 	{
 		// Called once before the first frame
 	}
 
-	public void override OnUpdate(float delta)
+	public override void OnUpdate(float delta)
 	{
 		// Called once every frame
-	}
-
-	public void override OnDestroy()
-	{
-		
 	}
 }
 )";

@@ -23,6 +23,8 @@ namespace Sparky {
 		props.Name = "Sparky Editor - (Debug devel x64)";
 #elif SP_RELEASE
 		props.Name = "Sparky Editor - (Release x64)";
+#elif SP_DIST
+		props.Name = "Sparky Editor";
 #endif
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;

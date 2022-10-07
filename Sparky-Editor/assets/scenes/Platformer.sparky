@@ -8,7 +8,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [8.10801125, 0.326045752, 1]
     SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
+      Color: [0.183926955, 0.599108338, 0.768339753, 1]
       Scale: 1
     Rigidbody2DComponent:
       BodyType: Static
@@ -17,14 +17,14 @@ Entities:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.5
+      Friction: 0.75
       Restitution: 0
       RestitutionThreshold: 0.5
   - Entity: 594083357025431621
     TagComponent:
-      Tag: Perspective Camera
+      Tag: Camera
     TransformComponent:
-      Translation: [0, 0, 5.92570257]
+      Translation: [3.86903143, 0, 12.4964895]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -38,24 +38,114 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 17328271711174587764
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 7
+  - Entity: 16185290437546672691
     TagComponent:
-      Tag: Player
+      Tag: Floor Copy
     TransformComponent:
-      Translation: [-2.98023224e-08, 1.1920929e-07, 0]
+      Translation: [8.54486561, -0.651003301, -0.23026228]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4.5, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      Scale: 1
+      TexturePath: Assets\Textures\Crate.png
+      Scale: 3
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.5
+      Friction: 0.75
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 7885627404559696754
+    TagComponent:
+      Tag: Floor Copy Copy
+    TransformComponent:
+      Translation: [15.541151, 0.902095079, 2.38418579e-07]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Crate.png
+      Scale: 3
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.75
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13331194298120451035
+    TagComponent:
+      Tag: Floor Copy Copy Copy
+    TransformComponent:
+      Translation: [22.5839081, 2.06974292, 0]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Crate.png
+      Scale: 3
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.75
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 16267899215055663896
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [-3.8900001, 3.29999995, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 8, 1]
+    SpriteRendererComponent:
+      Color: [0.183926955, 0.599108338, 0.768339753, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.75
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 17328271711174587764
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-3.7252903e-08, 1.1920929e-07, -9.31322575e-10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Offset: [0, -0.0199999996]
+      Size: [0.400000006, 0.469999999]
+      Density: 1
+      Friction: 1
       Restitution: 0
       RestitutionThreshold: 0.5
     ScriptComponent:
@@ -66,7 +156,7 @@ Entities:
           Data: 2
         - Name: JumpForce
           Type: Float
-          Data: 50
+          Data: 175
         - Name: Speed
           Type: Float
           Data: 10
