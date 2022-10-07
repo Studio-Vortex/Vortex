@@ -18,6 +18,8 @@ namespace Sparky {
 	{
 		m_ContextScene = context;
 		m_SelectedEntity = {};
+		m_EntityShouldBeRenamed = false;
+		m_EntityShouldBeDestroyed = false;
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
@@ -26,6 +28,25 @@ namespace Sparky {
 
 		if (m_ContextScene)
 		{
+			if (m_EntityShouldBeDestroyed)
+			{
+				auto view = m_ContextScene->GetAllEntitiesWith<IDComponent>();
+				for (auto& e : view)
+				{
+					if (Entity entity{ e, m_ContextScene.get() }; m_SelectedEntity == entity)
+					{
+						m_SelectedEntity = {};
+						m_EntityShouldBeDestroyed = false;
+						
+						// If we are hovering on the entity we must reset it otherwise entt will complain
+						if (hoveredEntity == entity)
+							hoveredEntity = Entity{};
+
+						m_ContextScene->DestroyEntity(entity);
+					}
+				}
+			}
+
 			m_ContextScene->m_Registry.each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_ContextScene.get() };
@@ -37,6 +58,7 @@ namespace Sparky {
 			{
 				m_SelectedEntity = {};
 				m_EntityShouldBeRenamed = false;
+				m_EntityShouldBeDestroyed = false;
 			}
 
 			// Right-click on blank space in scene hierarchy panel
@@ -154,7 +176,7 @@ namespace Sparky {
 			m_EntityShouldBeRenamed = false;
 		}
 
-		bool entityShouldBeDeleted = false;
+		m_EntityShouldBeDestroyed = false;
 		
 		// Right-click on entity for utilities popup
 		if (Gui::BeginPopupContextItem())
@@ -175,7 +197,7 @@ namespace Sparky {
 			Gui::Separator();
 
 			if (Gui::MenuItem("Delete Entity", "Del"))
-				entityShouldBeDeleted = true;
+				m_EntityShouldBeDestroyed = true;
 
 			Gui::EndPopup();
 		}
@@ -189,12 +211,13 @@ namespace Sparky {
 			Gui::TreePop();
 		}
 
-		if (entityShouldBeDeleted)
+		// Destroy the entity if requested
+		if (m_EntityShouldBeDestroyed && m_SelectedEntity == entity)
 		{
-			m_ContextScene->DestroyEntity(entity);
+			m_SelectedEntity = {};
+			m_EntityShouldBeDestroyed = false;
 
-			if (m_SelectedEntity == entity)
-				m_SelectedEntity = {};
+			m_ContextScene->DestroyEntity(entity);
 		}
 	}
 
@@ -334,7 +357,10 @@ namespace Sparky {
 		Gui::SameLine();
 		Gui::PushItemWidth(-1);
 
-		if (Gui::Button("Add Component"))
+		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
 			Gui::OpenPopup("AddComponent");
 
 		if (Gui::BeginPopup("AddComponent"))

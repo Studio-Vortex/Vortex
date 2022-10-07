@@ -20,6 +20,7 @@ namespace Sparky {
 		void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
 		void SetEntityToBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+		void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
 	private:
 		template <typename TComponent>
@@ -32,6 +33,7 @@ namespace Sparky {
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;
 		bool m_EntityShouldBeRenamed = false;
+		bool m_EntityShouldBeDestroyed = false;
 	};
 
 	template <typename TComponent>

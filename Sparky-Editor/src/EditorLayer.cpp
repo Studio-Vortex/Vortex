@@ -225,15 +225,23 @@ namespace Sparky {
 						OnSceneSimulate();
 					Gui::Separator();
 
-					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-
 					if (Gui::MenuItem("Add Empty Entity", "Ctrl+A"))
 						AddEmptyEntity();
-					if (selectedEntity)
+					if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+					{
 						Gui::Separator();
 
-					if (selectedEntity && Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
-						DuplicateSelectedEntity();
+						if (Gui::MenuItem("Rename Entity", "F2"))
+							m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+						Gui::Separator();
+
+						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
+							DuplicateSelectedEntity();
+						Gui::Separator();
+
+						if (Gui::MenuItem("Delete Entity", "Del"))
+							m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+					}
 				}
 				else
 				{
@@ -414,7 +422,7 @@ namespace Sparky {
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
 			// Snap to 45 degrees for rotation only, otherwise snap by half one unit
-			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? 45.0f : 0.5f;
+			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? 45.0f : 0.5f; // EXPOSE IN SETTINGS ///////////////////////////////////////////////////////////////////////////
 
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
@@ -424,6 +432,9 @@ namespace Sparky {
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(transform),
 				nullptr, snap ? snapValues.data() : nullptr
 			);
+
+			ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), 5);// expose in settings/////////////////////////
+			//ImGuizmo::Enable(false); expose in settings/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -625,17 +636,23 @@ namespace Sparky {
 			// Tools
 			case Key::F2:
 			{
-				Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-
-				if (selectedEntity)
+				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 					m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+
+				break;
+			}
+
+			case Key::Delete:
+			{
+				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
 
 				break;
 			}
 
 			case Key::A:
 			{
-				if (controlPressed)
+				if (controlPressed && !shiftPressed) // Ctrl+Shift+A opens the add component popup in inspector panel
 					AddEmptyEntity();
 
 				break;
