@@ -8,8 +8,6 @@ Sparky is an early-stage interactive application and rendering engine for Window
 
 ## Getting Started
 
----
-
 Visual Studio 2022 is recommended, Sparky has not been tested with other development environments.
 
 <ins>**1. Downloading the repository:**<ins>
@@ -34,8 +32,6 @@ If you make changes to the engine, or if you want to regenerate project files, r
 
 ## What to Expect in the Future
 
----
-
 -   High-fidelity Physically-Based 3D rendering
 -   Support for Mac, Linux, Android and IOS
 -   Fully featured Vulkan Renderer
@@ -51,8 +47,6 @@ If you make changes to the engine, or if you want to regenerate project files, r
 ---
 
 ## Preview
-
----
 
 ![Platformer Game](Sparky-Editor/Resources/Images/Engine/PlatformerGame.png)
 
