@@ -31,6 +31,7 @@ namespace Sparky {
 		props.VSync = true;
 		props.EnableGUI = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
+		props.CullMode = RendererAPI::TriangleCullMode::None;
 
 		//props.WorkingDirectory = "../Sparky-Editor";
 		props.WorkingDirectory = "C:/dev/Sparky Engine";

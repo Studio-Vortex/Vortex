@@ -12,8 +12,8 @@ namespace Sparky {
 		unsigned severity,
 		int length,
 		const char* message,
-		const void* userParam)
-	{
+		const void* userParam
+	) {
 		switch (severity)
 		{
 			case GL_DEBUG_SEVERITY_HIGH:         SP_CORE_CRITICAL(message); return;
@@ -42,6 +42,8 @@ namespace Sparky {
 
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_LINE_SMOOTH);
+
+		glEnable(GL_CULL_FACE);
     }
 
     void OpenGLRendererAPI::SetViewport(const Viewport& viewport) const
@@ -84,5 +86,23 @@ namespace Sparky {
 	{
 		glLineWidth(thickness);
     }
+
+	void OpenGLRendererAPI::SetCullMode(TriangleCullMode cullMode) const
+	{
+		GLenum mode{};
+
+		if (cullMode != TriangleCullMode::None)
+			glEnable(GL_CULL_FACE);
+
+		switch (cullMode)
+		{
+			case TriangleCullMode::None:         glDisable(GL_CULL_FACE);  break;
+			case TriangleCullMode::Front:        mode = GL_FRONT;          break;
+			case TriangleCullMode::Back:         mode = GL_BACK;           break;
+			case TriangleCullMode::FrontAndBack: mode = GL_FRONT_AND_BACK; break;
+		}
+
+		glCullFace(mode);
+	}
 
 }

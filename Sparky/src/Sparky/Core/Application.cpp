@@ -39,6 +39,7 @@ namespace Sparky {
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
 
 		Renderer::Init();
+		RenderCommand::SetCullMode(m_Properties.CullMode);
 		ScriptEngine::Init();
 
 		if (m_Properties.EnableGUI)

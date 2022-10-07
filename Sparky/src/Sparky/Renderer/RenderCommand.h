@@ -49,6 +49,11 @@ namespace Sparky {
 			s_RendererAPI->SetLineWidth(thickness);
 		}
 
+		inline static void SetCullMode(RendererAPI::TriangleCullMode cullMode)
+		{
+			s_RendererAPI->SetCullMode(cullMode);
+		}
+
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

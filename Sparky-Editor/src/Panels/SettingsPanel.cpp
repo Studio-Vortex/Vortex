@@ -65,6 +65,42 @@ namespace Sparky {
 			if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
 				Renderer2D::SetLineWidth(lineWidth);
 
+			RendererAPI::TriangleCullMode cullMode = Renderer2D::GetCullMode();
+			static const char* cullModes[4] = {
+				Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::None),
+				Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Front),
+				Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Back),
+				Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::FrontAndBack)
+			};
+
+			static const char* currentCullMode = Utils::TriangleCullModeToString(cullMode);
+
+			if (Gui::BeginCombo("Cull Mode", currentCullMode))
+			{
+				for (uint32_t i = 0; i < SP_ARRAYCOUNT(cullModes); i++)
+				{
+					bool isSelected = strcmp(currentCullMode, cullModes[i]) == 0;
+					if (Gui::Selectable(cullModes[i], isSelected))
+					{
+						currentCullMode = cullModes[i];
+
+						if (currentCullMode == cullModes[0])
+							Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
+						if (currentCullMode == cullModes[1])
+							Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Front);
+						if (currentCullMode == cullModes[2])
+							Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Back);
+						if (currentCullMode == cullModes[3])
+							Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::FrontAndBack);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+				}
+
+				Gui::EndMenu();
+			}
+
 			static bool wireframeMode = false;
 			if (Gui::Checkbox("Show Wireframe", &wireframeMode))
 				RenderCommand::SetWireframe(wireframeMode);

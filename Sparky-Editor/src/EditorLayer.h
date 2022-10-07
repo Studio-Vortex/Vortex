@@ -79,6 +79,7 @@ namespace Sparky {
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 		Math::vec4 m_PhysicsColliderColor = ColorToVec4(Color::Green);
+		Math::vec3 m_EditorClearColor = { 0.26f, 0.26f, 0.26f };
 
 		float m_EditorCameraFOV = 30.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
@@ -114,7 +115,9 @@ namespace Sparky {
 
 		// Settings
 
-		SettingsPanel::Settings m_Settings{ m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime) };
+		SettingsPanel::Settings m_Settings{ 
+			m_PhysicsColliderColor, m_EditorCameraFOV, m_ShowPhysicsColliders, m_EditorClearColor, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 
 		SceneState m_SceneState = SceneState::Edit;

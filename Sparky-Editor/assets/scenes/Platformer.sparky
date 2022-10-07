@@ -1,12 +1,48 @@
 Scene: Untitled
 Entities:
-  - Entity: 1892526480779130454
+  - Entity: 17328271711174587764
     TagComponent:
-      Tag: Floor
+      Tag: Player
     TransformComponent:
-      Translation: [2.32830644e-10, -0.680000007, 0]
+      Translation: [-3.7252903e-08, 1.1920929e-07, -9.31322575e-10]
       Rotation: [0, 0, 0]
-      Scale: [8.10801125, 0.326045752, 1]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Offset: [0, -0]
+      Size: [0.400000006, 0.469999999]
+      Density: 1
+      Friction: 1
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.PlatformerPlayer
+      ScriptFields:
+        - Name: Friction
+          Type: Float
+          Data: 2
+        - Name: IsGrounded
+          Type: Bool
+          Data: false
+        - Name: JumpForce
+          Type: Float
+          Data: 175
+        - Name: Speed
+          Type: Float
+          Data: 10
+  - Entity: 16267899215055663896
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [-3.8900001, 3.29999995, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 8, 1]
     SpriteRendererComponent:
       Color: [0.183926955, 0.599108338, 0.768339753, 1]
       Scale: 1
@@ -20,35 +56,11 @@ Entities:
       Friction: 0.75
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 594083357025431621
+  - Entity: 13331194298120451035
     TagComponent:
-      Tag: Camera
+      Tag: Floor Copy Copy Copy
     TransformComponent:
-      Translation: [3.86903143, 0, 12.4964895]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-    ScriptComponent:
-      ClassName: Sandbox.Camera2D
-      ScriptFields:
-        - Name: DistanceToPlayer
-          Type: Float
-          Data: 7
-  - Entity: 16185290437546672691
-    TagComponent:
-      Tag: Floor Copy
-    TransformComponent:
-      Translation: [8.54486561, -0.651003301, -0.23026228]
+      Translation: [22.5839081, 2.06974292, 0]
       Rotation: [0, 0, 0]
       Scale: [4.5, 3, 1]
     SpriteRendererComponent:
@@ -86,11 +98,11 @@ Entities:
       Friction: 0.75
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 13331194298120451035
+  - Entity: 16185290437546672691
     TagComponent:
-      Tag: Floor Copy Copy Copy
+      Tag: Floor Copy
     TransformComponent:
-      Translation: [22.5839081, 2.06974292, 0]
+      Translation: [8.54486561, -0.651003301, -0.23026228]
       Rotation: [0, 0, 0]
       Scale: [4.5, 3, 1]
     SpriteRendererComponent:
@@ -107,13 +119,37 @@ Entities:
       Friction: 0.75
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 16267899215055663896
+  - Entity: 594083357025431621
     TagComponent:
-      Tag: Floor Copy
+      Tag: Camera
     TransformComponent:
-      Translation: [-3.8900001, 3.29999995, 0]
+      Translation: [3.86903143, 0, 12.4964895]
       Rotation: [0, 0, 0]
-      Scale: [0.330000013, 8, 1]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 10
+  - Entity: 1892526480779130454
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [2.32830644e-10, -0.680000007, 0]
+      Rotation: [0, 0, 0]
+      Scale: [8.10801125, 0.326045752, 1]
     SpriteRendererComponent:
       Color: [0.183926955, 0.599108338, 0.768339753, 1]
       Scale: 1
@@ -127,36 +163,3 @@ Entities:
       Friction: 0.75
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 17328271711174587764
-    TagComponent:
-      Tag: Player
-    TransformComponent:
-      Translation: [-3.7252903e-08, 1.1920929e-07, -9.31322575e-10]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, -0.0199999996]
-      Size: [0.400000006, 0.469999999]
-      Density: 1
-      Friction: 1
-      Restitution: 0
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.PlatformerPlayer
-      ScriptFields:
-        - Name: Friction
-          Type: Float
-          Data: 2
-        - Name: JumpForce
-          Type: Float
-          Data: 175
-        - Name: Speed
-          Type: Float
-          Data: 10

@@ -12,9 +12,9 @@ namespace Sparky {
 			Math::vec4& ColliderColor;
 			float& EditorCameraFOV;
 			bool& ShowColliders;
+			Math::vec3& ClearColor;
 			const std::filesystem::path& CurrentEditorScenePath;
 			std::function<void()> LaunchRuntimeCallback;
-			Math::vec3 ClearColor = Math::vec3{ 0.1f, 0.1f, 0.1f };
 		};
 
 		SettingsPanel() = default;

@@ -21,6 +21,8 @@ namespace Sparky {
 		void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const override;
 
 		void SetLineWidth(float thickness) const override;
+
+		void SetCullMode(TriangleCullMode cullMode) const override;
 	};
 
 }

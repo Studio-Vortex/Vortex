@@ -5,20 +5,21 @@ namespace Sandbox {
 
 	public class PlatformerPlayer : Entity
 	{
-		public float Speed;
+		public float AnimationWaitTime = 1.0f;
+		public float Friction = 2.0f;
 		public float JumpForce;
-		public float Friction;
+		public float PlayerResetYAxis = -50.0f;
+		public float Speed;
 		public float YPosLastFrame;
-		public float PlayerResetYAxis = -5.0f;
-		public float Time;
-		public float AnimationWaitTime;
-		private float m_WaitTime;
-		public Vector3 Velocity;
+		public float WaitTime;
 		public Vector3 StartPosition;
+		public Vector3 Velocity;
 
+		public bool DisableRunAnimation;
 		public bool IsGrounded;
 
-		private Camera2D m_CameraEntity;
+		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
+		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
 		private RigidBody2D m_Rigidbody;
 		private SpriteRenderer m_Sprite;
 		private bool m_AnimationReady;
@@ -27,52 +28,49 @@ namespace Sandbox {
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
-			m_CameraEntity = FindEntityByName("Camera").As<Camera2D>();
-
-			Debug.Info("Sandbox.PlatformerPlayer::OnCreate()");
 			StartPosition = transform.Translation;
 		}
 
 		public override void OnUpdate(float delta)
 		{
-			Camera camera = m_CameraEntity.GetComponent<Camera>();
-			camera.FixedAspectRatio = true;
-
 			IsGrounded = false;
 
-			Time += delta;
-			if (m_WaitTime == 0.0f)
+			if (WaitTime <= 0.0f)
 			{
-				m_WaitTime = AnimationWaitTime;
+				WaitTime = AnimationWaitTime;
 				m_AnimationReady = true;
 			}
+
+			WaitTime -= delta;
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{
 				Velocity = Vector3.Zero;
-				ResetPlayerPosition();
+				transform.Translation = StartPosition;
 			}
 
 			if (Input.IsKeyDown(KeyCode.A))
 			{
 				transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
 				Velocity.X = -1.0f;
+
 				PlayRunningAnimation();
 			}
-			if (Input.IsKeyDown(KeyCode.D))
+			else if (Input.IsKeyDown(KeyCode.D))
 			{
 				transform.Rotation = new Vector3(0.0f, 180.0f, 0.0f);
 				Velocity.X = 1.0f;
+
 				PlayRunningAnimation();
 			}
 
 			if (YPosLastFrame == transform.Translation.Y)
 				IsGrounded = true;
 
-			if (YPosLastFrame < transform.Translation.Y)
-				m_Sprite.Texture = "Assets/Textures/game/Platformer/Characters/character_0001.png";
+			if (!IsGrounded)
+				m_Sprite.Texture = m_JumpTextureString;
 			else
-				m_Sprite.Texture = "Assets/Textures/game/Platformer/Characters/character_0000.png";
+				m_Sprite.Texture = m_NormalTextureString;
 
 			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
 				Velocity.Y = 1.0f;
@@ -87,20 +85,15 @@ namespace Sandbox {
 			m_Rigidbody.ApplyLinearImpulse(Velocity.XY, true);
 		}
 
-		private void ResetPlayerPosition()
-		{
-			transform.Translation = StartPosition;
-		}
-
 		private void PlayRunningAnimation()
 		{
-			if (!m_AnimationReady)
+			if (!IsGrounded && !m_AnimationReady && !DisableRunAnimation)
 				return;
 
-			if (m_Sprite.Texture == "Assets/Textures/game/Platformer/Characters/character_0000.png")
-				m_Sprite.Texture = "Assets/Textures/game/Platformer/Characters/character_0001.png";
+			if (m_Sprite.Texture == m_NormalTextureString)
+				m_Sprite.Texture = m_JumpTextureString;
 			else
-				m_Sprite.Texture = "Assets/Textures/game/Platformer/Characters/character_0000.png";
+				m_Sprite.Texture = m_NormalTextureString;
 
 			m_AnimationReady = false;
 		}

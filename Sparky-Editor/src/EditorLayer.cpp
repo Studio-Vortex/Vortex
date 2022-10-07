@@ -2,6 +2,7 @@
 
 #include <Sparky/Scene/SceneSerializer.h>
 #include <Sparky/Utils/PlatformUtils.h>
+#include <Sparky/Renderer/RenderCommand.h>
 
 #include <ImGuizmo.h>
 
@@ -884,6 +885,7 @@ namespace Sparky {
 
 		Entity newEntity = m_ActiveScene->CreateEntity();
 		m_SceneHierarchyPanel.SetSelectedEntity(newEntity);
+		m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()
@@ -897,6 +899,7 @@ namespace Sparky {
 		{
 			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
+			m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
 		}
 	}
 

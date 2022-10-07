@@ -23,7 +23,12 @@ namespace Sparky {
 			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
 		};
 
-		struct RendererInfo
+		enum class TriangleCullMode
+		{
+			None = 0, Front, Back, FrontAndBack
+		};
+
+		struct SPARKY_API RendererInfo
 		{
 			const char* API;
 			const unsigned char* GPU;
@@ -48,6 +53,8 @@ namespace Sparky {
 
 		virtual void SetLineWidth(float thickness) const = 0;
 
+		virtual void SetCullMode(TriangleCullMode cullMode) const = 0;
+
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }
 
@@ -58,5 +65,20 @@ namespace Sparky {
 		static API s_API;
 		static RendererInfo s_RendererInfo;
 	};
+
+	namespace Utils {
+
+		static const char* TriangleCullModeToString(RendererAPI::TriangleCullMode cullMode)
+		{
+			switch (cullMode)
+			{
+				case Sparky::RendererAPI::TriangleCullMode::None:         return "None";
+				case Sparky::RendererAPI::TriangleCullMode::Front:        return "Front";
+				case Sparky::RendererAPI::TriangleCullMode::Back:         return "Back";
+				case Sparky::RendererAPI::TriangleCullMode::FrontAndBack: return "Front And Back";
+			}
+		}
+
+	}
 
 }

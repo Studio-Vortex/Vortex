@@ -35,6 +35,7 @@ namespace Sparky {
 		bool VSync = true;
 		bool EnableGUI = false;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
+		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 		std::string WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};

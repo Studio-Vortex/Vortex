@@ -44,7 +44,7 @@ namespace Sparky
 		int EntityID;
 	};
 
-	struct Renderer2DData
+	struct Renderer2DInternalData
 	{
 		static constexpr inline uint32_t MaxQuads = 20'000;
 		static constexpr inline uint32_t MaxVertices = MaxQuads * VERTICES_PER_QUAD;
@@ -83,19 +83,20 @@ namespace Sparky
 
 		Math::vec4 QuadVertexPositions[4];
 
-		Renderer2D::Statistics Stats;
+		Renderer2D::Statistics Renderer2DStatistics;
+		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 	};
 
-	static Renderer2DData s_Data;
+	static Renderer2DInternalData s_Data;
 
-	void Renderer2D::Init()
+	void Renderer2D::Init(RendererAPI::TriangleCullMode cullMode)
 	{
 		SP_PROFILE_FUNCTION();
 
 		/// Quads
 		s_Data.QuadVA = VertexArray::Create();
 
-		s_Data.QuadVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(QuadVertex));
+		s_Data.QuadVB = VertexBuffer::Create(Renderer2DInternalData::MaxVertices * sizeof(QuadVertex));
 		s_Data.QuadVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color"    },
@@ -107,12 +108,12 @@ namespace Sparky
 
 		s_Data.QuadVA->AddVertexBuffer(s_Data.QuadVB);
 
-		s_Data.QuadVertexBufferBase = new QuadVertex[Renderer2DData::MaxVertices];
+		s_Data.QuadVertexBufferBase = new QuadVertex[Renderer2DInternalData::MaxVertices];
 
-		uint32_t* quadIndices = new uint32_t[Renderer2DData::MaxIndices];
+		uint32_t* quadIndices = new uint32_t[Renderer2DInternalData::MaxIndices];
 
 		uint32_t offset = 0;
-		for (size_t i = 0; i < Renderer2DData::MaxIndices; i += INDICES_PER_QUAD)
+		for (size_t i = 0; i < Renderer2DInternalData::MaxIndices; i += INDICES_PER_QUAD)
 		{
 			quadIndices[i + 0] = offset + 0;
 			quadIndices[i + 1] = offset + 1;
@@ -125,14 +126,14 @@ namespace Sparky
 			offset += VERTICES_PER_QUAD;
 		}
 
-		SharedRef<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DData::MaxIndices);
+		SharedRef<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DInternalData::MaxIndices);
 		s_Data.QuadVA->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
 		/// Circles
 		s_Data.CircleVA = VertexArray::Create();
 
-		s_Data.CircleVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(CircleVertex));
+		s_Data.CircleVB = VertexBuffer::Create(Renderer2DInternalData::MaxVertices * sizeof(CircleVertex));
 		s_Data.CircleVB->SetLayout({
 			{ ShaderDataType::Float3, "a_WorldPosition" },
 			{ ShaderDataType::Float3, "a_LocalPosition" },
@@ -144,12 +145,12 @@ namespace Sparky
 
 		s_Data.CircleVA->AddVertexBuffer(s_Data.CircleVB);
 		s_Data.CircleVA->SetIndexBuffer(quadIB); // Use quad IB
-		s_Data.CircleVertexBufferBase = new CircleVertex[Renderer2DData::MaxVertices];
+		s_Data.CircleVertexBufferBase = new CircleVertex[Renderer2DInternalData::MaxVertices];
 
 		/// Lines
 		s_Data.LineVA = VertexArray::Create();
 
-		s_Data.LineVB = VertexBuffer::Create(Renderer2DData::MaxVertices * sizeof(LineVertex));
+		s_Data.LineVB = VertexBuffer::Create(Renderer2DInternalData::MaxVertices * sizeof(LineVertex));
 		s_Data.LineVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color"    },
@@ -157,7 +158,7 @@ namespace Sparky
 		});
 
 		s_Data.LineVA->AddVertexBuffer(s_Data.LineVB);
-		s_Data.LineVertexBufferBase = new LineVertex[Renderer2DData::MaxVertices];
+		s_Data.LineVertexBufferBase = new LineVertex[Renderer2DInternalData::MaxVertices];
 
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
@@ -174,7 +175,7 @@ namespace Sparky
 		s_Data.QuadShader = Shader::Create(QUAD_SHADER_PATH);
 		s_Data.QuadShader->Enable();
 		// Set the sampler2D array on the GPU
-		s_Data.QuadShader->SetIntArray("u_Textures", samplers, Renderer2DData::MaxTextureSlots);
+		s_Data.QuadShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
 		s_Data.CircleShader = Shader::Create(CIRCLE_SHADER_PATH);
 		s_Data.LineShader = Shader::Create(LINE_SHADER_PATH);
@@ -186,6 +187,7 @@ namespace Sparky
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		SetLineWidth(s_Data.LineWidth);
+		SetCullMode(cullMode);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -305,7 +307,7 @@ namespace Sparky
 			// Bind a shader and make a draw call
 			s_Data.QuadShader->Enable();
 			RenderCommand::DrawIndexed(s_Data.QuadVA, s_Data.QuadIndexCount);
-			s_Data.Stats.DrawCalls++;
+			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
 
 		/// Circles
@@ -319,7 +321,7 @@ namespace Sparky
 			// Bind a shader and make a draw call
 			s_Data.CircleShader->Enable();
 			RenderCommand::DrawIndexed(s_Data.CircleVA, s_Data.CircleIndexCount);
-			s_Data.Stats.DrawCalls++;
+			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
 
 		/// Lines
@@ -332,9 +334,8 @@ namespace Sparky
 
 			// Bind a shader and make a draw call
 			s_Data.LineShader->Enable();
-			RenderCommand::SetLineSize(s_Data.LineWidth);
 			RenderCommand::DrawLines(s_Data.LineVA, s_Data.LineVertexCount);
-			s_Data.Stats.DrawCalls++;
+			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
 	}
 
@@ -354,7 +355,7 @@ namespace Sparky
 		s_Data.QuadIndexCount += INDICES_PER_QUAD;
 
 #if SP_RENDERER_STATISTICS
-		s_Data.Stats.QuadCount++;
+		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
 
@@ -363,7 +364,7 @@ namespace Sparky
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i]; // Use quad vertex positions
-			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f; // Multiply by 2 to get the coordinates in a -1 -> 1 space
+			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f; // Multiply by 2 to get the coordinates into a -1 -> 1 space
 			s_Data.CircleVertexBufferPtr->Color = color;
 			s_Data.CircleVertexBufferPtr->Thickness = thickness;
 			s_Data.CircleVertexBufferPtr->Fade = fade;
@@ -374,7 +375,7 @@ namespace Sparky
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
 
 #if SP_RENDERER_STATISTICS
-		s_Data.Stats.QuadCount++;
+		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
 
@@ -387,7 +388,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		constexpr float textureIndex = 0.0f; // Our White Texture
@@ -412,7 +413,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
@@ -429,7 +430,7 @@ namespace Sparky
 
 		if (textureIndex == 0.0f)
 		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = (float)s_Data.TextureSlotIndex;
@@ -514,7 +515,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
@@ -533,7 +534,7 @@ namespace Sparky
 
 		if (textureIndex == 0.0f)
 		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = (float)s_Data.TextureSlotIndex;
@@ -567,7 +568,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		static constexpr float textureIndex = 0.0f; // Our White Texture
@@ -592,7 +593,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
@@ -608,7 +609,7 @@ namespace Sparky
 
 		if (textureIndex == 0.0f)
 		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = (float)s_Data.TextureSlotIndex;
@@ -697,7 +698,7 @@ namespace Sparky
 	{
 		SP_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
@@ -715,7 +716,7 @@ namespace Sparky
 
 		if (textureIndex == 0.0f)
 		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = (float)s_Data.TextureSlotIndex;
@@ -781,7 +782,7 @@ namespace Sparky
 		s_Data.LineVertexCount += 2;
 
 #if SP_RENDERER_STATISTICS
-		s_Data.Stats.LineCount++;
+		s_Data.Renderer2DStatistics.LineCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
 
@@ -822,14 +823,25 @@ namespace Sparky
 		RenderCommand::SetLineSize(width);
 	}
 
-	void Renderer2D::ResetStats()
+	RendererAPI::TriangleCullMode Renderer2D::GetCullMode()
 	{
-		memset(&s_Data.Stats, NULL, sizeof(Statistics));
+		return s_Data.CullMode;
+	}
+
+	void Renderer2D::SetCullMode(RendererAPI::TriangleCullMode cullMode)
+	{
+		s_Data.CullMode = cullMode;
+		RenderCommand::SetCullMode(cullMode);
 	}
 
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
-		return s_Data.Stats;
+		return s_Data.Renderer2DStatistics;
+	}
+
+	void Renderer2D::ResetStats()
+	{
+		memset(&s_Data.Renderer2DStatistics, NULL, sizeof(s_Data.Renderer2DStatistics));
 	}
 
 }

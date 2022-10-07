@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Renderer/RendererAPI.h"
 #include "Sparky/Renderer/OrthographicCamera.h"
 #include "Sparky/Renderer/Camera.h"
 #include "Sparky/Renderer/EditorCamera.h"
@@ -24,7 +25,7 @@ namespace Sparky
 	class Renderer2D
 	{
 	public:
-		static void Init();
+		static void Init(RendererAPI::TriangleCullMode cullMode = RendererAPI::TriangleCullMode::None);
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const Math::mat4& transform);
@@ -107,6 +108,9 @@ namespace Sparky
 		static float GetLineWidth();
 		static void SetLineWidth(float width);
 
+		static RendererAPI::TriangleCullMode GetCullMode();
+		static void SetCullMode(RendererAPI::TriangleCullMode cullMode);
+
 		struct Statistics
 		{
 			uint32_t DrawCalls;
@@ -115,11 +119,11 @@ namespace Sparky
 
 			uint32_t GetTriangleCount() const { return QuadCount * 2; }
 			uint32_t GetVertexCount() const { return (QuadCount * VERTICES_PER_QUAD) + (LineCount * 2); }
-			uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD; }
+			uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD + (LineCount * 2); }
 		};
 
-		static void ResetStats();
 		static Statistics GetStats();
+		static void ResetStats();
 
 	private:
 		static void StartBatch();

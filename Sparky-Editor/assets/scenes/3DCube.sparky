@@ -53,9 +53,15 @@ Entities:
     ScriptComponent:
       ClassName: Sandbox.CameraController3D
       ScriptFields:
+        - Name: MaxRoll_Up
+          Type: Float
+          Data: 60
+        - Name: MaxRoll_Down
+          Type: Float
+          Data: -60
         - Name: RotationSpeed
           Type: Vector3
-          Data: [1.75, 2.25, 0]
+          Data: [100, 100, 0]
         - Name: Speed
           Type: Vector3
           Data: [5, 5, 5]
