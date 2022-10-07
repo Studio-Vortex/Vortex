@@ -65,7 +65,7 @@ namespace Sparky {
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
-		void CreatePhysicsBodyAndFixture(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
+		void OnPhysicsBodyCreate(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
 
 		void OnPhysics2DStart();
 		void OnPhysics2DUpdate(TimeStep delta);
@@ -92,5 +92,7 @@ namespace Sparky {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};
+
+
 
 }

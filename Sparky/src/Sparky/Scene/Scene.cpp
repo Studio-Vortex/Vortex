@@ -128,6 +128,10 @@ namespace Sparky {
 			ScriptEngine::OnDestroyEntity(entity);
 		}
 
+		// Destroy the physics body if it exists
+		if (entity.HasComponent<RigidBody2DComponent>())
+			m_PhysicsWorld->DestroyBody((b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody);
+
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
 
@@ -335,7 +339,7 @@ namespace Sparky {
 		return Entity{};
 	}
 
-	void Scene::CreatePhysicsBodyAndFixture(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
+	void Scene::OnPhysicsBodyCreate(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
 	{
 		b2BodyDef bodyDef;
 		bodyDef.type = RigidBody2DTypeToBox2DBody(rb2d.Type);
@@ -396,7 +400,7 @@ namespace Sparky {
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-			CreatePhysicsBodyAndFixture(entity, transform, rb2d);
+			OnPhysicsBodyCreate(entity, transform, rb2d);
 		}
 	}
 
@@ -413,7 +417,7 @@ namespace Sparky {
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
 				if (rb2d.RuntimeBody == nullptr)
-					CreatePhysicsBodyAndFixture(entity, transform, rb2d);
+					OnPhysicsBodyCreate(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				glm::vec3 translation = transform.Translation;
@@ -439,8 +443,9 @@ namespace Sparky {
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
+				// If a rb2d component is added during runtime we can create the physics body here
 				if (rb2d.RuntimeBody == nullptr)
-					CreatePhysicsBodyAndFixture(entity, transform, rb2d);
+					OnPhysicsBodyCreate(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
@@ -464,6 +469,7 @@ namespace Sparky {
 		/// Render Sprites
 		{
 			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+
 			for (auto entity : view)
 			{
 				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
@@ -475,6 +481,7 @@ namespace Sparky {
 		/// Render Circles
 		{
 			auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
+
 			for (auto entity : group)
 			{
 				auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
@@ -489,7 +496,7 @@ namespace Sparky {
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(sizeof(T) == 0);
+		static_assert(sizeof(T) != 0);
 	}
 
 	template <> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }

@@ -120,7 +120,7 @@ namespace Sparky {
 		bool m_OrthographicGizmos = false;
 		float m_SnapValue = 0.5f;
 		float m_RotationSnapValue = 45.0f;
-		bool m_DrawGizmoGrid = true;
+		bool m_DrawGizmoGrid = false;
 		float m_GizmoGridSize = 1.0f;
 
 		SettingsPanel::Settings::GizmoSettings m_GizmoSettings{
