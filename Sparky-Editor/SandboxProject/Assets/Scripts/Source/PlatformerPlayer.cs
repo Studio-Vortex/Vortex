@@ -12,10 +12,12 @@ namespace Sandbox {
 		public float WaitTime;
 		public Vector3 StartPosition;
 		public Vector3 Velocity;
+		public Vector2 Direction;
 
 		public bool IsGrounded;
 		public bool AnimationReady;
 		public bool IsRunning;
+		public bool ShowRaycast = true;
 
 		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
 		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
@@ -29,6 +31,7 @@ namespace Sandbox {
 			m_BoxCollider = GetComponent<BoxCollider2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
 			StartPosition = transform.Translation;
+			Direction = Vector2.Down;
 		}
 
 		public override void OnUpdate(float delta)
@@ -37,10 +40,9 @@ namespace Sandbox {
 			Vector2 groundPoint = playerFootPoint;
 			groundPoint.Y -= 0.1f;
 
-			if (Physics2D.Raycast(playerFootPoint, groundPoint))
-				IsGrounded = true;
-			else
-				IsGrounded = false;
+			IsGrounded = Physics2D.Raycast(transform.Translation.XY, groundPoint, ShowRaycast);
+
+			Physics2D.Raycast(transform.Translation.XY, Direction, ShowRaycast);
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{

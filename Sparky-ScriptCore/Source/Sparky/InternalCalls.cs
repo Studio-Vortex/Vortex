@@ -139,13 +139,6 @@ namespace Sparky {
 
 		#endregion
 
-		#region Physics2D
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Physics2D_Raycast(ref Vector2 start, ref Vector2 end);
-
-		#endregion
-
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -159,6 +152,13 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
+
+		#endregion
+
+		#region Physics2D
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Physics2D_Raycast(ref Vector2 origin, ref Vector2 direction, bool drawDebugLine);
 
 		#endregion
 
@@ -245,10 +245,10 @@ namespace Sparky {
 		#region RandomDevice
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static int RandomDevice_NewInt32(int min, int max);
+		internal extern static int RandomDevice_RangedInt32(int min, int max);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float RandomDevice_NewFloat(float min, float max);
+		internal extern static float RandomDevice_RangedFloat(float min, float max);
 
 		#endregion
 
