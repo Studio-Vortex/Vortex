@@ -17,7 +17,7 @@ namespace Sandbox {
 		public bool IsGrounded;
 		public bool AnimationReady;
 		public bool IsRunning;
-		public bool ShowRaycast = true;
+		public bool ShowRaycast;
 
 		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
 		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";

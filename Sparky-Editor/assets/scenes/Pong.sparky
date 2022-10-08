@@ -1,5 +1,35 @@
 Scene: Untitled
 Entities:
+  - Entity: 12910335349000657238
+    TagComponent:
+      Tag: Ball
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\AwesomeFace.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.479999989
+      Density: 1
+      Friction: 0.5
+      Restitution: 1
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.PongBall
+      ScriptFields:
+        - Name: MaxSpeed
+          Type: Float
+          Data: 200
+        - Name: Speed
+          Type: Float
+          Data: 100
   - Entity: 451101217983068239
     TagComponent:
       Tag: Right Wall
@@ -150,33 +180,3 @@ Entities:
         - Name: MaxSpeed
           Type: Float
           Data: 20
-  - Entity: 12910335349000657238
-    TagComponent:
-      Tag: Ball
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\AwesomeFace.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.479999989
-      Density: 1
-      Friction: 0.5
-      Restitution: 1
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.PongBall
-      ScriptFields:
-        - Name: MaxSpeed
-          Type: Float
-          Data: 200
-        - Name: Speed
-          Type: Float
-          Data: 100

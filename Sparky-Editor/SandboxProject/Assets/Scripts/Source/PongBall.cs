@@ -7,45 +7,54 @@ namespace Sandbox {
 	{
 		public float Speed;
 		public float MaxSpeed;
+		public Vector2 Velocity;
+
+		public bool ShowRaycasts;
+
 		private RigidBody2D m_Rigidbody;
-		private float m_XLastFrame;
+		private CircleCollider2D m_CircleCollider;
 
 		public override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
+			m_CircleCollider = GetComponent<CircleCollider2D>();
+			m_Rigidbody.ApplyForce(new Vector2(MaxSpeed, -1.0f), true);
 		}
 
 		public override void OnUpdate(float delta)
 		{
-			ApplyForce(delta);
+			float currentX = transform.Translation.X;
+			float currentY = transform.Translation.Y;
+			float circleRadius = m_CircleCollider.Radius;
 
-			m_XLastFrame = transform.Translation.X;
-		}
+			float upPoint = currentY + circleRadius;
+			bool hitUp = Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), ShowRaycasts);
 
-		private void ApplyForce(float delta)
-		{
-			float y = 0.0f;
+			if (hitUp)
+				Velocity.Y = -1.0f;
 
-			if (m_XLastFrame > transform.Translation.X)
-				Speed = -Math.Abs(Speed);
-			if (m_XLastFrame < transform.Translation.X)
-				Speed = Math.Abs(Speed);
+			float downPoint = currentY - circleRadius;
+			bool hitDown = Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), ShowRaycasts);
 
-			if (transform.Translation.Y >= 4.5f)
-			{
-				Debug.Log("Ball hit roof");
-				y = -Math.Abs(Speed);
-			}
-			if (transform.Translation.Y <= -4.5f)
-			{
-				Debug.Log("Ball hit floor");
-				y = Math.Abs(Speed);
-			}
+			if (hitDown)
+				Velocity.Y = 1.0f;
 
-			if (Speed > MaxSpeed)
-				Speed = MaxSpeed;
+			float leftPoint = currentX - circleRadius;
+			bool hitLeft = Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), ShowRaycasts);
 
-			m_Rigidbody.ApplyForce(new Vector2(Speed * delta, y * delta), true);
+			if (hitLeft)
+				Velocity.X = 1.0f;
+
+			float rightPoint = currentX + circleRadius;
+			bool hitRight = Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), ShowRaycasts);
+
+			if (hitRight)
+				Velocity.Y = -1.0f;
+
+			Speed = Math.Min(Speed, MaxSpeed);
+
+			Velocity *= Speed * delta;
+			m_Rigidbody.ApplyForce(Velocity, true);
 		}
 	}
 

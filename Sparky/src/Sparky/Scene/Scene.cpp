@@ -130,7 +130,12 @@ namespace Sparky {
 
 		// Destroy the physics body if it exists
 		if (entity.HasComponent<RigidBody2DComponent>())
-			m_PhysicsWorld->DestroyBody((b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody);
+		{
+			b2Body* body = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
+
+			if (body != nullptr)
+				m_PhysicsWorld->DestroyBody(body);
+		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);

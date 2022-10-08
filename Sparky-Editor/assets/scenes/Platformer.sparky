@@ -1,87 +1,139 @@
 Scene: Untitled
 Entities:
-  - Entity: 17328271711174587764
+  - Entity: 17287304479692841002
     TagComponent:
-      Tag: Player
+      Tag: Background Copy Copy Copy Copy
     TransformComponent:
-      Translation: [-4.47034836e-08, 4, -9.31322575e-10]
+      Translation: [-25.0699997, -29.3385677, -4.58450794]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0002.png
+      Scale: 1
+  - Entity: 1096700976545356321
+    TagComponent:
+      Tag: Background Copy Copy Copy
+    TransformComponent:
+      Translation: [34.9300003, -29.3385677, -4.58450794]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0002.png
+      Scale: 1
+  - Entity: 4906661742133443142
+    TagComponent:
+      Tag: Background Copy Copy
+    TransformComponent:
+      Translation: [4.92999983, -29.3385677, -4.58450794]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0002.png
+      Scale: 1
+  - Entity: 16581140728067943495
+    TagComponent:
+      Tag: Background Copy Copy
+    TransformComponent:
+      Translation: [-25.0742531, 0, -5]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0001.png
+      Scale: 1
+  - Entity: 14249574074892957182
+    TagComponent:
+      Tag: Background Copy
+    TransformComponent:
+      Translation: [34.9257469, 0, -5]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0001.png
+      Scale: 1
+  - Entity: 16869723982981191703
+    TagComponent:
+      Tag: Mushroom
+    TransformComponent:
+      Translation: [-1.5, 1, -0.0500000007]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0128.png
+      Scale: 0.899999976
+  - Entity: 7865282934526849583
+    TagComponent:
+      Tag: Grass
+    TransformComponent:
+      Translation: [8, 1, -0.0500000007]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0124.png
+      Scale: 0.899999976
+  - Entity: 14254360162671778200
+    TagComponent:
+      Tag: Mushroom Stem Copy Copy Copy
+    TransformComponent:
+      Translation: [0.5, -4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0032.png
       Scale: 1
+  - Entity: 15516688500203695602
+    TagComponent:
+      Tag: Grass Collider
+    TransformComponent:
+      Translation: [7.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2, 1, 1]
     Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
+      BodyType: Static
+      FixedRotation: false
     BoxCollider2DComponent:
-      Offset: [0, -0.00999999978]
-      Size: [0.400000006, 0.49000001]
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
       Density: 1
-      Friction: 1
+      Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.PlatformerPlayer
-      ScriptFields:
-        - Name: JumpForce
-          Type: Float
-          Data: 85
-        - Name: Speed
-          Type: Float
-          Data: 12
-  - Entity: 16267899215055663896
+  - Entity: 11505943142966285941
     TagComponent:
-      Tag: Floor Copy
+      Tag: Grass Copy
     TransformComponent:
-      Translation: [-3.8900001, 3.29999995, 0]
+      Translation: [8, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.330000013, 8, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.183926955, 0.599108338, 0.768339753, 1]
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0003.png
       Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.75
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 13331194298120451035
+  - Entity: 624866264775589287
     TagComponent:
-      Tag: Floor Copy Copy Copy
+      Tag: Grass
     TransformComponent:
-      Translation: [22.5839081, 2.06974292, 0]
+      Translation: [7, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [4.5, 3, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate.png
-      Scale: 3
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.75
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 7885627404559696754
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0001.png
+      Scale: 1
+  - Entity: 14336963857341181124
     TagComponent:
-      Tag: Floor Copy Copy
+      Tag: Floor Collider
     TransformComponent:
-      Translation: [15.541151, 0.902095079, 2.38418579e-07]
+      Translation: [0.5, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [4.5, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate.png
-      Scale: 3
+      Scale: [7, 1, 1]
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -89,28 +141,7 @@ Entities:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.75
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 16185290437546672691
-    TagComponent:
-      Tag: Floor Copy
-    TransformComponent:
-      Translation: [8.54486561, -0.651003301, -0.23026228]
-      Rotation: [0, 0, 0]
-      Scale: [4.5, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate.png
-      Scale: 3
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.75
+      Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
   - Entity: 594083357025431621
@@ -136,17 +167,124 @@ Entities:
       ScriptFields:
         - Name: DistanceToPlayer
           Type: Float
-          Data: 10
-  - Entity: 1892526480779130454
+          Data: 10.5
+  - Entity: 18190020980301366043
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [-0.5, 9.31322575e-10, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0013.png
+      Scale: 1
+  - Entity: 71578449750892703
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [2.32830644e-10, -0.680000007, 0]
+      Translation: [-1.5, 0, 9.31322575e-10]
       Rotation: [0, 0, 0]
-      Scale: [8.10801125, 0.326045752, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.183926955, 0.599108338, 0.768339753, 1]
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0013.png
       Scale: 1
+  - Entity: 17328271711174587764
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [2.98023224e-08, 4, -9.31322575e-10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.430000007, 0.5]
+      Density: 1
+      Friction: 1
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.PlatformerPlayer
+      ScriptFields:
+        - Name: JumpForce
+          Type: Float
+          Data: 70
+        - Name: PlayerResetYAxis
+          Type: Float
+          Data: -25
+        - Name: Speed
+          Type: Float
+          Data: 11
+  - Entity: 1028004622819695649
+    TagComponent:
+      Tag: Background
+    TransformComponent:
+      Translation: [4.92574596, 0, -5]
+      Rotation: [0, 0, 0]
+      Scale: [30, 30, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Background\background_0001.png
+      Scale: 1
+  - Entity: 10159095505642738823
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [-2.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0014.png
+      Scale: 1
+  - Entity: 8275898291857199458
+    TagComponent:
+      Tag: Floor Copy
+    TransformComponent:
+      Translation: [1.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0013.png
+      Scale: 1
+  - Entity: 6386116819398004915
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [2.5, 0, 0.00168132782]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0013.png
+      Scale: 1
+  - Entity: 3235611515831050624
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [3.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0015.png
+      Scale: 1
+  - Entity: 7942516888665696104
+    TagComponent:
+      Tag: Grass Collider Copy
+    TransformComponent:
+      Translation: [11.5, 0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2, 1, 1]
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -154,6 +292,83 @@ Entities:
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.75
+      Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 15521755230516285325
+    TagComponent:
+      Tag: Grass Collider Copy
+    TransformComponent:
+      Translation: [11, 0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0001.png
+      Scale: 1
+  - Entity: 14868737385911701645
+    TagComponent:
+      Tag: Grass Copy Copy
+    TransformComponent:
+      Translation: [12, 0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0003.png
+      Scale: 1
+  - Entity: 8410251916287613242
+    TagComponent:
+      Tag: Floor Copy Copy
+    TransformComponent:
+      Translation: [0.5, 9.31322575e-10, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0012.png
+      Scale: 1
+  - Entity: 9132068692653787426
+    TagComponent:
+      Tag: Mushroom Stem
+    TransformComponent:
+      Translation: [0.5, -1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0032.png
+      Scale: 1
+  - Entity: 5076527148715666043
+    TagComponent:
+      Tag: Mushroom Stem Copy
+    TransformComponent:
+      Translation: [0.5, -2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0032.png
+      Scale: 1
+  - Entity: 5437721566865836745
+    TagComponent:
+      Tag: Mushroom Stem Copy Copy
+    TransformComponent:
+      Translation: [0.5, -3, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0032.png
+      Scale: 1
+  - Entity: 15621010770228193247
+    TagComponent:
+      Tag: Mushroom Stem Copy Copy Copy
+    TransformComponent:
+      Translation: [0.5, -5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Tiles\tile_0072.png
+      Scale: 1

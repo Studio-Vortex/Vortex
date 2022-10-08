@@ -61,9 +61,9 @@ namespace Sparky {
 				if (Gui::MenuItem("Scene"))
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.sparky");
-					std::ofstream newSceneFile(m_PathToBeRenamed);
-					newSceneFile << "Scene: Untitled\nEntities:";
-					newSceneFile.close();
+					std::ofstream newSceneFileOut(m_PathToBeRenamed);
+					newSceneFileOut << "Scene: Untitled\nEntities:";
+					newSceneFileOut.close();
 
 					Gui::CloseCurrentPopup();
 				}
@@ -72,8 +72,8 @@ namespace Sparky {
 				if (Gui::MenuItem("C# Script"))
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
-					std::ofstream newScriptFile(m_PathToBeRenamed);
-					newScriptFile << R"(using System;
+					std::ofstream newScriptFileOut(m_PathToBeRenamed);
+					newScriptFileOut << R"(using System;
 using Sparky;
 
 public class Untitled : Entity
@@ -89,14 +89,13 @@ public class Untitled : Entity
 	}
 }
 )";
-					newScriptFile.close();
+					newScriptFileOut.close();
 
 					Gui::CloseCurrentPopup();
 				}
 
 				Gui::EndMenu();
 			}
-
 
 			Gui::EndPopup();
 		}
@@ -163,8 +162,8 @@ public class Untitled : Entity
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
-			const auto& path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, g_AssetPath);
+			const auto& currentPath = directoryEntry.path();
+			auto relativePath = std::filesystem::relative(currentPath, g_AssetPath);
 			std::string filenameString = relativePath.filename().string();
 			bool skipDirectoryEntry = false;
 
@@ -177,12 +176,12 @@ public class Untitled : Entity
 			Gui::PushID(filenameString.c_str());
 
 			SharedRef<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
-			if (path.extension().string() == ".png" || path.extension().string() == ".jpg")
+			if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")
 			{
-				if (m_TextureMap.find(path.string()) == m_TextureMap.end())
-					m_TextureMap[path.string()] = Texture2D::Create(path.string());
+				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
+					m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
 
-				icon = m_TextureMap[path.string()];
+				icon = m_TextureMap[currentPath.string()];
 			}
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
@@ -196,7 +195,7 @@ public class Untitled : Entity
 			{
 				if (Gui::MenuItem("Rename"))
 				{
-					m_PathToBeRenamed = path;
+					m_PathToBeRenamed = currentPath;
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();
@@ -233,7 +232,7 @@ public class Untitled : Entity
 				Gui::Separator();
 				Gui::Spacing();
 
-				Gui::Text("Are you sure you want to permanently delete '%s' ?", path.filename().string().c_str());
+				Gui::Text("Are you sure you want to permanently delete '%s' ?", currentPath.filename().string().c_str());
 				Gui::Text("This cannot be undone.");
 
 				Gui::Spacing();
@@ -244,7 +243,7 @@ public class Untitled : Entity
 
 				if (Gui::Button("Yes", button_size))
 				{
-					std::filesystem::remove(path);
+					std::filesystem::remove(currentPath);
 					Gui::CloseCurrentPopup();
 				}
 
@@ -262,18 +261,76 @@ public class Untitled : Entity
 				Gui::EndPopup();
 			}
 
-			if (path == m_PathToBeRenamed)
+			if (currentPath == m_PathToBeRenamed)
 			{
+				// Find the last backslash in the path and copy the filename to the buffer
 				char buffer[256];
-				size_t pos = path.string().find_last_of('\\');
-				std::string pathToCopy = path.string().substr(pos + 1, path.string().length());
-				memcpy(buffer, pathToCopy.c_str(), sizeof(buffer));
+				size_t pos = currentPath.string().find_last_of('\\');
+				std::string oldFilenameWithExtension = currentPath.string().substr(pos + 1, currentPath.string().length());
+				memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
 
 				Gui::SetKeyboardFocusHere();
 				if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 				{
-					if (strlen(buffer) != 0)
-						std::filesystem::rename(path, m_CurrentDirectory / std::filesystem::path(buffer));
+					if (strlen(buffer) != 0 && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentPath)
+					{
+						std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
+						std::filesystem::rename(currentPath, newFilePath);
+
+						// Rename C# file
+						if (newFilePath.filename().extension() == ".cs")
+						{
+							std::ifstream cSharpScriptFile(newFilePath);
+							 
+							if (cSharpScriptFile.is_open())
+							{
+								// Make sure we start at the beginning of the file
+								cSharpScriptFile.seekg(0);
+
+								std::vector<std::string> fileLineBuffer;
+								std::string currentLine;
+
+								// Get the old class name from the old filename - i.e. "Player.cs" -> "Player"
+								std::string oldClassName = oldFilenameWithExtension.substr(0, oldFilenameWithExtension.find_last_of('.'));
+								bool classNameFound = false;
+
+								while (std::getline(cSharpScriptFile, currentLine))
+								{
+									fileLineBuffer.push_back(currentLine);
+
+									if (currentLine.find(oldClassName) != std::string::npos)
+										classNameFound = true;
+								}
+
+								cSharpScriptFile.close();
+
+								SP_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
+
+								for (auto& line : fileLineBuffer)
+								{
+									if (line.find(oldClassName) != std::string::npos)
+									{
+										// Get the new name of the file to rename the C# class
+										std::string newClassName = newFilePath.filename().string().substr(0, newFilePath.filename().string().find_first_of('.'));
+										std::string formattedLine = std::format("public class {} : Entity", newClassName);
+										line = formattedLine;
+
+										// Replace the contents of the file
+										std::ofstream fout(newFilePath, std::ios::trunc);
+
+										for (auto& editedLine : fileLineBuffer)
+											fout << editedLine << '\n';
+
+										// Close the edited file
+										fout.close();
+
+										// Since we edited the file already we can skip the rest of the lines;
+										break;
+									}
+								}
+							}
+						}
+					}
 
 					m_PathToBeRenamed = "";
 				}
@@ -291,7 +348,7 @@ public class Untitled : Entity
 			{
 				if (directoryEntry.is_directory())
 				{
-					m_CurrentDirectory /= path.filename();
+					m_CurrentDirectory /= currentPath.filename();
 
 					// We also need to reset the search input text here
 					memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
@@ -300,7 +357,7 @@ public class Untitled : Entity
 			}
 
 			// If we are not renaming the current entry we can show the path
-			if (path != m_PathToBeRenamed)
+			if (currentPath != m_PathToBeRenamed)
 				Gui::TextWrapped(filenameString.c_str());
 
 			Gui::NextColumn();

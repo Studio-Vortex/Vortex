@@ -158,7 +158,7 @@ namespace Sparky {
 		#region Physics2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Physics2D_Raycast(ref Vector2 origin, ref Vector2 direction, bool drawDebugLine);
+		internal extern static bool Physics2D_Raycast(ref Vector2 start, ref Vector2 end, bool drawDebugLine);
 
 		#endregion
 

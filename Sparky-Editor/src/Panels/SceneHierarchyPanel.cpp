@@ -142,8 +142,14 @@ namespace Sparky {
 		else
 		{
 			const char* name = "None";
+
 			if (hoveredEntity && m_ContextScene)
-				name = hoveredEntity.GetComponent<TagComponent>().Tag.c_str();
+			{
+				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+
+				if (!tag.empty())
+					name = tag.c_str();
+			}
 
 			Gui::SetCursorPosX(10.0f);
 			Gui::Text("Hovered Entity: %s", name);

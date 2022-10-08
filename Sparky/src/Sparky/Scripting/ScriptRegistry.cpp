@@ -529,23 +529,24 @@ namespace Sparky {
 
 #pragma region Physics2D
 
-	static bool Physics2D_Raycast(Math::vec2* origin, Math::vec2* direction, bool drawDebugLine)
+	static bool Physics2D_Raycast(Math::vec2* start, Math::vec2* end, bool drawDebugLine)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		
 		// Create an instance of the callback and initialize it
 		RayCastCallback raycastCallback;
-		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { origin->x, origin->y }, { direction->x, direction->y });
+		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
 
 		bool result = false;
 
 		if (raycastCallback.fixture != nullptr)
 			result = true;
 
-		if (drawDebugLine)
+		// Render Raycat Hits
+		if (drawDebugLine && result)
 		{
-			Renderer2D::DrawLine({ origin->x, origin->y, 0.0f }, { direction->x, direction->y, 0.0f }, s_RaycastDebugLineColor);
+			Renderer2D::DrawLine({ start->x, start->y, 0.0f }, { end->x, end->y, 0.0f }, s_RaycastDebugLineColor);
 			Renderer2D::Flush();
 		}
 
