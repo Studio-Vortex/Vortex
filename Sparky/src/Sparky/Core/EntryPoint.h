@@ -10,6 +10,9 @@
 
 	int main(int argc, char* argv[])
 	{
+		// TODO: This should be reworked
+		ShowWindow(GetConsoleWindow(), SW_HIDE);
+
 		Sparky::Log::Init();
 
 		while (g_ApplicationRunning)

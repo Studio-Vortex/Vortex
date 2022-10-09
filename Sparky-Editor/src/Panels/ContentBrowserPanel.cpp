@@ -61,9 +61,9 @@ namespace Sparky {
 				if (Gui::MenuItem("Scene"))
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.sparky");
-					std::ofstream newSceneFileOut(m_PathToBeRenamed);
-					newSceneFileOut << "Scene: Untitled\nEntities:";
-					newSceneFileOut.close();
+					std::ofstream fout(m_PathToBeRenamed);
+					fout << "Scene: Untitled\nEntities:";
+					fout.close();
 
 					Gui::CloseCurrentPopup();
 				}
@@ -72,8 +72,8 @@ namespace Sparky {
 				if (Gui::MenuItem("C# Script"))
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
-					std::ofstream newScriptFileOut(m_PathToBeRenamed);
-					newScriptFileOut << R"(using System;
+					std::ofstream fout(m_PathToBeRenamed);
+					fout << R"(using System;
 using Sparky;
 
 public class Untitled : Entity
@@ -89,7 +89,8 @@ public class Untitled : Entity
 	}
 }
 )";
-					newScriptFileOut.close();
+
+					fout.close();
 
 					Gui::CloseCurrentPopup();
 				}
@@ -199,6 +200,16 @@ public class Untitled : Entity
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();
+
+				bool isCSharpFile = currentPath.filename().extension() == ".cs";
+
+				if (isCSharpFile && Gui::MenuItem("Open with VsCode"))
+				{
+					FileSystem::LaunchApplication("code", std::format("{} {}", currentPath.parent_path().string(), currentPath.string()).c_str());
+					Gui::CloseCurrentPopup();
+				}
+				if (isCSharpFile)
+					Gui::Separator();
 
 				if (Gui::MenuItem("Open in File Explorer"))
 				{
