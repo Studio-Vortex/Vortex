@@ -131,10 +131,6 @@ namespace Sparky {
 
 		if (selectedSetting == 2) // Editor Settings
 		{
-			Gui::DragFloat("Camera FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
-
-			Gui::Spacing();
-
 			static const char* themes[] = {
 				"Dark",
 				"Light Gray",
@@ -188,6 +184,8 @@ namespace Sparky {
 				Gui::EndCombo();
 			}
 
+			Gui::DragFloat("Camera FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
+
 			static bool lockEditorCameraRotation = false;
 			if (Gui::Checkbox("Lock Camera Rotation", &lockEditorCameraRotation))
 				EditorCamera::LockCameraRotation(lockEditorCameraRotation);
@@ -206,7 +204,8 @@ namespace Sparky {
 			Gui::DragFloat("Snap Value", &m_Settings.Gizmos.SnapValue, 0.05f, 0.05f, 0.0f, "%.2f");
 			Gui::DragFloat("Rotation Snap Value", &m_Settings.Gizmos.RotationSnapValue, 1.0f, 1.0f, 0.0f, "%.2f");
 			Gui::Checkbox("Draw Grid", &m_Settings.Gizmos.DrawGrid);
-			Gui::DragFloat("Grid Size", &m_Settings.Gizmos.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
+			if (m_Settings.Gizmos.DrawGrid)
+				Gui::DragFloat("Grid Size", &m_Settings.Gizmos.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
 		}
 
 		if (selectedSetting == 3) // Runtime Settings

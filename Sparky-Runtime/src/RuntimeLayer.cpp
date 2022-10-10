@@ -1,5 +1,6 @@
 #include "RuntimeLayer.h"
 
+#include <Sparky/Scene/Scene.h>
 #include <Sparky/Scene/SceneSerializer.h>
 
 namespace Sparky {
@@ -65,6 +66,9 @@ namespace Sparky {
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
+
+		// Set the viewport size
+		m_ViewportSize = { viewport->WorkSize.x, viewport->WorkSize.y };
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

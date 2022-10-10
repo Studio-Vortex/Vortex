@@ -1019,6 +1019,7 @@ namespace Sparky {
 
 	void ScriptRegistry::RegisterComponents()
 	{
+		s_EntityHasComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
 	}
 

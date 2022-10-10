@@ -77,6 +77,7 @@ namespace Sparky {
 			{
 				const char* errorMessage = mono_image_strerror(status);
 				// Log some error message using the errorMessage data
+				SP_CORE_ERROR("Mono Assembly Error: {}", errorMessage);
 				return nullptr;
 			}
 
@@ -131,6 +132,9 @@ namespace Sparky {
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
+		std::filesystem::path CoreAssemblyFilepath;
+		std::filesystem::path AppAssemblyFilepath;
+
 		ScriptClass EntityClass;
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
@@ -148,12 +152,13 @@ namespace Sparky {
 		s_Data = new ScriptEngineData();
 
 		InitMono();
+		ScriptRegistry::RegisterMethods();
+
 		LoadAssembly("Resources/Scripts/Sparky-ScriptCore.dll");
 		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
 		LoadAssemblyClasses();
 
 		ScriptRegistry::RegisterComponents();
-		ScriptRegistry::RegisterMethods();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
 	}
@@ -178,10 +183,12 @@ namespace Sparky {
 
 	void ScriptEngine::ShutdownMono()
 	{
-		//mono_domain_unload(s_Data->AppDomain);
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_Data->AppDomain);
 		s_Data->AppDomain = nullptr;
 
-		//mono_jit_cleanup(s_Data->RootDomain);
+		mono_jit_cleanup(s_Data->RootDomain);
 		s_Data->RootDomain = nullptr;
 	}
 
@@ -193,6 +200,7 @@ namespace Sparky {
 		mono_domain_set(s_Data->AppDomain, true);
 
 		// Move this
+		s_Data->CoreAssemblyFilepath = filepath;
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
@@ -201,9 +209,26 @@ namespace Sparky {
 	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		// Move this
+		s_Data->AppAssemblyFilepath = filepath;
 		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 		//Utils::PrintAssemblyTypes(s_Data->AppAssembly);
+	}
+
+	void ScriptEngine::ReloadAssembly()
+	{
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_Data->AppDomain);
+
+		LoadAssembly(s_Data->CoreAssemblyFilepath);
+		LoadAppAssembly(s_Data->AppAssemblyFilepath);
+
+		LoadAssemblyClasses();
+
+		ScriptRegistry::RegisterComponents();
+
+		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)

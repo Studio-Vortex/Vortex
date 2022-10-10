@@ -9,13 +9,18 @@ namespace Sandbox {
 		public float Speed;
 		public float Time;
 		public RigidBody2D rb;
+		public bool ShowRaycast;
 		private Camera2D m_Camera;
+		private SpriteRenderer m_SpriteRenderer;
 
 		public override void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
 			m_Camera = FindEntityByName("Camera").As<Camera2D>();
+			m_SpriteRenderer = GetComponent<SpriteRenderer>();
+
+			Speed *= 1.5f;
 		}
 
 		public override void OnUpdate(float delta)
@@ -34,18 +39,26 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D))
 				Velocity.X = 1.0f;
 
+			m_Camera.DistanceToPlayer += delta;
+
 			if (Input.IsKeyDown(KeyCode.Q))
 				m_Camera.DistanceToPlayer += 2.0f * delta;
 			if (Input.IsKeyDown(KeyCode.E))
 				m_Camera.DistanceToPlayer -= 2.0f * delta;
 
+			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + Vector2.Down, out RayCastHit2D hit, ShowRaycast);
+
+			if (hit.Hit)
+			{
+				m_SpriteRenderer.Color = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+				if (other.Name == "Floor")
+					Debug.Log("Floor Hit");
+			}
+			else
+				m_SpriteRenderer.Color = new Vector4(1.0f);
+
 			Velocity *= Speed * delta;
 			rb.ApplyForce(Velocity.XY, true);
-		}
-
-		public override void OnDestroy()
-		{
-
 		}
 	}
 

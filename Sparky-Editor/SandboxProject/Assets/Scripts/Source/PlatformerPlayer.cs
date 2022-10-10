@@ -8,11 +8,11 @@ namespace Sandbox {
 		public float AnimationWaitTime = 1.0f;
 		public float JumpForce;
 		public float PlayerResetYAxis = -50.0f;
+		public float Friction = 2.0f;
 		public float Speed;
 		public float WaitTime;
 		public Vector3 StartPosition;
 		public Vector3 Velocity;
-		public Vector2 Direction;
 
 		public bool IsGrounded;
 		public bool AnimationReady;
@@ -31,7 +31,6 @@ namespace Sandbox {
 			m_BoxCollider = GetComponent<BoxCollider2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
 			StartPosition = transform.Translation;
-			Direction = Vector2.Down;
 		}
 
 		public override void OnUpdate(float delta)
@@ -40,12 +39,8 @@ namespace Sandbox {
 			Vector2 groundPoint = playerFootPoint;
 			groundPoint.Y -= 0.1f;
 
-			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
+			Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
 			IsGrounded = hit.Hit;
-			if (hit.Hit)
-				Debug.Log($"Entity - {entity.Name}, Point - {hit.Point}, Normal - {hit.Normal}");
-
-			Physics2D.Raycast(transform.Translation.XY, Direction, out RayCastHit2D hit2, ShowRaycast);
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{
@@ -82,6 +77,9 @@ namespace Sandbox {
 				m_Sprite.Texture = m_JumpTextureString;
 			else
 				m_Sprite.Texture = m_NormalTextureString;
+
+			if (!IsGrounded)
+				Velocity.X /= Friction;
 
 			Velocity.X *= Speed * delta;
 			Velocity.Y *= JumpForce * delta;

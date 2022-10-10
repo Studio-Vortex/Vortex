@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include <Sparky/Scene/SceneSerializer.h>
+#include <Sparky/Scripting/ScriptEngine.h>
 #include <Sparky/Utils/PlatformUtils.h>
 #include <Sparky/Renderer/RenderCommand.h>
 
@@ -265,6 +266,17 @@ namespace Sparky {
 						if (Gui::MenuItem("Restart Simulation", "Ctrl+Shift+X"))
 							RestartSceneSimulation();
 					}
+				}
+
+				Gui::EndMenu();
+			}
+
+			if (Gui::BeginMenu("Script"))
+			{
+				if (inEditMode)
+				{
+					if (Gui::MenuItem("Reload Mono Assembly", "Ctrl+R"))
+						ScriptEngine::ReloadAssembly();
 				}
 
 				Gui::EndMenu();
@@ -741,7 +753,9 @@ namespace Sparky {
 			}
 			case Key::R:
 			{
-				if (!ImGuizmo::IsUsing())
+				if (controlPressed)
+					ScriptEngine::ReloadAssembly();
+				else if (!ImGuizmo::IsUsing())
 					OnScaleToolSelected();
 
 				break;
