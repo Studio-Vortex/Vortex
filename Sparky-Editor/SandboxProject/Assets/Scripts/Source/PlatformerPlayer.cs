@@ -40,15 +40,20 @@ namespace Sandbox {
 			Vector2 groundPoint = playerFootPoint;
 			groundPoint.Y -= 0.1f;
 
-			IsGrounded = Physics2D.Raycast(transform.Translation.XY, groundPoint, ShowRaycast);
+			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
+			IsGrounded = hit.Hit;
+			Debug.Log($"Point - {hit.Point}, Normal - {hit.Normal}");
 
-			Physics2D.Raycast(transform.Translation.XY, Direction, ShowRaycast);
+			Physics2D.Raycast(transform.Translation.XY, Direction, out RayCastHit2D hit2, ShowRaycast);
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{
 				Velocity = Vector3.Zero;
 				transform.Translation = StartPosition;
 			}
+
+			if (Input.IsKeyDown(KeyCode.Escape))
+				Game.Shutdown();
 
 			if (Input.IsKeyDown(KeyCode.A))
 			{

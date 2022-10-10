@@ -317,6 +317,7 @@ public class Untitled : Entity
 
 								SP_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
 
+								// Find the line with the class name and replace it
 								for (auto& line : fileLineBuffer)
 								{
 									if (line.find(oldClassName) != std::string::npos)

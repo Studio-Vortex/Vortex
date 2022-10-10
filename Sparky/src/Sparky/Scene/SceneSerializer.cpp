@@ -452,10 +452,12 @@ namespace Sparky {
 
 					sprite.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 					if (spriteComponent["TexturePath"])
+					{
 						sprite.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
+					}
 
 					if (spriteComponent["Scale"])
-					sprite.Scale = spriteComponent["Scale"].as<float>();
+						sprite.Scale = spriteComponent["Scale"].as<float>();
 				}
 				
 				auto circleComponent = entity["CircleRendererComponent"];

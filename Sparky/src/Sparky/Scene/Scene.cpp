@@ -128,13 +128,41 @@ namespace Sparky {
 			ScriptEngine::OnDestroyEntity(entity);
 		}
 
-		// Destroy the physics body if it exists
+		// Destroy the physics body and fixture if they exist
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{
 			b2Body* body = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
-
+			
 			if (body != nullptr)
+			{
+				if (entity.HasComponent<BoxCollider2DComponent>())
+				{
+					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture;
+
+					// Remove the fixture from our map of fixtures to user data
+					auto it = m_PhysicsBodyDataMap.find(fixture);
+					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
+					m_PhysicsBodyDataMap.erase(it->first);
+
+					if (fixture != nullptr)
+						body->DestroyFixture(fixture);
+				}
+
+				if (entity.HasComponent<CircleCollider2DComponent>())
+				{
+					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
+
+					// Remove the fixture from our map of fixtures to user data
+					auto it = m_PhysicsBodyDataMap.find(fixture);
+					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
+					m_PhysicsBodyDataMap.erase(it->first);
+
+					if (fixture != nullptr)
+						body->DestroyFixture(fixture);
+				}
+
 				m_PhysicsWorld->DestroyBody(body);
+			}
 		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
@@ -353,6 +381,7 @@ namespace Sparky {
 
 		b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb2d.FixedRotation);
+
 		rb2d.RuntimeBody = body;
 
 		if (entity.HasComponent<BoxCollider2DComponent>())
@@ -364,13 +393,22 @@ namespace Sparky {
 			boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
 
 			b2FixtureDef fixtureDef;
+
+			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
+			physicsBodyData->EntityUUID = entity.GetUUID();
+			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
+
 			fixtureDef.shape = &boxShape;
 			fixtureDef.density = bc2d.Density;
 			fixtureDef.friction = bc2d.Friction;
 			fixtureDef.restitution = bc2d.Restitution;
 			fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
 
-			body->CreateFixture(&fixtureDef);
+			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+
+			// Store the fixture and the user data in our map
+			if (m_PhysicsBodyDataMap.find(fixture) == m_PhysicsBodyDataMap.end())
+				m_PhysicsBodyDataMap[fixture] = std::move(physicsBodyData);
 		}
 
 		if (entity.HasComponent<CircleCollider2DComponent>())
@@ -382,20 +420,28 @@ namespace Sparky {
 			circleShape.m_radius = transform.Scale.x * cc2d.Radius;
 
 			b2FixtureDef fixtureDef;
+
+			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
+			physicsBodyData->EntityUUID = entity.GetUUID();
+			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
+
 			fixtureDef.shape = &circleShape;
 			fixtureDef.density = cc2d.Density;
 			fixtureDef.friction = cc2d.Friction;
 			fixtureDef.restitution = cc2d.Restitution;
 			fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
 
-			body->CreateFixture(&fixtureDef);
+			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+
+			// Store the fixture and the user data in our map
+			if (m_PhysicsBodyDataMap.find(fixture) == m_PhysicsBodyDataMap.end())
+				m_PhysicsBodyDataMap[fixture] = std::move(physicsBodyData);
 		}
 	}
 
 	void Scene::OnPhysics2DStart()
 	{
-		b2Vec2 gravity = { s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y };
-		m_PhysicsWorld = new b2World(gravity);
+		m_PhysicsWorld = new b2World({ s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y });
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
 
@@ -411,6 +457,8 @@ namespace Sparky {
 
 	void Scene::OnPhysics2DUpdate(TimeStep delta)
 	{
+		m_PhysicsWorld->SetGravity({ s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y });
+
 		// Physics
 		{
 			// Copies transform from Sparky to Box2D
@@ -465,6 +513,7 @@ namespace Sparky {
 	{
 		delete m_PhysicsWorld;
 		m_PhysicsWorld = nullptr;
+		m_PhysicsBodyDataMap.clear();
 	}
 
 	void Scene::RenderScene(EditorCamera& camera)

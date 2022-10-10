@@ -38,7 +38,9 @@ namespace Sparky {
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
+			InstrumentationTimer timer("Load Scene");
 			OpenScene(std::filesystem::path(sceneFilePath));
+			timer.Stop();
 		}
 		else
 		{

@@ -5,6 +5,13 @@ namespace Sparky {
 
 	internal static class InternalCalls
 	{
+		#region Game
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Application_Shutdown();
+
+		#endregion
+
 		#region Entity
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -158,7 +165,7 @@ namespace Sparky {
 		#region Physics2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Physics2D_Raycast(ref Vector2 start, ref Vector2 end, bool drawDebugLine);
+		internal extern static void Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
 
 		#endregion
 
@@ -279,19 +286,19 @@ namespace Sparky {
 		#region Debug
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Debug_Log(string message);
+		internal extern static void Debug_Log(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Debug_Info(string message);
+		internal extern static void Debug_Info(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Debug_Warn(string message);
+		internal extern static void Debug_Warn(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Debug_Error(string message);
+		internal extern static void Debug_Error(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Debug_Critical(string message);
+		internal extern static void Debug_Critical(string message);
 
 		#endregion
 	}

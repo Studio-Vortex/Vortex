@@ -13,6 +13,11 @@
 #include <cmath>
 #include <any>
 
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <future>
+
 #include <string>
 #include <sstream>
 #include <bitset>

@@ -171,6 +171,13 @@ namespace Sparky {
 
 		bool opened = Gui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 
+		if (Gui::BeginDragDropSource())
+		{
+			UUID uuid = entity.GetUUID();
+			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", (const void*)&uuid, sizeof(UUID), ImGuiCond_Once);
+			Gui::EndDragDropSource();
+		}
+
 		if (Gui::IsItemClicked())
 		{
 			m_SelectedEntity = entity;
@@ -936,6 +943,25 @@ namespace Sparky {
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
+								}
+
+								// Accept an Entity from the scene hierarchy
+								if (Gui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										UUID* entityUUID = (UUID*)payload->Data;
+										
+										if (Entity entity = scene->GetEntityWithUUID(*entityUUID))
+										{
+											ScriptFieldInstance& fieldInstance = entityFields[name];
+											fieldInstance.Field = field;
+											fieldInstance.SetValue(*entityUUID);
+										}
+										else
+											SP_WARN("Entity UUID {} was not found in the current scene.", *entityUUID);
+									}
+									Gui::EndDragDropTarget();
 								}
 							}
 						}

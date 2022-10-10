@@ -8,10 +8,16 @@
 #include <entt/entt.hpp>
 
 class b2World;
+class b2Fixture;
 
 namespace Sparky {
 
 	class Entity;
+
+	struct PhysicsBodyData
+	{
+		UUID EntityUUID;
+	};
 
 	class Scene
 	{
@@ -86,6 +92,8 @@ namespace Sparky {
 		inline static Math::vec2 s_PhysicsWorldGravity = Math::vec2(0.0f, -9.8f);
 		inline static int32_t s_PhysicsWorldVeloctityIterations = 6;
 		inline static int32_t s_PhysicsWorldPositionIterations = 2;
+
+		std::unordered_map<b2Fixture*, UniqueRef<PhysicsBodyData>> m_PhysicsBodyDataMap;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

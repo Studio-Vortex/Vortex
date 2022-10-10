@@ -24,7 +24,7 @@ namespace Sparky {
 					ImVec4 green = { 0.1f, 0.9f, 0.1f, 1.0f };
 					ImVec4 yellow = { 0.9f, 0.9f, 0.1f, 1.0f };
 
-					auto removeLogLevelFromMessage = [&]() {
+					auto RemoveLogLevelFromMessageFunc = [&]() {
 						size_t leftBracketPos = message.find_last_of('[');
 						size_t rightBracketPos = message.find_last_of(']');
 						size_t logLevelLength = rightBracketPos - leftBracketPos;
@@ -33,31 +33,31 @@ namespace Sparky {
 
 					if (message.find("[trace]") != std::string::npos)
 					{
-						removeLogLevelFromMessage();
+						RemoveLogLevelFromMessageFunc();
 						Gui::Text(message.c_str());
 					}
 
 					if (message.find("[info]") != std::string::npos)
 					{
-						removeLogLevelFromMessage();
+						RemoveLogLevelFromMessageFunc();
 						Gui::TextColored(green, message.c_str());
 					}
 
 					if (message.find("[warning]") != std::string::npos)
 					{
-						removeLogLevelFromMessage();
+						RemoveLogLevelFromMessageFunc();
 						Gui::TextColored(yellow, message.c_str());
 					}
 
 					if (message.find("[error]") != std::string::npos)
 					{
-						removeLogLevelFromMessage();
+						RemoveLogLevelFromMessageFunc();
 						Gui::TextColored(red, message.c_str());
 					}
 
 					if (message.find("[critical]") != std::string::npos)
 					{
-						removeLogLevelFromMessage();
+						RemoveLogLevelFromMessageFunc();
 						Gui::TextColored(red, message.c_str());
 					}
 				}

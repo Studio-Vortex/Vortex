@@ -28,27 +28,27 @@ namespace Sandbox {
 			float circleRadius = m_CircleCollider.Radius;
 
 			float upPoint = currentY + circleRadius;
-			bool hitUp = Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), out RayCastHit2D hit, ShowRaycasts);
 
-			if (hitUp)
+			if (hit.Hit)
 				Velocity.Y = -1.0f;
 
 			float downPoint = currentY - circleRadius;
-			bool hitDown = Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), out RayCastHit2D hit1, ShowRaycasts);
 
-			if (hitDown)
+			if (hit1.Hit)
 				Velocity.Y = 1.0f;
 
 			float leftPoint = currentX - circleRadius;
-			bool hitLeft = Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), out RayCastHit2D hit2, ShowRaycasts);
 
-			if (hitLeft)
+			if (hit2.Hit)
 				Velocity.X = 1.0f;
 
 			float rightPoint = currentX + circleRadius;
-			bool hitRight = Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), out RayCastHit2D hit3, ShowRaycasts);
 
-			if (hitRight)
+			if (hit3.Hit)
 				Velocity.Y = -1.0f;
 
 			Speed = Math.Min(Speed, MaxSpeed);

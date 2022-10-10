@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "ScriptRegistry.h"
 
+#include "Sparky/Core/Application.h"
+
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
@@ -25,27 +27,6 @@
 #include <cstdlib>
 #include <ctime>
 
-// Derived class of Box2D RayCastCallback
-class RayCastCallback : public b2RayCastCallback
-{
-public:
-	RayCastCallback() : fixture(nullptr) { }
-
-	float ReportFixture(b2Fixture* fixture_, const b2Vec2& point_, const b2Vec2& normal_, float fraction_) override
-	{
-		fixture = fixture_;
-		point = point_;
-		normal = normal_;
-		fraction = fraction_;
-		return fraction;
-	}
-
-	b2Fixture* fixture;
-	b2Vec2 point;
-	b2Vec2 normal;
-	float fraction;
-};
-
 namespace Sparky {
 
 #define SP_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Sparky.InternalCalls::" #icall, icall)
@@ -53,6 +34,18 @@ namespace Sparky {
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
 	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+#pragma region Game
+
+	static void Application_Shutdown()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Application::Get().Close();
+	}
+
+#pragma endregion
 
 #pragma region Entity
 
@@ -529,7 +522,54 @@ namespace Sparky {
 
 #pragma region Physics2D
 
-	static bool Physics2D_Raycast(Math::vec2* start, Math::vec2* end, bool drawDebugLine)
+	// Derived class of Box2D RayCastCallback
+	class RayCastCallback : public b2RayCastCallback
+	{
+	public:
+		RayCastCallback() : fixture(nullptr) { }
+
+		float ReportFixture(b2Fixture* fixture_, const b2Vec2& point_, const b2Vec2& normal_, float fraction_) override
+		{
+			fixture = fixture_;
+			point = point_;
+			normal = normal_;
+			fraction = fraction_;
+			return fraction;
+		}
+
+		b2Fixture* fixture;
+		b2Vec2 point;
+		b2Vec2 normal;
+		float fraction;
+	};
+
+	struct RayCastHit2D
+	{
+		Math::vec2 Point;
+		Math::vec2 Normal;
+		UUID OtherEntityUUID;
+		bool Hit;
+
+		RayCastHit2D(const RayCastCallback& raycastInfo)
+		{
+			Hit = raycastInfo.fixture != nullptr;
+
+			if (Hit)
+			{
+				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
+				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
+				OtherEntityUUID = reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
+			}
+			else
+			{
+				Point = Math::vec2();
+				Normal = Math::vec2();
+				OtherEntityUUID = 0; // Invalid UUID
+			}
+		}
+	};
+
+	static void Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RayCastHit2D* outResult, bool drawDebugLine)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -538,19 +578,14 @@ namespace Sparky {
 		RayCastCallback raycastCallback;
 		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
 
-		bool result = false;
+		*outResult = RayCastHit2D(raycastCallback);
 
-		if (raycastCallback.fixture != nullptr)
-			result = true;
-
-		// Render Raycat Hits
-		if (drawDebugLine && result)
+		// Render Raycast Hits
+		if (drawDebugLine && outResult->Hit)
 		{
 			Renderer2D::DrawLine({ start->x, start->y, 0.0f }, { end->x, end->y, 0.0f }, s_RaycastDebugLineColor);
 			Renderer2D::Flush();
 		}
-
-		return result;
 	}
 
 #pragma endregion
@@ -975,6 +1010,12 @@ namespace Sparky {
 
 	void ScriptRegistry::RegisterMethods()
 	{
+
+#pragma region Game
+
+		SP_ADD_INTERNAL_CALL(Application_Shutdown);
+
+#pragma endregion
 
 #pragma region Entity
 
