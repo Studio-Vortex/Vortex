@@ -6,6 +6,14 @@ namespace Sparky {
 	{
 		public readonly ulong ID;
 		public Transform transform;
+		public string Name
+		{
+			get
+			{
+				InternalCalls.Entity_GetName(ID, out string name);
+				return name;
+			}
+		}
 
 		protected Entity() { ID = 0; }
 
@@ -76,12 +84,6 @@ namespace Sparky {
 					case "Sparky.CircleCollider2D": InternalCalls.Entity_RemoveCircleCollider2D(ID); break;
 				}
 			}
-		}
-
-		public string GetName()
-		{
-			InternalCalls.Entity_GetName(ID, out string name);
-			return name;
 		}
 
 		public Entity FindEntityByName(string name)

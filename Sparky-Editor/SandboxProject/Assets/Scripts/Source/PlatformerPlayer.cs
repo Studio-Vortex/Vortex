@@ -43,7 +43,7 @@ namespace Sandbox {
 			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
 			IsGrounded = hit.Hit;
 			if (hit.Hit)
-				Debug.Log($"Entity - {entity.GetName()}, Point - {hit.Point}, Normal - {hit.Normal}");
+				Debug.Log($"Entity - {entity.Name}, Point - {hit.Point}, Normal - {hit.Normal}");
 
 			Physics2D.Raycast(transform.Translation.XY, Direction, out RayCastHit2D hit2, ShowRaycast);
 

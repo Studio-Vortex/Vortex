@@ -4,6 +4,7 @@
 	{
 		public Vector2 Point;
 		public Vector2 Normal;
+		public string Name;
 		public bool Hit;
 	}
 

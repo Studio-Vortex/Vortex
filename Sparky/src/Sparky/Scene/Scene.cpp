@@ -372,7 +372,7 @@ namespace Sparky {
 		return Entity{};
 	}
 
-	void Scene::OnPhysicsBodyCreate(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
+	void Scene::OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
 	{
 		b2BodyDef bodyDef;
 		bodyDef.type = RigidBody2DTypeToBox2DBody(rb2d.Type);
@@ -451,7 +451,7 @@ namespace Sparky {
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-			OnPhysicsBodyCreate(entity, transform, rb2d);
+			OnCreatePhysicsBody(entity, transform, rb2d);
 		}
 	}
 
@@ -469,8 +469,9 @@ namespace Sparky {
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
+				// If a rb2d component is added during runtime we can create the physics body here
 				if (rb2d.RuntimeBody == nullptr)
-					OnPhysicsBodyCreate(entity, transform, rb2d);
+					OnCreatePhysicsBody(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				glm::vec3 translation = transform.Translation;
@@ -496,9 +497,8 @@ namespace Sparky {
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-				// If a rb2d component is added during runtime we can create the physics body here
 				if (rb2d.RuntimeBody == nullptr)
-					OnPhysicsBodyCreate(entity, transform, rb2d);
+					OnCreatePhysicsBody(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
