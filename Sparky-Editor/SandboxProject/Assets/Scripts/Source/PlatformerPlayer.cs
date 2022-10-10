@@ -8,7 +8,8 @@ namespace Sandbox {
 		public float AnimationWaitTime = 1.0f;
 		public float JumpForce;
 		public float PlayerResetYAxis = -50.0f;
-		public float Friction = 2.0f;
+		public float FinishPoint;
+		public float HorizontalFriction = 2.0f;
 		public float Speed;
 		public float WaitTime;
 		public Vector3 StartPosition;
@@ -18,12 +19,14 @@ namespace Sandbox {
 		public bool AnimationReady;
 		public bool IsRunning;
 		public bool ShowRaycast;
+		public bool GameOver;
 
 		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
 		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
 		private RigidBody2D m_Rigidbody;
 		private BoxCollider2D m_BoxCollider;
 		private SpriteRenderer m_Sprite;
+		private Camera2D m_CameraEntity;
 
 		public override void OnCreate()
 		{
@@ -31,6 +34,7 @@ namespace Sandbox {
 			m_BoxCollider = GetComponent<BoxCollider2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
 			StartPosition = transform.Translation;
+			m_CameraEntity = FindEntityByName("Camera").As<Camera2D>();
 		}
 
 		public override void OnUpdate(float delta)
@@ -39,13 +43,20 @@ namespace Sandbox {
 			Vector2 groundPoint = playerFootPoint;
 			groundPoint.Y -= 0.1f;
 
-			Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
+			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
 			IsGrounded = hit.Hit;
+
+			if (hit.Hit && hit.Tag == "Grass Collider")
+			{
+				m_Sprite.Color = new Vector4(0.8f, 0.4f, 0.4f, 1.0f);
+				entity.Destroy(scriptInstance: false);
+			}
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
 			{
 				Velocity = Vector3.Zero;
 				transform.Translation = StartPosition;
+				m_Sprite.Color = new Vector4(1.0f);
 			}
 
 			if (Input.IsKeyDown(KeyCode.Escape))
@@ -70,16 +81,22 @@ namespace Sandbox {
 			else
 				IsRunning = false;
 
+			if (transform.Translation.X >= FinishPoint)
+				GameOver = true;
+
+			if (GameOver && m_CameraEntity.DistanceToPlayer > 5.0f)
+				m_CameraEntity.DistanceToPlayer -= 1.0f * delta;
+
 			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
 				Velocity.Y = 1.0f;
 
 			if (!IsGrounded)
+			{
 				m_Sprite.Texture = m_JumpTextureString;
+				Velocity.X /= HorizontalFriction;
+			}
 			else
 				m_Sprite.Texture = m_NormalTextureString;
-
-			if (!IsGrounded)
-				Velocity.X /= Friction;
 
 			Velocity.X *= Speed * delta;
 			Velocity.Y *= JumpForce * delta;

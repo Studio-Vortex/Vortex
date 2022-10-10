@@ -194,6 +194,18 @@ namespace Sparky {
 		outEntityName = mono_string_new_wrapper(name.c_str());
 	}
 
+	static uint64_t Entity_CreateWithName(MonoString* name)
+	{
+		char* nameCStr = mono_string_to_utf8(name);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->CreateEntity(nameCStr);
+		mono_free(nameCStr);
+
+		return entity.GetUUID();
+	}
+
 	static uint64_t Entity_FindEntityByName(MonoString* name)
 	{
 		char* nameCStr = mono_string_to_utf8(name);
@@ -216,14 +228,14 @@ namespace Sparky {
 		return ScriptEngine::GetManagedInstance(entityUUID);
 	}
 
-	static void Entity_Destroy(UUID entityUUID)
+	static void Entity_Destroy(UUID entityUUID, bool isScriptInstance = true)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		contextScene->DestroyEntity(entity, true);
+		contextScene->DestroyEntity(entity, isScriptInstance);
 	}
 
 #pragma endregion
@@ -559,9 +571,10 @@ namespace Sparky {
 	{
 		Math::vec2 Point;
 		Math::vec2 Normal;
+		MonoString* Tag;
 		bool Hit;
 
-		RayCastHit2D(const RayCastCallback& raycastInfo)
+		RayCastHit2D(const RayCastCallback& raycastInfo, Scene* contextScene)
 		{
 			Hit = raycastInfo.fixture != nullptr;
 
@@ -569,11 +582,13 @@ namespace Sparky {
 			{
 				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
 				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
+				Tag = mono_string_new_wrapper(contextScene->GetEntityWithUUID(reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID).GetName().c_str());
 			}
 			else
 			{
 				Point = Math::vec2();
 				Normal = Math::vec2();
+				Tag = mono_string_new_wrapper("");
 			}
 		}
 	};
@@ -587,7 +602,7 @@ namespace Sparky {
 		RayCastCallback raycastCallback;
 		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
 
-		*outResult = RayCastHit2D(raycastCallback);
+		*outResult = RayCastHit2D(raycastCallback, contextScene);
 
 		// Render Raycast Hits
 		if (drawDebugLine && outResult->Hit)
@@ -1047,6 +1062,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleCollider2D);
+		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
 		SP_ADD_INTERNAL_CALL(Entity_GetName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);

@@ -51,7 +51,7 @@ namespace Sandbox {
 			if (hit.Hit)
 			{
 				m_SpriteRenderer.Color = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-				if (other.Name == "Floor")
+				if (hit.Tag == "Floor")
 					Debug.Log("Floor Hit");
 			}
 			else

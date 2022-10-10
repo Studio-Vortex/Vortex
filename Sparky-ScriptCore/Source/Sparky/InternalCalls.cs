@@ -54,6 +54,9 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCircleCollider2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_CreateWithName(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_GetName(ulong entityID, out string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -63,7 +66,7 @@ namespace Sparky {
 		internal extern static object Entity_GetScriptInstance(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_Destroy(ulong entityID);
+		internal extern static ulong Entity_Destroy(ulong entityID, bool isScriptInstance = true);
 
 		#endregion
 

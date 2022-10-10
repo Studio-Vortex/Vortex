@@ -62,10 +62,10 @@ namespace Sparky {
 
 	void RuntimeLayer::OnGuiRender()
 	{
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGuiViewport* viewport = Gui::GetMainViewport();
+		Gui::SetNextWindowPos(viewport->WorkPos);
+		Gui::SetNextWindowSize(viewport->WorkSize);
+		Gui::SetNextWindowViewport(viewport->ID);
 
 		// Set the viewport size
 		m_ViewportSize = { viewport->WorkSize.x, viewport->WorkSize.y };

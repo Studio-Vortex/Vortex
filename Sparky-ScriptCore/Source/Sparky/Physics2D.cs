@@ -4,7 +4,7 @@
 	{
 		public Vector2 Point;
 		public Vector2 Normal;
-		//public string Name;
+		public string Tag;
 		public bool Hit;
 	}
 
@@ -14,10 +14,10 @@
 		{
 			ulong entityID = InternalCalls.Physics2D_Raycast(ref start, ref end, out hit, drawDebugLine);
 
-			if (entityID != 0)
-				return new Entity(entityID);
+			if (entityID == 0)
+				return null;
 
-			return null;
+			return new Entity(entityID);
 		}
 	}
 

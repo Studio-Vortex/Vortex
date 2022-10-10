@@ -39,9 +39,7 @@ namespace Sparky {
 		if (commandLineArgs.Count > 1)
 		{
 			auto sceneFilePath = commandLineArgs[1];
-			InstrumentationTimer timer("Load Scene");
 			OpenScene(std::filesystem::path(sceneFilePath));
-			timer.Stop();
 		}
 		else
 		{
@@ -129,7 +127,7 @@ namespace Sparky {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
 		}
 
 		OnOverlayRender();
@@ -371,7 +369,8 @@ namespace Sparky {
 		}
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-		Gui::Begin("Scene");
+		bool open = true;
+		Gui::Begin("Scene", &open, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();
@@ -810,6 +809,9 @@ namespace Sparky {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
+		std::string name = std::format("{} Load Time", path.filename().string());
+		InstrumentationTimer timer(name.c_str());
+
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 

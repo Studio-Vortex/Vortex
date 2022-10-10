@@ -122,11 +122,9 @@ namespace Sparky {
 
 	void Scene::DestroyEntity(Entity entity, bool isEntityInstance)
 	{
+		// Call the entitys OnDestroy function if they are a script instance
 		if (isEntityInstance)
-		{
-			// Call the entitys OnDestroy function
 			ScriptEngine::OnDestroyEntity(entity);
-		}
 
 		// Destroy the physics body and fixture if they exist
 		if (entity.HasComponent<RigidBody2DComponent>())
@@ -140,12 +138,14 @@ namespace Sparky {
 					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture;
 
 					// Remove the fixture and release the stored user data
-					auto it = m_PhysicsBodyDataMap.find(fixture);
-					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
-					m_PhysicsBodyDataMap.erase(it->first);
-
 					if (fixture != nullptr)
+					{
+						auto it = m_PhysicsBodyDataMap.find(fixture);
+						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
+						m_PhysicsBodyDataMap.erase(it->first);
+
 						body->DestroyFixture(fixture);
+					}
 				}
 
 				if (entity.HasComponent<CircleCollider2DComponent>())
@@ -153,12 +153,14 @@ namespace Sparky {
 					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
 
 					// Remove the fixture and release the stored user data
-					auto it = m_PhysicsBodyDataMap.find(fixture);
-					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
-					m_PhysicsBodyDataMap.erase(it->first);
-
 					if (fixture != nullptr)
+					{
+						auto it = m_PhysicsBodyDataMap.find(fixture);
+						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
+						m_PhysicsBodyDataMap.erase(it->first);
+
 						body->DestroyFixture(fixture);
+					}
 				}
 
 				m_PhysicsWorld->DestroyBody(body);

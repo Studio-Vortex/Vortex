@@ -6,7 +6,7 @@ namespace Sparky {
 	{
 		public readonly ulong ID;
 		public Transform transform;
-		public string Name
+		public string Tag
 		{
 			get
 			{
@@ -20,6 +20,12 @@ namespace Sparky {
 		internal Entity(ulong id)
 		{
 			ID = id;
+			transform = GetComponent<Transform>();
+		}
+
+		public Entity(string name)
+		{
+			ID = InternalCalls.Entity_CreateWithName(name);
 			transform = GetComponent<Transform>();
 		}
 
@@ -103,9 +109,9 @@ namespace Sparky {
 			return instance as T;
 		}
 
-		public void Destroy()
+		public void Destroy(bool scriptInstance = true)
 		{
-			InternalCalls.Entity_Destroy(ID);
+			InternalCalls.Entity_Destroy(ID, isScriptInstance: scriptInstance);
 		}
 	}
 
