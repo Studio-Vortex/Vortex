@@ -139,7 +139,7 @@ namespace Sparky {
 				{
 					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture;
 
-					// Remove the fixture from our map of fixtures to user data
+					// Remove the fixture and release the stored user data
 					auto it = m_PhysicsBodyDataMap.find(fixture);
 					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
 					m_PhysicsBodyDataMap.erase(it->first);
@@ -152,7 +152,7 @@ namespace Sparky {
 				{
 					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
 
-					// Remove the fixture from our map of fixtures to user data
+					// Remove the fixture and release the stored user data
 					auto it = m_PhysicsBodyDataMap.find(fixture);
 					SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
 					m_PhysicsBodyDataMap.erase(it->first);

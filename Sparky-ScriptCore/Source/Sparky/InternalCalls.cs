@@ -54,6 +54,9 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCircleCollider2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_GetName(ulong entityID, out string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_FindEntityByName(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -165,7 +168,7 @@ namespace Sparky {
 		#region Physics2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
+		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
 
 		#endregion
 

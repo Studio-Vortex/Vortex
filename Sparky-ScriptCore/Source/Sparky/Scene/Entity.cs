@@ -78,6 +78,12 @@ namespace Sparky {
 			}
 		}
 
+		public string GetName()
+		{
+			InternalCalls.Entity_GetName(ID, out string name);
+			return name;
+		}
+
 		public Entity FindEntityByName(string name)
 		{
 			ulong entityID = InternalCalls.Entity_FindEntityByName(name);

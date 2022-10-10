@@ -181,6 +181,18 @@ namespace Sparky {
 
 		entity.RemoveComponent<CircleCollider2DComponent>();
 	}
+	
+	static void Entity_GetName(UUID entityUUID, MonoString* outEntityName)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const std::string& name = entity.GetName();
+
+		outEntityName = mono_string_new_wrapper(name.c_str());
+	}
 
 	static uint64_t Entity_FindEntityByName(MonoString* name)
 	{
@@ -537,7 +549,7 @@ namespace Sparky {
 			return fraction;
 		}
 
-		b2Fixture* fixture;
+		b2Fixture* fixture; // This is the fixture that was hit by the raycast
 		b2Vec2 point;
 		b2Vec2 normal;
 		float fraction;
@@ -547,7 +559,6 @@ namespace Sparky {
 	{
 		Math::vec2 Point;
 		Math::vec2 Normal;
-		UUID OtherEntityUUID;
 		bool Hit;
 
 		RayCastHit2D(const RayCastCallback& raycastInfo)
@@ -558,18 +569,16 @@ namespace Sparky {
 			{
 				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
 				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
-				OtherEntityUUID = reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
 			}
 			else
 			{
 				Point = Math::vec2();
 				Normal = Math::vec2();
-				OtherEntityUUID = 0; // Invalid UUID
 			}
 		}
 	};
 
-	static void Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RayCastHit2D* outResult, bool drawDebugLine)
+	static uint64_t Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RayCastHit2D* outResult, bool drawDebugLine)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -586,6 +595,11 @@ namespace Sparky {
 			Renderer2D::DrawLine({ start->x, start->y, 0.0f }, { end->x, end->y, 0.0f }, s_RaycastDebugLineColor);
 			Renderer2D::Flush();
 		}
+
+		if (outResult->Hit)
+			return reinterpret_cast<PhysicsBodyData*>(raycastCallback.fixture->GetUserData().pointer)->EntityUUID;
+		else
+			return 0; // Invalid entity
 	}
 
 #pragma endregion
@@ -1032,6 +1046,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleCollider2D);
+		SP_ADD_INTERNAL_CALL(Entity_GetName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		SP_ADD_INTERNAL_CALL(Entity_Destroy);
@@ -1049,7 +1064,7 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Transform Component
+#pragma region Camera Component
 
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
