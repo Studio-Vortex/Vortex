@@ -12,6 +12,7 @@ namespace Sparky {
 		void OnGuiRender();
 
 	private:
+		void RenderRightClickPopupMenu();
 		void RenderFileExplorer();
 
 	private:

@@ -21,6 +21,16 @@
 			}
 		}
 
+		public void Translate(Vector3 translation)
+		{
+			Entity.transform.Translation += translation;
+		}
+
+		public void Translate(float x, float y, float z)
+		{
+			Entity.transform.Translation += new Vector3(x, y, z);
+		}
+
 		public Vector3 Scale
 		{
 			get
@@ -33,6 +43,11 @@
 			{
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
+		}
+
+		public void Scale()
+		{
+
 		}
 
 		public Vector3 Rotation
@@ -173,6 +188,25 @@
 
 	public class RigidBody2D : Component
 	{
+		public enum BodyType
+		{
+			Static, Dynamic, Kinematic,
+		}
+
+		public BodyType Type
+		{
+			get
+			{
+				InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID, out BodyType bodyType);
+				return bodyType;
+			}
+
+			set
+			{
+				InternalCalls.RigidBody2DComponent_SetBodyType(Entity.ID, value);
+			}
+		}
+
 		public void ApplyForce(Vector2 force, Vector2 worldPosition, bool wake)
 		{
 			InternalCalls.RigidBody2DComponent_ApplyForce(Entity.ID, ref force, ref worldPosition, wake);

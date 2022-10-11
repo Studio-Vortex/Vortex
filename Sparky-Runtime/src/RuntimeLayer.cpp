@@ -52,6 +52,7 @@ namespace Sparky {
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
+		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
 		RenderCommand::Clear();
 

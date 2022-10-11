@@ -41,36 +41,46 @@ namespace Sparky {
 		CopyComponent<Component...>(dst, src, enttMap);
 	}
 
-	template <typename... TComponents>
+	template <typename... TComponent>
 	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		([&]()
 		{
-			auto view = src.view<TComponents>();
+			auto view = src.view<TComponent>();
 			for (auto srcEntity : view)
 			{
 				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-				auto& srcComponent = src.get<TComponents>(srcEntity);
-				dst.emplace_or_replace<TComponents>(dstEntity, srcComponent);
+				auto& srcComponent = src.get<TComponent>(srcEntity);
+				dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
 			}
 		}(), ...);
 	}
 
-	template<typename... TComponents>
+	template<typename... TComponent>
 	static void CopyComponentIfExists(Entity dst, Entity src)
 	{
 		([&]()
 		{
-			if (src.HasComponent<TComponents>())
-				dst.AddOrReplaceComponent<TComponents>(src.GetComponent<TComponents>());
+			if (src.HasComponent<TComponent>())
+				dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+
+			// If we copy a script component, we should probably copy all of the script field values as well
+			if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
+			{
+				const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
+				auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+
+				for (const auto& [name, field] : sourceScriptFieldMap)
+					destinationScriptFieldMap[name] = field;
+			}
 		}(), ...);
 	}
 
-	template<typename... TComponents>
-	static void CopyComponentIfExists(ComponentGroup<TComponents...>, Entity dst, Entity src)
+	template<typename... TComponent>
+	static void CopyComponentIfExists(ComponentGroup<TComponent...>, Entity dst, Entity src)
 	{
-		CopyComponentIfExists<TComponents...>(dst, src);
+		CopyComponentIfExists<TComponent...>(dst, src);
 	}
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
@@ -129,9 +139,9 @@ namespace Sparky {
 		// Destroy the physics body and fixture if they exist
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{
-			b2Body* body = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
+			b2Body* entityRuntimePhysicsBody = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
 			
-			if (body != nullptr)
+			if (entityRuntimePhysicsBody != nullptr)
 			{
 				if (entity.HasComponent<BoxCollider2DComponent>())
 				{
@@ -144,7 +154,7 @@ namespace Sparky {
 						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
 						m_PhysicsBodyDataMap.erase(it->first);
 
-						body->DestroyFixture(fixture);
+						entityRuntimePhysicsBody->DestroyFixture(fixture);
 					}
 				}
 
@@ -159,11 +169,11 @@ namespace Sparky {
 						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
 						m_PhysicsBodyDataMap.erase(it->first);
 
-						body->DestroyFixture(fixture);
+						entityRuntimePhysicsBody->DestroyFixture(fixture);
 					}
 				}
 
-				m_PhysicsWorld->DestroyBody(body);
+				m_PhysicsWorld->DestroyBody(entityRuntimePhysicsBody);
 			}
 		}
 
@@ -241,7 +251,7 @@ namespace Sparky {
 
 		OnPhysics2DUpdate(delta);
 
-		// Render 2D
+		// Render 2D Primitives
 		Camera* mainCamera = nullptr;
 		Math::mat4 cameraTransform;
 
@@ -261,7 +271,7 @@ namespace Sparky {
 			}
 		}
 
-		if (mainCamera)
+		if (mainCamera != nullptr)
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
@@ -289,6 +299,8 @@ namespace Sparky {
 
 			Renderer2D::EndScene();
 		}
+
+		// TODO: Update Audio here
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
@@ -565,8 +577,7 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
 	
-	template <>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}

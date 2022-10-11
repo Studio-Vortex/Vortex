@@ -63,10 +63,10 @@ namespace Sparky {
 
 		Entity GetPrimaryCameraEntity();
 
-		template <typename... TComponents>
+		template <typename... TComponent>
 		auto GetAllEntitiesWith()
 		{
-			return m_Registry.view<TComponents...>();
+			return m_Registry.view<TComponent...>();
 		}
 
 	private:
@@ -102,6 +102,5 @@ namespace Sparky {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};
-
 
 }

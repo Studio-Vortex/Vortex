@@ -19,24 +19,19 @@ namespace Sandbox {
 		public override void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.W))
-			{
-				if (transform.Rotation.Y > 270.0f || transform.Rotation.Y < 90.0f)
-					m_Velocity = Vector3.Forward;
-				else if (transform.Rotation.Y > 90.0f || transform.Rotation.Y < 270.0f)
-					m_Velocity = Vector3.Back;
-			}
+				m_Velocity = Vector3.Forward;
 			else if (Input.IsKeyDown(KeyCode.S))
-			{
-				if (transform.Rotation.Y < 270.0f || transform.Rotation.Y > 90.0f)
-					m_Velocity = Vector3.Back;
-				else if (transform.Rotation.Y < 90.0f || transform.Rotation.Y > 270.0f)
-					m_Velocity = Vector3.Forward;
-			}
+				m_Velocity = Vector3.Back;
 
 			if (Input.IsKeyDown(KeyCode.A))
 				m_Velocity = Vector3.Left;
 			else if (Input.IsKeyDown(KeyCode.D))
 				m_Velocity = Vector3.Right;
+
+			if (Input.IsKeyDown(KeyCode.Q))
+				m_Velocity = Vector3.Up;
+			else if (Input.IsKeyDown(KeyCode.E))
+				m_Velocity = Vector3.Down;
 
 			if (!FixedRotation)
 			{
@@ -52,13 +47,6 @@ namespace Sandbox {
 
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
-
-			if (transform.Rotation.Y >= 360.0f)
-				transform.Rotation = new Vector3(transform.Rotation.X, 0.0f, transform.Rotation.Z);
-			if (transform.Rotation.Y <= 0.0f)
-				transform.Rotation = new Vector3(transform.Rotation.X, 0.0f, transform.Rotation.Z);
-
-			transform.Rotation = new Vector3(transform.Rotation.X, transform.Rotation.Y, transform.Rotation.Z);
 		}
 
 		private void ProcessRotation()
@@ -73,7 +61,7 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.Down))
 				m_Rotation.X = -1.0f;
 
-			if (transform.Rotation.X >= MaxRoll_Down)
+			if (transform.Rotation.X >= MaxRoll_Up)
 			{
 				float newRoll = Math.Min(MaxRoll_Up, transform.Rotation.X);
 				transform.Rotation = new Vector3(newRoll, transform.Rotation.Y, transform.Rotation.Z);

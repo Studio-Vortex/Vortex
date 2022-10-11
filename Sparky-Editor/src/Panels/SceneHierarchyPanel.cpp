@@ -59,60 +59,86 @@ namespace Sparky {
 			// Right-click on blank space in scene hierarchy panel
 			if (Gui::BeginPopupContextWindow(0, 1, false))
 			{
-				if (Gui::MenuItem("Create Empty Entity"))
+				if (Gui::MenuItem("Create Empty"))
 					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
 				Gui::Separator();
 
-				if (Gui::BeginMenu("Create 2D Entity"))
+				if (Gui::BeginMenu("2D Entity"))
 				{
-					if (Gui::MenuItem("Quad"))
+					if (Gui::BeginMenu("Sprites"))
 					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
-						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+						if (Gui::MenuItem("Quad"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
+							m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+						}
+
+						Gui::Separator();
+
+						if (Gui::MenuItem("Circle"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
+							m_SelectedEntity.AddComponent<CircleRendererComponent>();
+						}
+
+						Gui::EndMenu();
 					}
+
 					Gui::Separator();
 
-					if (Gui::MenuItem("Circle"))
+					if (Gui::BeginMenu("Physics"))
 					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
-						m_SelectedEntity.AddComponent<CircleRendererComponent>();
+						if (Gui::MenuItem("Static Box Collider"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
+							m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+							m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+							m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+						}
+
+						Gui::Separator();
+
+						if (Gui::MenuItem("Dynamic Box Collider"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
+							m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+							auto& rb2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+							rb2d.Type = RigidBody2DComponent::BodyType::Dynamic;
+							m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+						}
+
+						Gui::Separator();
+
+						if (Gui::MenuItem("Static Circle Collider"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
+							m_SelectedEntity.AddComponent<CircleRendererComponent>();
+							m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+							m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+						}
+
+						Gui::Separator();
+
+						if (Gui::MenuItem("Dynamic Circle Collider"))
+						{
+							m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
+							m_SelectedEntity.AddComponent<CircleRendererComponent>();
+							auto& cc2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+							cc2d.Type = RigidBody2DComponent::BodyType::Dynamic;
+							m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+						}
+
+						Gui::EndMenu();
 					}
 
 					Gui::EndMenu();
 				}
+
 				Gui::Separator();
 
-				if (Gui::BeginMenu("Create Physics 2D Entity"))
+				if (Gui::BeginMenu("Camera Entity"))
 				{
-					if (Gui::MenuItem("Empty RigidBody"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Empty RigidBody2D");
-						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-					}
-					Gui::Separator();
-
-					if (Gui::MenuItem("Empty Box Collider"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Empty BoxCollider2D");
-						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
-					}
-					Gui::Separator();
-
-					if (Gui::MenuItem("Empty Circle Collider"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Empty CircleCollider2D");
-						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
-					}
-
-					Gui::EndMenu();
-				}
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Create Camera Entity"))
-				{
-					if (Gui::MenuItem("Perspective Camera"))
+					if (Gui::MenuItem("Perspective"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
@@ -120,7 +146,7 @@ namespace Sparky {
 					}
 					Gui::Separator();
 
-					if (Gui::MenuItem("Orthographic Camera"))
+					if (Gui::MenuItem("Orthographic"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();

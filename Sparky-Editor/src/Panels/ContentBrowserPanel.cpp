@@ -45,6 +45,16 @@ namespace Sparky {
 		Gui::BeginGroup();
 		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
 
+		RenderFileExplorer();
+
+		Gui::EndChild();
+		Gui::EndGroup();
+
+		Gui::End();
+	}
+
+	void ContentBrowserPanel::RenderRightClickPopupMenu()
+	{
 		// Right-click on blank space in content browser panel
 		if (Gui::BeginPopupContextWindow(0, 1, false))
 		{
@@ -100,12 +110,6 @@ public class Untitled : Entity
 
 			Gui::EndPopup();
 		}
-
-		RenderFileExplorer();
-		Gui::EndChild();
-		Gui::EndGroup();
-
-		Gui::End();
 	}
 
 	void ContentBrowserPanel::RenderFileExplorer()
@@ -159,6 +163,9 @@ public class Untitled : Entity
 		int columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 			columnCount = 1;
+		
+		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 70.f), false);
+
 		Gui::Columns(columnCount, 0, false);
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
@@ -233,15 +240,20 @@ public class Untitled : Entity
 				confirmDeletionPopupOpen = false;
 			}
 
-			ImVec2 windowSize = { 500, 200 };
-			Gui::SetNextWindowSize(windowSize);
-			Gui::SetNextWindowPos({ (io.DisplaySize.x / 2.0f) - (windowSize.x / 2.0f), (io.DisplaySize.y / 2.0f) - (windowSize.y / 2.0f) });
-			ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
+			if (Gui::IsPopupOpen("Confirm"))
+			{
+				Math::vec2 applicationWindowSize = Application::Get().GetWindow().GetSize();
+				ImVec2 confirmWindowSize = { 500, 200 };
+				Gui::SetNextWindowSize(confirmWindowSize, ImGuiCond_Always);
+				Gui::SetNextWindowPos({ (applicationWindowSize.x / 2.0f) - (confirmWindowSize.x / 2.0f), (applicationWindowSize.y / 2.0f) - (confirmWindowSize.y / 2.0f) }, ImGuiCond_Always);
+			}
 			
 			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 			{
 				Gui::Separator();
 				Gui::Spacing();
+
+				ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
 
 				Gui::Text("Are you sure you want to permanently delete '%s' ?", currentPath.filename().string().c_str());
 				Gui::Text("This cannot be undone.");
@@ -348,6 +360,7 @@ public class Untitled : Entity
 				}
 			}
 
+			// Drag items from the content browser to somewhere else in the editor
 			if (Gui::BeginDragDropSource())
 			{
 				const wchar_t* itemPath = relativePath.c_str();
@@ -377,6 +390,22 @@ public class Untitled : Entity
 		}
 
 		Gui::Columns(1);
+
+		RenderRightClickPopupMenu();
+
+		Gui::EndChild();
+
+		// Accept a Prefab from the scene hierarchy
+		if (Gui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+			{
+				UUID uuid = *(UUID*)payload->Data;
+				SP_CORE_INFO("UUID: {}", uuid);
+				// Todo Create a new prefab here from the entity's uuid
+			}
+			Gui::EndDragDropTarget();
+		}
 
 		Gui::Spacing();
 		Gui::Separator();

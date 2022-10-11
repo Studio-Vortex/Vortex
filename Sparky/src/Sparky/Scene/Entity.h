@@ -32,12 +32,12 @@ namespace Sparky {
 			return component;
 		}
 
-		template <typename... TComponents>
+		template <typename... TComponent>
 		inline void RemoveComponent() const
 		{
-			SP_CORE_ASSERT(HasComponent<TComponents...>(), "Entity does not have this Component!");
+			SP_CORE_ASSERT(HasComponent<TComponent...>(), "Entity does not have this Component!");
 
-			m_Scene->m_Registry.remove<TComponents...>(m_EntityID);
+			m_Scene->m_Registry.remove<TComponent...>(m_EntityID);
 		}
 
 		template <typename TComponent>
@@ -48,10 +48,10 @@ namespace Sparky {
 			return m_Scene->m_Registry.get<TComponent>(m_EntityID);
 		}
 
-		template <typename... TComponents>
+		template <typename... TComponent>
 		inline bool HasComponent() const
 		{
-			return m_Scene->m_Registry.all_of<TComponents...>(m_EntityID);
+			return m_Scene->m_Registry.all_of<TComponent...>(m_EntityID);
 		}
 
 		UUID GetUUID() const { return GetComponent<IDComponent>().ID; }

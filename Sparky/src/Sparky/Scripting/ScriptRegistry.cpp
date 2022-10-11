@@ -494,6 +494,34 @@ namespace Sparky {
 
 #pragma region Rigidbody2D Component
 
+	static void RigidBody2DComponent_GetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType* outBodyType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outBodyType = entity.GetComponent<RigidBody2DComponent>().Type;
+	}
+
+	static void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType bodyType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		b2BodyType type;
+		switch (bodyType)
+		{
+			case Sparky::RigidBody2DComponent::BodyType::Static:    type = b2_staticBody;    break;
+			case Sparky::RigidBody2DComponent::BodyType::Dynamic:   type = b2_dynamicBody;   break;
+			case Sparky::RigidBody2DComponent::BodyType::Kinematic: type = b2_kinematicBody; break;
+		}
+
+		((b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody)->SetType(type);
+	}
+
 	static void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -1120,6 +1148,8 @@ namespace Sparky {
 
 #pragma region RigidBody2D Component
 
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
