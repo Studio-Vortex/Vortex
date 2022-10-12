@@ -1,15 +1,97 @@
 Scene: Untitled
 Entities:
-  - Entity: 16191623144354185198
+  - Entity: 6914990807036438930
     TagComponent:
-      Tag: Top Copy
+      Tag: Backdrop Left
     TransformComponent:
-      Translation: [8.73114914e-08, -0.5, 1.8090941e-07]
-      Rotation: [1.57079613, 0.785398245, 0]
-      Scale: [0.999999881, 0.999999285, 0.999970615]
+      Translation: [-25, 0, 9.99999714]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [49.9989624, 50, 0.999983788]
     SpriteRendererComponent:
-      Color: [0.122762047, 0.29507491, 0.521235526, 1]
-      Scale: 1
+      Color: [0.6409266, 0.6409266, 0.6409266, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 7
+  - Entity: 11220115898173391739
+    TagComponent:
+      Tag: Backdrop Right
+    TransformComponent:
+      Translation: [25, 0, 10]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [50, 50, 1]
+    SpriteRendererComponent:
+      Color: [0.6409266, 0.6409266, 0.6409266, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 7
+  - Entity: 11211510313575375176
+    TagComponent:
+      Tag: Circle Copy
+    TransformComponent:
+      Translation: [-2.32003927, 20.6941223, -5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.293436289, 0.353453457, 1, 1]
+      Thickness: 0.349999994
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 1
+      RestitutionThreshold: 23.2000008
+  - Entity: 3423766812970075854
+    TagComponent:
+      Tag: Circle Copy Copy
+    TransformComponent:
+      Translation: [1.92203546, 19.0808849, -5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.220235884, 0.976833999, 0.196121141, 1]
+      Thickness: 0.550000012
+      Fade: 0
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.150000006
+      Restitution: 1
+      RestitutionThreshold: 34.0999985
+  - Entity: 8297037720664452677
+    TagComponent:
+      Tag: Circle Copy
+    TransformComponent:
+      Translation: [5, 17.6637516, -5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.976833999, 0.937647581, 0.196121141, 1]
+      Thickness: 0.200000003
+      Fade: 0.141000003
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.419999987
+      Restitution: 1
+      RestitutionThreshold: 46.0999985
+  - Entity: 6712739422264683876
+    TagComponent:
+      Tag: Collider Entity
+    TransformComponent:
+      Translation: [0, -3, -5]
+      Rotation: [0, 0, 0]
+      Scale: [20, 1, 1]
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -20,96 +102,27 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 12559886435951519128
+  - Entity: 14589088733047399875
     TagComponent:
-      Tag: Right Copy
+      Tag: Circle
     TransformComponent:
-      Translation: [-0.349999994, 0, -0.353888363]
-      Rotation: [0, 0.785398245, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0.160784319, 0.294117659, 0.619607866, 1]
-      Scale: 1
-  - Entity: 11108667732149543511
-    TagComponent:
-      Tag: Left Copy
-    TransformComponent:
-      Translation: [0.349999994, 0, -0.349999994]
-      Rotation: [0, -0.785398245, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0.238458008, 0.443237066, 0.99613899, 1]
-      Scale: 1
-  - Entity: 2366115232929302760
-    TagComponent:
-      Tag: Left
-    TransformComponent:
-      Translation: [-0.349999994, 1.49011612e-08, 0.349999964]
-      Rotation: [0, -0.785398245, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0.181467175, 0.364767969, 1, 1]
-      Scale: 1
-  - Entity: 16498726574936382530
-    TagComponent:
-      Tag: Right
-    TransformComponent:
-      Translation: [0.349999994, -1.49011612e-08, 0.353218347]
-      Rotation: [0, 0.785398245, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0.180392146, 0.515830159, 1, 1]
-      Scale: 1
-  - Entity: 2770695311370114190
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 1.70000005, 4]
-      Rotation: [-0.404916406, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 25
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 1979468409428114623
-    TagComponent:
-      Tag: Top
-    TransformComponent:
-      Translation: [0, 0.5, 0]
-      Rotation: [1.57079613, 0.785398245, -4.21468513e-08]
-      Scale: [0.999999881, 0.999999285, 0.999997199]
-    SpriteRendererComponent:
-      Color: [0, 0.561738729, 0.876447856, 1]
-      Scale: 1
-  - Entity: 12733942358564377045
-    TagComponent:
-      Tag: Floor
-    TransformComponent:
-      Translation: [0, -3.5, 0]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [20, 20, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Checkerboard.png
-      Scale: 7
-  - Entity: 1526650983602685266
-    TagComponent:
-      Tag: Backdrop Front
-    TransformComponent:
-      Translation: [0, 0, -15]
+      Translation: [-5, 15, -5]
       Rotation: [0, 0, 0]
-      Scale: [50, 50, 1]
-    SpriteRendererComponent:
-      Color: [0.6409266, 0.6409266, 0.6409266, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 7
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.382239401, 0.382239401, 1]
+      Thickness: 0.400000006
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 1
+      RestitutionThreshold: 23.2000008
   - Entity: 6949508144411093171
     TagComponent:
       Tag: Camera
@@ -143,34 +156,106 @@ Entities:
         - Name: Speed
           Type: Vector3
           Data: [5, 5, 5]
-  - Entity: 14589088733047399875
+  - Entity: 1526650983602685266
     TagComponent:
-      Tag: Circle
+      Tag: Backdrop Front
     TransformComponent:
-      Translation: [-5, 15, -5]
+      Translation: [0, 0, -15]
       Rotation: [0, 0, 0]
+      Scale: [50, 50, 1]
+    SpriteRendererComponent:
+      Color: [0.6409266, 0.6409266, 0.6409266, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 7
+  - Entity: 12733942358564377045
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3.5, 0]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [20, 20, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Checkerboard.png
+      Scale: 7
+  - Entity: 1979468409428114623
+    TagComponent:
+      Tag: Top
+    TransformComponent:
+      Translation: [0, 0.5, 0]
+      Rotation: [-1.57079637, 0.785398185, -4.21468513e-08]
+      Scale: [0.999999881, 0.999999285, 0.999997199]
+    SpriteRendererComponent:
+      Color: [0, 0.561738729, 0.876447856, 1]
+      Scale: 1
+  - Entity: 2770695311370114190
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 1.70000005, 4]
+      Rotation: [-0.404916406, 0, 0]
       Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [1, 0.382239401, 0.382239401, 1]
-      Thickness: 0.400000006
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.5
-      Restitution: 1
-      RestitutionThreshold: 23.2000008
-  - Entity: 6712739422264683876
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 25
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 16498726574936382530
     TagComponent:
-      Tag: Collider Entity
+      Tag: Right
     TransformComponent:
-      Translation: [0, -3, -5]
-      Rotation: [0, 0, 0]
-      Scale: [20, 1, 1]
+      Translation: [0.349999994, -1.49011612e-08, 0.353218347]
+      Rotation: [0, 0.785398245, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.180392146, 0.515830159, 1, 1]
+      Scale: 1
+  - Entity: 2366115232929302760
+    TagComponent:
+      Tag: Left
+    TransformComponent:
+      Translation: [-0.349999994, 1.49011612e-08, 0.349999964]
+      Rotation: [-6.56053999e-07, -0.785398185, 4.50593689e-07]
+      Scale: [0.99999994, 1, 0.99999994]
+    SpriteRendererComponent:
+      Color: [0.181467175, 0.364767969, 1, 1]
+      Scale: 1
+  - Entity: 11108667732149543511
+    TagComponent:
+      Tag: Left Copy
+    TransformComponent:
+      Translation: [0.349999994, 0, -0.349999994]
+      Rotation: [0, 2.3561945, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.238458008, 0.443237066, 0.99613899, 1]
+      Scale: 1
+  - Entity: 12559886435951519128
+    TagComponent:
+      Tag: Right Copy
+    TransformComponent:
+      Translation: [-0.349999994, 0, -0.353888363]
+      Rotation: [0, -2.3561945, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.160784319, 0.294117659, 0.619607866, 1]
+      Scale: 1
+  - Entity: 16191623144354185198
+    TagComponent:
+      Tag: Top Copy
+    TransformComponent:
+      Translation: [8.73114914e-08, -0.5, 1.8090941e-07]
+      Rotation: [1.57079613, 0.785398245, 0]
+      Scale: [0.999999881, 0.999999285, 0.999970615]
+    SpriteRendererComponent:
+      Color: [0.122762047, 0.29507491, 0.521235526, 1]
+      Scale: 1
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -181,88 +266,3 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 8297037720664452677
-    TagComponent:
-      Tag: Circle Copy
-    TransformComponent:
-      Translation: [5, 17.6637516, -5]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.976833999, 0.937647581, 0.196121141, 1]
-      Thickness: 0.200000003
-      Fade: 0.141000003
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.419999987
-      Restitution: 1
-      RestitutionThreshold: 46.0999985
-  - Entity: 3423766812970075854
-    TagComponent:
-      Tag: Circle Copy Copy
-    TransformComponent:
-      Translation: [1.92203546, 19.0808849, -5]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.220235884, 0.976833999, 0.196121141, 1]
-      Thickness: 0.550000012
-      Fade: 0
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.150000006
-      Restitution: 1
-      RestitutionThreshold: 34.0999985
-  - Entity: 11211510313575375176
-    TagComponent:
-      Tag: Circle Copy
-    TransformComponent:
-      Translation: [-2.32003927, 20.6941223, -5]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.293436289, 0.353453457, 1, 1]
-      Thickness: 0.349999994
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.5
-      Restitution: 1
-      RestitutionThreshold: 23.2000008
-  - Entity: 11220115898173391739
-    TagComponent:
-      Tag: Backdrop Right
-    TransformComponent:
-      Translation: [25, 0, 10]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [50, 50, 1]
-    SpriteRendererComponent:
-      Color: [0.6409266, 0.6409266, 0.6409266, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 7
-  - Entity: 6914990807036438930
-    TagComponent:
-      Tag: Backdrop Left
-    TransformComponent:
-      Translation: [-25, 0, 9.99999714]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [49.9989624, 50, 0.999983788]
-    SpriteRendererComponent:
-      Color: [0.6409266, 0.6409266, 0.6409266, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 7

@@ -77,6 +77,9 @@ namespace Sparky {
 				case Sparky::RendererAPI::TriangleCullMode::Back:         return "Back";
 				case Sparky::RendererAPI::TriangleCullMode::FrontAndBack: return "Front And Back";
 			}
+
+			SP_CORE_ASSERT(false, "Unknown Triangle Cull Mode!");
+			return "None";
 		}
 
 	}

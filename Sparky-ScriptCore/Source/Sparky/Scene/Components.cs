@@ -23,12 +23,12 @@
 
 		public void Translate(Vector3 translation)
 		{
-			Entity.transform.Translation += translation;
+			Translation += translation;
 		}
 
 		public void Translate(float x, float y, float z)
 		{
-			Entity.transform.Translation += new Vector3(x, y, z);
+			Translation += new Vector3(x, y, z);
 		}
 
 		public Vector3 Scale
@@ -45,9 +45,44 @@
 			}
 		}
 
-		public void Scale()
+		/// <summary>
+		/// Sets the scale of the entity
+		/// </summary>
+		/// <param name="scale">the new scale</param>
+		public void LocalScale(Vector3 scale)
 		{
+			Scale = scale;
+		}
 
+		/// <summary>
+		/// Sets the scale of the entity
+		/// </summary>
+		/// <param name="x">the new x scale</param>
+		/// <param name="y">the new y scale</param>
+		/// <param name="z">the new z scale</param>
+		public void LocalScale(float x, float y, float z)
+		{
+			Scale = new Vector3(x, y, z);
+		}
+
+		/// <summary>
+		/// Applys the given scale to the current entity's scale
+		/// </summary>
+		/// <param name="scale">the scale to be applied</param>
+		public void ApplyScale(Vector3 scale)
+		{
+			Scale += scale;
+		}
+
+		/// <summary>
+		/// Applys the given scale to the current entity's scale
+		/// </summary>
+		/// <param name="x">the x scale to be applied</param>
+		/// <param name="y">the y scale to be applied</param>
+		/// <param name="z">the z scale to be applied</param>
+		public void ApplyScale(float x, float y, float z)
+		{
+			Scale += new Vector3(x, y, z);
 		}
 
 		public Vector3 Rotation
@@ -62,6 +97,16 @@
 			{
 				InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
 			}
+		}
+
+		public void Rotate(Vector3 rotation)
+		{
+			Rotation += rotation;
+		}
+
+		public void Rotate(float x, float y, float z)
+		{
+			Rotation += new Vector3(x, y, z);
 		}
 	}
 

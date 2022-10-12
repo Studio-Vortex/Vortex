@@ -146,6 +146,17 @@ namespace Sparky {
 						Gui::EndCombo();
 					}
 
+					Gui::Spacing();
+
+					// Editor Camera Settings
+					Gui::Text("Camera");
+					Gui::Separator();
+					Gui::Spacing();
+
+					Math::vec3 moveSpeed = EditorCamera::GetMoveSpeed();
+					if (Gui::DragFloat3("Move Speed", Math::ValuePtr(moveSpeed), 0.01f, 0.01f, 1.0f, "%.2f"))
+						EditorCamera::SetMoveSpeed(moveSpeed);
+
 					Gui::DragFloat("Camera FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
 					static bool lockEditorCameraRotation = false;

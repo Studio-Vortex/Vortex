@@ -27,9 +27,19 @@
 			Y = y;
 		}
 
+		public static Vector2 operator -(Vector2 vector)
+		{
+			return new Vector2(-vector.X, -vector.Y);
+		}
+
 		public static Vector2 operator +(Vector2 vector, Vector2 other)
 		{
 			return new Vector2(vector.X + other.X, vector.Y + other.Y);
+		}
+
+		public static Vector2 operator -(Vector2 vector, Vector2 other)
+		{
+			return new Vector2(vector.X - other.X, vector.Y - other.Y);
 		}
 
 		public static Vector2 operator *(Vector2 vector, Vector2 other)

@@ -299,7 +299,7 @@ namespace Sparky {
 				if (inEditMode)
 				{
 					if (Gui::MenuItem("Center Editor Camera"))
-						m_EditorCamera.ResetPositionToWorldOrigin();
+						m_EditorCamera.ResetCameraPositionToWorldOrigin();
 				}
 
 				Gui::EndMenu();
@@ -542,6 +542,22 @@ namespace Sparky {
 		else
 			Renderer2D::BeginScene(m_EditorCamera);
 
+		uint32_t lineLength = 10;
+
+		// Render Axes
+		Renderer2D::DrawLine({ -10.0f, 0.0f, 0.0f }, { 10.0f, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+		Renderer2D::DrawLine({ 0.0f, -10.0f, 0.0f }, { 0.0f, 10.0f, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+		Renderer2D::DrawLine({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, 10.0f }, ColorToVec4(Color::Blue));  // Z Axis
+
+		for (uint32_t z = 0; z < 10; z++)
+		{
+			for (uint32_t x = 0; x < 10; x++)
+			{
+				Renderer2D::DrawLine({ x, 0, z }, { x + lineLength, 0, z }, { .5f, .5f, .5f, 1.0f });
+			}
+		}
+
+
 		if (m_ShowPhysicsColliders)
 		{
 			float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
@@ -618,6 +634,7 @@ namespace Sparky {
 	{
 		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
 
 		switch (e.GetKeyCode())
 		{
@@ -731,21 +748,21 @@ namespace Sparky {
 
 			case Key::Q:
 			{
-				if (!ImGuizmo::IsUsing())
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
 					OnNoGizmoSelected();
 
 				break;
 			}
 			case Key::W:
 			{
-				if (!ImGuizmo::IsUsing())
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
 					OnTranslationToolSelected();
 
 				break;
 			}
 			case Key::E:
 			{
-				if (!ImGuizmo::IsUsing())
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
 					OnRotationToolSelected();
 
 				break;
@@ -754,7 +771,8 @@ namespace Sparky {
 			{
 				if (controlPressed)
 					ScriptEngine::ReloadAssembly();
-				else if (!ImGuizmo::IsUsing())
+
+				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
 					OnScaleToolSelected();
 
 				break;
@@ -766,18 +784,19 @@ namespace Sparky {
 
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
+		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+
 		switch (e.GetMouseButton())
 		{
 			case Mouse::ButtonLeft:
 			{
-				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed)
 				{
-					// TODO: Fix renaming when pressing F2 and selecting another entity
-					// Currently this will rename the clicked entity to whatever the previous entity's name was
+					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+
 					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
 						m_SceneHierarchyPanel.SetEntityToBeRenamed(false);
-
-					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 				}
 
 				break;

@@ -48,9 +48,19 @@
 			}
 		}
 
+		public static Vector3 operator -(Vector3 vector)
+		{
+			return new Vector3(-vector.X, -vector.Y, -vector.Z);
+		}
+
 		public static Vector3 operator +(Vector3 vector, Vector3 other)
 		{
 			return new Vector3(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z);
+		}
+
+		public static Vector3 operator -(Vector3 vector, Vector3 other)
+		{
+			return new Vector3(vector.X - other.X, vector.Y - other.Y, vector.Z - other.Z);
 		}
 
 		public static Vector3 operator *(Vector3 vector, Vector3 other)

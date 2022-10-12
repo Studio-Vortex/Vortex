@@ -39,9 +39,11 @@ namespace Sparky {
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
 
-		void ResetPositionToWorldOrigin();
+		void ResetCameraPositionToWorldOrigin();
 
 		static void LockCameraRotation(bool lockRotation) { s_LockEditorCameraRotation = lockRotation; }
+		static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }
+		static void SetMoveSpeed(const Math::vec3 moveSpeed) { s_MoveSpeed = moveSpeed; }
 
 	private:
 		void UpdateProjection();
@@ -63,6 +65,9 @@ namespace Sparky {
 	private:
 		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
+		float m_MouseXDelta = 0.0f, m_MouseYDelta = 0.0f;
+		float m_ShiftModifer = 2.0f;
+
 		Math::mat4 m_ViewMatrix = Math::Identity();
 		Math::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		Math::vec3 m_FocalPoint = Math::vec3(0.0f);
@@ -75,6 +80,7 @@ namespace Sparky {
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
 
 		inline static bool s_LockEditorCameraRotation = false;
+		inline static Math::vec3 s_MoveSpeed = { 0.1f, 0.1f, 0.1f };
 
 	};
 

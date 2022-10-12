@@ -31,8 +31,10 @@ namespace Sparky {
 		m_ViewMatrix = Math::Inverse(m_ViewMatrix);
 	}
 
-	void EditorCamera::ResetPositionToWorldOrigin()
+	void EditorCamera::ResetCameraPositionToWorldOrigin()
 	{
+		m_Position = Math::vec3(0.0f);
+		m_FocalPoint = Math::vec3(0.0f);
 		m_Distance = 10.0f;
 		m_Pitch = 0.0f;
 		m_Yaw = 0.0f;
@@ -67,19 +69,64 @@ namespace Sparky {
 
 	void EditorCamera::OnUpdate(TimeStep delta)
 	{
+		const Math::vec2& mousePosition{ Input::GetMouseX(), Input::GetMouseY() };
+		Math::vec2 mouseDelta = (mousePosition - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mousePosition;
+		float originalDistance = m_Distance;
+
 		if (Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt))
 		{
-			const Math::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			Math::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
-
-			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
-				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-				MouseRotate(delta);
+			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+				MouseRotate(mouseDelta);
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
-				MouseZoom(delta.y);
+				MouseZoom(mouseDelta.y);
 		}
+		else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+		{
+			Math::vec3 moveSpeed = s_MoveSpeed;
+			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+			if (m_MouseYDelta)
+			{
+				m_ShiftModifer += m_MouseXDelta;
+				m_MouseYDelta = 0.0f;
+			}
+
+			if (shiftPressed)
+				moveSpeed *= m_ShiftModifer;
+
+			Math::vec3 cameraVelocity = Math::vec3(0.0f);
+
+			if (Input::IsKeyPressed(Key::W))
+				cameraVelocity += GetForwardDirection();
+			if (Input::IsKeyPressed(Key::S))
+				cameraVelocity -= GetForwardDirection();
+
+			if (Input::IsKeyPressed(Key::A))
+				cameraVelocity -= GetRightDirection();
+			if (Input::IsKeyPressed(Key::D))
+				cameraVelocity += GetRightDirection();
+
+			if (Input::IsKeyPressed(Key::Q))
+				cameraVelocity += GetUpDirection();
+			if (Input::IsKeyPressed(Key::E))
+				cameraVelocity -= GetUpDirection();
+
+			m_Distance = 1.0f;
+
+			m_FocalPoint += cameraVelocity * moveSpeed;
+			m_Position = CalcualtePosition();
+
+			MouseRotate(mouseDelta);
+			UpdateView();
+
+			return;
+		}
+
+		m_Distance = originalDistance;
+
+		if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+			MousePan(mouseDelta);
 
 		UpdateView();
 	}
@@ -92,13 +139,19 @@ namespace Sparky {
 
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
-		float deltaX = e.GetXOffset() * 0.15f;
-		float deltaY = e.GetYOffset() * 0.1f;
+		m_MouseXDelta = e.GetXOffset();
+		m_MouseYDelta = e.GetYOffset();
+
+		float deltaX = m_MouseXDelta * 0.15f;
+		float deltaY = m_MouseYDelta * 0.1f;
 		
-		// Handle X Scrolling
-		MousePanHorizontal(deltaX);
-		// Handle Y Scrolling
-		MouseZoom(deltaY);
+		if (!Input::IsMouseButtonPressed(Mouse::ButtonRight)) // Only scroll if user is not moving or looking around
+		{
+			// Handle X Scrolling
+			MousePanHorizontal(deltaX);
+			// Handle Y Scrolling
+			MouseZoom(deltaY);
+		}
 
 		UpdateView();
 		return false;
@@ -129,14 +182,11 @@ namespace Sparky {
 
 	void EditorCamera::MouseZoom(float delta)
 	{
-		if (!Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		m_Distance -= delta * ZoomSpeed();
+		if (m_Distance < 1.0f)
 		{
-			m_Distance -= delta * ZoomSpeed();
-			if (m_Distance < 1.0f)
-			{
-				m_FocalPoint += GetForwardDirection();
-				m_Distance = 1.0f;
-			}
+			m_FocalPoint += GetForwardDirection();
+			m_Distance = 1.0f;
 		}
 	}
 
