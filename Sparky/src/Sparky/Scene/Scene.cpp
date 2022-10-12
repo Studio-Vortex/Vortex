@@ -189,6 +189,7 @@ namespace Sparky {
 	void Scene::OnRuntimeStart()
 	{
 		m_IsRunning = true;
+		m_DebugMode = false;
 
 		OnPhysics2DStart();
 
@@ -308,13 +309,13 @@ namespace Sparky {
 		OnPhysics2DUpdate(delta);
 
 		// Render
-		RenderScene(camera);
+		RenderSceneFromEditorCamera(camera);
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
 		// Render
-		RenderScene(camera);
+		RenderSceneFromEditorCamera(camera);
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -530,7 +531,7 @@ namespace Sparky {
 		m_PhysicsBodyDataMap.clear();
 	}
 
-	void Scene::RenderScene(EditorCamera& camera)
+	void Scene::RenderSceneFromEditorCamera(EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
 

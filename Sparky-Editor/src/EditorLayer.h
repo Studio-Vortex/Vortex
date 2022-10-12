@@ -78,16 +78,16 @@ namespace Sparky {
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
-		Math::vec4 m_PhysicsColliderColor = ColorToVec4(Color::Green);
-		Math::vec3 m_EditorClearColor = { 0.26f, 0.26f, 0.26f };
+		Math::vec4 m_Physics2DColliderColor = ColorToVec4(Color::LightBlue);
+		Math::vec3 m_EditorClearColor = { (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
 
 		float m_EditorCameraFOV = 30.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
 		int32_t m_GizmoType = -1;
 
-		bool m_ShowPhysicsColliders = false;
+		bool m_EditorDebugViewEnabled = false;
 
-		bool m_PrimaryCamera = true;
+		bool m_ShowPhysicsColliders = false;
 
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
@@ -128,7 +128,7 @@ namespace Sparky {
 		};
 
 		SettingsPanel::Settings m_Settings{ 
-			m_PhysicsColliderColor, m_ShowPhysicsColliders, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
 		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 

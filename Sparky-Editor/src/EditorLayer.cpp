@@ -47,6 +47,7 @@ namespace Sparky {
 		}
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
+		RenderCommand::SetClearColor(m_EditorClearColor);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -90,11 +91,13 @@ namespace Sparky {
 					m_EditorCamera.SetFOV(m_EditorCameraFOV);
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
+
 				break;
 			}
 			case SceneState::Play:
 			{
 				m_ActiveScene->OnUpdateRuntime(delta);
+
 				break;
 			}
 			case SceneState::Simulate:
@@ -415,9 +418,16 @@ namespace Sparky {
 		}
 
 		// Render Gizmos
-		bool isInEditMode = m_SceneState != SceneState::Play;
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GizmoType != -1 && isInEditMode && !Input::IsKeyPressed(Key::LeftAlt))
+
+		bool notInPlayMode = m_SceneState != SceneState::Play;
+		bool currentGizmoToolIsValid = m_GizmoType != -1;
+		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+		bool showGizmos = (selectedEntity && currentGizmoToolIsValid && notInPlayMode && !altPressed);
+
+		bool sceneIsInDebugMode = selectedEntity && m_ActiveScene->IsInDebugMode();
+
+		if (showGizmos || sceneIsInDebugMode)
 		{
 			ImGuizmo::Enable(m_GizmosEnabled);
 			ImGuizmo::SetOrthographic(m_OrthographicGizmos);
@@ -430,8 +440,8 @@ namespace Sparky {
 			Math::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
-			auto& transformComponent = selectedEntity.GetComponent<TransformComponent>();
-			Math::mat4 transform = transformComponent.GetTransform();
+			TransformComponent& entityTransformComponent = selectedEntity.GetTransform();
+			Math::mat4 entityTransform = entityTransformComponent.GetTransform();
 
 			// Snapping
 			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -440,14 +450,41 @@ namespace Sparky {
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
 
-			ImGuizmo::Manipulate(
-				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(transform),
-				nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
-			);
+			if (sceneIsInDebugMode)
+			{
+				Entity primaryCameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 
-			if (m_DrawGizmoGrid)
-				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), m_GizmoGridSize);
+				if (primaryCameraEntity)
+				{
+					TransformComponent& primaryCameraTransformComponent = primaryCameraEntity.GetTransform();
+
+					Math::quaternion orientation = Math::quaternion(Math::vec3(-primaryCameraTransformComponent.Rotation.x, -primaryCameraTransformComponent.Rotation.y, 0.0f));
+					Math::vec3 cameraPosition = primaryCameraTransformComponent.Translation - Math::Rotate(orientation, Math::vec3(0.0f, 0.0f, -1.0f));
+					Math::mat4 cameraViewMatrix = Math::Translate(cameraPosition) * Math::ToMat4(orientation);
+					cameraViewMatrix = Math::Inverse(cameraViewMatrix);
+					Math::mat4 cameraProjectionMatrix = primaryCameraEntity.GetComponent<CameraComponent>().Camera.GetProjection();
+
+					ImGuizmo::Manipulate(
+						Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix),
+						(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(entityTransform),
+						nullptr, (controlPressed&& m_GizmoSnapEnabled) ? snapValues.data() : nullptr
+					);
+
+					if (m_DrawGizmoGrid)
+						ImGuizmo::DrawGrid(Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix), Math::ValuePtr(entityTransform), m_GizmoGridSize);
+				}
+			}
+			else
+			{
+				ImGuizmo::Manipulate(
+					Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
+					(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(entityTransform),
+					nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
+				);
+
+				if (m_DrawGizmoGrid)
+					ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(entityTransform), m_GizmoGridSize);
+			}
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -455,11 +492,11 @@ namespace Sparky {
 				Math::vec3 rotation;
 				Math::vec3 scale;
 
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-				Math::vec3 deltaRotation = rotation - transformComponent.Rotation;
-				transformComponent.Translation = translation;
-				transformComponent.Rotation += deltaRotation;
-				transformComponent.Scale = scale;
+				Math::DecomposeTransform(entityTransform, translation, rotation, scale);
+				Math::vec3 deltaRotation = rotation - entityTransformComponent.Rotation;
+				entityTransformComponent.Translation = translation;
+				entityTransformComponent.Rotation += deltaRotation;
+				entityTransformComponent.Scale = scale;
 			}
 		}
 
@@ -542,21 +579,40 @@ namespace Sparky {
 		else
 			Renderer2D::BeginScene(m_EditorCamera);
 
-		uint32_t lineLength = 10;
-
-		// Render Axes
-		Renderer2D::DrawLine({ -10.0f, 0.0f, 0.0f }, { 10.0f, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
-		Renderer2D::DrawLine({ 0.0f, -10.0f, 0.0f }, { 0.0f, 10.0f, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
-		Renderer2D::DrawLine({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, 10.0f }, ColorToVec4(Color::Blue));  // Z Axis
-
-		for (uint32_t z = 0; z < 10; z++)
+		// Render Editor Grid
+		if (m_SceneState != SceneState::Play || m_EditorDebugViewEnabled)
 		{
-			for (uint32_t x = 0; x < 10; x++)
+			float lineLength = 100.0f;
+			float gridWidth = 100.0f;
+			float gridLength = 100.0f;
+
+			// Render Axes
+			float originalLineWidth = Renderer2D::GetLineWidth();
+			Renderer2D::SetLineWidth(4.0f);
+			Renderer2D::DrawLine({ -lineLength, 0.0f, 0.0f }, { lineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+			Renderer2D::DrawLine({ 0.0f, -lineLength, 0.0f }, { 0.0f, lineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+			Renderer2D::DrawLine({ 0.0f, 0.0f, -lineLength }, { 0.0f, 0.0f, lineLength }, ColorToVec4(Color::Blue));  // Z Axis
+			Renderer2D::Flush();
+			Renderer2D::SetLineWidth(originalLineWidth);
+
+			// X Grid Lines
+			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
 			{
-				Renderer2D::DrawLine({ x, 0, z }, { x + lineLength, 0, z }, { .5f, .5f, .5f, 1.0f });
+				if (gridWidth == 0)
+					continue;
+
+				Renderer2D::DrawLine({ x, 0, -lineLength }, { x, 0, lineLength }, { .5f, .5f, .5f, 1.0f });
+			}
+			
+			// Z Grid Lines
+			for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
+			{
+				if (gridLength == 0)
+					continue;
+
+				Renderer2D::DrawLine({ -lineLength, 0, z }, { lineLength, 0, z }, { .5f, .5f, .5f, 1.0f });
 			}
 		}
-
 
 		if (m_ShowPhysicsColliders)
 		{
@@ -578,7 +634,7 @@ namespace Sparky {
 						* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
 						* Math::Scale(scale);
 
-					Renderer2D::DrawRect(transform, m_PhysicsColliderColor);
+					Renderer2D::DrawRect(transform, m_Physics2DColliderColor);
 				}
 			}
 
@@ -596,7 +652,7 @@ namespace Sparky {
 						* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
 						* Math::Scale(Math::vec3(scale.x, scale.x, scale.z));
 
-					Renderer2D::DrawCircle(transform, m_PhysicsColliderColor, Renderer2D::GetLineWidth() / 100.0f);
+					Renderer2D::DrawCircle(transform, m_Physics2DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
 				}
 			}
 		}
@@ -671,6 +727,17 @@ namespace Sparky {
 			{
 				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 					m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+
+				break;
+			}
+
+			case Key::F3:
+			{
+				if (m_SceneState == SceneState::Play)
+				{
+					m_ActiveScene->SetDebugMode(!m_EditorDebugViewEnabled);
+					m_EditorDebugViewEnabled = !m_EditorDebugViewEnabled;
+				}
 
 				break;
 			}
@@ -886,6 +953,9 @@ namespace Sparky {
 	{
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
+
+		// Disable the debug view when starting a scene
+		m_EditorDebugViewEnabled = false;
 
 		m_SceneState = SceneState::Play;
 

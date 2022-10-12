@@ -9,7 +9,7 @@ namespace Sparky {
 	public:
 		struct Settings
 		{
-			Math::vec4& ColliderColor;
+			Math::vec4& Physics2DColliderColor;
 			bool& ShowColliders;
 			float& EditorCameraFOV;
 			Math::vec3& ClearColor;

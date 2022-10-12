@@ -72,7 +72,7 @@ namespace Sparky {
 
 				if (Gui::BeginTabItem("Physics 2D"))
 				{
-					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Settings.ColliderColor));
+					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
 
 					static Math::vec2 gravity = Scene::GetPhysicsWorldGravity();
 					if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity), 0.1f))
