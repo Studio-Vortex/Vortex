@@ -69,8 +69,8 @@ namespace Sparky {
 		float m_ShiftModifer = 2.0f;
 
 		Math::mat4 m_ViewMatrix = Math::Identity();
-		Math::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
-		Math::vec3 m_FocalPoint = Math::vec3(0.0f);
+		Math::vec3 m_Position = Math::vec3(0.0f);
+		Math::vec3 m_FocalPoint = Math::vec3(0.0f, 1.0f, 5.0f);
 
 		Math::vec2 m_InitialMousePosition = Math::vec2(0.0f);
 

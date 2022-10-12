@@ -429,8 +429,28 @@ namespace Sparky {
 		{
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
 
-			if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
-				component.Texture = nullptr;
+			if (component.Texture)
+			{
+				Gui::Text("Texture");
+				Gui::SameLine();
+
+				auto textureSize = ImVec2{ 64, 64 };
+
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }))
+					component.Texture = nullptr;
+				else if (Gui::IsItemHovered())
+				{
+					Gui::BeginTooltip();
+					Gui::Text(component.Texture->GetPath().c_str());
+					Gui::EndTooltip();
+				}
+			}
+			else
+			{
+				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+					component.Texture = nullptr;
+			}
 
 			// Accept a Texture from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -439,11 +459,19 @@ namespace Sparky {
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
-					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-					if (texture->IsLoaded())
-						component.Texture = texture;
+
+					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
+					{
+						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+						if (texture->IsLoaded())
+							component.Texture = texture;
+						else
+							SP_WARN("Could not load texture {}", texturePath.filename().string());
+					}
 					else
-						SP_WARN("Could not load texture {}", texturePath.filename().string());
+						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}

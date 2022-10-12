@@ -78,8 +78,8 @@ namespace Sparky {
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
-		Math::vec4 m_Physics2DColliderColor = ColorToVec4(Color::LightBlue);
-		Math::vec3 m_EditorClearColor = { (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
+		Math::vec4 m_Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
+		Math::vec3 m_EditorClearColor = Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
 
 		float m_EditorCameraFOV = 30.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
