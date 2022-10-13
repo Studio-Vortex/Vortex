@@ -309,6 +309,7 @@ public class Untitled : Entity
 				memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
 
 				Gui::SetKeyboardFocusHere();
+				Gui::SetNextItemWidth(thumbnailSize);
 				if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 				{
 					if (strlen(buffer) != 0 && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentPath)
@@ -399,7 +400,11 @@ public class Untitled : Entity
 
 			// If we are not renaming the current entry we can show the path
 			if (currentPath != m_PathToBeRenamed)
-				Gui::TextWrapped(filenameString.c_str());
+			{
+				size_t dotPos = filenameString.find('.');
+				std::string filenameWithoutExtension = filenameString.substr(0, dotPos);
+				Gui::TextWrapped(filenameWithoutExtension.c_str());
+			}
 
 			Gui::NextColumn();
 			Gui::PopID();
