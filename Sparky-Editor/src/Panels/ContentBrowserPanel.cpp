@@ -355,6 +355,7 @@ public class Untitled : Entity
 										// Get the new name of the file to rename the C# class
 										std::string newClassName = newFilePath.filename().string().substr(0, newFilePath.filename().string().find_first_of('.'));
 										std::string formattedLine = std::format("public class {} : Entity", newClassName);
+										// Modify the class name line
 										line = formattedLine;
 
 										// Replace the contents of the file

@@ -76,7 +76,7 @@ namespace Sparky
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
 
-		float LineWidth = 2.25f;
+		float LineWidth = 1.5f;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture

@@ -341,7 +341,6 @@ namespace Sparky {
 	Entity Scene::DuplicateEntity(Entity src)
 	{
 		std::string name = src.GetName();
-		name.append(" Copy"); // Allow the user to tell the difference between original entity and copy
 		Entity dest = CreateEntity(name);
 
 		// Copy components (except IDComponent and TagComponent)

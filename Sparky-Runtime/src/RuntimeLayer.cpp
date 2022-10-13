@@ -29,7 +29,10 @@ namespace Sparky {
 			const auto& sceneFilePath = commandLineArgs[1];
 
 			if (OpenScene(std::filesystem::path(sceneFilePath)))
+			{
 				m_RuntimeScene->OnRuntimeStart();
+				RenderCommand::SetClearColor(Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) });
+			}
 		}
 	}
 

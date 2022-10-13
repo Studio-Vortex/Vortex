@@ -2,6 +2,7 @@
 
 #include "Sparky/Core/Base.h"
 
+#include "Sparky/Renderer/RendererAPI.h"
 #include "Sparky/Renderer/OrthographicCamera.h"
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Shader.h"

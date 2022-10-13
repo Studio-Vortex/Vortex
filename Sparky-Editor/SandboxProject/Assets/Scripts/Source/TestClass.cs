@@ -1,25 +1,34 @@
-﻿using System;
+using System;
 using Sparky;
 
-namespace Sandbox {
+public class TestClass : Entity
+{
+	public float Speed;
+	public Vector3 Velocity;
 
-	public class TestClass : Entity
+	public override void OnCreate()
 	{
-		public Entity entity;
-		public SpriteRenderer spriteRenderer;
-
-		public override void OnCreate()
-		{
-			spriteRenderer = entity.GetComponent<SpriteRenderer>();
-		}
-
-		public override void OnUpdate(float delta)
-		{
-			if (Input.IsKeyDown(KeyCode.Space))
-			{
-				spriteRenderer.Color = new Vector4(0.2f, 0.2f, 0.8f, 1.0f);
-			}
-		}
+		// Called once before the first frame
+		Debug.Error("Hello from the game code!");
+		AddComponent<RigidBody2D>();
 	}
 
+	public override void OnUpdate(float delta)
+	{
+		// Called once every frame
+
+		Velocity = Vector3.Zero;
+
+		if (Input.IsKeyDown(KeyCode.W))
+			Velocity.Y = 1.0f;
+		else if (Input.IsKeyDown(KeyCode.S))
+			Velocity.Y = -1.0f;
+
+		if (Input.IsKeyDown(KeyCode.A))
+			Velocity.X = -1.0f;
+		else if (Input.IsKeyDown(KeyCode.D))
+			Velocity.X = 1.0f;
+
+		transform.Translate(Velocity * Speed * delta);
+	}
 }
