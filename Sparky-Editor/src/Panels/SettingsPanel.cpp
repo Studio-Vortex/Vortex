@@ -131,7 +131,6 @@ namespace Sparky {
 						Gui::EndMenu();
 					}
 
-					ImGuiIO& io = Gui::GetIO();
 					ImFont* currentFont = Gui::GetFont();
 					if (Gui::BeginCombo("Editor Font", currentFont->GetDebugName()))
 					{
@@ -145,6 +144,8 @@ namespace Sparky {
 						}
 						Gui::EndCombo();
 					}
+
+					Gui::Checkbox("Draw Editor Grid", &m_Settings.DrawEditorGrid);
 
 					Gui::Spacing();
 

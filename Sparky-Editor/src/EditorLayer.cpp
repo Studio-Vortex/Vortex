@@ -42,9 +42,7 @@ namespace Sparky {
 			OpenScene(std::filesystem::path(sceneFilePath));
 		}
 		else
-		{
 			CreateNewScene(); // Start the editor off with a fresh scene
-		}
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 		RenderCommand::SetClearColor(m_EditorClearColor);
@@ -580,7 +578,7 @@ namespace Sparky {
 			Renderer2D::BeginScene(m_EditorCamera);
 
 		// Render Editor Grid
-		if (m_SceneState != SceneState::Play || m_EditorDebugViewEnabled)
+		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
 			float lineLength = 100.0f;
 			float gridWidth = 100.0f;

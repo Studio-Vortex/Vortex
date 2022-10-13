@@ -19,6 +19,8 @@ namespace Sparky {
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
 		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
+
+		m_SparkyLogoIcon = Texture2D::Create("Resources/Images/SparkyLogo.jpg");
 	}
 
 	void LauncherLayer::OnDetach() { }
@@ -54,18 +56,19 @@ namespace Sparky {
 		m_ViewportSize = { viewport->WorkSize.x, viewport->WorkSize.y };
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10.0f, 10.0f });
 
 		Gui::Begin("Project Browser", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
-		
+
+		Gui::BeginGroup();
+
 		static int selectedProject = 0;
 		uint32_t i = 0;
 
 		Gui::PushFont(largeFont);
 		Gui::Text("Select A Project");
 		Gui::PopFont();
-
 		Gui::Spacing();
 
 		Gui::BeginChild("Projects", ImVec2(250, 0), true);
@@ -96,24 +99,37 @@ namespace Sparky {
 		}
 
 		Gui::EndChild();
-
+		Gui::EndGroup();
 		Gui::SameLine();
 		
+		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+
+		Gui::BeginChild("Right", contentRegionAvail);
+
+		Gui::PushFont(hugeFont);
+		Gui::TextCentered("Sparky Game Engine", 24.0f);
+		Gui::PopFont();
+		Gui::Spacing();
+		Gui::Spacing();
+		Gui::Separator();
+
+		ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
+		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
+		Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
+
 		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-		
-		ImVec2 buttonSize = { Gui::GetContentRegionAvail().x / 4.0f, 50.0f };
 
-		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - buttonSize.x, Gui::GetContentRegionAvail().y - buttonSize.y });
+		ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
+		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
 		if (Gui::Button("Launch Editor", buttonSize))
 			LaunchEditor();
 
 		Gui::PopStyleColor(3);
-
-		Gui::End();
-
 		Gui::PopStyleVar(3);
+		Gui::EndChild();
+		Gui::End();
 	}
 
 	void LauncherLayer::OnEvent(Event& e) { }

@@ -22,6 +22,7 @@ namespace Sparky {
 
 	private:
 		SharedRef<Framebuffer> m_Framebuffer;
+		SharedRef<Texture2D> m_SparkyLogoIcon;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		std::filesystem::path m_ProjectPath = std::filesystem::path();
 	};

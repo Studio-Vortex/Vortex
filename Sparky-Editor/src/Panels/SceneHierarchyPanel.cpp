@@ -324,6 +324,8 @@ namespace Sparky {
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
+		static SharedRef<Texture2D> settingsIcon = Texture2D::Create("Resources/Icons/Inspector/SettingsIcon.png");
+
 		if (entity.HasComponent<TComponent>())
 		{
 			auto& component = entity.GetComponent<TComponent>();
@@ -335,7 +337,7 @@ namespace Sparky {
 			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (Gui::Button("+", ImVec2{lineHeight, lineHeight}));
+			if (Gui::ImageButton((void*)settingsIcon->GetRendererID(), ImVec2{ lineHeight - 5.5f, lineHeight - 5.5f }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;

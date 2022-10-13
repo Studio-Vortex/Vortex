@@ -26,6 +26,7 @@ namespace Sparky {
 		Gui::BeginChild("Left Pane", ImVec2(directoryButtonsContainierWidth, 0), false);
 		
 		Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
+		Gui::SetCursorPosY(28.5f);
 		Gui::Separator();
 
 		for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))

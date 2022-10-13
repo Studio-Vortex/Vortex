@@ -9,8 +9,12 @@ namespace Sparky {
 	public:
 		struct Settings
 		{
+			// Physics
 			Math::vec4& Physics2DColliderColor;
 			bool& ShowColliders;
+
+			// Editor
+			bool& DrawEditorGrid;
 			float& EditorCameraFOV;
 			Math::vec3& ClearColor;
 
@@ -27,6 +31,7 @@ namespace Sparky {
 
 			GizmoSettings& Gizmos;
 
+			// Build
 			const std::filesystem::path& CurrentEditorScenePath;
 			std::function<void()> LaunchRuntimeCallback;
 		};
