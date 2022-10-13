@@ -12,17 +12,22 @@ namespace Sparky {
 		: m_CurrentDirectory(g_AssetPath)
 	{
 		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
+		m_CodeFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/CodeFileIcon.png");
+		m_SceneIcon = Texture2D::Create("Resources/Icons/ContentBrowser/SceneIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
 	}
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
 		Gui::Begin("Content Browser");
+
 		// Left
-		static uint32_t selectedSetting = 0;
-		Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
+		float directoryButtonsContainierWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 145.0f);
+		Gui::BeginChild("Left Pane", ImVec2(directoryButtonsContainierWidth, 0), false);
+		
 		Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
 		Gui::Separator();
+
 		for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
 		{
 			if (!assetDirectoryEntry.is_directory())
@@ -164,7 +169,8 @@ public class Untitled : Entity
 		if (columnCount < 1)
 			columnCount = 1;
 		
-		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 70.f), false);
+		//                                       leave some space for the icon size tools
+		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 68.0f), false);
 
 		Gui::Columns(columnCount, 0, false);
 
@@ -183,7 +189,17 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedRef<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+			SharedRef<Texture2D> icon;
+
+			if (directoryEntry.is_directory())
+				icon = m_DirectoryIcon;
+			else if (currentPath.extension().string() == ".sparky")
+				icon = m_SceneIcon;
+			else if (currentPath.extension().string() == ".cs")
+				icon = m_CodeFileIcon;
+			else
+				icon = m_FileIcon;
+
 			if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
@@ -193,7 +209,7 @@ public class Untitled : Entity
 			}
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
-			Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			Gui::ImageButton((void*)icon->GetRendererID(), { thumbnailSize, thumbnailSize }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 			Gui::PopStyleColor();
 
 			static bool confirmDeletionPopupOpen = false;

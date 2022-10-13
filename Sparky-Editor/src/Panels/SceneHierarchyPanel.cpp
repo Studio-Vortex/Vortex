@@ -335,7 +335,7 @@ namespace Sparky {
 			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (Gui::Button("+", ImVec2{ lineHeight, lineHeight }))
+			if (Gui::Button("+", ImVec2{lineHeight, lineHeight}));
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
@@ -437,7 +437,8 @@ namespace Sparky {
 				auto textureSize = ImVec2{ 64, 64 };
 
 				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
-				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }))
+				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 					component.Texture = nullptr;
 				else if (Gui::IsItemHovered())
 				{

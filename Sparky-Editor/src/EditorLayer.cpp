@@ -723,6 +723,20 @@ namespace Sparky {
 			}
 
 			// Tools
+			case Key::F1:
+			{
+				if (m_SceneState != SceneState::Play)
+				{
+					float editorCameraDistance = m_EditorCamera.GetDistance();
+
+					if (editorCameraDistance <= 2.0f)
+						m_EditorCamera.SetDistance(100.0f);
+					else
+						m_EditorCamera.SetDistance(1.0f);
+				}
+
+				break;
+			}
 			case Key::F2:
 			{
 				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
@@ -730,7 +744,6 @@ namespace Sparky {
 
 				break;
 			}
-
 			case Key::F3:
 			{
 				if (m_SceneState == SceneState::Play)

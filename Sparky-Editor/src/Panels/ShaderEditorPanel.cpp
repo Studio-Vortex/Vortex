@@ -17,7 +17,7 @@ namespace Sparky {
 
 			// Left
 			static uint32_t selectedSetting = 0;
-			Gui::BeginChild("Left Pane", ImVec2(150, 0), true);
+			Gui::BeginChild("Left Pane", ImVec2(150, 0), false);
 			if (Gui::Button("Open Shader...", ImVec2{ Gui::GetContentRegionAvail().x, 0 }))
 			{
 				m_CurrentShaderPath = FileSystem::OpenFile("Shader File (*.glsl)\0*.glsl\0");

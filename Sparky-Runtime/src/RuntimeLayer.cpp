@@ -5,8 +5,6 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath;
-
 	RuntimeLayer::RuntimeLayer()
 		: Layer("RuntimeLayer") { }
 
@@ -85,10 +83,7 @@ namespace Sparky {
 		Gui::PopStyleVar(3);
 	}
 
-	void RuntimeLayer::OnEvent(Event& e)
-	{
-		
-	}
+	void RuntimeLayer::OnEvent(Event& e) { }
 
 	bool RuntimeLayer::OpenScene(const std::filesystem::path& filepath)
 	{
