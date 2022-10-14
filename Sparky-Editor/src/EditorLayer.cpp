@@ -1,9 +1,10 @@
 #include "EditorLayer.h"
 
 #include <Sparky/Scene/SceneSerializer.h>
-#include <Sparky/Scripting/ScriptEngine.h>
-#include <Sparky/Utils/PlatformUtils.h>
 #include <Sparky/Renderer/RenderCommand.h>
+#include <Sparky/Utils/PlatformUtils.h>
+#include <Sparky/Scripting/ScriptEngine.h>
+#include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
 
@@ -47,18 +48,12 @@ namespace Sparky {
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 		RenderCommand::SetClearColor(m_EditorClearColor);
 
-		for (uint32_t i = 0; i < 6; i++)
-		{
-			switch (i)
-			{
-				case 0: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/back.jpg", false);   break;
-				case 1: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/bottom.jpg", false); break;
-				case 2: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/front.jpg");  break;
-				case 3: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/left.jpg");   break;
-				case 4: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/right.jpg");  break;
-				case 5: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/top.jpg");    break;
-			}
-		}
+		m_Skybox.Textures[0] = Texture2D::Create("Resources/Skybox/back.jpg", false);
+		m_Skybox.Textures[1] = Texture2D::Create("Resources/Skybox/bottom.jpg", false);
+		m_Skybox.Textures[2] = Texture2D::Create("Resources/Skybox/front.jpg");
+		m_Skybox.Textures[3] = Texture2D::Create("Resources/Skybox/left.jpg");
+		m_Skybox.Textures[4] = Texture2D::Create("Resources/Skybox/right.jpg");
+		m_Skybox.Textures[5] = Texture2D::Create("Resources/Skybox/top.jpg");
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -1005,6 +1000,8 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
+		AudioEngine::StopAllAudio();
+
 		// Disable the debug view when starting a scene
 		m_EditorDebugViewEnabled = false;
 
@@ -1012,6 +1009,8 @@ namespace Sparky {
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
+
+		AudioEngine::StartAllAudio();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}

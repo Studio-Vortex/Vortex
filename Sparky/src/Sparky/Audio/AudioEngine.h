@@ -13,7 +13,9 @@ namespace Sparky {
 		static void Init();
 		static void Shutdown();
 
-		static void PlayFromAudioSource(const AudioSource& audioSource);
+		static void PlayFromAudioSource(const SharedRef<AudioSource>& audioSource);
+		static void StartAllAudio();
+		static void StopAllAudio();
 	};
 
 }

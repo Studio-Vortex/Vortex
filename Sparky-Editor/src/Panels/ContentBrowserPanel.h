@@ -20,6 +20,7 @@ namespace Sparky {
 		std::filesystem::path m_PathToBeRenamed;
 
 		SharedRef<Texture2D> m_DirectoryIcon;
+		SharedRef<Texture2D> m_AudioFileIcon;
 		SharedRef<Texture2D> m_CodeFileIcon;
 		SharedRef<Texture2D> m_SceneIcon;
 		SharedRef<Texture2D> m_FileIcon;

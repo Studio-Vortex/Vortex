@@ -245,6 +245,18 @@ namespace Sparky {
 			out << YAML::EndMap; // CircleRendererComponent
 		}
 
+		if (entity.HasComponent<AudioSourceComponent>())
+		{
+			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
+
+			auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+
+			if (audioSourceComponent.Source)
+				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
+
+			out << YAML::EndMap; // AudioSourceComponent
+		}
+
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{
 			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
@@ -448,26 +460,34 @@ namespace Sparky {
 				auto spriteComponent = entity["SpriteRendererComponent"];
 				if (spriteComponent)
 				{
-					auto& sprite = deserializedEntity.AddComponent<SpriteRendererComponent>();
+					auto& spriteRendererComponent = deserializedEntity.AddComponent<SpriteRendererComponent>();
 
-					sprite.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
+					spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
+
 					if (spriteComponent["TexturePath"])
-					{
-						sprite.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
-					}
+						spriteRendererComponent.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
 
 					if (spriteComponent["Scale"])
-						sprite.Scale = spriteComponent["Scale"].as<float>();
+						spriteRendererComponent.Scale = spriteComponent["Scale"].as<float>();
 				}
 				
 				auto circleComponent = entity["CircleRendererComponent"];
 				if (circleComponent)
 				{
-					auto& circle = deserializedEntity.AddComponent<CircleRendererComponent>();
+					auto& circleRendererComponent = deserializedEntity.AddComponent<CircleRendererComponent>();
 
-					circle.Color = circleComponent["Color"].as<Math::vec4>();
-					circle.Thickness = circleComponent["Thickness"].as<float>();
-					circle.Fade = circleComponent["Fade"].as<float>();
+					circleRendererComponent.Color = circleComponent["Color"].as<Math::vec4>();
+					circleRendererComponent.Thickness = circleComponent["Thickness"].as<float>();
+					circleRendererComponent.Fade = circleComponent["Fade"].as<float>();
+				}
+
+				auto audioSourceComponent = entity["AudioSourceComponent"];
+				if (audioSourceComponent)
+				{
+					auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
+
+					if (audioSourceComponent["AudioSourcePath"])
+						asc.Source = CreateShared<AudioSource>(audioSourceComponent["AudioSourcePath"].as<std::string>());
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

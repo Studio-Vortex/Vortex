@@ -12,6 +12,7 @@ namespace Sparky {
 		: m_CurrentDirectory(g_AssetPath)
 	{
 		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
+		m_AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");
 		m_CodeFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/CodeFileIcon.png");
 		m_SceneIcon = Texture2D::Create("Resources/Icons/ContentBrowser/SceneIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
@@ -190,7 +191,9 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedRef<Texture2D> icon;
+			SharedRef<Texture2D> icon = m_FileIcon;
+
+			// File icons
 
 			if (directoryEntry.is_directory())
 				icon = m_DirectoryIcon;
@@ -198,10 +201,9 @@ public class Untitled : Entity
 				icon = m_SceneIcon;
 			else if (currentPath.extension().string() == ".cs")
 				icon = m_CodeFileIcon;
-			else
-				icon = m_FileIcon;
-
-			if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")
+			else if (currentPath.extension().string() == ".wav" || currentPath.extension().string() == ".mp3")
+				icon = m_AudioFileIcon;
+			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());

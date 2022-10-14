@@ -1,6 +1,7 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Audio/AudioEngine.h"
 #include "Sparky/Scene/Scene.h"
 
 #include <imgui_internal.h>
@@ -402,9 +403,10 @@ namespace Sparky {
 		if (Gui::BeginPopup("AddComponent"))
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
+			DisplayAddComponentPopup<CameraComponent>("Camera");
 			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
-			DisplayAddComponentPopup<CameraComponent>("Camera");
+			DisplayAddComponentPopup<AudioSourceComponent>("Audio Source");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
@@ -426,68 +428,6 @@ namespace Sparky {
 			component.Rotation = Math::Deg2Rad(rotation);
 			DrawVec3Controls("Scale", component.Scale, 1.0f);
 		}, false);
-
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
-		{
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
-
-			if (component.Texture)
-			{
-				Gui::Text("Texture");
-				Gui::SameLine();
-
-				auto textureSize = ImVec2{ 64, 64 };
-
-				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
-				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
-				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-					component.Texture = nullptr;
-				else if (Gui::IsItemHovered())
-				{
-					Gui::BeginTooltip();
-					Gui::Text(component.Texture->GetPath().c_str());
-					Gui::EndTooltip();
-				}
-			}
-			else
-			{
-				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
-					component.Texture = nullptr;
-			}
-
-			// Accept a Texture from the content browser
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
-
-					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
-					{
-						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-						if (texture->IsLoaded())
-							component.Texture = texture;
-						else
-							SP_WARN("Could not load texture {}", texturePath.filename().string());
-					}
-					else
-						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
-				}
-				Gui::EndDragDropTarget();
-			}
-
-			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
-		});
-
-		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
-		{
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-			Gui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
-			Gui::DragFloat("Fade", &component.Fade, 0.00025f, 0.0f, 1.0f);
-		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 		{
@@ -546,6 +486,114 @@ namespace Sparky {
 
 				Gui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 			}
+		});
+
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		{
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
+
+			if (component.Texture)
+			{
+				Gui::Text("Texture");
+				Gui::SameLine();
+
+				auto textureSize = ImVec2{ 64, 64 };
+
+				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+					component.Texture = nullptr;
+				else if (Gui::IsItemHovered())
+				{
+					Gui::BeginTooltip();
+					Gui::Text(component.Texture->GetPath().c_str());
+					Gui::EndTooltip();
+				}
+			}
+			else
+			{
+				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+					component.Texture = nullptr;
+			}
+
+			// Accept a Texture from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+
+					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
+					{
+						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+						if (texture->IsLoaded())
+							component.Texture = texture;
+						else
+							SP_WARN("Could not load texture {}", texturePath.filename().string());
+					}
+					else
+						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+		});
+
+		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
+		{
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
+			Gui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+			Gui::DragFloat("Fade", &component.Fade, 0.00025f, 0.0f, 1.0f);
+		});
+
+		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
+		{
+			char buffer[256];
+			
+			if (component.Source)
+				memcpy(buffer, component.Source->GetPath().c_str(), sizeof(buffer));
+			else
+				memset(buffer, 0, sizeof(buffer));
+
+			Gui::InputText("Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+
+			// Accept a Audio File from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path audioSourcePath = std::filesystem::path(g_AssetPath) / path;
+
+					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
+					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
+						component.Source = CreateShared<AudioSource>(audioSourcePath.string());
+					else
+						SP_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::BeginDisabled(component.Source == nullptr);
+
+			if (Gui::Button("Play"))
+			{
+				AudioEngine::PlayFromAudioSource(component.Source);
+			}
+
+			Gui::SameLine();
+
+			if (Gui::Button("Stop"))
+			{
+				AudioEngine::StopAllAudio();
+			}
+
+			Gui::EndDisabled();
 		});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)
