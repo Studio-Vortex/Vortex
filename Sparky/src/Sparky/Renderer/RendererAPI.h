@@ -13,8 +13,22 @@ namespace Sparky {
 	#define SP_RENDERER_STATISTICS 1; // Temporary
 #endif // SP_DEBUG
 
+	static constexpr uint32_t VERTICES_PER_CUBE = 24;
+	static constexpr uint32_t INDICES_PER_CUBE = 12;
+
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
+
+	struct RenderStatistics
+	{
+		uint32_t DrawCalls;
+		uint32_t QuadCount;
+		uint32_t LineCount;
+
+		uint32_t GetTriangleCount() const { return QuadCount * 2; }
+		uint32_t GetVertexCount() const { return (QuadCount * VERTICES_PER_QUAD) + (LineCount * 2); }
+		uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD + (LineCount * 2); }
+	};
 
 	struct SPARKY_API Viewport
 	{

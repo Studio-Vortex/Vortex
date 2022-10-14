@@ -15,6 +15,7 @@ namespace Sparky {
 
 			// Editor
 			bool& DrawEditorGrid;
+			bool& DrawEditorAxes;
 			float& EditorCameraFOV;
 			Math::vec3& ClearColor;
 

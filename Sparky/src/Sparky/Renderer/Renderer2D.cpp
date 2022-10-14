@@ -51,10 +51,11 @@ namespace Sparky
 		static constexpr inline uint32_t MaxIndices = MaxQuads * INDICES_PER_QUAD;
 		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
 
+		SharedRef<Texture2D> WhiteTexture; // Default texture
+
 		SharedRef<VertexArray> QuadVA;
 		SharedRef<VertexBuffer> QuadVB;
 		SharedRef<Shader> QuadShader;
-		SharedRef<Texture2D> WhiteTexture;
 
 		SharedRef<VertexArray> CircleVA;
 		SharedRef<VertexBuffer> CircleVB;
@@ -83,7 +84,7 @@ namespace Sparky
 
 		Math::vec4 QuadVertexPositions[4];
 
-		Renderer2D::Statistics Renderer2DStatistics;
+		RenderStatistics Renderer2DStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 	};
 
@@ -261,7 +262,7 @@ namespace Sparky
 	{
 		// Set the index count to 0 for the new batch
 		s_Data.QuadIndexCount = 0;
-		// Set the pointer to the beggining of the vertex buffer
+		// Set the pointer to the beginning of the vertex buffer
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
 		// Same for circles
@@ -272,7 +273,7 @@ namespace Sparky
 		s_Data.LineVertexCount = 0;
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
-		// Reset the starting frame texture slot past the White Texture
+		// Reset the texture slot index (0 is the default white texture)
 		s_Data.TextureSlotIndex = 1;
 	}
 
@@ -394,7 +395,7 @@ namespace Sparky
 		constexpr float textureIndex = 0.0f; // Our White Texture
 		constexpr float textureScale = 1.0f;
 
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		Math::vec2 textureCoords[36] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		AddToQuadVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
 	}
@@ -834,7 +835,7 @@ namespace Sparky
 		RenderCommand::SetCullMode(cullMode);
 	}
 
-	Renderer2D::Statistics Renderer2D::GetStats()
+	RenderStatistics Renderer2D::GetStats()
 	{
 		return s_Data.Renderer2DStatistics;
 	}

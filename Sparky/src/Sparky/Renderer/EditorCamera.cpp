@@ -83,6 +83,7 @@ namespace Sparky {
 		}
 		else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
+			// Handle movement and rotation
 			Math::vec3 moveSpeed = s_MoveSpeed;
 			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
@@ -108,9 +109,9 @@ namespace Sparky {
 				cameraVelocity += GetRightDirection();
 
 			if (Input::IsKeyPressed(Key::Q))
-				cameraVelocity += GetUpDirection();
-			if (Input::IsKeyPressed(Key::E))
 				cameraVelocity -= GetUpDirection();
+			if (Input::IsKeyPressed(Key::E))
+				cameraVelocity += GetUpDirection();
 
 			m_Distance = 1.0f;
 

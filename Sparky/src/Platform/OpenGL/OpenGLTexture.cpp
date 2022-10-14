@@ -31,6 +31,8 @@ namespace Sparky {
 
 		if (flipVertical)
 			stbi_set_flip_vertically_on_load(true);
+		else
+			stbi_set_flip_vertically_on_load(false);
 
 		int width, height, channels;
 		stbi_uc* data = nullptr;
@@ -42,8 +44,6 @@ namespace Sparky {
 
 		if (data)
 		{
-			m_IsLoaded = true;
-
 			m_Width = width;
 			m_Height = height;
 
@@ -76,6 +76,8 @@ namespace Sparky {
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
 			stbi_image_free(data);
+
+			m_IsLoaded = true;
 		}
 	}
 

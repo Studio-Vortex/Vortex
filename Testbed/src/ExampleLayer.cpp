@@ -73,7 +73,8 @@ void ExampleLayer::OnUpdate(Sparky::TimeStep delta)
 	Sparky::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 	Sparky::RenderCommand::Clear();
 
-	Sparky::Renderer::BeginScene(m_CameraController.GetCamera());
+	// Deprecated API
+	//Sparky::Renderer::BeginScene(m_CameraController.GetCamera());
 
 	static Math::mat4 scale = Math::Scale(Math::vec3(0.1f));
 

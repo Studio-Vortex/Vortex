@@ -102,18 +102,7 @@ namespace Sparky {
 		static RendererAPI::TriangleCullMode GetCullMode();
 		static void SetCullMode(RendererAPI::TriangleCullMode cullMode);
 
-		struct Statistics
-		{
-			uint32_t DrawCalls;
-			uint32_t QuadCount;
-			uint32_t LineCount;
-
-			uint32_t GetTriangleCount() const { return QuadCount * 2; }
-			uint32_t GetVertexCount() const { return (QuadCount * VERTICES_PER_QUAD) + (LineCount * 2); }
-			uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD + (LineCount * 2); }
-		};
-
-		static Statistics GetStats();
+		static RenderStatistics GetStats();
 		static void ResetStats();
 
 	private:

@@ -46,6 +46,19 @@ namespace Sparky {
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 		RenderCommand::SetClearColor(m_EditorClearColor);
+
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			switch (i)
+			{
+				case 0: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/back.jpg", false);   break;
+				case 1: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/bottom.jpg", false); break;
+				case 2: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/front.jpg");  break;
+				case 3: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/left.jpg");   break;
+				case 4: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/right.jpg");  break;
+				case 5: m_Skybox.Textures[i] = Texture2D::Create("Resources/Skybox/top.jpg");    break;
+			}
+		}
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -80,7 +93,7 @@ namespace Sparky {
 			{
 				const Math::vec2& mousePos = Input::GetMousePosition();
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
-				// this allows the user to manipulate the editor camera while they are holding the left mouse button even if the cursor is outside the scene viewport
+				// this allows the user to manipulate the editor camera while they are holding the right mouse button even if the cursor is outside the scene viewport
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
 					m_EditorCamera.OnUpdate(delta);
 
@@ -580,37 +593,64 @@ namespace Sparky {
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
-			float lineLength = 100.0f;
-			float gridWidth = 100.0f;
-			float gridLength = 100.0f;
+			float lineLength = 300.0f;
+			float gridWidth = 300.0f;
+			float gridLength = 300.0f;
 
 			// Render Axes
-			float originalLineWidth = Renderer2D::GetLineWidth();
-			Renderer2D::SetLineWidth(4.0f);
-			Renderer2D::DrawLine({ -lineLength, 0.0f, 0.0f }, { lineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
-			Renderer2D::DrawLine({ 0.0f, -lineLength, 0.0f }, { 0.0f, lineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
-			Renderer2D::DrawLine({ 0.0f, 0.0f, -lineLength }, { 0.0f, 0.0f, lineLength }, ColorToVec4(Color::Blue));  // Z Axis
-			Renderer2D::Flush();
-			Renderer2D::SetLineWidth(originalLineWidth);
+			if (m_DrawEditorAxes)
+			{
+				float originalLineWidth = Renderer2D::GetLineWidth();
+				Renderer2D::SetLineWidth(4.0f);
+				Renderer2D::DrawLine({ -lineLength, 0.0f, 0.0f }, { lineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+				Renderer2D::DrawLine({ 0.0f, -lineLength, 0.0f }, { 0.0f, lineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+				Renderer2D::DrawLine({ 0.0f, 0.0f, -lineLength }, { 0.0f, 0.0f, lineLength }, ColorToVec4(Color::Blue));  // Z Axis
+				Renderer2D::Flush();
+				Renderer2D::SetLineWidth(originalLineWidth);
+			}
+
+			Math::vec4 gridColor = { 0.5f, 0.5f, 0.5f, 1.0f };
 
 			// X Grid Lines
 			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
 			{
-				if (gridWidth == 0)
+				if (x == 0 && m_DrawEditorAxes)
 					continue;
 
-				Renderer2D::DrawLine({ x, 0, -lineLength }, { x, 0, lineLength }, { .5f, .5f, .5f, 1.0f });
+				Renderer2D::DrawLine({ x, 0, -lineLength }, { x, 0, lineLength }, gridColor);
 			}
 			
 			// Z Grid Lines
 			for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
 			{
-				if (gridLength == 0)
+				if (z == 0 && m_DrawEditorAxes)
 					continue;
 
-				Renderer2D::DrawLine({ -lineLength, 0, z }, { lineLength, 0, z }, { .5f, .5f, .5f, 1.0f });
+				Renderer2D::DrawLine({ -lineLength, 0, z }, { lineLength, 0, z }, gridColor);
 			}
 		}
+
+		const float cubemapSize = 600.0f;
+		Math::vec3 position;
+
+		// Render Editor Default Skybox
+		position = { 0.0f, 0.0f, cubemapSize / 2.0f };
+		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[0], 1.0f);
+
+		position = { 0.0f, -cubemapSize / 2.0f, 0.0f };
+		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[1], 1.0f);
+
+		position = { 0.0f, 0.0f, -cubemapSize / 2.0f };
+		Renderer2D::DrawQuad(position, { cubemapSize, cubemapSize }, m_Skybox.Textures[2], 1.0f);
+
+		position = { -cubemapSize / 2.0f, 0.0f, 0.0f };
+		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[3], 1.0f);
+
+		position = { cubemapSize / 2.0f, 0.0f, 0.0f };
+		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[4], 1.0f);
+
+		position = { 0.0f, cubemapSize / 2.0f, 0.0f };
+		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[5], 1.0f);
 
 		if (m_ShowPhysicsColliders)
 		{

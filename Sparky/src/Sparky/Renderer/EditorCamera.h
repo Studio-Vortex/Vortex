@@ -70,12 +70,12 @@ namespace Sparky {
 
 		Math::mat4 m_ViewMatrix = Math::Identity();
 		Math::vec3 m_Position = Math::vec3(0.0f);
-		Math::vec3 m_FocalPoint = Math::vec3(0.0f, 1.0f, 5.0f);
+		Math::vec3 m_FocalPoint = Math::vec3(0.0f, 5.0f, 10.0f);
 
 		Math::vec2 m_InitialMousePosition = Math::vec2(0.0f);
 
 		float m_Distance = 1.0f;
-		float m_Pitch = 0.0f, m_Yaw = 0.0f;
+		float m_Pitch = -25.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
 

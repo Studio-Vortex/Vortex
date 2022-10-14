@@ -13,6 +13,11 @@
 
 namespace Sparky {
 
+	struct Skybox
+	{
+		SharedRef<Texture2D> Textures[6];
+	};
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -86,6 +91,7 @@ namespace Sparky {
 		int32_t m_GizmoType = -1;
 
 		bool m_DrawEditorGrid = true;
+		bool m_DrawEditorAxes = true;
 		bool m_EditorDebugViewEnabled = false;
 
 		bool m_ShowPhysicsColliders = false;
@@ -100,6 +106,8 @@ namespace Sparky {
 		};
 		
 		// Editor resources
+
+		Skybox m_Skybox;
 
 		SharedRef<Texture2D> m_PlayIcon;
 		SharedRef<Texture2D> m_StopIcon;
@@ -129,7 +137,7 @@ namespace Sparky {
 		};
 
 		SettingsPanel::Settings m_Settings{ 
-			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_DrawEditorGrid, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_DrawEditorGrid, m_DrawEditorAxes, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
 		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 

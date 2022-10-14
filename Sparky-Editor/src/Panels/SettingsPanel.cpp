@@ -146,6 +146,7 @@ namespace Sparky {
 					}
 
 					Gui::Checkbox("Draw Editor Grid", &m_Settings.DrawEditorGrid);
+					Gui::Checkbox("Draw Editor Axes", &m_Settings.DrawEditorAxes);
 
 					Gui::Spacing();
 

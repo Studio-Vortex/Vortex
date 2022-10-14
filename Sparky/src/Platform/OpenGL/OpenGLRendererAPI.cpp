@@ -102,7 +102,8 @@ namespace Sparky {
 			case TriangleCullMode::FrontAndBack: mode = GL_FRONT_AND_BACK; break;
 		}
 
-		glCullFace(mode);
+		if (cullMode != TriangleCullMode::None)
+			glCullFace(mode);
 	}
 
 }
