@@ -4,7 +4,6 @@
 #include <Sparky/Renderer/RenderCommand.h>
 #include <Sparky/Utils/PlatformUtils.h>
 #include <Sparky/Scripting/ScriptEngine.h>
-#include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
 
@@ -1000,8 +999,6 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
-		AudioEngine::StopAllAudio();
-
 		// Disable the debug view when starting a scene
 		m_EditorDebugViewEnabled = false;
 
@@ -1009,8 +1006,6 @@ namespace Sparky {
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
-
-		AudioEngine::StartAllAudio();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}

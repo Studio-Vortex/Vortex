@@ -27,8 +27,14 @@ namespace Sparky {
 
 	void AudioEngine::PlayFromAudioSource(const SharedRef<AudioSource>& audioSource)
 	{
-		s_Data.Result = ma_engine_play_sound(&s_Data.Engine, audioSource->GetPath().c_str(), nullptr);
-		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to play audio from " + audioSource->GetPath());
+		std::filesystem::path audioSourcePath(audioSource->GetPath());
+
+		// If the path doesn't exist and we try to play the non-existant file the engine will crash
+		if (std::filesystem::exists(audioSourcePath))
+		{
+			s_Data.Result = ma_engine_play_sound(&s_Data.Engine, audioSource->GetPath().c_str(), nullptr);
+			SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to play audio from " + audioSource->GetPath());
+		}
 	}
 
 	void AudioEngine::StartAllAudio()

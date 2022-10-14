@@ -231,6 +231,21 @@
 		}
 	}
 
+	public class AudioSource : Component
+	{
+		public string Source;
+
+		public void Play()
+		{
+			InternalCalls.AudioSourceComponent_Play(Entity.ID);
+		}
+
+		public void Stop()	
+		{
+			InternalCalls.AudioSourceComponent_Stop(Entity.ID);
+		}
+	}
+
 	public class RigidBody2D : Component
 	{
 		public enum BodyType

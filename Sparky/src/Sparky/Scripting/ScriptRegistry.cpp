@@ -7,6 +7,8 @@
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
+#include "Sparky/Audio/AudioEngine.h"
+
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Core/MouseCodes.h"
 #include "Sparky/Core/KeyCodes.h"
@@ -120,6 +122,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CircleRendererComponent>();
+	}
+
+	static void Entity_AddAudioSource(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<AudioSourceComponent>();
+	}
+
+	static void Entity_RemoveAudioSource(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<AudioSourceComponent>();
 	}
 
 	static void Entity_AddRigidBody2D(UUID entityUUID)
@@ -491,6 +513,31 @@ namespace Sparky {
 	}
 
 #pragma endregion
+
+#pragma region AudioSource Component
+
+	static void AudioSourceComponent_Play(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		AudioEngine::PlayFromAudioSource(entity.GetComponent<AudioSourceComponent>().Source);
+	}
+
+	static void AudioSourceComponent_Stop(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<AudioSourceComponent>().Source;
+	}
+
+#pragma endregion
+
 
 #pragma region Rigidbody2D Component
 
@@ -1084,6 +1131,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_RemoveSpriteRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleRenderer);
+		SP_ADD_INTERNAL_CALL(Entity_AddAudioSource);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioSource);
 		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody2D);
 		SP_ADD_INTERNAL_CALL(Entity_AddBoxCollider2D);
@@ -1140,9 +1189,10 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Physics2D
+#pragma region Audio Source Component
 
-		SP_ADD_INTERNAL_CALL(Physics2D_Raycast);
+		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
+		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 
 #pragma endregion
 
@@ -1154,6 +1204,12 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
+
+#pragma endregion
+
+#pragma region Physics2D
+
+		SP_ADD_INTERNAL_CALL(Physics2D_Raycast);
 
 #pragma endregion
 

@@ -36,6 +36,12 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCircleRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddAudioSource(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveAudioSource(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddRigidBody2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -149,6 +155,16 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CircleRendererComponent_SetFade(ulong entityID, float fade);
+
+		#endregion
+
+		#region AudioSource
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Play(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Stop(ulong entityID);
 
 		#endregion
 

@@ -403,8 +403,6 @@ namespace Sparky {
 				}
 			}
 		}
-
-		auto& entityClasses = s_Data->EntityClasses;
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)

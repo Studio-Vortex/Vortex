@@ -38,8 +38,8 @@ namespace Sparky {
 			if (Gui::Button(assetDirectoryEntry.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
 			{
 				// Clear the search input text so it does not interfere with the child directory
-				memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
-				m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+				memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+				m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 
 				m_CurrentDirectory = assetDirectoryEntry.path();
 			}
@@ -140,8 +140,8 @@ public class Untitled : Entity
 		if (Gui::Button("  <--  "))
 		{
 			// Clear the search input text so it does not interfere with the parent directory
-			memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
-			m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+			m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 
 			m_CurrentDirectory = m_CurrentDirectory.parent_path();
 		}
@@ -155,9 +155,9 @@ public class Untitled : Entity
 		float inputTextSize = Gui::GetWindowWidth() / 2.0f - Gui::CalcTextSize(m_CurrentDirectory.string().c_str()).x;
 		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
 		Gui::SetNextItemWidth(inputTextSize);
-		bool isSearching = Gui::InputTextWithHint("##Search", "Search", m_InputTextFilter.InputBuf, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
+		bool isSearching = Gui::InputTextWithHint("##Search", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
 		if (isSearching)
-			m_InputTextFilter.Build();
+			m_SearchInputTextFilter.Build();
 
 		Gui::Spacing();
 		Gui::Separator();
@@ -183,7 +183,7 @@ public class Untitled : Entity
 			std::string filenameString = relativePath.filename().string();
 			bool skipDirectoryEntry = false;
 
-			if (!m_InputTextFilter.PassFilter(relativePath.string().c_str())) // If the search box text doesn't match up we can skip the directory entry
+			if (!m_SearchInputTextFilter.PassFilter(relativePath.string().c_str())) // If the search box text doesn't match up we can skip the directory entry
 				skipDirectoryEntry = true;
 
 			if (skipDirectoryEntry)
@@ -315,12 +315,17 @@ public class Untitled : Entity
 				Gui::SetNextItemWidth(thumbnailSize);
 				if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 				{
-					if (strlen(buffer) != 0 && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentPath)
+					bool inputTextWasNotEmpty = strlen(buffer) != 0;
+
+					if (inputTextWasNotEmpty && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentPath)
 					{
+						// Get the new path from the input text buffer relative to the current directory
 						std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
+						
+						// Rename the current path to the new path
 						std::filesystem::rename(currentPath, newFilePath);
 
-						// Rename C# file
+						// Rename C# Class name in file
 						if (newFilePath.filename().extension() == ".cs")
 						{
 							std::ifstream cSharpScriptFile(newFilePath);
@@ -375,13 +380,31 @@ public class Untitled : Entity
 								}
 							}
 						}
+
+						// Rename AudioSourceComponent Source path
+						if (newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3")
+						{
+							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
+							// we have the old filename
+							//oldFilenameWithExtension
+							// we also have the newFilePath
+						}
+
+						// Rename SpriteRendererComponent Texture path
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg")
+						{
+							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
+							// we have the old filename
+							//oldFilenameWithExtension
+							// we also have the newFilePath
+						}
 					}
 
 					m_PathToBeRenamed = "";
 				}
 			}
 
-			// Drag items from the content browser to somewhere else in the editor
+			// Drag items from the content browser to else-where in the editor
 			if (Gui::BeginDragDropSource())
 			{
 				const wchar_t* itemPath = relativePath.c_str();
@@ -397,8 +420,8 @@ public class Untitled : Entity
 					m_CurrentDirectory /= currentPath.filename();
 
 					// We also need to reset the search input text here
-					memset(m_InputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_InputTextFilter.InputBuf));
-					m_InputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+					m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 				}
 			}
 
