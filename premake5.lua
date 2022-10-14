@@ -24,6 +24,7 @@ IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
+IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
@@ -65,6 +66,7 @@ project "Sparky"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
+		"%{prj.name}/vendor/miniaudio/miniaudio/miniaudio.h",
 		"%{prj.name}/vendor/stb_image/**.h",
 		"%{prj.name}/vendor/stb_image/**.cpp",
 
@@ -87,6 +89,7 @@ project "Sparky"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
@@ -185,6 +188,7 @@ project "Sparky-Editor"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
 	}
 
@@ -234,6 +238,7 @@ project "Sparky-Launcher"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
 	}
 
@@ -286,6 +291,7 @@ project "Sparky-Runtime"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
 	}
 
@@ -338,6 +344,7 @@ project "Testbed"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
 	}
 

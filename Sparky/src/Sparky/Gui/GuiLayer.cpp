@@ -38,9 +38,8 @@ namespace Sparky {
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Regular.ttf", 26.0f);
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Italic.ttf", 18.0f);
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/roboto/Roboto-Regular.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Arial.ttf", 18.0f);
+		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Arial.ttf", 17.0f);
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/SegoeUI.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/SegoeUIHistoric.ttf", 18.0f);
 		const auto& regular = io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Regular.ttf", 18.0f);
 		io.FontDefault = regular;
 

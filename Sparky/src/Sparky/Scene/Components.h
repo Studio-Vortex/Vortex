@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Sparky/Core/Math.h"
-#include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Core/UUID.h"
+#include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/Texture.h"
+#include "Sparky/Audio/AudioSource.h"
 
 namespace Sparky {
+
+	// Core components (all entites have these)
 
 	struct IDComponent
 	{
@@ -46,6 +49,8 @@ namespace Sparky {
 		}
 	};
 
+	// Rendering components
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -76,6 +81,13 @@ namespace Sparky {
 
 		CircleRendererComponent() = default;
 		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
+	// Audio components
+
+	struct AudioSourceComponent
+	{
+		SharedRef<AudioSource> Source;
 	};
 
 	// Physics components
@@ -163,8 +175,8 @@ namespace Sparky {
 	};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent,
-		CameraComponent, SpriteRendererComponent, CircleRendererComponent,
+		ComponentGroup<TransformComponent, CameraComponent,
+		SpriteRendererComponent, CircleRendererComponent, AudioSourceComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 

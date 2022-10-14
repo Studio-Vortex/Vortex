@@ -4,6 +4,7 @@
 #include "Sparky/Renderer/Renderer.h"
 
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Audio/AudioEngine.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Events/KeyEvent.h"
@@ -41,6 +42,7 @@ namespace Sparky {
 		Renderer::Init();
 		RenderCommand::SetCullMode(m_Properties.CullMode);
 		ScriptEngine::Init();
+		AudioEngine::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -53,6 +55,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		AudioEngine::Shutdown();
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}
