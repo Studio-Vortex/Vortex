@@ -32,6 +32,8 @@ namespace Sparky {
 		public virtual void OnCreate() { }
 		public virtual void OnUpdate(float delta) { }
 		public virtual void OnDestroy() { }
+		public virtual void OnCollision() { }
+		public virtual void OnGui() { }
 
 		public bool HasComponent<T>()
 			where T : Component, new()

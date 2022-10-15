@@ -3,8 +3,8 @@
 
 #include "Sparky/Renderer/Renderer.h"
 
-#include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Audio/AudioEngine.h"
+#include "Sparky/Scripting/ScriptEngine.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Events/KeyEvent.h"

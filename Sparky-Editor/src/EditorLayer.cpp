@@ -3,6 +3,7 @@
 #include <Sparky/Scene/SceneSerializer.h>
 #include <Sparky/Renderer/RenderCommand.h>
 #include <Sparky/Utils/PlatformUtils.h>
+#include <Sparky/Scene/Components.h>
 #include <Sparky/Scripting/ScriptEngine.h>
 
 #include <ImGuizmo.h>
@@ -376,6 +377,9 @@ namespace Sparky {
 			m_AboutPanel.OnGuiRender();
 		}
 
+		// Update C# Entity.OnGui()
+		m_ActiveScene->OnUpdateEntityGui();
+
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		bool open = true;
 		Gui::Begin("Scene", &open, ImGuiWindowFlags_NoCollapse);
@@ -624,28 +628,31 @@ namespace Sparky {
 			}
 		}
 
-		const float cubemapSize = 600.0f;
-		Math::vec3 position;
+		if (m_DrawEditorCubemap)
+		{
+			const float cubemapSize = 600.0f;
+			Math::vec3 position;
 
-		// Render Editor Default Skybox
-		position = { 0.0f, 0.0f, cubemapSize / 2.0f };
-		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[0], 1.0f);
+			// Render Default Editor Skybox
+			position = { 0.0f, 0.0f, cubemapSize / 2.0f };
+			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[0], 1.0f);
 
-		position = { 0.0f, -cubemapSize / 2.0f, 0.0f };
-		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[1], 1.0f);
+			position = { 0.0f, -cubemapSize / 2.0f, 0.0f };
+			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[1], 1.0f);
 
-		position = { 0.0f, 0.0f, -cubemapSize / 2.0f };
-		Renderer2D::DrawQuad(position, { cubemapSize, cubemapSize }, m_Skybox.Textures[2], 1.0f);
+			position = { 0.0f, 0.0f, -cubemapSize / 2.0f };
+			Renderer2D::DrawQuad(position, { cubemapSize, cubemapSize }, m_Skybox.Textures[2], 1.0f);
 
-		position = { -cubemapSize / 2.0f, 0.0f, 0.0f };
-		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[3], 1.0f);
+			position = { -cubemapSize / 2.0f, 0.0f, 0.0f };
+			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[3], 1.0f);
 
-		position = { cubemapSize / 2.0f, 0.0f, 0.0f };
-		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[4], 1.0f);
+			position = { cubemapSize / 2.0f, 0.0f, 0.0f };
+			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[4], 1.0f);
 
-		position = { 0.0f, cubemapSize / 2.0f, 0.0f };
-		Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[5], 1.0f);
-
+			position = { 0.0f, cubemapSize / 2.0f, 0.0f };
+			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[5], 1.0f);
+		}
+		
 		if (m_ShowPhysicsColliders)
 		{
 			float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame

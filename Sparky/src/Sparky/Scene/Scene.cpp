@@ -318,6 +318,20 @@ namespace Sparky {
 		RenderSceneFromEditorCamera(camera);
 	}
 
+    void Scene::OnUpdateEntityGui()
+    {
+		if (!IsRunning())
+			return;
+
+		auto view = m_Registry.view<ScriptComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity = { e, this };
+			ScriptEngine::OnGuiEntity(entity);
+		}
+    }
+
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		if (m_ViewportWidth == width && m_ViewportHeight == height)

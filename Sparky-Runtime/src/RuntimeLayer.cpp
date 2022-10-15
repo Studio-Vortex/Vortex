@@ -78,6 +78,9 @@ namespace Sparky {
 
 		Gui::Begin("Game", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
 
+		// Update Application Gui
+		m_RuntimeScene->OnUpdateEntityGui();
+
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
 		

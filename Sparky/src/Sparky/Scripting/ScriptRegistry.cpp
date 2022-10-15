@@ -26,6 +26,8 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_fixture.h>
 
+#include <imgui.h>
+
 #include <cstdlib>
 #include <ctime>
 
@@ -1019,6 +1021,46 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Gui
+
+	namespace Gui = ImGui;
+
+	static void Gui_Begin(MonoString* text)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		Gui::Begin(textCStr);
+
+		mono_free(textCStr);
+	}
+
+	static void Gui_End()
+	{
+		Gui::End();
+	}
+
+	static void Gui_Text(MonoString* text)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		Gui::Text(textCStr);
+
+		mono_free(textCStr);
+	}
+
+	static bool Gui_Button(MonoString* text)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		bool result = Gui::Button(textCStr);
+
+		mono_free(textCStr);
+
+		return result;
+	}
+
+#pragma endregion
+
 #pragma region Debug
 
 	static void Debug_Log(MonoString* message)
@@ -1032,7 +1074,7 @@ namespace Sparky {
 		mono_free(managedString);
 	}
 	
-	static void Debug_Info(MonoString * message)
+	static void Debug_Info(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
 
@@ -1043,7 +1085,7 @@ namespace Sparky {
 		mono_free(managedString);
 	}
 	
-	static void Debug_Warn(MonoString * message)
+	static void Debug_Warn(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
 
@@ -1054,7 +1096,7 @@ namespace Sparky {
 		mono_free(managedString);
 	}
 	
-	static void Debug_Error(MonoString * message)
+	static void Debug_Error(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
 
@@ -1065,7 +1107,7 @@ namespace Sparky {
 		mono_free(managedString);
 	}
 	
-	static void Debug_Critical(MonoString * message)
+	static void Debug_Critical(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
 
@@ -1270,6 +1312,15 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+
+#pragma endregion
+
+#pragma region Gui
+
+		SP_ADD_INTERNAL_CALL(Gui_Begin);
+		SP_ADD_INTERNAL_CALL(Gui_End);
+		SP_ADD_INTERNAL_CALL(Gui_Text);
+		SP_ADD_INTERNAL_CALL(Gui_Button);
 
 #pragma endregion
 

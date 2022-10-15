@@ -52,7 +52,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "Resources\\Images\\SparkyLogo.ico"
+IDI_ICON1               ICON                    "C:\\dev\\Sparky_Game_Engine\\Sparky\\Sparky-Editor\\Resources\\Images\\SparkyLogo.ico"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ namespace Sparky {
 		void OnUpdateRuntime(TimeStep delta);
 		void OnUpdateSimulation(TimeStep delta, EditorCamera& camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
+		void OnUpdateEntityGui();
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 

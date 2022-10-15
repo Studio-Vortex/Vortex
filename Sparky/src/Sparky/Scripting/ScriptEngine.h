@@ -100,6 +100,8 @@ namespace Sparky {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
+		void InvokeOnCollision();
+		void InvokeOnGui();
 
 		inline SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
@@ -134,9 +136,12 @@ namespace Sparky {
 
 		MonoObject* m_Instance = nullptr;
 		MonoMethod* m_Constructor = nullptr;
+
 		MonoMethod* m_OnCreateFunc = nullptr;
 		MonoMethod* m_OnUpdateFunc = nullptr;
 		MonoMethod* m_OnDestroyFunc = nullptr;
+		MonoMethod* m_OnCollisionFunc = nullptr;
+		MonoMethod* m_OnGuiFunc = nullptr;
 
 		inline static char s_FieldValueBuffer[16];
 
@@ -169,6 +174,8 @@ namespace Sparky {
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
+		static void OnCollisionEntity(Entity entity);
+		static void OnGuiEntity(Entity entity);
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();

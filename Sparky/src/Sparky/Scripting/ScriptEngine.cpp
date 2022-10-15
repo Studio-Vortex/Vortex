@@ -300,6 +300,26 @@ namespace Sparky {
 		s_Data->EntityInstances.erase(it);
 	}
 
+	void ScriptEngine::OnCollisionEntity(Entity entity)
+	{
+		UUID uuid = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(uuid);
+
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+
+		it->second->InvokeOnCollision();
+	}
+
+	void ScriptEngine::OnGuiEntity(Entity entity)
+	{
+		UUID uuid = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(uuid);
+
+		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+
+		it->second->InvokeOnGui();
+	}
+
 	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
 		auto it = s_Data->EntityInstances.find(uuid);
@@ -439,9 +459,11 @@ namespace Sparky {
 		m_Instance = m_ScriptClass->Instantiate();
 
 		m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
-		m_OnCreateFunc = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_OnUpdateFunc = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_OnDestroyFunc = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_OnCreateFunc    = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdateFunc    = m_ScriptClass->GetMethod("OnUpdate", 1);
+		m_OnDestroyFunc   = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_OnCollisionFunc = m_ScriptClass->GetMethod("OnCollision", 0);
+		m_OnGuiFunc       = m_ScriptClass->GetMethod("OnGui", 0);
 
 		// Call Entity constructor
 		{
@@ -451,7 +473,7 @@ namespace Sparky {
 		}
 	}
 
-	void Sparky::ScriptInstance::InvokeOnCreate()
+	void ScriptInstance::InvokeOnCreate()
 	{
 		if (m_OnCreateFunc)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
@@ -470,6 +492,18 @@ namespace Sparky {
 	{
 		if (m_OnDestroyFunc)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
+	}
+
+	void ScriptInstance::InvokeOnCollision()
+	{
+		if (m_OnCollisionFunc)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionFunc);
+	}
+
+	void ScriptInstance::InvokeOnGui()
+	{
+		if (m_OnGuiFunc)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnGuiFunc);
 	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)

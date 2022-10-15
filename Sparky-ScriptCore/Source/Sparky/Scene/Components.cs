@@ -240,7 +240,7 @@
 			InternalCalls.AudioSourceComponent_Play(Entity.ID);
 		}
 
-		public void Stop()	
+		public void Stop()
 		{
 			InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 		}

@@ -311,6 +311,22 @@ namespace Sparky {
 
 		#endregion
 
+		#region Gui
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_Begin(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_End();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_Text(string text);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_Button(string text);
+
+		#endregion
+
 		#region Debug
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

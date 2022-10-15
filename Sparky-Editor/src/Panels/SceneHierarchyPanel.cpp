@@ -593,6 +593,10 @@ namespace Sparky {
 				AudioEngine::StopAllAudio();
 			}
 
+			AudioSource::AudioProperties& props = component.Source->GetProperties();
+
+			if (Gui::Checkbox("Loop", &props.Loop));
+
 			Gui::EndDisabled();
 		});
 

@@ -252,7 +252,12 @@ namespace Sparky {
 			auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
 
 			if (audioSourceComponent.Source)
+			{
+				const AudioSource::AudioProperties& audioProperties = audioSourceComponent.Source->GetProperties();
+
 				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
+				out << YAML::Key << "Loop" << YAML::Value << audioProperties.Loop;
+			}
 
 			out << YAML::EndMap; // AudioSourceComponent
 		}
@@ -488,6 +493,11 @@ namespace Sparky {
 
 					if (audioSourceComponent["AudioSourcePath"])
 						asc.Source = CreateShared<AudioSource>(audioSourceComponent["AudioSourcePath"].as<std::string>());
+
+					auto& audioProperties = asc.Source->GetProperties();
+
+					if (audioSourceComponent["Loop"])
+						audioProperties.Loop = audioSourceComponent["Loop"].as<bool>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];
