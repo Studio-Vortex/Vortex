@@ -38,11 +38,11 @@ namespace Sparky {
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
-
-		Renderer::Init();
 		RenderCommand::SetCullMode(m_Properties.CullMode);
-		ScriptEngine::Init();
+
 		AudioEngine::Init();
+		Renderer::Init();
+		ScriptEngine::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -55,9 +55,9 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		AudioEngine::Shutdown();
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
+		AudioEngine::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

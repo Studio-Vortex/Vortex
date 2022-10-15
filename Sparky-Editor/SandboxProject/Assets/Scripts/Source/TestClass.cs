@@ -12,6 +12,7 @@ namespace Sandbox {
 		{
 			// Called once before the first frame
 			Debug.Error("Hello from the game code!");
+			GetComponent<AudioSource>().Play();
 		}
 
 		public override void OnUpdate(float delta)
@@ -31,16 +32,6 @@ namespace Sandbox {
 				Velocity.X = 1.0f;
 
 			transform.Translate(Velocity * Speed * delta);
-		}
-
-		public override void OnGui()
-		{
-			Gui.Begin("Window");
-
-			if (Gui.Button("Play Music"))
-				GetComponent<AudioSource>().Play();
-
-			Gui.End();
 		}
 	}
 

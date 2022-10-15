@@ -1,28 +1,38 @@
 #pragma once
 
+#include <miniaudio/miniaudio.h>
+
 namespace Sparky {
 
 	class AudioSource
 	{
 	public:
-		AudioSource(const std::string& filepath)
-			: m_Path(filepath) { }
-
+		AudioSource(const std::string& filepath);
 		~AudioSource() = default;
+
+		void Play();
+		void Stop();
+
+		bool IsPlaying();
+
+		void SetVolume(float volume);
 
 		inline const std::string& GetPath() const { return m_Path; }
 
-		struct AudioProperties
+		struct SoundProperties
 		{
+			float Volume = 1.0f;
 			bool Loop = false;
 		};
 
-		inline const AudioProperties& GetProperties() const { return m_Settings; }
-		inline AudioProperties& GetProperties() { return m_Settings; }
+		inline const SoundProperties& GetProperties() const { return m_Properties; }
+		inline SoundProperties& GetProperties() { return m_Properties; }
 
 	private:
+		bool m_Initialized = false;
 		std::string m_Path;
-		AudioProperties m_Settings;
+		ma_sound m_Sound;
+		SoundProperties m_Properties;
 	};
 
 }

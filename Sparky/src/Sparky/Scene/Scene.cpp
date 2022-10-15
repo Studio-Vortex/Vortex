@@ -1,10 +1,10 @@
 #include "sppch.h"
 #include "Scene.h"
 
-#include "Sparky/Scene/ScriptableEntity.h"
+#include "Sparky/Core/Math.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Renderer/Renderer2D.h"
-#include "Sparky/Core/Math.h"
+#include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
 #include <box2d/b2_world.h>

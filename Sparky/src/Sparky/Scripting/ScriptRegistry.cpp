@@ -7,7 +7,7 @@
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
-#include "Sparky/Audio/AudioEngine.h"
+#include "Sparky/Audio/AudioSource.h"
 
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Core/MouseCodes.h"
@@ -525,7 +525,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		AudioEngine::PlayFromAudioSource(entity.GetComponent<AudioSourceComponent>().Source);
+		entity.GetComponent<AudioSourceComponent>().Source->Play();
 	}
 
 	static void AudioSourceComponent_Stop(UUID entityUUID)
@@ -535,7 +535,7 @@ namespace Sparky {
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<AudioSourceComponent>().Source;
+		entity.GetComponent<AudioSourceComponent>().Source->Stop();
 	}
 
 #pragma endregion

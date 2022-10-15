@@ -253,7 +253,7 @@ namespace Sparky {
 
 			if (audioSourceComponent.Source)
 			{
-				const AudioSource::AudioProperties& audioProperties = audioSourceComponent.Source->GetProperties();
+				const AudioSource::SoundProperties& audioProperties = audioSourceComponent.Source->GetProperties();
 
 				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
 				out << YAML::Key << "Loop" << YAML::Value << audioProperties.Loop;

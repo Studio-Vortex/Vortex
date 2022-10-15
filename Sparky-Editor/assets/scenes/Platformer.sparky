@@ -343,13 +343,16 @@ Entities:
     TagComponent:
       Tag: Player
     TransformComponent:
-      Translation: [2.98023224e-08, 4, 0.02]
+      Translation: [2.98023224e-08, 4, 0.0199999996]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
       Scale: 1
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\Jump.wav
+      Loop: false
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: true
@@ -375,3 +378,17 @@ Entities:
         - Name: Speed
           Type: Float
           Data: 11
+  - Entity: 15336957189326596983
+    TagComponent:
+      Tag: Music
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\KeeperOfTheSevenKeys.mp3
+      Loop: false
+    ScriptComponent:
+      ClassName: Sandbox.Music
+      ScriptFields:
+        []

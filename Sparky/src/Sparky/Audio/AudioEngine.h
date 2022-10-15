@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Sparky/Audio/AudioSource.h"
+// Forward declaration
+struct ma_sound;
 
 namespace Sparky {
 
@@ -13,9 +14,17 @@ namespace Sparky {
 		static void Init();
 		static void Shutdown();
 
-		static void PlayFromAudioSource(const SharedRef<AudioSource>& audioSource);
-		static void StartAllAudio();
-		static void StopAllAudio();
+		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume);
+
+		static void PlayFromSound(ma_sound* sound);
+		static void StopSound(ma_sound* sound);
+
+		static void SetVolume(ma_sound* sound, float volume);
+
+		static bool IsPlaying(ma_sound* sound);
+		
+		static void StartEngine();
+		static void StopEngine();
 	};
 
 }

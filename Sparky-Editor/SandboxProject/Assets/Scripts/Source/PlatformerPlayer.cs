@@ -23,9 +23,12 @@ namespace Sandbox {
 
 		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
 		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
+		
 		private RigidBody2D m_Rigidbody;
 		private BoxCollider2D m_BoxCollider;
 		private SpriteRenderer m_Sprite;
+		private AudioSource m_JumpSound;
+
 		private Camera2D m_CameraEntity;
 
 		public override void OnCreate()
@@ -33,7 +36,10 @@ namespace Sandbox {
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_BoxCollider = GetComponent<BoxCollider2D>();
 			m_Sprite = GetComponent<SpriteRenderer>();
+			m_JumpSound = GetComponent<AudioSource>();
+
 			StartPosition = transform.Translation;
+
 			m_CameraEntity = FindEntityByName("Camera").As<Camera2D>();
 		}
 
@@ -88,7 +94,10 @@ namespace Sandbox {
 				m_CameraEntity.DistanceToPlayer -= 1.0f * delta;
 
 			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
+			{
+				m_JumpSound.Play();
 				Velocity.Y = 1.0f;
+			}
 
 			if (!IsGrounded)
 			{
