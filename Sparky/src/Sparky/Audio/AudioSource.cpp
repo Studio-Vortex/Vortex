@@ -12,10 +12,26 @@ namespace Sparky {
 		m_Initialized = true;
 	}
 
+    AudioSource::~AudioSource()
+    {
+		Destroy();
+    }
+
+	void AudioSource::Destroy()
+	{
+		AudioEngine::DestroySound(&m_Sound);
+	}
+
 	void AudioSource::Play()
 	{
 		if (!m_Initialized)
+		{
 			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Volume);
+			m_Initialized = true;
+		}
+
+		if (IsPlaying())
+			return;
 
 		AudioEngine::PlayFromSound(&m_Sound);
 	}

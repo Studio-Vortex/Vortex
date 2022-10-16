@@ -352,7 +352,9 @@ Entities:
       Scale: 1
     AudioSourceComponent:
       AudioSourcePath: Assets\SFX\Jump.wav
-      Loop: false
+      SoundSettings:
+        Volume: 1
+        Loop: false
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: true

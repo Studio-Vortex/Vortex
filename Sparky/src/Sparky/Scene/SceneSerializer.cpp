@@ -253,10 +253,15 @@ namespace Sparky {
 
 			if (audioSourceComponent.Source)
 			{
-				const AudioSource::SoundProperties& audioProperties = audioSourceComponent.Source->GetProperties();
+				const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
 
 				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
-				out << YAML::Key << "Loop" << YAML::Value << audioProperties.Loop;
+
+				out << YAML::Key << "SoundSettings" << YAML::Value;
+				out << YAML::BeginMap; // SoundSettings
+				out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
+				out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
+				out << YAML::EndMap; // SoundSettings
 			}
 
 			out << YAML::EndMap; // AudioSourceComponent
@@ -494,10 +499,14 @@ namespace Sparky {
 					if (audioSourceComponent["AudioSourcePath"])
 						asc.Source = CreateShared<AudioSource>(audioSourceComponent["AudioSourcePath"].as<std::string>());
 
-					auto& audioProperties = asc.Source->GetProperties();
+					auto soundProps = audioSourceComponent["SoundSettings"];
 
-					if (audioSourceComponent["Loop"])
-						audioProperties.Loop = audioSourceComponent["Loop"].as<bool>();
+					if (soundProps)
+					{
+						auto& soundProperties = asc.Source->GetProperties();
+						soundProperties.Volume = soundProps["Volume"].as<float>();
+						soundProperties.Loop = soundProps["Loop"].as<bool>();
+					}
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

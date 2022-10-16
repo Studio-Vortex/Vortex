@@ -605,7 +605,7 @@ namespace Sparky {
 
 			// Accept a Audio File from the content browser
 			if (Gui::BeginDragDropTarget())
-			{
+			{	
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
@@ -613,7 +613,13 @@ namespace Sparky {
 
 					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
 					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
+					{
+						// If there is another file playing we need to stop it
+						if (component.Source->IsPlaying())
+							component.Source->Stop();
+
 						component.Source = CreateShared<AudioSource>(audioSourcePath.string());
+					}
 					else
 						SP_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
 				}

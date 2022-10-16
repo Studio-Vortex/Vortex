@@ -3,6 +3,7 @@
 
 #include "Sparky/Core/Math.h"
 #include "Sparky/Scene/Entity.h"
+#include "Sparky/Audio/AudioEngine.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
@@ -212,6 +213,7 @@ namespace Sparky {
 		m_IsRunning = false;
 
 		ScriptEngine::OnRuntimeStop();
+		AudioEngine::OnRuntimeStop();
 
 		OnPhysics2DStop();
 	}

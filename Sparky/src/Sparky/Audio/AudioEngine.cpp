@@ -55,9 +55,16 @@ namespace Sparky {
 		ma_sound_set_volume(sound, volume);
 	}
 
+	void AudioEngine::DestroySound(ma_sound* sound)
+	{
+		if (sound != nullptr)
+			ma_sound_uninit(sound);
+	}
+
 	void AudioEngine::PlayFromSound(ma_sound* sound)
 	{
-		ma_sound_start(sound);
+		if (sound != nullptr)
+			ma_sound_start(sound);
 	}
 
 	void AudioEngine::StopSound(ma_sound* sound)
@@ -76,7 +83,12 @@ namespace Sparky {
 
 	bool AudioEngine::IsPlaying(ma_sound* sound)
 	{
-		return ma_sound_at_end(sound);
+		return ma_sound_is_playing(sound);
+	}
+
+	void AudioEngine::OnRuntimeStop()
+	{
+		
 	}
 
 	void AudioEngine::StartEngine()
