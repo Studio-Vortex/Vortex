@@ -24,6 +24,12 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCamera(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddMeshRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveMeshRenderer(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddSpriteRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -111,6 +117,28 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
+
+		#endregion
+
+		#region MeshRenderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_GetColor(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetColor(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_GetTexture(ulong entityID, out string texturePathString);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetTexture(ulong entityID, string texturePathString);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out float result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetScale(ulong entityID, float scale);
 
 		#endregion
 

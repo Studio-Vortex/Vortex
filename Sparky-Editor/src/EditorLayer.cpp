@@ -568,7 +568,7 @@ namespace Sparky {
 
 	void EditorLayer::OnLaunchRuntime()
 	{
-		FileSystem::LaunchApplication("game\\Debug\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
+		FileSystem::LaunchApplication("runtime\\Debug\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()
@@ -588,9 +588,9 @@ namespace Sparky {
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
-			float lineLength = 300.0f;
-			float gridWidth = 300.0f;
-			float gridLength = 300.0f;
+			float lineLength = 100.0f;
+			float gridWidth = 100.0f;
+			float gridLength = 100.0f;
 
 			// Render Axes
 			if (m_DrawEditorAxes)
@@ -680,15 +680,7 @@ namespace Sparky {
 				{
 					case MeshRendererComponent::MeshType::Cube:
 					{
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x + (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x - (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
-
+						Renderer::DrawCubeWireframe(transform);
 						break;
 					}
 				}

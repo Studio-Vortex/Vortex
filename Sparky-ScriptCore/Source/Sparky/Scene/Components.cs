@@ -141,6 +141,51 @@
 		}
 	}
 
+	public class MeshRenderer : Component
+	{
+		public Vector4 Color
+		{
+			get
+			{
+				InternalCalls.MeshRendererComponent_GetColor(Entity.ID, out Vector4 color);
+				return color;
+			}
+
+			set
+			{
+				InternalCalls.MeshRendererComponent_SetColor(Entity.ID, ref value);
+			}
+		}
+
+		public string Texture
+		{
+			get
+			{
+				InternalCalls.MeshRendererComponent_GetTexture(Entity.ID, out string texturePath);
+				return texturePath;
+			}
+
+			set
+			{
+				InternalCalls.MeshRendererComponent_SetTexture(Entity.ID, value);
+			}
+		}
+
+		public float Scale
+		{
+			get
+			{
+				InternalCalls.MeshRendererComponent_GetScale(Entity.ID, out float scale);
+				return scale;
+			}
+
+			set
+			{
+				InternalCalls.MeshRendererComponent_SetScale(Entity.ID, value);
+			}
+		}
+	}
+
 	public class SpriteRenderer: Component
 	{
 		public Vector4 Color

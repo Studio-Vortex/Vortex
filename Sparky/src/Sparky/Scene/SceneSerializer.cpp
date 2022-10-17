@@ -149,7 +149,7 @@ namespace Sparky {
 			case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
 		}
 
-		SP_CORE_ASSERT(false, "Unknown body type!");
+		SP_CORE_ASSERT(false, "Unknown Body Type!");
 		return {};
 	}
 
@@ -159,8 +159,27 @@ namespace Sparky {
 		if (bodyTypeString == "Dynamic")   return RigidBody2DComponent::BodyType::Dynamic;
 		if (bodyTypeString == "Kinematic") return RigidBody2DComponent::BodyType::Kinematic;
 
-		SP_CORE_ASSERT(false, "Unknown body type!");
+		SP_CORE_ASSERT(false, "Unknown Body Type!");
 		return RigidBody2DComponent::BodyType::Static;
+	}
+
+	static std::string MeshRendererMeshTypeToString(MeshRendererComponent::MeshType meshType)
+	{
+		switch (meshType)
+		{
+			case Sparky::MeshRendererComponent::MeshType::Cube: return "Cube";
+		}
+
+		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
+		return {};
+	}
+
+	static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
+	{
+		if (meshTypeString == "Cube") return MeshRendererComponent::MeshType::Cube;
+
+		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
+		return MeshRendererComponent::MeshType::Cube;
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
@@ -216,6 +235,21 @@ namespace Sparky {
 			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
 
 			out << YAML::EndMap; // CameraComponent
+		}
+
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
+
+			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+			out << YAML::Key << "MeshType" << YAML::Value << MeshRendererMeshTypeToString(meshRendererComponent.Type);
+			out << YAML::Key << "Color" << YAML::Value << meshRendererComponent.Color;
+			if (meshRendererComponent.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << meshRendererComponent.Texture->GetPath();
+			out << YAML::Key << "Scale" << YAML::Value << meshRendererComponent.Scale;
+
+			out << YAML::EndMap; // MeshRendererComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
@@ -465,6 +499,19 @@ namespace Sparky {
 
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+				}
+
+				auto meshComponent = entity["MeshRendererComponent"];
+				if (meshComponent)
+				{
+					auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
+
+					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
+					meshRendererComponent.Color = meshComponent["Color"].as<Math::vec4>();
+
+					if (meshComponent["TexturePath"])
+						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
+					meshRendererComponent.Scale = meshComponent["Scale"].as<float>();
 				}
 
 				auto spriteComponent = entity["SpriteRendererComponent"];

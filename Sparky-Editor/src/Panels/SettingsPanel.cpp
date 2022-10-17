@@ -14,16 +14,16 @@ namespace Sparky {
 
 			if (Gui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
 			{
-				if (Gui::BeginTabItem("Renderer 2D"))
+				if (Gui::BeginTabItem("Renderer"))
 				{
 					if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Settings.ClearColor)))
 						RenderCommand::SetClearColor(m_Settings.ClearColor);
-
+					
 					float lineWidth = Renderer2D::GetLineWidth();
 					if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
 						Renderer2D::SetLineWidth(lineWidth);
 
-					RendererAPI::TriangleCullMode cullMode = Renderer2D::GetCullMode();
+					RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
 					static const char* cullModes[4] = {
 						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::None),
 						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Front),
@@ -70,21 +70,21 @@ namespace Sparky {
 					Gui::EndTabItem();
 				}
 
-				if (Gui::BeginTabItem("Physics 2D"))
+				if (Gui::BeginTabItem("Physics"))
 				{
-					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
+					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
 
-					static Math::vec2 gravity = Scene::GetPhysicsWorldGravity();
-					if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity), 0.1f))
-						Scene::SetPhysicsWorldGravitty(gravity);
+					static Math::vec2 gravity = Scene::GetPhysicsWorld2DGravity();
+					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity), 0.1f))
+						Scene::SetPhysicsWorld2DGravitty(gravity);
 
-					static int32_t velocityIterations = Scene::GetPhysicsWorldVeloctiyIterations();
-					if (Gui::DragInt("Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
-						Scene::SetPhysicsWorldVelocityIterations(velocityIterations);
+					static int32_t velocityIterations = Scene::GetPhysicsWorld2DVeloctiyIterations();
+					if (Gui::DragInt("2D Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
+						Scene::SetPhysicsWorld2DVelocityIterations(velocityIterations);
 
-					static int32_t positionIterations = Scene::GetPhysicsWorldPositionIterations();
-					Gui::DragInt("Position Iterations", &positionIterations, 1.0f, 1, 100);
-					Scene::SetPhysicsWorldPositionIterations(positionIterations);
+					static int32_t positionIterations = Scene::GetPhysicsWorld2DPositionIterations();
+					Gui::DragInt("2D Position Iterations", &positionIterations, 1.0f, 1, 100);
+					Scene::SetPhysicsWorld2DPositionIterations(positionIterations);
 
 					Gui::Checkbox("Show Physics Colliders", &m_Settings.ShowColliders);
 

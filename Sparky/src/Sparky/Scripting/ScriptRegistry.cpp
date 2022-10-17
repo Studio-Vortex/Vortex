@@ -86,6 +86,26 @@ namespace Sparky {
 		entity.RemoveComponent<CameraComponent>();
 	}
 
+	static void Entity_AddMeshRenderer(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<MeshRendererComponent>();
+	}
+
+	static void Entity_RemoveMeshRenderer(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<MeshRendererComponent>();
+	}
+
 	static void Entity_AddSpriteRenderer(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -378,6 +398,76 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
+	}
+
+#pragma endregion
+
+#pragma region Mesh Renderer Component
+
+	static void MeshRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outColor = entity.GetComponent<MeshRendererComponent>().Color;
+	}
+
+	static void MeshRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Color = *color;
+	}
+
+	static void MeshRendererComponent_GetScale(UUID entityUUID, float outScale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		outScale = entity.GetComponent<MeshRendererComponent>().Scale;
+	}
+
+	static void MeshRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const std::string& texturePath = entity.GetComponent<MeshRendererComponent>().Texture->GetPath();
+
+		outTexturePathString = mono_string_new_wrapper(texturePath.c_str());
+	}
+
+	static void MeshRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
+	{
+		char* texturePathCStr = mono_string_to_utf8(texturePathString);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
+
+		mono_free(texturePathCStr);
+	}
+
+	static void MeshRendererComponent_SetScale(UUID entityUUID, float scale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Scale = scale;
 	}
 
 #pragma endregion
@@ -1167,20 +1257,31 @@ namespace Sparky {
 #pragma region Entity
 
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
+
+		SP_ADD_INTERNAL_CALL(Entity_AddMeshRenderer);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveMeshRenderer);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddSpriteRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveSpriteRenderer);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleRenderer);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddAudioSource);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioSource);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody2D);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddBoxCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider2D);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleCollider2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleCollider2D);
+
 		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
 		SP_ADD_INTERNAL_CALL(Entity_GetName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
@@ -1206,6 +1307,17 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+
+#pragma endregion
+
+#pragma region Mesh Renderer Component
+
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetColor);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetTexture);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetTexture);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
 
 #pragma endregion
 

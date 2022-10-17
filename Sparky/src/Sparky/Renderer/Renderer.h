@@ -25,9 +25,11 @@ namespace Sparky {
 		static void EndScene();
 		static void Flush();
 
-		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform);
 
 		static void DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+
+		static void DrawCubeWireframe(const TransformComponent& transform);
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }

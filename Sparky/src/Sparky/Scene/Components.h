@@ -72,7 +72,7 @@ namespace Sparky {
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
 		MeshRendererComponent(const Math::vec4& color)
-			: Color(color) { }
+			: Color(color), Type(MeshType::Cube) { }
 	};
 
 	struct SpriteRendererComponent

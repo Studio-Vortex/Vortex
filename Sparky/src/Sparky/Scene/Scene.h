@@ -50,14 +50,14 @@ namespace Sparky {
 
 		b2World* GetPhysicsWorld() { return m_PhysicsWorld; }
 
-		static int32_t GetPhysicsWorldVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }
-		static void SetPhysicsWorldVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorldVeloctityIterations = veloctiyIterations; }
+		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }
+		static void SetPhysicsWorld2DVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorldVeloctityIterations = veloctiyIterations; }
 
-		static int32_t GetPhysicsWorldPositionIterations() { return s_PhysicsWorldPositionIterations; }
-		static void SetPhysicsWorldPositionIterations(int32_t positionIterations) { s_PhysicsWorldPositionIterations = positionIterations; }
+		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorldPositionIterations; }
+		static void SetPhysicsWorld2DPositionIterations(int32_t positionIterations) { s_PhysicsWorldPositionIterations = positionIterations; }
 		
-		static Math::vec2 GetPhysicsWorldGravity() { return s_PhysicsWorldGravity; }
-		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorldGravity = gravity; }
+		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorldGravity; }
+		static void SetPhysicsWorld2DGravitty(const Math::vec2& gravity) { s_PhysicsWorldGravity = gravity; }
 
 		Entity DuplicateEntity(Entity entity);
 

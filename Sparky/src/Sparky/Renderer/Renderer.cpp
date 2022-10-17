@@ -280,14 +280,23 @@ namespace Sparky {
 			s_Data.CubeVertexBufferPtr++;
 		}
 
-		s_Data.CubeIndexCount += INDICES_PER_QUAD;
+		s_Data.CubeIndexCount += INDICES_PER_CUBE;
 
 #if SP_RENDERER_STATISTICS
 		s_Data.RendererStatistics.QuadCount += 6;
 #endif // SP_RENDERER_STATISTICS
 	}
 
-	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform)
+	{
+		SP_PROFILE_FUNCTION();
+
+		shader->Enable();
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+	}
+
+	void Renderer::DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -342,17 +351,19 @@ namespace Sparky {
 		};
 
 		AddToCubeVertexBuffer(transform, meshRenderer.Color, textureCoords, textureIndex, meshRenderer.Scale, entityID);
-
-		shader->Enable();
-		vertexArray->Bind();
-		RenderCommand::DrawIndexed(vertexArray);
 	}
 
-	void Renderer::DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	void Renderer::DrawCubeWireframe(const TransformComponent& transform)
 	{
-		SP_PROFILE_FUNCTION();
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x + (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ transform.Scale.z, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x - (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ transform.Scale.z, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
 
-		Submit(s_Data.CubeShader, s_Data.CubeVA, transform, meshRenderer, entityID);
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ transform.Scale.x, transform.Scale.z, transform.Scale.z, }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ transform.Scale.x, transform.Scale.z, transform.Scale.z, }), ColorToVec4(Color::Orange));
+
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
+
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

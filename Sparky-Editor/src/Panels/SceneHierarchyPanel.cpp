@@ -64,7 +64,20 @@ namespace Sparky {
 					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
 				Gui::Separator();
 
-				if (Gui::BeginMenu("Sprites"))
+				if (Gui::BeginMenu("Create 3D"))
+				{
+					if (Gui::MenuItem("Cube"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Cube");
+						m_SelectedEntity.AddComponent<MeshRendererComponent>();
+					}
+
+					Gui::EndMenu();
+				}
+
+				Gui::Separator();
+
+				if (Gui::BeginMenu("Create 2D"))
 				{
 					if (Gui::MenuItem("Quad"))
 					{
@@ -108,7 +121,7 @@ namespace Sparky {
 
 				if (Gui::BeginMenu("Physics"))
 				{
-					if (Gui::MenuItem("Static Box Collider"))
+					if (Gui::MenuItem("Static Box Collider 2D"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
 						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
@@ -118,7 +131,7 @@ namespace Sparky {
 
 					Gui::Separator();
 
-					if (Gui::MenuItem("Static Circle Collider"))
+					if (Gui::MenuItem("Static Circle Collider 2D"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
 						m_SelectedEntity.AddComponent<CircleRendererComponent>();
@@ -128,7 +141,7 @@ namespace Sparky {
 
 					Gui::Separator();
 
-					if (Gui::MenuItem("Dynamic Box Collider"))
+					if (Gui::MenuItem("Dynamic Box Collider 2D"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
 						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
@@ -139,7 +152,7 @@ namespace Sparky {
 
 					Gui::Separator();
 
-					if (Gui::MenuItem("Dynamic Circle Collider"))
+					if (Gui::MenuItem("Dynamic Circle Collider 2D"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
 						m_SelectedEntity.AddComponent<CircleRendererComponent>();
