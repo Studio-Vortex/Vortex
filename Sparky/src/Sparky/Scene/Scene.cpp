@@ -256,8 +256,8 @@ namespace Sparky {
 		OnPhysics2DUpdate(delta);
 
 		// Render Primitives
-		Camera* mainCamera = nullptr;
-		Math::mat4 cameraTransform;
+		SceneCamera* primarySceneCamera = nullptr;
+		Math::mat4 primarySceneCameraTransform;
 
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
@@ -268,65 +268,16 @@ namespace Sparky {
 
 				if (cameraComponent.Primary)
 				{
-					mainCamera = &cameraComponent.Camera;
-					cameraTransform = transformComponent.GetTransform();
+					primarySceneCamera = &cameraComponent.Camera;
+					primarySceneCameraTransform = transformComponent.GetTransform();
 					break;
 				}
 			}
 		}
 
 		// If there is a primary camera in the scene we can render from the camera's point of view
-		if (mainCamera != nullptr)
-		{
-			// Render 2D Primitives
-			{
-				Renderer2D::BeginScene(*mainCamera, cameraTransform);
-
-				/// Render Sprites
-				{
-					auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-					for (auto entity : group)
-					{
-						auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-						Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
-					}
-				}
-
-				/// Render Circles
-				{
-					auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-					for (auto entity : view)
-					{
-						auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
-
-						Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
-					}
-				}
-
-				Renderer2D::EndScene();
-			}
-			
-			// Render 3D Primitives
-			{
-				Renderer::BeginScene(*mainCamera, cameraTransform);
-
-				/// Render Cubes
-				{
-					auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
-
-					for (auto& entity : view)
-					{
-						auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
-
-						if (meshRendererComponent.Type == MeshRendererComponent::MeshType::Cube)
-							Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
-					}
-				}
-
-				Renderer::EndScene();
-			}
-		}
+		if (primarySceneCamera != nullptr)
+			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, primarySceneCameraTransform, m_Registry);
 
 		// TODO: Update Audio here
 	}
@@ -336,13 +287,13 @@ namespace Sparky {
 		OnPhysics2DUpdate(delta);
 
 		// Render
-		RenderSceneFromEditorCamera(camera);
+		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
 		// Render
-		RenderSceneFromEditorCamera(camera);
+		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
 	}
 
     void Scene::OnUpdateEntityGui()
@@ -569,60 +520,6 @@ namespace Sparky {
 		delete m_PhysicsWorld;
 		m_PhysicsWorld = nullptr;
 		m_PhysicsBodyDataMap.clear();
-	}
-
-	void Scene::RenderSceneFromEditorCamera(EditorCamera& camera)
-	{
-		// Render 2D
-		{
-			Renderer2D::BeginScene(camera);
-
-			/// Render Sprites
-			{
-				auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-
-				for (auto entity : view)
-				{
-					auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
-
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
-				}
-			}
-
-			/// Render Circles
-			{
-				auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
-
-				for (auto entity : group)
-				{
-					auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
-
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
-				}
-			}
-
-			Renderer2D::EndScene();
-		}
-
-		// Render 3D
-		{
-			Renderer::BeginScene(camera);
-
-			/// Render Cubes
-			{
-				auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
-
-				for (auto& entity : view)
-				{
-					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
-
-					if (meshRendererComponent.Type == MeshRendererComponent::MeshType::Cube)
-						Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
-				}
-			}
-
-			Renderer::EndScene();
-		}
 	}
 
 	template <typename T>

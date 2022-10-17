@@ -4,6 +4,7 @@
 #include "Sparky/Core/TimeStep.h"
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Renderer/EditorCamera.h"
+#include "Sparky/Scene/SceneRenderer.h"
 
 #include <entt/entt.hpp>
 
@@ -82,10 +83,9 @@ namespace Sparky {
 		void OnPhysics2DUpdate(TimeStep delta);
 		void OnPhysics2DStop();
 
-		void RenderSceneFromEditorCamera(EditorCamera& camera);
-
 	private:
 		entt::registry m_Registry;
+		SceneRenderer m_SceneRenderer;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		bool m_IsRunning = false;
