@@ -334,12 +334,21 @@ namespace Sparky {
 					m_ConsolePanel.ShowPanel();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Performance"))
-					m_PerformancePanel.ShowPanel();
-				Gui::Separator();
-
 				if (Gui::MenuItem("Shader Editor"))
 					m_ShaderEditorPanel.ShowPanel();
+				Gui::Separator();
+
+				if (Gui::BeginMenu("Debug"))
+				{
+					if (Gui::MenuItem("Performance"))
+						m_PerformancePanel.ShowPanel();
+					Gui::Separator();
+
+					if (Gui::MenuItem("Script Registry"))
+						m_ScriptRegistryPanel.ShowPanel();
+
+					Gui::EndMenu();
+				}
 				Gui::Separator();
 
 				if (Gui::MenuItem("Settings"))
@@ -364,6 +373,7 @@ namespace Sparky {
 		{
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
+			m_ScriptRegistryPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();

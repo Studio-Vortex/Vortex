@@ -150,6 +150,13 @@ namespace Sparky {
 		friend struct ScriptFieldInstance;
 	};
 
+	struct MonoAssemblyTypeInfo
+	{
+		const char* Namespace;
+		const char* Name;
+		uint32_t FieldCount;
+	};
+
 	// Forward declaration
 	class TimeStep;
 
@@ -187,6 +194,8 @@ namespace Sparky {
 		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
 
 		static MonoObject* GetManagedInstance(UUID uuid);
+
+		static std::vector<MonoAssemblyTypeInfo> GetCoreAssemblyTypeInfo();
 
 	private:
 		static void InitMono();

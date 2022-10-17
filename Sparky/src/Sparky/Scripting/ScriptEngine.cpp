@@ -91,7 +91,7 @@ namespace Sparky {
 			return assembly;
 		}
 
-		void PrintAssemblyTypes(MonoAssembly* assembly)
+		static void PrintAssemblyTypes(MonoAssembly* assembly)
 		{
 			MonoImage* image = mono_assembly_get_image(assembly);
 			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
@@ -108,7 +108,36 @@ namespace Sparky {
 			}
 		}
 
-		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
+		static std::vector<MonoAssemblyTypeInfo> GetAssemblyTypeInfo(MonoAssembly* assembly)
+		{
+			std::vector<MonoAssemblyTypeInfo> result;
+
+			MonoImage* image = mono_assembly_get_image(assembly);
+			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+			for (int32_t i = 0; i < numTypes; i++)
+			{
+				uint32_t cols[MONO_TYPEDEF_SIZE];
+				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+				MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+
+				if (name[0] == '<' || !monoClass)
+					continue;
+
+				int fieldCount = mono_class_num_fields(monoClass);
+
+				result.emplace_back(nameSpace, name, fieldCount);
+			}
+
+			return result;
+		}
+
+		static ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
 		{
 			std::string typeName = mono_type_get_name(monoType);
 
@@ -359,6 +388,11 @@ namespace Sparky {
 		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Entity was not found in Entity Instance Map!");
 
 		return it->second->GetManagedObject();
+	}
+
+	std::vector<MonoAssemblyTypeInfo> Sparky::ScriptEngine::GetCoreAssemblyTypeInfo()
+	{
+		return Utils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
 
 	Scene* ScriptEngine::GetContextScene()
