@@ -11,6 +11,7 @@ namespace Sparky {
 	struct CubeVertex
 	{
 		Math::vec3 Position;
+		Math::vec3 Normal;
 		Math::vec4 Color;
 		Math::vec2 TexCoord;
 		float TexIndex;
@@ -59,6 +60,7 @@ namespace Sparky {
 		s_Data.CubeVB = VertexBuffer::Create(RendererInternalData::MaxVertices * sizeof(CubeVertex));
 		s_Data.CubeVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal"   },
 			{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
@@ -267,11 +269,12 @@ namespace Sparky {
 		}
 	}
 
-	void Renderer::AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
+	void Renderer::AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec3* normals, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
 	{
 		for (size_t i = 0; i < 24; i++)
 		{
 			s_Data.CubeVertexBufferPtr->Position = transform * s_Data.CubeVertexPositions[i];
+			s_Data.CubeVertexBufferPtr->Normal = normals[i];
 			s_Data.CubeVertexBufferPtr->Color = color;
 			s_Data.CubeVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.CubeVertexBufferPtr->TexIndex = textureIndex;
@@ -350,7 +353,27 @@ namespace Sparky {
 			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Bottom face
 		};
 
-		AddToCubeVertexBuffer(transform, meshRenderer.Color, textureCoords, textureIndex, meshRenderer.Scale, entityID);
+		Math::vec3 normals[24] = {
+			{ 0.0f,  0.0f,  1.0f },  { 0.0f,  0.0f,  1.0f },
+			{ 0.0f,  0.0f,  1.0f },  { 0.0f,  0.0f,  1.0f },          // Front face
+	
+			{ 0.0f,  0.0f, -1.0f },  { 0.0f,  0.0f, -1.0f },
+			{ 0.0f,  0.0f, -1.0f },  { 0.0f,  0.0f, -1.0f },          // Back face
+	
+			{ -1.0f,  0.0f,  0.0f }, { -1.0f,  0.0f,  0.0f },
+			{ -1.0f,  0.0f,  0.0f }, { -1.0f,  0.0f,  0.0f },         // Left face
+	
+			{ 1.0f,  0.0f,  0.0f },  { 1.0f,  0.0f,  0.0f },
+			{ 1.0f,  0.0f,  0.0f },  { 1.0f,  0.0f,  0.0f },          // Right face
+	
+			{ 0.0f,  1.0f,  0.0f },  { 0.0f,  1.0f,  0.0f },
+			{ 0.0f,  1.0f,  0.0f },  { 0.0f,  1.0f,  0.0f },          // Top face
+	
+			{ 0.0f, -1.0f,  0.0f },  { 0.0f, -1.0f,  0.0f },
+			{ 0.0f, -1.0f,  0.0f },  { 0.0f, -1.0f,  0.0f },          // Bottom face
+		};
+
+		AddToCubeVertexBuffer(transform, normals, meshRenderer.Color, textureCoords, textureIndex, meshRenderer.Scale, entityID);
 	}
 
 	void Renderer::DrawCubeWireframe(const TransformComponent& transform)

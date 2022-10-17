@@ -47,7 +47,7 @@ namespace Sparky {
 		static void StartBatch();
 		static void NextBatch();
 
-		static void AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID);
+		static void AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec3* normals, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID);
 	};
 
 }

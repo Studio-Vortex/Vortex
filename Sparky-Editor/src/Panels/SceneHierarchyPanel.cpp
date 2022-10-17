@@ -432,43 +432,16 @@ namespace Sparky {
 		if (Gui::BeginPopup("AddComponent"))
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
-
-			if (Gui::BeginMenu("Rendering"))
-			{
-				DisplayAddComponentPopup<CameraComponent>("Camera");
-				DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
-				DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
-				DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer", true);
-
-				Gui::EndMenu();
-			}
-			Gui::Separator();
-
-			if (Gui::BeginMenu("Audio"))
-			{
-				DisplayAddComponentPopup<AudioSourceComponent>("Audio Source", true);
-
-				Gui::EndMenu();
-			}
-			Gui::Separator();
-
-			if (Gui::BeginMenu("Physics"))
-			{
-				DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
-				DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
-				DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D", true);
-
-				Gui::EndMenu();
-			}
-			Gui::Separator();
-
-			if (Gui::BeginMenu("Scripts"))
-			{
-				DisplayAddComponentPopup<ScriptComponent>("C# Script");
-				DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true);
-
-				Gui::EndMenu();
-			}
+			DisplayAddComponentPopup<CameraComponent>("Camera");
+			DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
+			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
+			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
+			DisplayAddComponentPopup<AudioSourceComponent>("Audio Source");
+			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
+			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
+			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
+			DisplayAddComponentPopup<ScriptComponent>("C# Script");
+			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true);
 
 			Gui::EndPopup();
 		}

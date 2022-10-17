@@ -27,7 +27,7 @@ namespace Sparky {
 				Gui::TableHeadersRow();
 
 				Gui::TableNextColumn();
-				for (auto& typeInfo : coreAssemblyTypeInfo)
+				for (const auto& typeInfo : coreAssemblyTypeInfo)
 					Gui::Text("%s.%s", typeInfo.Namespace, typeInfo.Name);
 
 				Gui::TableNextColumn();

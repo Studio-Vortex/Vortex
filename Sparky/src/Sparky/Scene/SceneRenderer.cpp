@@ -15,7 +15,7 @@ namespace Sparky {
 			/// Render Sprites
 			{
 				auto group = sceneRegistry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-				for (auto entity : group)
+				for (const auto entity : group)
 				{
 					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
@@ -26,7 +26,7 @@ namespace Sparky {
 			/// Render Circles
 			{
 				auto view = sceneRegistry.view<TransformComponent, CircleRendererComponent>();
-				for (auto entity : view)
+				for (const auto entity : view)
 				{
 					auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 
@@ -45,7 +45,7 @@ namespace Sparky {
 			{
 				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
 
-				for (auto& entity : view)
+				for (const auto entity : view)
 				{
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
@@ -68,7 +68,7 @@ namespace Sparky {
 			{
 				auto view = sceneRegistry.view<TransformComponent, SpriteRendererComponent>();
 
-				for (auto entity : view)
+				for (const auto entity : view)
 				{
 					auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
@@ -80,7 +80,7 @@ namespace Sparky {
 			{
 				auto group = sceneRegistry.group<TransformComponent>(entt::get<CircleRendererComponent>);
 
-				for (auto entity : group)
+				for (const auto entity : group)
 				{
 					auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
 
@@ -99,7 +99,7 @@ namespace Sparky {
 			{
 				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
 
-				for (auto& entity : view)
+				for (const auto entity : view)
 				{
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
