@@ -516,7 +516,9 @@ namespace Sparky {
 			}
 		});
 
-		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [](auto& component)
+		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
+
+		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
 			const char* meshTypes[] = { "Cube" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
@@ -541,15 +543,15 @@ namespace Sparky {
 
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
 
+			auto textureSize = ImVec2{ 64, 64 };
+
+			Gui::Text("Texture");
+			Gui::SameLine();
+			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
 			if (component.Texture)
 			{
-				Gui::Text("Texture");
-				Gui::SameLine();
-
-				auto textureSize = ImVec2{ 64, 64 };
-
 				ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
-				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
 				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 					component.Texture = nullptr;
@@ -562,7 +564,8 @@ namespace Sparky {
 			}
 			else
 			{
-				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+				// Show the default checkerboard texture
+				if (Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }))
 					component.Texture = nullptr;
 			}
 
@@ -593,19 +596,19 @@ namespace Sparky {
 			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
 		});
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
 		{
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
 
+			auto textureSize = ImVec2{ 64, 64 };
+
+			Gui::Text("Texture");
+			Gui::SameLine();
+			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
 			if (component.Texture)
 			{
-				Gui::Text("Texture");
-				Gui::SameLine();
-
-				auto textureSize = ImVec2{ 64, 64 };
-
 				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
-				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
 				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 					component.Texture = nullptr;
@@ -618,7 +621,8 @@ namespace Sparky {
 			}
 			else
 			{
-				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+				// Show the default checkerboard texture
+				if (Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }))
 					component.Texture = nullptr;
 			}
 
@@ -681,6 +685,8 @@ namespace Sparky {
 						// If there is another file playing we need to stop it
 						if (component.Source->IsPlaying())
 							component.Source->Stop();
+						else
+							component.Source->Destroy();
 
 						component.Source = CreateShared<AudioSource>(audioSourcePath.string());
 					}

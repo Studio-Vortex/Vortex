@@ -946,6 +946,7 @@ namespace Sparky {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
+		// We need to destroy the sounds loaded from the last scene here
 		AudioEngine::DestroyLoadedSounds();
 
 		if (m_SceneState != SceneState::Edit)

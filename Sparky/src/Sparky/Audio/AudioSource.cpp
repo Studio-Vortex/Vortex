@@ -35,6 +35,12 @@ namespace Sparky {
 		}
 	}
 
+	void AudioSource::Destroy()
+	{
+		AudioEngine::DestroySound(&m_Sound);
+		AudioEngine::RemoveLoadedSound(&m_Sound);
+	}
+
 	bool AudioSource::IsPlaying()
 	{
 		return AudioEngine::IsPlaying(&m_Sound);

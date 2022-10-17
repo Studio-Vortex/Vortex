@@ -13,6 +13,8 @@ namespace Sparky {
 		void Play();
 		void Stop();
 
+		void Destroy();
+
 		bool IsPlaying();
 
 		void SetVolume(float volume);

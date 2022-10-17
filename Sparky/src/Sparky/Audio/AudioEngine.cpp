@@ -65,6 +65,11 @@ namespace Sparky {
 			ma_sound_uninit(sound);
 	}
 
+	void AudioEngine::RemoveLoadedSound(ma_sound* sound)
+	{
+		std::remove(s_Data.LoadedSounds.begin(), s_Data.LoadedSounds.end(), sound);
+	}
+
 	void AudioEngine::DestroyLoadedSounds()
 	{
 		for (auto& sound : s_Data.LoadedSounds)
