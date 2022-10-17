@@ -47,13 +47,6 @@ namespace Sparky {
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 		RenderCommand::SetClearColor(m_EditorClearColor);
-
-		m_Skybox.Textures[0] = Texture2D::Create("Resources/Skybox/back.jpg", false);
-		m_Skybox.Textures[1] = Texture2D::Create("Resources/Skybox/bottom.jpg", false);
-		m_Skybox.Textures[2] = Texture2D::Create("Resources/Skybox/front.jpg");
-		m_Skybox.Textures[3] = Texture2D::Create("Resources/Skybox/left.jpg");
-		m_Skybox.Textures[4] = Texture2D::Create("Resources/Skybox/right.jpg");
-		m_Skybox.Textures[5] = Texture2D::Create("Resources/Skybox/top.jpg");
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -74,6 +67,7 @@ namespace Sparky {
 		}
 
 		// Render
+		Renderer::ResetStats();
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
 		RenderCommand::Clear();
@@ -415,6 +409,9 @@ namespace Sparky {
 					{
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
+
+						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
+							m_HoveredEntity.GetComponent<MeshRendererComponent>().Texture = texture;
 					}
 					else
 						SP_WARN("Could not load texture {}", texturePath.filename().string());
@@ -627,31 +624,6 @@ namespace Sparky {
 				Renderer2D::DrawLine({ -lineLength, 0, z }, { lineLength, 0, z }, gridColor);
 			}
 		}
-
-		if (m_DrawEditorCubemap)
-		{
-			const float cubemapSize = 600.0f;
-			Math::vec3 position;
-
-			// Render Default Editor Skybox
-			position = { 0.0f, 0.0f, cubemapSize / 2.0f };
-			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[0], 1.0f);
-
-			position = { 0.0f, -cubemapSize / 2.0f, 0.0f };
-			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[1], 1.0f);
-
-			position = { 0.0f, 0.0f, -cubemapSize / 2.0f };
-			Renderer2D::DrawQuad(position, { cubemapSize, cubemapSize }, m_Skybox.Textures[2], 1.0f);
-
-			position = { -cubemapSize / 2.0f, 0.0f, 0.0f };
-			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[3], 1.0f);
-
-			position = { cubemapSize / 2.0f, 0.0f, 0.0f };
-			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Rotate(Math::Deg2Rad(180.0f), { 0.0f, 0.0f, 1.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[4], 1.0f);
-
-			position = { 0.0f, cubemapSize / 2.0f, 0.0f };
-			Renderer2D::DrawQuad(Math::Translate(position) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ cubemapSize, cubemapSize, 1.0f }), m_Skybox.Textures[5], 1.0f);
-		}
 		
 		if (m_ShowPhysicsColliders)
 		{
@@ -700,8 +672,32 @@ namespace Sparky {
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity()) {
 			const auto& transform = selectedEntity.GetComponent<TransformComponent>();
 
-			//Orange
-			Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Orange));
+			if (selectedEntity.HasComponent<MeshRendererComponent>())
+			{
+				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
+
+				switch (meshRenderer.Type)
+				{
+					case MeshRendererComponent::MeshType::Cube:
+					{
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x + (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x - (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+						Renderer2D::DrawRect(Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }) * Math::Scale(transform.Scale), ColorToVec4(Color::Orange));
+
+						break;
+					}
+				}
+			}
+			else
+			{
+				//Orange
+				Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Orange));
+			}
 		}
 
 		Renderer2D::EndScene();

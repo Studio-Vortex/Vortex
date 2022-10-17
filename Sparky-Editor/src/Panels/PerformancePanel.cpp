@@ -12,17 +12,36 @@ namespace Sparky {
 		{
 			Gui::Begin("Performance", &s_ShowPanel);
 
-			auto stats = Renderer2D::GetStats();
-			if (Gui::TreeNodeEx("Renderer 2D Statistics"))
+			// Renderer Stats
 			{
-				Gui::Text("Draw Calls: %i", stats.DrawCalls);
-				Gui::Text("Quads:      %i", stats.QuadCount);
-				Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-				Gui::Text("Lines:      %i", stats.LineCount);
-				Gui::Text("Vertices:   %i", stats.GetVertexCount());
-				Gui::Text("Indices:    %i", stats.GetIndexCount());
+				auto stats = Renderer::GetStats();
+				if (Gui::TreeNodeEx("Renderer Statistics"))
+				{
+					Gui::Text("Draw Calls: %i", stats.DrawCalls);
+					Gui::Text("Quads:      %i", stats.QuadCount);
+					Gui::Text("Triangles:  %i", stats.GetTriangleCount());
+					Gui::Text("Lines:      %i", stats.LineCount);
+					Gui::Text("Vertices:   %i", stats.GetVertexCount());
+					Gui::Text("Indices:    %i", stats.GetIndexCount());
 
-				Gui::TreePop();
+					Gui::TreePop();
+				}
+			}
+
+			// Renderer2D Stats
+			{
+				auto stats = Renderer2D::GetStats();
+				if (Gui::TreeNodeEx("Renderer 2D Statistics"))
+				{
+					Gui::Text("Draw Calls: %i", stats.DrawCalls);
+					Gui::Text("Quads:      %i", stats.QuadCount);
+					Gui::Text("Triangles:  %i", stats.GetTriangleCount());
+					Gui::Text("Lines:      %i", stats.LineCount);
+					Gui::Text("Vertices:   %i", stats.GetVertexCount());
+					Gui::Text("Indices:    %i", stats.GetIndexCount());
+
+					Gui::TreePop();
+				}
 			}
 
 			if (Gui::TreeNodeEx("Framerate"))

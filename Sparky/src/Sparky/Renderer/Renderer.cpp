@@ -291,8 +291,35 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		constexpr float textureIndex = 0.0f; // Our White Texture
-		constexpr float textureScale = 1.0f;
+		if (s_Data.CubeIndexCount >= RendererInternalData::MaxIndices)
+			NextBatch();
+
+		float textureIndex = 0.0f; // Our White Texture
+
+		SharedRef<Texture2D> texture = meshRenderer.Texture;
+
+		if (texture)
+		{
+			// Find the texture ID for the given texture so we can give it to the vertex descriptions
+			for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
+			{
+				if (*s_Data.TextureSlots[i].get() == *texture.get())
+				{
+					textureIndex = (float)i;
+					break;
+				}
+			}
+
+			if (textureIndex == 0.0f)
+			{
+				if (s_Data.TextureSlotIndex >= RendererInternalData::MaxTextureSlots)
+					NextBatch();
+
+				textureIndex = (float)s_Data.TextureSlotIndex;
+				s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+				s_Data.TextureSlotIndex++;
+			}
+		}
 
 		Math::vec2 textureCoords[24] = {
 			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
@@ -314,7 +341,7 @@ namespace Sparky {
 			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Bottom face
 		};
 
-		AddToCubeVertexBuffer(transform, meshRenderer.Color, textureCoords, textureIndex, textureScale, entityID);
+		AddToCubeVertexBuffer(transform, meshRenderer.Color, textureCoords, textureIndex, meshRenderer.Scale, entityID);
 
 		shader->Enable();
 		vertexArray->Bind();

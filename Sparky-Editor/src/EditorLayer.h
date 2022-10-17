@@ -108,8 +108,6 @@ namespace Sparky {
 		
 		// Editor resources
 
-		Skybox m_Skybox;
-
 		SharedRef<Texture2D> m_PlayIcon;
 		SharedRef<Texture2D> m_StopIcon;
 		SharedRef<Texture2D> m_SimulateIcon;
