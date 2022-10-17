@@ -20,21 +20,22 @@ namespace Sparky {
 			Gui::Text("Core Assembly Classes: %u", (uint32_t)coreAssemblyTypeInfo.size());
 			Gui::PopFont();
 
-			Gui::BeginTable("Registry", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+			if (Gui::BeginTable("Registry", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+			{
+				Gui::TableSetupColumn("Registered Class Name");
+				Gui::TableSetupColumn("Field Count");
+				Gui::TableHeadersRow();
 
-			Gui::TableSetupColumn("Registered Class Name");
-			Gui::TableSetupColumn("Field Count");
-			Gui::TableHeadersRow();
+				Gui::TableNextColumn();
+				for (auto& typeInfo : coreAssemblyTypeInfo)
+					Gui::Text("%s.%s", typeInfo.Namespace, typeInfo.Name);
 
-			Gui::TableNextColumn();
-			for (auto& typeInfo : coreAssemblyTypeInfo)
-				Gui::Text("%s.%s", typeInfo.Namespace, typeInfo.Name);
+				Gui::TableNextColumn();
+				for (const auto& typeInfo : coreAssemblyTypeInfo)
+					Gui::Text("%u", typeInfo.FieldCount);
 
-			Gui::TableNextColumn();
-			for (const auto& typeInfo : coreAssemblyTypeInfo)
-				Gui::Text("%u", typeInfo.FieldCount);
-
-			Gui::EndTable();
+				Gui::EndTable();
+			}
 
 			Gui::End();
 		}
