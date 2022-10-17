@@ -87,17 +87,17 @@ void ExampleLayer::OnUpdate(Sparky::TimeStep delta)
 		{
 			Math::vec3 position((float)x * 0.11f, (float)y * 0.11f, 0.0f);
 			Math::mat4 transform = Math::Translate(position) * scale;
-			Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
+			//Sparky::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 		}
 	}
 
 	auto textureShader = m_ShaderLibrary.Get("Texture");
 
 	m_Texture->Bind();
-	Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
+	//Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
 
 	m_LinuxLogo->Bind();
-	Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
+	//Sparky::Renderer::Submit(textureShader, m_SquareVA, Math::Scale(Math::vec3(1.5f)));
 
 	///Triangle
 	// Sparky::Renderer::Submit(m_TriangleShader, m_TriangleVA);

@@ -8,6 +8,8 @@
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Shader.h"
 
+#include "Sparky/Scene/Components.h"
+
 namespace Sparky {
 
 	class SPARKY_API Renderer
@@ -21,11 +23,11 @@ namespace Sparky {
 		static void BeginScene(const Camera& camera, const Math::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
-
-		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform = Math::Identity());
 		static void Flush();
 
-		static void DrawCube(const Math::mat4& transform, const Math::vec4& color, int entityID = -1);
+		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+
+		static void DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }
@@ -43,7 +45,7 @@ namespace Sparky {
 		static void StartBatch();
 		static void NextBatch();
 
-		static void AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2& normal, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID = -1);
+		static void AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID);
 	};
 
 }

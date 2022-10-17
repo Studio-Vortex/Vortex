@@ -395,7 +395,7 @@ namespace Sparky
 		constexpr float textureIndex = 0.0f; // Our White Texture
 		constexpr float textureScale = 1.0f;
 
-		Math::vec2 textureCoords[36] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		AddToQuadVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
 	}

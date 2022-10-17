@@ -14,7 +14,7 @@ namespace Sparky {
 #endif // SP_DEBUG
 
 	static constexpr uint32_t VERTICES_PER_CUBE = 24;
-	static constexpr uint32_t INDICES_PER_CUBE = 12;
+	static constexpr uint32_t INDICES_PER_CUBE = 36;
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;

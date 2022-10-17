@@ -4,6 +4,7 @@
 #include "Sparky/Core/Math.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Audio/AudioEngine.h"
+#include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
@@ -254,7 +255,7 @@ namespace Sparky {
 
 		OnPhysics2DUpdate(delta);
 
-		// Render 2D Primitives
+		// Render Primitives
 		Camera* mainCamera = nullptr;
 		Math::mat4 cameraTransform;
 
@@ -274,33 +275,57 @@ namespace Sparky {
 			}
 		}
 
+		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (mainCamera != nullptr)
 		{
-			Renderer2D::BeginScene(*mainCamera, cameraTransform);
-
-			/// Render Sprites
+			// Render 2D Primitives
 			{
-				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-				for (auto entity : group)
+				Renderer2D::BeginScene(*mainCamera, cameraTransform);
+
+				/// Render Sprites
 				{
-					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+					for (auto entity : group)
+					{
+						auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+						Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+					}
 				}
-			}
 
-			/// Render Circles
+				/// Render Circles
+				{
+					auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+					for (auto entity : view)
+					{
+						auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+
+						Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+					}
+				}
+
+				Renderer2D::EndScene();
+			}
+			
+			// Render 3D Primitives
 			{
-				auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-				for (auto entity : view)
+				Renderer::BeginScene(*mainCamera, cameraTransform);
+
+				/// Render Cubes
 				{
-					auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+					auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
 
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+					for (auto& entity : view)
+					{
+						auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
+
+						if (meshRendererComponent.Type == MeshRendererComponent::MeshType::Cube)
+							Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+					}
 				}
-			}
 
-			Renderer2D::EndScene();
+				Renderer::EndScene();
+			}
 		}
 
 		// TODO: Update Audio here
@@ -548,33 +573,56 @@ namespace Sparky {
 
 	void Scene::RenderSceneFromEditorCamera(EditorCamera& camera)
 	{
-		Renderer2D::BeginScene(camera);
-
-		/// Render Sprites
+		// Render 2D
 		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			Renderer2D::BeginScene(camera);
 
-			for (auto entity : view)
+			/// Render Sprites
 			{
-				auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+				auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 
-				Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+				for (auto entity : view)
+				{
+					auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+
+					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+				}
 			}
+
+			/// Render Circles
+			{
+				auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
+
+				for (auto entity : group)
+				{
+					auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
+
+					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				}
+			}
+
+			Renderer2D::EndScene();
 		}
 
-		/// Render Circles
+		// Render 3D
 		{
-			auto group = m_Registry.group<TransformComponent>(entt::get<CircleRendererComponent>);
+			Renderer::BeginScene(camera);
 
-			for (auto entity : group)
+			/// Render Cubes
 			{
-				auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
+				auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
 
-				Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				for (auto& entity : view)
+				{
+					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
+
+					if (meshRendererComponent.Type == MeshRendererComponent::MeshType::Cube)
+						Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+				}
 			}
-		}
 
-		Renderer2D::EndScene();
+			Renderer::EndScene();
+		}
 	}
 
 	template <typename T>

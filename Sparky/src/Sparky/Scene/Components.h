@@ -61,6 +61,20 @@ namespace Sparky {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
+	struct MeshRendererComponent
+	{
+		enum class MeshType { Cube = 0 };
+		MeshType Type;
+		Math::vec4 Color = Math::vec4(1.0f);
+		SharedRef<Texture2D> Texture = nullptr;
+		float Scale = 1.0f;
+
+		MeshRendererComponent() = default;
+		MeshRendererComponent(const MeshRendererComponent&) = default;
+		MeshRendererComponent(const Math::vec4& color)
+			: Color(color) { }
+	};
+
 	struct SpriteRendererComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
@@ -87,7 +101,10 @@ namespace Sparky {
 
 	struct AudioSourceComponent
 	{
-		SharedRef<AudioSource> Source;
+		SharedRef<AudioSource> Source = nullptr;
+
+		AudioSourceComponent() = default;
+		AudioSourceComponent(const AudioSourceComponent&) = default;
 	};
 
 	// Physics components
@@ -175,8 +192,9 @@ namespace Sparky {
 	};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, CameraComponent,
-		SpriteRendererComponent, CircleRendererComponent, AudioSourceComponent,
+		ComponentGroup<TransformComponent,
+		CameraComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
+		AudioSourceComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 

@@ -423,6 +423,7 @@ namespace Sparky {
 			if (Gui::BeginMenu("Rendering"))
 			{
 				DisplayAddComponentPopup<CameraComponent>("Camera");
+				DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
 				DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 				DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer", true);
 
@@ -527,6 +528,83 @@ namespace Sparky {
 
 				Gui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 			}
+		});
+
+		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [](auto& component)
+		{
+			const char* meshTypes[] = { "Cube" };
+			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
+
+			if (Gui::BeginCombo("Mesh Type", currentMeshType))
+			{
+				for (uint32_t i = 0; i < 1; i++)
+				{
+					bool isSelected = strcmp(currentMeshType, meshTypes[i]) == 0;
+					if (Gui::Selectable(meshTypes[i], isSelected))
+					{
+						currentMeshType = meshTypes[i];
+						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+				}
+
+				Gui::EndCombo();
+			}
+
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
+
+			if (component.Texture)
+			{
+				Gui::Text("Texture");
+				Gui::SameLine();
+
+				auto textureSize = ImVec2{ 64, 64 };
+
+				ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+					component.Texture = nullptr;
+				else if (Gui::IsItemHovered())
+				{
+					Gui::BeginTooltip();
+					Gui::Text(component.Texture->GetPath().c_str());
+					Gui::EndTooltip();
+				}
+			}
+			else
+			{
+				if (Gui::Button("Texture", ImVec2{ 100.0f, 0.0f }))
+					component.Texture = nullptr;
+			}
+
+			// Accept a Texture from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+
+					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
+					{
+						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+						if (texture->IsLoaded())
+							component.Texture = texture;
+						else
+							SP_WARN("Could not load texture {}", texturePath.filename().string());
+					}
+					else
+						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)

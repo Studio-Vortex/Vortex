@@ -12,7 +12,6 @@ namespace Sparky {
 	{
 		Math::vec3 Position;
 		Math::vec4 Color;
-		Math::vec2 Normal;
 		Math::vec2 TexCoord;
 		float TexIndex;
 		float TexScale;
@@ -23,9 +22,9 @@ namespace Sparky {
 
 	struct RendererInternalData
 	{
-		static constexpr inline uint32_t MaxQuads = 20'000;
-		static constexpr inline uint32_t MaxVertices = MaxQuads * VERTICES_PER_QUAD;
-		static constexpr inline uint32_t MaxIndices = MaxQuads * INDICES_PER_QUAD;
+		static constexpr inline uint32_t MaxCubes = 20'000;
+		static constexpr inline uint32_t MaxVertices = MaxCubes * VERTICES_PER_CUBE;
+		static constexpr inline uint32_t MaxIndices = MaxCubes * INDICES_PER_CUBE;
 		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
 
 		SharedRef<Texture2D> WhiteTexture; // Default texture
@@ -34,14 +33,14 @@ namespace Sparky {
 		SharedRef<VertexBuffer> CubeVB;
 		SharedRef<Shader> CubeShader;
 
-		uint32_t CubeIndexCount;
+		uint32_t CubeIndexCount = 0;
 		CubeVertex* CubeVertexBufferBase = nullptr;
 		CubeVertex* CubeVertexBufferPtr = nullptr;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
 
-		Math::vec4 CubeVertexPositions[36];
+		Math::vec4 CubeVertexPositions[24];
 
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
@@ -55,20 +54,17 @@ namespace Sparky {
 
 		RenderCommand::Init();
 
-#if 0
-
 		s_Data.CubeVA = VertexArray::Create();
 
 		s_Data.CubeVB = VertexBuffer::Create(RendererInternalData::MaxVertices * sizeof(CubeVertex));
 		s_Data.CubeVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color"    },
-			{ ShaderDataType::Float3, "a_Normal"   },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Float,  "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
-			});
+		});
 
 		s_Data.CubeVA->AddVertexBuffer(s_Data.CubeVB);
 
@@ -77,7 +73,7 @@ namespace Sparky {
 		uint32_t* cubeIndices = new uint32_t[RendererInternalData::MaxIndices];
 
 		uint32_t offset = 0;
-		for (size_t i = 0; i < RendererInternalData::MaxIndices; i += INDICES_PER_QUAD)
+		for (size_t i = 0; i < RendererInternalData::MaxIndices; i += INDICES_PER_CUBE)
 		{
 			cubeIndices[i + 0] = offset + 0;
 			cubeIndices[i + 1] = offset + 1;
@@ -86,6 +82,46 @@ namespace Sparky {
 			cubeIndices[i + 3] = offset + 2;
 			cubeIndices[i + 4] = offset + 3;
 			cubeIndices[i + 5] = offset + 0;
+
+			cubeIndices[i + 6] = offset + 4;
+			cubeIndices[i + 7] = offset + 5;
+			cubeIndices[i + 8] = offset + 7;
+
+			cubeIndices[i + 9] = offset + 7;
+			cubeIndices[i + 10] = offset + 5;
+			cubeIndices[i + 11] = offset + 6;
+
+			cubeIndices[i + 12] = offset + 8;
+			cubeIndices[i + 13] = offset + 9;
+			cubeIndices[i + 14] = offset + 11;
+
+			cubeIndices[i + 15] = offset + 11;
+			cubeIndices[i + 16] = offset + 9;
+			cubeIndices[i + 17] = offset + 10;
+
+			cubeIndices[i + 18] = offset + 12;
+			cubeIndices[i + 19] = offset + 13;
+			cubeIndices[i + 20] = offset + 15;
+
+			cubeIndices[i + 21] = offset + 15;
+			cubeIndices[i + 22] = offset + 13;
+			cubeIndices[i + 23] = offset + 14;
+
+			cubeIndices[i + 24] = offset + 16;
+			cubeIndices[i + 25] = offset + 17;
+			cubeIndices[i + 26] = offset + 19;
+
+			cubeIndices[i + 27] = offset + 19;
+			cubeIndices[i + 28] = offset + 17;
+			cubeIndices[i + 29] = offset + 18;
+
+			cubeIndices[i + 30] = offset + 20;
+			cubeIndices[i + 31] = offset + 21;
+			cubeIndices[i + 32] = offset + 23;
+
+			cubeIndices[i + 33] = offset + 23;
+			cubeIndices[i + 34] = offset + 21;
+			cubeIndices[i + 35] = offset + 22;
 
 			offset += VERTICES_PER_CUBE;
 		}
@@ -108,45 +144,43 @@ namespace Sparky {
 
 		s_Data.CubeShader = Shader::Create(CUBE_SHADER_PATH);
 		s_Data.CubeShader->Enable();
-		// Set the sampler2D array on the GPU
+
 		s_Data.CubeShader->SetIntArray("u_Textures", samplers, RendererInternalData::MaxTextureSlots);
 
-		// Create a quad's set of vertices at the origin in ndc
-		s_Data.CubeVertexPositions[0] = { -0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[1] = { 0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[2] = { 0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[3] = { -0.5f, -0.5f,  0.5f, 1.0f }; // Front face
+		// Create a cube's set of vertices at the origin in ndc
+		s_Data.CubeVertexPositions[ 0] = { -0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 1] = {  0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 2] = {  0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 3] = { -0.5f, -0.5f,  0.5f, 1.0f }; // Front face
 
-		s_Data.CubeVertexPositions[4] = { 0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[5] = { -0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[6] = { -0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[7] = { 0.5f, -0.5f, -0.5f, 1.0f }; // Back face
+		s_Data.CubeVertexPositions[ 4] = {  0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 5] = { -0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 6] = { -0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 7] = {  0.5f, -0.5f, -0.5f, 1.0f }; // Back face
 
-		s_Data.CubeVertexPositions[8] = { -0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[9] = { -0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 8] = { -0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[ 9] = { -0.5f,  0.5f,  0.5f, 1.0f };
 		s_Data.CubeVertexPositions[10] = { -0.5f, -0.5f,  0.5f, 1.0f };
 		s_Data.CubeVertexPositions[11] = { -0.5f, -0.5f, -0.5f, 1.0f }; // Left face
 
-		s_Data.CubeVertexPositions[12] = { 0.5f,  0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[13] = { 0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[14] = { 0.5f, -0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[15] = { 0.5f, -0.5f,  0.5f, 1.0f }; // Right face
+		s_Data.CubeVertexPositions[12] = {  0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[13] = {  0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[14] = {  0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[15] = {  0.5f, -0.5f,  0.5f, 1.0f }; // Right face
 
 		s_Data.CubeVertexPositions[16] = { -0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[17] = { 0.5f,  0.5f, -0.5f, 1.0f };
-		s_Data.CubeVertexPositions[18] = { 0.5f,  0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[17] = {  0.5f,  0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[18] = {  0.5f,  0.5f,  0.5f, 1.0f };
 		s_Data.CubeVertexPositions[19] = { -0.5f,  0.5f,  0.5f, 1.0f }; // Top face
 
 		s_Data.CubeVertexPositions[20] = { -0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[21] = { 0.5f, -0.5f,  0.5f, 1.0f };
-		s_Data.CubeVertexPositions[22] = { 0.5f, -0.5f, -0.5f, 1.0f };
+		s_Data.CubeVertexPositions[21] = {  0.5f, -0.5f,  0.5f, 1.0f };
+		s_Data.CubeVertexPositions[22] = {  0.5f, -0.5f, -0.5f, 1.0f };
 		s_Data.CubeVertexPositions[23] = { -0.5f, -0.5f, -0.5f, 1.0f }; // Bottom face
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
-
-#endif // 0
 
 		Renderer2D::Init();
 	}
@@ -155,7 +189,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		//delete[] s_Data.CubeVertexBufferBase;
+		delete[] s_Data.CubeVertexBufferBase;
 
 		Renderer2D::Shutdown();
 	}
@@ -191,7 +225,7 @@ namespace Sparky {
 	{
 		// Set the index count to 0 for the new batch
 		s_Data.CubeIndexCount = 0;
-		// Set the pointer to beginning of the vertex buffer
+		// Set the pointer to the beginning of the vertex buffer
 		s_Data.CubeVertexBufferPtr = s_Data.CubeVertexBufferBase;
 
 		// Reset the texture slot index (0 is the default white texture)
@@ -208,40 +242,37 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		// Render vertices as a batch
 		Flush();
-	}
-
-	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform)
-	{
-		SP_PROFILE_FUNCTION();
-
-		vertexArray->Bind();
-		RenderCommand::DrawIndexed(vertexArray);
 	}
 
 	void Renderer::Flush()
 	{
-		// Cubes
+		/// Cubes
 		if (s_Data.CubeIndexCount)
 		{
-			// Calculate the size of the buffer
+			// Calculate the size of the vertex buffer
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CubeVertexBufferPtr - (uint8_t*)s_Data.CubeVertexBufferBase);
-			// Copy the data to the gpu
+			// Copy data to GPU buffer
 			s_Data.CubeVB->SetData(s_Data.CubeVertexBufferBase, dataSize);
 
+			// Bind all textures used in the batch
+			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+				s_Data.TextureSlots[i]->Bind(i);
+
+			// Bind a shader and make a draw call
+			s_Data.CubeShader->Enable();
 			s_Data.CubeVA->Bind();
 			RenderCommand::DrawIndexed(s_Data.CubeVA, s_Data.CubeIndexCount);
+			s_Data.RendererStatistics.DrawCalls++;
 		}
 	}
 
-	void Renderer::AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2& normal, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
+	void Renderer::AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
 	{
 		for (size_t i = 0; i < 24; i++)
 		{
 			s_Data.CubeVertexBufferPtr->Position = transform * s_Data.CubeVertexPositions[i];
 			s_Data.CubeVertexBufferPtr->Color = color;
-			s_Data.CubeVertexBufferPtr->Normal = normal;
 			s_Data.CubeVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.CubeVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.CubeVertexBufferPtr->TexScale = textureScale;
@@ -249,22 +280,52 @@ namespace Sparky {
 			s_Data.CubeVertexBufferPtr++;
 		}
 
-		s_Data.CubeIndexCount += INDICES_PER_CUBE;
+		s_Data.CubeIndexCount += INDICES_PER_QUAD;
+
+#if SP_RENDERER_STATISTICS
+		s_Data.RendererStatistics.QuadCount += 6;
+#endif // SP_RENDERER_STATISTICS
 	}
 
-	void Renderer::DrawCube(const Math::mat4& transform, const Math::vec4& color, int entityID)
+	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
-
-		if (s_Data.CubeIndexCount >= RendererInternalData::MaxIndices)
-			NextBatch();
 
 		constexpr float textureIndex = 0.0f; // Our White Texture
 		constexpr float textureScale = 1.0f;
 
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		Math::vec2 textureCoords[24] = {
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Front face
 
-		//AddToCubeVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Back face
+
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Left face
+
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Right face
+
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Top face
+
+			{ 0.0f, 1.0f }, { 1.0f, 1.0f },
+			{ 1.0f, 0.0f }, { 0.0f, 0.0f },      // Bottom face
+		};
+
+		AddToCubeVertexBuffer(transform, meshRenderer.Color, textureCoords, textureIndex, textureScale, entityID);
+
+		shader->Enable();
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+	}
+
+	void Renderer::DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	{
+		SP_PROFILE_FUNCTION();
+
+		Submit(s_Data.CubeShader, s_Data.CubeVA, transform, meshRenderer, entityID);
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
