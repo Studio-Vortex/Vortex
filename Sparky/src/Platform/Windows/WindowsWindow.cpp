@@ -215,7 +215,7 @@ namespace Sparky {
 
 	void WindowsWindow::SetMaximized(bool maximized)
 	{
-		auto getWindowSize = [&]() {
+		auto getWindowSizeFunc = [&]() {
 			int width;
 			int height;
 			glfwGetWindowSize(m_Window, &width, &height);
@@ -227,12 +227,12 @@ namespace Sparky {
 		if (maximized)
 		{
 			glfwMaximizeWindow(m_Window);
-			getWindowSize();
+			getWindowSizeFunc();
 		}
 		else
 		{
 			glfwRestoreWindow(m_Window);
-			getWindowSize();
+			getWindowSizeFunc();
 		}
 	}
 

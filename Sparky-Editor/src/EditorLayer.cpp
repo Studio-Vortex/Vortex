@@ -76,15 +76,16 @@ namespace Sparky {
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
+		const Math::vec2& mousePos = Input::GetMousePosition();
+
 		// Update Scene
 		switch (m_SceneState)
 		{
 			case SceneState::Edit:
 			{
-				const Math::vec2& mousePos = Input::GetMousePosition();
 				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
 				// this allows the user to manipulate the editor camera while they are holding the right mouse button even if the cursor is outside the scene viewport
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					m_EditorCamera.OnUpdate(delta);
 
 				float editorCameraFOV = m_EditorCamera.GetFOV();
@@ -599,6 +600,7 @@ namespace Sparky {
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
+			float axisLineLength = 200.0f;
 			float lineLength = 100.0f;
 			float gridWidth = 100.0f;
 			float gridLength = 100.0f;
@@ -608,9 +610,9 @@ namespace Sparky {
 			{
 				float originalLineWidth = Renderer2D::GetLineWidth();
 				Renderer2D::SetLineWidth(4.0f);
-				Renderer2D::DrawLine({ -lineLength, 0.0f, 0.0f }, { lineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
-				Renderer2D::DrawLine({ 0.0f, -lineLength, 0.0f }, { 0.0f, lineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
-				Renderer2D::DrawLine({ 0.0f, 0.0f, -lineLength }, { 0.0f, 0.0f, lineLength }, ColorToVec4(Color::Blue));  // Z Axis
+				Renderer2D::DrawLine({ -axisLineLength, 0.0f, 0.0f }, { axisLineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+				Renderer2D::DrawLine({ 0.0f, -axisLineLength, 0.0f }, { 0.0f, axisLineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+				Renderer2D::DrawLine({ 0.0f, 0.0f, -axisLineLength }, { 0.0f, 0.0f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
 				Renderer2D::Flush();
 				Renderer2D::SetLineWidth(originalLineWidth);
 			}
@@ -722,6 +724,7 @@ namespace Sparky {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(SP_BIND_CALLBACK(EditorLayer::OnMouseButtonReleasedEvent));
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
@@ -916,6 +919,30 @@ namespace Sparky {
 					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
 						m_SceneHierarchyPanel.SetEntityToBeRenamed(false);
 				}
+
+				break;
+			}
+
+			case Mouse::ButtonRight:
+			{
+				if (m_SceneViewportHovered)
+					Application::Get().GetWindow().ShowMouseCursor(false);
+
+				break;
+			}
+		}
+
+		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e)
+	{
+		switch (e.GetMouseButton())
+		{
+			case Mouse::ButtonRight:
+			{
+				
+				Application::Get().GetWindow().ShowMouseCursor(true);
 
 				break;
 			}

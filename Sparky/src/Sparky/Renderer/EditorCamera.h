@@ -66,7 +66,7 @@ namespace Sparky {
 		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
 		float m_MouseXDelta = 0.0f, m_MouseYDelta = 0.0f;
-		float m_ShiftModifer = 2.0f;
+		float m_ShiftModifer = 3.0f;
 
 		Math::mat4 m_ViewMatrix = Math::Identity();
 		Math::vec3 m_Position = Math::vec3(0.0f);
@@ -80,7 +80,7 @@ namespace Sparky {
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
 
 		inline static bool s_LockEditorCameraRotation = false;
-		inline static Math::vec3 s_MoveSpeed = { 0.1f, 0.1f, 0.1f };
+		inline static Math::vec3 s_MoveSpeed = { 5.0f, 5.0f, 5.0f };
 
 	};
 

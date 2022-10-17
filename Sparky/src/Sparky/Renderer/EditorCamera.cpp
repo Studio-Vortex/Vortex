@@ -115,7 +115,7 @@ namespace Sparky {
 
 			m_Distance = 1.0f;
 
-			m_FocalPoint += cameraVelocity * moveSpeed;
+			m_FocalPoint += cameraVelocity * moveSpeed * Math::vec3(delta);
 			m_Position = CalcualtePosition();
 
 			MouseRotate(mouseDelta);

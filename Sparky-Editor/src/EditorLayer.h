@@ -36,6 +36,7 @@ namespace Sparky {
 		void OnOverlayRender();
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
+		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
 
 		void CreateNewScene();
 		void OpenExistingScene();
