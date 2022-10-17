@@ -12,16 +12,6 @@ namespace Sparky {
 		m_Initialized = true;
 	}
 
-    AudioSource::~AudioSource()
-    {
-		Destroy();
-    }
-
-	void AudioSource::Destroy()
-	{
-		AudioEngine::DestroySound(&m_Sound);
-	}
-
 	void AudioSource::Play()
 	{
 		if (!m_Initialized)

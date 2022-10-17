@@ -8,9 +8,7 @@ namespace Sparky {
 	{
 	public:
 		AudioSource(const std::string& filepath);
-		~AudioSource();
-
-		void Destroy();
+		~AudioSource() = default;
 
 		void Play();
 		void Stop();

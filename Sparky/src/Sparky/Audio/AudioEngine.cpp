@@ -13,6 +13,8 @@ namespace Sparky {
 		ma_context Context;
 		ma_uint32 PlaybackDeviceCount;
 		ma_device_info* pPlaybackDeviceInfos;
+
+		std::vector<ma_sound*> LoadedSounds;
 	};
 
 	static AudioEngineInternalData s_Data;
@@ -53,12 +55,22 @@ namespace Sparky {
 			ma_sound_set_looping(sound, MA_TRUE);
 
 		ma_sound_set_volume(sound, volume);
+
+		s_Data.LoadedSounds.push_back(sound);
 	}
 
 	void AudioEngine::DestroySound(ma_sound* sound)
 	{
 		if (sound != nullptr)
 			ma_sound_uninit(sound);
+	}
+
+	void AudioEngine::DestroyLoadedSounds()
+	{
+		for (auto& sound : s_Data.LoadedSounds)
+			DestroySound(sound);
+
+		s_Data.LoadedSounds.clear();
 	}
 
 	void AudioEngine::PlayFromSound(ma_sound* sound)
@@ -84,11 +96,6 @@ namespace Sparky {
 	bool AudioEngine::IsPlaying(ma_sound* sound)
 	{
 		return ma_sound_is_playing(sound);
-	}
-
-	void AudioEngine::OnRuntimeStop()
-	{
-		
 	}
 
 	void AudioEngine::StartEngine()

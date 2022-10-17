@@ -5,6 +5,7 @@
 #include <Sparky/Utils/PlatformUtils.h>
 #include <Sparky/Scene/Components.h>
 #include <Sparky/Scripting/ScriptEngine.h>
+#include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
 
@@ -945,8 +946,7 @@ namespace Sparky {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
-		std::string name = std::format("{} Load Time", path.filename().string());
-		InstrumentationTimer timer(name.c_str());
+		AudioEngine::DestroyLoadedSounds();
 
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
@@ -962,6 +962,9 @@ namespace Sparky {
 		SharedRef<Scene> newScene = CreateShared<Scene>();
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+		std::string name = std::format("{} Load Time", path.filename().string());
+		InstrumentationTimer timer(name.c_str());
 
 		if (serializer.Deserialize(path.string()))
 		{

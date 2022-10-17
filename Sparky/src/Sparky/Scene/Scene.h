@@ -3,7 +3,6 @@
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Core/TimeStep.h"
 #include "Sparky/Scene/Components.h"
-#include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Scene/SceneRenderer.h"
 
 #include <entt/entt.hpp>

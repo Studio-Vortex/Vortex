@@ -214,7 +214,6 @@ namespace Sparky {
 		m_IsRunning = false;
 
 		ScriptEngine::OnRuntimeStop();
-		AudioEngine::OnRuntimeStop();
 
 		OnPhysics2DStop();
 	}

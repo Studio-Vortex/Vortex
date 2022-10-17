@@ -386,7 +386,6 @@ namespace Sparky {
 
 		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
 		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
-
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

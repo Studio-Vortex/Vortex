@@ -17,6 +17,8 @@ namespace Sparky {
 		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume);
 		static void DestroySound(ma_sound* sound);
 
+		static void DestroyLoadedSounds();
+
 		static void PlayFromSound(ma_sound* sound);
 		static void StopSound(ma_sound* sound);
 
@@ -24,8 +26,6 @@ namespace Sparky {
 
 		static bool IsPlaying(ma_sound* sound);
 
-		static void OnRuntimeStop();
-		
 		static void StartEngine();
 		static void StopEngine();
 	};
