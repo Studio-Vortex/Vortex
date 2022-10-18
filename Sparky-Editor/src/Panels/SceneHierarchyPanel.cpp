@@ -642,10 +642,10 @@ namespace Sparky {
 						if (texture->IsLoaded())
 							component.Texture = texture;
 						else
-							SP_WARN("Could not load texture {}", texturePath.filename().string());
+							SP_CORE_WARN("Could not load texture {}", texturePath.filename().string());
 					}
 					else
-						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
+						SP_CORE_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
@@ -683,15 +683,13 @@ namespace Sparky {
 					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
 					{
 						// If there is another file playing we need to stop it
-						if (component.Source->IsPlaying())
+						if (component.Source)
 							component.Source->Stop();
-						else
-							component.Source->Destroy();
 
 						component.Source = CreateShared<AudioSource>(audioSourcePath.string());
 					}
 					else
-						SP_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						SP_CORE_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}

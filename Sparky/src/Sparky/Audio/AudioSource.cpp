@@ -32,6 +32,7 @@ namespace Sparky {
 		{
 			AudioEngine::StopSound(&m_Sound);
 			m_Initialized = false;
+			AudioEngine::RemoveLoadedSound(&m_Sound);
 		}
 	}
 

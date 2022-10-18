@@ -1,10 +1,13 @@
 #include "sppch.h"
 #include "ScriptEngine.h"
 
+#include "Sparky/Core/Application.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scene/Components.h"
+#include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Scripting/ScriptRegistry.h"
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Utils/PlatformUtils.h"
 
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>
@@ -12,8 +15,12 @@
 #include <mono/metadata/class.h>
 #include <mono/jit/jit.h>
 
+#include <Filewatch.hpp>
+
 namespace Sparky {
 
+	static constexpr const char* APP_ASSEMBLY_PATH = "C:/dev/Sparky_Game_Engine/Sparky/Sparky-Editor/SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
+	
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
 		{ "System.Single",  ScriptFieldType::Float   },
@@ -166,6 +173,11 @@ namespace Sparky {
 
 		ScriptClass EntityClass;
 
+		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
+		bool AssemblyReloadPending = false;
+
+		SharedRef<AudioSource> CompileSound;
+
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
@@ -190,6 +202,7 @@ namespace Sparky {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
+		s_Data->CompileSound = CreateShared<AudioSource>("Resources/Sounds/Compile.wav");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -235,6 +248,28 @@ namespace Sparky {
 		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
 	}
 
+	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
+	{
+		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
+		{
+			// Add reload to main thread queue
+
+			s_Data->AssemblyReloadPending = true;
+
+			Application::Get().SubmitToMainThread([]()
+			{
+				s_Data->AppAssemblyFilewatcher.reset();
+				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
+				
+				using namespace std::chrono_literals;
+				std::this_thread::sleep_for(500ms);
+				
+				ScriptEngine::ReloadAssembly();
+				s_Data->CompileSound->Play();
+			});
+		}
+	}
+
 	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		// Move this
@@ -242,6 +277,10 @@ namespace Sparky {
 		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 		//Utils::PrintAssemblyTypes(s_Data->AppAssembly);
+
+		// TODO HARDCODED FILEPATH
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
+		s_Data->AssemblyReloadPending = false;
 	}
 
 	void ScriptEngine::ReloadAssembly()

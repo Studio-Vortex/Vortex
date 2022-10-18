@@ -60,16 +60,23 @@ namespace Sparky {
 
 		void Close();
 
+		void SubmitToMainThread(const std::function<void()>& func);
+
 	private:
 		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
+
+		void ExecuteMainThreadQueue();
 
 	private:
 		ApplicationProperties m_Properties;
 		UniqueRef<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
+
+		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::mutex m_MainThreadQueueMutex;
 
 		float m_LastFrameTime = 0.0f;
 		bool m_Running = true;

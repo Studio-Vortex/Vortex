@@ -76,7 +76,7 @@ namespace Sparky {
 				}
 			}
 
-			/*/// Render Circles
+			/// Render Circles
 			{
 				auto group = sceneRegistry.group<TransformComponent>(entt::get<CircleRendererComponent>);
 
@@ -86,7 +86,7 @@ namespace Sparky {
 
 					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 				}
-			}*/
+			}
 
 			Renderer2D::EndScene();
 		}

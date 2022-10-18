@@ -11,7 +11,7 @@ namespace Sandbox {
 		public override void OnCreate()
 		{
 			// Called once before the first frame
-			Debug.Error("Hello from the game code!");
+
 			GetComponent<AudioSource>().Play();
 		}
 

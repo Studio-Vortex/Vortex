@@ -19,6 +19,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["Box2D"] = "Sparky/vendor/Box2D/include"
 IncludeDir["entt"] = "Sparky/vendor/entt/include"
+IncludeDir["filewatch"] = "Sparky/vendor/filewatch"
 IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
 IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["glm"] = "Sparky/vendor/glm"
@@ -84,6 +85,7 @@ project "Sparky"
 		"%{prj.name}/src",
 		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glm}",
@@ -185,6 +187,7 @@ project "Sparky-Editor"
 	{
 		"Sparky/src",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",

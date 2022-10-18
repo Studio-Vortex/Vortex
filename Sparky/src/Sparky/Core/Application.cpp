@@ -82,6 +82,13 @@ namespace Sparky {
 		g_ApplicationRunning = false;
 	}
 
+	void Application::SubmitToMainThread(const std::function<void()>& func)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		m_MainThreadQueue.emplace_back(func);
+	}
+
 	void Application::OnEvent(Event& e)
 	{
 		SP_PROFILE_FUNCTION();
@@ -99,6 +106,16 @@ namespace Sparky {
 		}
 	}
 
+	void Application::ExecuteMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		for (auto& func : m_MainThreadQueue)
+			func();
+
+		m_MainThreadQueue.clear();
+	}
+
 	void Application::Run()
 	{
 		SP_PROFILE_FUNCTION();
@@ -110,6 +127,8 @@ namespace Sparky {
 			float time = Time::GetTime();
 			TimeStep delta = time - m_LastFrameTime;
 			m_LastFrameTime = time;
+
+			ExecuteMainThreadQueue();
 
 			if (!m_ApplicationMinimized)
 			{
