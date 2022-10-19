@@ -28,6 +28,8 @@ namespace Sparky {
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform);
 
 		static void DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void DrawModel(const EditorCamera& editorCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void DrawModel(const SceneCamera& sceneCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);
 

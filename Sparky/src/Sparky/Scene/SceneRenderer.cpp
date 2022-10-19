@@ -51,8 +51,19 @@ namespace Sparky {
 				{
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
-					if (meshRendererComponent.Type == MeshRendererComponent::MeshType::Cube)
-						Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+					if (meshRendererComponent.Mesh)
+						Renderer::DrawModel(*sceneCamera, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
+					else
+					{
+						switch (meshRendererComponent.Type)
+						{
+							case MeshRendererComponent::MeshType::Cube:
+							{
+								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+								break;
+							}
+						}
+					}
 				}
 			}
 
@@ -106,13 +117,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-					{
-						SharedRef<Model> model = meshRendererComponent.Mesh;
-
-						model->OnUpdate(editorCamera, transformComponent.GetTransform(), meshRendererComponent.Color);
-
-						RenderCommand::DrawTriangles(model->GetVertexArray(), model->GetVertexCount());
-					}
+						Renderer::DrawModel(editorCamera, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
 					else
 					{
 						switch (meshRendererComponent.Type)

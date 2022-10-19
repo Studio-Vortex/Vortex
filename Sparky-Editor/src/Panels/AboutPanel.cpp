@@ -2,13 +2,13 @@
 
 namespace Sparky {
 
-	void AboutPanel::OnGuiRender()
+	void AboutPanel::OnGuiRender(bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (s_ShowPanel)
+		if (s_ShowPanel || showDefault)
 		{
 			Gui::SetNextWindowSizeConstraints(ImVec2{ 480, 280 }, ImVec2{ 600, 400 });
 			Gui::Begin("About", &s_ShowPanel);

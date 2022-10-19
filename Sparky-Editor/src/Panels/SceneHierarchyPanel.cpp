@@ -394,7 +394,19 @@ namespace Sparky {
 			}
 
 			if (componentShouldBeRemoved)
+			{
+				if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
+				{
+					SharedRef<AudioSource>& audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+					if (audioSource->IsPlaying())
+						audioSource->Stop();
+					else
+						audioSource->Destroy();
+				}
+				
 				entity.RemoveComponent<TComponent>();
+			}
 		}
 	}
 

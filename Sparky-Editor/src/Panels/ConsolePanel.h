@@ -9,7 +9,7 @@ namespace Sparky {
 	public:
 		ConsolePanel() = default;
 
-		void OnGuiRender();
+		void OnGuiRender(bool showDefault = false);
 		void ShowPanel() { s_ShowPanel = true; }
 
 	private:

@@ -378,6 +378,24 @@ namespace Sparky {
 		AddToCubeVertexBuffer(transform, normals, meshRenderer.Color, textureCoords, textureIndex, meshRenderer.Scale, entityID);
 	}
 
+	void Renderer::DrawModel(const EditorCamera& editorCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	{
+		SharedRef<Model> model = meshRenderer.Mesh;
+
+		model->OnUpdate(editorCamera, transform, meshRenderer.Color);
+
+		RenderCommand::DrawTriangles(model->GetVertexArray(), model->GetVertexCount());
+	}
+
+	void Renderer::DrawModel(const SceneCamera& sceneCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	{
+		SharedRef<Model> model = meshRenderer.Mesh;
+
+		model->OnUpdate(sceneCamera, transform, meshRenderer.Color);
+
+		RenderCommand::DrawTriangles(model->GetVertexArray(), model->GetVertexCount());
+	}
+
 	void Renderer::DrawCubeWireframe(const TransformComponent& transform)
 	{
 		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), ColorToVec4(Color::Orange));

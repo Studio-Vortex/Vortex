@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "OpenGLBuffer.h"
 
+#include "Sparky/Renderer/Model.h"
+
 #include <Glad/glad.h>
 
 namespace Sparky {

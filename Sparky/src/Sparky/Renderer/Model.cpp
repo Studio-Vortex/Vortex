@@ -48,7 +48,7 @@ namespace Sparky {
 						attributes.texcoords[2 * index.texcoord_index + 1]
 					};
 
-					vertices.emplace_back(vertexPosition, vertexNormal, vertexTexCoord);
+					vertices.push_back({ Math::vec3(vertexPosition), vertexNormal, vertexTexCoord });
 				}
 			}
 
@@ -65,29 +65,31 @@ namespace Sparky {
 		m_ModelVertices = std::vector<ModelVertex>(vertexInfo.size());
 
 		uint32_t i = 0;
-		for (auto& vertex : m_ModelVertices)
+		for (const auto& vertex : vertexInfo)
 		{
-			vertex.Position = vertexInfo[i].Position;
-			vertex.Color = color;
-			vertex.Normal = vertexInfo[i].Normal;
-			vertex.TextureCoord = vertexInfo[i].TextureCoord;
-			vertex.EntityID = entityID;
-
-			i++;
+			ModelVertex& v = m_ModelVertices[i++];
+			v.Position = vertex.Position;
+			//v.Color = color;
+			v.Normal = vertex.Normal;
+			v.TextureCoord = vertex.TextureCoord;
+			v.EntityID = entityID;
 		}
 
 		m_Vao = VertexArray::Create();
 
-		m_Vbo = VertexBuffer::Create(m_ModelVertices.size());
+		uint32_t size = (uint32_t)m_ModelVertices.size();
+		m_Vbo = VertexBuffer::Create(size);
 		m_Vbo->SetLayout({
-			{ ShaderDataType::Float4, "a_Position" },
-			{ ShaderDataType::Float4, "a_Color"    },
+			{ ShaderDataType::Float3, "a_Position" },
+			//{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float3, "a_Normal"   },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Int,    "a_EntityID" }
+			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 
 		m_Vao->AddVertexBuffer(m_Vbo);
+
+		m_VertexCount = size;
 	}
 
 	void Model::Init()
@@ -103,7 +105,26 @@ namespace Sparky {
 		for (auto& vertex : m_ModelVertices)
 		{
 			//vertex.Position = transform * vertex.Position;
-			vertex.Color = color;
+			//vertex.Color = color;
+		}
+
+		uint32_t size = (uint32_t)m_ModelVertices.size();
+		m_Vbo->SetData(m_ModelVertices.data(), size);
+
+		m_VertexCount = size;
+	}
+
+	void Model::OnUpdate(const SceneCamera& camera, const Math::mat4& transform, const Math::vec4& color)
+	{
+		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
+
+		s_ModelShader->Enable();
+		s_ModelShader->SetMat4("u_ViewProjection", viewProjection);
+
+		for (auto& vertex : m_ModelVertices)
+		{
+			//vertex.Position = transform * vertex.Position;
+			//vertex.Color = color;
 		}
 
 		uint32_t size = (uint32_t)m_ModelVertices.size();

@@ -548,6 +548,8 @@ namespace Sparky {
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
+	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) { }
+
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }

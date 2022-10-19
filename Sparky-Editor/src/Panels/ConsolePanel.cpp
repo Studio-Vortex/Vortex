@@ -4,13 +4,13 @@
 
 namespace Sparky {
 
-	void ConsolePanel::OnGuiRender()
+	void ConsolePanel::OnGuiRender(bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (s_ShowPanel)
+		if (s_ShowPanel || showDefault)
 		{
 			Gui::Begin("Console", &s_ShowPanel);
 

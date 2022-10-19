@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Renderer/VertexArray.h"
 #include "Sparky/Renderer/Buffer.h"
@@ -9,8 +10,8 @@ namespace Sparky {
 
 	struct ModelVertex
 	{
-		Math::vec4 Position;
-		Math::vec4 Color;
+		Math::vec3 Position;
+		//Math::vec4 Color;
 		Math::vec3 Normal;
 		Math::vec2 TextureCoord;
 
@@ -20,7 +21,7 @@ namespace Sparky {
 
 	struct ModelVertexInfo
 	{
-		Math::vec4 Position;
+		Math::vec3 Position;
 		Math::vec3 Normal;
 		Math::vec2 TextureCoord;
 	};
@@ -34,6 +35,7 @@ namespace Sparky {
 		static void Init();
 
 		void OnUpdate(const EditorCamera& camera, const Math::mat4& transform, const Math::vec4& color);
+		void OnUpdate(const SceneCamera& camera, const Math::mat4& transform, const Math::vec4& color);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
