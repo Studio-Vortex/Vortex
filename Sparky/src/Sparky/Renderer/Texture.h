@@ -6,7 +6,7 @@
 
 namespace Sparky {
 
-	class Texture
+	class SPARKY_API Texture
 	{
 	public:
 		virtual ~Texture() = default;

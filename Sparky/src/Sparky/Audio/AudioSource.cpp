@@ -16,7 +16,7 @@ namespace Sparky {
 	{
 		if (!m_Initialized)
 		{
-			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Volume);
+			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Volume, true);
 			m_Initialized = true;
 		}
 

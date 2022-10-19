@@ -141,8 +141,15 @@
 		}
 	}
 
+	public enum MeshType
+	{
+		Cube,
+	}
+
 	public class MeshRenderer : Component
 	{
+		public MeshType Type;
+
 		public Vector4 Color
 		{
 			get
@@ -291,18 +298,18 @@
 		}
 	}
 
+	public enum RigidBody2DType
+	{
+		Static, Dynamic, Kinematic,
+	}
+
 	public class RigidBody2D : Component
 	{
-		public enum BodyType
-		{
-			Static, Dynamic, Kinematic,
-		}
-
-		public BodyType Type
+		public RigidBody2DType Type
 		{
 			get
 			{
-				InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID, out BodyType bodyType);
+				InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID, out RigidBody2DType bodyType);
 				return bodyType;
 			}
 

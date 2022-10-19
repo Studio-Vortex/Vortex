@@ -8,6 +8,7 @@
 #include "Sparky/Scripting/ScriptRegistry.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Utils/PlatformUtils.h"
+#include "Sparky/Debug/Instrumentor.h"
 
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/object.h>

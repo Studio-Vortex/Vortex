@@ -199,10 +199,10 @@ namespace Sparky {
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody2DComponent_GetBodyType(ulong entityID, out RigidBody2D.BodyType bodyType);
+		internal extern static void RigidBody2DComponent_GetBodyType(ulong entityID, out RigidBody2DType bodyType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody2DComponent_SetBodyType(ulong entityID, RigidBody2D.BodyType bodyType);
+		internal extern static void RigidBody2DComponent_SetBodyType(ulong entityID, RigidBody2DType bodyType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_ApplyForce(ulong entityID, ref Vector2 force, ref Vector2 point, bool wake);

@@ -179,6 +179,16 @@ namespace Sparky {
 			}
 		}
 
+		// Destroy the sound if it exists
+		if (entity.HasComponent<AudioSourceComponent>())
+		{
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+			else
+				audioSource->Destroy();
+		}
+
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
 

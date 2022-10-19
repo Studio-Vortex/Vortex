@@ -11,7 +11,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 namespace Sparky::Math {
-
+	
 	typedef glm::vec2 vec2;
 	typedef glm::vec3 vec3;
 	typedef glm::vec4 vec4;
@@ -19,6 +19,9 @@ namespace Sparky::Math {
 	typedef glm::mat3 mat3;
 	typedef glm::mat4 mat4;
 	typedef glm::quat quaternion;
+
+	static constexpr float PI = glm::pi<float>();
+	static constexpr double PI_D = glm::pi<double>();
 
 	template <typename T>
 	static auto Deg2Rad(T degrees)
@@ -62,6 +65,30 @@ namespace Sparky::Math {
 	static auto Scale(const vec3& scale)
 	{
 		return glm::scale(mat4(1.0f), scale);
+	}
+
+	template <typename T>
+	static auto Cos(T v)
+	{
+		return glm::cos(v);
+	}
+
+	template <typename T>
+	static auto Sin(T v)
+	{
+		return glm::sin(v);
+	}
+
+	template <typename T>
+	static auto Tan(T v)
+	{
+		return glm::tan(v);
+	}
+
+	template <typename T>
+	static auto Normalize(T v)
+	{
+		return glm::normalize(v);
 	}
 
 	template <typename T>

@@ -426,7 +426,19 @@ namespace Sparky {
 							m_HoveredEntity.GetComponent<MeshRendererComponent>().Texture = texture;
 					}
 					else
-						SP_WARN("Could not load texture {}", texturePath.filename().string());
+						SP_CORE_WARN("Could not load texture - {}", texturePath.filename().string());
+				}
+				else if (filePath.extension().string() == ".obj")
+				{
+					std::filesystem::path modelPath = std::filesystem::path(g_AssetPath) / path;
+
+					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
+					{
+						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
+						SharedRef<Model> mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform().GetTransform(), meshRenderer.Color, (int)(entt::entity)m_HoveredEntity);
+
+						meshRenderer.Mesh = mesh;
+					}
 				}
 				else
 					OpenScene(std::filesystem::path(g_AssetPath) / path);
@@ -589,10 +601,8 @@ namespace Sparky {
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 
-			if (!cameraEntity) // No entity with a camera component was found so don't try to render
-				return;
-
-			Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			if (cameraEntity)
+				Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
 		}
 		else
 			Renderer2D::BeginScene(m_EditorCamera);

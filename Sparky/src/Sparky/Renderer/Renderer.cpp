@@ -4,6 +4,8 @@
 #include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
+#include <Glad/glad.h>
+
 namespace Sparky {
 
 	static constexpr const char* CUBE_SHADER_PATH = "Assets/Shaders/Renderer_Cube.glsl";
@@ -378,14 +380,11 @@ namespace Sparky {
 
 	void Renderer::DrawCubeWireframe(const TransformComponent& transform)
 	{
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x + (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ transform.Scale.z, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x - (transform.Scale.x / 2.0f), transform.Translation.y, transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }) * Math::Scale({ transform.Scale.z, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), ColorToVec4(Color::Orange));
 
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ transform.Scale.x, transform.Scale.z, transform.Scale.z, }), ColorToVec4(Color::Orange));
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }) * Math::Scale({ transform.Scale.x, transform.Scale.z, transform.Scale.z, }), ColorToVec4(Color::Orange));
-
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }) * Math::Scale({ transform.Scale.x, transform.Scale.y, transform.Scale.z, }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }), ColorToVec4(Color::Orange));
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

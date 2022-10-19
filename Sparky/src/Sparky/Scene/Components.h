@@ -4,6 +4,7 @@
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/Texture.h"
+#include "Sparky/Renderer/Model.h"
 #include "Sparky/Audio/AudioSource.h"
 
 namespace Sparky {
@@ -64,15 +65,16 @@ namespace Sparky {
 	struct MeshRendererComponent
 	{
 		enum class MeshType { Cube = 0 };
-		MeshType Type;
+		MeshType Type = MeshType::Cube;
 		Math::vec4 Color = Math::vec4(1.0f);
+		SharedRef<Model> Mesh = nullptr;
 		SharedRef<Texture2D> Texture = nullptr;
 		float Scale = 1.0f;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
 		MeshRendererComponent(const Math::vec4& color)
-			: Color(color), Type(MeshType::Cube) { }
+			: Color(color) { }
 	};
 
 	struct SpriteRendererComponent

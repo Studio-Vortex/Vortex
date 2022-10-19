@@ -8,13 +8,14 @@ namespace Sparky {
 
 	void SceneRenderer::RenderFromSceneCamera(SceneCamera* sceneCamera, const Math::mat4& cameraTransform, entt::registry& sceneRegistry)
 	{
-		// Render 2D Primitives
+		// Render 2D
 		{
 			Renderer2D::BeginScene(*sceneCamera, cameraTransform);
 
-			/// Render Sprites
+			// Render Sprites
 			{
 				auto group = sceneRegistry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+
 				for (const auto entity : group)
 				{
 					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
@@ -23,9 +24,10 @@ namespace Sparky {
 				}
 			}
 
-			/// Render Circles
+			// Render Circles
 			{
 				auto view = sceneRegistry.view<TransformComponent, CircleRendererComponent>();
+
 				for (const auto entity : view)
 				{
 					auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
@@ -37,11 +39,11 @@ namespace Sparky {
 			Renderer2D::EndScene();
 		}
 
-		// Render 3D Primitives
+		// Render 3D
 		{
 			Renderer::BeginScene(*sceneCamera, cameraTransform);
 
-			/// Render Cubes
+			// Render Meshes
 			{
 				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
 
@@ -60,11 +62,11 @@ namespace Sparky {
 
 	void SceneRenderer::RenderFromEditorCamera(const EditorCamera& editorCamera, entt::registry& sceneRegistry)
 	{
-		// Render 2D Primitives
+		// Render 2D
 		{
 			Renderer2D::BeginScene(editorCamera);
 
-			/// Render Sprites
+			// Render Sprites
 			{
 				auto view = sceneRegistry.view<TransformComponent, SpriteRendererComponent>();
 
@@ -76,7 +78,7 @@ namespace Sparky {
 				}
 			}
 
-			/// Render Circles
+			// Render Circles
 			{
 				auto group = sceneRegistry.group<TransformComponent>(entt::get<CircleRendererComponent>);
 
@@ -91,11 +93,11 @@ namespace Sparky {
 			Renderer2D::EndScene();
 		}
 
-		// Render 3D Primitives
+		// Render 3D
 		{
 			Renderer::BeginScene(editorCamera);
 
-			/// Render Cubes
+			// Render Meshes
 			{
 				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
 
@@ -103,12 +105,23 @@ namespace Sparky {
 				{
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
-					switch (meshRendererComponent.Type)
+					if (meshRendererComponent.Mesh)
 					{
-						case MeshRendererComponent::MeshType::Cube:
+						SharedRef<Model> model = meshRendererComponent.Mesh;
+
+						model->OnUpdate(editorCamera, transformComponent.GetTransform(), meshRendererComponent.Color);
+
+						RenderCommand::DrawTriangles(model->GetVertexArray(), model->GetVertexCount());
+					}
+					else
+					{
+						switch (meshRendererComponent.Type)
 						{
-							Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
-							break;
+							case MeshRendererComponent::MeshType::Cube:
+							{
+								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+								break;
+							}
 						}
 					}
 				}

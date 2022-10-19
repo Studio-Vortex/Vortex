@@ -543,6 +543,36 @@ namespace Sparky {
 
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
 
+			char buffer[256];
+
+			if (component.Mesh)
+				memcpy(buffer, component.Mesh->GetPath().c_str(), sizeof(buffer));
+			else
+				memset(buffer, 0, sizeof(buffer));
+
+			Gui::InputText("##Mesh", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+
+			// Accept a Model File from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path modelFilepath = std::filesystem::path(g_AssetPath) / path;
+
+					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
+					if (modelFilepath.filename().extension() == ".obj")
+						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform().GetTransform(), component.Color, (int)(entt::entity)entity);
+					else
+						SP_CORE_WARN("Could not load model file, not a '.obj' - {}", modelFilepath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::SameLine();
+			if (Gui::Button("Mesh"))
+				component.Mesh = nullptr;
+
 			auto textureSize = ImVec2{ 64, 64 };
 
 			Gui::Text("Texture");

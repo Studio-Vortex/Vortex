@@ -71,8 +71,10 @@ namespace Sparky {
 
 		virtual void Clear() const = 0;
 
+		virtual void DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
 		virtual void DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;
 		virtual void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
+		virtual void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
 
 		virtual void SetLineWidth(float thickness) const = 0;
 

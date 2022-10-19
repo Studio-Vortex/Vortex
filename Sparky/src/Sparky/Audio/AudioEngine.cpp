@@ -42,7 +42,7 @@ namespace Sparky {
 		ma_engine_uninit(&s_Data.AudioEngine);
 	}
 
-	void AudioEngine::InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume)
+	void AudioEngine::InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume, bool editorSound)
 	{
 		// If the path doesn't exist and we try to initialize a sound the audio engine will crash
 		if (!std::filesystem::exists(filepath))
@@ -56,7 +56,8 @@ namespace Sparky {
 
 		ma_sound_set_volume(sound, volume);
 
-		s_Data.LoadedSounds.push_back(sound);
+		if (!editorSound)
+			s_Data.LoadedSounds.push_back(sound);
 	}
 
 	void AudioEngine::DestroySound(ma_sound* sound)

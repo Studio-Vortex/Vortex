@@ -14,7 +14,7 @@ namespace Sparky {
 		static void Init();
 		static void Shutdown();
 
-		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume);
+		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume, bool editorSound = false);
 		static void DestroySound(ma_sound* sound);
 
 		static void RemoveLoadedSound(ma_sound* sound);

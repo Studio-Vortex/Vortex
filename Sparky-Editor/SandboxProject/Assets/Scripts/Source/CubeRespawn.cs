@@ -11,6 +11,7 @@ namespace Sandbox {
 		public override void OnCreate()
 		{
 			StartPosition = transform.Translation;
+
 		}
 
 		public override void OnUpdate(float delta)

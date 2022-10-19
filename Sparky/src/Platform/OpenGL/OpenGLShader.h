@@ -33,6 +33,8 @@ namespace Sparky {
 
 		inline const std::string& GetName() const override { return m_Name; };
 
+		void ReCompile() override;
+
 		void SetUniform(const std::string& uniformName, int v) const;
 		void SetUniform(const std::string& uniformName, int* data, uint32_t count) const;
 		void SetUniform(const std::string& uniformName, unsigned int v) const;
@@ -46,6 +48,8 @@ namespace Sparky {
 		void SetUniform(const std::string& uniformName, const Math::mat4& matrix) const;
 
 	private:
+		void CreateShader(const std::string& filepath);
+
 		std::string ReadFile(const std::string& filepath) const;
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source) const;
 		void Compile(const std::unordered_map<GLenum, std::string> shaderSources);
@@ -53,6 +57,7 @@ namespace Sparky {
 
 	private:
 		uint32_t m_RendererID = 0;
+		std::string m_Filepath;
 		std::string m_Name;
 	};
 

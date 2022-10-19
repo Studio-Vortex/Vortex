@@ -17,20 +17,11 @@ namespace Sparky {
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
+		: m_Filepath(filepath)
 	{
 		SP_PROFILE_FUNCTION();
 
-		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
-		Compile(shaderSources);
-
-		// Extract name from filepath
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = filepath.substr(lastSlash, count);
-		SP_CORE_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
+		CreateShader(m_Filepath);
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
@@ -51,6 +42,21 @@ namespace Sparky {
 
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
+	}
+
+	void OpenGLShader::CreateShader(const std::string& filepath)
+	{
+		std::string source = ReadFile(filepath);
+		auto shaderSources = PreProcess(source);
+		Compile(shaderSources);
+
+		// Extract name from filepath
+		auto lastSlash = filepath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filepath.rfind('.');
+		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		m_Name = filepath.substr(lastSlash, count);
+		SP_CORE_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
@@ -197,8 +203,13 @@ namespace Sparky {
 		glUseProgram(NULL);
 	}
 
-    void OpenGLShader::SetBool(const std::string& name, bool value) const
-    {
+	void OpenGLShader::ReCompile()
+	{
+		CreateShader(m_Filepath);
+	}
+
+	void OpenGLShader::SetBool(const std::string& name, bool value) const
+	{
 		SP_PROFILE_FUNCTION();
 
 		SetUniform(name, value);
@@ -211,10 +222,10 @@ namespace Sparky {
 		SetUniform(name, value);
 	}
 
-    void OpenGLShader::SetIntArray(const std::string& name, int* data, uint32_t count) const
-    {
+	void OpenGLShader::SetIntArray(const std::string& name, int* data, uint32_t count) const
+	{
 		SetUniform(name, data, count);
-    }
+	}
 
 	void OpenGLShader::SetFloat(const std::string& name, int value) const
 	{
