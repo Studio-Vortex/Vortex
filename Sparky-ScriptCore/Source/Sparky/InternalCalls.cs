@@ -337,6 +337,18 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyUp(KeyCode key);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Input_GetMousePosition(out Vector2 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsGamepadButtonDown(Gamepad gamepadButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsGamepadButtonUp(Gamepad gamepadButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Input_GetGamepadAxis(Gamepad gamepadAxis);
+
 		#endregion
 
 		#region Gui

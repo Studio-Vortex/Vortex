@@ -1107,6 +1107,26 @@ namespace Sparky {
 		return Input::IsKeyReleased(key);
 	}
 
+	static void Input_GetMousePosition(Math::vec2* outPosition)
+	{
+		*outPosition = Input::GetMousePosition();
+	}
+	
+	static bool Input_IsGamepadButtonDown(Gamepad button)
+	{
+		return Input::IsGamepadButtonPressed(button);
+	}
+
+	static bool Input_IsGamepadButtonUp(Gamepad button)
+	{
+		return Input::IsGamepadButtonReleased(button);
+	}
+
+	static float Input_GetGamepadAxis(Gamepad axis)
+	{
+		return Input::GetGamepadAxis(axis);
+	}
+
 	// TODO Input_Mouse functions
 
 #pragma endregion
@@ -1424,6 +1444,10 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+		SP_ADD_INTERNAL_CALL(Input_GetMousePosition);
+		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
+		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);
+		SP_ADD_INTERNAL_CALL(Input_GetGamepadAxis);
 
 #pragma endregion
 

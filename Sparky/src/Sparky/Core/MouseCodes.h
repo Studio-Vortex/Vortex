@@ -1,7 +1,8 @@
 #pragma once
 
-namespace Sparky
-{
+#include <iostream>
+
+namespace Sparky {
 
 	typedef enum class MouseCode : uint16_t
 	{

@@ -65,10 +65,10 @@ namespace Sandbox {
 				m_Sprite.Color = new Vector4(1.0f);
 			}
 
-			if (Input.IsKeyDown(KeyCode.Escape))
+			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.Start))
 				Game.Shutdown();
 
-			if (Input.IsKeyDown(KeyCode.A))
+			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -0.5f)
 			{
 				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
@@ -76,7 +76,7 @@ namespace Sandbox {
 
 				PlayRunningAnimation(delta);
 			}
-			else if (Input.IsKeyDown(KeyCode.D))
+			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > 0.5f)
 			{
 				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 180.0f, 0.0f);
@@ -93,7 +93,7 @@ namespace Sandbox {
 			if (GameOver && m_CameraEntity.DistanceToPlayer > 5.0f)
 				m_CameraEntity.DistanceToPlayer -= 1.0f * delta;
 
-			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
+			if ((Input.IsKeyDown(KeyCode.Space) || Input.IsGamepadButtonDown(Gamepad.ButtonA)) && IsGrounded)
 			{
 				m_JumpSound.Play();
 				Velocity.Y = 1.0f;

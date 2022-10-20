@@ -35,6 +35,30 @@ namespace Sparky {
 		return state == GLFW_RELEASE;
 	}
 
+    bool Input::IsGamepadButtonPressed(Gamepad gamepad)
+    {
+		GLFWgamepadstate state;
+
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+			return state.buttons[static_cast<int32_t>(gamepad)] == true;
+    }
+
+    bool Input::IsGamepadButtonReleased(Gamepad gamepad)
+    {
+		GLFWgamepadstate state;
+
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+			return state.buttons[static_cast<int32_t>(gamepad)] == false;
+    }
+
+	float Input::GetGamepadAxis(Gamepad axis)
+	{
+		GLFWgamepadstate state;
+
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+			return state.axes[static_cast<int32_t>(axis)];
+	}
+
 	Math::vec2 Input::GetMousePosition()
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());

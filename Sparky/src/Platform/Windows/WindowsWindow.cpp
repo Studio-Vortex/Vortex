@@ -189,6 +189,13 @@ namespace Sparky {
 			data.EventCallback(event);
 		});
 
+		glfwSetJoystickCallback([](int jid, int event) {
+			if (event == GLFW_CONNECTED)
+				SP_CORE_INFO("Joystick: {} Connected", jid);
+			else if (event == GLFW_DISCONNECTED)
+				SP_CORE_INFO("Joystick: {} Disconnected", jid);
+		});
+
 		LoadWindowIcon();
 	}
 
