@@ -295,7 +295,9 @@ namespace Sparky {
 
 				out << YAML::Key << "SoundSettings" << YAML::Value;
 				out << YAML::BeginMap; // SoundSettings
+				out << YAML::Key << "Position" << YAML::Value << soundProperties.Position;
 				out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
+				out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
 				out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
 				out << YAML::EndMap; // SoundSettings
 			}
@@ -553,8 +555,14 @@ namespace Sparky {
 					if (soundProps)
 					{
 						auto& soundProperties = asc.Source->GetProperties();
-						soundProperties.Volume = soundProps["Volume"].as<float>();
-						soundProperties.Loop = soundProps["Loop"].as<bool>();
+						if (soundProps["Position"])
+							soundProperties.Position = soundProps["Position"].as<Math::vec3>();
+						if (soundProps["Volume"])
+							soundProperties.Volume = soundProps["Volume"].as<float>();
+						if (soundProps["Spacialized"])
+							soundProperties.Spacialized = soundProps["Spacialized"].as<bool>();
+						if (soundProps["Loop"])
+							soundProperties.Loop = soundProps["Loop"].as<bool>();
 					}
 				}
 

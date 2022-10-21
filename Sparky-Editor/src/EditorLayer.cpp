@@ -592,7 +592,7 @@ namespace Sparky {
 
 	void EditorLayer::OnLaunchRuntime()
 	{
-		FileSystem::LaunchApplication("runtime\\Debug\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
+		FileSystem::LaunchApplication("runtime\\Release\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()

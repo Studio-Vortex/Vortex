@@ -46,7 +46,7 @@ namespace Sparky {
 
 	private:
 		Settings m_Settings;
-		inline static bool s_ShowPanel = false;
+		inline static bool s_ShowPanel = true;
 	};
 
 }

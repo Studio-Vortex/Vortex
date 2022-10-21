@@ -22,7 +22,8 @@ namespace Sparky {
 		char m_CodeBuffer[SHADER_BUFFER_SIZE] = "";
 		bool m_ShaderLoaded = false;
 		std::filesystem::path m_CurrentShaderPath = std::filesystem::path();
-		inline static bool s_ShowPanel = false;
+
+		inline static bool s_ShowPanel = true;
 	};
 
 }

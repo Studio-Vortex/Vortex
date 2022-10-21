@@ -14,7 +14,7 @@ namespace Sparky {
 		static void Init();
 		static void Shutdown();
 
-		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume, bool editorSound = false);
+		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, bool spacialized = true, float volume = 1.0f, bool editorSound = false);
 		static void DestroySound(ma_sound* sound);
 
 		static void RemoveLoadedSound(ma_sound* sound);
@@ -23,7 +23,10 @@ namespace Sparky {
 		static void PlayFromSound(ma_sound* sound);
 		static void StopSound(ma_sound* sound);
 
+		static void SetPosition(ma_sound* sound, const Math::vec3& position);
 		static void SetVolume(ma_sound* sound, float volume);
+		static void SetSpacialized(ma_sound* sound, bool spacialized);
+		static void SetLoop(ma_sound* sound, bool loop);
 
 		static bool IsPlaying(ma_sound* sound);
 

@@ -42,7 +42,7 @@ namespace Sparky {
 		ma_engine_uninit(&s_Data.AudioEngine);
 	}
 
-	void AudioEngine::InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, float volume, bool editorSound)
+	void AudioEngine::InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, bool spacialized, float volume, bool editorSound)
 	{
 		// If the path doesn't exist and we try to initialize a sound the audio engine will crash
 		if (!std::filesystem::exists(filepath))
@@ -53,9 +53,17 @@ namespace Sparky {
 
 		if (loop)
 			ma_sound_set_looping(sound, MA_TRUE);
+		else
+			ma_sound_set_looping(sound, MA_FALSE);
+
+		if (spacialized)
+			ma_sound_set_spatialization_enabled(sound, MA_TRUE);
+		else
+			ma_sound_set_spatialization_enabled(sound, MA_FALSE);
 
 		ma_sound_set_volume(sound, volume);
 
+		// We shouldn't be tracking sounds that are part of the editor
 		if (!editorSound)
 			s_Data.LoadedSounds.push_back(sound);
 	}
@@ -94,9 +102,24 @@ namespace Sparky {
 		}
 	}
 
+	void AudioEngine::SetPosition(ma_sound* sound, const Math::vec3& position)
+	{
+		ma_sound_set_position(sound, position.x, position.y, position.z);
+	}
+
 	void AudioEngine::SetVolume(ma_sound* sound, float volume)
 	{
 		ma_sound_set_volume(sound, volume);
+	}
+
+	void AudioEngine::SetSpacialized(ma_sound* sound, bool spacialized)
+	{
+		ma_sound_set_spatialization_enabled(sound, spacialized);
+	}
+
+	void AudioEngine::SetLoop(ma_sound* sound, bool loop)
+	{
+		ma_sound_set_looping(sound, loop);
 	}
 
 	bool AudioEngine::IsPlaying(ma_sound* sound)

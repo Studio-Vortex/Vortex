@@ -164,7 +164,7 @@ public class Untitled : Entity
 		Gui::Separator();
 
 		static float padding = 16.0f;
-		static float thumbnailSize = 128.0f;
+		static float thumbnailSize = 96.0f;
 		float cellSize = thumbnailSize + padding;
 
 		float panelWidth = Gui::GetContentRegionAvail().x;

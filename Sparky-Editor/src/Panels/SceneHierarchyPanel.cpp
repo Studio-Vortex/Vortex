@@ -309,7 +309,7 @@ namespace Sparky {
 		}
 	}
 
-	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
+	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, std::function<void()> uiCallback = nullptr)
 	{
 		ImGuiIO& io = Gui::GetIO();
 		const auto& boldFont = io.Fonts->Fonts[0];
@@ -332,12 +332,18 @@ namespace Sparky {
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		Gui::PushFont(boldFont);
 		if (Gui::Button("X", buttonSize))
+		{
 			values.x = resetValue;
+
+			if (uiCallback != nullptr)
+				uiCallback();
+		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
 
 		Gui::SameLine();
-		Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
+			uiCallback();
 		Gui::PopItemWidth();
 		Gui::SameLine();
 
@@ -346,12 +352,18 @@ namespace Sparky {
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
 		Gui::PushFont(boldFont);
 		if (Gui::Button("Y", buttonSize))
+		{
 			values.y = resetValue;
+
+			if (uiCallback != nullptr)
+				uiCallback();
+		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
 
 		Gui::SameLine();
-		Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
+			uiCallback();
 		Gui::PopItemWidth();
 		Gui::SameLine();
 
@@ -360,12 +372,18 @@ namespace Sparky {
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
 		Gui::PushFont(boldFont);
 		if (Gui::Button("Z", buttonSize))
+		{
 			values.z = resetValue;
+
+			if (uiCallback != nullptr)
+				uiCallback();
+		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
 
 		Gui::SameLine();
-		Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
+			uiCallback();
 		Gui::PopItemWidth();
 
 		Gui::PopStyleVar();
@@ -504,7 +522,9 @@ namespace Sparky {
 
 			if (Gui::BeginCombo("Projection", currentProjectionType))
 			{
-				for (uint32_t i = 0; i < 2; i++)
+				uint32_t arraySize = SP_ARRAYCOUNT(projectionTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
 				{
 					bool isSelected = strcmp(currentProjectionType, projectionTypes[i]) == 0;
 					if (Gui::Selectable(projectionTypes[i], isSelected))
@@ -515,6 +535,9 @@ namespace Sparky {
 
 					if (isSelected)
 						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
 				}
 
 				Gui::EndCombo();
@@ -561,7 +584,9 @@ namespace Sparky {
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
-				for (uint32_t i = 0; i < SP_ARRAYCOUNT(meshTypes); i++)
+				uint32_t arraySize = SP_ARRAYCOUNT(meshTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
 				{
 					bool isSelected = strcmp(currentMeshType, meshTypes[i]) == 0;
 					if (Gui::Selectable(meshTypes[i], isSelected))
@@ -572,6 +597,9 @@ namespace Sparky {
 
 					if (isSelected)
 						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
 				}
 
 				Gui::EndCombo();
@@ -774,10 +802,21 @@ namespace Sparky {
 			{
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
+				DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+				{
+					component.Source->SetPosition(props.Position);
+				});
+
+				Gui::Spacing();
+
 				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
 					component.Source->SetVolume(props.Volume);
 
-				Gui::Checkbox("Loop", &props.Loop);
+				if (Gui::Checkbox("Spacialized", &props.Spacialized))
+					component.Source->SetSpacialized(props.Spacialized);
+
+				if (Gui::Checkbox("Loop", &props.Loop))
+					component.Source->SetLoop(props.Loop);
 			}
 
 			Gui::EndDisabled();
@@ -790,7 +829,9 @@ namespace Sparky {
 
 			if (Gui::BeginCombo("Body Type", currentBodyType))
 			{
-				for (uint32_t i = 0; i < 3; i++)
+				uint32_t arraySize = SP_ARRAYCOUNT(bodyTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
 				{
 					bool isSelected = strcmp(currentBodyType, bodyTypes[i]) == 0;
 					if (Gui::Selectable(bodyTypes[i], isSelected))
@@ -801,6 +842,9 @@ namespace Sparky {
 
 					if (isSelected)
 						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
 				}
 
 				Gui::EndCombo();
@@ -858,12 +902,16 @@ namespace Sparky {
 
 					if (Gui::Selectable(currentEntityClassNameString, isSelected))
 					{
+						// If we select a class we need to set the components class name here
 						currentClassName = currentEntityClassNameString;
 						component.ClassName = std::string(currentClassName);
 					}
 
 					if (isSelected)
 						Gui::SetItemDefaultFocus();
+
+					if (i != entityClassNameStrings.size() - 1)
+						Gui::Separator();
 				}
 
 				Gui::EndCombo();

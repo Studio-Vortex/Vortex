@@ -35,7 +35,9 @@ namespace Sparky {
 
 					if (Gui::BeginCombo("Cull Mode", currentCullMode))
 					{
-						for (uint32_t i = 0; i < SP_ARRAYCOUNT(cullModes); i++)
+						uint32_t arraySize = SP_ARRAYCOUNT(cullModes);
+
+						for (uint32_t i = 0; i < arraySize; i++)
 						{
 							bool isSelected = strcmp(currentCullMode, cullModes[i]) == 0;
 							if (Gui::Selectable(cullModes[i], isSelected))
@@ -54,6 +56,9 @@ namespace Sparky {
 
 							if (isSelected)
 								Gui::SetItemDefaultFocus();
+
+							if (i != arraySize - 1)
+								Gui::Separator();
 						}
 
 						Gui::EndMenu();
@@ -105,7 +110,9 @@ namespace Sparky {
 
 					if (Gui::BeginCombo("Editor Theme", currentTheme))
 					{
-						for (uint32_t i = 0; i < SP_ARRAYCOUNT(themes); i++)
+						uint32_t arraySize = SP_ARRAYCOUNT(themes);
+
+						for (uint32_t i = 0; i < arraySize; i++)
 						{
 							bool isSelected = strcmp(currentTheme, themes[i]) == 0;
 							if (Gui::Selectable(themes[i], isSelected))
@@ -126,6 +133,9 @@ namespace Sparky {
 
 							if (isSelected)
 								Gui::SetItemDefaultFocus();
+
+							if (i != arraySize - 1)
+								Gui::Separator();
 						}
 
 						Gui::EndMenu();
@@ -134,14 +144,21 @@ namespace Sparky {
 					ImFont* currentFont = Gui::GetFont();
 					if (Gui::BeginCombo("Editor Font", currentFont->GetDebugName()))
 					{
-						for (uint32_t i = 0; i < io.Fonts->Fonts.Size; i++)
+						uint32_t arraySize = io.Fonts->Fonts.Size;
+
+						for (uint32_t i = 0; i < arraySize; i++)
 						{
 							ImFont* font = io.Fonts->Fonts[i];
 							Gui::PushID((void*)font);
 							if (Gui::Selectable(font->GetDebugName(), font == currentFont))
 								io.FontDefault = font;
+
+							if (i != arraySize - 1)
+								Gui::Separator();
+
 							Gui::PopID();
 						}
+
 						Gui::EndCombo();
 					}
 
@@ -152,7 +169,9 @@ namespace Sparky {
 					Gui::Spacing();
 
 					// Editor Camera Settings
+					Gui::PushFont(boldFont);
 					Gui::Text("Camera");
+					Gui::PopFont();
 					Gui::Separator();
 					Gui::Spacing();
 
@@ -169,7 +188,9 @@ namespace Sparky {
 					Gui::Spacing();
 
 					// Gizmo Settings
+					Gui::PushFont(boldFont);
 					Gui::Text("Gizmos");
+					Gui::PopFont();
 					Gui::Separator();
 					Gui::Spacing();
 

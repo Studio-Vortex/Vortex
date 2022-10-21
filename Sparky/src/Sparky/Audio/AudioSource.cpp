@@ -8,7 +8,7 @@ namespace Sparky {
 	AudioSource::AudioSource(const std::string& filepath)
 		: m_Path(filepath)
 	{
-		AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Volume);
+		AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
 		m_Initialized = true;
 	}
 
@@ -16,7 +16,7 @@ namespace Sparky {
 	{
 		if (!m_Initialized)
 		{
-			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Volume, true);
+			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
 			m_Initialized = true;
 		}
 
@@ -47,9 +47,24 @@ namespace Sparky {
 		return AudioEngine::IsPlaying(&m_Sound);
 	}
 
+	void AudioSource::SetPosition(const Math::vec3& position)
+	{
+		AudioEngine::SetPosition(&m_Sound, position);
+	}
+
 	void AudioSource::SetVolume(float volume)
 	{
 		AudioEngine::SetVolume(&m_Sound, volume);
+	}
+
+	void AudioSource::SetSpacialized(bool spacialized)
+	{
+		AudioEngine::SetSpacialized(&m_Sound, spacialized);
+	}
+
+	void AudioSource::SetLoop(bool loop)
+	{
+		AudioEngine::SetLoop(&m_Sound, loop);
 	}
 
 }

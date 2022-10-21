@@ -13,7 +13,7 @@ namespace Sparky {
 		void ShowPanel() { s_ShowPanel = true; }
 
 	private:
-		inline static bool s_ShowPanel = false;
+		inline static bool s_ShowPanel = true;
 	};
 
 }
