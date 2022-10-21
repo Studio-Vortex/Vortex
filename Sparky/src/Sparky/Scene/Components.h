@@ -64,7 +64,7 @@ namespace Sparky {
 
 	struct MeshRendererComponent
 	{
-		enum class MeshType { Cube = 0 };
+		enum class MeshType { Cube = 0, Sphere };
 		MeshType Type = MeshType::Cube;
 		Math::vec4 Color = Math::vec4(1.0f);
 		SharedRef<Model> Mesh = nullptr;

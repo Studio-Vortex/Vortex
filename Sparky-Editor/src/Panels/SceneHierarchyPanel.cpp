@@ -72,6 +72,14 @@ namespace Sparky {
 						m_SelectedEntity.AddComponent<MeshRendererComponent>();
 					}
 
+					Gui::Separator();
+
+					if (Gui::MenuItem("Sphere"))
+					{
+						m_SelectedEntity = m_ContextScene->CreateEntity("Sphere");
+						m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Sphere;
+					}
+
 					Gui::EndMenu();
 				}
 
@@ -532,12 +540,12 @@ namespace Sparky {
 
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
-			const char* meshTypes[] = { "Cube" };
+			const char* meshTypes[] = { "Cube", "Sphere" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
-				for (uint32_t i = 0; i < 1; i++)
+				for (uint32_t i = 0; i < SP_ARRAYCOUNT(meshTypes); i++)
 				{
 					bool isSelected = strcmp(currentMeshType, meshTypes[i]) == 0;
 					if (Gui::Selectable(meshTypes[i], isSelected))

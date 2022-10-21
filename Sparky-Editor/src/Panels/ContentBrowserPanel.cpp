@@ -13,6 +13,7 @@ namespace Sparky {
 	{
 		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
 		m_AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");
+		m_ModelFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/ModelFileIcon.png");
 		m_CodeFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/CodeFileIcon.png");
 		m_SceneIcon = Texture2D::Create("Resources/Icons/ContentBrowser/SceneIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
@@ -201,6 +202,8 @@ public class Untitled : Entity
 				icon = m_SceneIcon;
 			else if (currentPath.extension().string() == ".cs")
 				icon = m_CodeFileIcon;
+			else if (currentPath.extension().string() == ".obj")
+				icon = m_ModelFileIcon;
 			else if (currentPath.extension().string() == ".wav" || currentPath.extension().string() == ".mp3")
 				icon = m_AudioFileIcon;
 			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")

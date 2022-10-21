@@ -143,7 +143,7 @@
 
 	public enum MeshType
 	{
-		Cube,
+		Cube, Sphere,
 	}
 
 	public class MeshRenderer : Component

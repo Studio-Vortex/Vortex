@@ -12,6 +12,7 @@ namespace Sandbox {
 		public float HorizontalFriction = 2.0f;
 		public float Speed;
 		public float WaitTime;
+		public float ControllerDeadzone = 0.1f;
 		public Vector3 StartPosition;
 		public Vector3 Velocity;
 
@@ -41,6 +42,7 @@ namespace Sandbox {
 			StartPosition = transform.Translation;
 
 			m_CameraEntity = FindEntityByName("Camera").As<Camera2D>();
+			Debug.Info("Platformer Player is loose!");
 		}
 
 		public override void OnUpdate(float delta)
@@ -68,26 +70,32 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.Start))
 				Game.Shutdown();
 
-			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -0.5f)
+			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
 			{
 				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
+				float axisModifier = -Input.GetGamepadAxis(Gamepad.AxisLeftX);
 				Velocity.X = -1.0f;
+				if (axisModifier != 0.0f)
+					Velocity.X *= axisModifier;
 
 				PlayRunningAnimation(delta);
 			}
-			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > 0.5f)
+			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
 			{
 				IsRunning = true;
 				transform.Rotation = new Vector3(0.0f, 180.0f, 0.0f);
+				float axisModifier = Input.GetGamepadAxis(Gamepad.AxisLeftX);
 				Velocity.X = 1.0f;
+				if (axisModifier != 0.0f)
+					Velocity.X *= axisModifier;
 
-				PlayRunningAnimation(delta);
+					PlayRunningAnimation(delta);
 			}
 			else
 				IsRunning = false;
 
-			if (transform.Translation.X >= FinishPoint)
+			if (transform.Translation.Y >= FinishPoint)
 				GameOver = true;
 
 			if (GameOver && m_CameraEntity.DistanceToPlayer > 5.0f)

@@ -91,8 +91,7 @@ namespace Sparky {
 	void OpenGLRendererAPI::DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, nullptr);
 	}
 
 	void OpenGLRendererAPI::SetLineWidth(float thickness) const

@@ -20,7 +20,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, spriteComponent] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -32,7 +32,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)(entt::entity)entity);
 				}
 			}
 
@@ -59,7 +59,12 @@ namespace Sparky {
 						{
 							case MeshRendererComponent::MeshType::Cube:
 							{
-								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
+								break;
+							}
+							case MeshRendererComponent::MeshType::Sphere:
+							{
+								Renderer::DrawSphere(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
 								break;
 							}
 						}
@@ -85,7 +90,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)entity);
+					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -97,7 +102,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
 
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)(entt::entity)entity);
 				}
 			}
 
@@ -124,7 +129,12 @@ namespace Sparky {
 						{
 							case MeshRendererComponent::MeshType::Cube:
 							{
-								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)entity);
+								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
+								break;
+							}
+							case MeshRendererComponent::MeshType::Sphere:
+							{
+								Renderer::DrawSphere(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
 								break;
 							}
 						}

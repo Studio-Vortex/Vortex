@@ -693,7 +693,7 @@ namespace Sparky {
 
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity()) {
-			const auto& transform = selectedEntity.GetComponent<TransformComponent>();
+			const auto& entityTransform = selectedEntity.GetComponent<TransformComponent>();
 
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{
@@ -703,7 +703,12 @@ namespace Sparky {
 				{
 					case MeshRendererComponent::MeshType::Cube:
 					{
-						Renderer::DrawCubeWireframe(transform);
+						Renderer::DrawCubeWireframe(entityTransform);
+						break;
+					}
+					case MeshRendererComponent::MeshType::Sphere:
+					{
+						Renderer::DrawCubeWireframe(entityTransform);
 						break;
 					}
 				}
@@ -711,7 +716,7 @@ namespace Sparky {
 			else
 			{
 				//Orange
-				Renderer2D::DrawRect(transform.GetTransform(), ColorToVec4(Color::Orange));
+				Renderer2D::DrawRect(entityTransform.GetTransform(), ColorToVec4(Color::Orange));
 			}
 		}
 

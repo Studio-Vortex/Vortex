@@ -28,6 +28,7 @@ namespace Sparky {
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform);
 
 		static void DrawCube(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void DrawSphere(const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID);
 		static void DrawModel(const EditorCamera& editorCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 		static void DrawModel(const SceneCamera& sceneCamera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 
@@ -50,6 +51,7 @@ namespace Sparky {
 		static void NextBatch();
 
 		static void AddToCubeVertexBuffer(const Math::mat4& transform, const Math::vec3* normals, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID);
+		static void AddToSphereVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float textureIndex, float textureScale, int entityID);
 	};
 
 }

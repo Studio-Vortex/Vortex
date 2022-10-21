@@ -167,7 +167,8 @@ namespace Sparky {
 	{
 		switch (meshType)
 		{
-			case Sparky::MeshRendererComponent::MeshType::Cube: return "Cube";
+			case MeshRendererComponent::MeshType::Cube:   return "Cube";
+			case MeshRendererComponent::MeshType::Sphere: return "Sphere";
 		}
 
 		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
@@ -176,7 +177,8 @@ namespace Sparky {
 
 	static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
 	{
-		if (meshTypeString == "Cube") return MeshRendererComponent::MeshType::Cube;
+		if (meshTypeString == "Cube")   return MeshRendererComponent::MeshType::Cube;
+		if (meshTypeString == "Sphere") return MeshRendererComponent::MeshType::Sphere;
 
 		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
 		return MeshRendererComponent::MeshType::Cube;

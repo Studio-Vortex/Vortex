@@ -6,6 +6,7 @@ namespace Sandbox {
 	public class TestClass : Entity
 	{
 		public float Speed;
+		public float ControllerDeadzone = 0.15f;
 		public Vector3 Velocity;
 
 		public override void OnCreate()
@@ -21,15 +22,15 @@ namespace Sandbox {
 
 			Velocity = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.W))
-				Velocity.Y = 1.0f;
-			else if (Input.IsKeyDown(KeyCode.S))
-				Velocity.Y = -1.0f;
+			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
+				Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			else if (Input.IsKeyDown(KeyCode.S) || Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
+				Velocity.Y = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
 
-			if (Input.IsKeyDown(KeyCode.A))
-				Velocity.X = -1.0f;
-			else if (Input.IsKeyDown(KeyCode.D))
-				Velocity.X = 1.0f;
+			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
+				Velocity.X = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
+				Velocity.X = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftX);
 
 			if (Input.IsKeyDown(KeyCode.Space))
 				SpawnBullet();

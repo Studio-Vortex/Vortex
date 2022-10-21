@@ -19,6 +19,9 @@ namespace Sparky {
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
 
+	static constexpr uint32_t SPHERE_X_SEGMENTS = 32;
+	static constexpr uint32_t SPHERE_Y_SEGMENTS = 32;
+
 	struct RenderStatistics
 	{
 		uint32_t DrawCalls;
