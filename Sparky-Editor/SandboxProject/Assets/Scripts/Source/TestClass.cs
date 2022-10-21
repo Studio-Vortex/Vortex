@@ -23,9 +23,9 @@ namespace Sandbox {
 			Velocity = Vector3.Zero;
 
 			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
+				Velocity.Y = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			else if (Input.IsKeyDown(KeyCode.S) || Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				Velocity.Y = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
+				Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
 
 			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
 				Velocity.X = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftX);

@@ -74,8 +74,8 @@ namespace Sparky {
 
 		Math::vec2 m_InitialMousePosition = Math::vec2(0.0f);
 
-		float m_Distance = 1.0f;
-		float m_Pitch = -25.0f, m_Yaw = 0.0f;
+		float m_Distance = 0.0f;
+		float m_Pitch = Math::Deg2Rad(25.0f), m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
 

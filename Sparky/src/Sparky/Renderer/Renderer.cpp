@@ -263,7 +263,7 @@ namespace Sparky {
 
 			while (indexCount < RendererInternalData::MaxIndices)
 			{
-				memcpy(&sphereIndices[indexCount], &sphereIndices[offset], indexCount);
+				std::copy_n(&sphereIndices[offset], i, sphereIndices + indexCount);
 				offset = indexCount;
 				indexCount *= 2;
 			}

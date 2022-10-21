@@ -43,7 +43,7 @@ namespace Sparky {
 
 		virtual void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const = 0;
 
-		virtual void ShowMouseCursor(bool enabled) const = 0;
+		virtual void ShowMouseCursor(bool enabled, bool rawInputMode = false) const = 0;
 
 		static UniqueRef<Window> Create(const WindowProperties& props = WindowProperties());
 	};

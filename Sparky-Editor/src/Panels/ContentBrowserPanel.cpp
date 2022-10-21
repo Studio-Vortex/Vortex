@@ -156,7 +156,7 @@ public class Untitled : Entity
 		float inputTextSize = Gui::GetWindowWidth() / 2.0f - Gui::CalcTextSize(m_CurrentDirectory.string().c_str()).x;
 		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
 		Gui::SetNextItemWidth(inputTextSize);
-		bool isSearching = Gui::InputTextWithHint("##Search", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		bool isSearching = Gui::InputTextWithHint("##AssetSearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
 		if (isSearching)
 			m_SearchInputTextFilter.Build();
 

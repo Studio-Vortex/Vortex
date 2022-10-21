@@ -632,6 +632,7 @@ namespace Sparky {
 			// X Grid Lines
 			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
 			{
+				// Skip the origin lines
 				if (x == 0 && m_DrawEditorAxes)
 					continue;
 
@@ -641,6 +642,7 @@ namespace Sparky {
 			// Z Grid Lines
 			for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
 			{
+				// Skip the origin lines
 				if (z == 0 && m_DrawEditorAxes)
 					continue;
 
@@ -941,7 +943,7 @@ namespace Sparky {
 			case Mouse::ButtonRight:
 			{
 				if (m_SceneViewportHovered)
-					Application::Get().GetWindow().ShowMouseCursor(false);
+					Application::Get().GetWindow().ShowMouseCursor(false, true);
 
 				break;
 			}
@@ -1076,6 +1078,9 @@ namespace Sparky {
 
 		m_HoveredEntity = Entity{};
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		// Reset the mouse cursor in case a script turned it off
+		Application::Get().GetWindow().ShowMouseCursor(true);
 	}
 
 	void EditorLayer::RestartScene()

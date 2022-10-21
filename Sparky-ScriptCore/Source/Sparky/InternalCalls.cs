@@ -5,10 +5,17 @@ namespace Sparky {
 
 	internal static class InternalCalls
 	{
-		#region Game
+		#region Application
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Application_Shutdown();
+
+		#endregion
+		
+		#region Window
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_ShowMouseCursor(bool enabled);
 
 		#endregion
 

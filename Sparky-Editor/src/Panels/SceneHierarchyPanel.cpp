@@ -21,11 +21,24 @@ namespace Sparky {
 		m_SelectedEntity = {};
 		m_EntityShouldBeRenamed = false;
 		m_EntityShouldBeDestroyed = false;
+
+		// We should reset the search bar here
+		memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
 	{
 		Gui::Begin("Scene Hierarchy");
+
+		// Search Bar + Filtering
+		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x);
+		bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		if (isSearching)
+			m_SearchInputTextFilter.Build();
+
+		Gui::Spacing();
+		Gui::Separator();
 
 		if (m_ContextScene)
 		{
@@ -46,7 +59,10 @@ namespace Sparky {
 			m_ContextScene->m_Registry.each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_ContextScene.get() };
-				DrawEntityNode(entity);
+
+				// If the name lines up with the search box we can show it
+				if (m_SearchInputTextFilter.PassFilter(entity.GetName().c_str()))
+					DrawEntityNode(entity);
 			});
 
 			// Left click anywhere on the panel to deselect entity

@@ -72,7 +72,6 @@ namespace Sparky {
 		const Math::vec2& mousePosition{ Input::GetMouseX(), Input::GetMouseY() };
 		Math::vec2 mouseDelta = (mousePosition - m_InitialMousePosition) * 0.003f;
 		m_InitialMousePosition = mousePosition;
-		float originalDistance = m_Distance;
 
 		if (Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt))
 		{
@@ -113,18 +112,13 @@ namespace Sparky {
 			if (Input::IsKeyPressed(Key::E))
 				cameraVelocity += GetUpDirection();
 
-			m_Distance = 1.0f;
+			m_Distance = 0.0f;
 
 			m_FocalPoint += cameraVelocity * moveSpeed * Math::vec3(delta);
 			m_Position = CalcualtePosition();
 
 			MouseRotate(mouseDelta);
-			UpdateView();
-
-			return;
 		}
-
-		m_Distance = originalDistance;
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 			MousePan(mouseDelta);
@@ -184,10 +178,10 @@ namespace Sparky {
 	void EditorCamera::MouseZoom(float delta)
 	{
 		m_Distance -= delta * ZoomSpeed();
-		if (m_Distance < 1.0f)
+		if (m_Distance < 0.0f)
 		{
 			m_FocalPoint += GetForwardDirection();
-			m_Distance = 1.0f;
+			m_Distance = 0.0f;
 		}
 	}
 

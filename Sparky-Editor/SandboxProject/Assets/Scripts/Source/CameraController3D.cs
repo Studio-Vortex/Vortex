@@ -17,30 +17,32 @@ namespace Sandbox {
 		private Vector3 m_Velocity;
 		private Vector3 m_Rotation;
 
+		public override void OnCreate()
+		{
+			Window.ShowMouseCursor(false);
+		}
+
 		public override void OnUpdate(float delta)
 		{
-			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				m_Velocity = Vector3.Forward * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
-			else if (Input.IsKeyDown(KeyCode.S) || Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				m_Velocity = Vector3.Back * Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
+				m_Velocity.Z = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
+				m_Velocity.Z = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
 
-			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				m_Velocity = Vector3.Left * -Input.GetGamepadAxis(Gamepad.AxisLeftX);
-			else if (Input.IsKeyDown(KeyCode.D)|| Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				m_Velocity = Vector3.Right * Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
+				m_Velocity.X = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
+				m_Velocity.X = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftX);
 
-			if (Input.IsKeyDown(KeyCode.Q) || Input.IsGamepadButtonDown(Gamepad.LeftBumper))
-				m_Velocity = Vector3.Up;
-			else if (Input.IsKeyDown(KeyCode.E) || Input.IsGamepadButtonDown(Gamepad.RightBumper))
-				m_Velocity = Vector3.Down;
+			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
+				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
+			else if (Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > ControllerDeadzone)
+				m_Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
 
 			if (!FixedRotation)
-			{
 				ProcessRotation();
-				Debug.Log("ProcessRotation()");
-			}
 
-			if (Input.IsKeyDown(KeyCode.LeftShift) || Input.IsGamepadButtonDown(Gamepad.LeftThumb))
+			if (Input.IsKeyDown(KeyCode.LeftShift) || Input.IsGamepadButtonDown(Gamepad.LeftStick))
 				m_Velocity *= ShiftModifer;
 
 			m_Velocity *= Speed * delta;
@@ -52,25 +54,25 @@ namespace Sandbox {
 
 		private void ProcessRotation()
 		{
-			if (Input.IsKeyDown(KeyCode.Left) || Input.GetGamepadAxis(Gamepad.AxisRightX) < -ControllerDeadzone)
+			if (Input.GetGamepadAxis(Gamepad.AxisRightX) < -ControllerDeadzone)
 				m_Rotation.Y = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisRightX);
-			if (Input.IsKeyDown(KeyCode.Right) || Input.GetGamepadAxis(Gamepad.AxisRightX) > ControllerDeadzone)
+			if (Input.GetGamepadAxis(Gamepad.AxisRightX) > ControllerDeadzone)
 				m_Rotation.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisRightX);
 
-			if (Input.IsKeyDown(KeyCode.Up) || Input.GetGamepadAxis(Gamepad.AxisRightY) < -ControllerDeadzone)
+			if (Input.GetGamepadAxis(Gamepad.AxisRightY) < -ControllerDeadzone)
 				m_Rotation.X = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisRightY);
-			if (Input.IsKeyDown(KeyCode.Down) || Input.GetGamepadAxis(Gamepad.AxisRightY) > ControllerDeadzone)
+			if (Input.GetGamepadAxis(Gamepad.AxisRightY) > ControllerDeadzone)
 				m_Rotation.X = -1.0f * Input.GetGamepadAxis(Gamepad.AxisRightY);
 
 			if (transform.Rotation.X >= MaxRoll_Up)
 			{
-				float newRoll = Math.Min(MaxRoll_Up, transform.Rotation.X);
-				transform.Rotation = new Vector3(newRoll, transform.Rotation.Y, transform.Rotation.Z);
+				float roll = Math.Min(MaxRoll_Up, transform.Rotation.X);
+				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 			if (transform.Rotation.X <= MaxRoll_Down)
 			{
-				float newRoll = Math.Max(MaxRoll_Down, transform.Rotation.X);
-				transform.Rotation = new Vector3(newRoll, transform.Rotation.Y, transform.Rotation.Z);
+				float roll = Math.Max(MaxRoll_Down, transform.Rotation.X);
+				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 		}
 	}

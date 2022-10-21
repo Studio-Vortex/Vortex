@@ -39,7 +39,7 @@ namespace Sparky {
 
 	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-#pragma region Game
+#pragma region Application
 
 	static void Application_Shutdown()
 	{
@@ -47,6 +47,18 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		Application::Get().Close();
+	}
+
+#pragma endregion
+
+#pragma region Window
+
+	static void Window_ShowMouseCursor(bool enabled)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Application::Get().GetWindow().ShowMouseCursor(enabled);
 	}
 
 #pragma endregion
@@ -1268,9 +1280,15 @@ namespace Sparky {
 	void ScriptRegistry::RegisterMethods()
 	{
 
-#pragma region Game
+#pragma region Application
 
 		SP_ADD_INTERNAL_CALL(Application_Shutdown);
+
+#pragma endregion
+
+#pragma region Window
+
+		SP_ADD_INTERNAL_CALL(Window_ShowMouseCursor);
 
 #pragma endregion
 

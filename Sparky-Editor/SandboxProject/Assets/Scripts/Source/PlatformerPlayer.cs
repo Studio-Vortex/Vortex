@@ -67,8 +67,8 @@ namespace Sandbox {
 				m_Sprite.Color = new Vector4(1.0f);
 			}
 
-			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.Start))
-				Game.Shutdown();
+			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+				Application.Shutdown();
 
 			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
 			{

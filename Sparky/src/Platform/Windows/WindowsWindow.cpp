@@ -189,7 +189,8 @@ namespace Sparky {
 			data.EventCallback(event);
 		});
 
-		glfwSetJoystickCallback([](int jid, int event) {
+		glfwSetJoystickCallback([](int jid, int event)
+		{
 			if (event == GLFW_CONNECTED)
 				SP_CORE_INFO("Joystick: {} Connected", jid);
 			else if (event == GLFW_DISCONNECTED)
@@ -260,12 +261,20 @@ namespace Sparky {
 		glfwSetCursorPos(m_Window, (double)mouseCursorX, (double)mouseCursorY);
 	}
 
-	void WindowsWindow::ShowMouseCursor(bool enabled) const
+	void WindowsWindow::ShowMouseCursor(bool enabled, bool rawInputMode) const
 	{
 		if (enabled)
+		{
 			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+		}
 		else
+		{
 			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+			if (rawInputMode)
+				glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
 	}
 
 	void WindowsWindow::Shutdown()
