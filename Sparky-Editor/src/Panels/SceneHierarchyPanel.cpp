@@ -32,10 +32,23 @@ namespace Sparky {
 		Gui::Begin("Scene Hierarchy");
 
 		// Search Bar + Filtering
-		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x);
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
 		bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
 		if (isSearching)
 			m_SearchInputTextFilter.Build();
+
+		Gui::SameLine();
+		
+		if (Gui::Button(" + "))
+			Gui::OpenPopup("CreateEntity");
+
+		if (Gui::BeginPopup("CreateEntity"))
+		{
+			DisplayCreateEntityMenu();
+
+			Gui::EndPopup();
+		}
 
 		Gui::Spacing();
 		Gui::Separator();
@@ -76,138 +89,7 @@ namespace Sparky {
 			// Right-click on blank space in scene hierarchy panel
 			if (Gui::BeginPopupContextWindow(0, 1, false))
 			{
-				if (Gui::MenuItem("Create Empty"))
-					m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Create 3D"))
-				{
-					if (Gui::MenuItem("Cube"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Cube");
-						m_SelectedEntity.AddComponent<MeshRendererComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Sphere"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Sphere");
-						m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Sphere;
-					}
-
-					Gui::EndMenu();
-				}
-
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Create 2D"))
-				{
-					if (Gui::MenuItem("Quad"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
-						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Circle"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
-						m_SelectedEntity.AddComponent<CircleRendererComponent>();
-					}
-
-					Gui::EndMenu();
-				}
-
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Camera"))
-				{
-					if (Gui::MenuItem("Perspective"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
-						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
-						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-					}
-					Gui::Separator();
-
-					if (Gui::MenuItem("Orthographic"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
-						auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
-						cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-					}
-					Gui::EndMenu();
-				}
-
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Physics"))
-				{
-					if (Gui::MenuItem("Static Box Collider 2D"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
-						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
-						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Static Circle Collider 2D"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
-						m_SelectedEntity.AddComponent<CircleRendererComponent>();
-						m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Dynamic Box Collider 2D"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("BoxCollider2D");
-						m_SelectedEntity.AddComponent<SpriteRendererComponent>();
-						auto& rb2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						rb2d.Type = RigidBody2DComponent::BodyType::Dynamic;
-						m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Dynamic Circle Collider 2D"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("CircleCollider2D");
-						m_SelectedEntity.AddComponent<CircleRendererComponent>();
-						auto& cc2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-						cc2d.Type = RigidBody2DComponent::BodyType::Dynamic;
-						m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
-					}
-
-					Gui::EndMenu();
-				}
-
-				Gui::Separator();
-
-				if (Gui::BeginMenu("Audio"))
-				{
-					if (Gui::MenuItem("Source Entity"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Audio Source");
-						m_SelectedEntity.AddComponent<AudioSourceComponent>();
-					}
-
-					Gui::Separator();
-
-					if (Gui::MenuItem("Listener Entity"))
-					{
-						m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
-						m_SelectedEntity.AddComponent<AudioListenerComponent>();
-					}
-
-					Gui::EndMenu();
-				}
+				DisplayCreateEntityMenu();
 
 				Gui::EndPopup();
 			}
@@ -236,6 +118,142 @@ namespace Sparky {
 		}
 
 		Gui::End();
+	}
+
+	void SceneHierarchyPanel::DisplayCreateEntityMenu()
+	{
+		if (Gui::MenuItem("Create Empty"))
+			m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Create 3D"))
+		{
+			if (Gui::MenuItem("Cube"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Cube");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Sphere"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Sphere");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Sphere;
+			}
+
+			Gui::EndMenu();
+		}
+
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Create 2D"))
+		{
+			if (Gui::MenuItem("Quad"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
+				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Circle"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
+				m_SelectedEntity.AddComponent<CircleRendererComponent>();
+			}
+
+			Gui::EndMenu();
+		}
+
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Camera"))
+		{
+			if (Gui::MenuItem("Perspective"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
+				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Orthographic"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
+				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+			}
+			Gui::EndMenu();
+		}
+
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Physics"))
+		{
+			if (Gui::MenuItem("Static Box Collider 2D"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Box Collider2D");
+				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Static Circle Collider 2D"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Circle Collider2D");
+				m_SelectedEntity.AddComponent<CircleRendererComponent>();
+				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Dynamic Box Collider 2D"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Box Collider2D");
+				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+				auto& rb2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				rb2d.Type = RigidBody2DComponent::BodyType::Dynamic;
+				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Dynamic Circle Collider 2D"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Circle Collider2D");
+				m_SelectedEntity.AddComponent<CircleRendererComponent>();
+				auto& cc2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				cc2d.Type = RigidBody2DComponent::BodyType::Dynamic;
+				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+			}
+
+			Gui::EndMenu();
+		}
+
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Audio"))
+		{
+			if (Gui::MenuItem("Source Entity"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Source");
+				m_SelectedEntity.AddComponent<AudioSourceComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Listener Entity"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
+				m_SelectedEntity.AddComponent<AudioListenerComponent>();
+			}
+
+			Gui::EndMenu();
+		}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
@@ -458,6 +476,11 @@ namespace Sparky {
 			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
 			{
 				tag = std::string(buffer);
+				
+				// Set the focus to the scene panel otherwise the keyboard focus will still be on the input text box
+				if (m_EntityShouldBeRenamed)
+					Gui::SetWindowFocus("Scene");
+
 				m_EntityShouldBeRenamed = false;
 			}
 		}
@@ -747,6 +770,13 @@ namespace Sparky {
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
 		{
+			if (component.Source)
+			{
+				Gui::BeginDisabled(!component.Source->IsPlaying());
+				Gui::ProgressBar(component.Source->GetAmountComplete());
+				Gui::EndDisabled();
+			}
+
 			char buffer[256];
 			
 			if (component.Source)
@@ -779,6 +809,8 @@ namespace Sparky {
 				Gui::EndDragDropTarget();
 			}
 
+			Gui::Spacing();
+
 			Gui::BeginDisabled(component.Source == nullptr);
 
 			if (Gui::Button("Play"))
@@ -803,12 +835,10 @@ namespace Sparky {
 			if (Gui::Button("Stop"))
 				component.Source->Stop();
 
+			Gui::Spacing();
+
 			if (component.Source != nullptr)
 			{
-				Gui::BeginDisabled(!component.Source->IsPlaying());
-				Gui::ProgressBar(component.Source->GetAmountComplete());
-				Gui::EndDisabled();
-
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
 				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))
@@ -962,7 +992,7 @@ namespace Sparky {
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
@@ -972,7 +1002,7 @@ namespace Sparky {
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
 		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)

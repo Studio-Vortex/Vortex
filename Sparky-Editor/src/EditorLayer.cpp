@@ -610,16 +610,17 @@ namespace Sparky {
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
-			float axisLineLength = 200.0f;
-			float lineLength = 100.0f;
-			float gridWidth = 100.0f;
-			float gridLength = 100.0f;
+			float axisLineLength = 300.0f;
+			float gridLineLength = 200.0f;
+			float gridWidth = 200.0f;
+			float gridLength = 200.0f;
+
+			float originalLineWidth = Renderer2D::GetLineWidth();
 
 			// Render Axes
 			if (m_DrawEditorAxes)
 			{
-				float originalLineWidth = Renderer2D::GetLineWidth();
-				Renderer2D::SetLineWidth(4.0f);
+				Renderer2D::SetLineWidth(5.0f);
 				Renderer2D::DrawLine({ -axisLineLength, 0.0f, 0.0f }, { axisLineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
 				Renderer2D::DrawLine({ 0.0f, -axisLineLength, 0.0f }, { 0.0f, axisLineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
 				Renderer2D::DrawLine({ 0.0f, 0.0f, -axisLineLength }, { 0.0f, 0.0f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
@@ -627,7 +628,7 @@ namespace Sparky {
 				Renderer2D::SetLineWidth(originalLineWidth);
 			}
 
-			Math::vec4 gridColor = { 0.5f, 0.5f, 0.5f, 1.0f };
+			Math::vec4 gridColor = { 0.4f, 0.4f, 0.4f, 1.0f };
 
 			// X Grid Lines
 			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
@@ -636,7 +637,7 @@ namespace Sparky {
 				if (x == 0 && m_DrawEditorAxes)
 					continue;
 
-				Renderer2D::DrawLine({ x, 0, -lineLength }, { x, 0, lineLength }, gridColor);
+				Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
 			}
 			
 			// Z Grid Lines
@@ -646,8 +647,10 @@ namespace Sparky {
 				if (z == 0 && m_DrawEditorAxes)
 					continue;
 
-				Renderer2D::DrawLine({ -lineLength, 0, z }, { lineLength, 0, z }, gridColor);
+				Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
 			}
+
+			Renderer2D::Flush();
 		}
 		
 		if (m_ShowPhysicsColliders)
@@ -666,8 +669,8 @@ namespace Sparky {
 					Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
 					Math::mat4 transform = Math::Translate(tc.Translation)
-						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
+						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Scale(scale);
 
 					Renderer2D::DrawRect(transform, m_Physics2DColliderColor);
@@ -684,9 +687,9 @@ namespace Sparky {
 					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
 
 					Math::mat4 transform = Math::Translate(tc.Translation)
-						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
-						* Math::Scale(Math::vec3(scale.x, scale.x, scale.z));
+						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Scale(scale);
 
 					Renderer2D::DrawCircle(transform, m_Physics2DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
 				}
@@ -886,21 +889,21 @@ namespace Sparky {
 
 			case Key::Q:
 			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 					OnNoGizmoSelected();
 
 				break;
 			}
 			case Key::W:
 			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 					OnTranslationToolSelected();
 
 				break;
 			}
 			case Key::E:
 			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 					OnRotationToolSelected();
 
 				break;
@@ -910,7 +913,7 @@ namespace Sparky {
 				if (controlPressed)
 					ScriptEngine::ReloadAssembly();
 
-				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed)
+				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 					OnScaleToolSelected();
 
 				break;
@@ -1046,6 +1049,17 @@ namespace Sparky {
 
 	void EditorLayer::OnScenePlay()
 	{
+		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		// Stop audio sources that were playing before the play button was pressed
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_ActiveScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+		}
+
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
@@ -1082,6 +1096,17 @@ namespace Sparky {
 
 	void EditorLayer::RestartScene()
 	{
+		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		// Restart audio sources
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_ActiveScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			if (audioSource->IsPlaying())
+				audioSource->Restart();
+		}
+
 		OnScenePlay();
 	}
 

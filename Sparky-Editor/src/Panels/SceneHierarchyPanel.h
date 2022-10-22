@@ -19,13 +19,16 @@ namespace Sparky {
 
 		void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
+		bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
 		void SetEntityToBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+
 		void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
 	private:
 		template <typename TComponent>
 		void DisplayAddComponentPopup(const std::string& name, bool lastComponent = false, bool allowMultiple = false);
 
+		void DisplayCreateEntityMenu();
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 

@@ -34,9 +34,9 @@ namespace Sparky {
 	void EditorCamera::ResetCameraPositionToWorldOrigin()
 	{
 		m_Position = Math::vec3(0.0f);
-		m_FocalPoint = Math::vec3(0.0f);
-		m_Distance = 10.0f;
-		m_Pitch = 0.0f;
+		m_FocalPoint = Math::vec3(0.0f, 5.0f, 10.0f);
+		m_Distance = 0.0f;
+		m_Pitch = Math::Deg2Rad(25.0f);
 		m_Yaw = 0.0f;
 
 		UpdateView();
@@ -80,20 +80,29 @@ namespace Sparky {
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseZoom(mouseDelta.y);
 		}
+		else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+			MousePan(mouseDelta);
 		else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			// Handle movement and rotation
 			Math::vec3 moveSpeed = s_MoveSpeed;
 			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-			if (m_MouseYDelta)
-			{
-				m_ShiftModifer += m_MouseXDelta;
-				m_MouseYDelta = 0.0f;
-			}
-
 			if (shiftPressed)
+			{
+				// Scrolling will change the speed of the camera when shift is pressed
+				if (m_MouseYDelta)
+				{
+					m_ShiftModifer += m_MouseYDelta * 3.0f * delta;
+
+					if (m_ShiftModifer < 1.5f)
+						m_ShiftModifer = 1.5f;
+					if (m_ShiftModifer > 10.0f)
+						m_ShiftModifer = 10.0f;
+				}
+
 				moveSpeed *= m_ShiftModifer;
+			}
 
 			Math::vec3 cameraVelocity = Math::vec3(0.0f);
 
@@ -119,9 +128,6 @@ namespace Sparky {
 
 			MouseRotate(mouseDelta);
 		}
-
-		if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
-			MousePan(mouseDelta);
 
 		UpdateView();
 	}
