@@ -8,15 +8,20 @@ namespace Sparky {
 	AudioSource::AudioSource(const std::string& filepath)
 		: m_Path(filepath)
 	{
-		AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
-		m_Initialized = true;
+		
+	}
+
+	AudioSource::~AudioSource()
+	{
+		Destroy();
 	}
 
 	void AudioSource::Play()
 	{
 		if (!m_Initialized)
 		{
-			AudioEngine::InitSoundFromPath(m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
+			AudioEngine::InitEngine(&m_Engine);
+			AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
 			m_Initialized = true;
 		}
 
@@ -26,20 +31,29 @@ namespace Sparky {
 		AudioEngine::PlayFromSound(&m_Sound);
 	}
 
+	void AudioSource::Restart()
+	{
+		if (m_Initialized)
+			AudioEngine::RestartSound(&m_Sound);
+	}
+
 	void AudioSource::Stop()
 	{
 		if (m_Initialized)
 		{
 			AudioEngine::StopSound(&m_Sound);
+			AudioEngine::ShutdownEngine(&m_Engine);
 			m_Initialized = false;
-			AudioEngine::RemoveLoadedSound(&m_Sound);
 		}
 	}
 
 	void AudioSource::Destroy()
 	{
-		AudioEngine::RemoveLoadedSound(&m_Sound);
-		AudioEngine::DestroySound(&m_Sound);
+		if (m_Initialized)
+		{
+			AudioEngine::DestroySound(&m_Sound);
+			AudioEngine::ShutdownEngine(&m_Engine);
+		}
 	}
 
 	bool AudioSource::IsPlaying()
@@ -50,6 +64,41 @@ namespace Sparky {
 	void AudioSource::SetPosition(const Math::vec3& position)
 	{
 		AudioEngine::SetPosition(&m_Sound, position);
+	}
+
+	void AudioSource::SetDirection(const Math::vec3& direction)
+	{
+		AudioEngine::SetDirection(&m_Sound, direction);
+	}
+
+	void AudioSource::SetVelocity(const Math::vec3& velocity)
+	{
+		AudioEngine::SetVeloctiy(&m_Sound, velocity);
+	}
+
+	void AudioSource::SetCone(const SoundProperties::AudioCone& cone)
+	{
+		AudioEngine::SetCone(&m_Sound, cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
+	}
+
+	void AudioSource::SetMinDistance(float minDistance)
+	{
+		AudioEngine::SetMinDistance(&m_Sound, minDistance);
+	}
+
+	void AudioSource::SetMaxDistance(float maxDistance)
+	{
+		AudioEngine::SetMaxDistance(&m_Sound, maxDistance);
+	}
+
+	void AudioSource::SetPitch(float pitch)
+	{
+		AudioEngine::SetPitch(&m_Sound, pitch);
+	}
+
+	void AudioSource::SetDopplerFactor(float dopplerFactor)
+	{
+		AudioEngine::SetDopplerFactor(&m_Sound, dopplerFactor);
 	}
 
 	void AudioSource::SetVolume(float volume)

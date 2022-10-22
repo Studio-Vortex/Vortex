@@ -1,6 +1,7 @@
 #pragma once
 
-// Forward declaration
+// Forward declarations
+struct ma_engine;
 struct ma_sound;
 
 namespace Sparky {
@@ -14,24 +15,35 @@ namespace Sparky {
 		static void Init();
 		static void Shutdown();
 
-		static void InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, bool spacialized = true, float volume = 1.0f, bool editorSound = false);
+		static void InitEngine(ma_engine* engine);
+		static void ShutdownEngine(ma_engine* engine);
+
+		static void InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, bool loop, bool spacialized = true, float volume = 1.0f);
 		static void DestroySound(ma_sound* sound);
 
-		static void RemoveLoadedSound(ma_sound* sound);
-		static void DestroyLoadedSounds();
-
 		static void PlayFromSound(ma_sound* sound);
+		static void RestartSound(ma_sound* sound);
 		static void StopSound(ma_sound* sound);
 
 		static void SetPosition(ma_sound* sound, const Math::vec3& position);
+		static void SetDirection(ma_sound* sound, const Math::vec3& direction);
+		static void SetVeloctiy(ma_sound* sound, const Math::vec3& veloctiy);
+
+		static void SetCone(ma_sound* sound, float innerAngleRadians, float outerAngleRadians, float outerGain);
+
+		static void SetMinDistance(ma_sound* sound, float minDistance);
+		static void SetMaxDistance(ma_sound* sound, float maxDistance);
+		static void SetPitch(ma_sound* sound, float pitch);
+		static void SetDopplerFactor(ma_sound* sound, float dopplerFactor);
 		static void SetVolume(ma_sound* sound, float volume);
+
 		static void SetSpacialized(ma_sound* sound, bool spacialized);
 		static void SetLoop(ma_sound* sound, bool loop);
 
 		static bool IsPlaying(ma_sound* sound);
 
-		static void StartEngine();
-		static void StopEngine();
+		static void StartEngine(ma_engine* engine);
+		static void StopEngine(ma_engine* engine);
 	};
 
 }

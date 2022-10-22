@@ -296,7 +296,22 @@ namespace Sparky {
 				out << YAML::Key << "SoundSettings" << YAML::Value;
 				out << YAML::BeginMap; // SoundSettings
 				out << YAML::Key << "Position" << YAML::Value << soundProperties.Position;
+				out << YAML::Key << "Direction" << YAML::Value << soundProperties.Direction;
+				out << YAML::Key << "Veloctiy" << YAML::Value << soundProperties.Veloctiy;
+
+				out << YAML::Key << "Cone" << YAML::Value;
+				out << YAML::BeginMap; // Cone
+				out << YAML::Key << "InnerAngle" << YAML::Value << soundProperties.Cone.InnerAngle;
+				out << YAML::Key << "OuterAngle" << YAML::Value << soundProperties.Cone.OuterAngle;
+				out << YAML::Key << "OuterGain" << YAML::Value << soundProperties.Cone.OuterGain;
+				out << YAML::EndMap; // Cone
+
+				out << YAML::Key << "MinDistance" << YAML::Value << soundProperties.MinDistance;
+				out << YAML::Key << "MaxDistance" << YAML::Value << soundProperties.MaxDistance;
+				out << YAML::Key << "Pitch" << YAML::Value << soundProperties.Pitch;
+				out << YAML::Key << "DopplerFactor" << YAML::Value << soundProperties.DopplerFactor;
 				out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
+
 				out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
 				out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
 				out << YAML::EndMap; // SoundSettings
@@ -557,8 +572,31 @@ namespace Sparky {
 						auto& soundProperties = asc.Source->GetProperties();
 						if (soundProps["Position"])
 							soundProperties.Position = soundProps["Position"].as<Math::vec3>();
+						if (soundProps["Direction"])
+							soundProperties.Direction = soundProps["Direction"].as<Math::vec3>();
+						if (soundProps["Velocity"])
+							soundProperties.Veloctiy = soundProps["Velocity"].as<Math::vec3>();
+
+						if (soundProps["Cone"])
+						{
+							auto cone = soundProps["Cone"];
+							soundProperties.Cone.InnerAngle = cone["InnerAngle"].as<float>();
+							soundProperties.Cone.OuterAngle = cone["OuterAngle"].as<float>();
+							soundProperties.Cone.OuterGain = cone["OuterGain"].as<float>();
+						}
+
+						if (soundProps["MinDistance"])
+							soundProperties.MinDistance = soundProps["MinDistance"].as<float>();
+						if (soundProps["MaxDistance"])
+							soundProperties.MaxDistance = soundProps["MaxDistance"].as<float>();
+						
+						if (soundProps["Pitch"])
+							soundProperties.Pitch = soundProps["Pitch"].as<float>();
+						if (soundProps["DopplerFactor"])
+							soundProperties.DopplerFactor = soundProps["DopplerFactor"].as<float>();
 						if (soundProps["Volume"])
 							soundProperties.Volume = soundProps["Volume"].as<float>();
+
 						if (soundProps["Spacialized"])
 							soundProperties.Spacialized = soundProps["Spacialized"].as<bool>();
 						if (soundProps["Loop"])

@@ -14,7 +14,7 @@ namespace Sparky {
 		{
 			Gui::Begin("Script Registry", &s_ShowPanel);
 
-			static std::vector<MonoAssemblyTypeInfo> coreAssemblyTypeInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
+			std::vector<MonoAssemblyTypeInfo> coreAssemblyTypeInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
 
 			Gui::PushFont(boldFont);
 			Gui::Text("Core Assembly Classes: %u", (uint32_t)coreAssemblyTypeInfo.size());

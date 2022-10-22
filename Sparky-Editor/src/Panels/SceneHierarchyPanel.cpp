@@ -436,19 +436,7 @@ namespace Sparky {
 			}
 
 			if (componentShouldBeRemoved)
-			{
-				if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
-				{
-					SharedRef<AudioSource>& audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-					if (audioSource->IsPlaying())
-						audioSource->Stop();
-					else
-						audioSource->Destroy();
-				}
-				
 				entity.RemoveComponent<TComponent>();
-			}
 		}
 	}
 
@@ -506,8 +494,10 @@ namespace Sparky {
 		{
 			DrawVec3Controls("Translation", component.Translation);
 			Math::vec3 rotation = Math::Rad2Deg(component.Rotation);
-			DrawVec3Controls("Rotation", rotation);
-			component.Rotation = Math::Deg2Rad(rotation);
+			DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
+			{
+				component.Rotation = Math::Deg2Rad(rotation);
+			});
 			DrawVec3Controls("Scale", component.Scale, 1.0f);
 		}, false);
 
@@ -795,6 +785,15 @@ namespace Sparky {
 
 			Gui::SameLine();
 
+			Gui::BeginDisabled(component.Source != nullptr && component.Source->GetPath().empty() && !component.Source->IsPlaying());
+
+			if (Gui::Button("Restart"))
+				component.Source->Restart();
+
+			Gui::EndDisabled();
+
+			Gui::SameLine();
+
 			if (Gui::Button("Stop"))
 				component.Source->Stop();
 
@@ -802,21 +801,70 @@ namespace Sparky {
 			{
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
-				DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
-				{
-					component.Source->SetPosition(props.Position);
-				});
-
-				Gui::Spacing();
-
-				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
-					component.Source->SetVolume(props.Volume);
+				if (Gui::Checkbox("Loop", &props.Loop))
+					component.Source->SetLoop(props.Loop);
 
 				if (Gui::Checkbox("Spacialized", &props.Spacialized))
 					component.Source->SetSpacialized(props.Spacialized);
 
-				if (Gui::Checkbox("Loop", &props.Loop))
-					component.Source->SetLoop(props.Loop);
+				if (props.Spacialized)
+				{
+					Gui::Spacing();
+
+					DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+					{
+						component.Source->SetPosition(props.Position);
+					});
+
+					DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+					{
+						component.Source->SetDirection(props.Direction);
+					});
+
+					DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
+					{
+						component.Source->SetVelocity(props.Veloctiy);
+					});
+
+					Gui::Spacing();
+
+					Gui::Text("Cone");
+					float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+					if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+					{
+						props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+						component.Source->SetCone(props.Cone);
+					}
+					float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+					if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+					{
+						props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+						component.Source->SetCone(props.Cone);
+					}
+					float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+					if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+					{
+						props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+						component.Source->SetCone(props.Cone);
+					}
+
+					Gui::Spacing();
+
+					if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f))
+						component.Source->SetMinDistance(props.MinDistance);
+
+					if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f))
+						component.Source->SetMaxDistance(props.MaxDistance);
+
+					if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
+						component.Source->SetDopplerFactor(props.DopplerFactor);
+				}
+
+				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))
+					component.Source->SetPitch(props.Pitch);
+
+				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
+					component.Source->SetVolume(props.Volume);
 			}
 
 			Gui::EndDisabled();

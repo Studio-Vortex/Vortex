@@ -8,13 +8,10 @@ namespace Sparky {
 
 	struct AudioEngineInternalData
 	{
-		ma_engine AudioEngine;
 		ma_result Result;
 		ma_context Context;
 		ma_uint32 PlaybackDeviceCount;
 		ma_device_info* pPlaybackDeviceInfos;
-
-		std::vector<ma_sound*> LoadedSounds;
 	};
 
 	static AudioEngineInternalData s_Data;
@@ -30,25 +27,32 @@ namespace Sparky {
 		SP_CORE_INFO("{} Audio Devices:", s_Data.PlaybackDeviceCount);
 		for (uint32_t i = 0; i < s_Data.PlaybackDeviceCount; ++i)
 			SP_CORE_INFO("  {}: {}", i + 1, s_Data.pPlaybackDeviceInfos[i].name);
-
-		// Init the audio engine
-		s_Data.Result = ma_engine_init(nullptr, &s_Data.AudioEngine);
-		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "AudioEngine failed to initialize!");
 	}
 
 	void AudioEngine::Shutdown()
 	{
 		ma_context_uninit(&s_Data.Context);
-		ma_engine_uninit(&s_Data.AudioEngine);
 	}
 
-	void AudioEngine::InitSoundFromPath(const std::string& filepath, ma_sound* sound, bool loop, bool spacialized, float volume, bool editorSound)
+	void AudioEngine::InitEngine(ma_engine* engine)
+	{
+		// Init the audio engine
+		s_Data.Result = ma_engine_init(nullptr, engine);
+		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to initialize Audio Engine!");
+	}
+
+	void AudioEngine::ShutdownEngine(ma_engine* engine)
+	{
+		ma_engine_uninit(engine);
+	}
+
+	void AudioEngine::InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, bool loop, bool spacialized, float volume)
 	{
 		// If the path doesn't exist and we try to initialize a sound the audio engine will crash
 		if (!std::filesystem::exists(filepath))
 			return;
 
-		s_Data.Result = ma_sound_init_from_file(&s_Data.AudioEngine, filepath.c_str(), 0, nullptr, nullptr, sound);
+		s_Data.Result = ma_sound_init_from_file(preInitializedEngine, filepath.c_str(), 0, nullptr, nullptr, sound);
 		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to initialize sound file from " + filepath);
 
 		if (loop)
@@ -62,10 +66,6 @@ namespace Sparky {
 			ma_sound_set_spatialization_enabled(sound, MA_FALSE);
 
 		ma_sound_set_volume(sound, volume);
-
-		// We shouldn't be tracking sounds that are part of the editor
-		if (!editorSound)
-			s_Data.LoadedSounds.push_back(sound);
 	}
 
 	void AudioEngine::DestroySound(ma_sound* sound)
@@ -74,23 +74,17 @@ namespace Sparky {
 			ma_sound_uninit(sound);
 	}
 
-	void AudioEngine::RemoveLoadedSound(ma_sound* sound)
-	{
-		std::remove(s_Data.LoadedSounds.begin(), s_Data.LoadedSounds.end(), sound);
-	}
-
-	void AudioEngine::DestroyLoadedSounds()
-	{
-		for (auto& sound : s_Data.LoadedSounds)
-			DestroySound(sound);
-
-		s_Data.LoadedSounds.clear();
-	}
-
 	void AudioEngine::PlayFromSound(ma_sound* sound)
 	{
 		if (sound != nullptr)
 			ma_sound_start(sound);
+	}
+
+	void AudioEngine::RestartSound(ma_sound* sound)
+	{
+		if (sound != nullptr)
+			// Seek to the beginning of the audio file
+			ma_sound_seek_to_pcm_frame(sound, 0);
 	}
 
 	void AudioEngine::StopSound(ma_sound* sound)
@@ -105,6 +99,41 @@ namespace Sparky {
 	void AudioEngine::SetPosition(ma_sound* sound, const Math::vec3& position)
 	{
 		ma_sound_set_position(sound, position.x, position.y, position.z);
+	}
+
+	void AudioEngine::SetDirection(ma_sound* sound, const Math::vec3& direction)
+	{
+		ma_sound_set_direction(sound, direction.x, direction.y, direction.z);
+	}
+
+	void AudioEngine::SetVeloctiy(ma_sound* sound, const Math::vec3& veloctiy)
+	{
+		ma_sound_set_velocity(sound, veloctiy.x, veloctiy.y, veloctiy.z);
+	}
+	
+	void AudioEngine::SetCone(ma_sound* sound, float innerAngleRadians, float outerAngleRadians, float outerGain)
+	{
+		ma_sound_set_cone(sound, innerAngleRadians, outerAngleRadians, outerGain);
+	}
+
+	void AudioEngine::SetMinDistance(ma_sound* sound, float minDistance)
+	{
+		ma_sound_set_min_distance(sound, minDistance);
+	}
+
+	void AudioEngine::SetMaxDistance(ma_sound* sound, float maxDistance)
+	{
+		ma_sound_set_max_distance(sound, maxDistance);
+	}
+
+	void AudioEngine::SetPitch(ma_sound* sound, float pitch)
+	{
+		ma_sound_set_pitch(sound, pitch);
+	}
+
+	void AudioEngine::SetDopplerFactor(ma_sound* sound, float dopplerFactor)
+	{
+		ma_sound_set_doppler_factor(sound, dopplerFactor);
 	}
 
 	void AudioEngine::SetVolume(ma_sound* sound, float volume)
@@ -127,16 +156,16 @@ namespace Sparky {
 		return ma_sound_is_playing(sound);
 	}
 
-	void AudioEngine::StartEngine()
+	void AudioEngine::StartEngine(ma_engine* engine)
 	{
-		s_Data.Result = ma_engine_start(&s_Data.AudioEngine);
-		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to start all audio!");
+		s_Data.Result = ma_engine_start(engine);
+		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to start Audio Engine!");
 	}
 
-	void AudioEngine::StopEngine()
+	void AudioEngine::StopEngine(ma_engine* engine)
 	{
-		s_Data.Result = ma_engine_stop(&s_Data.AudioEngine);
-		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to stop all audio!");
+		s_Data.Result = ma_engine_stop(engine);
+		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to stop Audio Engine!");
 	}
 
 }
