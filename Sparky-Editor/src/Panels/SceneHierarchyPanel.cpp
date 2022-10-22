@@ -788,6 +788,11 @@ namespace Sparky {
 
 			Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
 
+			if (Gui::Button("Pause"))
+				component.Source->Pause();
+
+			Gui::SameLine();
+			
 			if (Gui::Button("Restart"))
 				component.Source->Restart();
 

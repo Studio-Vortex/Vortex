@@ -35,6 +35,12 @@ namespace Sparky {
 		AudioEngine::PlayFromSound(&m_Sound);
 	}
 
+    void AudioSource::Pause()
+    {
+		if (m_Initialized)
+			AudioEngine::PauseSound(&m_Sound);
+    }
+
 	void AudioSource::Restart()
 	{
 		if (m_Initialized)
@@ -45,6 +51,7 @@ namespace Sparky {
 	{
 		if (m_Initialized)
 		{
+			AudioEngine::RestartSound(&m_Sound);
 			AudioEngine::StopSound(&m_Sound);
 			AudioEngine::ShutdownEngine(&m_Engine);
 			m_Initialized = false;

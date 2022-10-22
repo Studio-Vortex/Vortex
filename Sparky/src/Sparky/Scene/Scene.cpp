@@ -217,6 +217,7 @@ namespace Sparky {
 
 		auto view = m_Registry.view<AudioSourceComponent>();
 
+		// Stop all audio sources in the scene
 		for (auto& e : view)
 		{
 			Entity entity{ e, this };
@@ -270,18 +271,12 @@ namespace Sparky {
 		Math::mat4 primarySceneCameraTransform;
 
 		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-
-			for (auto entity : view)
+			Entity primaryCameraEntity = GetPrimaryCameraEntity();
+			
+			if (primaryCameraEntity)
 			{
-				auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
-
-				if (cameraComponent.Primary)
-				{
-					primarySceneCamera = &cameraComponent.Camera;
-					primarySceneCameraTransform = transformComponent.GetTransform();
-					break;
-				}
+				primarySceneCamera = &primaryCameraEntity.GetComponent<CameraComponent>().Camera;
+				primarySceneCameraTransform = primaryCameraEntity.GetTransform().GetTransform();
 			}
 		}
 

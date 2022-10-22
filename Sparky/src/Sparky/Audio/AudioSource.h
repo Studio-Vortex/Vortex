@@ -36,6 +36,7 @@ namespace Sparky {
 		~AudioSource();
 
 		void Play();
+		void Pause();
 		void Restart();
 		void Stop();
 

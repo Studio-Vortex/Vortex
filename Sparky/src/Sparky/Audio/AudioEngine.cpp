@@ -82,6 +82,11 @@ namespace Sparky {
 			ma_sound_start(sound);
 	}
 
+    void AudioEngine::PauseSound(ma_sound* sound)
+    {
+		ma_sound_stop(sound);
+    }
+
 	void AudioEngine::RestartSound(ma_sound* sound)
 	{
 		if (sound != nullptr)
