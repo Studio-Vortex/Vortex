@@ -1,287 +1,291 @@
 Scene: Untitled
 Entities:
-  - Entity: 610465375924079861
+  - Entity: 4999088170359851204
     TagComponent:
-      Tag: Sphere
+      Tag: Roof
     TransformComponent:
-      Translation: [1.38364553, -1.99197614, -40.6127548]
-      Rotation: [0, 0.235057041, 0]
-      Scale: [2, 2, 2]
-    MeshRendererComponent:
-      MeshType: Sphere
+      Translation: [0, 2.99999905, -12]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99916553, 0.999895751]
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Other\wood.jpg
-      Scale: 1
-  - Entity: 11022057184427826527
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 3
+  - Entity: 7049490770703247820
     TagComponent:
-      Tag: Cube
+      Tag: Roof
     TransformComponent:
-      Translation: [10.5084801, -1.99197626, -41.8667374]
-      Rotation: [0, 0.235057041, 0]
-      Scale: [2, 2, 2]
-    MeshRendererComponent:
-      MeshType: Cube
+      Translation: [0, 2.99999785, -30]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [30, 30, 0.999850571]
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\OpenGL.png
-      Scale: 1
-  - Entity: 15346768335806980478
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 13
+  - Entity: 16912364276377257424
     TagComponent:
-      Tag: Cube
+      Tag: Roof
     TransformComponent:
-      Translation: [-12.4727287, -2.50897408, -43.5844612]
-      Rotation: [0, 0.235057041, 0]
-      Scale: [1, 1, 1]
-    MeshRendererComponent:
-      MeshType: Cube
+      Translation: [0, 2.99999952, -6]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 6, 0.999895692]
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_2.png
-      Scale: 1
-  - Entity: 11637157729086009967
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 3
+  - Entity: 11071084271897629045
     TagComponent:
-      Tag: Cube
+      Tag: Roof
     TransformComponent:
-      Translation: [-13.6994867, -2.50897408, -42.9234009]
-      Rotation: [0, -0.449932814, 0]
-      Scale: [1, 1, 1]
-    MeshRendererComponent:
-      MeshType: Cube
+      Translation: [0, 3, 0]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 6, 0.999915779]
+    SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_2.png
-      Scale: 1
-  - Entity: 14356298707090224840
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 3
+  - Entity: 13575087412817755848
     TagComponent:
-      Tag: Music
+      Tag: Roof
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [5.96046448e-08, 3.00000048, 6]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99944735, 0.999930918]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 3
+  - Entity: 15628683134130694622
+    TagComponent:
+      Tag: Roof
+    TransformComponent:
+      Translation: [0, 3.00000095, 12]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99959326, 0.999949157]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Crate_1.png
+      Scale: 3
+  - Entity: 17308322078944251873
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.99999905, 0, 5.99999952]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904299, 6, 0.999880314]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 4526310078429830445
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [3.00000095, 0, 6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99921513, 6, 0.999901831]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 10336005176151312800
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, 15]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    AudioSourceComponent:
-      AudioSourcePath: Assets\SFX\Pistolvania.mp3
-      SoundSettings:
-        Volume: 1
-        Loop: true
-    ScriptComponent:
-      ClassName: Sandbox.A1_OpeningScene
-  - Entity: 10360928567936502819
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-2.99999952, 0, 12]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99904442, 6, 0.999880493]
+      Scale: [5.99943018, 6, 0.999928772]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 8979682953223822376
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [3.00000048, 0, 12]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99912357, 6, 0.999890387]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 13563620352720788320
+  - Entity: 17593536354058450071
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [0, -2.99999905, 12]
+      Translation: [0, -2.99999952, 6]
       Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99959373, 0.999949217]
+      Scale: [6, 5.99985981, 0.999982476]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: Assets\Textures\Floor.jpg
       Scale: 3
-  - Entity: 15580036536962080154
+  - Entity: 6082851487787691474
     TagComponent:
-      Tag: Wall
+      Tag: Decoration
     TransformComponent:
-      Translation: [-15, 0, -30]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99812317, 6, 0.999765396]
+      Translation: [12, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: assets\textures\Shawn\Shawn.jpg
       Scale: 1
-  - Entity: 16539471845452048877
+  - Entity: 17994718396331423145
     TagComponent:
-      Tag: Wall
+      Tag: Decoration
     TransformComponent:
-      Translation: [-15, 0, -36]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99822617, 6, 0.999778271]
+      Translation: [6, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: assets\textures\Shawn\Shawn.png
       Scale: 1
-  - Entity: 13314154941646148803
+  - Entity: 1455431635273936739
     TagComponent:
-      Tag: Wall
+      Tag: Decoration
     TransformComponent:
-      Translation: [-15.000001, 0, -24]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99834538, 6, 0.999793172]
+      Translation: [-12, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: assets\textures\Shawn\Shawn4.jpg
       Scale: 1
-  - Entity: 9428068541018271585
+  - Entity: 17473160336394363675
     TagComponent:
-      Tag: Wall
+      Tag: Decoration
     TransformComponent:
-      Translation: [-15.000001, 0, -18]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.9984498, 6, 0.999806225]
+      Translation: [-6, 0, -15.0500002]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: assets\textures\Shawn\Shawn2.jpg
       Scale: 1
-  - Entity: 9882156585222821317
+  - Entity: 10801644474773246805
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [-14.999999, 0, -42]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99865675, 6, 0.999832094]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 4442265412268408688
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [15.000001, 0, -42]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99879551, 6, 0.999849439]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 13433524093796689811
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [15.000001, 0, -36]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99891186, 6, 0.999863982]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 16814097676382012400
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [15.000001, 0, -30]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99904537, 6, 0.999880672]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 3265642486940015494
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [15.000001, 0, -24]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99918461, 6, 0.999898076]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 12500489238410509122
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [15.000001, 0, -18]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99930811, 6, 0.999913514]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 11922301292536089024
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [12.000001, 0, -15]
+      Translation: [6.00000095, 0, -15]
       Rotation: [0, 0, 0]
       Scale: [5.99943018, 6, 0.999928772]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 1442064695184392604
+  - Entity: 6550522526454473535
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [12.000001, 0, -45]
+      Translation: [-5.99999905, 0, -15]
       Rotation: [0, 0, 0]
       Scale: [5.99943018, 6, 0.999928772]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 17411119356335989129
+  - Entity: 13379850710425556943
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3.00000048, -11.9977398]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99960852, 0.999951065]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Floor.jpg
+      Scale: 3
+  - Entity: 11842337086880304669
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3.00000167, -29.9984646]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [30, 29.9991283, 0.99990344]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Floor.jpg
+      Scale: 14
+  - Entity: 8899026784796974534
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [6.00000095, 0, -45]
+      Translation: [-11.999999, 0, -45]
       Rotation: [0, 0, 0]
       Scale: [5.99943018, 6, 0.999928772]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 12203353731547809384
+  - Entity: 13466472008640886397
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [9.53674316e-07, 0, -45]
+      Translation: [-11.999999, 0, -15]
       Rotation: [0, 0, 0]
       Scale: [5.99943018, 6, 0.999928772]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 16771871323697545717
+  - Entity: 9877398207365800879
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [-5.99999905, 0, -45]
-      Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 10979268923613723867
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [3, 0, 0]
+      Translation: [3.00000095, 0, -12]
       Rotation: [0, 1.57079637, 0]
+      Scale: [5.99927378, 6, 0.999909222]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 11310440172590609485
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.99999905, 0, -12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 3737315805751857442
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.99999952, 0, -6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99923944, 6, 0.999904931]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 3127092491974662784
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [3.00000048, 0, -6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99980021, 6, 0.999975026]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 1497077094255837486
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3, -5.99773979]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [6, 5.99974203, 0.999967754]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Floor.jpg
+      Scale: 3
+  - Entity: 12695346280655060362
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [1.57079637, 0, 0]
       Scale: [6, 6, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 3595857843733065218
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-3, 0, 0]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [6, 6, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
+      TexturePath: Assets\Textures\Floor.jpg
+      Scale: 3
   - Entity: 11761243949373089932
     TagComponent:
       Tag: Perspective Camera
@@ -315,289 +319,297 @@ Entities:
         - Name: Speed
           Type: Vector3
           Data: [4, 0, 4]
-  - Entity: 12695346280655060362
+  - Entity: 3595857843733065218
     TagComponent:
-      Tag: Floor
+      Tag: Wall
     TransformComponent:
-      Translation: [0, -3, 0]
-      Rotation: [1.57079637, 0, 0]
+      Translation: [-3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
       Scale: [6, 6, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Floor.jpg
-      Scale: 3
-  - Entity: 1497077094255837486
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 10979268923613723867
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [6, 6, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16771871323697545717
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-5.99999905, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 12203353731547809384
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 17411119356335989129
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [6.00000095, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 1442064695184392604
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [12.000001, 0, -45]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 11922301292536089024
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [12.000001, 0, -15]
+      Rotation: [0, 0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 12500489238410509122
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99930811, 6, 0.999913514]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 3265642486940015494
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99918461, 6, 0.999898076]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16814097676382012400
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904537, 6, 0.999880672]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13433524093796689811
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99891186, 6, 0.999863982]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 4442265412268408688
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [15.000001, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99879551, 6, 0.999849439]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 9882156585222821317
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-14.999999, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99865675, 6, 0.999832094]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 9428068541018271585
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.9984498, 6, 0.999806225]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13314154941646148803
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99834538, 6, 0.999793172]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 16539471845452048877
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99822617, 6, 0.999778271]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 15580036536962080154
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-15, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99812317, 6, 0.999765396]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      Scale: 1
+  - Entity: 13563620352720788320
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [0, -3, -5.99773979]
+      Translation: [0, -2.99999905, 12]
       Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99974203, 0.999967754]
+      Scale: [6, 5.99959373, 0.999949217]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: Assets\Textures\Floor.jpg
       Scale: 3
-  - Entity: 3127092491974662784
+  - Entity: 8979682953223822376
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [3.00000048, 0, -6]
+      Translation: [3.00000048, 0, 12]
       Rotation: [0, 1.57079637, 0]
-      Scale: [5.99980021, 6, 0.999975026]
+      Scale: [5.99912357, 6, 0.999890387]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 3737315805751857442
+  - Entity: 10360928567936502819
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [-2.99999952, 0, -6]
+      Translation: [-2.99999952, 0, 12]
       Rotation: [0, 1.57079637, 0]
-      Scale: [5.99923944, 6, 0.999904931]
+      Scale: [5.99904442, 6, 0.999880493]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Crate.png
       Scale: 1
-  - Entity: 11310440172590609485
+  - Entity: 14356298707090224840
     TagComponent:
-      Tag: Wall
+      Tag: Music
     TransformComponent:
-      Translation: [-2.99999905, 0, -12]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 9877398207365800879
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [3.00000095, 0, -12]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99927378, 6, 0.999909222]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 13466472008640886397
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-11.999999, 0, -15]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\Metal In Your Mouth.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        Spacialized: true
+        Loop: true
+    ScriptComponent:
+      ClassName: Sandbox.A1_OpeningScene
+  - Entity: 11637157729086009967
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [-13.6994867, -2.50897408, -42.9234009]
+      Rotation: [0, -0.449932814, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: Assets\Textures\Crate_2.png
       Scale: 1
-  - Entity: 8899026784796974534
+  - Entity: 15346768335806980478
     TagComponent:
-      Tag: Wall
+      Tag: Cube
     TransformComponent:
-      Translation: [-11.999999, 0, -45]
-      Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
+      Translation: [-12.4727287, -2.50897408, -43.5844612]
+      Rotation: [0, 0.235057041, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: Assets\Textures\Crate_2.png
       Scale: 1
-  - Entity: 11842337086880304669
+  - Entity: 11022057184427826527
     TagComponent:
-      Tag: Floor
+      Tag: Cube
     TransformComponent:
-      Translation: [0, -3.00000167, -29.9984646]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [30, 29.9991283, 0.99990344]
-    SpriteRendererComponent:
+      Translation: [10.5084801, -1.99197626, -41.8667374]
+      Rotation: [0, 0.235057041, 0]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Cube
       Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Floor.jpg
-      Scale: 14
-  - Entity: 13379850710425556943
-    TagComponent:
-      Tag: Floor
-    TransformComponent:
-      Translation: [0, -3.00000048, -11.9977398]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99960852, 0.999951065]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Floor.jpg
-      Scale: 3
-  - Entity: 6550522526454473535
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-5.99999905, 0, -15]
-      Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: Assets\Textures\OpenGL.png
       Scale: 1
-  - Entity: 10801644474773246805
+  - Entity: 610465375924079861
     TagComponent:
-      Tag: Wall
+      Tag: Sphere
     TransformComponent:
-      Translation: [6.00000095, 0, -15]
-      Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
+      Translation: [1.38364553, -1.99197614, -40.6127548]
+      Rotation: [0, 0.235057041, 0]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Sphere
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
+      TexturePath: Assets\Textures\Other\wood.jpg
       Scale: 1
-  - Entity: 17473160336394363675
-    TagComponent:
-      Tag: Decoration
-    TransformComponent:
-      Translation: [-6, 0, -15.0500002]
-      Rotation: [0, 0, 0]
-      Scale: [3, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn2.jpg
-      Scale: 1
-  - Entity: 1455431635273936739
-    TagComponent:
-      Tag: Decoration
-    TransformComponent:
-      Translation: [-12, 0, -15.0500002]
-      Rotation: [0, 0, 0]
-      Scale: [3, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn4.jpg
-      Scale: 1
-  - Entity: 17994718396331423145
-    TagComponent:
-      Tag: Decoration
-    TransformComponent:
-      Translation: [6, 0, -15.0500002]
-      Rotation: [0, 0, 0]
-      Scale: [3, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn.png
-      Scale: 1
-  - Entity: 6082851487787691474
-    TagComponent:
-      Tag: Decoration
-    TransformComponent:
-      Translation: [12, 0, -15.0500002]
-      Rotation: [0, 0, 0]
-      Scale: [3, 3, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Shawn\Shawn.jpg
-      Scale: 1
-  - Entity: 17593536354058450071
-    TagComponent:
-      Tag: Floor
-    TransformComponent:
-      Translation: [0, -2.99999952, 6]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99985981, 0.999982476]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Floor.jpg
-      Scale: 3
-  - Entity: 10336005176151312800
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [9.53674316e-07, 0, 15]
-      Rotation: [0, 0, 0]
-      Scale: [5.99943018, 6, 0.999928772]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 4526310078429830445
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [3.00000095, 0, 6]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99921513, 6, 0.999901831]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 17308322078944251873
-    TagComponent:
-      Tag: Wall
-    TransformComponent:
-      Translation: [-2.99999905, 0, 5.99999952]
-      Rotation: [0, 1.57079637, 0]
-      Scale: [5.99904299, 6, 0.999880314]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Crate.png
-      Scale: 1
-  - Entity: 15628683134130694622
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [0, 3.00000095, 12]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99959326, 0.999949157]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 3
-  - Entity: 13575087412817755848
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [5.96046448e-08, 3.00000048, 6]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99944735, 0.999930918]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 3
-  - Entity: 11071084271897629045
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [0, 3, 0]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 6, 0.999915779]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 3
-  - Entity: 16912364276377257424
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [0, 2.99999952, -6]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 6, 0.999895692]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 3
-  - Entity: 7049490770703247820
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [0, 2.99999785, -30]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [30, 30, 0.999850571]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 13
-  - Entity: 4999088170359851204
-    TagComponent:
-      Tag: Roof
-    TransformComponent:
-      Translation: [0, 2.99999905, -12]
-      Rotation: [1.57079637, 0, 0]
-      Scale: [6, 5.99916553, 0.999895751]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Assets\Textures\Crate_1.png
-      Scale: 3

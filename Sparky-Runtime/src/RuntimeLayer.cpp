@@ -36,10 +36,7 @@ namespace Sparky {
 		}
 	}
 
-	void RuntimeLayer::OnDetach()
-	{
-		m_RuntimeScene->OnRuntimeStop();
-	}
+	void RuntimeLayer::OnDetach() { }
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{

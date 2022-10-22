@@ -858,6 +858,8 @@ namespace Sparky {
 
 					if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
 						component.Source->SetDopplerFactor(props.DopplerFactor);
+
+					Gui::Spacing();
 				}
 
 				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))

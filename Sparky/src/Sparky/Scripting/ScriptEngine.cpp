@@ -177,7 +177,7 @@ namespace Sparky {
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
 		bool AssemblyReloadPending = false;
 
-		SharedRef<AudioSource> CompileSound;
+		SharedRef<AudioSource> CompilationSuccessSound;
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
@@ -203,7 +203,7 @@ namespace Sparky {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
-		s_Data->CompileSound = CreateShared<AudioSource>("Resources/Sounds/Compile.wav");
+		s_Data->CompilationSuccessSound = CreateShared<AudioSource>("Resources/Sounds/Compile.wav");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -263,10 +263,10 @@ namespace Sparky {
 				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
 				
 				using namespace std::chrono_literals;
-				std::this_thread::sleep_for(500ms);
+				std::this_thread::sleep_for(250ms);
 				
 				ScriptEngine::ReloadAssembly();
-				s_Data->CompileSound->Play();
+				s_Data->CompilationSuccessSound->Play();
 			});
 		}
 	}
