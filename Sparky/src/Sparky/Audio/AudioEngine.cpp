@@ -46,13 +46,13 @@ namespace Sparky {
 		ma_engine_uninit(engine);
 	}
 
-	void AudioEngine::InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, bool loop, bool spacialized, float volume)
+	void AudioEngine::InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, float* length, bool loop, bool spacialized, float volume)
 	{
 		// If the path doesn't exist and we try to initialize a sound the audio engine will crash
 		if (!std::filesystem::exists(filepath))
 			return;
 
-		s_Data.Result = ma_sound_init_from_file(preInitializedEngine, filepath.c_str(), 0, nullptr, nullptr, sound);
+		s_Data.Result = ma_sound_init_from_file(preInitializedEngine, filepath.c_str(), MA_SOUND_FLAG_ASYNC, nullptr, nullptr, sound);
 		SP_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to initialize sound file from " + filepath);
 
 		if (loop)
@@ -64,6 +64,8 @@ namespace Sparky {
 			ma_sound_set_spatialization_enabled(sound, MA_TRUE);
 		else
 			ma_sound_set_spatialization_enabled(sound, MA_FALSE);
+
+		ma_sound_get_length_in_seconds(sound, length);
 
 		ma_sound_set_volume(sound, volume);
 	}
@@ -104,6 +106,16 @@ namespace Sparky {
 	void AudioEngine::SetDirection(ma_sound* sound, const Math::vec3& direction)
 	{
 		ma_sound_set_direction(sound, direction.x, direction.y, direction.z);
+	}
+
+	void AudioEngine::SetListenerPosition(ma_engine* engine, uint32_t listenerIndex, const Math::vec3& position)
+	{
+		ma_engine_listener_set_position(engine, listenerIndex, position.x, position.y, position.z);
+	}
+
+	void AudioEngine::SetListenerDirection(ma_engine* engine, uint32_t listenerIndex, const Math::vec3& direction)
+	{
+		ma_engine_listener_set_direction(engine, listenerIndex, direction.x, direction.y, direction.z);
 	}
 
 	void AudioEngine::SetVeloctiy(ma_sound* sound, const Math::vec3& veloctiy)
@@ -149,6 +161,13 @@ namespace Sparky {
 	void AudioEngine::SetLoop(ma_sound* sound, bool loop)
 	{
 		ma_sound_set_looping(sound, loop);
+	}
+
+	float AudioEngine::GetSoundCursor(ma_sound* sound)
+	{
+		float cursor;
+		ma_sound_get_cursor_in_seconds(sound, &cursor);
+		return cursor;
 	}
 
 	bool AudioEngine::IsPlaying(ma_sound* sound)

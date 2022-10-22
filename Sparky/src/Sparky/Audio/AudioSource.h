@@ -63,12 +63,23 @@ namespace Sparky {
 		inline const SoundProperties& GetProperties() const { return m_Properties; }
 		inline SoundProperties& GetProperties() { return m_Properties; }
 
+		inline static uint32_t AddAudioListener() { return ++s_ListenerCount; }
+		inline static void RemoveAudioListener() { --s_ListenerCount; }
+
+		float GetAmountComplete();
+
 	private:
-		bool m_Initialized = false;
+		inline static uint32_t s_ListenerCount = 0;
+
+	private:
 		std::string m_Path;
 		ma_engine m_Engine;
 		ma_sound m_Sound;
 		SoundProperties m_Properties;
+
+		float m_LengthInSeconds = 0.0f;
+
+		bool m_Initialized = false;
 	};
 
 }

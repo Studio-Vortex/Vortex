@@ -24,6 +24,9 @@ namespace Sandbox {
 
 		public override void OnUpdate(float delta)
 		{
+			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+				Application.Shutdown();
+
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
 				m_Velocity.Z = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)

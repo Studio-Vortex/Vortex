@@ -179,16 +179,6 @@ namespace Sparky {
 			}
 		}
 
-		// Destroy the sound if it exists
-		if (entity.HasComponent<AudioSourceComponent>())
-		{
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (audioSource->IsPlaying())
-				audioSource->Stop();
-			else
-				audioSource->Destroy();
-		}
-
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
 
@@ -224,6 +214,17 @@ namespace Sparky {
 		m_IsRunning = false;
 
 		ScriptEngine::OnRuntimeStop();
+
+		auto view = m_Registry.view<AudioSourceComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+		}
 
 		OnPhysics2DStop();
 	}
@@ -554,7 +555,15 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
 	
-	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component) { }
+	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
+	{
+	}
+
+	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)
+	{
+		component.Listener = CreateShared<AudioListener>();
+		AudioSource::AddAudioListener();
+	}
 	
 	template <> void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
 

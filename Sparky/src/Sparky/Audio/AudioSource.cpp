@@ -9,7 +9,7 @@ namespace Sparky {
 		: m_Path(filepath)
 	{
 		AudioEngine::InitEngine(&m_Engine);
-		AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
+		AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, &m_LengthInSeconds, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
 		m_Initialized = true;
 		AudioEngine::StopEngine(&m_Engine);
 	}
@@ -24,7 +24,7 @@ namespace Sparky {
 		if (!m_Initialized)
 		{
 			AudioEngine::InitEngine(&m_Engine);
-			AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
+			AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, &m_LengthInSeconds, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
 			m_Initialized = true;
 		}
 
@@ -118,6 +118,11 @@ namespace Sparky {
 	void AudioSource::SetLoop(bool loop)
 	{
 		AudioEngine::SetLoop(&m_Sound, loop);
+	}
+
+	float AudioSource::GetAmountComplete()
+	{
+		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
 
 }

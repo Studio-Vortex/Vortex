@@ -203,7 +203,7 @@ namespace Sparky {
 					if (Gui::MenuItem("Listener Entity"))
 					{
 						m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
-						
+						m_SelectedEntity.AddComponent<AudioListenerComponent>();
 					}
 
 					Gui::EndMenu();
@@ -479,6 +479,7 @@ namespace Sparky {
 			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentPopup<AudioSourceComponent>("Audio Source");
+			DisplayAddComponentPopup<AudioListenerComponent>("Audio Listener");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
 			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
 			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
@@ -785,7 +786,7 @@ namespace Sparky {
 
 			Gui::SameLine();
 
-			Gui::BeginDisabled(component.Source != nullptr && component.Source->GetPath().empty() && !component.Source->IsPlaying());
+			Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
 
 			if (Gui::Button("Restart"))
 				component.Source->Restart();
@@ -799,7 +800,17 @@ namespace Sparky {
 
 			if (component.Source != nullptr)
 			{
+				Gui::BeginDisabled(!component.Source->IsPlaying());
+				Gui::ProgressBar(component.Source->GetAmountComplete());
+				Gui::EndDisabled();
+
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
+
+				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))
+					component.Source->SetPitch(props.Pitch);
+
+				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
+					component.Source->SetVolume(props.Volume);
 
 				if (Gui::Checkbox("Loop", &props.Loop))
 					component.Source->SetLoop(props.Loop);
@@ -861,15 +872,51 @@ namespace Sparky {
 
 					Gui::Spacing();
 				}
-
-				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))
-					component.Source->SetPitch(props.Pitch);
-
-				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
-					component.Source->SetVolume(props.Volume);
 			}
 
 			Gui::EndDisabled();
+		});
+
+		DrawComponent<AudioListenerComponent>("Audio Listener", entity, [](auto& component)
+		{
+			AudioListener::ListenerProperties& props = component.Listener->GetProperties();
+
+			DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+			{
+				component.Listener->SetPosition(props.Position);
+			});
+
+			DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+			{
+				component.Listener->SetDirection(props.Direction);
+			});
+
+			DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
+			{
+				component.Listener->SetVelocity(props.Veloctiy);
+			});
+
+			Gui::Spacing();
+
+			Gui::Text("Cone");
+			float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+			if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+			{
+				props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+				component.Listener->SetCone(props.Cone);
+			}
+			float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+			if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+			{
+				props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+				component.Listener->SetCone(props.Cone);
+			}
+			float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+			if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+			{
+				props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+				component.Listener->SetCone(props.Cone);
+			}
 		});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)

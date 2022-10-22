@@ -6,6 +6,7 @@
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Renderer/Model.h"
 #include "Sparky/Audio/AudioSource.h"
+#include "Sparky/Audio/AudioListener.h"
 
 namespace Sparky {
 
@@ -108,6 +109,14 @@ namespace Sparky {
 		AudioSourceComponent() = default;
 		AudioSourceComponent(const AudioSourceComponent&) = default;
 	};
+	
+	struct AudioListenerComponent
+	{
+		SharedRef<AudioListener> Listener = nullptr;
+
+		AudioListenerComponent() = default;
+		AudioListenerComponent(const AudioListenerComponent&) = default;
+	};
 
 	// Physics components
 
@@ -196,7 +205,7 @@ namespace Sparky {
 	using AllComponents =
 		ComponentGroup<TransformComponent,
 		CameraComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
-		AudioSourceComponent,
+		AudioSourceComponent, AudioListenerComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 
