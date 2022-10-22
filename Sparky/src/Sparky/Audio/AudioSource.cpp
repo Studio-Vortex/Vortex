@@ -8,7 +8,10 @@ namespace Sparky {
 	AudioSource::AudioSource(const std::string& filepath)
 		: m_Path(filepath)
 	{
-		
+		AudioEngine::InitEngine(&m_Engine);
+		AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
+		m_Initialized = true;
+		AudioEngine::StopEngine(&m_Engine);
 	}
 
 	AudioSource::~AudioSource()
@@ -28,6 +31,7 @@ namespace Sparky {
 		if (IsPlaying())
 			return;
 
+		AudioEngine::StartEngine(&m_Engine);
 		AudioEngine::PlayFromSound(&m_Sound);
 	}
 
