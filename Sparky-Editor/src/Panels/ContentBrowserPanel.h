@@ -11,9 +11,14 @@ namespace Sparky {
 		
 		void OnGuiRender();
 
+		bool& IsOpen() { return s_ShowPanel; }
+
 	private:
 		void RenderRightClickPopupMenu();
 		void RenderFileExplorer();
+
+	private:
+		inline static bool s_ShowPanel = true;
 
 	private:
 		std::filesystem::path m_CurrentDirectory;

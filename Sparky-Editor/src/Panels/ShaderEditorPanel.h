@@ -12,18 +12,20 @@ namespace Sparky {
 		ShaderEditorPanel() = default;
 
 		void OnGuiRender(bool showDefault = false);
-		void ShowPanel() { s_ShowPanel = true; }
-		void LoadShaderFile(const std::filesystem::path& path);
+		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
+		void LoadShaderFile(const std::filesystem::path& path);
 		void RenderShaderCodeEditor();
+
+	private:
+		inline static bool s_ShowPanel = false;
 
 	private:
 		char m_CodeBuffer[SHADER_BUFFER_SIZE] = "";
 		bool m_ShaderLoaded = false;
 		std::filesystem::path m_CurrentShaderPath = std::filesystem::path();
 
-		inline static bool s_ShowPanel = true;
 	};
 
 }

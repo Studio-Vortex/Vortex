@@ -297,6 +297,9 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("View"))
 			{
+				Gui::MenuItem("Maximize On Play", nullptr, &m_MaximizeOnPlay);
+				Gui::Separator();
+
 				if (m_SceneViewportMaximized)
 				{
 					if (Gui::MenuItem("Minimize Scene", "Ctrl+Space"))
@@ -342,37 +345,37 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Window"))
 			{
-				if (Gui::MenuItem("Console"))
-					m_ConsolePanel.ShowPanel();
+				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
+				Gui::Separator();
+				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
 				Gui::Separator();
 
-				if (Gui::MenuItem("Shader Editor"))
-					m_ShaderEditorPanel.ShowPanel();
+				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				Gui::Separator();
 
 				if (Gui::BeginMenu("Debug"))
 				{
-					if (Gui::MenuItem("Performance"))
-						m_PerformancePanel.ShowPanel();
+					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
 					Gui::Separator();
 
-					if (Gui::MenuItem("Script Registry"))
-						m_ScriptRegistryPanel.ShowPanel();
+					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 
 					Gui::EndMenu();
 				}
 				Gui::Separator();
 
-				if (Gui::MenuItem("Settings"))
-					m_SettingsPanel.ShowPanel();
+				Gui::MenuItem("Settings", nullptr, &m_SettingsPanel.IsOpen());
 
 				Gui::EndMenu();
 			}
 			
 			if (Gui::BeginMenu("Help"))
 			{
-				if (Gui::MenuItem("About"))
-					m_AboutPanel.ShowPanel();
+				Gui::MenuItem("About", nullptr, &m_AboutPanel.IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -581,6 +584,8 @@ namespace Sparky {
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
 			{
+				StopAudioSourcesToBeResumed();
+
 				if (hasSimulateButton)
 					OnScenePlay();
 				else
@@ -595,6 +600,8 @@ namespace Sparky {
 			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
 			{
+				StopAudioSourcesToBeResumed();
+
 				if (hasPlayButton)
 					OnSceneSimulate();
 				else
@@ -607,8 +614,15 @@ namespace Sparky {
 		if (hasPauseButton)
 		{
 			SharedRef<Texture2D> icon = m_PauseIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), scenePaused ? ImVec4(0.2f, 0.2f, 0.8f, 1.0f) : tintColor) && toolbarEnabled)
-				m_ActiveScene->SetPaused(!scenePaused);
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			{
+				bool paused = !scenePaused;
+
+				if (paused)
+					OnScenePause();
+				else
+					OnSceneResume();
+			}
 
 			if (scenePaused)
 			{
@@ -1105,6 +1119,9 @@ namespace Sparky {
 
 		m_SceneState = SceneState::Play;
 
+		if (m_MaximizeOnPlay)
+			m_SceneViewportMaximized = true;
+
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
 
@@ -1116,7 +1133,42 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Edit)
 			return;
 
+		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		// Pause all audio sources in the scene
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_ActiveScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			if (audioSource->IsPlaying())
+			{
+				audioSource->Pause();
+				m_AudioSourcesToResume.push_back(audioSource);
+			}
+		}
+
 		m_ActiveScene->SetPaused(true);
+	}
+
+	void EditorLayer::OnSceneResume()
+	{
+		if (!m_AudioSourcesToResume.empty())
+		{
+			for (auto& audioSource : m_AudioSourcesToResume)
+				audioSource->Play();
+
+			m_AudioSourcesToResume.clear();
+		}
+
+		m_ActiveScene->SetPaused(false);
+	}
+
+	void EditorLayer::StopAudioSourcesToBeResumed()
+	{
+		for (auto& audioSource : m_AudioSourcesToResume)
+			audioSource->Stop();
+
+		m_AudioSourcesToResume.clear();
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -1129,6 +1181,9 @@ namespace Sparky {
 			m_ActiveScene->OnSimulationStop();
 
 		m_SceneState = SceneState::Edit;
+
+		if (m_MaximizeOnPlay)
+			m_SceneViewportMaximized = false;
 
 		m_ActiveScene = m_EditorScene;
 
@@ -1161,6 +1216,9 @@ namespace Sparky {
 			OnSceneStop();
 
 		m_SceneState = SceneState::Simulate;
+
+		if (m_MaximizeOnPlay)
+			m_SceneViewportMaximized = true;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnSimulationStart();

@@ -21,44 +21,47 @@ namespace Sparky {
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
-		Gui::Begin("Content Browser");
-
-		// Left
-		float directoryButtonsContainierWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 145.0f);
-		Gui::BeginChild("Left Pane", ImVec2(directoryButtonsContainierWidth, 0), false);
-		
-		Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
-		Gui::SetCursorPosY(28.5f);
-		Gui::Separator();
-
-		for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
+		if (s_ShowPanel)
 		{
-			if (!assetDirectoryEntry.is_directory())
-				continue;
+			Gui::Begin("Content Browser");
 
-			if (Gui::Button(assetDirectoryEntry.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+			// Left
+			float directoryButtonsContainierWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 145.0f);
+			Gui::BeginChild("Left Pane", ImVec2(directoryButtonsContainierWidth, 0), false);
+
+			Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
+			Gui::SetCursorPosY(28.5f);
+			Gui::Separator();
+
+			for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
 			{
-				// Clear the search input text so it does not interfere with the child directory
-				memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-				m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+				if (!assetDirectoryEntry.is_directory())
+					continue;
 
-				m_CurrentDirectory = assetDirectoryEntry.path();
+				if (Gui::Button(assetDirectoryEntry.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+				{
+					// Clear the search input text so it does not interfere with the child directory
+					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+					m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+
+					m_CurrentDirectory = assetDirectoryEntry.path();
+				}
 			}
+			Gui::EndChild();
+
+			Gui::SameLine();
+
+			// Right
+			Gui::BeginGroup();
+			Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
+
+			RenderFileExplorer();
+
+			Gui::EndChild();
+			Gui::EndGroup();
+
+			Gui::End();
 		}
-		Gui::EndChild();
-
-		Gui::SameLine();
-
-		// Right
-		Gui::BeginGroup();
-		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
-
-		RenderFileExplorer();
-
-		Gui::EndChild();
-		Gui::EndGroup();
-
-		Gui::End();
 	}
 
 	void ContentBrowserPanel::RenderRightClickPopupMenu()

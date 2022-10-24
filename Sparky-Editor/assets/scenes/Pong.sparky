@@ -1,48 +1,12 @@
 Scene: Untitled
 Entities:
-  - Entity: 12910335349000657238
+  - Entity: 1772233635840414015
     TagComponent:
-      Tag: Ball
+      Tag: Right Paddle
     TransformComponent:
-      Translation: [0, 0, -9.31322575e-10]
+      Translation: [6, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\AwesomeFace.png
-      Scale: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.479999989
-      Density: 1
-      Friction: 0
-      Restitution: 1
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.PongBall
-      ScriptFields:
-        - Name: MaxSpeed
-          Type: Float
-          Data: 110
-        - Name: ShowRaycasts
-          Type: Bool
-          Data: false
-        - Name: Speed
-          Type: Float
-          Data: 100
-        - Name: Velocity
-          Type: Vector2
-          Data: [0, 0]
-  - Entity: 451101217983068239
-    TagComponent:
-      Tag: Right Wall
-    TransformComponent:
-      Translation: [9.75, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.5, 10, 1]
+      Scale: [0.5, 3, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -56,13 +20,63 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 14128749575890305120
+    ScriptComponent:
+      ClassName: Sandbox.AIPaddle
+      ScriptFields:
+        - Name: MaxSpeed
+          Type: Float
+          Data: 25
+  - Entity: 4077357939924341436
     TagComponent:
-      Tag: Left Wall
+      Tag: Left Paddle
     TransformComponent:
-      Translation: [-9.75, 0, 0]
+      Translation: [-6, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 10, 1]
+      Scale: [0.5, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Scale: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Sandbox.Paddle
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 5
+  - Entity: 17854921238768044091
+    TagComponent:
+      Tag: Perspective Camera
+    TransformComponent:
+      Translation: [0, -2.19345093e-05, 10]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 14617265967978248286
+    TagComponent:
+      Tag: Top Wall
+    TransformComponent:
+      Translation: [2.38418579e-07, 5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.5, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -96,13 +110,13 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 14617265967978248286
+  - Entity: 14128749575890305120
     TagComponent:
-      Tag: Top Wall
+      Tag: Left Wall
     TransformComponent:
-      Translation: [2.38418579e-07, 5, 0]
+      Translation: [-9.75, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [20, 0.5, 1]
+      Scale: [0.5, 10, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -116,31 +130,13 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 17854921238768044091
+  - Entity: 451101217983068239
     TagComponent:
-      Tag: Perspective Camera
+      Tag: Right Wall
     TransformComponent:
-      Translation: [0, -2.19345093e-05, 10]
+      Translation: [9.75, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 1000
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 4077357939924341436
-    TagComponent:
-      Tag: Left Paddle
-    TransformComponent:
-      Translation: [-6, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.5, 3, 1]
+      Scale: [0.5, 10, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       Scale: 1
@@ -154,35 +150,56 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Sandbox.Paddle
-      ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 5
-  - Entity: 1772233635840414015
+  - Entity: 12910335349000657238
     TagComponent:
-      Tag: Right Paddle
+      Tag: Ball
     TransformComponent:
-      Translation: [6, 0, 0]
+      Translation: [0, 0, -9.31322575e-10]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 3, 1]
+      Scale: [0.5, 0.5, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\AwesomeFace.png
       Scale: 1
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\MetalClang.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        Spacialized: true
+        Loop: true
     Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    CircleCollider2DComponent:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Radius: 0.479999989
       Density: 1
-      Friction: 0.5
-      Restitution: 0
+      Friction: 0
+      Restitution: 1
       RestitutionThreshold: 0.5
     ScriptComponent:
-      ClassName: Sandbox.AIPaddle
+      ClassName: Sandbox.PongBall
       ScriptFields:
         - Name: MaxSpeed
           Type: Float
-          Data: 25
+          Data: 110
+        - Name: ShowRaycasts
+          Type: Bool
+          Data: false
+        - Name: Speed
+          Type: Float
+          Data: 100
+        - Name: Velocity
+          Type: Vector2
+          Data: [0, 0]

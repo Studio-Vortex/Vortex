@@ -10,10 +10,10 @@ namespace Sparky {
 		ScriptRegistryPanel() = default;
 
 		void OnGuiRender();
-		void ShowPanel() { s_ShowPanel = true; }
+		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		inline static bool s_ShowPanel = true;
+		inline static bool s_ShowPanel = false;
 	};
 
 }

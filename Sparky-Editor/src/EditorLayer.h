@@ -48,6 +48,8 @@ namespace Sparky {
 
 		void OnScenePlay();
 		void OnScenePause();
+		void OnSceneResume();
+		void StopAudioSourcesToBeResumed();
 		void OnSceneStop();
 		void RestartScene();
 
@@ -103,6 +105,7 @@ namespace Sparky {
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportMaximized = false;
+		bool m_MaximizeOnPlay = false;
 
 		enum class SceneState
 		{
@@ -116,6 +119,8 @@ namespace Sparky {
 		SharedRef<Texture2D> m_StopIcon;
 		SharedRef<Texture2D> m_SimulateIcon;
 		SharedRef<Texture2D> m_StepIcon;
+
+		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 
 		// Panels
 

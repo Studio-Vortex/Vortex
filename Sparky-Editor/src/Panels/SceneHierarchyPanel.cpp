@@ -29,95 +29,101 @@ namespace Sparky {
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
 	{
-		Gui::Begin("Scene Hierarchy");
-
-		// Search Bar + Filtering
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
-		bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-		if (isSearching)
-			m_SearchInputTextFilter.Build();
-
-		Gui::SameLine();
-		
-		if (Gui::Button(" + "))
-			Gui::OpenPopup("CreateEntity");
-
-		if (Gui::BeginPopup("CreateEntity"))
+		if (s_ShowSceneHierarchyPanel)
 		{
-			DisplayCreateEntityMenu();
+			Gui::Begin("Scene Hierarchy", &s_ShowSceneHierarchyPanel);
 
-			Gui::EndPopup();
-		}
+			// Search Bar + Filtering
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
+			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+			if (isSearching)
+				m_SearchInputTextFilter.Build();
 
-		Gui::Spacing();
-		Gui::Separator();
+			Gui::SameLine();
 
-		if (m_ContextScene)
-		{
-			if (m_EntityShouldBeDestroyed && m_SelectedEntity)
-			{
-				Entity entityToBeDestroyed = m_SelectedEntity;
+			if (Gui::Button(" + "))
+				Gui::OpenPopup("CreateEntity");
 
-				m_SelectedEntity = {};
-				m_EntityShouldBeDestroyed = false;
-						
-				// If we are hovering on the entity we must reset it otherwise entt will complain
-				if (hoveredEntity == entityToBeDestroyed)
-					hoveredEntity = Entity{};
-
-				m_ContextScene->DestroyEntity(entityToBeDestroyed);
-			}
-
-			m_ContextScene->m_Registry.each([&](auto entityID)
-			{
-				Entity entity{ entityID, m_ContextScene.get() };
-
-				// If the name lines up with the search box we can show it
-				if (m_SearchInputTextFilter.PassFilter(entity.GetName().c_str()))
-					DrawEntityNode(entity);
-			});
-
-			// Left click anywhere on the panel to deselect entity
-			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
-			{
-				m_SelectedEntity = {};
-				m_EntityShouldBeRenamed = false;
-				m_EntityShouldBeDestroyed = false;
-			}
-
-			// Right-click on blank space in scene hierarchy panel
-			if (Gui::BeginPopupContextWindow(0, 1, false))
+			if (Gui::BeginPopup("CreateEntity"))
 			{
 				DisplayCreateEntityMenu();
 
 				Gui::EndPopup();
 			}
-		}
 
-		Gui::End();
+			Gui::Spacing();
+			Gui::Separator();
 
-		Gui::Begin("Inspector");
-
-		if (m_SelectedEntity)
-			DrawComponents(m_SelectedEntity);
-		else
-		{
-			const char* name = "None";
-
-			if (hoveredEntity && m_ContextScene)
+			if (m_ContextScene)
 			{
-				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+				if (m_EntityShouldBeDestroyed && m_SelectedEntity)
+				{
+					Entity entityToBeDestroyed = m_SelectedEntity;
 
-				if (!tag.empty())
-					name = tag.c_str();
+					m_SelectedEntity = {};
+					m_EntityShouldBeDestroyed = false;
+
+					// If we are hovering on the entity we must reset it otherwise entt will complain
+					if (hoveredEntity == entityToBeDestroyed)
+						hoveredEntity = Entity{};
+
+					m_ContextScene->DestroyEntity(entityToBeDestroyed);
+				}
+
+				m_ContextScene->m_Registry.each([&](auto entityID)
+					{
+						Entity entity{ entityID, m_ContextScene.get() };
+
+						// If the name lines up with the search box we can show it
+						if (m_SearchInputTextFilter.PassFilter(entity.GetName().c_str()))
+							DrawEntityNode(entity);
+					});
+
+				// Left click anywhere on the panel to deselect entity
+				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
+				{
+					m_SelectedEntity = {};
+					m_EntityShouldBeRenamed = false;
+					m_EntityShouldBeDestroyed = false;
+				}
+
+				// Right-click on blank space in scene hierarchy panel
+				if (Gui::BeginPopupContextWindow(0, 1, false))
+				{
+					DisplayCreateEntityMenu();
+
+					Gui::EndPopup();
+				}
 			}
 
-			Gui::SetCursorPosX(10.0f);
-			Gui::Text("Hovered Entity: %s", name);
+			Gui::End();
 		}
 
-		Gui::End();
+		if (s_ShowInspectorPanel)
+		{
+			Gui::Begin("Inspector", &s_ShowInspectorPanel);
+
+			if (m_SelectedEntity)
+				DrawComponents(m_SelectedEntity);
+			else
+			{
+				const char* name = "None";
+
+				if (hoveredEntity && m_ContextScene)
+				{
+					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+
+					if (!tag.empty())
+						name = tag.c_str();
+				}
+
+				Gui::SetCursorPosX(10.0f);
+				Gui::Text("Hovered Entity: %s", name);
+			}
+
+			Gui::End();
+		}
 	}
 
 	void SceneHierarchyPanel::DisplayCreateEntityMenu()

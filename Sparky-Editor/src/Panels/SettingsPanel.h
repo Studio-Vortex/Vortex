@@ -43,11 +43,13 @@ namespace Sparky {
 		SettingsPanel(const Settings& settings) : m_Settings(settings) { }
 
 		void OnGuiRender(bool showDefault = false);
-		void ShowPanel() { s_ShowPanel = true; }
+		bool& IsOpen() { return s_ShowPanel; }
+
+	private:
+		inline static bool s_ShowPanel = true;
 
 	private:
 		Settings m_Settings;
-		inline static bool s_ShowPanel = true;
 	};
 
 }

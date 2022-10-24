@@ -10,10 +10,10 @@ namespace Sparky {
 		ConsolePanel() = default;
 
 		void OnGuiRender(bool showDefault = false);
-		void ShowPanel() { s_ShowPanel = true; }
+		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		inline static bool s_ShowPanel = true;
+		inline static bool s_ShowPanel = false;
 	};
 
 }
