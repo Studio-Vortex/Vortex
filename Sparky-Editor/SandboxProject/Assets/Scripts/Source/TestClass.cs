@@ -40,7 +40,9 @@ namespace Sandbox {
 
 		public override void OnGui()
 		{
-			Gui.Begin("Tutorial", Window.GetSize() / 4.0f, new Vector2(300.0f, 200.0f));
+			Vector2 windowPos = Window.GetPosition();
+			windowPos.Y += 25.0f;
+			Gui.Begin("Tutorial", windowPos, new Vector2(325.0f, 150.0f));
 			Gui.Text("Welcome to Sparky!");
 			Gui.Separator();
 			Gui.Spacing();

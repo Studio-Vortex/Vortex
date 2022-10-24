@@ -14,6 +14,7 @@ namespace Sparky {
 			bool& ShowColliders;
 
 			// Editor
+			uint32_t& FrameStepCount;
 			bool& DrawEditorGrid;
 			bool& DrawEditorAxes;
 			bool& DrawEditorCubemap;

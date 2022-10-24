@@ -29,8 +29,10 @@ namespace Sparky {
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
 		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
+		m_PauseIcon = Texture2D::Create("Resources/Icons/PauseButton.png");
 		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
 		m_SimulateIcon = Texture2D::Create("Resources/Icons/SimulateButton.png");
+		m_StepIcon = Texture2D::Create("Resources/Icons/StepButton.png");
 
 		m_EditorScene = CreateShared<Scene>();
 		m_ActiveScene = m_EditorScene;
@@ -395,6 +397,7 @@ namespace Sparky {
 		m_ActiveScene->OnUpdateEntityGui();
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+
 		bool open = true;
 		Gui::Begin("Scene", &open, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -548,6 +551,11 @@ namespace Sparky {
 
 	void EditorLayer::UI_Toolbar()
 	{
+		bool hasPlayButton = m_SceneState != SceneState::Simulate;
+		bool hasSimulateButton = m_SceneState != SceneState::Play;
+		bool hasPauseButton = m_SceneState != SceneState::Edit;
+		bool scenePaused = m_ActiveScene->IsPaused();
+
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 2.0f });
 		Gui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 0.0f, 0.0f });
 		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
@@ -566,29 +574,49 @@ namespace Sparky {
 			tintColor.w = 0.5f;
 
 		float size = Gui::GetWindowHeight() - 4.0f;
+		Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
 
+		if (hasPlayButton)
 		{
-			SharedRef<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_PlayIcon : m_StopIcon;
-			Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
 			{
-				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+				if (hasSimulateButton)
 					OnScenePlay();
-				else if (m_SceneState == SceneState::Play)
+				else
 					OnSceneStop();
 			}
+
+			Gui::SameLine();
 		}
 
-		Gui::SameLine();
-
+		if (hasSimulateButton)
 		{
-			SharedRef<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_SimulateIcon : m_StopIcon;
+			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
 			{
-				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+				if (hasPlayButton)
 					OnSceneSimulate();
-				else if (m_SceneState == SceneState::Simulate)
+				else
 					OnSceneStop();
+			}
+
+			Gui::SameLine();
+		}
+
+		if (hasPauseButton)
+		{
+			SharedRef<Texture2D> icon = m_PauseIcon;
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), scenePaused ? ImVec4(0.2f, 0.2f, 0.8f, 1.0f) : tintColor) && toolbarEnabled)
+				m_ActiveScene->SetPaused(!scenePaused);
+
+			if (scenePaused)
+			{
+				Gui::SameLine();
+
+				SharedRef<Texture2D> icon = m_StepIcon;
+				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+					m_ActiveScene->Step(m_FrameStepCount);
 			}
 		}
 
@@ -705,7 +733,8 @@ namespace Sparky {
 		}
 
 		// Draw selected entity outline 
-		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity()) {
+		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+		{
 			const auto& entityTransform = selectedEntity.GetComponent<TransformComponent>();
 
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
@@ -1080,6 +1109,14 @@ namespace Sparky {
 		m_ActiveScene->OnRuntimeStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnScenePause()
+	{
+		if (m_SceneState == SceneState::Edit)
+			return;
+
+		m_ActiveScene->SetPaused(true);
 	}
 
 	void EditorLayer::OnSceneStop()

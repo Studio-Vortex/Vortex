@@ -13,12 +13,14 @@ namespace Sandbox {
 
 		private RigidBody2D m_Rigidbody;
 		private CircleCollider2D m_CircleCollider;
+		private AudioSource m_HitSound;
 
 		public override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_CircleCollider = GetComponent<CircleCollider2D>();
 			m_Rigidbody.ApplyForce(new Vector2(MaxSpeed, -1.0f), true);
+			m_HitSound = GetComponent<AudioSource>();
 		}
 
 		public override void OnUpdate(float delta)
@@ -31,25 +33,37 @@ namespace Sandbox {
 			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), out RayCastHit2D hit, ShowRaycasts);
 
 			if (hit.Hit)
+			{
+				m_HitSound.Play();
 				Velocity.Y = -1.0f;
+			}
 
 			float downPoint = currentY - circleRadius;
 			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), out RayCastHit2D hit1, ShowRaycasts);
 
 			if (hit1.Hit)
+			{
+				m_HitSound.Play();
 				Velocity.Y = 1.0f;
+			}
 
 			float leftPoint = currentX - circleRadius;
 			Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), out RayCastHit2D hit2, ShowRaycasts);
 
 			if (hit2.Hit)
+			{
+				m_HitSound.Play();
 				Velocity.X = 1.0f;
+			}
 
 			float rightPoint = currentX + circleRadius;
 			Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), out RayCastHit2D hit3, ShowRaycasts);
 
 			if (hit3.Hit)
+			{
+				m_HitSound.Play();
 				Velocity.Y = -1.0f;
+			}
 
 			Speed += delta;
 

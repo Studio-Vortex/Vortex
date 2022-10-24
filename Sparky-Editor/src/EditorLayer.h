@@ -47,6 +47,7 @@ namespace Sparky {
 		void SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path);
 
 		void OnScenePlay();
+		void OnScenePause();
 		void OnSceneStop();
 		void RestartScene();
 
@@ -111,8 +112,10 @@ namespace Sparky {
 		// Editor resources
 
 		SharedRef<Texture2D> m_PlayIcon;
+		SharedRef<Texture2D> m_PauseIcon;
 		SharedRef<Texture2D> m_StopIcon;
 		SharedRef<Texture2D> m_SimulateIcon;
+		SharedRef<Texture2D> m_StepIcon;
 
 		// Panels
 
@@ -126,6 +129,7 @@ namespace Sparky {
 
 		// Settings
 
+		uint32_t m_FrameStepCount = 1;
 		bool m_GizmosEnabled = true;
 		bool m_GizmoSnapEnabled = true;
 		bool m_OrthographicGizmos = false;
@@ -139,7 +143,8 @@ namespace Sparky {
 		};
 
 		SettingsPanel::Settings m_Settings{ 
-			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_DrawEditorGrid, m_DrawEditorAxes, m_DrawEditorCubemap, m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes, m_DrawEditorCubemap,
+			m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
 		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 

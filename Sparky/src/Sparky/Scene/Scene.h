@@ -42,9 +42,13 @@ namespace Sparky {
 		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
 		void OnUpdateEntityGui();
 
+		void Step(uint32_t frames = 1);
+
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		bool IsRunning() const { return m_IsRunning; }
+		bool IsPaused() const { return m_IsPaused; }
+		void SetPaused(bool paused) { m_IsPaused = paused; }
 		bool IsInDebugMode() const { return m_DebugMode; }
 		void SetDebugMode(bool mode) { m_DebugMode = mode; }
 
@@ -87,8 +91,10 @@ namespace Sparky {
 		SceneRenderer m_SceneRenderer;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+		uint32_t m_StepFrames = 0;
 		bool m_IsRunning = false;
-		bool m_DebugMode = false;
+		bool m_IsPaused = false;
+		bool m_DebugMode = false; // Editor-only
 
 		b2World* m_PhysicsWorld = nullptr;
 		

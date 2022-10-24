@@ -242,29 +242,36 @@ namespace Sparky {
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
-		// Update Scripts
+		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			// C# Entity OnUpdate
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto entityID : view)
-				ScriptEngine::OnUpdateEntity(Entity{ entityID, this }, delta);
-
-			// C++ Entity OnUpdate
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			// Update Scripts
 			{
-				// TODO: Move to Scene::OnScenePlay
-				if (!nsc.Instance)
+				// C# Entity OnUpdate
+				auto view = m_Registry.view<ScriptComponent>();
+				for (auto entityID : view)
+					ScriptEngine::OnUpdateEntity(Entity{ entityID, this }, delta);
+
+				// C++ Entity OnUpdate
+				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
+					// TODO: Move to Scene::OnScenePlay
+					if (!nsc.Instance)
+					{
+						nsc.Instance = nsc.InstantiateScript();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
+					}
 
-				nsc.Instance->OnUpdate(delta);
-			});
+					nsc.Instance->OnUpdate(delta);
+				});
+			}
+
+			// Update Physics Bodies
+			OnPhysics2DUpdate(delta);
+
+			if (m_StepFrames)
+				m_StepFrames--;
 		}
-
-		OnPhysics2DUpdate(delta);
 
 		// Render Primitives
 		SceneCamera* primarySceneCamera = nullptr;
@@ -289,7 +296,13 @@ namespace Sparky {
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
 	{
-		OnPhysics2DUpdate(delta);
+		if (!m_IsPaused || m_StepFrames > 0)
+		{
+			OnPhysics2DUpdate(delta);
+
+			if (m_StepFrames)
+				m_StepFrames--;
+		}
 
 		// Render
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
@@ -301,8 +314,8 @@ namespace Sparky {
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
 	}
 
-    void Scene::OnUpdateEntityGui()
-    {
+	void Scene::OnUpdateEntityGui()
+	{
 		if (!IsRunning())
 			return;
 
@@ -313,7 +326,12 @@ namespace Sparky {
 			Entity entity = { e, this };
 			ScriptEngine::OnGuiEntity(entity);
 		}
-    }
+	}
+
+	void Scene::Step(uint32_t frames)
+	{
+		m_StepFrames = frames;
+	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{

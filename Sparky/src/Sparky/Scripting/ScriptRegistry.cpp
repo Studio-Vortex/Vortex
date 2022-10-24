@@ -93,6 +93,34 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Scene
+
+	static bool Scene_IsPaused()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return contextScene->IsPaused();
+	}
+
+	static void Scene_Pause()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		contextScene->SetPaused(true);
+	}
+
+	static void Scene_Resume()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		contextScene->SetPaused(false);
+	}
+
+#pragma endregion
+
 #pragma region SceneManager
 
 	static void SceneManager_LoadScene(MonoString* sceneName)
@@ -1386,6 +1414,14 @@ namespace Sparky {
 #pragma region Renderer
 
 		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
+
+#pragma endregion
+
+#pragma region Scene
+
+		SP_ADD_INTERNAL_CALL(Scene_IsPaused);
+		SP_ADD_INTERNAL_CALL(Scene_Pause);
+		SP_ADD_INTERNAL_CALL(Scene_Resume);
 
 #pragma endregion
 

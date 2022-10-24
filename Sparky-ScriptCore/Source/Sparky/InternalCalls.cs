@@ -32,6 +32,19 @@ namespace Sparky {
 
 		#endregion
 
+		#region Scene
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Scene_IsPaused();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Scene_Pause();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Scene_Resume();
+
+		#endregion
+
 		#region SceneManager
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
