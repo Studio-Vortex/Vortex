@@ -11,11 +11,31 @@ namespace Sparky {
 		internal extern static void Application_Shutdown();
 
 		#endregion
-		
+
 		#region Window
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_GetSize(out Vector2 size);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_GetPosition(out Vector2 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Window_ShowMouseCursor(bool enabled);
+
+		#endregion
+
+		#region Renderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Renderer_SetClearColor(ref Vector3 color);
+
+		#endregion
+
+		#region SceneManager
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneManager_LoadScene(string sceneName);
 
 		#endregion
 
@@ -329,13 +349,6 @@ namespace Sparky {
 
 		#endregion
 
-		#region Renderer
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Renderer_SetClearColor(ref Vector3 color);
-
-		#endregion
-
 		#region Input
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -364,7 +377,22 @@ namespace Sparky {
 		internal extern static void Gui_Begin(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_BeginWithPosition(string name, ref Vector2 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_BeginWithSize(string name, float width, float height);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_BeginWithPositionAndSize(string name, ref Vector2 position, ref Vector2 size);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_End();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_Separator();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_Spacing();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_Text(string text);

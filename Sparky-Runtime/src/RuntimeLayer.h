@@ -22,7 +22,7 @@ namespace Sparky {
 
 	private:
 		SharedRef<Framebuffer> m_Framebuffer;
-		SharedRef<Scene> m_RuntimeScene;
+		SharedRef<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 	};
 

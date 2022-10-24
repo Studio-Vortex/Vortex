@@ -4,7 +4,7 @@ Entities:
     TagComponent:
       Tag: Ball
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 0, -9.31322575e-10]
       Rotation: [0, 0, 0]
       Scale: [0.5, 0.5, 1]
     SpriteRendererComponent:
@@ -18,7 +18,7 @@ Entities:
       Offset: [0, 0]
       Radius: 0.479999989
       Density: 1
-      Friction: 0.5
+      Friction: 0
       Restitution: 1
       RestitutionThreshold: 0.5
     ScriptComponent:
@@ -26,10 +26,16 @@ Entities:
       ScriptFields:
         - Name: MaxSpeed
           Type: Float
-          Data: 200
+          Data: 110
+        - Name: ShowRaycasts
+          Type: Bool
+          Data: false
         - Name: Speed
           Type: Float
           Data: 100
+        - Name: Velocity
+          Type: Vector2
+          Data: [0, 0]
   - Entity: 451101217983068239
     TagComponent:
       Tag: Right Wall
@@ -179,4 +185,4 @@ Entities:
       ScriptFields:
         - Name: MaxSpeed
           Type: Float
-          Data: 20
+          Data: 25

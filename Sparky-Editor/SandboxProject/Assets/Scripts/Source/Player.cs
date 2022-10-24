@@ -41,6 +41,9 @@ namespace Sandbox {
 
 			m_Camera.DistanceToPlayer += delta;
 
+			if (m_Camera.DistanceToPlayer > 20.0f)
+				m_Camera.DistanceToPlayer = 20.0f;
+
 			if (Input.IsKeyDown(KeyCode.Q))
 				m_Camera.DistanceToPlayer += 2.0f * delta;
 			if (Input.IsKeyDown(KeyCode.E))

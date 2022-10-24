@@ -109,6 +109,14 @@ namespace Sparky {
 			data.EventCallback(event);
 		});
 
+		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int xpos, int ypos)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Position = Math::vec2{ (float)xpos, (float)ypos };
+
+			// TODO potentially a window moved event
+		});
+
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

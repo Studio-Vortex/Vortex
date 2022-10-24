@@ -37,6 +37,8 @@ namespace Sparky {
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
+	static std::string s_SceneToBeLoaded = "";
+
 	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 #pragma region Application
@@ -53,12 +55,54 @@ namespace Sparky {
 
 #pragma region Window
 
+	static void Window_GetSize(Math::vec2* outSize)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		*outSize = Application::Get().GetWindow().GetSize();
+	}
+
+	static void Window_GetPosition(Math::vec2* outPosition)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		*outPosition = Application::Get().GetWindow().GetPosition();
+	}
+
 	static void Window_ShowMouseCursor(bool enabled)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		Application::Get().GetWindow().ShowMouseCursor(enabled);
+	}
+
+#pragma endregion
+
+#pragma region Renderer
+
+	static void Renderer_SetClearColor(Math::vec3* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		RenderCommand::SetClearColor(*color);
+	}
+
+#pragma endregion
+
+#pragma region SceneManager
+
+	static void SceneManager_LoadScene(MonoString* sceneName)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		char* sceneNameCStr = mono_string_to_utf8(sceneName);
+		s_SceneToBeLoaded = sceneNameCStr;
+		mono_free(sceneNameCStr);
 	}
 
 #pragma endregion
@@ -642,7 +686,6 @@ namespace Sparky {
 
 #pragma endregion
 
-
 #pragma region Rigidbody2D Component
 
 	static void RigidBody2DComponent_GetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType* outBodyType)
@@ -1097,14 +1140,6 @@ namespace Sparky {
 		return &result;
 	}
 
-	static void Renderer_SetClearColor(Math::vec3* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		RenderCommand::SetClearColor(*color);
-	}
-
 #pragma endregion
 
 #pragma region Input
@@ -1147,11 +1182,44 @@ namespace Sparky {
 
 	namespace Gui = ImGui;
 
+	static uint32_t defaultWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking;
+
 	static void Gui_Begin(MonoString* text)
 	{
 		char* textCStr = mono_string_to_utf8(text);
 
-		Gui::Begin(textCStr);
+		Gui::Begin(textCStr, nullptr, defaultWindowFlags);
+
+		mono_free(textCStr);
+	}
+	
+	static void Gui_BeginWithPosition(MonoString* text, Math::vec2* position)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		Gui::SetNextWindowPos({ position->x, position->y });
+		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoMove);
+
+		mono_free(textCStr);
+	}
+
+	static void Gui_BeginWithSize(MonoString* text, float width, float height)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		Gui::SetNextWindowSize({ width, height });
+		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoResize);
+
+		mono_free(textCStr);
+	}
+
+	static void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size)
+	{
+		char* textCStr = mono_string_to_utf8(text);
+
+		Gui::SetNextWindowPos({ position->x, position->y });
+		Gui::SetNextWindowSize({ size->x, size->y });
+		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 		mono_free(textCStr);
 	}
@@ -1159,6 +1227,16 @@ namespace Sparky {
 	static void Gui_End()
 	{
 		Gui::End();
+	}
+
+	static void Gui_Separator()
+	{
+		Gui::Separator();
+	}
+
+	static void Gui_Spacing()
+	{
+		Gui::Spacing();
 	}
 
 	static void Gui_Text(MonoString* text)
@@ -1277,6 +1355,17 @@ namespace Sparky {
 		RegisterComponent(AllComponents{});
 	}
 
+	const char* ScriptRegistry::GetSceneToBeLoaded()
+	{
+		const char* sceneName = s_SceneToBeLoaded.c_str();
+		return sceneName;
+	}
+
+	void ScriptRegistry::ResetSceneToBeLoaded()
+	{
+		s_SceneToBeLoaded = std::string();
+	}
+
 	void ScriptRegistry::RegisterMethods()
 	{
 
@@ -1288,7 +1377,21 @@ namespace Sparky {
 
 #pragma region Window
 
+		SP_ADD_INTERNAL_CALL(Window_GetSize);
+		SP_ADD_INTERNAL_CALL(Window_GetPosition);
 		SP_ADD_INTERNAL_CALL(Window_ShowMouseCursor);
+
+#pragma endregion
+
+#pragma region Renderer
+
+		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
+
+#pragma endregion
+
+#pragma region SceneManager
+
+		SP_ADD_INTERNAL_CALL(SceneManager_LoadScene);
 
 #pragma endregion
 
@@ -1452,12 +1555,6 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Renderer
-
-		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
-
-#pragma endregion
-
 #pragma region Input
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
@@ -1472,7 +1569,12 @@ namespace Sparky {
 #pragma region Gui
 
 		SP_ADD_INTERNAL_CALL(Gui_Begin);
+		SP_ADD_INTERNAL_CALL(Gui_BeginWithPosition);
+		SP_ADD_INTERNAL_CALL(Gui_BeginWithSize);
+		SP_ADD_INTERNAL_CALL(Gui_BeginWithPositionAndSize);
 		SP_ADD_INTERNAL_CALL(Gui_End);
+		SP_ADD_INTERNAL_CALL(Gui_Separator);
+		SP_ADD_INTERNAL_CALL(Gui_Spacing);
 		SP_ADD_INTERNAL_CALL(Gui_Text);
 		SP_ADD_INTERNAL_CALL(Gui_Button);
 

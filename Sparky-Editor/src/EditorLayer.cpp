@@ -1,10 +1,11 @@
 #include "EditorLayer.h"
 
+#include <Sparky/Scene/Components.h>
 #include <Sparky/Scene/SceneSerializer.h>
 #include <Sparky/Renderer/RenderCommand.h>
 #include <Sparky/Utils/PlatformUtils.h>
-#include <Sparky/Scene/Components.h>
 #include <Sparky/Scripting/ScriptEngine.h>
+#include <Sparky/Scripting/ScriptRegistry.h>
 #include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
@@ -98,6 +99,13 @@ namespace Sparky {
 			}
 			case SceneState::Play:
 			{
+				if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
+				{
+					OpenScene(std::filesystem::path(std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded)));
+					OnScenePlay();
+					ScriptRegistry::ResetSceneToBeLoaded();
+				}
+
 				m_ActiveScene->OnUpdateRuntime(delta);
 
 				break;
@@ -961,7 +969,6 @@ namespace Sparky {
 		{
 			case Mouse::ButtonRight:
 			{
-				
 				Application::Get().GetWindow().ShowMouseCursor(true);
 
 				break;
@@ -1056,6 +1063,7 @@ namespace Sparky {
 		{
 			Entity entity{ e, m_ActiveScene.get() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			
 			if (audioSource->IsPlaying())
 				audioSource->Stop();
 		}

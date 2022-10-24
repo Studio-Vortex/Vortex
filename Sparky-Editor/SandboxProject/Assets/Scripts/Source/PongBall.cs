@@ -51,6 +51,8 @@ namespace Sandbox {
 			if (hit3.Hit)
 				Velocity.Y = -1.0f;
 
+			Speed += delta;
+
 			Speed = Math.Min(Speed, MaxSpeed);
 
 			Velocity *= Speed * delta;

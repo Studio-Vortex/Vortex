@@ -10,6 +10,7 @@ namespace Sparky {
 
 	static constexpr const char* CUBE_SHADER_PATH = "Assets/Shaders/Renderer_Cube.glsl";
 	static constexpr const char* SPHERE_SHADER_PATH = "Assets/Shaders/Renderer_Sphere.glsl";
+	static constexpr const char* MODEL_SHADER_PATH = "Assets/Shaders/Renderer_Model.glsl";
 
 	struct CubeVertex
 	{
@@ -53,6 +54,8 @@ namespace Sparky {
 		SharedRef<VertexArray> SphereVA;
 		SharedRef<VertexBuffer> SphereVB;
 		SharedRef<Shader> SphereShader;
+
+		SharedRef<Shader> ModelShader;
 
 		uint32_t CubeIndexCount = 0;
 		CubeVertex* CubeVertexBufferBase = nullptr;

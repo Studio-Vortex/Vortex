@@ -7,7 +7,8 @@ namespace Sparky {
 	public:
 		static void RegisterMethods();
 		static void RegisterComponents();
-	private:
+		static const char* GetSceneToBeLoaded();
+		static void ResetSceneToBeLoaded();
 	};
 
 }

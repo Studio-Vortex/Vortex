@@ -93,7 +93,7 @@ namespace Sparky {
 				// Scrolling will change the speed of the camera when shift is pressed
 				if (m_MouseYDelta)
 				{
-					m_ShiftModifer += m_MouseYDelta * 3.0f * delta;
+					m_ShiftModifer += m_MouseYDelta * delta;
 
 					if (m_ShiftModifer < 1.5f)
 						m_ShiftModifer = 1.5f;
@@ -122,10 +122,7 @@ namespace Sparky {
 				cameraVelocity += GetUpDirection();
 
 			m_Distance = 0.0f;
-
 			m_FocalPoint += cameraVelocity * moveSpeed * Math::vec3(delta);
-			m_Position = CalcualtePosition();
-
 			MouseRotate(mouseDelta);
 		}
 

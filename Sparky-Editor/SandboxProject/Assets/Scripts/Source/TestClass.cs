@@ -32,21 +32,29 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
 				Velocity.X = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftX);
 
-			if (Input.IsKeyDown(KeyCode.Space))
-				SpawnBullet();
+			if (Input.IsGamepadButtonDown(Gamepad.ButtonA))
+				SceneManager.LoadScene("Real3D");
 
 			transform.Translate(Velocity * Speed * delta);
 		}
 
-		private void SpawnBullet()
+		public override void OnGui()
 		{
-			Entity bullet = new Entity("Bullet");
-			RigidBody2D rb = bullet.AddComponent<RigidBody2D>();
-			rb.Type = RigidBody2DType.Dynamic;
-			bullet.AddComponent<CircleCollider2D>();
-			CircleRenderer circle = bullet.AddComponent<CircleRenderer>();
-			rb.ApplyForce(Vector2.Up, true);
-			circle.Color = new Vector4(1.0f, 1.0f, 0.2f, 1.0f);
+			Gui.Begin("Tutorial", Window.GetSize() / 4.0f, new Vector2(300.0f, 200.0f));
+			Gui.Text("Welcome to Sparky!");
+			Gui.Separator();
+			Gui.Spacing();
+			Gui.Text("Use the left stick to move around");
+			Gui.Text("Press A to load the next scene!");
+
+			Gui.Spacing();
+			Gui.Text("Or click this button to load the Spawner Scene");
+			Gui.Spacing();
+
+			if (Gui.Button("Load Scene"))
+				SceneManager.LoadScene("Spawner");
+
+			Gui.End();
 		}
 	}
 

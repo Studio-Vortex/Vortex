@@ -13,6 +13,7 @@ namespace Sparky {
 	{
 		std::string Title;
 		Math::vec2 Size;
+		Math::vec2 Position;
 		bool Maximized;
 		bool VSync;
 		bool Decorated;
@@ -28,9 +29,11 @@ namespace Sparky {
 
 		virtual void OnUpdate() = 0;
 
-		virtual Math::vec2 GetSize() const = 0;
-		virtual unsigned int GetWidth() const = 0;
-		virtual unsigned int GetHeight() const = 0;
+		virtual const Math::vec2& GetSize() const = 0;
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
+		virtual const Math::vec2& GetPosition() const = 0;
+
 		virtual bool IsMaximized() const = 0;
 		virtual void SetMaximized(bool maximized) = 0;
 

@@ -61,11 +61,7 @@ namespace Sandbox {
 			}
 
 			if (transform.Translation.Y <= PlayerResetYAxis)
-			{
-				Velocity = Vector3.Zero;
-				transform.Translation = StartPosition;
-				m_Sprite.Color = new Vector4(1.0f);
-			}
+				SceneManager.LoadScene("Platformer");
 
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 				Application.Shutdown();
@@ -99,7 +95,12 @@ namespace Sandbox {
 				GameOver = true;
 
 			if (GameOver && m_CameraEntity.DistanceToPlayer > 5.0f)
+			{
 				m_CameraEntity.DistanceToPlayer -= 1.0f * delta;
+
+				if (m_CameraEntity.DistanceToPlayer <= 5.0f)
+					SceneManager.LoadScene("Platformer");
+			}
 
 			if ((Input.IsKeyDown(KeyCode.Space) || Input.IsGamepadButtonDown(Gamepad.ButtonA)) && IsGrounded)
 			{

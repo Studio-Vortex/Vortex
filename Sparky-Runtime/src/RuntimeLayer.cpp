@@ -2,6 +2,7 @@
 
 #include <Sparky/Scene/Scene.h>
 #include <Sparky/Scene/SceneSerializer.h>
+#include <Sparky/Scripting/ScriptRegistry.h>
 
 namespace Sparky {
 
@@ -21,18 +22,16 @@ namespace Sparky {
 			framebufferProps.Height = appProps.WindowHeight;
 
 			m_Framebuffer = Framebuffer::Create(framebufferProps);
-			m_RuntimeScene = CreateShared<Scene>();
-			m_RuntimeScene->OnViewportResize(appProps.WindowWidth, appProps.WindowHeight);
 
 			m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
+			m_RuntimeScene = CreateShared<Scene>();
+			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
 			const auto& sceneFilePath = commandLineArgs[1];
 
-			if (OpenScene(std::filesystem::path(sceneFilePath)))
-			{
-				m_RuntimeScene->OnRuntimeStart();
-				RenderCommand::SetClearColor(Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) });
-			}
+			OpenScene(std::filesystem::path(sceneFilePath));
+			RenderCommand::SetClearColor(Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) });
 		}
 	}
 
@@ -52,6 +51,12 @@ namespace Sparky {
 
 		m_Framebuffer->Bind();
 		RenderCommand::Clear();
+
+		if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
+		{
+			OpenScene(std::filesystem::path(std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded)));
+			ScriptRegistry::ResetSceneToBeLoaded();
+		}
 
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
@@ -74,27 +79,42 @@ namespace Sparky {
 
 		Gui::Begin("Game", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
 
-		// Update Application Gui
-		m_RuntimeScene->OnUpdateEntityGui();
-
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
 		
 		Gui::End();
 
 		Gui::PopStyleVar(3);
+
+		// Update Application Gui
+		m_RuntimeScene->OnUpdateEntityGui();
 	}
 
 	void RuntimeLayer::OnEvent(Event& e) { }
 
 	bool RuntimeLayer::OpenScene(const std::filesystem::path& filepath)
 	{
+		if (m_RuntimeScene->IsRunning())
+		{
+			m_RuntimeScene->OnRuntimeStop();
+
+			SharedRef<Scene> newScene = CreateShared<Scene>();
+			m_RuntimeScene.swap(newScene);
+			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+			// Reset the mouse cursor in case a script turned it off
+			Application::Get().GetWindow().ShowMouseCursor(true);
+		}
+
 		if (std::filesystem::exists(filepath) && filepath.extension().string() == ".sparky")
 		{
 			SceneSerializer serializer(m_RuntimeScene);
 
 			if (serializer.Deserialize(filepath.string()))
+			{
+				m_RuntimeScene->OnRuntimeStart();
 				return true;
+			}
 		}
 		else
 		{

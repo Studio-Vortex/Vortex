@@ -21,9 +21,10 @@ namespace Sparky {
 
 		void OnUpdate() override;
 
-		inline Math::vec2 GetSize() const override { return { (float)GetWidth(), (float)GetHeight() }; }
-		inline unsigned int GetWidth() const override { return (unsigned int)m_Properties.Size.x; }
-		inline unsigned int GetHeight() const override { return (unsigned int)m_Properties.Size.y; }
+		inline const Math::vec2& GetSize() const override { return { (float)GetWidth(), (float)GetHeight() }; }
+		inline uint32_t GetWidth() const override { return (uint32_t)m_Properties.Size.x; }
+		inline uint32_t GetHeight() const override { return (uint32_t)m_Properties.Size.y; }
+		inline const Math::vec2& GetPosition() const override { return m_Properties.Position; }
 		bool IsMaximized() const override { return m_Properties.Maximized; }
 		void SetMaximized(bool maximized) override;
 
@@ -52,6 +53,7 @@ namespace Sparky {
 		{
 			std::string Title;
 			Math::vec2 Size;
+			Math::vec2 Position;
 			bool Maximized;
 			bool VSync;
 			bool Decorated;

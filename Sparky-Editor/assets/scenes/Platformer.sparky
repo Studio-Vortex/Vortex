@@ -92,7 +92,7 @@ Entities:
     TagComponent:
       Tag: Grass Collider
     TransformComponent:
-      Translation: [7.5, 0, 0]
+      Translation: [11.5, 0.5, 0]
       Rotation: [0, 0, 0]
       Scale: [2, 1, 1]
     Rigidbody2DComponent:
@@ -225,7 +225,7 @@ Entities:
     TagComponent:
       Tag: Grass Collider Copy
     TransformComponent:
-      Translation: [11.5, 0.5, 0]
+      Translation: [7.5, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [2, 1, 1]
     Rigidbody2DComponent:
@@ -240,7 +240,7 @@ Entities:
       RestitutionThreshold: 0.5
   - Entity: 15521755230516285325
     TagComponent:
-      Tag: Grass Collider Copy
+      Tag: Grass Block
     TransformComponent:
       Translation: [11, 0.5, 0]
       Rotation: [0, 0, 0]
@@ -353,7 +353,19 @@ Entities:
     AudioSourceComponent:
       AudioSourcePath: Assets\SFX\Jump.wav
       SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
         Volume: 1
+        Spacialized: true
         Loop: false
     Rigidbody2DComponent:
       BodyType: Dynamic
@@ -389,8 +401,20 @@ Entities:
       Scale: [1, 1, 1]
     AudioSourceComponent:
       AudioSourcePath: Assets\SFX\KeeperOfTheSevenKeys.mp3
-      Loop: false
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        Spacialized: true
+        Loop: false
     ScriptComponent:
-      ClassName: Sandbox.Music
-      ScriptFields:
-        []
+      ClassName: Sandbox.StartMusic
