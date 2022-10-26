@@ -117,6 +117,7 @@ namespace Sparky {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 
 		static SharedRef<VertexBuffer> Create(float* vertices, uint32_t size);
+		static SharedRef<VertexBuffer> Create(const void* vertices, uint32_t size);
 		static SharedRef<VertexBuffer> Create(uint32_t size);
 	};
 

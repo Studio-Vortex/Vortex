@@ -18,6 +18,15 @@ namespace Sparky {
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_DYNAMIC_DRAW);
 	}
 
+	OpenGLVertexBuffer::OpenGLVertexBuffer(const void* vertices, uint32_t size)
+	{
+		SP_PROFILE_FUNCTION();
+
+		glCreateBuffers(1, &m_RendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_DYNAMIC_DRAW);
+	}
+
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	{
 		SP_PROFILE_FUNCTION();

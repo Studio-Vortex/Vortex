@@ -9,6 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/hash.hpp>
 
 namespace Sparky::Math {
 	
@@ -39,6 +40,11 @@ namespace Sparky::Math {
 	static auto Perspective(T verticalFOV, T aspectRatio, T zNear, T zFar)
 	{
 		return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
+	}
+
+	static auto LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
+	{
+		return glm::lookAt(eyePos, point, up);
 	}
 
 	template <typename T>

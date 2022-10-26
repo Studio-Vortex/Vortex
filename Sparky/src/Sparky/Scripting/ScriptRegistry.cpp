@@ -59,7 +59,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
+		SP_CORE_TRACE(Application::Get().GetWindow().GetSize());
 		*outSize = Application::Get().GetWindow().GetSize();
 	}
 
@@ -69,6 +69,14 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		*outPosition = Application::Get().GetWindow().GetPosition();
+	}
+
+	static bool Window_IsMaximized()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return Application::Get().GetWindow().IsMaximized();
 	}
 
 	static void Window_ShowMouseCursor(bool enabled)
@@ -482,6 +490,17 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
+	}
+
+	static void CameraComponent_LookAt(UUID entityUUID, Math::vec3* point, Math::vec3* up)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		Math::vec3 eyePos = entity.GetComponent<TransformComponent>().Translation;
+		entity.GetComponent<CameraComponent>().Camera.LookAt(eyePos, *point, *up);
 	}
 
 #pragma endregion
@@ -1212,11 +1231,25 @@ namespace Sparky {
 
 	static uint32_t defaultWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking;
 
+	static void BeginWindow(char* text, uint32_t flags = 0)
+	{
+		ImGuiIO& io = Gui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
+		Gui::Begin(text, nullptr, defaultWindowFlags | flags);
+		Gui::PushFont(largeFont);
+		Gui::TextCentered(text);
+		Gui::PopFont();
+		Gui::Separator();
+		Gui::Spacing();
+	}
+
 	static void Gui_Begin(MonoString* text)
 	{
 		char* textCStr = mono_string_to_utf8(text);
 
-		Gui::Begin(textCStr, nullptr, defaultWindowFlags);
+		BeginWindow(textCStr);
 
 		mono_free(textCStr);
 	}
@@ -1226,7 +1259,7 @@ namespace Sparky {
 		char* textCStr = mono_string_to_utf8(text);
 
 		Gui::SetNextWindowPos({ position->x, position->y });
-		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoMove);
+		BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 
 		mono_free(textCStr);
 	}
@@ -1236,7 +1269,7 @@ namespace Sparky {
 		char* textCStr = mono_string_to_utf8(text);
 
 		Gui::SetNextWindowSize({ width, height });
-		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoResize);
+		BeginWindow(textCStr, ImGuiWindowFlags_NoResize);
 
 		mono_free(textCStr);
 	}
@@ -1247,7 +1280,7 @@ namespace Sparky {
 
 		Gui::SetNextWindowPos({ position->x, position->y });
 		Gui::SetNextWindowSize({ size->x, size->y });
-		Gui::Begin(textCStr, nullptr, defaultWindowFlags | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 		mono_free(textCStr);
 	}
@@ -1407,6 +1440,7 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Window_GetSize);
 		SP_ADD_INTERNAL_CALL(Window_GetPosition);
+		SP_ADD_INTERNAL_CALL(Window_IsMaximized);
 		SP_ADD_INTERNAL_CALL(Window_ShowMouseCursor);
 
 #pragma endregion
@@ -1484,6 +1518,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+		SP_ADD_INTERNAL_CALL(CameraComponent_LookAt);
 
 #pragma endregion
 

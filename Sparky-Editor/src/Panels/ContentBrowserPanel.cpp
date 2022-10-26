@@ -23,7 +23,7 @@ namespace Sparky {
 	{
 		if (s_ShowPanel)
 		{
-			Gui::Begin("Content Browser");
+			Gui::Begin("Content Browser", &s_ShowPanel);
 
 			// Left
 			float directoryButtonsContainierWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 145.0f);
@@ -125,7 +125,7 @@ public class Untitled : Entity
 
 	void ContentBrowserPanel::RenderFileExplorer()
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = Gui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 

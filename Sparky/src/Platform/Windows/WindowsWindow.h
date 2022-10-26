@@ -21,7 +21,7 @@ namespace Sparky {
 
 		void OnUpdate() override;
 
-		inline const Math::vec2& GetSize() const override { return { (float)GetWidth(), (float)GetHeight() }; }
+		inline const Math::vec2& GetSize() const override { return m_Properties.Size; }
 		inline uint32_t GetWidth() const override { return (uint32_t)m_Properties.Size.x; }
 		inline uint32_t GetHeight() const override { return (uint32_t)m_Properties.Size.y; }
 		inline const Math::vec2& GetPosition() const override { return m_Properties.Position; }

@@ -37,12 +37,15 @@ namespace Sparky {
 		ReCalculateProjection();
 	}
 
-	void SceneCamera::ReCalculateProjection()
+    void SceneCamera::LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
+    {
+		m_ProjectionMatrix = Math::LookAt(eyePos, point, up);
+    }
+
+    void SceneCamera::ReCalculateProjection()
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
-		{
 			m_ProjectionMatrix = Math::Perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
-		}
 		else
 		{
 			float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;

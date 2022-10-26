@@ -14,6 +14,11 @@
 			return position;
 		}
 
+		public static bool IsMaximized()
+		{
+			return InternalCalls.Window_IsMaximized();
+		}
+
 		public static void ShowMouseCursor(bool enabled)
 		{
 			InternalCalls.Window_ShowMouseCursor(enabled);

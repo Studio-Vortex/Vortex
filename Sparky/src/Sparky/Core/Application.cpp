@@ -9,9 +9,6 @@
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Events/KeyEvent.h"
 
-// TEMPORARY
-#include "Sparky/Renderer/Model.h"
-
 extern bool g_ApplicationRunning;
 
 namespace Sparky {
@@ -45,9 +42,6 @@ namespace Sparky {
 
 		AudioEngine::Init();
 		Renderer::Init();
-
-		//TEMPORARY
-		Model::Init();
 
 		ScriptEngine::Init();
 

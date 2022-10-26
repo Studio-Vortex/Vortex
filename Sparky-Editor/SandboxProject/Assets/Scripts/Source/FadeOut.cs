@@ -22,9 +22,6 @@ namespace Sandbox {
 			if (DelayStart > 0.0f)
 				DelayStart -= delta;
 			else
-				DelayStart = 0.0f;
-
-			if (DelayStart == 0.0f)
 			{
 				Vector4 color = m_Sprite.Color;
 				color.W -= delta * 0.37f;
@@ -46,7 +43,7 @@ namespace Sandbox {
 					DelayEnd -= delta;
 
 				if (DelayEnd <= 0.0f)
-					SceneManager.LoadScene("SpaceShooter");
+					SceneManager.LoadScene("MainMenu");
 
 				m_Sprite.Color = color;
 			}

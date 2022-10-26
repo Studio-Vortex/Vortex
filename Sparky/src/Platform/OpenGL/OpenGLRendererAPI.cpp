@@ -42,8 +42,6 @@ namespace Sparky {
 
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_LINE_SMOOTH);
-
-		glEnable(GL_CULL_FACE);
     }
 
     void OpenGLRendererAPI::SetViewport(const Viewport& viewport) const

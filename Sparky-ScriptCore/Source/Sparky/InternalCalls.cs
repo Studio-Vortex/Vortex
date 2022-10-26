@@ -21,6 +21,9 @@ namespace Sparky {
 		internal extern static void Window_GetPosition(out Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Window_IsMaximized();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Window_ShowMouseCursor(bool enabled);
 
 		#endregion
@@ -157,6 +160,9 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_LookAt(ulong entityID, ref Vector3 point, ref Vector3 up);
 
 		#endregion
 

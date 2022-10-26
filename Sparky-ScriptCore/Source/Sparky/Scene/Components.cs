@@ -139,11 +139,16 @@
 				InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
 			}
 		}
+
+		public void LookAt(Vector3 point, Vector3 up)
+		{
+			InternalCalls.CameraComponent_LookAt(Entity.ID, ref point, ref up);
+		}
 	}
 
 	public enum MeshType
 	{
-		Cube, Sphere,
+		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus
 	}
 
 	public class MeshRenderer : Component

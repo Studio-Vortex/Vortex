@@ -167,8 +167,14 @@ namespace Sparky {
 	{
 		switch (meshType)
 		{
-			case MeshRendererComponent::MeshType::Cube:   return "Cube";
-			case MeshRendererComponent::MeshType::Sphere: return "Sphere";
+			case MeshRendererComponent::MeshType::Cube:     return "Cube";
+			case MeshRendererComponent::MeshType::Sphere:   return "Sphere";
+			case MeshRendererComponent::MeshType::Capsule:  return "Capsule";
+			case MeshRendererComponent::MeshType::Cone:     return "Cone";
+			case MeshRendererComponent::MeshType::Cylinder: return "Cylinder";
+			case MeshRendererComponent::MeshType::Plane:    return "Plane";
+			case MeshRendererComponent::MeshType::Torus:    return "Torus";
+			case MeshRendererComponent::MeshType::Custom:   return "Custom";
 		}
 
 		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
@@ -177,8 +183,14 @@ namespace Sparky {
 
 	static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
 	{
-		if (meshTypeString == "Cube")   return MeshRendererComponent::MeshType::Cube;
-		if (meshTypeString == "Sphere") return MeshRendererComponent::MeshType::Sphere;
+		if (meshTypeString == "Cube")     return MeshRendererComponent::MeshType::Cube;
+		if (meshTypeString == "Sphere")   return MeshRendererComponent::MeshType::Sphere;
+		if (meshTypeString == "Capsule")  return MeshRendererComponent::MeshType::Capsule;
+		if (meshTypeString == "Cone")     return MeshRendererComponent::MeshType::Cone;
+		if (meshTypeString == "Cylinder") return MeshRendererComponent::MeshType::Cylinder;
+		if (meshTypeString == "Plane")    return MeshRendererComponent::MeshType::Plane;
+		if (meshTypeString == "Torus")    return MeshRendererComponent::MeshType::Torus;
+		if (meshTypeString == "Custom")   return MeshRendererComponent::MeshType::Custom;
 
 		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
 		return MeshRendererComponent::MeshType::Cube;
@@ -249,6 +261,8 @@ namespace Sparky {
 			out << YAML::Key << "Color" << YAML::Value << meshRendererComponent.Color;
 			if (meshRendererComponent.Texture)
 				out << YAML::Key << "TexturePath" << YAML::Value << meshRendererComponent.Texture->GetPath();
+			if (meshRendererComponent.Mesh)
+				out << YAML::Key << "MeshSource" << YAML::Value << meshRendererComponent.Mesh->GetPath();
 			out << YAML::Key << "Scale" << YAML::Value << meshRendererComponent.Scale;
 
 			out << YAML::EndMap; // MeshRendererComponent
@@ -508,7 +522,7 @@ namespace Sparky {
 					auto cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
-					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
+					cc.Camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(cameraProps["PerspectiveFOV"].as<float>()));
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 
@@ -530,6 +544,9 @@ namespace Sparky {
 
 					if (meshComponent["TexturePath"])
 						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
+					if (meshComponent["MeshSource"])
+						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity, meshRendererComponent.Color);
+
 					meshRendererComponent.Scale = meshComponent["Scale"].as<float>();
 				}
 

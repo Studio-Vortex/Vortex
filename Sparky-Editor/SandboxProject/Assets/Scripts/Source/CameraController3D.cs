@@ -45,7 +45,7 @@ namespace Sandbox {
 			if (!FixedRotation)
 				ProcessRotation();
 
-			if (Input.IsKeyDown(KeyCode.LeftShift) || Input.IsGamepadButtonDown(Gamepad.LeftStick))
+			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
 				m_Velocity *= ShiftModifer;
 
 			m_Velocity *= Speed * delta;

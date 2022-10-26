@@ -52,23 +52,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(*sceneCamera, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-					else
-					{
-						switch (meshRendererComponent.Type)
-						{
-							case MeshRendererComponent::MeshType::Cube:
-							{
-								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-								break;
-							}
-							case MeshRendererComponent::MeshType::Sphere:
-							{
-								Renderer::DrawSphere(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-								break;
-							}
-						}
-					}
+						Renderer::DrawModel(*sceneCamera, cameraTransform, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -123,22 +107,6 @@ namespace Sparky {
 
 					if (meshRendererComponent.Mesh)
 						Renderer::DrawModel(editorCamera, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-					else
-					{
-						switch (meshRendererComponent.Type)
-						{
-							case MeshRendererComponent::MeshType::Cube:
-							{
-								Renderer::DrawCube(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-								break;
-							}
-							case MeshRendererComponent::MeshType::Sphere:
-							{
-								Renderer::DrawSphere(transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
-								break;
-							}
-						}
-					}
 				}
 			}
 

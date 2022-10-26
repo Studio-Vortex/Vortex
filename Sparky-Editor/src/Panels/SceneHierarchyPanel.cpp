@@ -139,13 +139,47 @@ namespace Sparky {
 				m_SelectedEntity = m_ContextScene->CreateEntity("Cube");
 				m_SelectedEntity.AddComponent<MeshRendererComponent>();
 			}
-
 			Gui::Separator();
 
 			if (Gui::MenuItem("Sphere"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Sphere");
 				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Sphere;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Capsule"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Capsule");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Capsule;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Cone"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Cone");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Cone;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Cylinder"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Cylinder");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Cylinder;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Plane"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Plane");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Plane;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Torus"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Torus");
+				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Torus;
 			}
 
 			Gui::EndMenu();
@@ -599,8 +633,28 @@ namespace Sparky {
 
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
-			const char* meshTypes[] = { "Cube", "Sphere" };
+			const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
+
+			auto SetMeshSourceFunc = [&](int meshType)
+			{
+				static const char* meshSourcePaths[] = {
+					"Resources/Meshes/Default/Cube.obj",
+					"Resources/Meshes/Default/Sphere.obj",
+					"Resources/Meshes/Default/Capsule.obj",
+					"Resources/Meshes/Default/Cone.obj",
+					"Resources/Meshes/Default/Cylinder.obj",
+					"Resources/Meshes/Default/Plane.obj",
+					"Resources/Meshes/Default/Torus.obj",
+				};
+
+				component.Mesh = Model::Create(std::string(meshSourcePaths[meshType]), entity, component.Color);
+			};
+
+			bool isDefaultMesh = component.Type != MeshRendererComponent::MeshType::Custom;
+
+			if (!component.Mesh && isDefaultMesh)
+				SetMeshSourceFunc(static_cast<uint32_t>(component.Type));
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
@@ -613,6 +667,11 @@ namespace Sparky {
 					{
 						currentMeshType = meshTypes[i];
 						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
+
+						if (component.Type != MeshRendererComponent::MeshType::Custom)
+							SetMeshSourceFunc(i);
+						else
+							component.Mesh = nullptr;
 					}
 
 					if (isSelected)
@@ -634,7 +693,7 @@ namespace Sparky {
 			else
 				memset(buffer, 0, sizeof(buffer));
 
-			Gui::InputText("##Mesh", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+			Gui::InputText("##Mesh Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -646,7 +705,10 @@ namespace Sparky {
 
 					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj")
-						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform().GetTransform(), component.Color, (int)(entt::entity)entity);
+					{
+						component.Mesh = Model::Create(modelFilepath.string(), entity, component.Color);
+						component.Type = MeshRendererComponent::MeshType::Custom;
+					}
 					else
 						SP_CORE_WARN("Could not load model file, not a '.obj' - {}", modelFilepath.filename().string());
 				}
@@ -654,7 +716,7 @@ namespace Sparky {
 			}
 
 			Gui::SameLine();
-			if (Gui::Button("Mesh"))
+			if (Gui::Button("Mesh Source"))
 				component.Mesh = nullptr;
 
 			auto textureSize = ImVec2{ 64, 64 };

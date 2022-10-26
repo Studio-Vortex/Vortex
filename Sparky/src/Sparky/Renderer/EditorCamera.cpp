@@ -93,12 +93,12 @@ namespace Sparky {
 				// Scrolling will change the speed of the camera when shift is pressed
 				if (m_MouseYDelta)
 				{
-					m_ShiftModifer += m_MouseYDelta * delta;
+					m_ShiftModifer += m_MouseYDelta * delta * 0.25f;
 
 					if (m_ShiftModifer < 1.5f)
 						m_ShiftModifer = 1.5f;
-					if (m_ShiftModifer > 10.0f)
-						m_ShiftModifer = 10.0f;
+					if (m_ShiftModifer > 15.0f)
+						m_ShiftModifer = 15.0f;
 				}
 
 				moveSpeed *= m_ShiftModifer;

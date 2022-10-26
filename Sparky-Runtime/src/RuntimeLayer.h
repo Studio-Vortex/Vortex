@@ -18,12 +18,17 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
+		void OnRuntimeScenePaused();
+		void OnRuntimeSceneResumed();
+
 		bool OpenScene(const std::filesystem::path& filepath);
 
 	private:
 		SharedRef<Framebuffer> m_Framebuffer;
 		SharedRef<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
+
+		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 	};
 
 }

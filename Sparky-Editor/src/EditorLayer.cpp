@@ -108,6 +108,14 @@ namespace Sparky {
 					ScriptRegistry::ResetSceneToBeLoaded();
 				}
 
+				bool scenePaused = m_ActiveScene->IsPaused();
+
+				if (scenePaused)
+					OnScenePause();
+
+				if (!scenePaused && !m_AudioSourcesToResume.empty())
+					OnSceneResume();
+
 				m_ActiveScene->OnUpdateRuntime(delta);
 
 				break;
@@ -154,6 +162,8 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 		
+		static bool scenePanelOpen = true;
+
 		// Dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -345,6 +355,8 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Window"))
 			{
+				Gui::MenuItem("Scene", nullptr, &scenePanelOpen);
+				Gui::Separator();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
@@ -400,9 +412,7 @@ namespace Sparky {
 		m_ActiveScene->OnUpdateEntityGui();
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-
-		bool open = true;
-		Gui::Begin("Scene", &open, ImGuiWindowFlags_NoCollapse);
+		Gui::Begin("Scene", &scenePanelOpen, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();
@@ -449,7 +459,7 @@ namespace Sparky {
 					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
 					{
 						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
-						SharedRef<Model> mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform().GetTransform(), meshRenderer.Color, (int)(entt::entity)m_HoveredEntity);
+						SharedRef<Model> mesh = Model::Create(modelPath.string(), m_HoveredEntity, meshRenderer.Color);
 
 						meshRenderer.Mesh = mesh;
 					}
@@ -660,10 +670,10 @@ namespace Sparky {
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
-			float axisLineLength = 300.0f;
-			float gridLineLength = 200.0f;
-			float gridWidth = 200.0f;
-			float gridLength = 200.0f;
+			float axisLineLength = 1'000.0f;
+			float gridLineLength = 750.0f;
+			float gridWidth = 750.0f;
+			float gridLength = 750.0f;
 
 			float originalLineWidth = Renderer2D::GetLineWidth();
 
@@ -671,9 +681,9 @@ namespace Sparky {
 			if (m_DrawEditorAxes)
 			{
 				Renderer2D::SetLineWidth(5.0f);
-				Renderer2D::DrawLine({ -axisLineLength, 0.0f, 0.0f }, { axisLineLength, 0.0f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
-				Renderer2D::DrawLine({ 0.0f, -axisLineLength, 0.0f }, { 0.0f, axisLineLength, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
-				Renderer2D::DrawLine({ 0.0f, 0.0f, -axisLineLength }, { 0.0f, 0.0f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
+				Renderer2D::DrawLine({ -axisLineLength, 0.0f + 0.02f, 0.0f }, { axisLineLength, 0.0f + 0.02f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+				Renderer2D::DrawLine({ 0.0f, -axisLineLength + 0.02f, 0.0f }, { 0.0f, axisLineLength + 0.02f, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+				Renderer2D::DrawLine({ 0.0f, 0.0f + 0.02f, -axisLineLength }, { 0.0f, 0.0f + 0.02f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
 				Renderer2D::Flush();
 				Renderer2D::SetLineWidth(originalLineWidth);
 			}
@@ -755,19 +765,7 @@ namespace Sparky {
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				switch (meshRenderer.Type)
-				{
-					case MeshRendererComponent::MeshType::Cube:
-					{
-						Renderer::DrawCubeWireframe(entityTransform);
-						break;
-					}
-					case MeshRendererComponent::MeshType::Sphere:
-					{
-						Renderer::DrawCubeWireframe(entityTransform);
-						break;
-					}
-				}
+				Renderer::DrawCubeWireframe(entityTransform);
 			}
 			else
 			{
@@ -1133,17 +1131,20 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Edit)
 			return;
 
-		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		// Pause all audio sources in the scene
-		for (auto& e : view)
+		if (m_SceneState == SceneState::Play)
 		{
-			Entity entity{ e, m_ActiveScene.get() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (audioSource->IsPlaying())
+			auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+			// Pause all audio sources in the scene
+			for (auto& e : view)
 			{
-				audioSource->Pause();
-				m_AudioSourcesToResume.push_back(audioSource);
+				Entity entity{ e, m_ActiveScene.get() };
+				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+				if (audioSource->IsPlaying())
+				{
+					audioSource->Pause();
+					m_AudioSourcesToResume.push_back(audioSource);
+				}
 			}
 		}
 
@@ -1152,12 +1153,15 @@ namespace Sparky {
 
 	void EditorLayer::OnSceneResume()
 	{
-		if (!m_AudioSourcesToResume.empty())
+		if (m_SceneState == SceneState::Play)
 		{
-			for (auto& audioSource : m_AudioSourcesToResume)
-				audioSource->Play();
+			if (!m_AudioSourcesToResume.empty())
+			{
+				for (auto& audioSource : m_AudioSourcesToResume)
+					audioSource->Play();
 
-			m_AudioSourcesToResume.clear();
+				m_AudioSourcesToResume.clear();
+			}
 		}
 
 		m_ActiveScene->SetPaused(false);

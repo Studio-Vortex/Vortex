@@ -58,6 +58,14 @@ namespace Sparky {
 			ScriptRegistry::ResetSceneToBeLoaded();
 		}
 
+		bool scenePaused = m_RuntimeScene->IsPaused();
+
+		if (scenePaused)
+			OnRuntimeScenePaused();
+		
+		if (!scenePaused && !m_AudioSourcesToResume.empty())
+			OnRuntimeSceneResumed();
+
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
 		m_Framebuffer->Unbind();
@@ -77,7 +85,8 @@ namespace Sparky {
 		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 
-		Gui::Begin("Game", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
+		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
+		Gui::Begin("Game", nullptr, flags);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
@@ -91,6 +100,34 @@ namespace Sparky {
 	}
 
 	void RuntimeLayer::OnEvent(Event& e) { }
+
+	void RuntimeLayer::OnRuntimeScenePaused()
+	{
+		auto view = m_RuntimeScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		// Pause all audio sources in the scene
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_RuntimeScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			if (audioSource->IsPlaying())
+			{
+				audioSource->Pause();
+				m_AudioSourcesToResume.push_back(audioSource);
+			}
+		}
+	}
+
+	void RuntimeLayer::OnRuntimeSceneResumed()
+	{
+		if (!m_AudioSourcesToResume.empty())
+		{
+			for (auto& audioSource : m_AudioSourcesToResume)
+				audioSource->Play();
+
+			m_AudioSourcesToResume.clear();
+		}
+	}
 
 	bool RuntimeLayer::OpenScene(const std::filesystem::path& filepath)
 	{
