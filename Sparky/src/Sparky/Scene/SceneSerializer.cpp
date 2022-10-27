@@ -4,6 +4,7 @@
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Renderer/Model.h"
 
 #include <yaml-cpp/yaml.h>
 

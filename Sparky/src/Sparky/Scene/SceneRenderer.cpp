@@ -52,7 +52,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(*sceneCamera, cameraTransform, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
+						Renderer::DrawModel(transformComponent, meshRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -106,7 +106,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(editorCamera, transformComponent.GetTransform(), meshRendererComponent, (int)(entt::entity)entity);
+						Renderer::DrawModel(transformComponent, meshRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 

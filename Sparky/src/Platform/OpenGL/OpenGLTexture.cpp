@@ -113,7 +113,7 @@ namespace Sparky {
     {
 		SP_PROFILE_FUNCTION();
 
-		glBindTextureUnit(m_Slot, m_RendererID);
+		glBindTextureUnit(m_Slot, 0);
     }
 
 }

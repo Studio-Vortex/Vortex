@@ -4,11 +4,13 @@
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/Texture.h"
-#include "Sparky/Renderer/Model.h"
+//#include "Sparky/Renderer/Model.h"
 #include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Audio/AudioListener.h"
 
 namespace Sparky {
+
+	class Model;
 
 	// Core components (all entites have these)
 

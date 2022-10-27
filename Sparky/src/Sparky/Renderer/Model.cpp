@@ -23,6 +23,7 @@ namespace Sparky {
 
 			std::vector<ModelVertexInfo> vertices;
 			std::vector<uint32_t> indices;
+			std::vector<SharedRef<Texture2D>> textures;
 
 			std::unordered_map<ModelVertexInfo, uint32_t> uniqueVertices{};
 
@@ -69,6 +70,16 @@ namespace Sparky {
 
 	}
 
+	static constexpr const char* DEFAULT_MESH_SOURCE_PATHS[] = {
+		"Resources/Meshes/Default/Cube.obj",
+		"Resources/Meshes/Default/Sphere.obj",
+		"Resources/Meshes/Default/Capsule.obj",
+		"Resources/Meshes/Default/Cone.obj",
+		"Resources/Meshes/Default/Cylinder.obj",
+		"Resources/Meshes/Default/Plane.obj",
+		"Resources/Meshes/Default/Torus.obj",
+	};
+
 	Model::Model(const std::string& filepath, Entity entity, const Math::vec4& color)
 		: m_Filepath(filepath)
 	{
@@ -79,7 +90,7 @@ namespace Sparky {
 		uint32_t i = 0;
 		for (const auto& vertex : mesh.Vertices)
 		{
-			ModelVertex& v = m_Vertices[i];
+			ModelVertex& v = m_Vertices[i++];
 			v.Position = vertex.Position;
 			v.Color = color;
 			v.Normal = vertex.Normal;
@@ -87,7 +98,6 @@ namespace Sparky {
 			v.TexIndex = 0.0f;
 			v.TexScale = 1.0f;
 			v.EntityID = (int)(entt::entity)entity;
-			i++;
 		}
 
 		m_Vao = VertexArray::Create();
@@ -112,38 +122,80 @@ namespace Sparky {
 		m_Vao->SetIndexBuffer(m_Ibo);
 	}
 
-	void Model::OnUpdate(const EditorCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer)
+	Model::Model(MeshRendererComponent::MeshType meshType)
 	{
-		if (m_Transform != transform)
+		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
+
+		m_Vao = VertexArray::Create();
+
+		float vertices[] =
 		{
-			for (auto& vertex : m_Vertices)
-				vertex.Position = transform * Math::vec4(vertex.Position, 1.0f);
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
 
-			m_Transform = transform;
-		}
+			-0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
 
-		for (auto& vertex : m_Vertices)
-		{
-			vertex.Color = meshRenderer.Color;
-			vertex.TexScale = meshRenderer.Scale;
-		}
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
 
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
-		m_Vbo->SetData(m_Vertices.data(), dataSize);
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f, -0.5f,
+
+			-0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
+		};
+
+		uint32_t dataSize = 36 * sizeof(Math::vec3);
+		m_Vbo = VertexBuffer::Create(vertices, dataSize);
+		m_Vbo->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
+		m_Vao->AddVertexBuffer(m_Vbo);
 	}
 
-	void Model::OnUpdate(const SceneCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer)
+	void Model::OnUpdate(const TransformComponent& transform, const Math::vec4& color, float scale)
 	{
-		if (m_Transform != transform)
-		{
-			for (auto& vertex : m_Vertices)
-				vertex.Position = transform * Math::vec4(vertex.Position, 1.0f);
+		Math::mat4 entityTransform = transform.GetTransform();
 
-			m_Transform = transform;
-		}
+		bool recalculateTransform = m_Transform != entityTransform;
 
 		for (auto& vertex : m_Vertices)
-			vertex.Color = meshRenderer.Color;
+		{
+			if (recalculateTransform)
+			{
+				vertex.Position = entityTransform * Math::vec4(vertex.Position, 1.0f);
+				m_Transform = entityTransform;
+			}
+
+			vertex.Color = color;
+			vertex.TexScale = scale;
+		}
 
 		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
 		m_Vbo->SetData(m_Vertices.data(), dataSize);
@@ -157,6 +209,11 @@ namespace Sparky {
 	SharedRef<Model> Model::Create(const std::string& filepath, Entity entity, const Math::vec4& color)
 	{
 		return CreateShared<Model>(filepath, entity, color);
+	}
+
+	SharedRef<Model> Model::Create(MeshRendererComponent::MeshType meshType)
+	{
+		return CreateShared<Model>(meshType);
 	}
 
 }

@@ -7,9 +7,9 @@
 
 namespace Sparky
 {
-	static constexpr const char* QUAD_SHADER_PATH   = "Assets/Shaders/Renderer2D_Quad.glsl";
-	static constexpr const char* CIRCLE_SHADER_PATH = "Assets/Shaders/Renderer2D_Circle.glsl";
-	static constexpr const char* LINE_SHADER_PATH   = "Assets/Shaders/Renderer2D_Line.glsl";
+	static constexpr const char* QUAD_SHADER_PATH   = "Resources/Shaders/Renderer2D_Quad.glsl";
+	static constexpr const char* CIRCLE_SHADER_PATH = "Resources/Shaders/Renderer2D_Circle.glsl";
+	static constexpr const char* LINE_SHADER_PATH   = "Resources/Shaders/Renderer2D_Line.glsl";
 
 	struct QuadVertex
 	{

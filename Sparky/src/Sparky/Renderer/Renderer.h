@@ -7,6 +7,7 @@
 #include "Sparky/Renderer/Camera.h"
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Shader.h"
+#include "Sparky/Renderer/Model.h"
 
 #include "Sparky/Scene/Components.h"
 
@@ -26,8 +27,9 @@ namespace Sparky {
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform);
 
-		static void DrawModel(const EditorCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
-		static void DrawModel(const SceneCamera& camera, const Math::mat4& cameraTransform, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
+		static void DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale = 1.0f, int entityID = -1);
+		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);
 

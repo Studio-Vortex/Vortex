@@ -1,0 +1,24 @@
+#pragma once
+
+#include "Sparky/Core/Base.h"
+
+#include <string>
+
+namespace Sparky {
+
+	class SPARKY_API Skybox
+	{
+	public:
+		virtual ~Skybox() = default;
+
+		virtual const std::string& GetDirectoryPath() const = 0;
+
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		virtual bool IsLoaded() const = 0;
+
+		static SharedRef<Skybox> Create(const std::string& directoryPath);
+	};
+
+}

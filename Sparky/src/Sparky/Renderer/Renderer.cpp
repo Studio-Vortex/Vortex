@@ -3,12 +3,16 @@
 
 #include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Renderer2D.h"
+#include "Sparky/Renderer/Skybox.h"
 
 #include <Glad/glad.h>
 
 namespace Sparky {
 
-	static constexpr const char* MODEL_SHADER_PATH = "Assets/Shaders/Renderer_Model.glsl";
+	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
+	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
+
+	static constexpr const char* DEFAULT_SKYBOX_DIRECTORY_PATH = "Resources/Textures/Default/Skybox";
 
 	struct RendererInternalData
 	{
@@ -17,6 +21,10 @@ namespace Sparky {
 		SharedRef<Texture2D> WhiteTexture; // Default texture
 
 		SharedRef<Shader> ModelShader;
+		SharedRef<Shader> SkyboxShader;
+
+		SharedRef<Model> SkyboxCube;
+		SharedRef<Skybox> DefaultSkybox;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
@@ -50,6 +58,10 @@ namespace Sparky {
 		// Set the first texture slot to out default white texture
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
+		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
+		s_Data.SkyboxCube = Model::Create(MeshRendererComponent::MeshType::Cube);
+		s_Data.DefaultSkybox = Skybox::Create(DEFAULT_SKYBOX_DIRECTORY_PATH);
+
 #if SP_RENDERER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
@@ -73,7 +85,10 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
+		Math::mat4 projection = camera.GetProjection();
+		Math::mat4 viewProjection = projection * Math::Inverse(transform);
+
+		DrawSkybox(Math::Inverse(transform), projection);
 
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", viewProjection);
@@ -84,7 +99,9 @@ namespace Sparky {
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
-		
+
+		DrawSkybox(camera.GetViewMatrix(), camera.GetProjection());
+
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
 
@@ -103,48 +120,45 @@ namespace Sparky {
 		shader->Enable();
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
+		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::DrawModel(const EditorCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	{
+		DrawModel(transform, meshRenderer.Mesh, (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture, meshRenderer.Color, meshRenderer.Scale, entityID);
+	}
+
+	void Renderer::DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
-		SharedRef<Model> model = meshRenderer.Mesh;
+		model->OnUpdate(transform, color, scale);
 
-		model->OnUpdate(camera, transform, meshRenderer);
+		texture->Bind();
 
-		if (meshRenderer.Texture)
-			meshRenderer.Texture->Bind();
-		else
-			s_Data.WhiteTexture->Bind();
-
-		RenderCommand::DrawIndexed(model->GetVertexArray());
-		s_Data.RendererStatistics.DrawCalls++;
+		Submit(s_Data.ModelShader, model->GetVertexArray(), transform.GetTransform());
 
 #if SP_RENDERER_STATISTICS
 		s_Data.RendererStatistics.QuadCount += model->GetQuadCount();
 #endif // SP_RENDERER_STATISTICS
 	}
 
-	void Renderer::DrawModel(const SceneCamera& camera, const Math::mat4& cameraTransform, const Math::mat4& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection)
 	{
-		SP_PROFILE_FUNCTION();
+		glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
+		s_Data.SkyboxShader->Enable();
+		s_Data.SkyboxShader->SetInt("u_Skybox", 0);
+		s_Data.SkyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
+		s_Data.SkyboxShader->SetMat4("u_Projection", projection);
 
-		SharedRef<Model> model = meshRenderer.Mesh;
+		SharedRef<VertexArray> skyboxVA = s_Data.SkyboxCube->GetVertexArray();
 
-		model->OnUpdate(camera, transform, meshRenderer);
-
-		if (meshRenderer.Texture)
-			meshRenderer.Texture->Bind();
-		else
-			s_Data.WhiteTexture->Bind();
-
-		RenderCommand::DrawIndexed(model->GetVertexArray());
-		s_Data.RendererStatistics.DrawCalls++;
-
-#if SP_RENDERER_STATISTICS
-		s_Data.RendererStatistics.QuadCount += model->GetQuadCount();
-#endif // SP_RENDERER_STATISTICS
+		skyboxVA->Bind();
+		s_Data.DefaultSkybox->Bind();
+		RenderCommand::DrawTriangles(skyboxVA, 36);
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
 	}
 
 	void Renderer::DrawCubeWireframe(const TransformComponent& transform)

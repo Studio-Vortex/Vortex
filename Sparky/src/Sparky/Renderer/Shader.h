@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Sparky/Core/Base.h"
-
 #include "Sparky/Core/Math.h"
 
 #include <unordered_map>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Scene/Components.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Renderer/VertexArray.h"
@@ -10,7 +11,6 @@
 namespace Sparky {
 
 	class Entity;
-	struct MeshRendererComponent;
 
 	struct ModelVertex
 	{
@@ -41,31 +41,32 @@ namespace Sparky {
 	{
 		std::vector<ModelVertexInfo> Vertices;
 		std::vector<uint32_t> Indices;
+		std::vector<SharedRef<Texture2D>> Textures;
 	};
 
 	class Model
 	{
 	public:
 		Model(const std::string& filepath, Entity entity, const Math::vec4& color);
+		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(const EditorCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer);
-		void OnUpdate(const SceneCamera& camera, const Math::mat4& transform, const MeshRendererComponent& meshRenderer);
+		void OnUpdate(const TransformComponent& transform, const Math::vec4& color, float scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
+		const std::vector<SharedRef<Texture2D>>& GetTextures() const { return m_Textures; }
 
 		uint32_t GetQuadCount() const;
 
 		static SharedRef<Model> Create(const std::string& filepath, Entity entity, const Math::vec4& color);
-
-	private:
-		inline static SharedRef<Shader> s_ModelShader = nullptr;
+		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
 
 	private:
 		std::string m_Filepath;
 		Math::mat4 m_Transform;
 		std::vector<ModelVertex> m_Vertices;
+		std::vector<SharedRef<Texture2D>> m_Textures;
 		SharedRef<VertexArray> m_Vao = nullptr;
 		SharedRef<VertexBuffer> m_Vbo = nullptr;
 		SharedRef<IndexBuffer> m_Ibo = nullptr;
