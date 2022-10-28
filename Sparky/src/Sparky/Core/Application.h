@@ -30,6 +30,7 @@ namespace Sparky {
 		std::string Name = "Sparky Application";
 		uint16_t WindowWidth = 1600;
 		uint16_t WindowHeight = 900;
+		uint32_t SampleCount = 4;
 		bool MaximizeWindow = false;
 		bool WindowDecorated = true;
 		bool VSync = true;

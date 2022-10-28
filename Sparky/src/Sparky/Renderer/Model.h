@@ -18,7 +18,6 @@ namespace Sparky {
 		Math::vec3 Normal;
 		Math::vec4 Color;
 		Math::vec2 TextureCoord;
-		float TexIndex;
 		float TexScale;
 
 		// Editor-only

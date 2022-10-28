@@ -79,6 +79,9 @@ namespace Sparky {
 		virtual void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
 		virtual void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
 
+		virtual void EnableDepthMask() const = 0;
+		virtual void DisableDepthMask() const = 0;
+
 		virtual void SetLineWidth(float thickness) const = 0;
 
 		virtual void SetCullMode(TriangleCullMode cullMode) const = 0;

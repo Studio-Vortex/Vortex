@@ -30,6 +30,7 @@ namespace Sparky {
 		WindowProperties windowProps;
 		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
 		windowProps.Title = m_Properties.Name;
+		windowProps.SampleCount = m_Properties.SampleCount;
 		windowProps.Maximized = m_Properties.MaximizeWindow;
 		windowProps.VSync = m_Properties.VSync;
 		windowProps.Decorated = m_Properties.WindowDecorated;

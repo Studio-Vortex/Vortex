@@ -54,6 +54,7 @@ namespace Sparky {
 			std::string Title;
 			Math::vec2 Size;
 			Math::vec2 Position;
+			uint32_t SampleCount;
 			bool Maximized;
 			bool VSync;
 			bool Decorated;

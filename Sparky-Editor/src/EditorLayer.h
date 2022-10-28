@@ -14,11 +14,6 @@
 
 namespace Sparky {
 
-	struct Skybox
-	{
-		SharedRef<Texture2D> Textures[6];
-	};
-
 	class EditorLayer : public Layer
 	{
 	public:

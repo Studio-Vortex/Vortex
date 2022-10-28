@@ -95,7 +95,6 @@ namespace Sparky {
 			v.Color = color;
 			v.Normal = vertex.Normal;
 			v.TextureCoord = vertex.TextureCoord;
-			v.TexIndex = 0.0f;
 			v.TexScale = 1.0f;
 			v.EntityID = (int)(entt::entity)entity;
 		}
@@ -111,7 +110,6 @@ namespace Sparky {
 			{ ShaderDataType::Float3, "a_Normal"   },
 			{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Float,  "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
 		});

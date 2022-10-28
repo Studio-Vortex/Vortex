@@ -8,6 +8,7 @@
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Shader.h"
 #include "Sparky/Renderer/Model.h"
+#include "Sparky/Renderer/Skybox.h"
 
 #include "Sparky/Scene/Components.h"
 
@@ -29,7 +30,7 @@ namespace Sparky {
 
 		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 		static void DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale = 1.0f, int entityID = -1);
-		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection);
+		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);
 

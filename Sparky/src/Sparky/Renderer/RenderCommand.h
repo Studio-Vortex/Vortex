@@ -54,6 +54,16 @@ namespace Sparky {
 			s_RendererAPI->DrawTriangleStrip(vertexArray, indexCount);
 		}
 
+		inline static void EnableDepthMask()
+		{
+			s_RendererAPI->EnableDepthMask();
+		}
+
+		inline static void DisableDepthMask()
+		{
+			s_RendererAPI->DisableDepthMask();
+		}
+
 		inline static void SetLineSize(float thickness)
 		{
 			s_RendererAPI->SetLineWidth(thickness);

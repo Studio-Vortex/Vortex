@@ -35,21 +35,16 @@ If you make changes to the engine, or if you want to regenerate project files, r
 -   High-fidelity Physically-Based 3D rendering
 -   Support for Mac, Linux, Android and IOS
 -   Fully featured Vulkan Renderer
--   Fully featured runtime and editor applications
--   Fully scripted interaction and behavior
--   Integrated Project Browser
 -   Integrated 3rd party 3D physics engine
 -   Procedural terrain and world generation
 -   Artificial Intelligence
 -   Tree Graph editor system
--   Audio system
 
 ---
 
 ## Preview
-
+- A simple platformer game
 ![Platformer Game](Sparky-Editor/Resources/Images/Engine/PlatformerGame.png)
 
-![3D Scene](Sparky-Editor/Resources/Images/Engine/3DScene.png)
-
-![3D Cube](Sparky-Editor/Resources/Images/Engine/3DCube.png)
+- Imported 3D model with skybox
+![3D Model With Skybox](Sparky-Editor/Resources/Images/Engine/3DModel.png)

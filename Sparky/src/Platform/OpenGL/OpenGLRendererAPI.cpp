@@ -41,6 +41,7 @@ namespace Sparky {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_MULTISAMPLE);
 		//glEnable(GL_LINE_SMOOTH);
     }
 
@@ -90,6 +91,18 @@ namespace Sparky {
 	{
 		vertexArray->Bind();
 		glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, nullptr);
+	}
+
+	void OpenGLRendererAPI::EnableDepthMask() const
+	{
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
+	}
+
+	void OpenGLRendererAPI::DisableDepthMask() const
+	{
+		glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
 	}
 
 	void OpenGLRendererAPI::SetLineWidth(float thickness) const

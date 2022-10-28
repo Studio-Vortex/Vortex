@@ -65,6 +65,12 @@ namespace Sparky {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
+	/*struct LightComponent
+	{
+		LightComponent() = default;
+		LightComponent(const LightComponent&) = default;
+	};*/
+
 	struct MeshRendererComponent
 	{
 		enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
@@ -206,7 +212,7 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		CameraComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
+		CameraComponent, /*LightComponent,*/ MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
 		AudioSourceComponent, AudioListenerComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;

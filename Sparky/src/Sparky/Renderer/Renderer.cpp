@@ -3,7 +3,6 @@
 
 #include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Renderer2D.h"
-#include "Sparky/Renderer/Skybox.h"
 
 #include <Glad/glad.h>
 
@@ -23,7 +22,7 @@ namespace Sparky {
 		SharedRef<Shader> ModelShader;
 		SharedRef<Shader> SkyboxShader;
 
-		SharedRef<Model> SkyboxCube;
+		SharedRef<Model> SkyboxMesh;
 		SharedRef<Skybox> DefaultSkybox;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
@@ -45,21 +44,10 @@ namespace Sparky {
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		// Gpu Sampler2D Array
-		int32_t samplers[s_Data.MaxTextureSlots];
-		for (size_t i = 0; i < s_Data.MaxTextureSlots; i++)
-			samplers[i] = i;
-
 		s_Data.ModelShader = Shader::Create(MODEL_SHADER_PATH);
-		s_Data.ModelShader->Enable();
-		// Set the sampler2D array on the GPU
-		s_Data.ModelShader->SetIntArray("u_Textures", samplers, RendererInternalData::MaxTextureSlots);
-
-		// Set the first texture slot to out default white texture
-		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
 		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
-		s_Data.SkyboxCube = Model::Create(MeshRendererComponent::MeshType::Cube);
+		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
 		s_Data.DefaultSkybox = Skybox::Create(DEFAULT_SKYBOX_DIRECTORY_PATH);
 
 #if SP_RENDERER_STATISTICS
@@ -86,26 +74,23 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		Math::mat4 projection = camera.GetProjection();
+		Math::mat4 view = Math::Inverse(transform);
 		Math::mat4 viewProjection = projection * Math::Inverse(transform);
 
-		DrawSkybox(Math::Inverse(transform), projection);
+		DrawSkybox(view, projection, s_Data.DefaultSkybox);
 
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", viewProjection);
-
-		s_Data.TextureSlotIndex = 1;
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
 		SP_PROFILE_FUNCTION();
 
-		DrawSkybox(camera.GetViewMatrix(), camera.GetProjection());
+		DrawSkybox(camera.GetViewMatrix(), camera.GetProjection(), s_Data.DefaultSkybox);
 
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
-
-		s_Data.TextureSlotIndex = 1;
 	}
 
 	void Renderer::EndScene()
@@ -133,7 +118,6 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		model->OnUpdate(transform, color, scale);
-
 		texture->Bind();
 
 		Submit(s_Data.ModelShader, model->GetVertexArray(), transform.GetTransform());
@@ -143,22 +127,20 @@ namespace Sparky {
 #endif // SP_RENDERER_STATISTICS
 	}
 
-	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection)
+	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox)
 	{
-		glDepthMask(GL_FALSE);
-		glDepthFunc(GL_LEQUAL);
+		RenderCommand::DisableDepthMask();
 		s_Data.SkyboxShader->Enable();
 		s_Data.SkyboxShader->SetInt("u_Skybox", 0);
 		s_Data.SkyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 		s_Data.SkyboxShader->SetMat4("u_Projection", projection);
 
-		SharedRef<VertexArray> skyboxVA = s_Data.SkyboxCube->GetVertexArray();
+		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
-		skyboxVA->Bind();
-		s_Data.DefaultSkybox->Bind();
-		RenderCommand::DrawTriangles(skyboxVA, 36);
-		glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);
+		skyboxMeshVA->Bind();
+		skybox->Bind();
+		RenderCommand::DrawTriangles(skyboxMeshVA, 36);
+		RenderCommand::EnableDepthMask();
 	}
 
 	void Renderer::DrawCubeWireframe(const TransformComponent& transform)
