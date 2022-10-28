@@ -9,6 +9,7 @@
 namespace Sparky {
 
 	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
+	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 
 	static constexpr const char* DEFAULT_SKYBOX_DIRECTORY_PATH = "Resources/Textures/Default/Skybox";
@@ -17,13 +18,14 @@ namespace Sparky {
 	{
 		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
 
-		SharedRef<Texture2D> WhiteTexture; // Default texture
+		SharedRef<Texture2D> WhiteTexture = nullptr; // Default texture
 
-		SharedRef<Shader> ModelShader;
-		SharedRef<Shader> SkyboxShader;
+		SharedRef<Shader> ModelShader = nullptr;
+		SharedRef<Shader> ReflectiveShader = nullptr;
+		SharedRef<Shader> SkyboxShader = nullptr;
 
-		SharedRef<Model> SkyboxMesh;
-		SharedRef<Skybox> DefaultSkybox;
+		SharedRef<Model> SkyboxMesh = nullptr;
+		SharedRef<Skybox> DefaultSkybox = nullptr;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
@@ -46,6 +48,8 @@ namespace Sparky {
 
 		s_Data.ModelShader = Shader::Create(MODEL_SHADER_PATH);
 
+		s_Data.ReflectiveShader = Shader::Create(REFLECTIVE_SHADER_PATH);
+
 		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
 		s_Data.DefaultSkybox = Skybox::Create(DEFAULT_SKYBOX_DIRECTORY_PATH);
@@ -57,7 +61,8 @@ namespace Sparky {
 		Renderer2D::Init();
 	}
 
-	void Renderer::Shutdown()
+	void Renderer::Shutdown() 
+
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -81,6 +86,11 @@ namespace Sparky {
 
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", viewProjection);
+
+		s_Data.ReflectiveShader->Enable();
+		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", viewProjection);
+		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
+		s_Data.ReflectiveShader->SetFloat3("u_CameraPos", Math::vec3(transform[0][3]));
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -91,6 +101,11 @@ namespace Sparky {
 
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
+
+		s_Data.ReflectiveShader->Enable();
+		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
+		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
+		s_Data.ReflectiveShader->SetFloat3("u_CameraPos", camera.GetPosition());
 	}
 
 	void Renderer::EndScene()
@@ -110,17 +125,17 @@ namespace Sparky {
 
 	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
 	{
-		DrawModel(transform, meshRenderer.Mesh, (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture, meshRenderer.Color, meshRenderer.Scale, entityID);
+		DrawModel(transform, meshRenderer.Mesh, (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture, meshRenderer.Color, meshRenderer.Scale, meshRenderer.Reflective, entityID);
 	}
 
-	void Renderer::DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale, int entityID)
+	void Renderer::DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale, bool reflective, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
 		model->OnUpdate(transform, color, scale);
 		texture->Bind();
 
-		Submit(s_Data.ModelShader, model->GetVertexArray(), transform.GetTransform());
+		Submit(reflective ? s_Data.ReflectiveShader : s_Data.ModelShader, model->GetVertexArray(), transform.GetTransform());
 
 #if SP_RENDERER_STATISTICS
 		s_Data.RendererStatistics.QuadCount += model->GetQuadCount();

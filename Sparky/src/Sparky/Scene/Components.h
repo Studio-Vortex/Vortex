@@ -79,6 +79,7 @@ namespace Sparky {
 		SharedRef<Model> Mesh = nullptr;
 		SharedRef<Texture2D> Texture = nullptr;
 		float Scale = 1.0f;
+		bool Reflective = false;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;

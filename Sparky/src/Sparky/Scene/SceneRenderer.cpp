@@ -60,7 +60,7 @@ namespace Sparky {
 		}
 	}
 
-	void SceneRenderer::RenderFromEditorCamera(const EditorCamera& editorCamera, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry)
 	{
 		// Render 2D
 		{

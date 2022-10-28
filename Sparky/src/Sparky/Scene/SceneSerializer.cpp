@@ -265,6 +265,7 @@ namespace Sparky {
 			if (meshRendererComponent.Mesh)
 				out << YAML::Key << "MeshSource" << YAML::Value << meshRendererComponent.Mesh->GetPath();
 			out << YAML::Key << "Scale" << YAML::Value << meshRendererComponent.Scale;
+			out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
 
 			out << YAML::EndMap; // MeshRendererComponent
 		}
@@ -549,6 +550,9 @@ namespace Sparky {
 						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity, meshRendererComponent.Color);
 
 					meshRendererComponent.Scale = meshComponent["Scale"].as<float>();
+
+					if (meshComponent["Reflective"])
+						meshRendererComponent.Reflective = meshComponent["Reflective"].as<bool>();
 				}
 
 				auto spriteComponent = entity["SpriteRendererComponent"];

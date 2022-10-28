@@ -770,6 +770,7 @@ namespace Sparky {
 			}
 
 			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+			Gui::Checkbox("Reflective", &component.Reflective);
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)

@@ -15,7 +15,7 @@ namespace Sparky {
 		~SceneRenderer() = default;
 
 		void RenderFromSceneCamera(SceneCamera* sceneCamera, const Math::mat4& cameraTransform, entt::registry& sceneRegistry);
-		void RenderFromEditorCamera(const EditorCamera& editorCamera, entt::registry& sceneRegistry);
+		void RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry);
 	};
 
 }

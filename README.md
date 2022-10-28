@@ -44,7 +44,10 @@ If you make changes to the engine, or if you want to regenerate project files, r
 
 ## Preview
 - A simple platformer game
-![Platformer Game](Sparky-Editor/Resources/Images/Engine/PlatformerGame.png)
+![Platformer game](Sparky-Editor/Resources/Images/Engine/PlatformerGame.png)
 
 - Imported 3D model with skybox
-![3D Model With Skybox](Sparky-Editor/Resources/Images/Engine/3DModel.png)
+![3D model with skybox](Sparky-Editor/Resources/Images/Engine/3DModel.png)
+
+- Sponza model in full chrome
+![Sponza in chrome](Sparky-Editor/Resources/Images/Engine/SponzaChrome.png)

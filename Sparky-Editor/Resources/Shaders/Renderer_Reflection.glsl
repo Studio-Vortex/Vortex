@@ -1,6 +1,6 @@
 //-------------------------
 // - Sparky Game Engine -
-// Renderer Model Shader with Texturing
+// Renderer Reflection Shader
 //-------------------------
 
 #type vertex
@@ -13,6 +13,7 @@ layout (location = 3) in vec2  a_TexCoord; // Vertex texture coordinate
 layout (location = 4) in float a_TexScale; // Texture scale
 layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
+out vec3       f_Position;
 out vec3       f_Normal;
 out vec4       f_Color;
 out vec2       f_TexCoord;
@@ -23,6 +24,7 @@ uniform highp mat4 u_ViewProjection;
 
 void main()
 {
+	f_Position = a_Position;
 	f_Normal = a_Normal;
 	f_Color = a_Color;
 	f_TexCoord = a_TexCoord;
@@ -40,24 +42,21 @@ void main()
 layout (location = 0) out vec4 o_Color;
 layout (location = 1) out int o_EntityID;
 
+in vec3	      f_Position;
 in vec3       f_Normal;
 in vec4       f_Color;
 in vec2       f_TexCoord;
 in float      f_TexScale;
 in flat int   f_EntityID;
 
-uniform sampler2D   u_Texture;
+uniform samplerCube u_Skybox;
+uniform vec3        u_CameraPos;
 
 void main()
 {
-	vec4 texColor = f_Color * texture(u_Texture, f_TexCoord * f_TexScale);
-
-	// Discard the pixel/fragment if it has an alpha of zero
-	if (texColor.a == 0.0)
-		discard;
-
-	// Set output color
-	o_Color = texColor;
+	vec3 I = normalize(f_Position - u_CameraPos);
+	vec3 R = reflect(I, normalize(f_Normal));
+	o_Color = vec4(texture(u_Skybox, R).rgb, 1.0);
 
 	o_EntityID = f_EntityID;
 }
