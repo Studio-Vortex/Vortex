@@ -12,7 +12,7 @@ namespace Sparky {
 		{
 			Gui::Begin("Settings", &s_ShowPanel);
 
-			if (Gui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+			if (Gui::BeginTabBar("##Tabs"))
 			{
 				if (Gui::BeginTabItem("Renderer"))
 				{
@@ -52,6 +52,62 @@ namespace Sparky {
 									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Back);
 								if (currentCullMode == cullModes[3])
 									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::FrontAndBack);
+							}
+
+							if (isSelected)
+								Gui::SetItemDefaultFocus();
+
+							if (i != arraySize - 1)
+								Gui::Separator();
+						}
+
+						Gui::EndMenu();
+					}
+
+					static const char* refractiveIndices[5] = {
+						"Air",
+						"Water",
+						"Ice",
+						"Glass",
+						"Diamond",
+					};
+
+					float refractiveIndex = Renderer::GetRefractiveIndex();
+
+					static const char* currentRefractiveIndex;
+
+					if (refractiveIndex == 1.0f)
+						currentRefractiveIndex = refractiveIndices[0];
+					else if (refractiveIndex == 1.33f)
+						currentRefractiveIndex = refractiveIndices[1];
+					else if (refractiveIndex == 1.309f)
+						currentRefractiveIndex = refractiveIndices[2];
+					else if (refractiveIndex == 1.52f)
+						currentRefractiveIndex = refractiveIndices[3];
+					else if (refractiveIndex == 2.42f)
+						currentRefractiveIndex = refractiveIndices[4];
+
+					if (Gui::BeginCombo("Refractive Index", currentRefractiveIndex))
+					{
+						uint32_t arraySize = SP_ARRAYCOUNT(refractiveIndices);
+
+						for (uint32_t i = 0; i < arraySize; i++)
+						{
+							bool isSelected = strcmp(currentRefractiveIndex, refractiveIndices[i]) == 0;
+							if (Gui::Selectable(refractiveIndices[i], isSelected))
+							{
+								currentRefractiveIndex = refractiveIndices[i];
+
+								if (currentRefractiveIndex == refractiveIndices[0])
+									Renderer::SetRefractiveIndex(1.0f);
+								if (currentRefractiveIndex == refractiveIndices[1])
+									Renderer::SetRefractiveIndex(1.33f);
+								if (currentRefractiveIndex == refractiveIndices[2])
+									Renderer::SetRefractiveIndex(1.309f);
+								if (currentRefractiveIndex == refractiveIndices[3])
+									Renderer::SetRefractiveIndex(1.52f);
+								if (currentRefractiveIndex == refractiveIndices[4])
+									Renderer::SetRefractiveIndex(2.42f);
 							}
 
 							if (isSelected)

@@ -227,7 +227,7 @@ namespace Sparky {
 		SetUniform(name, data, count);
 	}
 
-	void OpenGLShader::SetFloat(const std::string& name, int value) const
+	void OpenGLShader::SetFloat(const std::string& name, float value) const
 	{
 		SP_PROFILE_FUNCTION();
 

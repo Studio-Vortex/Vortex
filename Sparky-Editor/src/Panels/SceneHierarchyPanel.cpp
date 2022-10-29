@@ -500,6 +500,8 @@ namespace Sparky {
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -684,10 +686,8 @@ namespace Sparky {
 				Gui::EndCombo();
 			}
 
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-
 			char buffer[256];
-
+			
 			if (component.Mesh)
 				memcpy(buffer, component.Mesh->GetPath().c_str(), sizeof(buffer));
 			else
@@ -716,8 +716,7 @@ namespace Sparky {
 			}
 
 			Gui::SameLine();
-			if (Gui::Button("Mesh Source"))
-				component.Mesh = nullptr;
+			Gui::Text("Mesh Source");
 
 			auto textureSize = ImVec2{ 64, 64 };
 
@@ -769,8 +768,20 @@ namespace Sparky {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
-			Gui::Checkbox("Reflective", &component.Reflective);
+			if (Gui::TreeNodeEx("Material", treeNodeFlags))
+			{
+				Gui::Unindent();
+
+				Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
+
+				Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+
+				Gui::Checkbox("Reflective", &component.Reflective);
+				Gui::Checkbox("Refractive", &component.Refractive);
+
+				Gui::Indent();
+				Gui::TreePop();
+			}
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
@@ -922,9 +933,10 @@ namespace Sparky {
 				if (Gui::Checkbox("Spacialized", &props.Spacialized))
 					component.Source->SetSpacialized(props.Spacialized);
 
-				if (props.Spacialized)
+				if (props.Spacialized && Gui::TreeNodeEx("Spatialization", treeNodeFlags))
 				{
 					Gui::Spacing();
+					Gui::Unindent();
 
 					DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 					{
@@ -943,24 +955,30 @@ namespace Sparky {
 
 					Gui::Spacing();
 
-					Gui::Text("Cone");
-					float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-					if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+					if (Gui::TreeNodeEx("Cone", treeNodeFlags))
 					{
-						props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-						component.Source->SetCone(props.Cone);
-					}
-					float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-					if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
-					{
-						props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-						component.Source->SetCone(props.Cone);
-					}
-					float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-					if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
-					{
-						props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-						component.Source->SetCone(props.Cone);
+						Gui::Unindent();
+						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+						if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+						{
+							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+							component.Source->SetCone(props.Cone);
+						}
+						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+						if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+						{
+							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+							component.Source->SetCone(props.Cone);
+						}
+						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+						if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+						{
+							props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+							component.Source->SetCone(props.Cone);
+						}
+
+						Gui::Indent();
+						Gui::TreePop();
 					}
 
 					Gui::Spacing();
@@ -974,7 +992,8 @@ namespace Sparky {
 					if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
 						component.Source->SetDopplerFactor(props.DopplerFactor);
 
-					Gui::Spacing();
+					Gui::Indent();
+					Gui::TreePop();
 				}
 			}
 
@@ -1002,24 +1021,31 @@ namespace Sparky {
 
 			Gui::Spacing();
 
-			Gui::Text("Cone");
-			float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-			if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+			if (Gui::TreeNodeEx("Cone", treeNodeFlags))
 			{
-				props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-				component.Listener->SetCone(props.Cone);
-			}
-			float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-			if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
-			{
-				props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-				component.Listener->SetCone(props.Cone);
-			}
-			float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-			if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
-			{
-				props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-				component.Listener->SetCone(props.Cone);
+				Gui::Unindent();
+
+				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+				if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+				{
+					props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+					component.Listener->SetCone(props.Cone);
+				}
+				float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+				if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+				{
+					props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+					component.Listener->SetCone(props.Cone);
+				}
+				float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+				if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+				{
+					props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+					component.Listener->SetCone(props.Cone);
+				}
+
+				Gui::Indent();
+				Gui::TreePop();
 			}
 		});
 

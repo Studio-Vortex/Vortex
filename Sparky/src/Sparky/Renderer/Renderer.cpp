@@ -10,6 +10,7 @@ namespace Sparky {
 
 	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
+	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 
 	static constexpr const char* DEFAULT_SKYBOX_DIRECTORY_PATH = "Resources/Textures/Default/Skybox";
@@ -22,6 +23,7 @@ namespace Sparky {
 
 		SharedRef<Shader> ModelShader = nullptr;
 		SharedRef<Shader> ReflectiveShader = nullptr;
+		SharedRef<Shader> RefractiveShader = nullptr;
 		SharedRef<Shader> SkyboxShader = nullptr;
 
 		SharedRef<Model> SkyboxMesh = nullptr;
@@ -29,6 +31,8 @@ namespace Sparky {
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
+
+		float RefractiveIndex = 1.52f; // Glass
 
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
@@ -49,6 +53,7 @@ namespace Sparky {
 		s_Data.ModelShader = Shader::Create(MODEL_SHADER_PATH);
 
 		s_Data.ReflectiveShader = Shader::Create(REFLECTIVE_SHADER_PATH);
+		s_Data.RefractiveShader = Shader::Create(REFRACTIVE_SHADER_PATH);
 
 		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
@@ -81,16 +86,10 @@ namespace Sparky {
 		Math::mat4 projection = camera.GetProjection();
 		Math::mat4 view = Math::Inverse(transform);
 		Math::mat4 viewProjection = projection * Math::Inverse(transform);
+		Math::vec3 cameraPosition = Math::vec3(Math::Inverse(transform)[0][3]);
 
 		DrawSkybox(view, projection, s_Data.DefaultSkybox);
-
-		s_Data.ModelShader->Enable();
-		s_Data.ModelShader->SetMat4("u_ViewProjection", viewProjection);
-
-		s_Data.ReflectiveShader->Enable();
-		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", viewProjection);
-		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
-		s_Data.ReflectiveShader->SetFloat3("u_CameraPos", Math::vec3(transform[0][3]));
+		BindShaders(viewProjection, cameraPosition);
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -98,14 +97,7 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		DrawSkybox(camera.GetViewMatrix(), camera.GetProjection(), s_Data.DefaultSkybox);
-
-		s_Data.ModelShader->Enable();
-		s_Data.ModelShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
-
-		s_Data.ReflectiveShader->Enable();
-		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
-		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
-		s_Data.ReflectiveShader->SetFloat3("u_CameraPos", camera.GetPosition());
+		BindShaders(camera.GetViewProjection(), camera.GetPosition());
 	}
 
 	void Renderer::EndScene()
@@ -113,7 +105,24 @@ namespace Sparky {
 
 	}
 
-	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray, const Math::mat4& transform)
+	void Renderer::BindShaders(const Math::mat4& viewProjection, const Math::vec3& cameraPosition)
+	{
+		s_Data.ModelShader->Enable();
+		s_Data.ModelShader->SetMat4("u_ViewProjection", viewProjection);
+
+		s_Data.ReflectiveShader->Enable();
+		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", viewProjection);
+		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
+		s_Data.ReflectiveShader->SetFloat3("u_CameraPos", cameraPosition);
+
+		s_Data.RefractiveShader->Enable();
+		s_Data.RefractiveShader->SetMat4("u_ViewProjection", viewProjection);
+		s_Data.RefractiveShader->SetInt("u_Skybox", 0);
+		s_Data.RefractiveShader->SetFloat3("u_CameraPos", cameraPosition);
+		s_Data.RefractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
+	}
+
+	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -125,17 +134,26 @@ namespace Sparky {
 
 	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
 	{
-		DrawModel(transform, meshRenderer.Mesh, (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture, meshRenderer.Color, meshRenderer.Scale, meshRenderer.Reflective, entityID);
+		DrawModel(transform, meshRenderer.Mesh, (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture, meshRenderer.Color, meshRenderer.Scale, meshRenderer.Reflective, meshRenderer.Refractive, entityID);
 	}
 
-	void Renderer::DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale, bool reflective, int entityID)
+	void Renderer::DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale, bool reflective, bool refractive, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
 		model->OnUpdate(transform, color, scale);
 		texture->Bind();
 
-		Submit(reflective ? s_Data.ReflectiveShader : s_Data.ModelShader, model->GetVertexArray(), transform.GetTransform());
+		SharedRef<Shader> shader;
+
+		if (reflective)
+			shader = s_Data.ReflectiveShader;
+		else if (refractive)
+			shader = s_Data.RefractiveShader;
+		else
+			shader = s_Data.ModelShader;
+
+		Submit(shader, model->GetVertexArray());
 
 #if SP_RENDERER_STATISTICS
 		s_Data.RendererStatistics.QuadCount += model->GetQuadCount();
@@ -192,6 +210,16 @@ namespace Sparky {
 	void Renderer::ResetStats()
 	{
 		memset(&s_Data.RendererStatistics, 0, sizeof(s_Data.RendererStatistics));
+	}
+
+	float Renderer::GetRefractiveIndex()
+	{
+		return s_Data.RefractiveIndex;
+	}
+
+	void Renderer::SetRefractiveIndex(float index)
+	{
+		s_Data.RefractiveIndex = index;
 	}
 
 }
