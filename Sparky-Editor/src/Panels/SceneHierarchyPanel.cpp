@@ -3,6 +3,7 @@
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Scene/Scene.h"
+#include "Sparky/Renderer/LightSource.h"
 
 #include <imgui_internal.h>
 
@@ -224,6 +225,33 @@ namespace Sparky {
 				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 			}
+			Gui::EndMenu();
+		}
+
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Light"))
+		{
+			if (Gui::MenuItem("Directional"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
+				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Directional;
+			}
+			Gui::Separator();
+
+			if (Gui::MenuItem("Point"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
+				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Point;
+			}
+			Gui::Separator();
+			
+			if (Gui::MenuItem("Spot"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
+				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Spot;
+			}
+
 			Gui::EndMenu();
 		}
 
@@ -540,6 +568,7 @@ namespace Sparky {
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
 			DisplayAddComponentPopup<CameraComponent>("Camera");
+			DisplayAddComponentPopup<LightComponent>("Light Source");
 			DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
 			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
@@ -631,11 +660,58 @@ namespace Sparky {
 			}
 		});
 
+		DrawComponent<LightComponent>("Light Source", entity, [](auto& component)
+		{
+			static const char* lightTypes[] = {"Directional", "Point", "Spot" };
+			const char* currentLightType = lightTypes[(uint32_t)component.Type];
+
+			if (Gui::BeginCombo("Light Type", currentLightType))
+			{
+				uint32_t arraySize = SP_ARRAYCOUNT(lightTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
+				{
+					bool isSelected = strcmp(currentLightType, lightTypes[i]) == 0;
+					if (Gui::Selectable(lightTypes[i], isSelected))
+					{
+						currentLightType = lightTypes[i];
+						component.Type = static_cast<LightComponent::LightType>(i);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
+				}
+
+				Gui::EndCombo();
+			}
+
+			SharedRef<LightSource> lightSource = component.Source;
+
+			Math::vec3 ambient = lightSource->GetAmbient();
+			if (Gui::DragFloat3("Ambient", Math::ValuePtr(ambient), 0.01f, 0.01f, 1.0f, "%.2f"))
+				lightSource->SetAmbient(ambient);
+
+			Math::vec3 diffuse = lightSource->GetDiffuse();
+			if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
+				lightSource->SetDiffuse(diffuse);
+
+			Math::vec3 specular = lightSource->GetSpecular();
+			if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
+				lightSource->SetSpecular(specular);
+
+			Math::vec3 color = lightSource->GetColor();
+			if (Gui::ColorEdit3("Color", Math::ValuePtr(color)))
+				lightSource->SetColor(color);
+		});
+
 		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
 
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
-			const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
+			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
 
 			auto SetMeshSourceFunc = [&](int meshType)
@@ -768,6 +844,8 @@ namespace Sparky {
 				Gui::EndDragDropTarget();
 			}
 
+			SharedRef<Material> material = component.Mesh->GetMaterial();
+
 			if (Gui::TreeNodeEx("Material", treeNodeFlags))
 			{
 				Gui::Unindent();
@@ -775,6 +853,22 @@ namespace Sparky {
 				Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
 
 				Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+
+				Math::vec3 ambient = material->GetAmbient();
+				if (Gui::DragFloat3("Ambient", Math::ValuePtr(ambient), 0.01f, 0.01f, 1.0f, "%.2f"))
+					material->SetAmbient(ambient);
+
+				Math::vec3 diffuse = material->GetDiffuse();
+				if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
+					material->SetDiffuse(diffuse);
+
+				Math::vec3 specular = material->GetSpecular();
+				if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
+					material->SetSpecular(specular);
+
+				float shininess = material->GetShininess();
+				if (Gui::DragFloat("Shininess", &shininess, 2.0f, 2.0f, 256.0f))
+					material->SetShininess(shininess);
 
 				Gui::Checkbox("Reflective", &component.Reflective);
 				Gui::Checkbox("Refractive", &component.Refractive);

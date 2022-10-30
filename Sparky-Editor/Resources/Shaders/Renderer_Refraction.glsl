@@ -50,15 +50,15 @@ in float      f_TexScale;
 in flat int   f_EntityID;
 
 uniform samplerCube u_Skybox;
-uniform vec3        u_CameraPos;
+uniform vec3        u_CameraPosition;
 uniform float       u_RefractiveIndex;
 
 void main()
 {
 	float ratio = 1.0 / u_RefractiveIndex;
-	vec3 I = normalize(f_Position - u_CameraPos);
+	vec3 I = normalize(f_Position - u_CameraPosition);
 	vec3 R = refract(I, normalize(f_Normal), ratio);
-	o_Color = vec4(texture(u_Skybox, R).rgb, 1.0);
+	o_Color = f_Color * vec4(texture(u_Skybox, R).rgb, 1.0);
 
 	o_EntityID = f_EntityID;
 }

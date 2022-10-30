@@ -6,6 +6,7 @@
 #include "Sparky/Audio/AudioEngine.h"
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
+#include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
@@ -560,6 +561,11 @@ namespace Sparky {
 	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	template <> void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component)
+	{
+		component.Source = LightSource::Create(LightSourceProperties());
 	}
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) { }

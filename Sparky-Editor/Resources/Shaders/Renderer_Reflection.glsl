@@ -50,13 +50,13 @@ in float      f_TexScale;
 in flat int   f_EntityID;
 
 uniform samplerCube u_Skybox;
-uniform vec3        u_CameraPos;
+uniform vec3        u_CameraPosition;
 
 void main()
 {
-	vec3 I = normalize(f_Position - u_CameraPos);
+	vec3 I = normalize(f_Position - u_CameraPosition);
 	vec3 R = reflect(I, normalize(f_Normal));
-	o_Color = vec4(texture(u_Skybox, R).rgb, 1.0);
+	o_Color = f_Color * vec4(texture(u_Skybox, R).rgb, 1.0);
 
 	o_EntityID = f_EntityID;
 }

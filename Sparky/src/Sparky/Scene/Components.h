@@ -4,13 +4,10 @@
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/Texture.h"
-//#include "Sparky/Renderer/Model.h"
 #include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Audio/AudioListener.h"
 
 namespace Sparky {
-
-	class Model;
 
 	// Core components (all entites have these)
 
@@ -48,8 +45,8 @@ namespace Sparky {
 		Math::mat4 GetTransform() const
 		{
 			Math::mat4 rotation = Math::ToMat4(Math::Quaternion(Rotation));
-
-			return Math::Translate(Translation) * rotation * Math::Scale(Scale);
+			Math::mat4 result = Math::Translate(Translation) * rotation * Math::Scale(Scale);
+			return result;
 		}
 	};
 
@@ -65,11 +62,21 @@ namespace Sparky {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	/*struct LightComponent
+	// Forward declaration
+	class LightSource;
+
+	struct LightComponent
 	{
+		enum class LightType { Directional = 0, Point, Spot };
+		LightType Type = LightType::Directional;
+		SharedRef<LightSource> Source = nullptr;
+
 		LightComponent() = default;
 		LightComponent(const LightComponent&) = default;
-	};*/
+	};
+
+	// Forward declaration
+	class Model;
 
 	struct MeshRendererComponent
 	{
@@ -214,7 +221,7 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		CameraComponent, /*LightComponent,*/ MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
+		CameraComponent, LightComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
 		AudioSourceComponent, AudioListenerComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;

@@ -28,8 +28,8 @@ namespace Sparky {
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
+		static void RenderLight(const TransformComponent& transform, const LightComponent& light, int entityID = -1);
 		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
-		static void DrawModel(const TransformComponent& transform, const SharedRef<Model>& model, const SharedRef<Texture2D>& texture, const Math::vec4& color, float scale = 1.0f, bool reflective = false, bool refractive = false, int entityID = -1);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);
@@ -50,7 +50,7 @@ namespace Sparky {
 		static void SetRefractiveIndex(float index);
 
 	private:
-		static void BindShaders(const Math::mat4& viewProjection, const Math::vec3& cameraPosition);
+		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
 	};
 
 }

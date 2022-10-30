@@ -10,7 +10,7 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform)
+		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform, const SharedRef<Material>& material, bool& materialCreated)
 		{
 			tinyobj::attrib_t attributes;
 			std::vector<tinyobj::shape_t> shapes;
@@ -38,8 +38,6 @@ namespace Sparky {
 						1.0f
 					};
 
-					vertexPosition = transform * vertexPosition;
-
 					Math::vec3 vertexNormal = {
 						attributes.normals[3 * index.normal_index + 0],
 						attributes.normals[3 * index.normal_index + 1],
@@ -65,6 +63,17 @@ namespace Sparky {
 				}
 			}
 
+			if (!materials.empty())
+			{
+				material->SetAmbient(Math::vec3{ materials[0].ambient[0], materials[0].ambient[1], materials[0].ambient[2] });
+				material->SetDiffuse(Math::vec3{ materials[0].diffuse[0], materials[0].diffuse[1], materials[0].diffuse[2] });
+				material->SetSpecular(Math::vec3{ materials[0].specular[0], materials[0].specular[1], materials[0].specular[2] });
+				material->SetShininess(materials[0].shininess);
+				materialCreated = true;
+			}
+			else
+				materialCreated = false;
+
 			return { vertices, indices };
 		}
 
@@ -83,14 +92,19 @@ namespace Sparky {
 	Model::Model(const std::string& filepath, Entity entity, const Math::vec4& color)
 		: m_Filepath(filepath)
 	{
-		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform());
+		bool materialCreated;
+		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform(), m_Material, materialCreated);
 
-		m_Vertices = std::vector<ModelVertex>(mesh.Vertices.size());
+		if (!materialCreated)
+			m_Material = Material::Create(MaterialProperties());
 
+		m_OriginalVertices = std::vector<ModelVertex>(mesh.Vertices.size());
+
+		// Store the original mesh vertices
 		uint32_t i = 0;
 		for (const auto& vertex : mesh.Vertices)
 		{
-			ModelVertex& v = m_Vertices[i++];
+			ModelVertex& v = m_OriginalVertices[i++];
 			v.Position = vertex.Position;
 			v.Color = color;
 			v.Normal = vertex.Normal;
@@ -103,8 +117,8 @@ namespace Sparky {
 
 		uint32_t indexCount = mesh.Indices.size();
 		
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
-		m_Vbo = VertexBuffer::Create(m_Vertices.data(), dataSize);
+		uint32_t dataSize = m_OriginalVertices.size() * sizeof(ModelVertex);
+		m_Vbo = VertexBuffer::Create(m_OriginalVertices.data(), dataSize);
 		m_Vbo->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal"   },
@@ -118,11 +132,17 @@ namespace Sparky {
 
 		m_Ibo = IndexBuffer::Create(mesh.Indices.data(), indexCount);
 		m_Vao->SetIndexBuffer(m_Ibo);
+
+		m_Vertices = m_OriginalVertices;
 	}
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
 	{
-		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
+		bool materialCreated;
+		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity(), m_Material, materialCreated);
+
+		if (!materialCreated)
+			m_Material = Material::Create(MaterialProperties());
 
 		m_Vao = VertexArray::Create();
 
@@ -181,16 +201,10 @@ namespace Sparky {
 	{
 		Math::mat4 entityTransform = transform.GetTransform();
 
-		bool recalculateTransform = m_Transform != entityTransform;
-
+		uint32_t i = 0;
 		for (auto& vertex : m_Vertices)
 		{
-			if (recalculateTransform)
-			{
-				vertex.Position = entityTransform * Math::vec4(vertex.Position, 1.0f);
-				m_Transform = entityTransform;
-			}
-
+			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i++].Position, 1.0f);
 			vertex.Color = color;
 			vertex.TexScale = scale;
 		}

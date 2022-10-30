@@ -4,6 +4,7 @@
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Renderer/VertexArray.h"
+#include "Sparky/Renderer/Material.h"
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Renderer/Buffer.h"
 #include "Sparky/Renderer/Shader.h"
@@ -46,6 +47,7 @@ namespace Sparky {
 	class Model
 	{
 	public:
+		Model() = default;
 		Model(const std::string& filepath, Entity entity, const Math::vec4& color);
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
@@ -53,6 +55,7 @@ namespace Sparky {
 		void OnUpdate(const TransformComponent& transform, const Math::vec4& color, float scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
+		const SharedRef<Material>& GetMaterial() const { return m_Material; }
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
 		const std::vector<SharedRef<Texture2D>>& GetTextures() const { return m_Textures; }
 
@@ -63,8 +66,10 @@ namespace Sparky {
 
 	private:
 		std::string m_Filepath;
-		Math::mat4 m_Transform;
+		SharedRef<Material> m_Material;
+		std::vector<ModelVertex> m_OriginalVertices;
 		std::vector<ModelVertex> m_Vertices;
+
 		std::vector<SharedRef<Texture2D>> m_Textures;
 		SharedRef<VertexArray> m_Vao = nullptr;
 		SharedRef<VertexBuffer> m_Vbo = nullptr;
