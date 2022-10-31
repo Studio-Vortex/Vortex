@@ -7,6 +7,7 @@
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/ParticleEmitter.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
@@ -293,6 +294,8 @@ namespace Sparky {
 			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, primarySceneCameraTransform, m_Registry);
 
 		// TODO: Update Audio here
+
+		OnParticleEmitterUpdate(delta);
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
@@ -311,6 +314,8 @@ namespace Sparky {
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
+		OnParticleEmitterUpdate(delta);
+
 		// Render
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
 	}
@@ -400,6 +405,21 @@ namespace Sparky {
 		}
 
 		return Entity{};
+	}
+
+	void Scene::OnParticleEmitterUpdate(TimeStep delta)
+	{
+		// Update Particle Emitters
+		{
+			auto view = m_Registry.view<ParticleEmitterComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
+				particleEmitter->OnUpdate(delta);
+			}
+		}
 	}
 
 	void Scene::OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
@@ -563,16 +583,42 @@ namespace Sparky {
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
-	template <> void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component)
+	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)
+	{
+		component.Source = Skybox::Create();
+	}
+
+	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
 	{
 		component.Source = LightSource::Create(LightSourceProperties());
 	}
 
-	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) { }
+	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
+	{
+		static const char* meshSourcePaths[] = {
+			"Resources/Meshes/Default/Cube.obj",
+			"Resources/Meshes/Default/Sphere.obj",
+			"Resources/Meshes/Default/Capsule.obj",
+			"Resources/Meshes/Default/Cone.obj",
+			"Resources/Meshes/Default/Cylinder.obj",
+			"Resources/Meshes/Default/Plane.obj",
+			"Resources/Meshes/Default/Torus.obj",
+		};
+
+		uint32_t componentType = static_cast<uint32_t>(component.Type);
+
+		if (componentType < 7)
+			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity, component.Color);
+	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent& component)
+	{
+		component.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
+	}
 	
 	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
 	{

@@ -43,7 +43,6 @@ namespace Sparky {
 
 		m_Properties.Title = props.Title;
 		m_Properties.Size = props.Size;
-		m_Properties.SampleCount = props.SampleCount;
 		m_Properties.Maximized = props.Maximized;
 		m_Properties.VSync = props.VSync;
 		m_Properties.Decorated = props.Decorated;
@@ -80,8 +79,6 @@ namespace Sparky {
 				glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 			else
 				glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-
-			glfwWindowHint(GLFW_SAMPLES, m_Properties.SampleCount);
 
 			m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
 

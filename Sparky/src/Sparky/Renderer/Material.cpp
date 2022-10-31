@@ -6,35 +6,25 @@ namespace Sparky {
 	Material::Material(const MaterialProperties& props)
 		: m_Properties(props) { }
 
-	const Math::vec3& Material::GetAmbient() const
-	{
-		return m_Properties.Ambient;
-	}
+    const SharedRef<Texture2D>& Material::GetDiffuseMap() const
+    {
+		return m_Properties.DiffuseMap;
+    }
 
-	void Material::SetAmbient(const Math::vec3& ambient)
-	{
-		m_Properties.Ambient = ambient;
-	}
+    void Material::SetDiffuseMap(const SharedRef<Texture2D>& diffuseMap)
+    {
+		m_Properties.DiffuseMap = diffuseMap;
+    }
 
-	const Math::vec3& Material::GetDiffuse() const
-	{
-		return m_Properties.Diffuse;
-	}
+    const SharedRef<Texture2D>& Material::GetSpecularMap() const
+    {
+		return m_Properties.SpecularMap;
+    }
 
-	void Material::SetDiffuse(const Math::vec3& diffuse)
-	{
-		m_Properties.Diffuse = diffuse;
-	}
-
-	const Math::vec3& Material::GetSpecular() const
-	{
-		return m_Properties.Specular;
-	}
-
-	void Material::SetSpecular(const Math::vec3& specular)
-	{
-		m_Properties.Specular = specular;
-	}
+    void Material::SetSpecularMap(const SharedRef<Texture2D>& specularMap)
+    {
+		m_Properties.SpecularMap = specularMap;
+    }
 
 	float Material::GetShininess() const
 	{

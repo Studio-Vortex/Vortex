@@ -27,5 +27,5 @@ private:
 	Math::vec4 m_SquareColor;
 
 	Math::vec4 m_GridColor;
-	float m_GridScale;
+	Math::vec2 m_GridScale;
 };

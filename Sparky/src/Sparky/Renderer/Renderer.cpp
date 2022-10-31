@@ -8,13 +8,12 @@
 
 namespace Sparky {
 
-	static constexpr const char* LIGHT_SHADER_PATH = "Resources/Shaders/Renderer_Light.glsl";
 	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 
-	static constexpr const char* DEFAULT_SKYBOX_DIRECTORY_PATH = "Resources/Textures/Default/Skybox";
+	static constexpr const char* LIGHT_SOURCE_TEXTURE_PATH = "Resources/Icons/Scene/LightSource.png";
 
 	struct RendererInternalData
 	{
@@ -22,14 +21,12 @@ namespace Sparky {
 
 		SharedRef<Texture2D> WhiteTexture = nullptr; // Default texture
 
-		SharedRef<Shader> LightShader = nullptr;
 		SharedRef<Shader> ModelShader = nullptr;
 		SharedRef<Shader> ReflectiveShader = nullptr;
 		SharedRef<Shader> RefractiveShader = nullptr;
 		SharedRef<Shader> SkyboxShader = nullptr;
 
 		SharedRef<Model> SkyboxMesh = nullptr;
-		SharedRef<Skybox> DefaultSkybox = nullptr;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
@@ -38,6 +35,9 @@ namespace Sparky {
 
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
+
+		// Editor Resources
+		SharedRef<Texture2D> LightSourceTexture = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -52,8 +52,6 @@ namespace Sparky {
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		s_Data.LightShader = Shader::Create(LIGHT_SHADER_PATH);
-
 		s_Data.ModelShader = Shader::Create(MODEL_SHADER_PATH);
 		s_Data.ReflectiveShader = Shader::Create(REFLECTIVE_SHADER_PATH);
 		s_Data.RefractiveShader = Shader::Create(REFRACTIVE_SHADER_PATH);
@@ -61,7 +59,8 @@ namespace Sparky {
 		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
 
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
-		s_Data.DefaultSkybox = Skybox::Create(DEFAULT_SKYBOX_DIRECTORY_PATH);
+
+		s_Data.LightSourceTexture = Texture2D::Create(LIGHT_SOURCE_TEXTURE_PATH);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -88,10 +87,8 @@ namespace Sparky {
 
 		Math::mat4 projection = camera.GetProjection();
 		Math::mat4 view = Math::Inverse(transform);
-		Math::mat4 viewProjection = projection * Math::Inverse(transform);
 		Math::vec3 cameraPosition = Math::vec3(Math::Inverse(transform)[0][3]);
 
-		DrawSkybox(view, projection, s_Data.DefaultSkybox);
 		BindShaders(view, projection, cameraPosition);
 	}
 
@@ -99,7 +96,6 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		DrawSkybox(camera.GetViewMatrix(), camera.GetProjection(), s_Data.DefaultSkybox);
 		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
 	}
 
@@ -110,9 +106,6 @@ namespace Sparky {
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
-		s_Data.LightShader->Enable();
-		s_Data.LightShader->SetMat4("u_ViewProjection", projection * view);
-
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
@@ -140,17 +133,41 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderLight(const TransformComponent& transform, const LightComponent& light, int entityID)
+	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, int entityID)
 	{
 		SharedRef<LightSource> lightSource = light.Source;
-		s_Data.ModelShader->SetFloat3("u_LightSource.Ambient", lightSource->GetAmbient());
-		s_Data.ModelShader->SetFloat3("u_LightSource.Diffuse", lightSource->GetDiffuse());
-		s_Data.ModelShader->SetFloat3("u_LightSource.Specular", lightSource->GetSpecular());
-		s_Data.ModelShader->SetFloat3("u_LightSource.Color", lightSource->GetColor());
-		lightSource->SetPosition(transform.Translation);
-		s_Data.ModelShader->SetFloat3("u_LightSource.Position", lightSource->GetPosition());
 
-		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.25f)), Math::vec4(1.0f), entityID);
+		switch (light.Type)
+		{
+			case LightSourceComponent::LightType::Directional:
+			{
+				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Ambient", lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Diffuse", lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Color", lightSource->GetColor());
+				//s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
+
+				break;
+			}
+			case LightSourceComponent::LightType::Point:
+			{
+				s_Data.ModelShader->SetFloat3("u_PointLight.Ambient", lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3("u_PointLight.Diffuse", lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3("u_PointLight.Specular", lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3("u_PointLight.Color", lightSource->GetColor());
+				lightSource->SetPosition(transform.Translation);
+				s_Data.ModelShader->SetFloat3("u_PointLight.Position", lightSource->GetPosition());
+
+				break;
+			}
+			case LightSourceComponent::LightType::Spot:
+			{
+
+				break;
+			}
+		}
+
+		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceTexture, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
 
 	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
@@ -176,9 +193,24 @@ namespace Sparky {
 			shader->SetMat4("u_Model", transform.GetTransform());
 
 			SharedRef<Material> material = model->GetMaterial();
-			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
-			shader->SetFloat3("u_Material.Diffuse", material->GetDiffuse());
-			shader->SetFloat3("u_Material.Specular", material->GetSpecular());
+			
+			SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
+			if (diffuseMap)
+			{
+				diffuseMap->Bind();
+				//shader->SetInt("u_Material.Diffuse", 0);
+			}
+			
+			SharedRef<Texture2D> specularMap = material->GetSpecularMap();
+			if (specularMap)
+			{
+				specularMap->Bind();
+				uint32_t textureSlot = 0;
+				if (diffuseMap)
+					textureSlot = 1;
+				//shader->SetInt("u_Material.Specular", textureSlot);
+			}
+
 			shader->SetFloat("u_Material.Shininess", material->GetShininess());
 		}
 
@@ -252,5 +284,15 @@ namespace Sparky {
 	{
 		s_Data.RefractiveIndex = index;
 	}
+
+    std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()
+    {
+		std::vector<SharedRef<Shader>> result;
+		result.push_back(s_Data.ModelShader);
+		result.push_back(s_Data.ReflectiveShader);
+		result.push_back(s_Data.RefractiveShader);
+		result.push_back(s_Data.SkyboxShader);
+		return result;
+    }
 
 }

@@ -40,6 +40,7 @@ namespace Sparky {
 		float GetYaw() const { return m_Yaw; }
 
 		void ResetCameraPositionToWorldOrigin();
+		void MoveToPosition(const Math::vec3& translation);
 
 		static void LockCameraRotation(bool lockRotation) { s_LockEditorCameraRotation = lockRotation; }
 		static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }

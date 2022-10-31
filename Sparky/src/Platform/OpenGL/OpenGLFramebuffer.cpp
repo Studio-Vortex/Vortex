@@ -31,6 +31,12 @@ namespace Sparky {
 			if (multisampled)
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
+
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
 			else
 			{
@@ -53,6 +59,12 @@ namespace Sparky {
 			if (multisampled)
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
 			else
 			{
@@ -72,7 +84,7 @@ namespace Sparky {
 		{
 			switch (format)
 			{
-				case Sparky::FramebufferTextureFormat::DEPTH24STENCIL8: return true;
+				case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
 			}
 
 			return false;
@@ -82,8 +94,8 @@ namespace Sparky {
 		{
 			switch (format)
 			{
-				case Sparky::FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-				case Sparky::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
 			SP_CORE_ASSERT(false, "Unknown texture format!");

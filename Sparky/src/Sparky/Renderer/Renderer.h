@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Sparky/Core/Base.h"
-
 #include "Sparky/Renderer/RendererAPI.h"
 #include "Sparky/Renderer/EditorCamera.h"
 #include "Sparky/Renderer/Camera.h"
@@ -11,6 +9,8 @@
 #include "Sparky/Renderer/Skybox.h"
 
 #include "Sparky/Scene/Components.h"
+
+#include <vector>
 
 namespace Sparky {
 
@@ -28,7 +28,7 @@ namespace Sparky {
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
-		static void RenderLight(const TransformComponent& transform, const LightComponent& light, int entityID = -1);
+		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, int entityID = -1);
 		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
@@ -48,6 +48,8 @@ namespace Sparky {
 
 		static float GetRefractiveIndex();
 		static void SetRefractiveIndex(float index);
+
+		static std::vector<SharedRef<Shader>> GetLoadedShaders();
 
 	private:
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);

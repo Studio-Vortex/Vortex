@@ -21,10 +21,13 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		const auto& appProps = Application::Get().GetProperties();
+
 		FramebufferProperties framebufferProps;
 		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		framebufferProps.Width = 1600;
 		framebufferProps.Height = 900;
+		framebufferProps.Samples = appProps.SampleCount;
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
@@ -37,7 +40,6 @@ namespace Sparky {
 		m_EditorScene = CreateShared<Scene>();
 		m_ActiveScene = m_EditorScene;
 
-		const auto& appProps = Application::Get().GetProperties();
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
 
 		auto commandLineArgs = appProps.CommandLineArgs;
@@ -365,21 +367,14 @@ namespace Sparky {
 				Gui::Separator();
 				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
 				Gui::Separator();
-
+				Gui::MenuItem("Asset Manager", nullptr, &m_AssetManagerPanel.IsOpen());
+				Gui::Separator();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				Gui::Separator();
-
-				if (Gui::BeginMenu("Debug"))
-				{
-					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
-					Gui::Separator();
-
-					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
-
-					Gui::EndMenu();
-				}
+				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
 				Gui::Separator();
-
+				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+				Gui::Separator();
 				Gui::MenuItem("Settings", nullptr, &m_SettingsPanel.IsOpen());
 
 				Gui::EndMenu();
@@ -401,6 +396,7 @@ namespace Sparky {
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
+			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
@@ -437,7 +433,7 @@ namespace Sparky {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg")
+				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga")
 				{
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
@@ -521,7 +517,7 @@ namespace Sparky {
 					ImGuizmo::Manipulate(
 						Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix),
 						(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(entityTransform),
-						nullptr, (controlPressed&& m_GizmoSnapEnabled) ? snapValues.data() : nullptr
+						nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
 					);
 
 					if (m_DrawGizmoGrid)
@@ -873,6 +869,17 @@ namespace Sparky {
 				break;
 			}
 
+			case Key::F:
+			{
+				if (m_SceneHierarchyPanel.GetSelectedEntity())
+				{
+					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+					m_EditorCamera.MoveToPosition(selectedEntity.GetTransform().Translation);
+				}
+
+				break;
+			}
+
 			case Key::A:
 			{
 				if (controlPressed && !shiftPressed) // Ctrl+Shift+A opens the add component popup in inspector panel
@@ -1029,6 +1036,20 @@ namespace Sparky {
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
+
+		// Starting Entities
+		Entity startingCube = m_EditorScene->CreateEntity("Cube");
+		startingCube.AddComponent<MeshRendererComponent>();
+
+		Entity startingLight = m_EditorScene->CreateEntity("Point Light");
+		startingLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+
+		Entity startingCamera = m_EditorScene->CreateEntity("Camera");
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
+		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);
 	}
 
 	void EditorLayer::OpenExistingScene()

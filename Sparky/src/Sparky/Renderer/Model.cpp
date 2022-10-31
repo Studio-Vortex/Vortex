@@ -10,7 +10,7 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform, const SharedRef<Material>& material, bool& materialCreated)
+		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform)
 		{
 			tinyobj::attrib_t attributes;
 			std::vector<tinyobj::shape_t> shapes;
@@ -63,17 +63,6 @@ namespace Sparky {
 				}
 			}
 
-			if (!materials.empty())
-			{
-				material->SetAmbient(Math::vec3{ materials[0].ambient[0], materials[0].ambient[1], materials[0].ambient[2] });
-				material->SetDiffuse(Math::vec3{ materials[0].diffuse[0], materials[0].diffuse[1], materials[0].diffuse[2] });
-				material->SetSpecular(Math::vec3{ materials[0].specular[0], materials[0].specular[1], materials[0].specular[2] });
-				material->SetShininess(materials[0].shininess);
-				materialCreated = true;
-			}
-			else
-				materialCreated = false;
-
 			return { vertices, indices };
 		}
 
@@ -92,11 +81,9 @@ namespace Sparky {
 	Model::Model(const std::string& filepath, Entity entity, const Math::vec4& color)
 		: m_Filepath(filepath)
 	{
-		bool materialCreated;
-		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform(), m_Material, materialCreated);
+		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform());
 
-		if (!materialCreated)
-			m_Material = Material::Create(MaterialProperties());
+		m_Material = Material::Create(MaterialProperties());
 
 		m_OriginalVertices = std::vector<ModelVertex>(mesh.Vertices.size());
 
@@ -109,7 +96,7 @@ namespace Sparky {
 			v.Color = color;
 			v.Normal = vertex.Normal;
 			v.TextureCoord = vertex.TextureCoord;
-			v.TexScale = 1.0f;
+			v.TexScale = Math::vec2(1.0f);
 			v.EntityID = (int)(entt::entity)entity;
 		}
 
@@ -124,7 +111,7 @@ namespace Sparky {
 			{ ShaderDataType::Float3, "a_Normal"   },
 			{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float,  "a_TexScale" },
+			{ ShaderDataType::Float2, "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 
@@ -138,11 +125,9 @@ namespace Sparky {
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
 	{
-		bool materialCreated;
-		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity(), m_Material, materialCreated);
+		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
 
-		if (!materialCreated)
-			m_Material = Material::Create(MaterialProperties());
+		m_Material = nullptr;
 
 		m_Vao = VertexArray::Create();
 
@@ -197,7 +182,7 @@ namespace Sparky {
 		m_Vao->AddVertexBuffer(m_Vbo);
 	}
 
-	void Model::OnUpdate(const TransformComponent& transform, const Math::vec4& color, float scale)
+	void Model::OnUpdate(const TransformComponent& transform, const Math::vec4& color, const Math::vec2& scale)
 	{
 		Math::mat4 entityTransform = transform.GetTransform();
 

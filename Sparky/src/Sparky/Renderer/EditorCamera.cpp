@@ -33,10 +33,19 @@ namespace Sparky {
 
 	void EditorCamera::ResetCameraPositionToWorldOrigin()
 	{
-		m_Position = Math::vec3(0.0f);
 		m_FocalPoint = Math::vec3(0.0f, 5.0f, 10.0f);
 		m_Distance = 0.0f;
 		m_Pitch = Math::Deg2Rad(25.0f);
+		m_Yaw = 0.0f;
+
+		UpdateView();
+	}
+
+	void EditorCamera::MoveToPosition(const Math::vec3& translation)
+	{
+		m_FocalPoint = Math::vec3(translation.x, translation.y, translation.z + 3.0f);
+		m_Distance = 0.0f;
+		m_Pitch = 0.0f;
 		m_Yaw = 0.0f;
 
 		UpdateView();

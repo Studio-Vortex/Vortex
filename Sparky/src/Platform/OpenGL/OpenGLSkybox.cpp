@@ -11,6 +11,36 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
+		LoadSkybox(directoryPath);
+	}
+
+	OpenGLSkybox::~OpenGLSkybox()
+	{
+		SP_PROFILE_FUNCTION();
+
+		if (m_RendererID)
+			glDeleteTextures(1, &m_RendererID);
+	}
+
+	void OpenGLSkybox::Bind() const
+	{
+		SP_PROFILE_FUNCTION();
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
+	}
+
+	void OpenGLSkybox::Unbind() const
+	{
+		SP_PROFILE_FUNCTION();
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	}
+
+	void OpenGLSkybox::LoadSkybox(const std::string& directoryPath)
+	{
+		if (m_RendererID)
+			glDeleteTextures(1, &m_RendererID);
+
 		glGenTextures(1, &m_RendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 
@@ -38,6 +68,8 @@ namespace Sparky {
 
 			uint32_t i = 0;
 
+			stbi_set_flip_vertically_on_load(false);
+
 			for (auto& path : facePaths)
 			{
 				stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
@@ -61,28 +93,6 @@ namespace Sparky {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	}
-
-	OpenGLSkybox::~OpenGLSkybox()
-	{
-		SP_PROFILE_FUNCTION();
-
-		if (m_RendererID)
-			glDeleteTextures(1, &m_RendererID);
-	}
-
-	void OpenGLSkybox::Bind() const
-	{
-		SP_PROFILE_FUNCTION();
-
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
-	}
-
-	void OpenGLSkybox::Unbind() const
-	{
-		SP_PROFILE_FUNCTION();
-
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 	}
 
 }

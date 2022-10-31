@@ -10,13 +10,13 @@ layout (location = 0) in vec3  a_Position; // Vertex position
 layout (location = 1) in vec4  a_Color; // Vertex color
 layout (location = 2) in vec2  a_TexCoord; // Vertex texture coordinate
 layout (location = 3) in float a_TexIndex; // Texture index out of 32
-layout (location = 4) in float a_TexScale; // Texture scale
+layout (location = 4) in vec2  a_TexScale; // Texture scale
 layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out vec4       f_Color;
 out vec2       f_TexCoord;
 out flat float f_TexIndex;
-out float      f_TexScale;
+out vec2       f_TexScale;
 out flat int   f_EntityID;
 
 uniform mat4 u_ViewProjection;
@@ -43,7 +43,7 @@ layout (location = 1) out int o_EntityID;
 in vec4       f_Color;
 in vec2       f_TexCoord;
 in flat float f_TexIndex;
-in float      f_TexScale;
+in vec2       f_TexScale;
 in flat int   f_EntityID;
 
 uniform sampler2D u_Textures[32];

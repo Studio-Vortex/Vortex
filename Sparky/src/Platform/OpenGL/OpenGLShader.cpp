@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "OpenGLShader.h"
 
+#include "Sparky/Utils/PlatformUtils.h"
+
 #include <Glad/glad.h>
 
 namespace Sparky {
@@ -205,6 +207,14 @@ namespace Sparky {
 
 	void OpenGLShader::ReCompile()
 	{
+		if (m_RendererID)
+			glDeleteProgram(m_RendererID);
+
+		FileSystem::LaunchApplication("CopyShaders.bat", "");
+
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(250ms);
+
 		CreateShader(m_Filepath);
 	}
 

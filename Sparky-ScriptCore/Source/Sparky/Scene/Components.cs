@@ -146,6 +146,65 @@
 		}
 	}
 
+	public class LightSource : Component
+	{
+		public Vector3 Ambient
+		{
+			get
+			{
+				InternalCalls.LightSourceComponent_GetAmbient(Entity.ID, out Vector3 ambient);
+				return ambient;
+			}
+
+			set
+			{
+				InternalCalls.LightSourceComponent_SetAmbient(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 Diffuse
+		{
+			get
+			{
+				InternalCalls.LightSourceComponent_GetDiffuse(Entity.ID, out Vector3 diffuse);
+				return diffuse;
+			}
+
+			set
+			{
+				InternalCalls.LightSourceComponent_SetDiffuse(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 Specular
+		{
+			get
+			{
+				InternalCalls.LightSourceComponent_GetSpecular(Entity.ID, out Vector3 specular);
+				return specular;
+			}
+
+			set
+			{
+				InternalCalls.LightSourceComponent_SetSpecular(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 Color
+		{
+			get
+			{
+				InternalCalls.LightSourceComponent_GetColor(Entity.ID, out Vector3 color);
+				return color;
+			}
+
+			set
+			{
+				InternalCalls.LightSourceComponent_SetColor(Entity.ID, ref value);
+			}
+		}
+	}
+
 	public enum MeshType
 	{
 		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus
@@ -183,17 +242,17 @@
 			}
 		}
 
-		public float Scale
+		public Vector2 Scale
 		{
 			get
 			{
-				InternalCalls.MeshRendererComponent_GetScale(Entity.ID, out float scale);
+				InternalCalls.MeshRendererComponent_GetScale(Entity.ID, out Vector2 scale);
 				return scale;
 			}
 
 			set
 			{
-				InternalCalls.MeshRendererComponent_SetScale(Entity.ID, value);
+				InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
 			}
 		}
 	}
@@ -228,17 +287,17 @@
 			}
 		}
 
-		public float Scale
+		public Vector2 Scale
 		{
 			get
 			{
-				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out float scale);
+				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out Vector2 scale);
 				return scale;
 			}
 
 			set
 			{
-				InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, value);
+				InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, ref value);
 			}
 		}
 	}
@@ -301,6 +360,11 @@
 		{
 			InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 		}
+	}
+
+	public class AudioListener : Component
+	{
+		
 	}
 
 	public enum RigidBody2DType

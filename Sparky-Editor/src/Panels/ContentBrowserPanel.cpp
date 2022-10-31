@@ -209,7 +209,7 @@ public class Untitled : Entity
 				icon = m_ModelFileIcon;
 			else if (currentPath.extension().string() == ".wav" || currentPath.extension().string() == ".mp3")
 				icon = m_AudioFileIcon;
-			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg")
+			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg" || currentPath.extension().string() == ".tga")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
@@ -397,7 +397,7 @@ public class Untitled : Entity
 						}
 
 						// Rename SpriteRendererComponent Texture path
-						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg")
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".tga")
 						{
 							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
 							// we have the old filename

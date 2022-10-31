@@ -63,6 +63,7 @@ namespace Sparky {
 					RenderShaderCodeEditor();
 					Gui::EndTabItem();
 				}
+
 				Gui::EndTabBar();
 			}
 			Gui::EndChild();

@@ -19,7 +19,7 @@ namespace Sparky {
 		Math::vec3 Normal;
 		Math::vec4 Color;
 		Math::vec2 TextureCoord;
-		float TexScale;
+		Math::vec2 TexScale;
 
 		// Editor-only
 		int EntityID;
@@ -52,7 +52,7 @@ namespace Sparky {
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(const TransformComponent& transform, const Math::vec4& color, float scale);
+		void OnUpdate(const TransformComponent& transform, const Math::vec4& color, const Math::vec2& scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }

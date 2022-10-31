@@ -4,17 +4,19 @@
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
+#include "Sparky/Renderer/ParticleEmitter.h"
+
 namespace Sparky {
 
 	template <typename TCamera>
-	static void RenderScene(TCamera& camera, const Math::mat4& cameraTransform, entt::registry& sceneRegistry)
+	static void RenderScene(TCamera& activeCamera, const Math::mat4& sceneCameraTransform, entt::registry& sceneRegistry)
 	{
 		// Render 2D
 		{
 			if (typeid(TCamera).name() == typeid(EditorCamera).name())
-				Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(camera));
+				Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(activeCamera));
 			else
-				Renderer2D::BeginScene(reinterpret_cast<Camera&>(camera), cameraTransform);
+				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform);
 
 			// Render Sprites
 			{
@@ -22,9 +24,9 @@ namespace Sparky {
 
 				for (const auto entity : view)
 				{
-					auto [transformComponent, spriteComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteComponent, (int)(entt::entity)entity);
+					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -34,9 +36,40 @@ namespace Sparky {
 
 				for (const auto entity : group)
 				{
-					auto [transformComponent, circle] = group.get<TransformComponent, CircleRendererComponent>(entity);
+					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(entity);
 
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)(entt::entity)entity);
+					Renderer2D::DrawCircle(transformComponent.GetTransform(), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
+				}
+			}
+
+			// Render Particles
+			{
+				auto view = sceneRegistry.view<TransformComponent, ParticleEmitterComponent>();
+
+				for (auto& entity : view)
+				{
+					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(entity);
+
+					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+					
+					if (particleEmitter->IsActive())
+					{
+						std::vector<ParticleEmitter::Particle> particles = particleEmitter->GetParticles();
+						const ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+						for (auto& particle : particles)
+						{
+							switch (emitterProperties.Type)
+							{
+								case ParticleEmitterProperties::PrimitiveType::Quad:
+									Renderer2D::DrawQuad(particle.Position, particle.Size, particle.Color, (int)(entt::entity)entity);
+									break;
+								case ParticleEmitterProperties::PrimitiveType::Circle:
+									Math::mat4 transform = Math::Identity() * Math::Translate(particle.Position) * Math::Scale({ particle.Size.x, particle.Size.y, 1.0f });
+									Renderer2D::DrawCircle(transform, particle.Color, 1.0f, 0.005f, (int)(entt::entity)entity);
+									break;
+							}
+						}
+					}
 				}
 			}
 
@@ -46,24 +79,37 @@ namespace Sparky {
 		// Render 3D
 		{
 			if (typeid(TCamera).name() == typeid(EditorCamera).name())
-				Renderer::BeginScene(reinterpret_cast<EditorCamera&>(camera));
+			{
+				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
+				Renderer::BeginScene(editorCamera);
+
+				SceneRenderer::RenderSkybox(editorCamera.GetViewMatrix(), editorCamera.GetProjection(), sceneRegistry);
+			}
 			else
-				Renderer::BeginScene(reinterpret_cast<Camera&>(camera), cameraTransform);
+			{
+				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
+				Renderer::BeginScene(sceneCamera, sceneCameraTransform);
+
+				Math::mat4 view = Math::Inverse(sceneCameraTransform);
+				Math::mat4 projection = sceneCamera.GetProjection();
+
+				SceneRenderer::RenderSkybox(view, projection, sceneRegistry);
+			}
 
 			// Render Lights
 			{
-				auto view = sceneRegistry.view<TransformComponent, LightComponent>();
+				auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
 
 				if (typeid(TCamera).name() == typeid(EditorCamera).name())
-					Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(camera));
+					Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(activeCamera));
 				else
-					Renderer2D::BeginScene(reinterpret_cast<Camera&>(camera), cameraTransform);
+					Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform);
 				
 				for (const auto entity : view)
 				{
-					auto [transformComponent, lightComponent] = view.get<TransformComponent, LightComponent>(entity);
+					auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-					Renderer::RenderLight(transformComponent, lightComponent, (int)(entt::entity)entity);
+					Renderer::RenderLightSource(transformComponent, lightSourceComponent, (int)(entt::entity)entity);
 				}
 
 				Renderer2D::EndScene();
@@ -94,6 +140,23 @@ namespace Sparky {
 	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry)
 	{
 		RenderScene(editorCamera, Math::Identity(), sceneRegistry);
+	}
+
+	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, entt::registry& sceneRegistry)
+	{
+		auto skyboxView = sceneRegistry.view<SkyboxComponent>();
+
+		if (!skyboxView.empty())
+		{
+			for (auto& entity : skyboxView)
+			{
+				auto& skyboxComponent = skyboxView.get<SkyboxComponent>(entity);
+				Renderer::DrawSkybox(view, projection, skyboxComponent.Source);
+
+				// Only render one skybox per scene
+				break;
+			}
+		}
 	}
 
 }

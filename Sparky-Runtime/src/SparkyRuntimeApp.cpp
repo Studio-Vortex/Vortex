@@ -26,6 +26,7 @@ namespace Sparky {
 		props.Name = applicationName;
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
+		props.SampleCount = 1;
 		props.MaximizeWindow = true;
 		props.WindowDecorated = true;
 		props.VSync = true;

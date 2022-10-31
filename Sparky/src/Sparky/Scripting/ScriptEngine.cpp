@@ -10,11 +10,13 @@
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Debug/Instrumentor.h"
 
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/object.h>
-#include <mono/metadata/attrdefs.h>
-#include <mono/metadata/class.h>
 #include <mono/jit/jit.h>
+#include <mono/metadata/class.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/threads.h>
+#include <mono/metadata/attrdefs.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/mono-debug.h>
 
 #include <Filewatch.hpp>
 
@@ -72,7 +74,7 @@ namespace Sparky {
 			return buffer;
 		}
 
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath)
+		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false)
 		{
 			uint32_t fileSize = 0;
 			char* fileData = ReadBytes(filepath, &fileSize);
@@ -87,6 +89,24 @@ namespace Sparky {
 				// Log some error message using the errorMessage data
 				SP_CORE_ERROR("Mono Assembly Error: {}", errorMessage);
 				return nullptr;
+			}
+
+			if (loadPdb)
+			{
+				std::filesystem::path assemblyPath = filepath;
+				std::filesystem::path pdbPath = assemblyPath.replace_extension(".pdb");
+
+				if (std::filesystem::exists(pdbPath))
+				{
+					uint32_t pdbFileSize = 0;
+					char* pdbFileData = ReadBytes(pdbPath, &pdbFileSize);
+
+					mono_debug_open_image_from_memory(image, (const mono_byte*)pdbFileData, (int)pdbFileSize);
+
+					SP_CORE_INFO("PDB Loaded: {}", pdbPath);
+
+					delete[] pdbFileData;
+				}
 			}
 
 			std::string pathString = filepath.string();
@@ -177,6 +197,8 @@ namespace Sparky {
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
 		bool AssemblyReloadPending = false;
 
+		bool DebuggingEnabled = true;
+
 		SharedRef<AudioSource> CompilationSuccessSound;
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
@@ -188,6 +210,28 @@ namespace Sparky {
 	};
 
 	static ScriptEngineData* s_Data = nullptr;
+
+	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
+	{
+		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
+		{
+			// Add reload to main thread queue
+
+			s_Data->AssemblyReloadPending = true;
+
+			Application::Get().SubmitToMainThread([]()
+			{
+				s_Data->AppAssemblyFilewatcher.reset();
+				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
+
+				using namespace std::chrono_literals;
+				std::this_thread::sleep_for(250ms);
+
+				ScriptEngine::ReloadAssembly();
+				s_Data->CompilationSuccessSound->Play();
+			});
+		}
+	}
 
 	void ScriptEngine::Init()
 	{
@@ -217,11 +261,27 @@ namespace Sparky {
 	{
 		mono_set_assemblies_path("mono/lib");
 
+		if (s_Data->DebuggingEnabled)
+		{
+			const char* argv[2] = {
+				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=Resources/Logs/MonoDebugger.txt",
+				"--soft-breakpoints"
+			};
+
+			mono_jit_parse_options(2, (char**)argv);
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+		}
+
 		MonoDomain* rootDomain = mono_jit_init("SparkyJITRuntime");
 		SP_CORE_ASSERT(rootDomain, "Root Domain was null pointer!");
 
 		// Store the root domain pointer
 		s_Data->RootDomain = rootDomain;
+
+		if (s_Data->DebuggingEnabled)
+			mono_debug_domain_create(s_Data->RootDomain);
+
+		mono_thread_set_main(mono_thread_current());
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -244,38 +304,16 @@ namespace Sparky {
 
 		// Move this
 		s_Data->CoreAssemblyFilepath = filepath;
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
 		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
-	}
-
-	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
-	{
-		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
-		{
-			// Add reload to main thread queue
-
-			s_Data->AssemblyReloadPending = true;
-
-			Application::Get().SubmitToMainThread([]()
-			{
-				s_Data->AppAssemblyFilewatcher.reset();
-				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
-				
-				using namespace std::chrono_literals;
-				std::this_thread::sleep_for(250ms);
-				
-				ScriptEngine::ReloadAssembly();
-				s_Data->CompilationSuccessSound->Play();
-			});
-		}
 	}
 
 	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		// Move this
 		s_Data->AppAssemblyFilepath = filepath;
-		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
+		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 		//Utils::PrintAssemblyTypes(s_Data->AppAssembly);
 

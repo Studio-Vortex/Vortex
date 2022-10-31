@@ -67,6 +67,12 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCamera(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddLightSource(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveLightSource(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddMeshRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -89,6 +95,12 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_RemoveAudioSource(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddAudioListener(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveAudioListener(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddRigidBody2D(ulong entityID);
@@ -166,6 +178,34 @@ namespace Sparky {
 
 		#endregion
 
+		#region LightSource
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_GetAmbient(ulong entityID, out Vector3 outAmbient);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetAmbient(ulong entityID, ref Vector3 ambient);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_GetDiffuse(ulong entityID, out Vector3 outDiffuse);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetDiffuse(ulong entityID, ref Vector3 diffuse);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_GetSpecular(ulong entityID, out Vector3 outSpecular);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetSpecular(ulong entityID, ref Vector3 specular);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_GetColor(ulong entityID, out Vector3 outColor);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetColor(ulong entityID, ref Vector3 color);
+
+		#endregion
+
 		#region MeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -181,10 +221,10 @@ namespace Sparky {
 		internal extern static void MeshRendererComponent_SetTexture(ulong entityID, string texturePathString);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out float result);
+		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetScale(ulong entityID, float scale);
+		internal extern static void MeshRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
 
 		#endregion
 
@@ -203,10 +243,10 @@ namespace Sparky {
 		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, string texturePathString);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out float result);
+		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetScale(ulong entityID, float scale);
+		internal extern static void SpriteRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
 
 		#endregion
 

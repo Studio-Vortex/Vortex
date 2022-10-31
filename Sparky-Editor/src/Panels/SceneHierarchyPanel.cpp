@@ -4,6 +4,8 @@
 #include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/ParticleEmitter.h"
+#include "Sparky/Renderer/Skybox.h"
 
 #include <imgui_internal.h>
 
@@ -185,7 +187,6 @@ namespace Sparky {
 
 			Gui::EndMenu();
 		}
-
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Create 2D"))
@@ -206,7 +207,6 @@ namespace Sparky {
 
 			Gui::EndMenu();
 		}
-
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Camera"))
@@ -227,7 +227,6 @@ namespace Sparky {
 			}
 			Gui::EndMenu();
 		}
-
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Light"))
@@ -235,26 +234,25 @@ namespace Sparky {
 			if (Gui::MenuItem("Directional"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
-				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Directional;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Directional;
 			}
 			Gui::Separator();
 
 			if (Gui::MenuItem("Point"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
-				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Point;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
 			}
 			Gui::Separator();
 			
 			if (Gui::MenuItem("Spot"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
-				m_SelectedEntity.AddComponent<LightComponent>().Type = LightComponent::LightType::Spot;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Spot;
 			}
 
 			Gui::EndMenu();
 		}
-
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Physics"))
@@ -301,7 +299,6 @@ namespace Sparky {
 
 			Gui::EndMenu();
 		}
-
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Audio"))
@@ -318,6 +315,18 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
 				m_SelectedEntity.AddComponent<AudioListenerComponent>();
+			}
+
+			Gui::EndMenu();
+		}
+		Gui::Separator();
+
+		if (Gui::BeginMenu("Effects"))
+		{
+			if (Gui::MenuItem("Particles"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Particle Emitter");
+				m_SelectedEntity.AddComponent<ParticleEmitterComponent>();
 			}
 
 			Gui::EndMenu();
@@ -568,10 +577,12 @@ namespace Sparky {
 		{
 			DisplayAddComponentPopup<TransformComponent>("Transform");
 			DisplayAddComponentPopup<CameraComponent>("Camera");
-			DisplayAddComponentPopup<LightComponent>("Light Source");
+			DisplayAddComponentPopup<SkyboxComponent>("Skybox");
+			DisplayAddComponentPopup<LightSourceComponent>("Light Source");
 			DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
 			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
+			DisplayAddComponentPopup<ParticleEmitterComponent>("Particle Emitter");
 			DisplayAddComponentPopup<AudioSourceComponent>("Audio Source");
 			DisplayAddComponentPopup<AudioListenerComponent>("Audio Listener");
 			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
@@ -660,9 +671,45 @@ namespace Sparky {
 			}
 		});
 
-		DrawComponent<LightComponent>("Light Source", entity, [](auto& component)
+		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
 		{
-			static const char* lightTypes[] = {"Directional", "Point", "Spot" };
+			SharedRef<Skybox> skybox = component.Source;
+			
+			char buffer[256];
+
+			std::string skyboxPath = skybox->GetDirectoryPath();
+
+			if (!skyboxPath.empty())
+				memcpy(buffer, skyboxPath.c_str(), sizeof(buffer));
+			else
+				memset(buffer, 0, sizeof(buffer));
+
+			Gui::InputText("##Skybox Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+
+			// Accept a Skybox Directory from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path skyboxDirectoryPath = std::filesystem::path(g_AssetPath) / path;
+
+					// Make sure we are recieving an actual directory otherwise we will have trouble loading it
+					if (std::filesystem::is_directory(skyboxDirectoryPath))
+						skybox->SetDirectoryPath(skyboxDirectoryPath.string());
+					else
+						SP_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxDirectoryPath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			Gui::SameLine();
+			Gui::Text("Source");
+		});
+
+		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)
+		{
+			static const char* lightTypes[] = { "Directional", "Point", "Spot" };
 			const char* currentLightType = lightTypes[(uint32_t)component.Type];
 
 			if (Gui::BeginCombo("Light Type", currentLightType))
@@ -675,7 +722,7 @@ namespace Sparky {
 					if (Gui::Selectable(lightTypes[i], isSelected))
 					{
 						currentLightType = lightTypes[i];
-						component.Type = static_cast<LightComponent::LightType>(i);
+						component.Type = static_cast<LightSourceComponent::LightType>(i);
 					}
 
 					if (isSelected)
@@ -691,7 +738,7 @@ namespace Sparky {
 			SharedRef<LightSource> lightSource = component.Source;
 
 			Math::vec3 ambient = lightSource->GetAmbient();
-			if (Gui::DragFloat3("Ambient", Math::ValuePtr(ambient), 0.01f, 0.01f, 1.0f, "%.2f"))
+			if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
 				lightSource->SetAmbient(ambient);
 
 			Math::vec3 diffuse = lightSource->GetDiffuse();
@@ -728,11 +775,6 @@ namespace Sparky {
 
 				component.Mesh = Model::Create(std::string(meshSourcePaths[meshType]), entity, component.Color);
 			};
-
-			bool isDefaultMesh = component.Type != MeshRendererComponent::MeshType::Custom;
-
-			if (!component.Mesh && isDefaultMesh)
-				SetMeshSourceFunc(static_cast<uint32_t>(component.Type));
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
@@ -816,8 +858,7 @@ namespace Sparky {
 			else
 			{
 				// Show the default checkerboard texture
-				if (Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }))
-					component.Texture = nullptr;
+				Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 			}
 
 			// Accept a Texture from the content browser
@@ -829,7 +870,7 @@ namespace Sparky {
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 
 					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
+					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 					{
 						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
@@ -839,7 +880,7 @@ namespace Sparky {
 							SP_WARN("Could not load texture {}", texturePath.filename().string());
 					}
 					else
-						SP_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
+						SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
@@ -852,22 +893,110 @@ namespace Sparky {
 
 				Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
 
-				Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+				Gui::DragFloat2("Scale", Math::ValuePtr(component.Scale), 0.05f);
 
-				Math::vec3 ambient = material->GetAmbient();
-				if (Gui::DragFloat3("Ambient", Math::ValuePtr(ambient), 0.01f, 0.01f, 1.0f, "%.2f"))
-					material->SetAmbient(ambient);
+				Gui::Text("Diffuse");
+				Gui::SameLine();
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
-				Math::vec3 diffuse = material->GetDiffuse();
-				if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
-					material->SetDiffuse(diffuse);
+				SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
 
-				Math::vec3 specular = material->GetSpecular();
-				if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
-					material->SetSpecular(specular);
+				if (diffuseMap)
+				{
+					ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+
+					if (Gui::ImageButton((void*)diffuseMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+						material->SetDiffuseMap(nullptr);
+					else if (Gui::IsItemHovered())
+					{
+						Gui::BeginTooltip();
+						Gui::Text(diffuseMap->GetPath().c_str());
+						Gui::EndTooltip();
+					}
+				}
+				else
+				{
+					// Show the default checkerboard texture
+					Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+				}
+
+				// Accept a Diffuse map from the content browser
+				if (Gui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+
+						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+						{
+							SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+							if (texture->IsLoaded())
+								material->SetDiffuseMap(texture);
+							else
+								SP_WARN("Could not load texture {}", texturePath.filename().string());
+						}
+						else
+							SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+					}
+					Gui::EndDragDropTarget();
+				}
+
+				Gui::Spacing();
+				
+				Gui::Text("Specular");
+				Gui::SameLine();
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+				SharedRef<Texture2D> specularMap = material->GetSpecularMap();
+
+				if (specularMap)
+				{
+					ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+
+					if (Gui::ImageButton((void*)specularMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+						material->SetSpecularMap(nullptr);
+					else if (Gui::IsItemHovered())
+					{
+						Gui::BeginTooltip();
+						Gui::Text(specularMap->GetPath().c_str());
+						Gui::EndTooltip();
+					}
+				}
+				else
+				{
+					// Show the default checkerboard texture
+					Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+				}
+
+				// Accept a Specular map from the content browser
+				if (Gui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+
+						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+						{
+							SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+							if (texture->IsLoaded())
+								material->SetSpecularMap(texture);
+							else
+								SP_WARN("Could not load texture {}", texturePath.filename().string());
+						}
+						else
+							SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+					}
+					Gui::EndDragDropTarget();
+				}
 
 				float shininess = material->GetShininess();
-				if (Gui::DragFloat("Shininess", &shininess, 2.0f, 2.0f, 256.0f))
+				if (Gui::DragFloat("Shininess", &shininess, 4.0f, 2.0f, 256.0f))
 					material->SetShininess(shininess);
 
 				Gui::Checkbox("Reflective", &component.Reflective);
@@ -917,7 +1046,7 @@ namespace Sparky {
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 
 					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg")
+					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 					{
 						SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
@@ -927,12 +1056,12 @@ namespace Sparky {
 							SP_CORE_WARN("Could not load texture {}", texturePath.filename().string());
 					}
 					else
-						SP_CORE_WARN("Could not load texture, not a '.png' or 'jpg' - {}", texturePath.filename().string());
+						SP_CORE_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat("Scale", &component.Scale, 0.1f, 0.0f, 100.0f);
+			Gui::DragFloat2("Scale", Math::ValuePtr(component.Scale), 0.05f);
 		});
 
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
@@ -940,6 +1069,18 @@ namespace Sparky {
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
 			Gui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
 			Gui::DragFloat("Fade", &component.Fade, 0.00025f, 0.0f, 1.0f);
+		});
+
+		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, [](auto& component)
+		{
+			SharedRef<ParticleEmitter> particleEmitter = component.Emitter;
+
+			if (Gui::Button("Start"))
+				particleEmitter->Start();
+			Gui::SameLine();
+
+			if (Gui::Button("Stop"))
+				particleEmitter->Stop();
 		});
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)

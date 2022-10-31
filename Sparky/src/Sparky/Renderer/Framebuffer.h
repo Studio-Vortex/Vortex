@@ -43,7 +43,7 @@ namespace Sparky {
 		uint32_t Width;
 		uint32_t Height;
 		FramebufferAttachmentProperties Attachments;
-		uint32_t Samples = 1;
+		uint32_t Samples;
 
 		bool SwapChainTarget = false;
 	};

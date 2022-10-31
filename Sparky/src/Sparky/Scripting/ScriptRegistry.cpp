@@ -16,6 +16,7 @@
 
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Renderer2D.h"
+#include "Sparky/Renderer/LightSource.h"
 
 #include "Sparky/Core/Log.h"
 
@@ -178,6 +179,26 @@ namespace Sparky {
 		entity.RemoveComponent<CameraComponent>();
 	}
 
+	static void Entity_AddLightSource(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<LightSourceComponent>();
+	}
+
+	static void Entity_RemoveLightSource(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<LightSourceComponent>();
+	}
+
 	static void Entity_AddMeshRenderer(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -256,6 +277,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<AudioSourceComponent>();
+	}
+
+	static void Entity_AddAudioListener(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<AudioListenerComponent>();
+	}
+
+	static void Entity_RemoveAudioListener(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<AudioListenerComponent>();
 	}
 
 	static void Entity_AddRigidBody2D(UUID entityUUID)
@@ -505,6 +546,90 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Light Source Component
+
+	static void LightSourceComponent_GetAmbient(UUID entityUUID, Math::vec3* outAmbient)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outAmbient = entity.GetComponent<LightSourceComponent>().Source->GetAmbient();
+	}
+
+	static void LightSourceComponent_SetAmbient(UUID entityUUID, Math::vec3* ambient)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetAmbient(*ambient);
+	}
+
+	static void LightSourceComponent_GetDiffuse(UUID entityUUID, Math::vec3* outDiffuse)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outDiffuse = entity.GetComponent<LightSourceComponent>().Source->GetDiffuse();
+	}
+
+	static void LightSourceComponent_SetDiffuse(UUID entityUUID, Math::vec3* diffuse)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetDiffuse(*diffuse);
+	}
+
+	static void LightSourceComponent_GetSpecular(UUID entityUUID, Math::vec3* outSpecular)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outSpecular = entity.GetComponent<LightSourceComponent>().Source->GetSpecular();
+	}
+
+	static void LightSourceComponent_SetSpecular(UUID entityUUID, Math::vec3* specular)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetSpecular(*specular);
+	}
+
+	static void LightSourceComponent_GetColor(UUID entityUUID, Math::vec3* outColor)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outColor = entity.GetComponent<LightSourceComponent>().Source->GetColor();
+	}
+
+	static void LightSourceComponent_SetColor(UUID entityUUID, Math::vec3* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetColor(*color);
+	}
+
+#pragma endregion
+
 #pragma region Mesh Renderer Component
 
 	static void MeshRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
@@ -527,14 +652,14 @@ namespace Sparky {
 		entity.GetComponent<MeshRendererComponent>().Color = *color;
 	}
 
-	static void MeshRendererComponent_GetScale(UUID entityUUID, float outScale)
+	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outScale = entity.GetComponent<MeshRendererComponent>().Scale;
+		*outScale = entity.GetComponent<MeshRendererComponent>().Scale;
 	}
 
 	static void MeshRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
@@ -563,14 +688,14 @@ namespace Sparky {
 		mono_free(texturePathCStr);
 	}
 
-	static void MeshRendererComponent_SetScale(UUID entityUUID, float scale)
+	static void MeshRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<MeshRendererComponent>().Scale = scale;
+		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
 	}
 
 #pragma endregion
@@ -597,14 +722,14 @@ namespace Sparky {
 		entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
 	}
 
-	static void SpriteRendererComponent_GetScale(UUID entityUUID, float outScale)
+	static void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
+		*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
 	}
 
 	static void SpriteRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
@@ -633,14 +758,14 @@ namespace Sparky {
 		mono_free(texturePathCStr);
 	}
 
-	static void SpriteRendererComponent_SetScale(UUID entityUUID, float scale)
+	static void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteRendererComponent>().Scale = scale;
+		entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
 	}
 
 #pragma endregion
@@ -1472,6 +1597,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
 
+		SP_ADD_INTERNAL_CALL(Entity_AddLightSource);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveLightSource);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddMeshRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveMeshRenderer);
 
@@ -1483,6 +1611,9 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Entity_AddAudioSource);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioSource);
+
+		SP_ADD_INTERNAL_CALL(Entity_AddAudioListener);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioListener);
 
 		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody2D);
@@ -1519,6 +1650,19 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_LookAt);
+
+#pragma endregion
+
+#pragma region Light Source Component
+
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetAmbient);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetAmbient);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDiffuse);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDiffuse);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetSpecular);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetSpecular);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetColor);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetColor);
 
 #pragma endregion
 

@@ -7,6 +7,7 @@
 
 #include "Sparky/Renderer/Model.h"
 #include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/Skybox.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -143,27 +144,27 @@ namespace Sparky {
 		return out;
 	}
 
-	static std::string LightTypeToString(LightComponent::LightType lightType)
+	static std::string LightTypeToString(LightSourceComponent::LightType lightType)
 	{
 		switch (lightType)
 		{
-			case LightComponent::LightType::Directional:  return "Directional";
-			case LightComponent::LightType::Point:        return "Point";
-			case LightComponent::LightType::Spot:         return "Spot";
+			case LightSourceComponent::LightType::Directional:  return "Directional";
+			case LightSourceComponent::LightType::Point:        return "Point";
+			case LightSourceComponent::LightType::Spot:         return "Spot";
 		}
 
 		SP_CORE_ASSERT(false, "Unknown Light Type!");
 		return {};
 	}
 
-	static LightComponent::LightType LightTypeFromString(const std::string& lightTypeString)
+	static LightSourceComponent::LightType LightTypeFromString(const std::string& lightTypeString)
 	{
-		if (lightTypeString == "Directional")  return LightComponent::LightType::Directional;
-		if (lightTypeString == "Point")        return LightComponent::LightType::Point;
-		if (lightTypeString == "Spot")         return LightComponent::LightType::Spot;
+		if (lightTypeString == "Directional")  return LightSourceComponent::LightType::Directional;
+		if (lightTypeString == "Point")        return LightSourceComponent::LightType::Point;
+		if (lightTypeString == "Spot")         return LightSourceComponent::LightType::Spot;
 
 		SP_CORE_ASSERT(false, "Unknown Light Type!");
-		return LightComponent::LightType::Directional;
+		return LightSourceComponent::LightType::Directional;
 	}
 
 	static std::string MeshRendererMeshTypeToString(MeshRendererComponent::MeshType meshType)
@@ -277,12 +278,25 @@ namespace Sparky {
 			out << YAML::EndMap; // CameraComponent
 		}
 
-		if (entity.HasComponent<LightComponent>())
+		if (entity.HasComponent<SkyboxComponent>())
 		{
-			out << YAML::Key << "LightComponent";
-			out << YAML::BeginMap; // LightComponent
+			out << YAML::Key << "SkyboxComponent";
+			out << YAML::BeginMap; // SkyboxComponent
 
-			auto& lightComponent = entity.GetComponent<LightComponent>();
+			auto& lightComponent = entity.GetComponent<SkyboxComponent>();
+
+			SharedRef<Skybox> skybox = lightComponent.Source;
+			out << YAML::Key << "SourcePath" << skybox->GetDirectoryPath();
+
+			out << YAML::EndMap; // SkyboxComponent
+		}
+
+		if (entity.HasComponent<LightSourceComponent>())
+		{
+			out << YAML::Key << "LightSourceComponent";
+			out << YAML::BeginMap; // LightSourceComponent
+
+			auto& lightComponent = entity.GetComponent<LightSourceComponent>();
 
 			out << YAML::Key << "LightType" << YAML::Value << LightTypeToString(lightComponent.Type);
 			
@@ -293,7 +307,7 @@ namespace Sparky {
 			out << YAML::Key << "Color" << YAML::Value << lightSource->GetColor();
 			out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
 
-			out << YAML::EndMap; // LightComponent
+			out << YAML::EndMap; // LightSourceComponent
 		}
 
 		if (entity.HasComponent<MeshRendererComponent>())
@@ -312,12 +326,14 @@ namespace Sparky {
 				out << YAML::Key << "MeshSource" << YAML::Value << model->GetPath();
 
 				SharedRef<Material> material = model->GetMaterial();
-				out << YAML::Key << "Ambient" << material->GetAmbient();
-				out << YAML::Key << "Diffuse" << material->GetDiffuse();
-				out << YAML::Key << "Specular" << material->GetSpecular();
+				if (material->GetDiffuseMap())
+					out << YAML::Key << "DiffuseMapPath" << material->GetDiffuseMap()->GetPath();
+				if (material->GetSpecularMap())
+					out << YAML::Key << "SpecularMapPath" << material->GetSpecularMap()->GetPath();
+
 				out << YAML::Key << "Shininess" << material->GetShininess();
 			}
-			out << YAML::Key << "Scale" << YAML::Value << meshRendererComponent.Scale;
+			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 			out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
 			out << YAML::Key << "Refractive" << YAML::Value << meshRendererComponent.Refractive;
 
@@ -333,7 +349,7 @@ namespace Sparky {
 			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
 			if (spriteComponent.Texture)
 				out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
-			out << YAML::Key << "Scale" << YAML::Value << spriteComponent.Scale;
+			out << YAML::Key << "TextureScale" << YAML::Value << spriteComponent.Scale;
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -590,24 +606,32 @@ namespace Sparky {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
-				auto lightComponent = entity["LightComponent"];
-				if (lightComponent)
+				auto skyboxComponent = entity["SkyboxComponent"];
+				if (skyboxComponent)
 				{
-					auto& lightComp = deserializedEntity.AddComponent<LightComponent>();
+					auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-					lightComp.Source = CreateShared<LightSource>(LightSourceProperties());
+					skybox.Source = Skybox::Create(skyboxComponent["SourcePath"].as<std::string>());
+				}
 
-					lightComp.Type = LightTypeFromString(lightComponent["LightType"].as<std::string>());
-					if (lightComponent["Ambient"])
-						lightComp.Source->SetAmbient(lightComponent["Ambient"].as<Math::vec3>());
-					if (lightComponent["Diffuse"])
-						lightComp.Source->SetDiffuse(lightComponent["Diffuse"].as<Math::vec3>());
-					if (lightComponent["Specular"])
-						lightComp.Source->SetSpecular(lightComponent["Specular"].as<Math::vec3>());
-					if (lightComponent["Color"])
-						lightComp.Source->SetColor(lightComponent["Color"].as<Math::vec3>());
-					if (lightComponent["Position"])
-						lightComp.Source->SetPosition(lightComponent["Position"].as<Math::vec3>());
+				auto lightSourceComponent = entity["LightSourceComponent"];
+				if (lightSourceComponent)
+				{
+					auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
+
+					lightComponent.Source = CreateShared<LightSource>(LightSourceProperties());
+
+					lightComponent.Type = LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
+					if (lightSourceComponent["Ambient"])
+						lightComponent.Source->SetAmbient(lightSourceComponent["Ambient"].as<Math::vec3>());
+					if (lightSourceComponent["Diffuse"])
+						lightComponent.Source->SetDiffuse(lightSourceComponent["Diffuse"].as<Math::vec3>());
+					if (lightSourceComponent["Specular"])
+						lightComponent.Source->SetSpecular(lightSourceComponent["Specular"].as<Math::vec3>());
+					if (lightSourceComponent["Color"])
+						lightComponent.Source->SetColor(lightSourceComponent["Color"].as<Math::vec3>());
+					if (lightSourceComponent["Position"])
+						lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
 				}
 
 				auto meshComponent = entity["MeshRendererComponent"];
@@ -622,16 +646,15 @@ namespace Sparky {
 						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
 					if (meshComponent["MeshSource"])
 						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity, meshRendererComponent.Color);
-					if (meshComponent["Ambient"])
-						meshRendererComponent.Mesh->GetMaterial()->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
-					if (meshComponent["Diffuse"])
-						meshRendererComponent.Mesh->GetMaterial()->SetDiffuse(meshComponent["Diffuse"].as<Math::vec3>());
-					if (meshComponent["Specular"])
-						meshRendererComponent.Mesh->GetMaterial()->SetSpecular(meshComponent["Specular"].as<Math::vec3>());
+					if (meshComponent["DiffuseMapPath"])
+						meshRendererComponent.Mesh->GetMaterial()->SetDiffuseMap(Texture2D::Create(meshComponent["DiffuseMapPath"].as<std::string>()));
+					if (meshComponent["SpecularMapPath"])
+						meshRendererComponent.Mesh->GetMaterial()->SetSpecularMap(Texture2D::Create(meshComponent["SpecularMapPath"].as<std::string>()));
 					if (meshComponent["Shininess"])
 						meshRendererComponent.Mesh->GetMaterial()->SetShininess(meshComponent["Shininess"].as<float>());
 
-					meshRendererComponent.Scale = meshComponent["Scale"].as<float>();
+					if (meshComponent["TextureScale"])
+						meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();
 
 					if (meshComponent["Reflective"])
 						meshRendererComponent.Reflective = meshComponent["Reflective"].as<bool>();
@@ -649,8 +672,8 @@ namespace Sparky {
 					if (spriteComponent["TexturePath"])
 						spriteRendererComponent.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
 
-					if (spriteComponent["Scale"])
-						spriteRendererComponent.Scale = spriteComponent["Scale"].as<float>();
+					if (spriteComponent["TextureScale"])
+						spriteRendererComponent.Scale = spriteComponent["TextureScale"].as<Math::vec2>();
 				}
 				
 				auto circleComponent = entity["CircleRendererComponent"];

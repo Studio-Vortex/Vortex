@@ -9,7 +9,7 @@
 
 namespace Sparky {
 
-	// Core components (all entites have these)
+#pragma region Core Components
 
 	struct IDComponent
 	{
@@ -50,7 +50,9 @@ namespace Sparky {
 		}
 	};
 
-	// Rendering components
+#pragma endregion
+
+#pragma region Rendering Components
 
 	struct CameraComponent
 	{
@@ -63,16 +65,27 @@ namespace Sparky {
 	};
 
 	// Forward declaration
+	class Skybox;
+
+	struct SkyboxComponent
+	{
+		SharedRef<Skybox> Source = nullptr;
+
+		SkyboxComponent() = default;
+		SkyboxComponent(const SkyboxComponent&) = default;
+	};
+
+	// Forward declaration
 	class LightSource;
 
-	struct LightComponent
+	struct LightSourceComponent
 	{
 		enum class LightType { Directional = 0, Point, Spot };
 		LightType Type = LightType::Directional;
 		SharedRef<LightSource> Source = nullptr;
 
-		LightComponent() = default;
-		LightComponent(const LightComponent&) = default;
+		LightSourceComponent() = default;
+		LightSourceComponent(const LightSourceComponent&) = default;
 	};
 
 	// Forward declaration
@@ -85,7 +98,7 @@ namespace Sparky {
 		Math::vec4 Color = Math::vec4(1.0f);
 		SharedRef<Model> Mesh = nullptr;
 		SharedRef<Texture2D> Texture = nullptr;
-		float Scale = 1.0f;
+		Math::vec2 Scale = Math::vec2(1.0f);
 		bool Reflective = false;
 		bool Refractive = false;
 
@@ -99,7 +112,7 @@ namespace Sparky {
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 		SharedRef<Texture2D> Texture = nullptr;
-		float Scale = 1.0f;
+		Math::vec2 Scale = Math::vec2(1.0f);
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -117,7 +130,20 @@ namespace Sparky {
 		CircleRendererComponent(const CircleRendererComponent&) = default;
 	};
 
-	// Audio components
+	// Forward declaration
+	class ParticleEmitter;
+
+	struct ParticleEmitterComponent
+	{
+		SharedRef<ParticleEmitter> Emitter = nullptr;
+
+		ParticleEmitterComponent() = default;
+		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
+	};
+
+#pragma endregion
+
+#pragma region Audio Components
 
 	struct AudioSourceComponent
 	{
@@ -130,12 +156,14 @@ namespace Sparky {
 	struct AudioListenerComponent
 	{
 		SharedRef<AudioListener> Listener = nullptr;
-
+		
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
 
-	// Physics components
+#pragma endregion
+
+#pragma region Physics Components
 
 	struct RigidBody2DComponent
 	{
@@ -186,12 +214,14 @@ namespace Sparky {
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
-	// Script components
+#pragma endregion
+
+#pragma region Script Components
 
 	struct ScriptComponent
 	{
 		std::string ClassName;
-		 
+
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
 	};
@@ -204,7 +234,7 @@ namespace Sparky {
 		ScriptableEntity* Instance = nullptr;
 
 		ScriptableEntity* (*InstantiateScript)() = nullptr;
-		void (* DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
+		void (*DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
 
 		template <typename T>
 		void Bind()
@@ -214,6 +244,8 @@ namespace Sparky {
 		}
 	};
 
+#pragma endregion
+
 	template<typename... Component>
 	struct ComponentGroup
 	{
@@ -221,7 +253,7 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		CameraComponent, LightComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent,
+		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
 		AudioSourceComponent, AudioListenerComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;

@@ -17,7 +17,7 @@ namespace Sparky
 		Math::vec4 Color;
 		Math::vec2 TexCoord;
 		float TexIndex;
-		float TexScale;
+		Math::vec2 TexScale;
 
 		// Editor-only
 		int EntityID;
@@ -103,7 +103,7 @@ namespace Sparky
 			{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
-			{ ShaderDataType::Float,  "a_TexScale" },
+			{ ShaderDataType::Float2, "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
 		});
 
@@ -340,7 +340,7 @@ namespace Sparky
 		}
 	}
 
-	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, float textureScale, int entityID)
+	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID)
 	{
 		for (size_t i = 0; i < 4; i++)
 		{
@@ -393,7 +393,7 @@ namespace Sparky
 			NextBatch();
 
 		constexpr float textureIndex = 0.0f; // Our White Texture
-		constexpr float textureScale = 1.0f;
+		constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
@@ -405,12 +405,12 @@ namespace Sparky
 		DrawQuad(transform, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -445,7 +445,7 @@ namespace Sparky
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale, entityID);
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(transform, texture, scale, ColorToVec4(tintColor));
 	}
@@ -465,10 +465,10 @@ namespace Sparky
 		DrawQuad(position, size, { color.r, color.g, color.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Scale({ size.x, size.y, 1.0f });
-		DrawQuad(transform, color);
+		DrawQuad(transform, color, entityID);
 	}
 
 	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, Color color)
@@ -481,38 +481,38 @@ namespace Sparky
 		DrawQuad(position, size, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Scale({ size.x, size.y, 1.0f });
 		DrawQuad(transform, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(position, size, texture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -550,12 +550,12 @@ namespace Sparky
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
@@ -573,7 +573,7 @@ namespace Sparky
 			NextBatch();
 
 		static constexpr float textureIndex = 0.0f; // Our White Texture
-		static constexpr float textureScale = 1.0f;
+		static constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
@@ -585,12 +585,12 @@ namespace Sparky
 		DrawRotatedQuad(transform, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -623,7 +623,7 @@ namespace Sparky
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(transform, texture, scale, ColorToVec4(tintColor));
 	}
@@ -659,43 +659,43 @@ namespace Sparky
 		DrawRotatedQuad(position, size, rotation, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
 		DrawRotatedQuad(transform, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -731,22 +731,22 @@ namespace Sparky
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, float scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, texture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, float scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, ColorToVec4(tintColor));
 	}
@@ -844,5 +844,14 @@ namespace Sparky
 	{
 		memset(&s_Data.Renderer2DStatistics, NULL, sizeof(s_Data.Renderer2DStatistics));
 	}
+
+    std::vector<SharedRef<Shader>> Renderer2D::GetLoadedShaders()
+    {
+		std::vector<SharedRef<Shader>> result;
+		result.push_back(s_Data.QuadShader);
+		result.push_back(s_Data.CircleShader);
+		result.push_back(s_Data.LineShader);
+		return result;
+    }
 
 }
