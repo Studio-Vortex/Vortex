@@ -13,6 +13,7 @@ namespace Sandbox {
 		public override void OnCreate()
 		{
 			m_Left = true;
+			GetComponent<ParticleEmitter>().Start();
 		}
 
 		public override void OnUpdate(float delta)
@@ -22,7 +23,6 @@ namespace Sandbox {
 				m_Velocity.X = -1.0f;
 				if (transform.Translation.X <= -Bounds)
 					m_Left = false;
-
 			}
 			else
 			{

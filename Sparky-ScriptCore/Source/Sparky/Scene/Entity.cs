@@ -66,6 +66,7 @@ namespace Sparky {
 					case "Sparky.MeshRenderer":     InternalCalls.Entity_AddMeshRenderer(ID);     break;
 					case "Sparky.SpriteRenderer":   InternalCalls.Entity_AddSpriteRenderer(ID);   break;
 					case "Sparky.CircleRenderer":   InternalCalls.Entity_AddCircleRenderer(ID);   break;
+					case "Sparky.ParticleEmitter":  InternalCalls.Entity_AddParticleEmitter(ID);  break;
 					case "Sparky.AudioSource":      InternalCalls.Entity_AddAudioSource(ID);      break;
 					case "Sparky.AudioListener":    InternalCalls.Entity_AddAudioListener(ID);    break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_AddRigidBody2D(ID);      break;
@@ -93,6 +94,7 @@ namespace Sparky {
 					case "Sparky.MeshRenderer":     InternalCalls.Entity_RemoveMeshRenderer(ID);     break;
 					case "Sparky.SpriteRenderer":   InternalCalls.Entity_RemoveSpriteRenderer(ID);   break;
 					case "Sparky.CircleRenderer":   InternalCalls.Entity_RemoveCircleRenderer(ID);   break;
+					case "Sparky.ParticleEmitter":  InternalCalls.Entity_RemoveParticleEmitter(ID);  break;
 					case "Sparky.AudioSource":      InternalCalls.Entity_RemoveAudioSource(ID);      break;
 					case "Sparky.AudioListener":    InternalCalls.Entity_RemoveAudioListener(ID);    break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_RemoveRigidBody2D(ID);      break;

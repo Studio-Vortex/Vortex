@@ -7,8 +7,16 @@ namespace Sparky {
 
 	struct ParticleEmitterProperties
 	{
-		enum class PrimitiveType { Quad = 0, Circle };
-		PrimitiveType Type = PrimitiveType::Quad;
+		Math::vec3 Position;
+		Math::vec3 Velocity = Math::vec3(1.0f);
+		Math::vec3 VelocityVariation = Math::vec3(1.0f);
+		Math::vec2 SizeBegin = Math::vec2(1.0f);
+		Math::vec2 SizeEnd = Math::vec2(1.0f);
+		Math::vec2 SizeVariation = Math::vec2(1.0f);
+		Math::vec4 ColorBegin = Math::vec4(1.0f);
+		Math::vec4 ColorEnd = Math::vec4(1.0f);
+		float Rotation = 0.1f;
+		float LifeTime = 1.0f;
 	};
 
 	class ParticleEmitter
@@ -18,11 +26,14 @@ namespace Sparky {
 		{
 			Math::vec3 Position;
 			Math::vec3 Velocity;
-			Math::vec4 Color;
-			Math::vec2 Size;
-
+			Math::vec2 SizeBegin, SizeEnd;
+			Math::vec4 ColorBegin, ColorEnd;
 			float Rotation = 0.0f;
-			float Lifetime = 1.0f;
+
+			float LifeTime = 1.0f;
+			float LifeRemaining = 0.0f;
+
+			bool Active = false;
 		};
 
 	public:
@@ -31,14 +42,16 @@ namespace Sparky {
 		const ParticleEmitterProperties& GetProperties() const { return m_Properties; }
 		ParticleEmitterProperties& GetProperties() { return m_Properties; }
 
-		const std::vector<Particle>& GetParticles() const { return m_Particles; }
+		const std::vector<Particle>& GetParticles() const { return m_ParticlePool; }
+
+		void Start();
+		void Stop();
 
 		void OnUpdate(TimeStep delta);
 
-		bool IsActive() const { return m_IsActive; }
+		void EmitParticle();
 
-		void Start() { m_IsActive = true; }
-		void Stop() { m_IsActive = false; }
+		bool IsActive() const { return m_IsActive; }
 
 		static SharedRef<ParticleEmitter> Create(const ParticleEmitterProperties& props);
 
@@ -47,7 +60,8 @@ namespace Sparky {
 
 	private:
 		ParticleEmitterProperties m_Properties;
-		std::vector<Particle> m_Particles;
+		std::vector<Particle> m_ParticlePool;
+		uint32_t m_PoolIndex = s_MaxParticles - 1;
 		bool m_IsActive = false;
 	};
 

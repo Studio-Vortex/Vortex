@@ -17,6 +17,7 @@
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/ParticleEmitter.h"
 
 #include "Sparky/Core/Log.h"
 
@@ -257,6 +258,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CircleRendererComponent>();
+	}
+
+	static void Entity_AddParticleEmitter(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<ParticleEmitterComponent>();
+	}
+
+	static void Entity_RemoveParticleEmitter(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<ParticleEmitterComponent>();
 	}
 
 	static void Entity_AddAudioSource(UUID entityUUID)
@@ -792,14 +813,14 @@ namespace Sparky {
 		entity.GetComponent<CircleRendererComponent>().Color = *color;
 	}
 
-	static void CircleRendererComponent_GetThickness(UUID entityUUID, float outThickness)
+	static void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
+		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
 	}
 
 	static void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
@@ -812,14 +833,14 @@ namespace Sparky {
 		entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
 	}
 
-	static void CircleRendererComponent_GetFade(UUID entityUUID, float outFade)
+	static void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outFade = entity.GetComponent<CircleRendererComponent>().Fade;
+		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
 	}
 
 	static void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
@@ -830,6 +851,210 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleRendererComponent>().Fade = fade;
+	}
+
+#pragma endregion
+
+#pragma region Particle Emitter Component
+
+	static void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
+	}
+
+	static void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
+	}
+
+	static void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
+	}
+
+	static void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
+	}
+
+	static void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
+	}
+
+	static void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
+	}
+
+	static void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
+	}
+
+	static void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
+	}
+
+	static void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
+	}
+
+	static void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
+	}
+
+	static void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
+	}
+
+	static void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
+	}
+
+	static void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
+	}
+
+	static void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
+	}
+
+	static void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
+	}
+
+	static void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
+	}
+
+	static void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
+	}
+
+	static void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
+	}
+
+	static void ParticleEmitterComponent_Start(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
+	}
+
+	static void ParticleEmitterComponent_Stop(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
 	}
 
 #pragma endregion
@@ -1055,14 +1280,14 @@ namespace Sparky {
 		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
 	}
 
-	static void BoxCollider2DComponent_GetDensity(UUID entityUUID, float outDensity)
+	static void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
+		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
 	}
 
 	static void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
@@ -1077,14 +1302,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
 	}
 
-	static void BoxCollider2DComponent_GetFriction(UUID entityUUID, float outFriction)
+	static void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
+		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
 	}
 
 	static void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
@@ -1097,14 +1322,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
 	}
 
-	static void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float outRestitution)
+	static void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
+		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
 	}
 
 	static void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
@@ -1117,14 +1342,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
 	}
 
-	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float outRestitutionThreshold)
+	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
+		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
 	}
 
 	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
@@ -1181,14 +1406,14 @@ namespace Sparky {
 		entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
 	}
 
-	static void CircleCollider2DComponent_GetDensity(UUID entityUUID, float outDensity)
+	static void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
+		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
 	}
 
 	static void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
@@ -1203,14 +1428,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
 	}
 
-	static void CircleCollider2DComponent_GetFriction(UUID entityUUID, float outFriction)
+	static void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
+		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
 	}
 
 	static void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
@@ -1223,14 +1448,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
 	}
 
-	static void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float outRestitution)
+	static void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
+		*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
 	}
 
 	static void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
@@ -1243,14 +1468,14 @@ namespace Sparky {
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
 	}
 
-	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float outRestitutionThreshold)
+	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
+		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
 	}
 
 	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
@@ -1609,6 +1834,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_AddCircleRenderer);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleRenderer);
 
+		SP_ADD_INTERNAL_CALL(Entity_AddParticleEmitter);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveParticleEmitter);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddAudioSource);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioSource);
 
@@ -1754,6 +1982,31 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitution);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
+
+#pragma endregion
+
+#pragma region Particle Emitter Component
+
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetVelocity);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetVelocity);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetVelocityVariation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetVelocityVariation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetSizeBegin);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetSizeBegin);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetSizeEnd);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetSizeEnd);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetSizeVariation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetSizeVariation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetColorBegin);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetColorBegin);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetColorEnd);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetColorEnd);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetRotation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetRotation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetLifeTime);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetLifeTime);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_Start);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_Stop);
 
 #pragma endregion
 

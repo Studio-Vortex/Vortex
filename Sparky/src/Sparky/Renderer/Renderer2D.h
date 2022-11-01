@@ -59,17 +59,17 @@ namespace Sparky {
 
 		// Rotation is in radians
 		static void DrawRotatedQuad(const Math::mat4& transform, const Math::vec3& color);
-		static void DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color);
+		static void DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color, int entityID = -1);
 		static void DrawRotatedQuad(const Math::mat4& transform, Color color = Color::White);
 
 		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor);
 		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor);
 		static void DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor = Color::White);
 
-		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color);
-		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color);
-		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color);
-		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color, int entityID = -1);
+		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, int entityID = -1);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color, int entityID = -1);
+		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color, int entityID = -1);
 
 		static void DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, Color color = Color::White);
 		static void DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, Color color = Color::White);

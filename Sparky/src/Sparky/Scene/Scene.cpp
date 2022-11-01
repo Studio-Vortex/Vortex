@@ -217,16 +217,31 @@ namespace Sparky {
 
 		ScriptEngine::OnRuntimeStop();
 
-		auto view = m_Registry.view<AudioSourceComponent>();
-
-		// Stop all audio sources in the scene
-		for (auto& e : view)
 		{
-			Entity entity{ e, this };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			
-			if (audioSource->IsPlaying())
-				audioSource->Stop();
+			auto view = m_Registry.view<AudioSourceComponent>();
+
+			// Stop all audio sources in the scene
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+				if (audioSource->IsPlaying())
+					audioSource->Stop();
+			}
+		}
+
+		{
+			auto view = m_Registry.view<ParticleEmitterComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
+
+				if (particleEmitter->IsActive())
+					particleEmitter->Stop();
+			}
 		}
 
 		OnPhysics2DStop();
@@ -430,7 +445,15 @@ namespace Sparky {
 			{
 				Entity entity{ e, this };
 				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
-				particleEmitter->OnUpdate(delta);
+
+				// Set the starting particle position to the entity's translation
+				particleEmitter->GetProperties().Position = entity.GetTransform().Translation;
+
+				if (particleEmitter->IsActive())
+				{
+					particleEmitter->OnUpdate(delta);
+					particleEmitter->EmitParticle();
+				}
 			}
 		}
 	}

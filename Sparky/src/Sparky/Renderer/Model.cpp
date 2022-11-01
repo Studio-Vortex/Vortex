@@ -38,6 +38,8 @@ namespace Sparky {
 						1.0f
 					};
 
+					vertexPosition = Math::Identity() * vertexPosition;
+
 					Math::vec3 vertexNormal = {
 						attributes.normals[3 * index.normal_index + 0],
 						attributes.normals[3 * index.normal_index + 1],
@@ -189,7 +191,7 @@ namespace Sparky {
 		uint32_t i = 0;
 		for (auto& vertex : m_Vertices)
 		{
-			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
+			vertex.Position = Math::Identity() * entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
 			vertex.Normal = Math::Normalize(Math::mat3(entityTransform) * m_OriginalVertices[i].Normal);
 			vertex.Color = color;
 			vertex.TexScale = scale;

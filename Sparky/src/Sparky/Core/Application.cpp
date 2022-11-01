@@ -44,6 +44,7 @@ namespace Sparky {
 		Renderer::Init();
 
 		ScriptEngine::Init();
+		Random::Init();
 
 		if (m_Properties.EnableGUI)
 		{

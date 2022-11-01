@@ -8,6 +8,7 @@
 #include "Sparky/Renderer/Model.h"
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/Skybox.h"
+#include "Sparky/Renderer/ParticleEmitter.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -367,6 +368,29 @@ namespace Sparky {
 			out << YAML::EndMap; // CircleRendererComponent
 		}
 
+		if (entity.HasComponent<ParticleEmitterComponent>())
+		{
+			out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
+
+			auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+
+			ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
+
+			out << YAML::Key << "ColorBegin" << YAML::Value << emitterProperties.ColorBegin;
+			out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
+			out << YAML::Key << "LifeTime" << YAML::Value << emitterProperties.LifeTime;
+			out << YAML::Key << "Position" << YAML::Value << emitterProperties.Position;
+			out << YAML::Key << "Rotation" << YAML::Value << emitterProperties.Rotation;
+			out << YAML::Key << "SizeBegin" << YAML::Value << emitterProperties.SizeBegin;
+			out << YAML::Key << "SizeEnd" << YAML::Value << emitterProperties.SizeEnd;
+			out << YAML::Key << "SizeVariation" << YAML::Value << emitterProperties.SizeVariation;
+			out << YAML::Key << "Velocity" << YAML::Value << emitterProperties.Velocity;
+			out << YAML::Key << "VelocityVariation" << YAML::Value << emitterProperties.VelocityVariation;
+
+			out << YAML::EndMap; // ParticleEmitterComponent
+		}
+
 		if (entity.HasComponent<AudioSourceComponent>())
 		{
 			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
@@ -684,6 +708,26 @@ namespace Sparky {
 					circleRendererComponent.Color = circleComponent["Color"].as<Math::vec4>();
 					circleRendererComponent.Thickness = circleComponent["Thickness"].as<float>();
 					circleRendererComponent.Fade = circleComponent["Fade"].as<float>();
+				}
+
+				auto particleEmitterComponent = entity["ParticleEmitterComponent"];
+				if (particleEmitterComponent)
+				{
+					auto& particleEmitter = deserializedEntity.AddComponent<ParticleEmitterComponent>();
+
+					ParticleEmitterProperties emitterProperties;
+					emitterProperties.ColorBegin = particleEmitterComponent["ColorBegin"].as<Math::vec4>();
+					emitterProperties.ColorEnd = particleEmitterComponent["ColorEnd"].as<Math::vec4>();
+					emitterProperties.LifeTime = particleEmitterComponent["LifeTime"].as<float>();
+					emitterProperties.Position = particleEmitterComponent["Position"].as<Math::vec3>();
+					emitterProperties.Rotation = particleEmitterComponent["Rotation"].as<float>();
+					emitterProperties.SizeBegin = particleEmitterComponent["SizeBegin"].as<Math::vec2>();
+					emitterProperties.SizeEnd = particleEmitterComponent["SizeEnd"].as<Math::vec2>();
+					emitterProperties.SizeVariation = particleEmitterComponent["SizeVariation"].as<Math::vec2>();
+					emitterProperties.Velocity = particleEmitterComponent["Velocity"].as<Math::vec3>();
+					emitterProperties.VelocityVariation = particleEmitterComponent["VelocityVariation"].as<Math::vec3>();
+
+					particleEmitter.Emitter = ParticleEmitter::Create(emitterProperties);
 				}
 
 				auto audioSourceComponent = entity["AudioSourceComponent"];

@@ -91,6 +91,12 @@ namespace Sparky {
 		internal extern static void Entity_RemoveCircleRenderer(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddParticleEmitter(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveParticleEmitter(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddAudioSource(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -272,6 +278,70 @@ namespace Sparky {
 
 		#endregion
 
+		#region ParticleEmitter
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetVelocity(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetVelocityVariation(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetVelocityVariation(ulong entityID, ref Vector3 velocityVariation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetSizeBegin(ulong entityID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetSizeBegin(ulong entityID, ref Vector2 sizeBegin);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetSizeEnd(ulong entityID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetSizeEnd(ulong entityID, ref Vector2 sizeEnd);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetSizeVariation(ulong entityID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetSizeVariation(ulong entityID, ref Vector2 sizeVariation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetColorBegin(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetColorBegin(ulong entityID, ref Vector4 colorBegin);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetColorEnd(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetColorEnd(ulong entityID, ref Vector4 colorEnd);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetRotation(ulong entityID, out float result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetRotation(ulong entityID, float rotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetLifeTime(ulong entityID, out float result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetLifeTime(ulong entityID, float lifetime);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_Start(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_Stop(ulong entityID);
+
+		#endregion
+
 		#region AudioSource
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -360,7 +430,7 @@ namespace Sparky {
 		internal extern static void CircleCollider2DComponent_SetOffset(ulong entityID, ref Vector2 offset);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CircleCollider2DComponent_GetRadius(ulong entityID, out float radius);
+		internal extern static void CircleCollider2DComponent_GetRadius(ulong entityID, out float result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CircleCollider2DComponent_SetRadius(ulong entityID, float radius);

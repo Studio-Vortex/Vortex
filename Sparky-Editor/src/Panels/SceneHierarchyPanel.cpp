@@ -1122,6 +1122,18 @@ namespace Sparky {
 		{
 			SharedRef<ParticleEmitter> particleEmitter = component.Emitter;
 
+			ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+
+			Gui::DragFloat3("Velocity", Math::ValuePtr(emitterProperties.Velocity), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::DragFloat3("Velocity Variation", Math::ValuePtr(emitterProperties.VelocityVariation), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::DragFloat2("Size Start", Math::ValuePtr(emitterProperties.SizeBegin), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::DragFloat2("Size End", Math::ValuePtr(emitterProperties.SizeEnd), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::DragFloat2("Size Variation", Math::ValuePtr(emitterProperties.SizeVariation), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::ColorEdit4("Color Start", Math::ValuePtr(emitterProperties.ColorBegin));
+			Gui::ColorEdit4("Color End", Math::ValuePtr(emitterProperties.ColorEnd));
+			Gui::DragFloat("Rotation", &emitterProperties.Rotation, 0.1f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat("Lifetime", &emitterProperties.LifeTime, 0.25f, 0.1f, 0.0f, "%.2f");
+
 			if (Gui::Button("Start"))
 				particleEmitter->Start();
 			Gui::SameLine();

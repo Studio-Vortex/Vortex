@@ -1,5 +1,5 @@
-﻿namespace Sparky
-{
+﻿namespace Sparky {
+
 	public abstract class Component
 	{
 		public Entity Entity { get; internal set; }
@@ -207,7 +207,7 @@
 
 	public enum MeshType
 	{
-		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus
+		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
 	}
 
 	public class MeshRenderer : Component
@@ -580,6 +580,145 @@
 			{
 				InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
 			}
+		}
+	}
+
+	public class ParticleEmitter : Component
+	{
+		public Vector3 Velocity
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetVelocity(Entity.ID, out Vector3 velocity);
+				return velocity;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetVelocity(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 VelocityVariation
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetVelocityVariation(Entity.ID, out Vector3 velocityVariation);
+				return velocityVariation;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetVelocityVariation(Entity.ID, ref value);
+			}
+		}
+
+		public Vector2 SizeBegin
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetSizeBegin(Entity.ID, out Vector2 sizeBegin);
+				return sizeBegin;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetSizeBegin(Entity.ID, ref value);
+			}
+		}
+
+		public Vector2 SizeEnd
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetSizeEnd(Entity.ID, out Vector2 sizeEnd);
+				return sizeEnd;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetSizeEnd(Entity.ID, ref value);
+			}
+		}
+
+		public Vector2 SizeVariation
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetSizeVariation(Entity.ID, out Vector2 sizeVariation);
+				return sizeVariation;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetSizeVariation(Entity.ID, ref value);
+			}
+		}
+
+		public Vector4 ColorBegin
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetColorBegin(Entity.ID, out Vector4 colorBegin);
+				return colorBegin;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetColorBegin(Entity.ID, ref value);
+			}
+		}
+
+		public Vector4 ColorEnd
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetColorEnd(Entity.ID, out Vector4 colorEnd);
+				return colorEnd;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetColorEnd(Entity.ID, ref value);
+			}
+		}
+
+		public float Rotation
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetRotation(Entity.ID, out float rotation);
+				return rotation;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetRotation(Entity.ID, value);
+			}
+		}
+
+		public float LifeTime
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetLifeTime(Entity.ID, out float lifetime);
+				return lifetime;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetLifeTime(Entity.ID, value);
+			}
+		}
+
+		public void Start()
+		{
+			InternalCalls.ParticleEmitterComponent_Start(Entity.ID);
+		}
+
+		public void Stop()
+		{
+			InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
 		}
 	}
 

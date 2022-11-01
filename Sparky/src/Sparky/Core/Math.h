@@ -8,6 +8,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/hash.hpp>
 
@@ -51,6 +52,18 @@ namespace Sparky::Math {
 	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
 	{
 		return glm::ortho<T>(left, right, bottom, top, zNear, zFar);
+	}
+
+	template <typename T, typename Z>
+	static auto Lerp(T v, T v1, Z z)
+	{
+		return glm::lerp(v, v1, z);
+	}
+
+	template <typename T, typename Z>
+	static auto Slerp(T v, T v1, Z z)
+	{
+		return glm::slerp(v, v1, z);
 	}
 
 	static auto Translate(const vec3& translation)

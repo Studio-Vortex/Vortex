@@ -52,22 +52,19 @@ namespace Sparky {
 
 					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
 					
-					if (particleEmitter->IsActive())
+					if (!particleEmitter->IsActive())
+						continue;
+
+					const auto& particles = particleEmitter->GetParticles();
+
+					for (auto& particle : particles)
 					{
-						std::vector<ParticleEmitter::Particle> particles = particleEmitter->GetParticles();
-						const ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
-						for (auto& particle : particles)
+						if (particle.Active)
 						{
-							switch (emitterProperties.Type)
-							{
-								case ParticleEmitterProperties::PrimitiveType::Quad:
-									Renderer2D::DrawQuad(particle.Position, particle.Size, particle.Color, (int)(entt::entity)entity);
-									break;
-								case ParticleEmitterProperties::PrimitiveType::Circle:
-									Math::mat4 transform = Math::Identity() * Math::Translate(particle.Position) * Math::Scale({ particle.Size.x, particle.Size.y, 1.0f });
-									Renderer2D::DrawCircle(transform, particle.Color, 1.0f, 0.005f, (int)(entt::entity)entity);
-									break;
-							}
+							float life = particle.LifeRemaining / particle.LifeTime;
+							Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
+							Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
+							Renderer2D::DrawRotatedQuad(particle.Position, size, particle.Rotation, color, (int)(entt::entity)entity);
 						}
 					}
 				}

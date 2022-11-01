@@ -565,7 +565,7 @@ namespace Sparky
 		DrawRotatedQuad(transform, { color.r, color.g, color.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color, int entityID)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -577,7 +577,7 @@ namespace Sparky
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
-		AddToQuadVertexBuffer(transform, color, textureCoords, textureIndex, textureScale);
+		AddToQuadVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, Color color)
@@ -628,22 +628,22 @@ namespace Sparky
 		DrawRotatedQuad(transform, texture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec3& color, int entityID)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, { color.r, color.g, color.b, 1.0f });
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, { color.r, color.g, color.b, 1.0f }, entityID);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, int entityID)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color, entityID);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec3& color, int entityID)
 	{
-		DrawRotatedQuad(position, size, rotation, { color.r, color.g, color.b, 1.0f });
+		DrawRotatedQuad(position, size, rotation, { color.r, color.g, color.b, 1.0f }, entityID);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const Math::vec4& color, int entityID)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
 		DrawRotatedQuad(transform, color);
