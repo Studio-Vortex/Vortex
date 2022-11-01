@@ -797,6 +797,7 @@ namespace Sparky {
 		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
 
 		switch (e.GetKeyCode())
 		{
@@ -871,7 +872,7 @@ namespace Sparky {
 
 			case Key::F:
 			{
-				if (m_SceneHierarchyPanel.GetSelectedEntity())
+				if (m_SceneHierarchyPanel.GetSelectedEntity() && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 					m_EditorCamera.MoveToPosition(selectedEntity.GetTransform().Translation);
@@ -953,14 +954,32 @@ namespace Sparky {
 			case Key::W:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					if (altPressed)
+					{
+						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.Translation = Math::vec3(0.0f);
+					}
+
 					OnTranslationToolSelected();
+				}
 
 				break;
 			}
 			case Key::E:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					if (altPressed)
+					{
+						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.Rotation = Math::vec3(0.0f);
+					}
+
 					OnRotationToolSelected();
+				}
 
 				break;
 			}
@@ -970,7 +989,16 @@ namespace Sparky {
 					ScriptEngine::ReloadAssembly();
 
 				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					if (altPressed)
+					{
+						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.Scale = Math::vec3(1.0f);
+					}
+
 					OnScaleToolSelected();
+				}
 
 				break;
 			}

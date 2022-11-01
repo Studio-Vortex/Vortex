@@ -80,6 +80,7 @@ namespace Sparky {
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
+		void OnModelUpdate();
 		void OnParticleEmitterUpdate(TimeStep delta);
 
 		void OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);

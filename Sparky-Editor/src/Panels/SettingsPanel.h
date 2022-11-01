@@ -17,7 +17,6 @@ namespace Sparky {
 			uint32_t& FrameStepCount;
 			bool& DrawEditorGrid;
 			bool& DrawEditorAxes;
-			bool& DrawEditorCubemap;
 			float& EditorCameraFOV;
 			Math::vec3& ClearColor;
 

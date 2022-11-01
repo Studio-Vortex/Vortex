@@ -275,7 +275,7 @@ namespace Sparky {
 				m_StepFrames--;
 		}
 
-		// Render Primitives
+		// Render
 		SceneCamera* primarySceneCamera = nullptr;
 		Math::mat4 primarySceneCameraTransform;
 
@@ -292,9 +292,8 @@ namespace Sparky {
 		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (primarySceneCamera != nullptr)
 			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, primarySceneCameraTransform, m_Registry);
-
-		// TODO: Update Audio here
-
+		
+		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
 	}
 
@@ -314,10 +313,11 @@ namespace Sparky {
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
-		OnParticleEmitterUpdate(delta);
-
 		// Render
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
+
+		OnModelUpdate();
+		OnParticleEmitterUpdate(delta);
 	}
 
 	void Scene::OnUpdateEntityGui()
@@ -405,6 +405,19 @@ namespace Sparky {
 		}
 
 		return Entity{};
+	}
+
+	void Scene::OnModelUpdate()
+	{
+		auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
+
+		for (auto& entity : view)
+		{
+			auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
+
+			SharedRef<Model> model = meshRendererComponent.Mesh;
+			model->OnUpdate(transformComponent, meshRendererComponent.Color, meshRendererComponent.Scale);
+		}
 	}
 
 	void Scene::OnParticleEmitterUpdate(TimeStep delta)

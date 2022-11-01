@@ -177,7 +177,6 @@ namespace Sparky {
 		SharedRef<Texture2D> texture = (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture;
 		SharedRef<Model> model = meshRenderer.Mesh;
 
-		model->OnUpdate(transform, meshRenderer.Color, meshRenderer.Scale);
 		texture->Bind();
 
 		SharedRef<Shader> shader;

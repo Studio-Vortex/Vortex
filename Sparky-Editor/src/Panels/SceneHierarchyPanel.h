@@ -42,7 +42,8 @@ namespace Sparky {
 	private:
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;
-		ImGuiTextFilter m_SearchInputTextFilter;
+		ImGuiTextFilter m_EntitySearchInputTextFilter;
+		ImGuiTextFilter m_ComponentSearchInputTextFilter;
 		bool m_EntityShouldBeRenamed = false;
 		bool m_EntityShouldBeDestroyed = false;
 	};

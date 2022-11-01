@@ -26,8 +26,8 @@ namespace Sparky {
 		m_EntityShouldBeDestroyed = false;
 
 		// We should reset the search bar here
-		memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-		m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
+		m_EntitySearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
@@ -39,9 +39,9 @@ namespace Sparky {
 			// Search Bar + Filtering
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
-			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
 			if (isSearching)
-				m_SearchInputTextFilter.Build();
+				m_EntitySearchInputTextFilter.Build();
 
 			Gui::SameLine();
 
@@ -79,7 +79,7 @@ namespace Sparky {
 						Entity entity{ entityID, m_ContextScene.get() };
 
 						// If the name lines up with the search box we can show it
-						if (m_SearchInputTextFilter.PassFilter(entity.GetName().c_str()))
+						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
 							DrawEntityNode(entity);
 					});
 
@@ -571,25 +571,72 @@ namespace Sparky {
 		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
 		if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
+		{
 			Gui::OpenPopup("AddComponent");
+
+			// We should reset the search bar here
+			memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+		}
 
 		if (Gui::BeginPopup("AddComponent"))
 		{
-			DisplayAddComponentPopup<TransformComponent>("Transform");
-			DisplayAddComponentPopup<CameraComponent>("Camera");
-			DisplayAddComponentPopup<SkyboxComponent>("Skybox");
-			DisplayAddComponentPopup<LightSourceComponent>("Light Source");
-			DisplayAddComponentPopup<MeshRendererComponent>("Mesh Renderer");
-			DisplayAddComponentPopup<SpriteRendererComponent>("Sprite Renderer");
-			DisplayAddComponentPopup<CircleRendererComponent>("Circle Renderer");
-			DisplayAddComponentPopup<ParticleEmitterComponent>("Particle Emitter");
-			DisplayAddComponentPopup<AudioSourceComponent>("Audio Source");
-			DisplayAddComponentPopup<AudioListenerComponent>("Audio Listener");
-			DisplayAddComponentPopup<RigidBody2DComponent>("RigidBody 2D");
-			DisplayAddComponentPopup<BoxCollider2DComponent>("Box Collider 2D");
-			DisplayAddComponentPopup<CircleCollider2DComponent>("Circle Collider 2D");
-			DisplayAddComponentPopup<ScriptComponent>("C# Script");
-			DisplayAddComponentPopup<NativeScriptComponent>("C++ Script", true);
+			// Search Bar + Filtering
+			bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			if (isSearching)
+				m_ComponentSearchInputTextFilter.Build();
+
+			Gui::Spacing();
+			Gui::Separator();
+
+			static const char* componentNames[] = {
+				"Camera",
+				"Skybox",
+				"Light Source",
+				"Mesh Renderer",
+				"Sprite Renderer",
+				"Circle Renderer",
+				"Particle Emitter",
+				"Audio Source",
+				"Audio Listener",
+				"RigidBody 2D",
+				"Box Collider 2D",
+				"Circle Collider 2D",
+				"C# Script",
+				"C++ Script"
+			};
+
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[0]))
+				DisplayAddComponentPopup<CameraComponent>(componentNames[0]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[1]))
+				DisplayAddComponentPopup<SkyboxComponent>(componentNames[1]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[2]))
+				DisplayAddComponentPopup<LightSourceComponent>(componentNames[2]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[3]))
+				DisplayAddComponentPopup<MeshRendererComponent>(componentNames[3]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[4]))
+				DisplayAddComponentPopup<SpriteRendererComponent>(componentNames[4]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[5]))
+				DisplayAddComponentPopup<CircleRendererComponent>(componentNames[5]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[6]))
+				DisplayAddComponentPopup<ParticleEmitterComponent>(componentNames[6]);
+
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[7]))
+				DisplayAddComponentPopup<AudioSourceComponent>(componentNames[7]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[8]))
+				DisplayAddComponentPopup<AudioListenerComponent>(componentNames[8]);
+
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[9]))
+				DisplayAddComponentPopup<RigidBody2DComponent>(componentNames[9]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[10]))
+			DisplayAddComponentPopup<BoxCollider2DComponent>(componentNames[10]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[11]))
+				DisplayAddComponentPopup<CircleCollider2DComponent>(componentNames[11]);
+
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[12]))
+				DisplayAddComponentPopup<ScriptComponent>(componentNames[12]);
+			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[13]))
+				DisplayAddComponentPopup<NativeScriptComponent>(componentNames[13], true);
 
 			Gui::EndPopup();
 		}
@@ -1212,20 +1259,20 @@ namespace Sparky {
 							component.Source->SetCone(props.Cone);
 						}
 
+						Gui::Spacing();
+
+						if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f))
+							component.Source->SetMinDistance(props.MinDistance);
+
+						if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f))
+							component.Source->SetMaxDistance(props.MaxDistance);
+
+						if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
+							component.Source->SetDopplerFactor(props.DopplerFactor);
+
 						Gui::Indent();
 						Gui::TreePop();
 					}
-
-					Gui::Spacing();
-
-					if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f))
-						component.Source->SetMinDistance(props.MinDistance);
-
-					if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f))
-						component.Source->SetMaxDistance(props.MaxDistance);
-
-					if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
-						component.Source->SetDopplerFactor(props.DopplerFactor);
 
 					Gui::Indent();
 					Gui::TreePop();

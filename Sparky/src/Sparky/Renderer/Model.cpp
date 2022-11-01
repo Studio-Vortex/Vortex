@@ -189,9 +189,12 @@ namespace Sparky {
 		uint32_t i = 0;
 		for (auto& vertex : m_Vertices)
 		{
-			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i++].Position, 1.0f);
+			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
+			vertex.Normal = Math::Normalize(Math::mat3(entityTransform) * m_OriginalVertices[i].Normal);
 			vertex.Color = color;
 			vertex.TexScale = scale;
+
+			i++;
 		}
 
 		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);

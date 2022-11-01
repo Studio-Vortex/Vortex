@@ -221,7 +221,6 @@ namespace Sparky {
 					Gui::DragScalar("Frame Step Count", ImGuiDataType_U32, &m_Settings.FrameStepCount);
 					Gui::Checkbox("Draw Editor Grid", &m_Settings.DrawEditorGrid);
 					Gui::Checkbox("Draw Editor Axes", &m_Settings.DrawEditorAxes);
-					Gui::Checkbox("Draw Editor Cubemap", &m_Settings.DrawEditorCubemap);
 
 					Gui::Spacing();
 
