@@ -91,14 +91,46 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Renderer
+#pragma region DebugRenderer
 
-	static void Renderer_SetClearColor(Math::vec3* color)
+	static void DebugRenderer_SetClearColor(Math::vec3* color)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		RenderCommand::SetClearColor(*color);
+	}
+
+	static void DebugRenderer_BeginScene()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Entity primaryCamera = contextScene->GetPrimaryCameraEntity();
+
+		if (primaryCamera)
+		{
+			SceneCamera& camera = primaryCamera.GetComponent<CameraComponent>().Camera;
+			Renderer2D::BeginScene(camera, primaryCamera.GetTransform().GetTransform());
+		}
+	}
+
+	static void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
+	{
+		Renderer2D::DrawLine(*p1, *p2, *color);
+	}
+
+	static void DebugRenderer_DrawQuad(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
+	{
+		Renderer2D::DrawQuad(*translation, *size, *color);
+	}
+
+	static void DebugRenderer_Flush()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Renderer2D::EndScene();
 	}
 
 #pragma endregion
@@ -508,6 +540,45 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TransformComponent>().Scale = *scale;
+	}
+
+	static void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outForwardDirection)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::vec3 forwardDirection(0.0f, 0.0f, -1.0f);
+		*outForwardDirection = Math::Rotate(orientation, forwardDirection);
+	}
+
+	static void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outRightDirection)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::vec3 rightDirection(1.0f, 0.0f, 0.0f);
+		*outRightDirection = Math::Rotate(orientation, rightDirection);
+	}
+
+	static void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outUpDirection)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+		*outUpDirection = Math::Rotate(orientation, upDirection);
 	}
 
 #pragma endregion
@@ -1531,10 +1602,14 @@ namespace Sparky {
 
 #pragma region Algebra
 
-	static Math::vec3* Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right)
+	static void Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
 	{
-		Math::vec3 result = Math::Cross(*left, *right);
-		return &result;
+		*outResult = Math::Cross(*left, *right);
+	}
+
+	static float Algebra_DotProductVec3(Math::vec3* left, Math::vec3* right)
+	{
+		return Math::Dot(*left, *right);
 	}
 
 #pragma endregion
@@ -1795,9 +1870,12 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Renderer
+#pragma region Debug Renderer
 
-		SP_ADD_INTERNAL_CALL(Renderer_SetClearColor);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_BeginScene);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
 #pragma endregion
 
@@ -1868,6 +1946,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetForwardDirection);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 
 #pragma endregion
 
@@ -2020,6 +2101,7 @@ namespace Sparky {
 #pragma region Algebra
 
 		SP_ADD_INTERNAL_CALL(Algebra_CrossProductVec3);
+		SP_ADD_INTERNAL_CALL(Algebra_DotProductVec3);
 
 #pragma endregion
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration.Assemblies;
 using System.Runtime.CompilerServices;
 
 namespace Sparky {
@@ -28,10 +29,22 @@ namespace Sparky {
 
 		#endregion
 
-		#region Renderer
+		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Renderer_SetClearColor(ref Vector3 color);
+		internal extern static void DebugRenderer_SetClearColor(ref Vector3 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_BeginScene();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawLine(ref Vector3 p1, ref Vector3 p2, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawQuad(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_Flush();
 
 		#endregion
 
@@ -162,6 +175,15 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetForwardDirection(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetRightDirection(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetUpDirection(ulong entityID, out Vector3 result);
 
 		#endregion
 
@@ -474,7 +496,10 @@ namespace Sparky {
 		#region Algebra
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static Vector3 Algebra_CrossProductVec3(ref Vector3 left, ref Vector3 right);
+		internal extern static void Algebra_CrossProductVec3(ref Vector3 left, ref Vector3 right, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Algebra_DotProductVec3(ref Vector3 left, ref Vector3 right);
 
 		#endregion
 

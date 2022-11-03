@@ -28,14 +28,14 @@ namespace Sandbox {
 				Application.Shutdown();
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				m_Velocity.Z = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
+				transform.Translate(-transform.Forward * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				m_Velocity.Z = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
+				transform.Translate(-transform.Forward * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				m_Velocity.X = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftX);
+				transform.Translate(transform.Right * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				m_Velocity.X = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftX);
+				transform.Translate(transform.Right * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 
 			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
 				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);

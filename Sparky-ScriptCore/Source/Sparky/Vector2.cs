@@ -47,6 +47,16 @@
 			return new Vector2(vector.X * other.X, vector.Y * other.Y);
 		}
 
+		public static Vector2 operator +(Vector2 vector, float scalar)
+		{
+			return new Vector2(vector.X + scalar, vector.Y + scalar);
+		}
+
+		public static Vector2 operator -(Vector2 vector, float scalar)
+		{
+			return new Vector2(vector.X - scalar, vector.Y - scalar);
+		}
+
 		public static Vector2 operator *(Vector2 vector, float scalar)
 		{
 			return new Vector2(vector.X * scalar, vector.Y * scalar);

@@ -306,7 +306,7 @@ namespace Sparky {
 
 		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (primarySceneCamera != nullptr)
-			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, primarySceneCameraTransform, m_Registry);
+			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, GetPrimaryCameraEntity().GetTransform(), m_Registry);
 		
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);

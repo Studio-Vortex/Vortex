@@ -34,7 +34,7 @@ void main()
 	
 	f_EntityID = a_EntityID;
 	
-	gl_Position = u_Projection * u_View * vec4(f_Position, 1.0);
+	gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
 }
 
 
@@ -119,7 +119,8 @@ void main()
 	if (fragColor.a == 0.0)
 		discard;
 
-	o_Color = vec4(lightResult * u_PointLight.Color * fragColor.rbg, fragColor.a);
+	vec4 finalColor = vec4(lightResult * u_PointLight.Color * fragColor.rbg, fragColor.a);
 
+	o_Color = finalColor;
 	o_EntityID = f_EntityID;
 }

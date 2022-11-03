@@ -123,14 +123,31 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Dot(T v1, T v2)
+	{
+		return glm::dot(v1, v2);
+	}
+
+	template <typename T>
 	static auto Quaternion(T v)
 	{
 		return glm::quat(v);
 	}
 
-	static auto Inverse(const mat4& matrix)
+	static quaternion GetOrientation(float pitch, float yaw, float roll)
 	{
-		return glm::inverse(matrix);
+		return quaternion(vec3(pitch, yaw, roll));
+	}
+
+	static auto Transpose(const mat4& matrix)
+	{
+		return glm::transpose(matrix);
+	}
+
+	template <typename T>
+	static auto Inverse(const T& v)
+	{
+		return glm::inverse(v);
 	}
 
 	static auto Identity()

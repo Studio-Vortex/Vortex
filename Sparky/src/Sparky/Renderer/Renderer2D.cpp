@@ -847,11 +847,11 @@ namespace Sparky
 
     std::vector<SharedRef<Shader>> Renderer2D::GetLoadedShaders()
     {
-		std::vector<SharedRef<Shader>> result;
-		result.push_back(s_Data.QuadShader);
-		result.push_back(s_Data.CircleShader);
-		result.push_back(s_Data.LineShader);
-		return result;
+		std::vector<SharedRef<Shader>> shaders;
+		shaders.push_back(s_Data.QuadShader);
+		shaders.push_back(s_Data.CircleShader);
+		shaders.push_back(s_Data.LineShader);
+		return shaders;
     }
 
 }

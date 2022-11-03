@@ -13,7 +13,8 @@ namespace Sparky {
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 
-	static constexpr const char* LIGHT_SOURCE_TEXTURE_PATH = "Resources/Icons/Scene/LightSource.png";
+	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
+	static constexpr const char* LIGHT_SOURCE_ICON_PATH = "Resources/Icons/Scene/LightSourceIcon.png";
 
 	struct RendererInternalData
 	{
@@ -37,7 +38,8 @@ namespace Sparky {
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
 		// Editor Resources
-		SharedRef<Texture2D> LightSourceTexture = nullptr;
+		SharedRef<Texture2D> CameraIcon = nullptr;
+		SharedRef<Texture2D> LightSourceIcon = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -60,7 +62,8 @@ namespace Sparky {
 
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
 
-		s_Data.LightSourceTexture = Texture2D::Create(LIGHT_SOURCE_TEXTURE_PATH);
+		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
+		s_Data.LightSourceIcon = Texture2D::Create(LIGHT_SOURCE_ICON_PATH);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -81,13 +84,13 @@ namespace Sparky {
 		RenderCommand::SetViewport(viewport);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const Math::mat4& transform)
+	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform)
 	{
 		SP_PROFILE_FUNCTION();
 
 		Math::mat4 projection = camera.GetProjection();
-		Math::mat4 view = Math::Inverse(transform);
-		Math::vec3 cameraPosition = Math::vec3(Math::Inverse(transform)[0][3]);
+		Math::mat4 view = Math::Inverse(transform.GetTransform());
+		Math::vec3 cameraPosition = transform.Translation;
 
 		BindShaders(view, projection, cameraPosition);
 	}
@@ -133,6 +136,11 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, const CameraComponent& light, int entityID)
+	{
+		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+	}
+
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, int entityID)
 	{
 		SharedRef<LightSource> lightSource = light.Source;
@@ -167,7 +175,7 @@ namespace Sparky {
 			}
 		}
 
-		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceTexture, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
 
 	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
@@ -286,12 +294,12 @@ namespace Sparky {
 
     std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()
     {
-		std::vector<SharedRef<Shader>> result;
-		result.push_back(s_Data.ModelShader);
-		result.push_back(s_Data.ReflectiveShader);
-		result.push_back(s_Data.RefractiveShader);
-		result.push_back(s_Data.SkyboxShader);
-		return result;
+		std::vector<SharedRef<Shader>> shaders;
+		shaders.push_back(s_Data.ModelShader);
+		shaders.push_back(s_Data.ReflectiveShader);
+		shaders.push_back(s_Data.RefractiveShader);
+		shaders.push_back(s_Data.SkyboxShader);
+		return shaders;
     }
 
 }

@@ -74,6 +74,16 @@
 			return new Vector4(vector.X * other.X, vector.Y * other.Y, vector.Z * other.Z, vector.W * other.W);
 		}
 
+		public static Vector4 operator +(Vector4 vector, float scalar)
+		{
+			return new Vector4(vector.X + scalar, vector.Y + scalar, vector.Z + scalar, vector.W + scalar);
+		}
+
+		public static Vector4 operator -(Vector4 vector, float scalar)
+		{
+			return new Vector4(vector.X - scalar, vector.Y - scalar, vector.Z - scalar, vector.W - scalar);
+		}
+
 		public static Vector4 operator *(Vector4 vector, float scalar)
 		{
 			return new Vector4(vector.X * scalar, vector.Y * scalar, vector.Z * scalar, vector.W * scalar);

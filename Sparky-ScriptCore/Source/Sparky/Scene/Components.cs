@@ -45,6 +45,33 @@
 			}
 		}
 
+		public Vector3 Forward
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetForwardDirection(Entity.ID, out Vector3 forward);
+				return forward;
+			}
+		}
+
+		public Vector3 Right
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetRightDirection(Entity.ID, out Vector3 right);
+				return right;
+			}
+		}
+
+		public Vector3 Up
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetUpDirection(Entity.ID, out Vector3 up);
+				return up;
+			}
+		}
+
 		/// <summary>
 		/// Sets the scale of the entity
 		/// </summary>

@@ -48,6 +48,16 @@
 			}
 		}
 
+		public static Vector3 Cross(Vector3 left, Vector3 right)
+		{
+			InternalCalls.Algebra_CrossProductVec3(ref left, ref right, out Vector3 result);
+			return result;
+		}
+		public static float Dot(Vector3 left, Vector3 right)
+		{
+			return InternalCalls.Algebra_DotProductVec3(ref left, ref right);
+		}
+
 		public static Vector3 operator -(Vector3 vector)
 		{
 			return new Vector3(-vector.X, -vector.Y, -vector.Z);
@@ -66,6 +76,16 @@
 		public static Vector3 operator *(Vector3 vector, Vector3 other)
 		{
 			return new Vector3(vector.X * other.X, vector.Y * other.Y, vector.Z * other.Z);
+		}
+
+		public static Vector3 operator +(Vector3 vector, float scalar)
+		{
+			return new Vector3(vector.X + scalar, vector.Y + scalar, vector.Z + scalar);
+		}
+
+		public static Vector3 operator -(Vector3 vector, float scalar)
+		{
+			return new Vector3(vector.X - scalar, vector.Y - scalar, vector.Z - scalar);
 		}
 
 		public static Vector3 operator *(Vector3 vector, float scalar)

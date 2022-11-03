@@ -34,7 +34,6 @@ namespace Sparky {
 		Math::vec3 GetRightDirection() const;
 		Math::vec3 GetForwardDirection() const;
 		const Math::vec3& GetPosition() const { return m_Position; }
-		Math::quaternion GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }

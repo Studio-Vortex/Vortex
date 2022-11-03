@@ -9,14 +9,19 @@
 namespace Sparky {
 
 	template <typename TCamera>
-	static void RenderScene(TCamera& activeCamera, const Math::mat4& sceneCameraTransform, entt::registry& sceneRegistry)
+	static void RenderScene(TCamera& activeCamera, const TransformComponent& sceneCameraTransform, entt::registry& sceneRegistry)
 	{
 		// Render 2D
 		{
+			bool sceneCamera = false;
+
 			if (typeid(TCamera).name() == typeid(EditorCamera).name())
 				Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(activeCamera));
 			else
-				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform);
+			{
+				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform.GetTransform());
+				sceneCamera = true;
+			}
 
 			// Render Sprites
 			{
@@ -59,13 +64,39 @@ namespace Sparky {
 
 					for (auto& particle : particles)
 					{
-						if (particle.Active)
-						{
-							float life = particle.LifeRemaining / particle.LifeTime;
-							Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
-							Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
-							Renderer2D::DrawRotatedQuad(particle.Position, size, particle.Rotation, color, (int)(entt::entity)entity);
-						}
+						if (!particle.Active)
+							continue;
+
+						float life = particle.LifeRemaining / particle.LifeTime;
+						Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
+						Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
+						Renderer2D::DrawRotatedQuad(particle.Position, size, particle.Rotation, color, (int)(entt::entity)entity);
+					}
+				}
+			}
+
+			// Render Scene Icons
+			if (!sceneCamera)
+			{
+				{
+					auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
+
+					for (const auto entity : view)
+					{
+						auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
+
+						Renderer::RenderLightSource(transformComponent, lightSourceComponent, (int)(entt::entity)entity);
+					}
+				}
+
+				{
+					auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+
+					for (const auto entity : view)
+					{
+						auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+
+						Renderer::RenderCameraIcon(transformComponent, cameraComponent, (int)(entt::entity)entity);
 					}
 				}
 			}
@@ -87,29 +118,10 @@ namespace Sparky {
 				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
 				Renderer::BeginScene(sceneCamera, sceneCameraTransform);
 
-				Math::mat4 view = Math::Inverse(sceneCameraTransform);
+				Math::mat4 view = Math::Inverse(sceneCameraTransform.GetTransform());
 				Math::mat4 projection = sceneCamera.GetProjection();
 
 				SceneRenderer::RenderSkybox(view, projection, sceneRegistry);
-			}
-
-			// Render Lights
-			{
-				auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
-
-				if (typeid(TCamera).name() == typeid(EditorCamera).name())
-					Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(activeCamera));
-				else
-					Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform);
-				
-				for (const auto entity : view)
-				{
-					auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
-
-					Renderer::RenderLightSource(transformComponent, lightSourceComponent, (int)(entt::entity)entity);
-				}
-
-				Renderer2D::EndScene();
 			}
 
 			// Render Meshes
@@ -129,14 +141,14 @@ namespace Sparky {
 		}
 	}
 
-	void SceneRenderer::RenderFromSceneCamera(SceneCamera* sceneCamera, const Math::mat4& cameraTransform, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderFromSceneCamera(SceneCamera* sceneCamera, const TransformComponent& cameraTransform, entt::registry& sceneRegistry)
 	{
 		RenderScene(*sceneCamera, cameraTransform, sceneRegistry);
 	}
 
 	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry)
 	{
-		RenderScene(editorCamera, Math::Identity(), sceneRegistry);
+		RenderScene(editorCamera, TransformComponent(), sceneRegistry);
 	}
 
 	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, entt::registry& sceneRegistry)

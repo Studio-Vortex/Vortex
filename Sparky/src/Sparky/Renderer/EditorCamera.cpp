@@ -24,9 +24,9 @@ namespace Sparky {
 		if (s_LockEditorCameraRotation)
 			m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 
-		m_Position = CalcualtePosition(); 
+		m_Position = CalcualtePosition();
 
-		Math::quaternion orientation = GetOrientation();
+		Math::quaternion orientation = Math::GetOrientation(-m_Pitch, -m_Yaw, 0.0f);
 		m_ViewMatrix = Math::Translate(m_Position) * Math::ToMat4(orientation);
 		m_ViewMatrix = Math::Inverse(m_ViewMatrix);
 	}
@@ -202,27 +202,22 @@ namespace Sparky {
 
 	Math::vec3 EditorCamera::GetUpDirection() const
 	{
-		return Math::Rotate(GetOrientation(), Math::vec3(0.0f, 1.0f, 0.0f));
+		return Math::Rotate(Math::GetOrientation(-m_Pitch, -m_Yaw, 0.0f), Math::vec3(0.0f, 1.0f, 0.0f));
 	}
 
 	Math::vec3 EditorCamera::GetRightDirection() const
 	{
-		return Math::Rotate(GetOrientation(), Math::vec3(1.0f, 0.0f, 0.0f));
+		return Math::Rotate(Math::GetOrientation(-m_Pitch, -m_Yaw, 0.0f), Math::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 	Math::vec3 EditorCamera::GetForwardDirection() const
 	{
-		return Math::Rotate(GetOrientation(), Math::vec3(0.0f, 0.0f, -1.0f));
+		return Math::Rotate(Math::GetOrientation(-m_Pitch, -m_Yaw, 0.0f), Math::vec3(0.0f, 0.0f, -1.0f));
 	}
 
 	Math::vec3 EditorCamera::CalcualtePosition() const
 	{
 		return m_FocalPoint - GetForwardDirection() * m_Distance;
-	}
-
-	Math::quaternion EditorCamera::GetOrientation() const
-	{
-		return Math::quaternion(Math::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
 
 }
