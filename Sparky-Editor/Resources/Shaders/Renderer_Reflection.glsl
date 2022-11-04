@@ -8,14 +8,12 @@
 
 layout (location = 0) in vec3  a_Position; // Vertex position
 layout (location = 1) in vec3  a_Normal;   // Vertex normal
-layout (location = 2) in vec4  a_Color;    // Vertex color
-layout (location = 3) in vec2  a_TexCoord; // Vertex texture coordinate
-layout (location = 4) in vec2  a_TexScale; // Texture scale
-layout (location = 5) in int   a_EntityID; // Vertex Entity ID
+layout (location = 2) in vec2  a_TexCoord; // Vertex texture coordinate
+layout (location = 3) in vec2  a_TexScale; // Texture scale
+layout (location = 4) in int   a_EntityID; // Vertex Entity ID
 
 out vec3       f_Position;
 out vec3       f_Normal;
-out vec4       f_Color;
 out vec2       f_TexCoord;
 out vec2       f_TexScale;
 out flat int   f_EntityID;
@@ -26,7 +24,6 @@ void main()
 {
 	f_Position = a_Position;
 	f_Normal = a_Normal;
-	f_Color = a_Color;
 	f_TexCoord = a_TexCoord;
 	f_TexScale = a_TexScale;
 	
@@ -44,19 +41,27 @@ layout (location = 1) out int o_EntityID;
 
 in vec3	      f_Position;
 in vec3       f_Normal;
-in vec4       f_Color;
 in vec2       f_TexCoord;
 in vec2       f_TexScale;
 in flat int   f_EntityID;
 
+struct Material
+{
+	vec3 Ambient;
+	sampler2D Diffuse;
+	sampler2D Specular;
+	float Shininess;
+};
+
 uniform samplerCube u_Skybox;
 uniform vec3        u_CameraPosition;
+uniform Material    u_Material;
 
 void main()
 {
 	vec3 I = normalize(f_Position - u_CameraPosition);
 	vec3 R = reflect(I, normalize(f_Normal));
-	o_Color = f_Color * vec4(texture(u_Skybox, R).rgb, 1.0);
+	o_Color = vec4(texture(u_Skybox, R).rgb * u_Material.Ambient.rgb, 1.0);
 
 	o_EntityID = f_EntityID;
 }

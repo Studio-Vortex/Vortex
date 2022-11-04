@@ -84,6 +84,7 @@ namespace Sparky {
 
 		void OnModelUpdate();
 		void OnParticleEmitterUpdate(TimeStep delta);
+		void OnLightSourceUpdate();
 
 		void OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
 

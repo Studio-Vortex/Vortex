@@ -310,6 +310,7 @@ namespace Sparky {
 		
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
+		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
@@ -333,6 +334,7 @@ namespace Sparky {
 
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
+		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateEntityGui()
@@ -437,24 +439,35 @@ namespace Sparky {
 
 	void Scene::OnParticleEmitterUpdate(TimeStep delta)
 	{
-		// Update Particle Emitters
+		auto view = m_Registry.view<ParticleEmitterComponent>();
+
+		for (auto& e : view)
 		{
-			auto view = m_Registry.view<ParticleEmitterComponent>();
+			Entity entity{ e, this };
+			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
 
-			for (auto& e : view)
+			// Set the starting particle position to the entity's translation
+			particleEmitter->GetProperties().Position = entity.GetTransform().Translation;
+
+			if (particleEmitter->IsActive())
 			{
-				Entity entity{ e, this };
-				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
-
-				// Set the starting particle position to the entity's translation
-				particleEmitter->GetProperties().Position = entity.GetTransform().Translation;
-
-				if (particleEmitter->IsActive())
-				{
-					particleEmitter->OnUpdate(delta);
-					particleEmitter->EmitParticle();
-				}
+				particleEmitter->OnUpdate(delta);
+				particleEmitter->EmitParticle();
 			}
+		}
+	}
+
+	void Scene::OnLightSourceUpdate()
+	{
+		auto view = m_Registry.view<LightSourceComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<LightSource> lightSource = entity.GetComponent<LightSourceComponent>().Source;
+			
+			Math::vec3 position = entity.GetTransform().Translation;
+			lightSource->SetPosition(position);
 		}
 	}
 
@@ -616,7 +629,8 @@ namespace Sparky {
 	
 	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
-		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
+			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)

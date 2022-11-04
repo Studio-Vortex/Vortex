@@ -88,11 +88,7 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		Math::mat4 projection = camera.GetProjection();
-		Math::mat4 view = Math::Inverse(transform.GetTransform());
-		Math::vec3 cameraPosition = transform.Translation;
-
-		BindShaders(view, projection, cameraPosition);
+		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjection(), transform.Translation);
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -136,7 +132,7 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const CameraComponent& light, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, int entityID)
 	{
 		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
@@ -163,7 +159,6 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat3("u_PointLight.Diffuse", lightSource->GetDiffuse());
 				s_Data.ModelShader->SetFloat3("u_PointLight.Specular", lightSource->GetSpecular());
 				s_Data.ModelShader->SetFloat3("u_PointLight.Color", lightSource->GetColor());
-				lightSource->SetPosition(transform.Translation);
 				s_Data.ModelShader->SetFloat3("u_PointLight.Position", lightSource->GetPosition());
 
 				break;
@@ -185,48 +180,45 @@ namespace Sparky {
 
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
+		SharedRef<Material> material = model->GetMaterial();
 
 		if (meshRenderer.Reflective)
+		{
 			shader = s_Data.ReflectiveShader;
+			shader->Enable();
+			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
+		}
 		else if (meshRenderer.Refractive)
+		{
 			shader = s_Data.RefractiveShader;
+			shader->Enable();
+			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
+		}
 		else
 		{
 			shader = s_Data.ModelShader;
 			shader->Enable();
-			SharedRef<Texture2D> texture = (meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture;
-			texture->Bind();
-			shader->SetInt("u_Texture", 0);
-			shader->SetMat4("u_Model", transform.GetTransform());
-
-			SharedRef<Material> material = model->GetMaterial();
-
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 
-			bool isDefaultTexture = *texture.get() != *s_Data.WhiteTexture.get();
+			SharedRef<Texture2D> texture = meshRenderer.Texture ? meshRenderer.Texture : s_Data.WhiteTexture;
+			uint32_t textureSlot = 1;
+			texture->Bind(textureSlot);
+			shader->SetInt("u_Texture", textureSlot);
 
-			SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
-			if (diffuseMap)
+			shader->SetMat4("u_Model", transform.GetTransform());
+
+			if (SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap())
 			{
-				uint32_t textureSlot = 0;
-				if (isDefaultTexture)
-					textureSlot = 1;
-
-				diffuseMap->Bind(textureSlot);
-				shader->SetInt("u_Material.Diffuse", textureSlot);
+				uint32_t diffuseMapTextureSlot = 1;
+				diffuseMap->Bind(diffuseMapTextureSlot);
+				shader->SetInt("u_Material.Diffuse", diffuseMapTextureSlot);
 			}
-			
-			SharedRef<Texture2D> specularMap = material->GetSpecularMap();
-			if (specularMap)
-			{
-				uint32_t textureSlot = 0;
-				if (diffuseMap && !isDefaultTexture)
-					textureSlot = 2;
-				else if (diffuseMap)
-					textureSlot = 1;
 
-				specularMap->Bind(textureSlot);
-				shader->SetInt("u_Material.Specular", textureSlot);
+			if (SharedRef<Texture2D> specularMap = material->GetSpecularMap())
+			{
+				uint32_t specularMapTextureSlot = 2;
+				specularMap->Bind(specularMapTextureSlot);
+				shader->SetInt("u_Material.Specular", specularMapTextureSlot);
 			}
 
 			shader->SetFloat("u_Material.Shininess", material->GetShininess());
@@ -273,8 +265,8 @@ namespace Sparky {
 		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }), ColorToVec4(Color::Orange));
 	}
 
-    void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
-    {
+	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
+	{
 		//4 2.25
 		Math::vec3 rotation = transform.Rotation;
 		Math::vec3 forwardDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), { 0.0f, 0.0f, -1.0f });
@@ -283,7 +275,7 @@ namespace Sparky {
 		Math::vec2 viewportSize = sceneCamera.GetViewportSize();
 		Renderer2D::DrawRect(farClipTransform, color);
 		Renderer2D::DrawRect(nearClipTransform, color);
-    }
+	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
 	{
@@ -315,14 +307,14 @@ namespace Sparky {
 		s_Data.RefractiveIndex = index;
 	}
 
-    std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()
-    {
+	std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()
+	{
 		std::vector<SharedRef<Shader>> shaders;
 		shaders.push_back(s_Data.ModelShader);
 		shaders.push_back(s_Data.ReflectiveShader);
 		shaders.push_back(s_Data.RefractiveShader);
 		shaders.push_back(s_Data.SkyboxShader);
 		return shaders;
-    }
+	}
 
 }

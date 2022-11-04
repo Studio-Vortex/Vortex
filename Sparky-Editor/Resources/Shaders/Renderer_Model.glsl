@@ -41,6 +41,12 @@ void main()
 layout (location = 0) out vec4 o_Color;
 layout (location = 1) out int o_EntityID;
 
+in vec3       f_Position;
+in vec3       f_Normal;
+in vec2       f_TexCoord;
+in vec2       f_TexScale;
+in flat int   f_EntityID;
+
 struct Material
 {
 	vec3 Ambient;
@@ -79,12 +85,6 @@ struct SpotLight
 	vec3 Position;
 	vec3 Point;
 };
-
-in vec3       f_Position;
-in vec3       f_Normal;
-in vec2       f_TexCoord;
-in vec2       f_TexScale;
-in flat int   f_EntityID;
 
 uniform sampler2D        u_Texture;
 uniform vec3             u_CameraPosition;

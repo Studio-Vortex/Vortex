@@ -97,7 +97,7 @@ namespace Sparky {
 					if (sceneCamera)
 						continue;
 
-					Renderer::RenderCameraIcon(transformComponent, cameraComponent, (int)(entt::entity)entity);
+					Renderer::RenderCameraIcon(transformComponent, (int)(entt::entity)entity);
 				}
 			}
 
