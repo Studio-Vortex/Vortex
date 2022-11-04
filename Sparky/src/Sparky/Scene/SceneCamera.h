@@ -17,6 +17,7 @@ namespace Sparky {
 		void SetOrthographic(float size, float nearClip, float farClip);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
+		const Math::vec2& GetViewportSize() const { return m_ViewportSize; }
 
 		float GetPerspectiveVerticalFOV() const { return m_PerspectiveFOV; }
 		void SetPerspectiveVerticalFOV(float verticalFOV) { m_PerspectiveFOV = verticalFOV; ReCalculateProjection(); }
@@ -48,6 +49,8 @@ namespace Sparky {
 
 		float m_OrthographicSize = 10.0f;
 		float m_OrthographicNear = -1.0f, m_OrthographicFar = 1.0f;
+
+		Math::vec2 m_ViewportSize = {};
 
 		float m_AspectRatio = 0.0f;
 	};

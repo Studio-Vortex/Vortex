@@ -135,6 +135,11 @@
 		{
 			Rotation += new Vector3(x, y, z);
 		}
+
+		public void LookAt(Vector3 worldPoint)
+		{
+			InternalCalls.TransformComponent_LookAt(Entity.ID, ref worldPoint);
+		}
 	}
 
 	public class Camera : Component
@@ -240,20 +245,6 @@
 	public class MeshRenderer : Component
 	{
 		public MeshType Type;
-
-		public Vector4 Color
-		{
-			get
-			{
-				InternalCalls.MeshRendererComponent_GetColor(Entity.ID, out Vector4 color);
-				return color;
-			}
-
-			set
-			{
-				InternalCalls.MeshRendererComponent_SetColor(Entity.ID, ref value);
-			}
-		}
 
 		public string Texture
 		{

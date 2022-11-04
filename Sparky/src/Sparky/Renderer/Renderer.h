@@ -28,12 +28,13 @@ namespace Sparky {
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
-		static void RenderCameraIcon(const TransformComponent& transform, const CameraComponent& light, int entityID = -1);
-		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, int entityID = -1);
+		static void RenderCameraIcon(const TransformComponent& transform, const CameraComponent& camera, int entityID = -1);
+		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, bool sceneRunning, int entityID = -1);
 		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID = -1);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);
+		static void DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }

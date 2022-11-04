@@ -2,7 +2,7 @@
 
 namespace Sparky {
 
-	void PerformancePanel::OnGuiRender(bool showDefault)
+	void PerformancePanel::OnGuiRender(size_t entityCount, bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -11,6 +11,13 @@ namespace Sparky {
 		if (s_ShowPanel || showDefault)
 		{
 			Gui::Begin("Performance", &s_ShowPanel);
+
+			Gui::PushFont(boldFont);
+			Gui::Text("Scene");
+			Gui::PopFont();
+			Gui::Separator();
+
+			Gui::Text("Entity Count: %u", entityCount);
 
 			Gui::PushFont(boldFont);
 			Gui::Text("Renderer");

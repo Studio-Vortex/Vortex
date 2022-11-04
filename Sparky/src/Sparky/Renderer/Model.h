@@ -17,7 +17,6 @@ namespace Sparky {
 	{
 		Math::vec3 Position;
 		Math::vec3 Normal;
-		Math::vec4 Color;
 		Math::vec2 TextureCoord;
 		Math::vec2 TexScale;
 
@@ -48,11 +47,11 @@ namespace Sparky {
 	{
 	public:
 		Model() = default;
-		Model(const std::string& filepath, Entity entity, const Math::vec4& color);
+		Model(const std::string& filepath, Entity entity);
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(const TransformComponent& transform, const Math::vec4& color, const Math::vec2& scale);
+		void OnUpdate(const TransformComponent& transform, const Math::vec2& scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }
@@ -61,7 +60,7 @@ namespace Sparky {
 
 		uint32_t GetQuadCount() const;
 
-		static SharedRef<Model> Create(const std::string& filepath, Entity entity, const Math::vec4& color);
+		static SharedRef<Model> Create(const std::string& filepath, Entity entity);
 		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
 
 	private:

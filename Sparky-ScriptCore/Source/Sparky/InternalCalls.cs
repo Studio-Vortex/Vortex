@@ -185,6 +185,9 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetUpDirection(ulong entityID, out Vector3 result);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
+
 		#endregion
 
 		#region Camera
@@ -235,12 +238,6 @@ namespace Sparky {
 		#endregion
 
 		#region MeshRenderer
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetColor(ulong entityID, out Vector4 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_GetTexture(ulong entityID, out string texturePathString);

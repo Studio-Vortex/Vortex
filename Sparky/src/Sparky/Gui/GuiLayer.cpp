@@ -30,6 +30,7 @@ namespace Sparky {
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		
@@ -54,6 +55,8 @@ namespace Sparky {
 		style.WindowTitleAlign = { 0.5f, 0.5f };
 		style.WindowMenuButtonPosition = ImGuiDir_Right;
 		style.GrabRounding = 2.5f;
+
+		ImGui::SetColorEditOptions(ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_Float);
 
 		SetDarkThemeColors();
 

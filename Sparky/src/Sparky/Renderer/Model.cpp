@@ -78,7 +78,7 @@ namespace Sparky {
 		"Resources/Meshes/Default/Torus.obj",
 	};
 
-	Model::Model(const std::string& filepath, Entity entity, const Math::vec4& color)
+	Model::Model(const std::string& filepath, Entity entity)
 		: m_Filepath(filepath)
 	{
 		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform());
@@ -93,7 +93,6 @@ namespace Sparky {
 		{
 			ModelVertex& v = m_OriginalVertices[i++];
 			v.Position = vertex.Position;
-			v.Color = color;
 			v.Normal = vertex.Normal;
 			v.TextureCoord = vertex.TextureCoord;
 			v.TexScale = Math::vec2(1.0f);
@@ -109,7 +108,6 @@ namespace Sparky {
 		m_Vbo->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal"   },
-			{ ShaderDataType::Float4, "a_Color"    },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float2, "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
@@ -182,7 +180,7 @@ namespace Sparky {
 		m_Vao->AddVertexBuffer(m_Vbo);
 	}
 
-	void Model::OnUpdate(const TransformComponent& transform, const Math::vec4& color, const Math::vec2& scale)
+	void Model::OnUpdate(const TransformComponent& transform, const Math::vec2& scale)
 	{
 		Math::mat4 entityTransform = transform.GetTransform();
 
@@ -192,7 +190,6 @@ namespace Sparky {
 			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
 			//vertex.Normal = Math::Normalize(Math::mat3(entityTransform) * m_OriginalVertices[i].Normal);
 			//vertex.Normal = m_OriginalVertices[i].Normal;
-			vertex.Color = color;
 			vertex.TexScale = scale;
 
 			i++;
@@ -207,9 +204,9 @@ namespace Sparky {
 		return m_Ibo->GetCount() / 3;
 	}
 
-	SharedRef<Model> Model::Create(const std::string& filepath, Entity entity, const Math::vec4& color)
+	SharedRef<Model> Model::Create(const std::string& filepath, Entity entity)
 	{
-		return CreateShared<Model>(filepath, entity, color);
+		return CreateShared<Model>(filepath, entity);
 	}
 
 	SharedRef<Model> Model::Create(MeshRendererComponent::MeshType meshType)

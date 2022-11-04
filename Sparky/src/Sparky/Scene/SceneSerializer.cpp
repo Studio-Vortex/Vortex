@@ -318,7 +318,6 @@ namespace Sparky {
 			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 			out << YAML::Key << "MeshType" << YAML::Value << MeshRendererMeshTypeToString(meshRendererComponent.Type);
-			out << YAML::Key << "Color" << YAML::Value << meshRendererComponent.Color;
 			if (meshRendererComponent.Texture)
 				out << YAML::Key << "TexturePath" << YAML::Value << meshRendererComponent.Texture->GetPath();
 			if (meshRendererComponent.Mesh)
@@ -327,10 +326,12 @@ namespace Sparky {
 				out << YAML::Key << "MeshSource" << YAML::Value << model->GetPath();
 
 				SharedRef<Material> material = model->GetMaterial();
+
+				out << YAML::Key << "Ambient" << YAML::Value << material->GetAmbient();
 				if (material->GetDiffuseMap())
-					out << YAML::Key << "DiffuseMapPath" << material->GetDiffuseMap()->GetPath();
+					out << YAML::Key << "DiffuseMapPath" << YAML::Value << material->GetDiffuseMap()->GetPath();
 				if (material->GetSpecularMap())
-					out << YAML::Key << "SpecularMapPath" << material->GetSpecularMap()->GetPath();
+					out << YAML::Key << "SpecularMapPath" << YAML::Value << material->GetSpecularMap()->GetPath();
 
 				out << YAML::Key << "Shininess" << material->GetShininess();
 			}
@@ -664,12 +665,13 @@ namespace Sparky {
 					auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
 
 					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
-					meshRendererComponent.Color = meshComponent["Color"].as<Math::vec4>();
 
 					if (meshComponent["TexturePath"])
 						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
 					if (meshComponent["MeshSource"])
-						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity, meshRendererComponent.Color);
+						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity);
+					if (meshComponent["Ambient"])
+						meshRendererComponent.Mesh->GetMaterial()->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
 					if (meshComponent["DiffuseMapPath"])
 						meshRendererComponent.Mesh->GetMaterial()->SetDiffuseMap(Texture2D::Create(meshComponent["DiffuseMapPath"].as<std::string>()));
 					if (meshComponent["SpecularMapPath"])

@@ -550,7 +550,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
 		Math::vec3 forwardDirection(0.0f, 0.0f, -1.0f);
 		*outForwardDirection = Math::Rotate(orientation, forwardDirection);
 	}
@@ -563,7 +563,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
 		Math::vec3 rightDirection(1.0f, 0.0f, 0.0f);
 		*outRightDirection = Math::Rotate(orientation, rightDirection);
 	}
@@ -576,9 +576,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(-transform.Rotation.x, -transform.Rotation.y, -transform.Rotation.z);
+		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
 		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 		*outUpDirection = Math::Rotate(orientation, upDirection);
+	}
+
+	static void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		TransformComponent& transform = entity.GetTransform();
+		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
+		Math::vec3 translation;
+		Math::vec3 rotation;
+		Math::vec3 scale;
+		Math::DecomposeTransform(result, translation, rotation, scale);
+		transform = TransformComponent{ translation, rotation, scale };
 	}
 
 #pragma endregion
@@ -723,26 +740,6 @@ namespace Sparky {
 #pragma endregion
 
 #pragma region Mesh Renderer Component
-
-	static void MeshRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outColor = entity.GetComponent<MeshRendererComponent>().Color;
-	}
-
-	static void MeshRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Color = *color;
-	}
 
 	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
@@ -1949,6 +1946,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetForwardDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
+		SP_ADD_INTERNAL_CALL(TransformComponent_LookAt);
 
 #pragma endregion
 
@@ -1977,8 +1975,6 @@ namespace Sparky {
 
 #pragma region Mesh Renderer Component
 
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetColor);
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetTexture);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetTexture);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);

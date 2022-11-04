@@ -91,6 +91,8 @@ namespace Sparky {
 		float m_EditorCameraFOVLastFrame = 0.0f;
 		int32_t m_GizmoType = -1;
 
+		bool m_ShowSceneCreateEntityMenu = false;
+
 		bool m_DrawEditorGrid = true;
 		bool m_DrawEditorAxes = true;
 		bool m_EditorDebugViewEnabled = false;
@@ -114,6 +116,13 @@ namespace Sparky {
 		SharedRef<Texture2D> m_StopIcon;
 		SharedRef<Texture2D> m_SimulateIcon;
 		SharedRef<Texture2D> m_StepIcon;
+		SharedRef<Texture2D> m_LocalModeIcon;
+		SharedRef<Texture2D> m_WorldModeIcon;
+		SharedRef<Texture2D> m_TranslateToolIcon;
+		SharedRef<Texture2D> m_RotateToolIcon;
+		SharedRef<Texture2D> m_ScaleToolIcon;
+
+		uint32_t m_TranslationMode = 0; // Local mode
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 

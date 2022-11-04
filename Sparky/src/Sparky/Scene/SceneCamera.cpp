@@ -35,6 +35,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(width > 0 && height > 0, "Invalid Resize!");
 		m_AspectRatio = (float)width / (float)height;
 		ReCalculateProjection();
+		m_ViewportSize = { (float)width, (float)height };
 	}
 
     void SceneCamera::LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)

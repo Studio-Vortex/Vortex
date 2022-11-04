@@ -57,8 +57,6 @@ namespace Sandbox {
 				}
 			}
 
-			DebugRenderer.DrawQuad(new Vector3(0), new Vector2(1), new Vector4(1));
-
 			DebugRenderer.Flush();
 		}
 	}

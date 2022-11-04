@@ -7,6 +7,7 @@ namespace Sparky {
 
 	struct SPARKY_API MaterialProperties
 	{
+		Math::vec3 Ambient = Math::vec3(1.0f);
 		SharedRef<Texture2D> DiffuseMap = nullptr;
 		SharedRef<Texture2D> SpecularMap = nullptr;
 		float Shininess = 32.0f;
@@ -16,6 +17,9 @@ namespace Sparky {
 	{
 	public:
 		Material(const MaterialProperties& props);
+
+		const Math::vec3& GetAmbient() const;
+		void SetAmbient(const Math::vec3& ambient);
 
 		const SharedRef<Texture2D>& GetDiffuseMap() const;
 		void SetDiffuseMap(const SharedRef<Texture2D>& diffuseMap);

@@ -292,7 +292,7 @@ namespace Sparky {
 
 		// Render
 		SceneCamera* primarySceneCamera = nullptr;
-		Math::mat4 primarySceneCameraTransform;
+		TransformComponent primarySceneCameraTransform;
 
 		{
 			Entity primaryCameraEntity = GetPrimaryCameraEntity();
@@ -300,13 +300,13 @@ namespace Sparky {
 			if (primaryCameraEntity)
 			{
 				primarySceneCamera = &primaryCameraEntity.GetComponent<CameraComponent>().Camera;
-				primarySceneCameraTransform = primaryCameraEntity.GetTransform().GetTransform();
+				primarySceneCameraTransform = primaryCameraEntity.GetTransform();
 			}
 		}
 
 		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (primarySceneCamera != nullptr)
-			m_SceneRenderer.RenderFromSceneCamera(primarySceneCamera, GetPrimaryCameraEntity().GetTransform(), m_Registry);
+			m_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, m_Registry);
 		
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -431,7 +431,7 @@ namespace Sparky {
 			auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 			SharedRef<Model> model = meshRendererComponent.Mesh;
-			model->OnUpdate(transformComponent, meshRendererComponent.Color, meshRendererComponent.Scale);
+			model->OnUpdate(transformComponent, meshRendererComponent.Scale);
 		}
 	}
 
@@ -644,7 +644,7 @@ namespace Sparky {
 		uint32_t componentType = static_cast<uint32_t>(component.Type);
 
 		if (componentType < 7)
-			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity, component.Color);
+			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

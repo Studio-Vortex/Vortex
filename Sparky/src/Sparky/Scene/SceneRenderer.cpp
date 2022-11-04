@@ -76,28 +76,28 @@ namespace Sparky {
 			}
 
 			// Render Scene Icons
-			if (!sceneCamera)
 			{
+				auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
+
+				for (const auto entity : view)
 				{
-					auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
+					auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-					for (const auto entity : view)
-					{
-						auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
-
-						Renderer::RenderLightSource(transformComponent, lightSourceComponent, (int)(entt::entity)entity);
-					}
+					Renderer::RenderLightSource(transformComponent, lightSourceComponent, sceneCamera, (int)(entt::entity)entity);
 				}
+			}
 
+			{
+				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+
+				for (const auto entity : view)
 				{
-					auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+					auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-					for (const auto entity : view)
-					{
-						auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+					if (sceneCamera)
+						continue;
 
-						Renderer::RenderCameraIcon(transformComponent, cameraComponent, (int)(entt::entity)entity);
-					}
+					Renderer::RenderCameraIcon(transformComponent, cameraComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -141,9 +141,9 @@ namespace Sparky {
 		}
 	}
 
-	void SceneRenderer::RenderFromSceneCamera(SceneCamera* sceneCamera, const TransformComponent& cameraTransform, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderFromSceneCamera(SceneCamera& sceneCamera, const TransformComponent& cameraTransform, entt::registry& sceneRegistry)
 	{
-		RenderScene(*sceneCamera, cameraTransform, sceneRegistry);
+		RenderScene(sceneCamera, cameraTransform, sceneRegistry);
 	}
 
 	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry)

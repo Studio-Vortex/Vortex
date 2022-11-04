@@ -37,6 +37,12 @@ namespace Sparky {
 		m_SimulateIcon = Texture2D::Create("Resources/Icons/SimulateButton.png");
 		m_StepIcon = Texture2D::Create("Resources/Icons/StepButton.png");
 
+		m_LocalModeIcon = Texture2D::Create("Resources/Icons/Scene/LocalMode.png");
+		m_WorldModeIcon = Texture2D::Create("Resources/Icons/Scene/WorldMode.png");
+		m_TranslateToolIcon = Texture2D::Create("Resources/Icons/Scene/TranslateTool.png");
+		m_RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
+		m_ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
+
 		m_EditorScene = CreateShared<Scene>();
 		m_ActiveScene = m_EditorScene;
 
@@ -337,6 +343,19 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Tools"))
 			{
+				if (inEditMode && m_SceneHierarchyPanel.GetSelectedEntity())
+				{
+					if (Gui::MenuItem("Move To Camera Position"))
+					{
+						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+						TransformComponent& transform = selectedEntity.GetTransform();
+						transform.Translation = m_EditorCamera.GetPosition();
+						transform.Rotation = Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.Rotation.z);
+					}
+
+					Gui::Separator();
+				}
+
 				if (Gui::MenuItem("No Selection", "Q"))
 					OnNoGizmoSelected();
 				Gui::Separator();
@@ -400,7 +419,7 @@ namespace Sparky {
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
-			m_PerformancePanel.OnGuiRender();
+			m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 			m_AboutPanel.OnGuiRender();
 		}
 
@@ -423,9 +442,9 @@ namespace Sparky {
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 }, m_ActiveScene->IsPaused() ? ImVec4{ 1.0f, 1.0f, 1.0f, 0.5f } : ImVec4{ 1.0f, 1.0f, 1.0f, 1.0f });
 
-		// Accept a Scene from the content browser
+		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -455,17 +474,36 @@ namespace Sparky {
 					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
 					{
 						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
-						SharedRef<Model> mesh = Model::Create(modelPath.string(), m_HoveredEntity, meshRenderer.Color);
 
-						meshRenderer.Mesh = mesh;
+						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity);
+						meshRenderer.Type = MeshRendererComponent::MeshType::Custom;
 					}
 				}
-				else
+				else if (filePath.extension().string() == ".sparky")
 					OpenScene(std::filesystem::path(g_AssetPath) / path);
 			}
 
 			Gui::EndDragDropTarget();
 		}
+
+		if (m_ShowSceneCreateEntityMenu)
+		{
+			Gui::OpenPopup("SceneCreateEntityMenu");
+			m_ShowSceneCreateEntityMenu = false;
+		}
+
+		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
+			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+
+		if (Gui::BeginPopup("SceneCreateEntityMenu"))
+		{
+			m_SceneHierarchyPanel.DisplayCreateEntityMenu();
+
+			Gui::PopStyleVar();
+			Gui::EndPopup();
+		}
+
+		UI_Toolbar();
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -516,7 +554,7 @@ namespace Sparky {
 
 					ImGuizmo::Manipulate(
 						Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix),
-						(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(entityTransform),
+						static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
 						nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
 					);
 
@@ -553,42 +591,50 @@ namespace Sparky {
 		Gui::End();
 		Gui::PopStyleVar();
 
-		UI_Toolbar();
-
 		Gui::End();
 	}
 
 	void EditorLayer::UI_Toolbar()
 	{
-		bool hasPlayButton = m_SceneState != SceneState::Simulate;
-		bool hasSimulateButton = m_SceneState != SceneState::Play;
-		bool hasPauseButton = m_SceneState != SceneState::Edit;
-		bool scenePaused = m_ActiveScene->IsPaused();
-
-		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 2.0f });
-		Gui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 0.0f, 0.0f });
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
+		Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 		auto& colors = Gui::GetStyle().Colors;
 		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ buttonActive.x, buttonActive.y, buttonActive.z, 0.5f });
 		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
 
-		Gui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		float size = Gui::GetTextLineHeightWithSpacing() * 1.25f;
+		Gui::SetCursorPos({ size, 10.0f });
+		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::LOCAL);
 
-		bool toolbarEnabled = (bool)m_ActiveScene;
+		Gui::SameLine();
+		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
 
-		ImVec4 tintColor = ImVec4(1, 1, 1, 1);
-		if (!toolbarEnabled)
-			tintColor.w = 0.5f;
+		Gui::SetCursorPos({ size * 6, 10.0f });
+		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+			OnTranslationToolSelected();
 
-		float size = Gui::GetWindowHeight() - 4.0f;
-		Gui::SetCursorPosX((Gui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+		Gui::SameLine();
+		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+			OnRotationToolSelected();
+
+		Gui::SameLine();
+		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+			OnScaleToolSelected();
+
+		bool hasPlayButton = m_SceneState != SceneState::Simulate;
+		bool hasSimulateButton = m_SceneState != SceneState::Play;
+		bool hasPauseButton = m_SceneState != SceneState::Edit;
+		bool scenePaused = m_ActiveScene->IsPaused();
+
+		Gui::SetCursorPos({ Gui::GetWindowWidth() * 0.5f - size * 0.5f, 10.0f });
 
 		if (hasPlayButton)
 		{
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				StopAudioSourcesToBeResumed();
 
@@ -604,7 +650,7 @@ namespace Sparky {
 		if (hasSimulateButton)
 		{
 			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				StopAudioSourcesToBeResumed();
 
@@ -620,7 +666,7 @@ namespace Sparky {
 		if (hasPauseButton)
 		{
 			SharedRef<Texture2D> icon = m_PauseIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				bool paused = !scenePaused;
 
@@ -635,15 +681,12 @@ namespace Sparky {
 				Gui::SameLine();
 
 				SharedRef<Texture2D> icon = m_StepIcon;
-				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), 0, ImVec4(0, 0, 0, 0), tintColor) && toolbarEnabled)
+				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 					m_ActiveScene->Step(m_FrameStepCount);
 			}
 		}
 
-		Gui::PopStyleVar(2);
 		Gui::PopStyleColor(3);
-
-		Gui::End();
 	}
 
 	void EditorLayer::OnLaunchRuntime()
@@ -763,6 +806,17 @@ namespace Sparky {
 
 				Renderer::DrawCubeWireframe(entityTransform);
 			}
+			else if (selectedEntity.HasComponent<CameraComponent>())
+			{
+				const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
+				if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+				{
+					// TODO: Draw Camera Frustum
+					//Renderer::DrawFrustum(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+				}
+
+				Renderer2D::DrawRect(entityTransform.GetTransform(), ColorToVec4(Color::Orange));
+			}
 			else
 			{
 				//Orange
@@ -798,6 +852,7 @@ namespace Sparky {
 		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 
 		switch (e.GetKeyCode())
 		{
@@ -846,7 +901,7 @@ namespace Sparky {
 			}
 			case Key::F2:
 			{
-				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+				if (selectedEntity)
 					m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
 
 				break;
@@ -864,7 +919,7 @@ namespace Sparky {
 
 			case Key::Delete:
 			{
-				if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+				if (selectedEntity)
 					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
 
 				break;
@@ -872,7 +927,7 @@ namespace Sparky {
 
 			case Key::F:
 			{
-				if (m_SceneHierarchyPanel.GetSelectedEntity() && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				if (selectedEntity && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 					m_EditorCamera.MoveToPosition(selectedEntity.GetTransform().Translation);
@@ -883,8 +938,8 @@ namespace Sparky {
 
 			case Key::A:
 			{
-				if (controlPressed && !shiftPressed) // Ctrl+Shift+A opens the add component popup in inspector panel
-					AddEmptyEntity();
+				if (controlPressed)
+					m_ShowSceneCreateEntityMenu = true;
 
 				break;
 			}
@@ -955,9 +1010,8 @@ namespace Sparky {
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					if (altPressed)
+					if (altPressed && selectedEntity)
 					{
-						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 						TransformComponent& transformComponent = selectedEntity.GetTransform();
 						transformComponent.Translation = Math::vec3(0.0f);
 					}
@@ -971,9 +1025,8 @@ namespace Sparky {
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					if (altPressed)
+					if (altPressed && selectedEntity)
 					{
-						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 						TransformComponent& transformComponent = selectedEntity.GetTransform();
 						transformComponent.Rotation = Math::vec3(0.0f);
 					}
@@ -990,9 +1043,8 @@ namespace Sparky {
 
 				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					if (altPressed)
+					if (altPressed && selectedEntity)
 					{
-						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 						TransformComponent& transformComponent = selectedEntity.GetTransform();
 						transformComponent.Scale = Math::vec3(1.0f);
 					}

@@ -6,6 +6,16 @@ namespace Sparky {
 	Material::Material(const MaterialProperties& props)
 		: m_Properties(props) { }
 
+    const Math::vec3& Material::GetAmbient() const
+    {
+		return m_Properties.Ambient;
+    }
+
+    void Material::SetAmbient(const Math::vec3& ambient)
+    {
+		m_Properties.Ambient = ambient;
+    }
+
     const SharedRef<Texture2D>& Material::GetDiffuseMap() const
     {
 		return m_Properties.DiffuseMap;

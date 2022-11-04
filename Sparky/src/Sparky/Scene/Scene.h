@@ -52,6 +52,8 @@ namespace Sparky {
 		bool IsInDebugMode() const { return m_DebugMode; }
 		void SetDebugMode(bool mode) { m_DebugMode = mode; }
 
+		size_t GetEntityCount() const { return m_Registry.alive(); }
+
 		b2World* GetPhysicsWorld() { return m_PhysicsWorld; }
 
 		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }

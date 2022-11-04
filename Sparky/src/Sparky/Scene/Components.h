@@ -41,6 +41,8 @@ namespace Sparky {
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const Math::vec3& translation)
 			: Translation(translation) { }
+		TransformComponent(const Math::vec3& translation, const Math::vec3& rotation, const Math::vec3& scale)
+			: Translation(translation), Rotation(rotation), Scale(scale) { }
 
 		Math::mat4 GetTransform() const
 		{
@@ -95,7 +97,6 @@ namespace Sparky {
 	{
 		enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
 		MeshType Type = MeshType::Cube;
-		Math::vec4 Color = Math::vec4(1.0f);
 		SharedRef<Model> Mesh = nullptr;
 		SharedRef<Texture2D> Texture = nullptr;
 		Math::vec2 Scale = Math::vec2(1.0f);
@@ -104,8 +105,6 @@ namespace Sparky {
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
-		MeshRendererComponent(const Math::vec4& color)
-			: Color(color) { }
 	};
 
 	struct SpriteRendererComponent

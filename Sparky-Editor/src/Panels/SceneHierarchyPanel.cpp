@@ -25,9 +25,15 @@ namespace Sparky {
 		m_EntityShouldBeRenamed = false;
 		m_EntityShouldBeDestroyed = false;
 
-		// We should reset the search bar here
+		// Clear all search bars
 		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
-		m_EntitySearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+		m_EntitySearchInputTextFilter.Build();
+
+		memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
+		m_EntityClassNameInputTextFilter.Build();
+
+		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+		m_ComponentSearchInputTextFilter.Build();
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
@@ -37,7 +43,6 @@ namespace Sparky {
 			Gui::Begin("Scene Hierarchy", &s_ShowSceneHierarchyPanel);
 
 			// Search Bar + Filtering
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
 			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
 			if (isSearching)
@@ -808,20 +813,18 @@ namespace Sparky {
 			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
 
-			auto SetMeshSourceFunc = [&](int meshType)
-			{
-				static const char* meshSourcePaths[] = {
-					"Resources/Meshes/Default/Cube.obj",
-					"Resources/Meshes/Default/Sphere.obj",
-					"Resources/Meshes/Default/Capsule.obj",
-					"Resources/Meshes/Default/Cone.obj",
-					"Resources/Meshes/Default/Cylinder.obj",
-					"Resources/Meshes/Default/Plane.obj",
-					"Resources/Meshes/Default/Torus.obj",
-				};
-
-				component.Mesh = Model::Create(std::string(meshSourcePaths[meshType]), entity, component.Color);
+			static const char* defaultMeshSourcePaths[] = {
+				"Resources/Meshes/Default/Cube.obj",
+				"Resources/Meshes/Default/Sphere.obj",
+				"Resources/Meshes/Default/Capsule.obj",
+				"Resources/Meshes/Default/Cone.obj",
+				"Resources/Meshes/Default/Cylinder.obj",
+				"Resources/Meshes/Default/Plane.obj",
+				"Resources/Meshes/Default/Torus.obj",
 			};
+
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
@@ -836,9 +839,9 @@ namespace Sparky {
 						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
 
 						if (component.Type != MeshRendererComponent::MeshType::Custom)
-							SetMeshSourceFunc(i);
+							component.Mesh = Model::Create(std::string(defaultMeshSourcePaths[i]), entity);
 						else
-							component.Mesh = nullptr;
+							component.Mesh = Model::Create(std::string(buffer), entity);
 					}
 
 					if (isSelected)
@@ -850,13 +853,9 @@ namespace Sparky {
 
 				Gui::EndCombo();
 			}
-
-			char buffer[256];
 			
 			if (component.Mesh)
 				memcpy(buffer, component.Mesh->GetPath().c_str(), sizeof(buffer));
-			else
-				memset(buffer, 0, sizeof(buffer));
 
 			Gui::InputText("##Mesh Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
@@ -871,7 +870,7 @@ namespace Sparky {
 					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj")
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity, component.Color);
+						component.Mesh = Model::Create(modelFilepath.string(), entity);
 						component.Type = MeshRendererComponent::MeshType::Custom;
 					}
 					else
@@ -889,9 +888,12 @@ namespace Sparky {
 			Gui::SameLine();
 			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
+			SharedRef<Material> material = component.Mesh->GetMaterial();
+			Math::vec3 ambient = material->GetAmbient();
+
 			if (component.Texture)
 			{
-				ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+				ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
 
 				if (Gui::ImageButton((void*)component.Texture->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 					component.Texture = nullptr;
@@ -932,15 +934,12 @@ namespace Sparky {
 				Gui::EndDragDropTarget();
 			}
 
-			SharedRef<Material> material = component.Mesh->GetMaterial();
-
 			if (Gui::TreeNodeEx("Material", treeNodeFlags))
 			{
 				Gui::Unindent();
 
-				Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-
-				Gui::DragFloat2("Scale", Math::ValuePtr(component.Scale), 0.05f);
+				if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
+					material->SetAmbient(ambient);
 
 				Gui::Text("Diffuse");
 				Gui::SameLine();
@@ -950,7 +949,7 @@ namespace Sparky {
 
 				if (diffuseMap)
 				{
-					ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+					ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
 
 					if (Gui::ImageButton((void*)diffuseMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 						material->SetDiffuseMap(nullptr);
@@ -1001,7 +1000,7 @@ namespace Sparky {
 
 				if (specularMap)
 				{
-					ImVec4 tintColor = { component.Color.r, component.Color.g, component.Color.b, component.Color.a };
+					ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
 
 					if (Gui::ImageButton((void*)specularMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
 						material->SetSpecularMap(nullptr);
@@ -1043,8 +1042,10 @@ namespace Sparky {
 				}
 
 				float shininess = material->GetShininess();
-				if (Gui::DragFloat("Shininess", &shininess, 4.0f, 2.0f, 256.0f))
+				if (Gui::DragFloat("Shininess", &shininess, 2.0f, 2.0f, 256.0f, "%.2f"))
 					material->SetShininess(shininess);
+
+				Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f, 0.0f, 0.0f, "%.2f");
 
 				Gui::Checkbox("Reflective", &component.Reflective);
 				Gui::Checkbox("Refractive", &component.Refractive);
@@ -1108,7 +1109,7 @@ namespace Sparky {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat2("Scale", Math::ValuePtr(component.Scale), 0.05f);
+			Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f);
 		});
 
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
@@ -1394,7 +1395,7 @@ namespace Sparky {
 			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
-		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_ContextScene](auto& component)
+		DrawComponent<ScriptComponent>("C# Script", entity, [&](auto& component)
 		{
 			std::vector<std::string> entityClassNameStrings;
 			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
@@ -1416,16 +1417,30 @@ namespace Sparky {
 			// Display available entity classes to choose from
 			if (allEntityClassNamesCollected && Gui::BeginCombo("Class", currentClassName))
 			{
+				bool isSearching = Gui::InputTextWithHint("##ClassNameSearch", "Search", m_EntityClassNameInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
+				if (isSearching)
+					m_EntityClassNameInputTextFilter.Build();
+
+				Gui::Spacing();
+				Gui::Separator();
+
 				for (uint32_t i = 0; i < entityClassNameStrings.size(); i++)
 				{
 					const char* currentEntityClassNameString = entityClassNameStrings[i].c_str();
 					bool isSelected = strcmp(currentClassName, currentEntityClassNameString) == 0;
+
+					if (!m_EntityClassNameInputTextFilter.PassFilter(currentEntityClassNameString))
+						continue;
 
 					if (Gui::Selectable(currentEntityClassNameString, isSelected))
 					{
 						// If we select a class we need to set the components class name here
 						currentClassName = currentEntityClassNameString;
 						component.ClassName = std::string(currentClassName);
+
+						// Reset the search bar once a class is chosen
+						memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
+						m_EntityClassNameInputTextFilter.Build();
 					}
 
 					if (isSelected)
@@ -1439,7 +1454,7 @@ namespace Sparky {
 			}
 
 			// Fields
-			bool sceneRunning = scene->IsRunning();
+			bool sceneRunning = m_ContextScene->IsRunning();
 
 			if (sceneRunning)
 			{
@@ -1813,7 +1828,7 @@ namespace Sparky {
 									{
 										UUID* entityUUID = (UUID*)payload->Data;
 										
-										if (Entity entity = scene->GetEntityWithUUID(*entityUUID))
+										if (Entity entity = m_ContextScene->GetEntityWithUUID(*entityUUID))
 										{
 											ScriptFieldInstance& fieldInstance = entityFields[name];
 											fieldInstance.Field = field;

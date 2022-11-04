@@ -24,6 +24,8 @@ namespace Sparky {
 
 		void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
+		void DisplayCreateEntityMenu();
+
 		bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
 		bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
 
@@ -31,7 +33,6 @@ namespace Sparky {
 		template <typename TComponent>
 		void DisplayAddComponentPopup(const std::string& name, bool lastComponent = false, bool allowMultiple = false);
 
-		void DisplayCreateEntityMenu();
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 
@@ -44,6 +45,7 @@ namespace Sparky {
 		Entity m_SelectedEntity;
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
+		ImGuiTextFilter m_EntityClassNameInputTextFilter;
 		bool m_EntityShouldBeRenamed = false;
 		bool m_EntityShouldBeDestroyed = false;
 	};
