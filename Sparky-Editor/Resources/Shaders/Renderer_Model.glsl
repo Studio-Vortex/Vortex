@@ -219,7 +219,9 @@ void main()
 	if (fragColor.a == 0.0)
 		discard;
 
-	vec4 finalColor = vec4(lightColor * fragColor.rgb, fragColor.a);
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(lightColor * fragColor.rgb, vec3(1.0 / gamma)), fragColor.a);
 
 	// Set the output color
 	o_Color = finalColor;

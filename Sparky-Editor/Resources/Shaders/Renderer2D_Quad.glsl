@@ -92,8 +92,12 @@ void main()
 	if (texColor.a == 0.0)
 		discard;
 
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(texColor.rgb, vec3(1.0 / gamma)), texColor.a);
+
 	// Set output color
-	o_Color = texColor;
+	o_Color = finalColor;
 
 	o_EntityID = f_EntityID;
 }

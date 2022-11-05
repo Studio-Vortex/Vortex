@@ -36,8 +36,11 @@ in flat int f_EntityID;
 
 void main()
 {
-    // Set output color
-    o_Color = f_Color;
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(f_Color.rgb, vec3(1.0 / gamma)), f_Color.a);
 
+    // Set output color
+    o_Color = finalColor;
 	o_EntityID = f_EntityID;
 }

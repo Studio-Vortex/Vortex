@@ -33,6 +33,12 @@ uniform samplerCube u_Skybox;
 
 void main()
 {
-	o_Color = texture(u_Skybox, f_TexCoord);
+	vec4 skybox = texture(u_Skybox, f_TexCoord);
+
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(skybox.rgb, vec3(1.0 / gamma)), skybox.a);
+
+	o_Color = finalColor;
 	o_EntityID = -1;
 }

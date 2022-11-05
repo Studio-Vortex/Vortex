@@ -48,7 +48,7 @@ in flat int f_EntityID;
 
 void main()
 {
-    // Calculate distance and fill circle with white
+    // Calculate distance and fill circle with color
     float distance = 1.0 - length(f_LocalPosition);
     float circle = smoothstep(0.0, f_Fade, distance);
     circle *= smoothstep(f_Thickness + f_Fade, f_Thickness, distance);
@@ -57,9 +57,11 @@ void main()
     if (circle == 0.0)
         discard;
 
-    // Set output color
-    o_Color = f_Color;
-    o_Color.a *= circle;
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(f_Color.rgb, vec3(1.0 / gamma)), f_Color.a * circle);
 
+    // Set output color
+    o_Color = finalColor;
 	o_EntityID = f_EntityID;
 }

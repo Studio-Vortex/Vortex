@@ -31,7 +31,7 @@ namespace Sandbox {
 			//m_Camera.transform.LookAt(transform.Translation);
 			//m_Camera.transform.Rotation = transform.Rotation * 0.5f;
 
-			Vector3 lightPos = transform.Translation + Vector3.Up * 20.0f;
+			Vector3 lightPos = transform.Translation + Vector3.Up;
 			m_PointLight.transform.Translation = lightPos;
 
 			ProcessMovement(delta);

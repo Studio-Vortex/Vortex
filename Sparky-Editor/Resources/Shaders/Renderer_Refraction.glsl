@@ -63,7 +63,11 @@ void main()
 	float ratio = 1.0 / u_RefractiveIndex;
 	vec3 I = normalize(f_Position - u_CameraPosition);
 	vec3 R = refract(I, normalize(f_Normal), ratio);
-	o_Color = vec4(texture(u_Skybox, R).rgb * u_Material.Ambient.rgb, 1.0);
 
+	// Apply Gamma correction
+	float gamma = 2.2;
+	vec4 finalColor = vec4(pow(texture(u_Skybox, R).rgb * u_Material.Ambient.rgb, vec3(1.0 / gamma)), 1.0);
+
+	o_Color = finalColor;
 	o_EntityID = f_EntityID;
 }

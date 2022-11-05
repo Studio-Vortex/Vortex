@@ -727,7 +727,7 @@ namespace Sparky {
 				Renderer2D::SetLineWidth(originalLineWidth);
 			}
 
-			Math::vec4 gridColor = { 0.4f, 0.4f, 0.4f, 1.0f };
+			Math::vec4 gridColor = { 0.2f, 0.2f, 0.2f, 1.0f };
 
 			// X Grid Lines
 			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
