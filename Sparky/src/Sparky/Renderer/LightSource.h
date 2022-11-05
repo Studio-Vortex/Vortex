@@ -4,7 +4,7 @@ namespace Sparky {
 
 	struct LightSourceProperties
 	{
-		Math::vec3 Ambient = Math::vec3(0.5f);
+		Math::vec3 Ambient = Math::vec3(0.2f);
 		Math::vec3 Diffuse = Math::vec3(0.5f);
 		Math::vec3 Specular = Math::vec3(0.5f);
 

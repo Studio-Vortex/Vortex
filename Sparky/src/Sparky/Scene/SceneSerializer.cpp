@@ -324,6 +324,7 @@ namespace Sparky {
 				{
 					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
 					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
 					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
 
@@ -693,7 +694,7 @@ namespace Sparky {
 							if (lightSourceComponent["Position"])
 								lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
 							if (lightSourceComponent["Attenuation"])
-								lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec3>());
+								lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 
 							break;
 						}
@@ -703,6 +704,8 @@ namespace Sparky {
 								lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
 							if (lightSourceComponent["Direction"])
 								lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
+							if (lightSourceComponent["Attenuation"])
+								lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 							if (lightSourceComponent["CutOff"])
 								lightComponent.Source->SetCutOff(lightSourceComponent["CutOff"].as<float>());
 							if (lightSourceComponent["OuterCutOff"])

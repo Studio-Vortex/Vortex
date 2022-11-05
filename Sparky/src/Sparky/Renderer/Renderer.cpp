@@ -34,6 +34,9 @@ namespace Sparky {
 
 		float RefractiveIndex = 1.52f; // Glass
 
+		static constexpr inline uint32_t MaxPointLights = 2;
+		uint32_t PointLightIndex = 0;
+
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
@@ -89,6 +92,8 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjection(), transform.Translation);
+
+		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -96,6 +101,8 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
+
+		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::EndScene()
@@ -147,7 +154,6 @@ namespace Sparky {
 		{
 			case LightSourceComponent::LightType::Directional:
 			{
-				s_Data.ModelShader->SetInt("u_LightType", 0);
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Ambient", lightSource->GetAmbient());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Diffuse", lightSource->GetDiffuse());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
@@ -158,24 +164,29 @@ namespace Sparky {
 			}
 			case LightSourceComponent::LightType::Point:
 			{
-				s_Data.ModelShader->SetInt("u_LightType", 1);
-				s_Data.ModelShader->SetFloat3("u_PointLight.Ambient", lightSource->GetAmbient());
-				s_Data.ModelShader->SetFloat3("u_PointLight.Diffuse", lightSource->GetDiffuse());
-				s_Data.ModelShader->SetFloat3("u_PointLight.Specular", lightSource->GetSpecular());
-				s_Data.ModelShader->SetFloat3("u_PointLight.Color", lightSource->GetColor());
-				s_Data.ModelShader->SetFloat3("u_PointLight.Position", lightSource->GetPosition());
+				uint32_t& i = s_Data.PointLightIndex;
+
+				if (i >= s_Data.MaxPointLights)
+					break;
+
+				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
+				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
 
-				s_Data.ModelShader->SetFloat("u_PointLight.Constant", 1.0f);
-				s_Data.ModelShader->SetFloat("u_PointLight.Linear", attenuation.x);
-				s_Data.ModelShader->SetFloat("u_PointLight.Quadratic", attenuation.y);
+				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
+				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
+				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
+
+				i++;
 
 				break;
 			}
 			case LightSourceComponent::LightType::Spot:
 			{
-				s_Data.ModelShader->SetInt("u_LightType", 2);
 				s_Data.ModelShader->SetFloat3("u_SpotLight.Ambient", lightSource->GetAmbient());
 				s_Data.ModelShader->SetFloat3("u_SpotLight.Diffuse", lightSource->GetDiffuse());
 				s_Data.ModelShader->SetFloat3("u_SpotLight.Specular", lightSource->GetSpecular());
@@ -184,6 +195,12 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat3("u_SpotLight.Direction", lightSource->GetDirection());
 				s_Data.ModelShader->SetFloat("u_SpotLight.CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
 				s_Data.ModelShader->SetFloat("u_SpotLight.OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+
+				Math::vec2 attenuation = lightSource->GetAttenuation();
+
+				s_Data.ModelShader->SetFloat("u_SpotLight.Constant", 1.0f);
+				s_Data.ModelShader->SetFloat("u_SpotLight.Linear", attenuation.x);
+				s_Data.ModelShader->SetFloat("u_SpotLight.Quadratic", attenuation.y);
 
 				break;
 			}

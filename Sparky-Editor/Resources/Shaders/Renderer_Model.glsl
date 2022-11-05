@@ -75,8 +75,8 @@ struct PointLight
 	vec3 Position;
 
 	float Constant;
-    float Linear;
-    float Quadratic;
+	float Linear;
+	float Quadratic;
 };
 
 struct SpotLight
@@ -93,59 +93,62 @@ struct SpotLight
 	float OuterCutOff;
 };
 
+struct FragmentProperties
+{
+	vec4 FragColor;
+	vec3 DiffuseMap;
+	vec3 SpecularMap;
+};
+
+#define MAX_POINT_LIGHTS 2
+
 uniform sampler2D        u_Texture;
 uniform vec3             u_CameraPosition;
 uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLight;
-uniform PointLight       u_PointLight;
+uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLight;
-uniform int              u_LightType;
 
-vec4 CalculateDirectionalLight(DirectionalLight lightSource, Material material)
+vec4 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties)
 {
-	// Ambient
-	vec3 ambient = lightSource.Ambient * material.Ambient * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+	// Ambient shading
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
-	// Diffuse
+	// Diffuse shading
 	vec3 norm = normalize(f_Normal);
 	vec3 lightDir = normalize(-lightSource.Direction);
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = lightSource.Diffuse * diff * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+	vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
 
-	// Specular
+	// Specular shading
 	vec3 viewDir = normalize(u_CameraPosition - f_Position);
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
-	vec3 specular = lightSource.Specular * spec * texture(material.Specular, f_TexCoord * f_TexScale).rgb;
+	vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
 
 	vec3 lightResult = ambient + diffuse + specular;
-	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
 
-	// Discard the pixel/fragment if it has an alpha of zero
-	if (fragColor.a == 0.0)
-		discard;
-
-	return vec4(lightSource.Color * lightResult * fragColor.rbg, fragColor.a);
+	return vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
 }
 
-vec4 CalculatePointLight(PointLight lightSource, Material material)
+vec4 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties)
 {
-	// Ambient
-	vec3 ambient = lightSource.Ambient * material.Ambient * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+	// Ambient shading
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
-	// Diffuse
+	// Diffuse shading
 	vec3 norm = normalize(f_Normal);
 	vec3 lightDir = normalize(lightSource.Position - f_Position);
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = lightSource.Diffuse * diff * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+	vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
 
-	// Specular
+	// Specular shading
 	vec3 viewDir = normalize(u_CameraPosition - f_Position);
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
-	vec3 specular = lightSource.Specular * spec * texture(material.Specular, f_TexCoord * f_TexScale).rgb;
+	vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
 
-	// Attenuation
+	// Attenuation shading
 	float distance = length(lightSource.Position - f_Position);
 	float attenuation = 1.0 / (lightSource.Constant + lightSource.Linear * distance + lightSource.Quadratic * (distance * distance));
 	ambient  *= attenuation; 
@@ -153,19 +156,12 @@ vec4 CalculatePointLight(PointLight lightSource, Material material)
 	specular *= attenuation;
 
 	vec3 lightResult = ambient + diffuse + specular;
-	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
 
-	// Discard the pixel/fragment if it has an alpha of zero
-	if (fragColor.a == 0.0)
-		discard;	
-
-	return vec4(lightSource.Color * lightResult * fragColor.rbg, fragColor.a);
+	return vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
 }
 
-vec4 CalculateSpotLight(SpotLight lightSource, Material material)
+vec4 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties)
 {
-	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
-
 	vec3 lightDir = normalize(lightSource.Position - f_Position);
 
 	float theta = dot(lightDir, normalize(-lightSource.Direction));
@@ -177,45 +173,64 @@ vec4 CalculateSpotLight(SpotLight lightSource, Material material)
 	// remember that we're working with angles as cosines instead of degrees so a '>' is used
 	if (theta > lightSource.CutOff)
 	{
-		// Ambient
-		vec3 ambient = lightSource.Ambient * material.Ambient * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+		// Ambient shading
+		vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
-		// Diffuse
+		// Diffuse shading
 		vec3 norm = normalize(f_Normal);
 		float diff = max(dot(norm, lightDir), 0.0);
-		vec3 diffuse = lightSource.Diffuse * diff * texture(material.Diffuse, f_TexCoord * f_TexScale).rgb;
+		vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
 
-		// Specular
+		// Specular shading
 		vec3 viewDir = normalize(u_CameraPosition - f_Position);
 		vec3 reflectDir = reflect(-lightDir, norm);
 		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
-		vec3 specular = lightSource.Specular * spec * texture(material.Specular, f_TexCoord * f_TexScale).rgb;
+		vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
 
 		diffuse *= intensity;
-        specular *= intensity;
+		specular *= intensity;
 
 		vec3 lightResult = ambient + diffuse + specular;
 
-		result = vec4(lightSource.Color * lightResult * fragColor.rbg, fragColor.a);
+		result = vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
 	}
 	else
-		result = vec4(vec4(lightSource.Ambient, 1.0) * texture(material.Diffuse, f_TexCoord * f_TexScale)) * fragColor;
-
-	// Discard the pixel/fragment if it has an alpha of zero
-	if (result.a == 0.0)
-		discard;
+		result = vec4(vec4(lightSource.Ambient, 1.0) * texture(material.Diffuse, f_TexCoord * f_TexScale)) * properties.FragColor;
 
 	return result;
 }
 
 void main()
 {
-	if (u_LightType == 0) // Directional
-		o_Color = CalculateDirectionalLight(u_DirectionalLight, u_Material);
-	else if (u_LightType == 1) // Point
-		o_Color = CalculatePointLight(u_PointLight, u_Material);
-	else if (u_LightType == 2) // spot
-		o_Color = CalculateSpotLight(u_SpotLight, u_Material);
+	vec4 color;
 
+	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
+	vec3 diffuseMap = texture(u_Material.Diffuse, f_TexCoord * f_TexScale).rgb;
+	vec3 specularMap = texture(u_Material.Specular, f_TexCoord * f_TexScale).rgb;
+
+	FragmentProperties properties;
+	properties.FragColor = fragColor;
+	properties.DiffuseMap = diffuseMap;
+	properties.SpecularMap = specularMap;
+
+	// Phase 1: Directional lighting
+	color += CalculateDirectionalLight(u_DirectionalLight, u_Material, properties);
+
+	// Phase 2: Point lights
+	for (int i = 0; i  < MAX_POINT_LIGHTS; i++)
+		color += CalculatePointLight(u_PointLights[i], u_Material, properties);
+
+	// Phase 3: Spot light
+	color += CalculateSpotLight(u_SpotLight, u_Material, properties);
+
+	// Discard the pixel/fragment if it has an alpha of zero
+	if (color.a == 0.0)
+		discard;
+
+	vec4 texCoords = vec4(f_TexCoord, 0.0, 1.0);
+	vec4 normals = vec4(f_Normal, 1.0);
+
+	// Set the output color
+	o_Color = color;
 	o_EntityID = f_EntityID;
 }
