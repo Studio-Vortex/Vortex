@@ -4,13 +4,19 @@ namespace Sparky {
 
 	struct LightSourceProperties
 	{
-		Math::vec3 Ambient = Math::vec3(0.2f);
+		Math::vec3 Ambient = Math::vec3(0.5f);
 		Math::vec3 Diffuse = Math::vec3(0.5f);
 		Math::vec3 Specular = Math::vec3(0.5f);
 
 		Math::vec3 Color = Math::vec3(1.0f);
 		Math::vec3 Position = Math::vec3(0.0f);
 		Math::vec3 Direction = Math::vec3(0.0f);
+
+		// (Linear, Quadratic)
+		Math::vec2 Attenuation = Math::vec2(0.045f, 0.0075f);
+
+		float Cutoff = 12.5f;
+		float OuterCutoff = 17.5f;
 	};
 
 	class LightSource
@@ -35,6 +41,15 @@ namespace Sparky {
 
 		const Math::vec3& GetDirection() const;
 		void SetDirection(const Math::vec3& direction);
+
+		const Math::vec2& GetAttenuation() const;
+		void SetAttenuation(const Math::vec2& attenuation);
+
+		float GetCutOff() const;
+		void SetCutOff(float cutoff);
+
+		float GetOuterCutOff() const;
+		void SetOuterCutOff(float outerCutoff);
 
 		static SharedRef<LightSource> Create(const LightSourceProperties& props);
 

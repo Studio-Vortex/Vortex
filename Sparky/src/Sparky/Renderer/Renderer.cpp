@@ -165,11 +165,26 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat3("u_PointLight.Color", lightSource->GetColor());
 				s_Data.ModelShader->SetFloat3("u_PointLight.Position", lightSource->GetPosition());
 
+				Math::vec2 attenuation = lightSource->GetAttenuation();
+
+				s_Data.ModelShader->SetFloat("u_PointLight.Constant", 1.0f);
+				s_Data.ModelShader->SetFloat("u_PointLight.Linear", attenuation.x);
+				s_Data.ModelShader->SetFloat("u_PointLight.Quadratic", attenuation.y);
+
 				break;
 			}
 			case LightSourceComponent::LightType::Spot:
 			{
 				s_Data.ModelShader->SetInt("u_LightType", 2);
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Ambient", lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Diffuse", lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Specular", lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Color", lightSource->GetColor());
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Position", lightSource->GetPosition());
+				s_Data.ModelShader->SetFloat3("u_SpotLight.Direction", lightSource->GetDirection());
+				s_Data.ModelShader->SetFloat("u_SpotLight.CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
+				s_Data.ModelShader->SetFloat("u_SpotLight.OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+
 				break;
 			}
 		}

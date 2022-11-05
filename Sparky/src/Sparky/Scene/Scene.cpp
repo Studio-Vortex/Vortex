@@ -464,10 +464,24 @@ namespace Sparky {
 		for (auto& e : view)
 		{
 			Entity entity{ e, this };
-			SharedRef<LightSource> lightSource = entity.GetComponent<LightSourceComponent>().Source;
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 			
-			Math::vec3 position = entity.GetTransform().Translation;
-			lightSource->SetPosition(position);
+			switch (lightSourceComponent.Type)
+			{
+				case LightSourceComponent::LightType::Directional:
+				{
+					break;
+				}
+				case LightSourceComponent::LightType::Point:
+				case LightSourceComponent::LightType::Spot:
+				{
+					Math::vec3 position = entity.GetTransform().Translation;
+					lightSource->SetPosition(position);
+					
+					break;
+				}
+			}
 		}
 	}
 

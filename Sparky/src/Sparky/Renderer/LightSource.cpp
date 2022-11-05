@@ -66,6 +66,36 @@ namespace Sparky {
 		m_Properties.Direction = direction;
     }
 
+    const Math::vec2& LightSource::GetAttenuation() const
+    {
+		return m_Properties.Attenuation;
+    }
+
+    void LightSource::SetAttenuation(const Math::vec2& attenuation)
+    {
+		m_Properties.Attenuation = attenuation;
+    }
+
+    float LightSource::GetCutOff() const
+    {
+		return m_Properties.Cutoff;
+    }
+
+    void LightSource::SetCutOff(float cutoff)
+    {
+		m_Properties.Cutoff = cutoff;
+    }
+
+	float LightSource::GetOuterCutOff() const
+	{
+		return m_Properties.OuterCutoff;
+	}
+
+	void LightSource::SetOuterCutOff(float outerCutoff)
+	{
+		m_Properties.OuterCutoff = outerCutoff;
+	}
+
     SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)
     {
 		return CreateShared<LightSource>(props);
