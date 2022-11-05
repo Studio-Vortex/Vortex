@@ -24,14 +24,14 @@ uniform highp mat4 u_Projection;
 
 void main()
 {
-	f_Position = vec3(u_Model * vec4(a_Position, 1.0));
+	f_Position = a_Position;
 	f_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 	f_TexCoord = a_TexCoord;
 	f_TexScale = a_TexScale;
 	
 	f_EntityID = a_EntityID;
 	
-	gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
+	gl_Position = u_Projection * u_View * vec4(f_Position, 1.0);
 }
 
 
@@ -89,13 +89,16 @@ struct SpotLight
 	vec3 Position;
 	vec3 Direction;
 
+	float Constant;
+	float Linear;
+	float Quadratic;
+
 	float CutOff;
 	float OuterCutOff;
 };
 
 struct FragmentProperties
 {
-	vec4 FragColor;
 	vec3 DiffuseMap;
 	vec3 SpecularMap;
 };
@@ -109,43 +112,41 @@ uniform DirectionalLight u_DirectionalLight;
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLight;
 
-vec4 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties)
+vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties)
 {
 	// Ambient shading
 	vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
 	// Diffuse shading
-	vec3 norm = normalize(f_Normal);
+	vec3 normal = normalize(f_Normal);
 	vec3 lightDir = normalize(-lightSource.Direction);
-	float diff = max(dot(norm, lightDir), 0.0);
+	float diff = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
 
 	// Specular shading
 	vec3 viewDir = normalize(u_CameraPosition - f_Position);
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.Shininess);
 	vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
 
-	vec3 lightResult = ambient + diffuse + specular;
-
-	return vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
+	return lightSource.Color * (ambient + diffuse + specular);
 }
 
-vec4 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties)
+vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties)
 {
 	// Ambient shading
 	vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
 	// Diffuse shading
-	vec3 norm = normalize(f_Normal);
+	vec3 normal = normalize(f_Normal);
 	vec3 lightDir = normalize(lightSource.Position - f_Position);
-	float diff = max(dot(norm, lightDir), 0.0);
+	float diff = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
 
 	// Specular shading
 	vec3 viewDir = normalize(u_CameraPosition - f_Position);
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.Shininess);
 	vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
 
 	// Attenuation shading
@@ -155,82 +156,72 @@ vec4 CalculatePointLight(PointLight lightSource, Material material, FragmentProp
 	diffuse  *= attenuation;
 	specular *= attenuation;
 
-	vec3 lightResult = ambient + diffuse + specular;
-
-	return vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
+	return lightSource.Color * (ambient + diffuse + specular);
 }
 
-vec4 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties)
+vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties)
 {
-	vec3 lightDir = normalize(lightSource.Position - f_Position);
+	// Ambient shading
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
 
+	// Diffuse shading
+	vec3 normal = normalize(f_Normal);
+	vec3 lightDir = normalize(lightSource.Position - f_Position);
+	float diff = max(dot(normal, lightDir), 0.0);
+	vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
+
+	// Specular shading
+	vec3 viewDir = normalize(u_CameraPosition - f_Position);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.Shininess);
+	vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
+
+	// Spotlight
 	float theta = dot(lightDir, normalize(-lightSource.Direction));
 	float epsilon = lightSource.CutOff - lightSource.OuterCutOff;
 	float intensity = clamp((theta - lightSource.OuterCutOff) / epsilon, 0.0, 1.0);
+	diffuse *= intensity;
+	specular *= intensity;
 
-	vec4 result;
+	// Attenuation shading
+	float distance = length(lightSource.Position - f_Position);
+	float attenuation = 1.0 / (lightSource.Constant + lightSource.Linear * distance + lightSource.Quadratic * (distance * distance));
+	//ambient  *= attenuation; 
+	diffuse  *= attenuation;
+	specular *= attenuation;
 
-	// remember that we're working with angles as cosines instead of degrees so a '>' is used
-	if (theta > lightSource.CutOff)
-	{
-		// Ambient shading
-		vec3 ambient = lightSource.Ambient * material.Ambient * properties.DiffuseMap;
-
-		// Diffuse shading
-		vec3 norm = normalize(f_Normal);
-		float diff = max(dot(norm, lightDir), 0.0);
-		vec3 diffuse = lightSource.Diffuse * diff * properties.DiffuseMap;
-
-		// Specular shading
-		vec3 viewDir = normalize(u_CameraPosition - f_Position);
-		vec3 reflectDir = reflect(-lightDir, norm);
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
-		vec3 specular = lightSource.Specular * spec * properties.SpecularMap;
-
-		diffuse *= intensity;
-		specular *= intensity;
-
-		vec3 lightResult = ambient + diffuse + specular;
-
-		result = vec4(lightSource.Color * lightResult * properties.FragColor.rbg, properties.FragColor.a);
-	}
-	else
-		result = vec4(vec4(lightSource.Ambient, 1.0) * texture(material.Diffuse, f_TexCoord * f_TexScale)) * properties.FragColor;
-
-	return result;
+	return lightSource.Color * (ambient + diffuse + specular);
 }
 
 void main()
 {
-	vec4 color;
-
-	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
+	vec3 lightColor;
 	vec3 diffuseMap = texture(u_Material.Diffuse, f_TexCoord * f_TexScale).rgb;
 	vec3 specularMap = texture(u_Material.Specular, f_TexCoord * f_TexScale).rgb;
 
 	FragmentProperties properties;
-	properties.FragColor = fragColor;
 	properties.DiffuseMap = diffuseMap;
 	properties.SpecularMap = specularMap;
 
 	// Phase 1: Directional lighting
-	color += CalculateDirectionalLight(u_DirectionalLight, u_Material, properties);
+	lightColor += CalculateDirectionalLight(u_DirectionalLight, u_Material, properties);
 
 	// Phase 2: Point lights
 	for (int i = 0; i  < MAX_POINT_LIGHTS; i++)
-		color += CalculatePointLight(u_PointLights[i], u_Material, properties);
+		lightColor += CalculatePointLight(u_PointLights[i], u_Material, properties);
 
 	// Phase 3: Spot light
-	color += CalculateSpotLight(u_SpotLight, u_Material, properties);
+	lightColor += CalculateSpotLight(u_SpotLight, u_Material, properties);
+
+	vec4 fragColor = texture(u_Texture, f_TexCoord * f_TexScale);
 
 	// Discard the pixel/fragment if it has an alpha of zero
-	if (color.a == 0.0)
+	if (fragColor.a == 0.0)
 		discard;
 
-	vec4 texCoords = vec4(f_TexCoord, 0.0, 1.0);
-	vec4 normals = vec4(f_Normal, 1.0);
+	vec4 finalColor = vec4(lightColor * fragColor.rgb, fragColor.a);
 
 	// Set the output color
-	o_Color = color;
+	o_Color = finalColor;
 	o_EntityID = f_EntityID;
 }
