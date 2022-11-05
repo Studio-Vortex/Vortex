@@ -10,6 +10,7 @@ namespace Sparky {
 
 		Math::vec3 Color = Math::vec3(1.0f);
 		Math::vec3 Position = Math::vec3(0.0f);
+		Math::vec3 Direction = Math::vec3(0.0f);
 	};
 
 	class LightSource
@@ -31,6 +32,9 @@ namespace Sparky {
 
 		const Math::vec3& GetPosition() const;
 		void SetPosition(const Math::vec3& position);
+
+		const Math::vec3& GetDirection() const;
+		void SetDirection(const Math::vec3& direction);
 
 		static SharedRef<LightSource> Create(const LightSourceProperties& props);
 

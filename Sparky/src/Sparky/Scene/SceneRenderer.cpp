@@ -87,15 +87,13 @@ namespace Sparky {
 				}
 			}
 
+			if (!sceneCamera)
 			{
 				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
 
 				for (const auto entity : view)
 				{
 					auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
-
-					if (sceneCamera)
-						continue;
 
 					Renderer::RenderCameraIcon(transformComponent, (int)(entt::entity)entity);
 				}

@@ -789,6 +789,27 @@ namespace Sparky {
 
 			SharedRef<LightSource> lightSource = component.Source;
 
+			switch (component.Type)
+			{
+				case LightSourceComponent::LightType::Directional:
+				{
+					Math::vec3 direction = lightSource->GetDirection();
+					if (Gui::DragFloat3("Direction", Math::ValuePtr(direction), 0.1f, 0.0f, 0.0f, "%.2f"))
+						lightSource->SetDirection(direction);
+					break;
+				}
+				case LightSourceComponent::LightType::Point:
+				{
+
+					break;
+				}
+				case LightSourceComponent::LightType::Spot:
+				{
+
+					break;
+				}
+			}
+
 			Math::vec3 ambient = lightSource->GetAmbient();
 			if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
 				lightSource->SetAmbient(ambient);

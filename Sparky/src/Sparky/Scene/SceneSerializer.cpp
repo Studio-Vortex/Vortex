@@ -306,7 +306,25 @@ namespace Sparky {
 			out << YAML::Key << "Diffuse" << YAML::Value << lightSource->GetDiffuse();
 			out << YAML::Key << "Specular" << YAML::Value << lightSource->GetSpecular();
 			out << YAML::Key << "Color" << YAML::Value << lightSource->GetColor();
-			out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+
+			switch (lightComponent.Type)
+			{
+				case LightSourceComponent::LightType::Directional:
+				{
+					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+					break;
+				}
+				case LightSourceComponent::LightType::Point:
+				{
+					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+					break;
+				}
+				case LightSourceComponent::LightType::Spot:
+				{
+
+					break;
+				}
+			}
 
 			out << YAML::EndMap; // LightSourceComponent
 		}
@@ -655,8 +673,29 @@ namespace Sparky {
 						lightComponent.Source->SetSpecular(lightSourceComponent["Specular"].as<Math::vec3>());
 					if (lightSourceComponent["Color"])
 						lightComponent.Source->SetColor(lightSourceComponent["Color"].as<Math::vec3>());
-					if (lightSourceComponent["Position"])
-						lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
+
+					switch (lightComponent.Type)
+					{
+						case LightSourceComponent::LightType::Directional:
+						{
+							if (lightSourceComponent["Direction"])
+								lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
+
+							break;
+						}
+						case LightSourceComponent::LightType::Point:
+						{
+							if (lightSourceComponent["Position"])
+								lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
+
+							break;
+						}
+						case LightSourceComponent::LightType::Spot:
+						{
+
+							break;
+						}
+					}
 				}
 
 				auto meshComponent = entity["MeshRendererComponent"];

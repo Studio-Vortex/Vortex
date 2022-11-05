@@ -21,6 +21,8 @@ namespace Sandbox {
 			float aspectRatio = width / (float)height;
 			float length = 2.0f;
 			float radius = 0.5f;
+			Vector2 quadSize = new Vector2(.05f);
+			Vector4 quadColor = new Vector4(0, 1, 0, 1);
 
 			t0Hits.Clear();
 			t1Hits.Clear();
@@ -43,17 +45,28 @@ namespace Sandbox {
 					float b = 2.0f * Vector3.Dot(rayOrigin, rayDirection);
 					float c = Vector3.Dot(rayOrigin, rayOrigin) - radius * radius;
 
-					// Quadratic formula discriminant
-					// b^2 - 4ac
-
 					float discriminant = b * b - 4 * a * c;
 
 					Vector4 rayColor = new Vector4(0, 0, 0, 0.2f);
 
 					if (discriminant >= 0.0f)
-						rayColor = new Vector4(1, 0, 1, 1);
+					{
+						float t0 = (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
+						float t1 = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
 
-					DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
+						{
+							Vector3 hitPosition = rayOrigin + rayDirection * length;
+							DebugRenderer.DrawQuadBillboard(hitPosition, quadSize, quadColor);
+						}
+						{
+							Vector3 hitPosition = rayOrigin + rayDirection * length;
+							DebugRenderer.DrawQuadBillboard(hitPosition, quadSize, quadColor);
+						}
+
+						rayColor = new Vector4(1, 0, 1, 1);
+					}
+
+					//DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
 				}
 			}
 

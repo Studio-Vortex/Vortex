@@ -106,13 +106,16 @@ namespace Sparky {
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Entity primaryCamera = contextScene->GetPrimaryCameraEntity();
+		Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
 
-		if (primaryCamera)
+		if (!primaryCameraEntity)
 		{
-			SceneCamera& camera = primaryCamera.GetComponent<CameraComponent>().Camera;
-			Renderer2D::BeginScene(camera, primaryCamera.GetTransform().GetTransform());
+			SP_CORE_WARN("Scene must include a primary camera to call debug render functions!");
+			return;
 		}
+
+		SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
+		Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
 	}
 
 	static void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
@@ -120,9 +123,20 @@ namespace Sparky {
 		Renderer2D::DrawLine(*p1, *p2, *color);
 	}
 
-	static void DebugRenderer_DrawQuad(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
+	static void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
 	{
-		Renderer2D::DrawQuad(*translation, *size, *color);
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
+
+		if (!primaryCameraEntity)
+		{
+			SP_CORE_WARN("Scene must include a primary camera to call debug render functions!");
+			return;
+		}
+
+		Math::vec3 cameraPosition(primaryCameraEntity.GetTransform().Translation);
+		Renderer2D::DrawQuadBillboard(cameraPosition, *translation, *size, *color);
 	}
 
 	static void DebugRenderer_Flush()
@@ -594,7 +608,7 @@ namespace Sparky {
 		Math::vec3 translation;
 		Math::vec3 rotation;
 		Math::vec3 scale;
-		Math::DecomposeTransform(result, translation, rotation, scale);
+		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
 		transform = TransformComponent{ translation, rotation, scale };
 	}
 
@@ -1872,6 +1886,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_BeginScene);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
 #pragma endregion

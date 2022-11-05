@@ -21,16 +21,16 @@ namespace Sandbox {
 				{
 					for (float x = 0; x < Width; x++)
 					{
-						Entity entity = new Entity($"{x}, {y}, {z}");
+						/*Entity entity = new Entity($"{x}, {y}, {z}");
 						entity.transform.Translate(x - Width / 2.0f, y, z);
 						entity.AddComponent<MeshRenderer>().Color = new Vector4(
 							RandomDevice.RangedFloat(0.0f, 1.0f),
 							RandomDevice.RangedFloat(0.0f, 1.0f),
 							RandomDevice.RangedFloat(0.0f, 1.0f),
 							1.0f
-						);
+						);*/
 
-						m_Cubes.Add(entity);
+						//m_Cubes.Add(entity);
 					}
 				}
 			}

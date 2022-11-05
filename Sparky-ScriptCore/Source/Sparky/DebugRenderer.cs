@@ -17,9 +17,9 @@
 			InternalCalls.DebugRenderer_DrawLine(ref p1, ref p2, ref color);
 		}
 
-		public static void DrawQuad(Vector3 translation, Vector2 size, Vector4 color)
+		public static void DrawQuadBillboard(Vector3 translation, Vector2 size, Vector4 color)
 		{
-			InternalCalls.DebugRenderer_DrawQuad(ref translation, ref size, ref color);
+			InternalCalls.DebugRenderer_DrawQuadBillboard(ref translation, ref size, ref color);
 		}
 
 		public static void Flush()

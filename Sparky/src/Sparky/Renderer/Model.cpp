@@ -188,8 +188,6 @@ namespace Sparky {
 		for (auto& vertex : m_Vertices)
 		{
 			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
-			//vertex.Normal = Math::Normalize(Math::mat3(entityTransform) * m_OriginalVertices[i].Normal);
-			//vertex.Normal = m_OriginalVertices[i].Normal;
 			vertex.TexScale = scale;
 
 			i++;

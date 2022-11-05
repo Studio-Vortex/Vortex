@@ -9,7 +9,8 @@ namespace Sandbox {
 		public float MaxRoll_Down = -60.0f;
 		public float ShiftModifer = 2.0f;
 		public float ControllerDeadzone = 0.15f;
-		public Vector3 Speed = new Vector3(4.0f, 0.0f, 4.0f);
+		public Vector3 WalkSpeed = new Vector3(4.0f, 0.0f, 4.0f);
+		public Vector3 RunSpeed = new Vector3(10.0f, 0.0f, 10.0f);
 		public Vector3 RotationSpeed = new Vector3(100.0f, 100.0f, 0.0f);
 		
 		public bool FixedRotation;
@@ -24,18 +25,20 @@ namespace Sandbox {
 
 		public override void OnUpdate(float delta)
 		{
+			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
+
 			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 				Application.Shutdown();
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				transform.Translate(-transform.Forward * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+				transform.Translate(-transform.Forward * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				transform.Translate(-transform.Forward * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+				transform.Translate(-transform.Forward * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				transform.Translate(transform.Right * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
+				transform.Translate(transform.Right * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				transform.Translate(transform.Right * Speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
+				transform.Translate(transform.Right * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 
 			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
 				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
@@ -48,7 +51,7 @@ namespace Sandbox {
 			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
 				m_Velocity *= ShiftModifer;
 
-			m_Velocity *= Speed * delta;
+			m_Velocity *= speed * delta;
 			m_Rotation *= RotationSpeed * delta;
 
 			transform.Translation += m_Velocity;
@@ -57,15 +60,13 @@ namespace Sandbox {
 
 		private void ProcessRotation()
 		{
-			if (Input.GetGamepadAxis(Gamepad.AxisRightX) < -ControllerDeadzone)
-				m_Rotation.Y = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisRightX);
-			if (Input.GetGamepadAxis(Gamepad.AxisRightX) > ControllerDeadzone)
-				m_Rotation.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisRightX);
+			float rightAxisX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
+			if (rightAxisX < -ControllerDeadzone || rightAxisX > ControllerDeadzone)
+				m_Rotation.Y = rightAxisX;
 
-			if (Input.GetGamepadAxis(Gamepad.AxisRightY) < -ControllerDeadzone)
-				m_Rotation.X = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisRightY);
-			if (Input.GetGamepadAxis(Gamepad.AxisRightY) > ControllerDeadzone)
-				m_Rotation.X = -1.0f * Input.GetGamepadAxis(Gamepad.AxisRightY);
+			float rightAxisY = -Input.GetGamepadAxis(Gamepad.AxisRightY);
+			if (rightAxisY < -ControllerDeadzone || rightAxisY > ControllerDeadzone)
+				m_Rotation.X = rightAxisY;
 
 			if (transform.Rotation.X >= MaxRoll_Up)
 			{

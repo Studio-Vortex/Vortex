@@ -56,6 +56,16 @@ namespace Sparky {
 		m_Properties.Position = position;
     }
 
+    const Math::vec3& LightSource::GetDirection() const
+    {
+		return m_Properties.Direction;
+    }
+
+    void LightSource::SetDirection(const Math::vec3& direction)
+    {
+		m_Properties.Direction = direction;
+    }
+
     SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)
     {
 		return CreateShared<LightSource>(props);

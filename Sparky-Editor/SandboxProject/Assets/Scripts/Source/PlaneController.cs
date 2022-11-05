@@ -14,6 +14,8 @@ namespace Sandbox {
 		Entity m_Camera;
 		Entity m_PointLight;
 
+		private bool m_ThrottleOn = false;
+
 		public override void OnCreate()
 		{
 			m_Camera = FindEntityByName("Camera");
@@ -29,18 +31,15 @@ namespace Sandbox {
 			//m_Camera.transform.LookAt(transform.Translation);
 			//m_Camera.transform.Rotation = transform.Rotation * 0.5f;
 
-			Vector3 lightPos = transform.Translation + Vector3.Up * 3.0f;
-			lightPos.X -= 2.0f;
+			Vector3 lightPos = transform.Translation + Vector3.Up * 20.0f;
 			m_PointLight.transform.Translation = lightPos;
-			m_PointLight.GetComponent<LightSource>().Specular = new Vector3((float)Math.Cos(delta) * 0.5f);
 
 			ProcessMovement(delta);
 			ProcessRotation(delta);
-			//ProcessCameraRotation(delta);
+			ProcessCameraRotation(delta);
 
 			transform.Translate(Velocity);
 			transform.Rotate(Rotation);
-			//Velocity *= 0.5f;
 			Rotation *= 0.5f;
 		}
 
@@ -48,10 +47,23 @@ namespace Sandbox {
 		{
 			float axisLeftTrigger = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
 			if (axisLeftTrigger > Deadzone)
-				Velocity = -transform.Forward * MoveSpeed * delta * axisLeftTrigger;
+				Velocity = transform.Forward * MoveSpeed * delta * -axisLeftTrigger;
+
 			float axisRightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (axisRightTrigger > Deadzone)
+			{
 				Velocity = transform.Forward * MoveSpeed * delta * axisRightTrigger;
+
+				if (!m_ThrottleOn)
+				{
+					m_ThrottleOn = true;
+				}
+
+				MoveSpeed += delta;
+			}
+
+			if (Input.IsGamepadButtonDown(Gamepad.ButtonB))
+				Velocity *= 0.25f;
 		}
 
 		void ProcessRotation(float delta)
@@ -75,14 +87,9 @@ namespace Sandbox {
 		void ProcessCameraRotation(float delta)
 		{
 			// left right rotation
-			float axisRightX = Input.GetGamepadAxis(Gamepad.AxisRightX);
+			float axisRightX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
 			if (axisRightX > Deadzone || axisRightX < -Deadzone)
-				m_Camera.transform.Rotate(m_Camera.transform.Up * RotationSpeed * delta * axisRightX);
-
-			// up down rotation
-			float axisRightY = Input.GetGamepadAxis(Gamepad.AxisRightY);
-			if (axisRightY > Deadzone || axisRightY < -Deadzone)
-				m_Camera.transform.Rotate(m_Camera.transform.Right * RotationSpeed * delta * axisRightY);
+				m_Camera.transform.Rotate(transform.Up * RotationSpeed * delta * axisRightX);
 		}
 
 		public override void OnGui()

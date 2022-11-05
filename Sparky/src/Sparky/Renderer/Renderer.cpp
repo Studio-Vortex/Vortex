@@ -141,20 +141,24 @@ namespace Sparky {
 	{
 		SharedRef<LightSource> lightSource = light.Source;
 
+		s_Data.ModelShader->Enable();
+
 		switch (light.Type)
 		{
 			case LightSourceComponent::LightType::Directional:
 			{
+				s_Data.ModelShader->SetInt("u_LightType", 0);
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Ambient", lightSource->GetAmbient());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Diffuse", lightSource->GetDiffuse());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Color", lightSource->GetColor());
-				//s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
+				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
 
 				break;
 			}
 			case LightSourceComponent::LightType::Point:
 			{
+				s_Data.ModelShader->SetInt("u_LightType", 1);
 				s_Data.ModelShader->SetFloat3("u_PointLight.Ambient", lightSource->GetAmbient());
 				s_Data.ModelShader->SetFloat3("u_PointLight.Diffuse", lightSource->GetDiffuse());
 				s_Data.ModelShader->SetFloat3("u_PointLight.Specular", lightSource->GetSpecular());
@@ -165,7 +169,7 @@ namespace Sparky {
 			}
 			case LightSourceComponent::LightType::Spot:
 			{
-
+				s_Data.ModelShader->SetInt("u_LightType", 2);
 				break;
 			}
 		}

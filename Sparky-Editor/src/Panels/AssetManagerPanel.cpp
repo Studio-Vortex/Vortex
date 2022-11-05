@@ -48,7 +48,7 @@ namespace Sparky {
 				}
 			}
 
-			Gui::Begin("Asset Manager");
+			Gui::Begin("Asset Manager", &s_ShowPanel);
 
 			Gui::PushFont(boldFont);
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
