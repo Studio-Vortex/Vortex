@@ -10,6 +10,45 @@ namespace Sparky {
 
 	namespace Utils {
 
+		static void GenerateGeometryTangents(std::vector<ModelVertexInfo>& vertices, const std::vector<uint32_t>& indices)
+		{
+			uint32_t indexCount = indices.size();
+			for (uint32_t i = 0; i < indexCount; i += 3)
+			{
+				uint32_t i0 = indices[(size_t)i + 0];
+				uint32_t i1 = indices[(size_t)i + 1];
+				uint32_t i2 = indices[(size_t)i + 2];
+
+				Math::vec3 edge1 = vertices[i1].Position - vertices[i0].Position;
+				Math::vec3 edge2 = vertices[i2].Position - vertices[i0].Position;
+
+				float deltaU1 = vertices[i1].TextureCoord.x - vertices[i0].TextureCoord.x;
+				float deltaV1 = vertices[i1].TextureCoord.y - vertices[i0].TextureCoord.y;
+
+				float deltaU2 = vertices[i2].TextureCoord.x - vertices[i0].TextureCoord.x;
+				float deltaV2 = vertices[i2].TextureCoord.y - vertices[i0].TextureCoord.y;
+
+				float dividend = (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+				float fc = 1.0f / dividend;
+
+				Math::vec3 tangent(
+					(fc * (deltaV2 * edge1.x - deltaV1 * edge2.x)),
+					(fc * (deltaV2 * edge1.y - deltaV1 * edge2.y)),
+					(fc * (deltaV2 * edge1.z - deltaV1 * edge2.z))
+				);
+
+				tangent = Math::Normalize(tangent);
+				
+				float sx = deltaU1, sy = deltaU2;
+				float tx = deltaV1, ty = deltaV2;
+				float handedness = ((tx * sy - ty * sx) < 0.0f) ? -1.0f : 1.0f;
+				Math::vec4 t4(tangent, handedness);
+				vertices[i0].Tangent = t4;
+				vertices[i1].Tangent = t4;
+				vertices[i2].Tangent = t4;
+			}
+		}
+
 		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform)
 		{
 			tinyobj::attrib_t attributes;
@@ -51,7 +90,7 @@ namespace Sparky {
 						attributes.texcoords[2 * index.texcoord_index + 1]
 					};
 
-					ModelVertexInfo vertex = { Math::vec3(vertexPosition), vertexNormal, vertexTexCoord };
+					ModelVertexInfo vertex = { Math::vec3(vertexPosition), vertexNormal, Math::vec4(), vertexTexCoord};
 
 					if (uniqueVertices.count(vertex) == 0)
 					{
@@ -62,6 +101,8 @@ namespace Sparky {
 					indices.push_back(uniqueVertices[vertex]);
 				}
 			}
+
+			GenerateGeometryTangents(vertices, indices);
 
 			return { vertices, indices };
 		}
@@ -94,6 +135,7 @@ namespace Sparky {
 			ModelVertex& v = m_OriginalVertices[i++];
 			v.Position = vertex.Position;
 			v.Normal = vertex.Normal;
+			v.Tangent = vertex.Tangent;
 			v.TextureCoord = vertex.TextureCoord;
 			v.TexScale = Math::vec2(1.0f);
 			v.EntityID = (int)(entt::entity)entity;
@@ -108,6 +150,7 @@ namespace Sparky {
 		m_Vbo->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal"   },
+			{ ShaderDataType::Float4, "a_Tangent"  },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float2, "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },

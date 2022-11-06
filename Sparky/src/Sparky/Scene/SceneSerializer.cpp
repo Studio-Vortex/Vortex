@@ -352,10 +352,16 @@ namespace Sparky {
 				SharedRef<Material> material = model->GetMaterial();
 
 				out << YAML::Key << "Ambient" << YAML::Value << material->GetAmbient();
-				if (material->GetDiffuseMap())
-					out << YAML::Key << "DiffuseMapPath" << YAML::Value << material->GetDiffuseMap()->GetPath();
-				if (material->GetSpecularMap())
-					out << YAML::Key << "SpecularMapPath" << YAML::Value << material->GetSpecularMap()->GetPath();
+
+				SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
+				SharedRef<Texture2D> specularMap = material->GetSpecularMap();
+				SharedRef<Texture2D> normalMap = material->GetNormalMap();
+				if (diffuseMap)
+					out << YAML::Key << "DiffuseMapPath" << YAML::Value << diffuseMap->GetPath();
+				if (specularMap)
+					out << YAML::Key << "SpecularMapPath" << YAML::Value << specularMap->GetPath();
+				if (normalMap)
+					out << YAML::Key << "NormalMapPath" << YAML::Value << normalMap->GetPath();
 
 				out << YAML::Key << "Shininess" << material->GetShininess();
 			}
@@ -727,14 +733,18 @@ namespace Sparky {
 						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
 					if (meshComponent["MeshSource"])
 						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity);
+
+					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
 					if (meshComponent["Ambient"])
-						meshRendererComponent.Mesh->GetMaterial()->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
+						material->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
 					if (meshComponent["DiffuseMapPath"])
-						meshRendererComponent.Mesh->GetMaterial()->SetDiffuseMap(Texture2D::Create(meshComponent["DiffuseMapPath"].as<std::string>()));
+						material->SetDiffuseMap(Texture2D::Create(meshComponent["DiffuseMapPath"].as<std::string>()));
 					if (meshComponent["SpecularMapPath"])
-						meshRendererComponent.Mesh->GetMaterial()->SetSpecularMap(Texture2D::Create(meshComponent["SpecularMapPath"].as<std::string>()));
+						material->SetSpecularMap(Texture2D::Create(meshComponent["SpecularMapPath"].as<std::string>()));
+					if (meshComponent["NormalMapPath"])
+						material->SetNormalMap(Texture2D::Create(meshComponent["NormalMapPath"].as<std::string>()));
 					if (meshComponent["Shininess"])
-						meshRendererComponent.Mesh->GetMaterial()->SetShininess(meshComponent["Shininess"].as<float>());
+						material->SetShininess(meshComponent["Shininess"].as<float>());
 
 					if (meshComponent["TextureScale"])
 						meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();

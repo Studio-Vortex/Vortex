@@ -17,6 +17,7 @@ namespace Sparky {
 	{
 		Math::vec3 Position;
 		Math::vec3 Normal;
+		Math::vec4 Tangent;
 		Math::vec2 TextureCoord;
 		Math::vec2 TexScale;
 
@@ -28,11 +29,12 @@ namespace Sparky {
 	{
 		Math::vec3 Position;
 		Math::vec3 Normal;
+		Math::vec4 Tangent;
 		Math::vec2 TextureCoord;
 
 		inline bool operator==(const ModelVertexInfo& other) const
 		{
-			return Position == other.Position && Normal == other.Normal && TextureCoord == other.TextureCoord;
+			return Position == other.Position && Normal == other.Normal && Tangent == other.Tangent && TextureCoord == other.TextureCoord;
 		}
 	};
 

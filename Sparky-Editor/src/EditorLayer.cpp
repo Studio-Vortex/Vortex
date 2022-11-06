@@ -376,23 +376,25 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Window"))
 			{
+				Gui::MenuItem("Asset Manager", nullptr, &m_AssetManagerPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
+				Gui::Separator();
+				Gui::MenuItem("Material Viewer", nullptr, &m_MaterialViewerPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+				Gui::Separator();
 				Gui::MenuItem("Scene", nullptr, &scenePanelOpen);
 				Gui::Separator();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
 				Gui::Separator();
-				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
-				Gui::Separator();
-				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.IsOpen());
-				Gui::Separator();
-				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
-				Gui::Separator();
-				Gui::MenuItem("Asset Manager", nullptr, &m_AssetManagerPanel.IsOpen());
+				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
-				Gui::Separator();
-				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
-				Gui::Separator();
-				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Settings", nullptr, &m_SettingsPanel.IsOpen());
 
@@ -415,6 +417,7 @@ namespace Sparky {
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
+			m_MaterialViewerPanel.OnGuiRender();
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SettingsPanel.OnGuiRender();
@@ -566,7 +569,7 @@ namespace Sparky {
 			{
 				ImGuizmo::Manipulate(
 					Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
-					(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, Math::ValuePtr(entityTransform),
+					static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
 					nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
 				);
 
@@ -603,26 +606,47 @@ namespace Sparky {
 		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
 
+		auto DisplayTooltipFunc = [](const char* message) {
+			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+			Gui::BeginTooltip();
+			Gui::Text(message);
+			Gui::EndTooltip();
+			Gui::PopStyleVar();
+		};
+
+		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+
 		float size = Gui::GetTextLineHeightWithSpacing() * 1.25f;
 		Gui::SetCursorPos({ size, 10.0f });
-		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::LOCAL);
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("Local Mode");
 
 		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("World Mode");
 
 		Gui::SetCursorPos({ size * 6, 10.0f });
-		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
 			OnTranslationToolSelected();
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("Translate Tool");
 
 		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
 			OnRotationToolSelected();
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("Rotate Tool");
 
 		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }))
+		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
 			OnScaleToolSelected();
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("Scale Tool");
 
 		bool hasPlayButton = m_SceneState != SceneState::Simulate;
 		bool hasSimulateButton = m_SceneState != SceneState::Play;
@@ -643,6 +667,8 @@ namespace Sparky {
 				else
 					OnSceneStop();
 			}
+			else if (Gui::IsItemHovered())
+				DisplayTooltipFunc((hasSimulateButton) ? "Play" : "Stop");
 
 			Gui::SameLine();
 		}
@@ -659,6 +685,8 @@ namespace Sparky {
 				else
 					OnSceneStop();
 			}
+			else if (Gui::IsItemHovered())
+				DisplayTooltipFunc("Simulate Physics");
 
 			Gui::SameLine();
 		}
@@ -675,6 +703,8 @@ namespace Sparky {
 				else
 					OnSceneResume();
 			}
+			else if (Gui::IsItemHovered())
+				DisplayTooltipFunc("Pause Scene");
 
 			if (scenePaused)
 			{
@@ -683,6 +713,8 @@ namespace Sparky {
 				SharedRef<Texture2D> icon = m_StepIcon;
 				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 					m_ActiveScene->Step(m_FrameStepCount);
+				else if (Gui::IsItemHovered())
+					DisplayTooltipFunc("Next Frame");
 			}
 		}
 
@@ -830,15 +862,6 @@ namespace Sparky {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_EditorCamera.OnEvent(e);
-
-		// Set cursor position
-		Math::vec2 mousePosition = Input::GetMousePosition();
-		Math::vec2 windowSize = Application::Get().GetWindow().GetSize();
-
-		if (m_MousePosLastFrame.x == 0)
-			Application::Get().GetWindow().SetCursorPosition(windowSize.x, m_MousePosLastFrame.y);
-		if (m_MousePosLastFrame.x == windowSize.x - 1.0f)
-			Application::Get().GetWindow().SetCursorPosition(0, m_MousePosLastFrame.y);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
@@ -1121,9 +1144,17 @@ namespace Sparky {
 		Entity startingCube = m_EditorScene->CreateEntity("Cube");
 		startingCube.AddComponent<MeshRendererComponent>();
 
-		Entity startingLight = m_EditorScene->CreateEntity("Point Light");
-		startingLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+		Entity startingPointLight1 = m_EditorScene->CreateEntity("Point Light");
+		startingPointLight1.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingPointLight1.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+
+		Entity startingPointLight2 = m_EditorScene->CreateEntity("Point Light");
+		startingPointLight2.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingPointLight2.GetTransform().Translation = Math::vec3(2.0f, 4.0f, 4.0f);
+
+		Entity startingSpotLight = m_EditorScene->CreateEntity("Spot Light");
+		startingSpotLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Spot;
+		startingSpotLight.GetTransform().Translation = Math::vec3(-0.0f, 4.0f, 4.0f);
 
 		Entity startingCamera = m_EditorScene->CreateEntity("Camera");
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;

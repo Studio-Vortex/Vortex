@@ -36,6 +36,16 @@ namespace Sparky {
 		m_Properties.SpecularMap = specularMap;
     }
 
+    const SharedRef<Texture2D>& Material::GetNormalMap() const
+    {
+		return m_Properties.NormalMap;
+    }
+
+    void Material::SetNormalMap(const SharedRef<Texture2D>& normalMap)
+    {
+		m_Properties.NormalMap = normalMap;
+    }
+
 	float Material::GetShininess() const
 	{
 		return m_Properties.Shininess;

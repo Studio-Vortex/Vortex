@@ -247,14 +247,21 @@ namespace Sparky {
 			{
 				uint32_t diffuseMapTextureSlot = 1;
 				diffuseMap->Bind(diffuseMapTextureSlot);
-				shader->SetInt("u_Material.Diffuse", diffuseMapTextureSlot);
+				shader->SetInt("u_Material.DiffuseMap", diffuseMapTextureSlot);
 			}
 
 			if (SharedRef<Texture2D> specularMap = material->GetSpecularMap())
 			{
 				uint32_t specularMapTextureSlot = 2;
 				specularMap->Bind(specularMapTextureSlot);
-				shader->SetInt("u_Material.Specular", specularMapTextureSlot);
+				shader->SetInt("u_Material.SpecularMap", specularMapTextureSlot);
+			}
+
+			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
+			{
+				uint32_t normalMapTextureSlot = 3;
+				normalMap->Bind(normalMapTextureSlot);
+				shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
 			}
 
 			shader->SetFloat("u_Material.Shininess", material->GetShininess());

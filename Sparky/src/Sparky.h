@@ -19,6 +19,10 @@ namespace Math = Sparky::Math;
 namespace Gui = ImGui;
 /// ---------------------------------------------------
 
+/// Audio
+#include "Sparky/Audio/AudioSource.h"
+#include "Sparky/Audio/AudioListener.h"
+
 /// Scene
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"
@@ -50,6 +54,11 @@ namespace Gui = ImGui;
 #include "Sparky/Renderer/SubTexture2D.h"
 #include "Sparky/Renderer/Framebuffer.h"
 #include "Sparky/Renderer/VertexArray.h"
+#include "Sparky/Renderer/ParticleEmitter.h"
+#include "Sparky/Renderer/Model.h"
+#include "Sparky/Renderer/Material.h"
+#include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/Skybox.h"
 
 #include "Sparky/Renderer/OrthographicCamera.h"
 /// ---------------------------------------------------

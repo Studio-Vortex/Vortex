@@ -1,11 +1,6 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Sparky/Scripting/ScriptEngine.h"
-#include "Sparky/Audio/AudioSource.h"
-#include "Sparky/Scene/Scene.h"
-#include "Sparky/Renderer/LightSource.h"
-#include "Sparky/Renderer/ParticleEmitter.h"
-#include "Sparky/Renderer/Skybox.h"
 
 #include <imgui_internal.h>
 
@@ -992,12 +987,11 @@ namespace Sparky {
 				if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
 					material->SetAmbient(ambient);
 
-				Gui::Text("Diffuse");
+				Gui::Text("Diffuse Map");
 				Gui::SameLine();
 				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
 				SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
-
 				if (diffuseMap)
 				{
 					ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
@@ -1040,15 +1034,12 @@ namespace Sparky {
 					}
 					Gui::EndDragDropTarget();
 				}
-
-				Gui::Spacing();
 				
-				Gui::Text("Specular");
+				Gui::Text("Specular Map");
 				Gui::SameLine();
-				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + 10);
 
 				SharedRef<Texture2D> specularMap = material->GetSpecularMap();
-
 				if (specularMap)
 				{
 					ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
@@ -1083,6 +1074,54 @@ namespace Sparky {
 
 							if (texture->IsLoaded())
 								material->SetSpecularMap(texture);
+							else
+								SP_WARN("Could not load texture {}", texturePath.filename().string());
+						}
+						else
+							SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+					}
+					Gui::EndDragDropTarget();
+				}
+
+				Gui::Text("Normal Map");
+				Gui::SameLine();
+				Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + 2);
+
+				SharedRef<Texture2D> normalMap = material->GetNormalMap();
+				if (normalMap)
+				{
+					ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
+
+					if (Gui::ImageButton((void*)normalMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+						material->SetNormalMap(nullptr);
+					else if (Gui::IsItemHovered())
+					{
+						Gui::BeginTooltip();
+						Gui::Text(normalMap->GetPath().c_str());
+						Gui::EndTooltip();
+					}
+				}
+				else
+				{
+					// Show the default checkerboard texture
+					Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+				}
+
+				// Accept a Normal map from the content browser
+				if (Gui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+
+						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+						{
+							SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+							if (texture->IsLoaded())
+								material->SetNormalMap(texture);
 							else
 								SP_WARN("Could not load texture {}", texturePath.filename().string());
 						}

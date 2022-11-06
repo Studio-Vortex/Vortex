@@ -8,9 +8,10 @@
 
 layout (location = 0) in vec3  a_Position; // Vertex position
 layout (location = 1) in vec3  a_Normal;   // Vertex normal
-layout (location = 2) in vec2  a_TexCoord; // Vertex texture coordinate
-layout (location = 3) in vec2  a_TexScale; // Texture scale
-layout (location = 4) in int   a_EntityID; // Vertex Entity ID
+layout (location = 2) in vec4  a_Tangent;  // Vertex tangent
+layout (location = 3) in vec2  a_TexCoord; // Vertex texture coordinate
+layout (location = 4) in vec2  a_TexScale; // Texture scale
+layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out vec3       f_Position;
 out vec3       f_Normal;

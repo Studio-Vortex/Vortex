@@ -10,6 +10,7 @@ namespace Sparky {
 		Math::vec3 Ambient = Math::vec3(1.0f);
 		SharedRef<Texture2D> DiffuseMap = nullptr;
 		SharedRef<Texture2D> SpecularMap = nullptr;
+		SharedRef<Texture2D> NormalMap = nullptr;
 		float Shininess = 32.0f;
 	};
 
@@ -26,6 +27,9 @@ namespace Sparky {
 
 		const SharedRef<Texture2D>& GetSpecularMap() const;
 		void SetSpecularMap(const SharedRef<Texture2D>& specularMap);
+
+		const SharedRef<Texture2D>& GetNormalMap() const;
+		void SetNormalMap(const SharedRef<Texture2D>& normalMap);
 
 		float GetShininess() const;
 		void SetShininess(float shininess);
