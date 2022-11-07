@@ -15,6 +15,7 @@ namespace Sparky {
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
 	static constexpr const char* LIGHT_SOURCE_ICON_PATH = "Resources/Icons/Scene/LightSourceIcon.png";
+	static constexpr const char* AUDIO_SOURCE_ICON_PATH = "Resources/Icons/Scene/AudioSourceIcon.png";
 
 	struct RendererInternalData
 	{
@@ -43,6 +44,7 @@ namespace Sparky {
 		// Editor Resources
 		SharedRef<Texture2D> CameraIcon = nullptr;
 		SharedRef<Texture2D> LightSourceIcon = nullptr;
+		SharedRef<Texture2D> AudioSourceIcon = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -67,6 +69,7 @@ namespace Sparky {
 
 		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
 		s_Data.LightSourceIcon = Texture2D::Create(LIGHT_SOURCE_ICON_PATH);
+		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -115,10 +118,7 @@ namespace Sparky {
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
-		s_Data.ModelShader->SetFloat3("u_CameraPosition", cameraPosition);
-		s_Data.ModelShader->SetBool("u_SceneProperties.HasDirectionalLight", false);
-		s_Data.ModelShader->SetBool("u_SceneProperties.HasPointLight", false);
-		s_Data.ModelShader->SetBool("u_SceneProperties.HasSpotLight", false);
+		s_Data.ModelShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 
 		s_Data.ReflectiveShader->Enable();
 		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", projection * view);
@@ -154,6 +154,12 @@ namespace Sparky {
 			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
 
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
+	{
+		if (!sceneRunning)
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.AudioSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+	}
+
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
 	{
 		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
@@ -169,8 +175,6 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Color", lightSource->GetColor());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
-
-				s_Data.ModelShader->SetBool("u_SceneProperties.HasDirectionalLight", true);
 
 				break;
 			}
@@ -193,7 +197,6 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
 				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
-				s_Data.ModelShader->SetBool("u_SceneProperties.HasPointLight", true);
 				i++;
 
 				break;
@@ -214,8 +217,6 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat("u_SpotLight.Constant", 1.0f);
 				s_Data.ModelShader->SetFloat("u_SpotLight.Linear", attenuation.x);
 				s_Data.ModelShader->SetFloat("u_SpotLight.Quadratic", attenuation.y);
-
-				s_Data.ModelShader->SetBool("u_SceneProperties.HasSpotLight", true);
 
 				break;
 			}
@@ -252,8 +253,6 @@ namespace Sparky {
 			uint32_t textureSlot = 1;
 			texture->Bind(textureSlot);
 			shader->SetInt("u_Texture", textureSlot);
-			bool isTextured = *texture.get() != *s_Data.WhiteTexture.get();
-			shader->SetBool("u_Material.IsTextured", isTextured);
 
 			shader->SetMat4("u_Model", transform.GetTransform());
 

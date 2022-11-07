@@ -77,7 +77,6 @@ struct Material
 	sampler2D NormalMap;
 	float Shininess;
 	
-	bool IsTextured;
 	bool HasDiffuseMap;
 	bool HasSpecularMap;
 	bool HasNormalMap;
@@ -138,15 +137,12 @@ struct FragmentProperties
 
 struct SceneProperties
 {
-	bool HasDirectionalLight;
-	bool HasPointLight;
-	bool HasSpotLight;
+	vec3 CameraPosition;
 };
 
 #define MAX_POINT_LIGHTS 2
 
 uniform sampler2D        u_Texture;
-uniform vec3             u_CameraPosition;
 uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLight;
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
@@ -198,7 +194,7 @@ vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, 
 	if (material.HasNormalMap)
 		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
 	else
-		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+		viewDir = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
 
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
@@ -240,7 +236,7 @@ vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProp
 	if (material.HasNormalMap)
 		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
 	else
-		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+		viewDir = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
 
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
@@ -289,7 +285,7 @@ vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProper
 	if (material.HasNormalMap)
 		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
 	else
-		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+		viewDir = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
 
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
@@ -324,11 +320,10 @@ void main()
 	FragmentProperties properties;
 	properties.Diffuse = diffuse;
 	properties.Specular = specular;
-
+	properties.Normal = normalize(fragmentIn.TBN * normal);
 	properties.TBN = fragmentIn.TBN;
 	properties.TangentFragPos = fragmentIn.TBN * fragmentIn.Position;
-	properties.TangentViewPos = fragmentIn.TBN * u_CameraPosition;
-	properties.Normal = normalize(fragmentIn.TBN * normal);
+	properties.TangentViewPos = fragmentIn.TBN * u_SceneProperties.CameraPosition;
 
 	vec3 lightColor = vec3(0.0);
 
@@ -342,15 +337,18 @@ void main()
 	// Phase 3: Spot light
 	lightColor += CalculateSpotLight(u_SpotLight, u_Material, properties);
 
-	vec4 fragColor = ((u_Material.IsTextured) ? texture(u_Texture, textureScale) : vec4(1.0));
+	vec4 fragColor = texture(u_Texture, textureScale);
 
 	// Discard the pixel/fragment if it has an alpha of zero
 	if (fragColor.a == 0.0)
 		discard;
 
-	// Apply Gamma correction
-	float gamma = 2.2;
-	vec4 finalColor = vec4(pow(lightColor * fragColor.rgb, vec3(1.0 / gamma)), fragColor.a);
+	// Apply Gamma correction and exposure tone mapping
+	const float gamma = 2.2;
+	const float exposure = 1.0;
+	vec3 mapped = vec3(1.0) - exp(-(lightColor * fragColor.rgb) * exposure);
+	mapped = pow(mapped, vec3(1.0 / gamma));
+	vec4 finalColor = vec4(mapped, fragColor.a);
 
 	// Set the output color
 	o_Color = finalColor;

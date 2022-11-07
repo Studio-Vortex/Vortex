@@ -51,7 +51,7 @@ namespace Sparky {
 			{
 				auto view = sceneRegistry.view<TransformComponent, ParticleEmitterComponent>();
 
-				for (auto& entity : view)
+				for (const auto& entity : view)
 				{
 					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(entity);
 
@@ -77,24 +77,35 @@ namespace Sparky {
 
 			// Render Scene Icons
 			{
+				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+
+				for (const auto entity : view)
+				{
+					const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+
+					Renderer::RenderCameraIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
+				}
+			}
+
+			{
 				auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
 
 				for (const auto entity : view)
 				{
-					auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
+					const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
 					Renderer::RenderLightSourceIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
 				}
 			}
 
 			{
-				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+				auto view = sceneRegistry.view<TransformComponent, AudioSourceComponent>();
 
 				for (const auto entity : view)
 				{
-					auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+					const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
 
-					Renderer::RenderCameraIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
+					Renderer::RenderAudioSourceIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
 				}
 			}
 

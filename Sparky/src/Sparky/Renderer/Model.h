@@ -70,8 +70,10 @@ namespace Sparky {
 		SharedRef<Material> m_Material;
 		std::vector<ModelVertex> m_OriginalVertices;
 		std::vector<ModelVertex> m_Vertices;
-
 		std::vector<SharedRef<Texture2D>> m_Textures;
+
+		Math::mat4 m_EntityTransform;
+
 		SharedRef<VertexArray> m_Vao = nullptr;
 		SharedRef<VertexBuffer> m_Vbo = nullptr;
 		SharedRef<IndexBuffer> m_Ibo = nullptr;

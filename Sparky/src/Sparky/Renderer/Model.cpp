@@ -227,17 +227,22 @@ namespace Sparky {
 	{
 		Math::mat4 entityTransform = transform.GetTransform();
 
-		uint32_t i = 0;
-		for (auto& vertex : m_Vertices)
+		if (m_EntityTransform != entityTransform)
 		{
-			vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
-			vertex.TexScale = scale;
+			uint32_t i = 0;
+			for (auto& vertex : m_Vertices)
+			{
+				vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
+				vertex.TexScale = scale;
 
-			i++;
+				i++;
+			}
+
+			uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
+			m_Vbo->SetData(m_Vertices.data(), dataSize);
+
+			m_EntityTransform = entityTransform;
 		}
-
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
-		m_Vbo->SetData(m_Vertices.data(), dataSize);
 	}
 
 	uint32_t Model::GetQuadCount() const
