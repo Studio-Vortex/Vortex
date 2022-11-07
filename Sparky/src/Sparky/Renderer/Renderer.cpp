@@ -35,8 +35,14 @@ namespace Sparky {
 
 		float RefractiveIndex = 1.52f; // Glass
 
+		static constexpr inline uint32_t MaxDirectionalLights = 1;
 		static constexpr inline uint32_t MaxPointLights = 2;
+		static constexpr inline uint32_t MaxSpotLights = 1;
+		static constexpr inline uint32_t MaxSceneLightSources = MaxDirectionalLights + MaxPointLights + MaxSpotLights;
+
 		uint32_t PointLightIndex = 0;
+
+		float SceneExposure = 1.0f;
 
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
@@ -95,8 +101,6 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjection(), transform.Translation);
-
-		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -104,21 +108,21 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
-
-		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::EndScene()
 	{
-
 	}
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
+		SP_PROFILE_FUNCTION();
+
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
 		s_Data.ModelShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		s_Data.ModelShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 
 		s_Data.ReflectiveShader->Enable();
 		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", projection * view);
@@ -130,6 +134,8 @@ namespace Sparky {
 		s_Data.RefractiveShader->SetInt("u_Skybox", 0);
 		s_Data.RefractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
 		s_Data.RefractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
+
+		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -370,6 +376,16 @@ namespace Sparky {
 	void Renderer::SetRefractiveIndex(float index)
 	{
 		s_Data.RefractiveIndex = index;
+	}
+
+	float Renderer::GetSceneExposure()
+	{
+		return s_Data.SceneExposure;
+	}
+
+	void Renderer::SetSceneExposure(float exposure)
+	{
+		s_Data.SceneExposure = exposure;
 	}
 
 	std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()

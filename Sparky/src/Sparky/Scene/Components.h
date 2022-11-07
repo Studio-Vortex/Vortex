@@ -88,6 +88,8 @@ namespace Sparky {
 
 		LightSourceComponent() = default;
 		LightSourceComponent(const LightSourceComponent&) = default;
+		LightSourceComponent(LightType type, SharedRef<LightSource> source)
+			: Type(type), Source(source) { }
 	};
 
 	// Forward declaration

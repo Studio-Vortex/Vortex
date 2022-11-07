@@ -54,6 +54,9 @@ namespace Sparky {
 		static float GetRefractiveIndex();
 		static void SetRefractiveIndex(float index);
 
+		static float GetSceneExposure();
+		static void SetSceneExposure(float exposure);
+
 		static std::vector<SharedRef<Shader>> GetLoadedShaders();
 
 	private:

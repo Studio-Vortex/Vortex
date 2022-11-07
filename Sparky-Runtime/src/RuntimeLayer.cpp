@@ -86,7 +86,7 @@ namespace Sparky {
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 
 		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
-		Gui::Begin("Game", nullptr, flags);
+		Gui::Begin("##Game", nullptr, flags);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 

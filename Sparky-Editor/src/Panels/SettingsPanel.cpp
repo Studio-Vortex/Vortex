@@ -120,6 +120,10 @@ namespace Sparky {
 						Gui::EndMenu();
 					}
 
+					float sceneExposure = Renderer::GetSceneExposure();
+					if (Gui::DragFloat("Scene Exposure", &sceneExposure, 0.01f, 0.01f, 1.0f, "%.2f"))
+						Renderer::SetSceneExposure(sceneExposure);
+
 					static bool wireframeMode = false;
 					if (Gui::Checkbox("Show Wireframe", &wireframeMode))
 						RenderCommand::SetWireframe(wireframeMode);

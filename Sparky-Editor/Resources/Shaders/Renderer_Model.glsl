@@ -138,6 +138,7 @@ struct FragmentProperties
 struct SceneProperties
 {
 	vec3 CameraPosition;
+	float Exposure;
 };
 
 #define MAX_POINT_LIGHTS 2
@@ -343,9 +344,9 @@ void main()
 	if (fragColor.a == 0.0)
 		discard;
 
-	// Apply Gamma correction and exposure tone mapping
+	// Apply Gamma Correction and Exposure Tone Mapping
 	const float gamma = 2.2;
-	const float exposure = 1.0;
+	float exposure = u_SceneProperties.Exposure;
 	vec3 mapped = vec3(1.0) - exp(-(lightColor * fragColor.rgb) * exposure);
 	mapped = pow(mapped, vec3(1.0 / gamma));
 	vec4 finalColor = vec4(mapped, fragColor.a);
