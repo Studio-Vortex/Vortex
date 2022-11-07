@@ -14,20 +14,20 @@ namespace Sparky {
 
 		void OnGuiRender(Entity hoveredEntity);
 
-		Entity& GetSelectedEntity() { return m_SelectedEntity; }
-		const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
+		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
+		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
 
-		void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
+		inline void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
-		bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
-		void SetEntityToBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
+		inline void SetEntityShouldBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
-		void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
+		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
 		void DisplayCreateEntityMenu();
 
-		bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
-		bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
+		inline bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
+		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
 
 	private:
 		template <typename TComponent>

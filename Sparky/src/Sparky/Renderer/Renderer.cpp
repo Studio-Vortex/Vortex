@@ -116,6 +116,9 @@ namespace Sparky {
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
 		s_Data.ModelShader->SetFloat3("u_CameraPosition", cameraPosition);
+		s_Data.ModelShader->SetBool("u_SceneProperties.HasDirectionalLight", false);
+		s_Data.ModelShader->SetBool("u_SceneProperties.HasPointLight", false);
+		s_Data.ModelShader->SetBool("u_SceneProperties.HasSpotLight", false);
 
 		s_Data.ReflectiveShader->Enable();
 		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", projection * view);
@@ -139,18 +142,25 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
 	{
-		Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+		if (!sceneRunning)
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
 
-	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& light, bool sceneRunning, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
 	{
-		SharedRef<LightSource> lightSource = light.Source;
+		if (!sceneRunning)
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+	}
+
+	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
+	{
+		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 
 		s_Data.ModelShader->Enable();
 
-		switch (light.Type)
+		switch (lightSourceComponent.Type)
 		{
 			case LightSourceComponent::LightType::Directional:
 			{
@@ -159,6 +169,8 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Color", lightSource->GetColor());
 				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
+
+				s_Data.ModelShader->SetBool("u_SceneProperties.HasDirectionalLight", true);
 
 				break;
 			}
@@ -181,6 +193,7 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
 				s_Data.ModelShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
+				s_Data.ModelShader->SetBool("u_SceneProperties.HasPointLight", true);
 				i++;
 
 				break;
@@ -202,12 +215,11 @@ namespace Sparky {
 				s_Data.ModelShader->SetFloat("u_SpotLight.Linear", attenuation.x);
 				s_Data.ModelShader->SetFloat("u_SpotLight.Quadratic", attenuation.y);
 
+				s_Data.ModelShader->SetBool("u_SceneProperties.HasSpotLight", true);
+
 				break;
 			}
 		}
-
-		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
 	}
 
 	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
@@ -236,10 +248,12 @@ namespace Sparky {
 			shader->Enable();
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 
-			SharedRef<Texture2D> texture = meshRenderer.Texture ? meshRenderer.Texture : s_Data.WhiteTexture;
+			SharedRef<Texture2D> texture = ((meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture);
 			uint32_t textureSlot = 1;
 			texture->Bind(textureSlot);
 			shader->SetInt("u_Texture", textureSlot);
+			bool isTextured = *texture.get() != *s_Data.WhiteTexture.get();
+			shader->SetBool("u_Material.IsTextured", isTextured);
 
 			shader->SetMat4("u_Model", transform.GetTransform());
 
@@ -248,21 +262,30 @@ namespace Sparky {
 				uint32_t diffuseMapTextureSlot = 1;
 				diffuseMap->Bind(diffuseMapTextureSlot);
 				shader->SetInt("u_Material.DiffuseMap", diffuseMapTextureSlot);
+				shader->SetBool("u_Material.HasDiffuseMap", true);
 			}
+			else
+				shader->SetBool("u_Material.HasDiffuseMap", false);
 
 			if (SharedRef<Texture2D> specularMap = material->GetSpecularMap())
 			{
 				uint32_t specularMapTextureSlot = 2;
 				specularMap->Bind(specularMapTextureSlot);
 				shader->SetInt("u_Material.SpecularMap", specularMapTextureSlot);
+				shader->SetBool("u_Material.HasSpecularMap", true);
 			}
+			else
+				shader->SetBool("u_Material.HasSpecularMap", false);
 
 			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
 			{
 				uint32_t normalMapTextureSlot = 3;
 				normalMap->Bind(normalMapTextureSlot);
 				shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
+				shader->SetBool("u_Material.HasNormalMap", true);
 			}
+			else
+				shader->SetBool("u_Material.HasNormalMap", false);
 
 			shader->SetFloat("u_Material.Shininess", material->GetShininess());
 		}

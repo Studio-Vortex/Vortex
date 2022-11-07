@@ -76,6 +76,7 @@ namespace Sparky {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_MaterialViewerPanel.SetTexture(m_ScaleToolIcon);
 		}
 
 		// Render
@@ -251,6 +252,19 @@ namespace Sparky {
 			{
 				if (inEditMode)
 				{
+					if (m_SceneHierarchyPanel.GetSelectedEntity())
+					{
+						if (Gui::MenuItem("Move To Camera Position"))
+						{
+							Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+							TransformComponent& transform = selectedEntity.GetTransform();
+							transform.Translation = m_EditorCamera.GetPosition();
+							transform.Rotation = Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.Rotation.z);
+						}
+
+						Gui::Separator();
+					}
+
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
 						OnScenePlay();
 					Gui::Separator();
@@ -266,7 +280,7 @@ namespace Sparky {
 						Gui::Separator();
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
-							m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+							m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 						Gui::Separator();
 
 						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
@@ -343,19 +357,6 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("Tools"))
 			{
-				if (inEditMode && m_SceneHierarchyPanel.GetSelectedEntity())
-				{
-					if (Gui::MenuItem("Move To Camera Position"))
-					{
-						Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-						TransformComponent& transform = selectedEntity.GetTransform();
-						transform.Translation = m_EditorCamera.GetPosition();
-						transform.Rotation = Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.Rotation.z);
-					}
-
-					Gui::Separator();
-				}
-
 				if (Gui::MenuItem("No Selection", "Q"))
 					OnNoGizmoSelected();
 				Gui::Separator();
@@ -925,7 +926,7 @@ namespace Sparky {
 			case Key::F2:
 			{
 				if (selectedEntity)
-					m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+					m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 
 				break;
 			}
@@ -1096,7 +1097,7 @@ namespace Sparky {
 					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 
 					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
-						m_SceneHierarchyPanel.SetEntityToBeRenamed(false);
+						m_SceneHierarchyPanel.SetEntityShouldBeRenamed(false);
 				}
 
 				break;
@@ -1374,7 +1375,7 @@ namespace Sparky {
 
 		Entity newEntity = m_ActiveScene->CreateEntity();
 		m_SceneHierarchyPanel.SetSelectedEntity(newEntity);
-		m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+		m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()
@@ -1388,7 +1389,7 @@ namespace Sparky {
 		{
 			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
-			m_SceneHierarchyPanel.SetEntityToBeRenamed(true);
+			m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 		}
 	}
 

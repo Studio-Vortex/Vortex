@@ -20,6 +20,8 @@ out VertexOut {
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
+
+	mat3       TBN;
 } vertexOut;
 
 uniform highp mat4 u_Model;
@@ -35,6 +37,15 @@ void main()
 	vertexOut.TexScale = a_TexScale;
 
 	vertexOut.EntityID = a_EntityID;
+
+	// Calculate the Tangent Bitangent Normal Matrix
+	vec3 N = normalize(vertexOut.Normal);
+	vec3 T = normalize(vertexOut.Tangent.xyz);
+	T = (T - dot(T, N) * N);
+	vec3 B = cross(normalize(vertexOut.Normal), vertexOut.Tangent.xyz) * vertexOut.Tangent.w;
+	mat3 TBN = mat3(T, B, N);
+	TBN = transpose(TBN);
+	vertexOut.TBN = TBN;
 	
 	gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
 }
@@ -54,6 +65,8 @@ in VertexOut
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
+
+	mat3       TBN;
 } fragmentIn;
 
 struct Material
@@ -123,6 +136,13 @@ struct FragmentProperties
     vec3 TangentFragPos;
 };
 
+struct SceneProperties
+{
+	bool HasDirectionalLight;
+	bool HasPointLight;
+	bool HasSpotLight;
+};
+
 #define MAX_POINT_LIGHTS 2
 
 uniform sampler2D        u_Texture;
@@ -131,6 +151,7 @@ uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLight;
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLight;
+uniform SceneProperties  u_SceneProperties;
 
 float CalculateDiffuse(vec3 normal, vec3 lightDir)
 {
@@ -154,13 +175,31 @@ vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, 
 	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
 
 	// Diffuse shading
-	vec3 normal = properties.Normal;
-	vec3 lightDir = properties.TBN * normalize(-lightSource.Direction);
+	vec3 normal;
+	vec3 lightDir;
+
+	if (material.HasNormalMap)
+	{
+		normal = properties.Normal; // Tangent space normal
+		lightDir = properties.TBN * normalize(-lightSource.Direction);
+	}
+	else
+	{
+		normal = normalize(fragmentIn.Normal);
+		lightDir = normalize(-lightSource.Direction);
+	}
+
 	float diff = CalculateDiffuse(normal, lightDir);
 	vec3 diffuse = lightSource.Diffuse * diff * properties.Diffuse;
-
+	
 	// Specular shading
-	vec3 viewDir = properties.TBN * normalize(properties.TangentViewPos - fragmentIn.Position);
+	vec3 viewDir;
+
+	if (material.HasNormalMap)
+		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	else
+		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
 	vec3 specular = lightSource.Specular * spec * properties.Specular;
@@ -173,22 +212,43 @@ vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProp
 	// Ambient shading
 	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
 
-	vec3 tangentLightPos = properties.TBN * lightSource.Position;
-
 	// Diffuse shading
-	vec3 normal = properties.Normal;
-	vec3 lightDir = properties.TBN * normalize(tangentLightPos - properties.TangentFragPos);
+	vec3 normal;
+	vec3 lightDir;
+	vec3 lightPos;
+
+	if (material.HasNormalMap)
+	{
+		vec3 tangentLightPos = properties.TBN * lightSource.Position;
+		normal = properties.Normal;
+		lightDir = properties.TBN * normalize(tangentLightPos - properties.TangentFragPos);
+		lightPos = tangentLightPos;
+	}
+	else
+	{
+		normal = normalize(fragmentIn.Normal);
+		lightDir = normalize(lightSource.Position - fragmentIn.Position);
+		lightPos = lightSource.Position;
+	}
+
 	float diff = CalculateDiffuse(normal, lightDir);
 	vec3 diffuse = lightSource.Diffuse * diff * properties.Diffuse;
 
 	// Specular shading
-	vec3 viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	vec3 viewDir;
+
+	if (material.HasNormalMap)
+		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	else
+		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
 	vec3 specular = lightSource.Specular * spec * properties.Specular;
 
 	// Attenuation
-	float attenuation = CalculateAttenuation(tangentLightPos, properties.TangentFragPos, lightSource.Constant, lightSource.Linear, lightSource.Quadratic);
+	vec3 fragmentPos = ((material.HasNormalMap) ? properties.TangentFragPos : fragmentIn.Position);
+	float attenuation = CalculateAttenuation(lightPos, fragmentPos, lightSource.Constant, lightSource.Linear, lightSource.Quadratic);
 	ambient  *= attenuation; 
 	diffuse  *= attenuation;
 	specular *= attenuation;
@@ -201,16 +261,36 @@ vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProper
 	// Ambient shading
 	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
 
-	vec3 tangentLightPos = properties.TBN * lightSource.Position;
-
 	// Diffuse shading
-	vec3 normal = properties.Normal;
-	vec3 lightDir = properties.TBN * normalize(tangentLightPos - properties.TangentFragPos);
+	vec3 normal;
+	vec3 lightDir;
+	vec3 lightPos;
+
+	if (material.HasNormalMap)
+	{
+		vec3 tangentLightPos = properties.TBN * lightSource.Position;
+		normal = properties.Normal;
+		lightDir = properties.TBN * normalize(tangentLightPos - properties.TangentFragPos);
+		lightPos = tangentLightPos;
+	}
+	else
+	{
+		normal = normalize(fragmentIn.Normal);
+		lightDir = normalize(lightSource.Position - fragmentIn.Position);
+		lightPos = lightSource.Position;
+	}
+
 	float diff = CalculateDiffuse(normal, lightDir);
 	vec3 diffuse = lightSource.Diffuse * diff * properties.Diffuse;
 
 	// Specular shading
-	vec3 viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	vec3 viewDir;
+
+	if (material.HasNormalMap)
+		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	else
+		viewDir = normalize(u_CameraPosition - fragmentIn.Position);
+
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
 	vec3 specular = lightSource.Specular * spec * properties.Specular;
@@ -223,7 +303,8 @@ vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProper
 	specular *= intensity;
 
 	// Attenuation
-	float attenuation = CalculateAttenuation(tangentLightPos, properties.TangentFragPos, lightSource.Constant, lightSource.Linear, lightSource.Quadratic);
+	vec3 fragmentPos = ((material.HasNormalMap) ? properties.TangentFragPos : fragmentIn.Position);
+	float attenuation = CalculateAttenuation(lightPos, fragmentPos, lightSource.Constant, lightSource.Linear, lightSource.Quadratic);
 	ambient  *= attenuation;
 	diffuse  *= attenuation;
 	specular *= attenuation;
@@ -235,8 +316,8 @@ void main()
 {
 	vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
 
-	vec3 diffuse = texture(u_Material.DiffuseMap, textureScale).rgb;
-	vec3 specular = texture(u_Material.SpecularMap, textureScale).rgb;
+	vec3 diffuse = ((u_Material.HasDiffuseMap) ? texture(u_Material.DiffuseMap, textureScale).rgb : vec3(1.0));
+	vec3 specular = ((u_Material.HasSpecularMap) ? texture(u_Material.SpecularMap, textureScale).rgb : vec3(1.0));
 	vec3 normal = texture(u_Material.NormalMap, textureScale).rgb;
 	normal = normal * 2.0 - 1.0;
 
@@ -244,17 +325,10 @@ void main()
 	properties.Diffuse = diffuse;
 	properties.Specular = specular;
 
-	vec3 N = normalize(fragmentIn.Normal);
-	vec3 T = normalize(fragmentIn.Tangent.xyz);
-	T = (T - dot(T, N) * N);
-	vec3 B = cross(normalize(fragmentIn.Normal), fragmentIn.Tangent.xyz) * fragmentIn.Tangent.w;
-	mat3 TBN = mat3(T, B, N);
-	TBN = transpose(TBN);
-
-	properties.TBN = TBN;
-	properties.TangentFragPos = TBN * fragmentIn.Position;
-	properties.TangentViewPos = TBN * u_CameraPosition;
-	properties.Normal = normalize(TBN * normal);
+	properties.TBN = fragmentIn.TBN;
+	properties.TangentFragPos = fragmentIn.TBN * fragmentIn.Position;
+	properties.TangentViewPos = fragmentIn.TBN * u_CameraPosition;
+	properties.Normal = normalize(fragmentIn.TBN * normal);
 
 	vec3 lightColor = vec3(0.0);
 
@@ -268,7 +342,7 @@ void main()
 	// Phase 3: Spot light
 	lightColor += CalculateSpotLight(u_SpotLight, u_Material, properties);
 
-	vec4 fragColor = texture(u_Texture, textureScale);
+	vec4 fragColor = ((u_Material.IsTextured) ? texture(u_Texture, textureScale) : vec4(1.0));
 
 	// Discard the pixel/fragment if it has an alpha of zero
 	if (fragColor.a == 0.0)

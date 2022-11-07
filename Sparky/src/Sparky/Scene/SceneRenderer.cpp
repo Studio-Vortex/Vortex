@@ -83,11 +83,10 @@ namespace Sparky {
 				{
 					auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-					Renderer::RenderLightSource(transformComponent, lightSourceComponent, sceneCamera, (int)(entt::entity)entity);
+					Renderer::RenderLightSourceIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
 				}
 			}
 
-			if (!sceneCamera)
 			{
 				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
 
@@ -95,7 +94,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-					Renderer::RenderCameraIcon(transformComponent, (int)(entt::entity)entity);
+					Renderer::RenderCameraIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
 				}
 			}
 
@@ -132,6 +131,18 @@ namespace Sparky {
 
 					if (meshRendererComponent.Mesh)
 						Renderer::DrawModel(transformComponent, meshRendererComponent, (int)(entt::entity)entity);
+				}
+			}
+
+			// Render Light Sources
+			{
+				auto view = sceneRegistry.view<LightSourceComponent>();
+
+				for (auto& entity : view)
+				{
+					const auto& lightSourceComponent = view.get<LightSourceComponent>(entity);
+
+					Renderer::RenderLightSource(lightSourceComponent);
 				}
 			}
 
