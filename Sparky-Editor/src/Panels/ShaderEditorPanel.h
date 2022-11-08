@@ -2,6 +2,8 @@
 
 #include <Sparky.h>
 
+#include <TextEditor.h>
+
 namespace Sparky {
 
 	static constexpr size_t SHADER_BUFFER_SIZE = 50'000;
@@ -25,7 +27,7 @@ namespace Sparky {
 		char m_CodeBuffer[SHADER_BUFFER_SIZE] = "";
 		bool m_ShaderLoaded = false;
 		std::filesystem::path m_CurrentShaderPath = std::filesystem::path();
-
+		TextEditor m_TextEditor;
 	};
 
 }

@@ -364,6 +364,20 @@ namespace Sparky {
 					out << YAML::Key << "NormalMapPath" << YAML::Value << normalMap->GetPath();
 
 				out << YAML::Key << "Shininess" << material->GetShininess();
+
+				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+
+				if (albedoMap)
+					out << YAML::Key << "AlbedoMapPath" << YAML::Value << albedoMap->GetPath();
+				if (metallicMap)
+					out << YAML::Key << "MetallicMapPath" << YAML::Value << metallicMap->GetPath();
+				if (roughnessMap)
+					out << YAML::Key << "RoughnessMapPath" << YAML::Value << roughnessMap->GetPath();
+				if (ambientOcclusionMap)
+					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << ambientOcclusionMap->GetPath();
 			}
 			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 			out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
@@ -745,6 +759,15 @@ namespace Sparky {
 						material->SetNormalMap(Texture2D::Create(meshComponent["NormalMapPath"].as<std::string>()));
 					if (meshComponent["Shininess"])
 						material->SetShininess(meshComponent["Shininess"].as<float>());
+
+					if (meshComponent["AlbedoMapPath"])
+						material->SetAlbedoMap(Texture2D::Create(meshComponent["AlbedoMapPath"].as<std::string>()));
+					if (meshComponent["MetallicMapPath"])
+						material->SetMetallicMap(Texture2D::Create(meshComponent["MetallicMapPath"].as<std::string>()));
+					if (meshComponent["RoughnessMapPath"])
+						material->SetRoughnessMap(Texture2D::Create(meshComponent["RoughnessMapPath"].as<std::string>()));
+					if (meshComponent["AmbientOcclusionMapPath"])
+						material->SetAmbientOcclusionMap(Texture2D::Create(meshComponent["AmbientOcclusionMapPath"].as<std::string>()));
 
 					if (meshComponent["TextureScale"])
 						meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();

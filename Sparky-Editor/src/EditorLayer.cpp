@@ -9,6 +9,7 @@
 #include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
+#include <ImGradient.h>
 
 namespace Sparky {
 

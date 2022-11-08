@@ -25,6 +25,7 @@ IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
 IncludeDir["glm"] = "Sparky/vendor/glm"
 IncludeDir["ImGui"] = "Sparky/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
+IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
 IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
@@ -75,6 +76,9 @@ project "Sparky"
 
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
+
+		"%{prj.name}/vendor/ImGuiColorTextEdit/TextEditor.h",
+		"%{prj.name}/vendor/ImGuiColorTextEdit/TextEditor.cpp",
 	}
 
 	defines
@@ -93,6 +97,7 @@ project "Sparky"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.spdlog}",
@@ -113,6 +118,9 @@ project "Sparky"
 	}
 
 	filter "files:Sparky/vendor/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
+
+	filter "files:Sparky/vendor/ImGuiColorTextEdit/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
@@ -194,6 +202,7 @@ project "Sparky-Editor"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.tinyobjloader}",

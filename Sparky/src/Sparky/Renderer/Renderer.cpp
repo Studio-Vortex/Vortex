@@ -36,7 +36,7 @@ namespace Sparky {
 		float RefractiveIndex = 1.52f; // Glass
 
 		static constexpr inline uint32_t MaxDirectionalLights = 1;
-		static constexpr inline uint32_t MaxPointLights = 2;
+		static constexpr inline uint32_t MaxPointLights = 3;
 		static constexpr inline uint32_t MaxSpotLights = 1;
 		static constexpr inline uint32_t MaxSceneLightSources = MaxDirectionalLights + MaxPointLights + MaxSpotLights;
 
@@ -293,6 +293,46 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasNormalMap", false);
 
 			shader->SetFloat("u_Material.Shininess", material->GetShininess());
+
+			if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
+			{
+				uint32_t albedoMapTextureSlot = 4;
+				albedoMap->Bind(albedoMapTextureSlot);
+				shader->SetInt("u_Material.AlbedoMap", albedoMapTextureSlot);
+				shader->SetBool("u_Material.HasAlbedoMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasAlbedoMap", false);
+
+			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
+			{
+				uint32_t metallicMapTextureSlot = 5;
+				metallicMap->Bind(metallicMapTextureSlot);
+				shader->SetInt("u_Material.MetallicMap", metallicMapTextureSlot);
+				shader->SetBool("u_Material.HasMetallicMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasMetallicMap", false);
+
+			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
+			{
+				uint32_t roughnessMapTextureSlot = 6;
+				roughnessMap->Bind(roughnessMapTextureSlot);
+				shader->SetInt("u_Material.RoughnessMap", roughnessMapTextureSlot);
+				shader->SetBool("u_Material.HasRoughnessMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasRoughnessMap", false);
+
+			if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
+			{
+				uint32_t ambientOcclusionMapTextureSlot = 7;
+				ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
+				shader->SetInt("u_Material.AOMap", ambientOcclusionMapTextureSlot);
+				shader->SetBool("u_Material.HasAOMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasAOMap", false);
 		}
 
 		Submit(shader, model->GetVertexArray());

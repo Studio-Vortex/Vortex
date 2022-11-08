@@ -56,6 +56,46 @@ namespace Sparky {
 		m_Properties.Shininess = shininess;
 	}
 
+    const SharedRef<Texture2D>& Material::GetAlbedoMap() const
+    {
+		return m_Properties.AlbedoMap;
+    }
+
+    void Material::SetAlbedoMap(const SharedRef<Texture2D>& albedoMap)
+    {
+		m_Properties.AlbedoMap = albedoMap;
+    }
+
+    const SharedRef<Texture2D>& Material::GetMetallicMap() const
+    {
+		return m_Properties.MetallicMap;
+    }
+
+    void Material::SetMetallicMap(const SharedRef<Texture2D>& metallicMap)
+    {
+		m_Properties.MetallicMap = metallicMap;
+    }
+
+    const SharedRef<Texture2D>& Material::GetRoughnessMap() const
+    {
+		return m_Properties.RoughnessMap;
+    }
+
+    void Material::SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap)
+    {
+		m_Properties.RoughnessMap = roughnessMap;
+    }
+
+    const SharedRef<Texture2D>& Material::GetAmbientOcclusionMap() const
+    {
+		return m_Properties.AmbientOcclusionMap;
+    }
+
+    void Material::SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap)
+    {
+		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
+    }
+
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
 		return CreateShared<Material>(props);
