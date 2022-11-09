@@ -11,7 +11,7 @@ namespace Sparky {
 	class ShaderEditorPanel
 	{
 	public:
-		ShaderEditorPanel() = default;
+		ShaderEditorPanel();
 
 		void OnGuiRender(bool showDefault = false);
 		bool& IsOpen() { return s_ShowPanel; }
@@ -24,8 +24,6 @@ namespace Sparky {
 		inline static bool s_ShowPanel = false;
 
 	private:
-		char m_CodeBuffer[SHADER_BUFFER_SIZE] = "";
-		bool m_ShaderLoaded = false;
 		std::filesystem::path m_CurrentShaderPath = std::filesystem::path();
 		TextEditor m_TextEditor;
 	};

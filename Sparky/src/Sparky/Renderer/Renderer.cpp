@@ -35,12 +35,14 @@ namespace Sparky {
 
 		float RefractiveIndex = 1.52f; // Glass
 
-		static constexpr inline uint32_t MaxDirectionalLights = 1;
-		static constexpr inline uint32_t MaxPointLights = 3;
-		static constexpr inline uint32_t MaxSpotLights = 1;
+		static constexpr inline uint32_t MaxDirectionalLights = 10;
+		static constexpr inline uint32_t MaxPointLights = 10;
+		static constexpr inline uint32_t MaxSpotLights = 10;
 		static constexpr inline uint32_t MaxSceneLightSources = MaxDirectionalLights + MaxPointLights + MaxSpotLights;
 
-		uint32_t PointLightIndex = 0;
+		uint32_t ActiveDirectionalLights = 0;
+		uint32_t ActivePointLights = 0;
+		uint32_t ActiveSpotLights = 0;
 
 		float SceneExposure = 1.0f;
 
@@ -112,17 +114,25 @@ namespace Sparky {
 
 	void Renderer::EndScene()
 	{
+		
 	}
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
 		SP_PROFILE_FUNCTION();
 
+		s_Data.ActiveDirectionalLights = 0;
+		s_Data.ActivePointLights = 0;
+		s_Data.ActiveSpotLights = 0;
+
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
 		s_Data.ModelShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		s_Data.ModelShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		s_Data.ModelShader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
+		s_Data.ModelShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
+		s_Data.ModelShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
 
 		s_Data.ReflectiveShader->Enable();
 		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", projection * view);
@@ -134,8 +144,6 @@ namespace Sparky {
 		s_Data.RefractiveShader->SetInt("u_Skybox", 0);
 		s_Data.RefractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
 		s_Data.RefractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
-
-		s_Data.PointLightIndex = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -148,22 +156,22 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
 	{
 		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
 	{
 		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
 	}
 
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, bool sceneRunning, int entityID)
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
 	{
 		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.AudioSourceIcon, Math::vec2(1.0f), Math::vec4(1.0f), entityID);
+			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.AudioSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
 	}
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
@@ -176,19 +184,26 @@ namespace Sparky {
 		{
 			case LightSourceComponent::LightType::Directional:
 			{
-				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Ambient", lightSource->GetAmbient());
-				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Diffuse", lightSource->GetDiffuse());
-				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Specular", lightSource->GetSpecular());
-				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Color", lightSource->GetColor());
-				s_Data.ModelShader->SetFloat3("u_DirectionalLight.Direction", lightSource->GetDirection());
+				uint32_t& i = s_Data.ActiveDirectionalLights;
+
+				if (i + 1 > RendererInternalData::MaxDirectionalLights)
+					break;
+
+				s_Data.ModelShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
+				s_Data.ModelShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+
+				i++;
 
 				break;
 			}
 			case LightSourceComponent::LightType::Point:
 			{
-				uint32_t& i = s_Data.PointLightIndex;
+				uint32_t& i = s_Data.ActivePointLights;
 
-				if (i >= s_Data.MaxPointLights)
+				if (i + 1 > s_Data.MaxPointLights)
 					break;
 
 				s_Data.ModelShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
@@ -209,20 +224,27 @@ namespace Sparky {
 			}
 			case LightSourceComponent::LightType::Spot:
 			{
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Ambient", lightSource->GetAmbient());
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Diffuse", lightSource->GetDiffuse());
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Specular", lightSource->GetSpecular());
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Color", lightSource->GetColor());
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Position", lightSource->GetPosition());
-				s_Data.ModelShader->SetFloat3("u_SpotLight.Direction", lightSource->GetDirection());
-				s_Data.ModelShader->SetFloat("u_SpotLight.CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				s_Data.ModelShader->SetFloat("u_SpotLight.OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+				uint32_t& i = s_Data.ActiveSpotLights;
+
+				if (i + 1 > RendererInternalData::MaxSpotLights)
+					break;
+
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Color", i).c_str(), lightSource->GetColor());
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				s_Data.ModelShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				s_Data.ModelShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
+				s_Data.ModelShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
 
-				s_Data.ModelShader->SetFloat("u_SpotLight.Constant", 1.0f);
-				s_Data.ModelShader->SetFloat("u_SpotLight.Linear", attenuation.x);
-				s_Data.ModelShader->SetFloat("u_SpotLight.Quadratic", attenuation.y);
+				s_Data.ModelShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
+				s_Data.ModelShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
+				s_Data.ModelShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
+
+				i++;
 
 				break;
 			}
@@ -253,6 +275,11 @@ namespace Sparky {
 		{
 			shader = s_Data.ModelShader;
 			shader->Enable();
+
+			s_Data.ModelShader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
+			s_Data.ModelShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
+			s_Data.ModelShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
+
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 
 			SharedRef<Texture2D> texture = ((meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture);

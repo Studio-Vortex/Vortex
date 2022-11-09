@@ -4,6 +4,7 @@
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
+#include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
 namespace Sparky {
@@ -83,7 +84,7 @@ namespace Sparky {
 				{
 					const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-					Renderer::RenderCameraIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
+					Renderer::RenderCameraIcon(transformComponent, sceneCamera, ColorToVec4(Color::White),(int)(entt::entity)entity);
 				}
 			}
 
@@ -93,8 +94,9 @@ namespace Sparky {
 				for (const auto entity : view)
 				{
 					const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
-
-					Renderer::RenderLightSourceIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
+					SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+					
+					Renderer::RenderLightSourceIcon(transformComponent, sceneCamera, lightSource->GetColor(), (int)(entt::entity)entity);
 				}
 			}
 
@@ -105,7 +107,7 @@ namespace Sparky {
 				{
 					const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
 
-					Renderer::RenderAudioSourceIcon(transformComponent, sceneCamera, (int)(entt::entity)entity);
+					Renderer::RenderAudioSourceIcon(transformComponent, sceneCamera, ColorToVec4(Color::White),(int)(entt::entity)entity);
 				}
 			}
 
@@ -132,6 +134,18 @@ namespace Sparky {
 				SceneRenderer::RenderSkybox(view, projection, sceneRegistry);
 			}
 
+			// Render Light Sources
+			{
+				auto view = sceneRegistry.view<LightSourceComponent>();
+
+				for (auto& entity : view)
+				{
+					const auto& lightSourceComponent = view.get<LightSourceComponent>(entity);
+
+					Renderer::RenderLightSource(lightSourceComponent);
+				}
+			}
+
 			// Render Meshes
 			{
 				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
@@ -142,18 +156,6 @@ namespace Sparky {
 
 					if (meshRendererComponent.Mesh)
 						Renderer::DrawModel(transformComponent, meshRendererComponent, (int)(entt::entity)entity);
-				}
-			}
-
-			// Render Light Sources
-			{
-				auto view = sceneRegistry.view<LightSourceComponent>();
-
-				for (auto& entity : view)
-				{
-					const auto& lightSourceComponent = view.get<LightSourceComponent>(entity);
-
-					Renderer::RenderLightSource(lightSourceComponent);
 				}
 			}
 

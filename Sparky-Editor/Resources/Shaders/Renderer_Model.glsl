@@ -155,19 +155,25 @@ struct FragmentProperties
 
 struct SceneProperties
 {
+	int ActiveDirectionalLights;
+	int ActivePointLights;
+	int ActiveSpotLights;
+
 	vec3 CameraPosition;
 	float Exposure;
 };
 
-#define MAX_POINT_LIGHTS 3
+#define MAX_DIRECTIONAL_LIGHTS 10
+#define MAX_POINT_LIGHTS 10
+#define MAX_SPOT_LIGHTS 10
 
 const float PI = 3.14159265359;
 
 uniform sampler2D        u_Texture;
 uniform Material         u_Material;
-uniform DirectionalLight u_DirectionalLight;
+uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
-uniform SpotLight        u_SpotLight;
+uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
 
 vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties);
@@ -183,7 +189,11 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 void main()
 {
-	if (false)
+	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRougnessMap && u_Material.HasAOMap;
+	const float gamma = 2.2;
+	vec4 finalColor = vec4(1.0);
+
+	if (!pbr)
 	{
 		vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
 
@@ -203,14 +213,28 @@ void main()
 		vec3 lightColor = vec3(0.0);
 
 		// Phase 1: Directional lighting
-		//lightColor += CalculateDirectionalLight(u_DirectionalLight, u_Material, properties);
+		int activeDirectionalLights = u_SceneProperties.ActiveDirectionalLights;
+		if (activeDirectionalLights > 0)
+		{
+			for (int i = 0; i < activeDirectionalLights; i++)
+				lightColor += CalculateDirectionalLight(u_DirectionalLights[i], u_Material, properties);
+		}
 
 		// Phase 2: Point lights
-		for (int i = 0; i  < MAX_POINT_LIGHTS; i++)
-			lightColor += CalculatePointLight(u_PointLights[i], u_Material, properties);
+		int activePointLights = u_SceneProperties.ActivePointLights;
+		if (activePointLights > 0)
+		{
+			for (int i = 0; i < activePointLights; i++)
+				lightColor += CalculatePointLight(u_PointLights[i], u_Material, properties);
+		}
 
 		// Phase 3: Spot light
-		//lightColor += CalculateSpotLight(u_SpotLight, u_Material, properties);
+		int activeSpotLights = u_SceneProperties.ActiveSpotLights;
+		if (activeSpotLights > 0)
+		{
+			for (int i = 0; i < activeSpotLights; i++)
+				lightColor += CalculateSpotLight(u_SpotLights[i], u_Material, properties);
+		}
 
 		vec4 fragColor = texture(u_Texture, textureScale);
 
@@ -219,94 +243,93 @@ void main()
 			discard;
 
 		// Apply Gamma Correction and Exposure Tone Mapping
-		const float gamma = 2.2;
 		float exposure = u_SceneProperties.Exposure;
 		vec3 mapped = vec3(1.0) - exp(-(lightColor * fragColor.rgb) * exposure);
 		mapped = pow(mapped, vec3(1.0 / gamma));
-		vec4 finalColor = vec4(mapped, fragColor.a);
 
 		// Set the output color
-		o_Color = finalColor;
-		o_EntityID = fragmentIn.EntityID;
+		finalColor = vec4(mapped, fragColor.a);
 	}
-
-	const float gamma = 2.2;
-
-	vec2 size = fragmentIn.TexCoord * fragmentIn.TexScale;
-	vec3 albedo = pow(texture(u_Material.AlbedoMap, size).rgb, vec3(gamma));
-	float metallic = texture(u_Material.MetallicMap, size).r;
-	float roughness = texture(u_Material.RoughnessMap, size).r;
-	float ao = texture(u_Material.AOMap, size).r;
-
-	vec3 normal = texture(u_Material.NormalMap, size).rgb;
-	normal = normal * 2.0 - 1.0;
-	vec3 N = normalize(fragmentIn.TBN * normal);
-	vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.WorldPosition);
-
-	// Calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-	// of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
-	vec3 F0 = vec3(0.04);
-	F0 = mix(F0, albedo, metallic);
-
-	// Reflectance equation
-	vec3 Lo = vec3(0.0);
-
-	for(int i = 0; i < MAX_POINT_LIGHTS; i++)
+	else if (pbr)
 	{
-		// Calculate per-light radiance
-		vec3 L = normalize(u_PointLights[i].Position - fragmentIn.WorldPosition);
-		vec3 H = normalize(V + L);
-		float distance = length(u_PointLights[i].Position - fragmentIn.WorldPosition);
-		float attenuation = 1.0 / (distance * distance);
-		vec3 radiance = u_PointLights[i].Color * attenuation;
+		vec2 size = fragmentIn.TexCoord * fragmentIn.TexScale;
+		vec3 albedo = pow(texture(u_Material.AlbedoMap, size).rgb, vec3(gamma));
+		float metallic = texture(u_Material.MetallicMap, size).r;
+		float roughness = texture(u_Material.RoughnessMap, size).r;
+		float ao = texture(u_Material.AOMap, size).r;
 
-		// Cook-Torrance BRDF
-		float NDF = DistributionGGX(N, H, roughness);
-		float G   = GeometrySmith(N, V, L, roughness);
-		vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0);
+		vec3 normal = texture(u_Material.NormalMap, size).rgb;
+		normal = normal * 2.0 - 1.0;
+		vec3 N = normalize(fragmentIn.TBN * normal);
+		vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.WorldPosition);
 
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent division by 0
-		vec3 specular = numerator / denominator;
+		// Calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+		// of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
+		vec3 F0 = vec3(0.04);
+		F0 = mix(F0, albedo, metallic);
 
-		// kS is equal to Fresnel
-		vec3 kS = F;
-		// For energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-		vec3 kD = vec3(1.0) - kS;
-		// Multiply kD by the inverse metalness such that only non-metals 
-        // have diffuse lighting, or a linear blend if partly metal (pure metals
-        // have no diffuse light).
-		kD *= 1.0 - metallic;
+		// Reflectance equation
+		vec3 Lo = vec3(0.0);
 
-		// Scale light by NdotL
-		float NdotL = max(dot(N, L), 0.0);
+		for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
+		{
+			// Calculate per-light radiance
+			vec3 L = normalize(u_PointLights[i].Position - fragmentIn.WorldPosition);
+			vec3 H = normalize(V + L);
+			float distance = length(u_PointLights[i].Position - fragmentIn.WorldPosition);
+			float attenuation = 1.0 / (distance * distance);
+			vec3 radiance = u_PointLights[i].Color * attenuation;
 
-		// Add to outgoing radiance Lo
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			// Cook-Torrance BRDF
+			float NDF = DistributionGGX(N, H, roughness);
+			float G   = GeometrySmith(N, V, L, roughness);
+			vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+			vec3 numerator = NDF * G * F;
+			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent division by 0
+			vec3 specular = numerator / denominator;
+
+			// kS is equal to Fresnel
+			vec3 kS = F;
+			// For energy conservation, the diffuse and specular light can't
+			// be above 1.0 (unless the surface emits light); to preserve this
+			// relationship the diffuse component (kD) should equal 1.0 - kS.
+			vec3 kD = vec3(1.0) - kS;
+			// Multiply kD by the inverse metalness such that only non-metals 
+			// have diffuse lighting, or a linear blend if partly metal (pure metals
+			// have no diffuse light).
+			kD *= 1.0 - metallic;
+
+			// Scale light by NdotL
+			float NdotL = max(dot(N, L), 0.0);
+
+			// Add to outgoing radiance Lo
+			Lo += (kD * albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		}
+
+		vec3 ambient = vec3(0.03) * albedo * ao;
+
+		vec3 color = ambient + Lo;
+
+		// HDR tonemapping
+		color = color / (color + vec3(1.0));
+
+		// Gamma correct
+		color = pow(color, vec3(1.0 / gamma));
+
+		finalColor = vec4(color, 1.0);
 	}
 
-	vec3 ambient = vec3(0.03) * albedo * ao;
-
-	vec3 color = ambient + Lo;
-
-	// HDR tonemapping
-	color = color / (color + vec3(1.0));
-
-	// Gamma correct
-	color = pow(color, vec3(1.0 / gamma));
-
-	o_Color = vec4(color, 1.0);
+	o_Color = finalColor;
 	o_EntityID = fragmentIn.EntityID;
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
-    float a      = roughness*roughness;
-    float a2     = a*a;
+    float a      = roughness * roughness;
+    float a2     = a * a;
     float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
+    float NdotH2 = NdotH * NdotH;
 	
     float num   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
@@ -318,7 +341,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
     float num   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
