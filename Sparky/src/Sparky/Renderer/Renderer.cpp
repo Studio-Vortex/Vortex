@@ -35,9 +35,9 @@ namespace Sparky {
 
 		float RefractiveIndex = 1.52f; // Glass
 
-		static constexpr inline uint32_t MaxDirectionalLights = 10;
-		static constexpr inline uint32_t MaxPointLights = 10;
-		static constexpr inline uint32_t MaxSpotLights = 10;
+		static constexpr inline uint32_t MaxDirectionalLights = 25;
+		static constexpr inline uint32_t MaxPointLights = 25;
+		static constexpr inline uint32_t MaxSpotLights = 25;
 		static constexpr inline uint32_t MaxSceneLightSources = MaxDirectionalLights + MaxPointLights + MaxSpotLights;
 
 		uint32_t ActiveDirectionalLights = 0;
@@ -121,18 +121,11 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		s_Data.ActiveDirectionalLights = 0;
-		s_Data.ActivePointLights = 0;
-		s_Data.ActiveSpotLights = 0;
-
 		s_Data.ModelShader->Enable();
 		s_Data.ModelShader->SetMat4("u_View", view);
 		s_Data.ModelShader->SetMat4("u_Projection", projection);
 		s_Data.ModelShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		s_Data.ModelShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
-		s_Data.ModelShader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
-		s_Data.ModelShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
-		s_Data.ModelShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
 
 		s_Data.ReflectiveShader->Enable();
 		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", projection * view);
@@ -144,6 +137,10 @@ namespace Sparky {
 		s_Data.RefractiveShader->SetInt("u_Skybox", 0);
 		s_Data.RefractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
 		s_Data.RefractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
+
+		s_Data.ActiveDirectionalLights = 0;
+		s_Data.ActivePointLights = 0;
+		s_Data.ActiveSpotLights = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)

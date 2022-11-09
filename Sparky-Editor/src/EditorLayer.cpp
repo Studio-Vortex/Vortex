@@ -1150,14 +1150,6 @@ namespace Sparky {
 		startingPointLight1.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
 		startingPointLight1.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
 
-		Entity startingPointLight2 = m_EditorScene->CreateEntity("Point Light");
-		startingPointLight2.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingPointLight2.GetTransform().Translation = Math::vec3(2.0f, 4.0f, 4.0f);
-
-		Entity startingSpotLight = m_EditorScene->CreateEntity("Spot Light");
-		startingSpotLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Spot;
-		startingSpotLight.GetTransform().Translation = Math::vec3(-0.0f, 4.0f, 4.0f);
-
 		Entity startingCamera = m_EditorScene->CreateEntity("Camera");
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
 		TransformComponent& cameraTransform = startingCamera.GetTransform();

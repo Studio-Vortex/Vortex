@@ -91,7 +91,7 @@ struct Material
 
 	bool HasAlbedoMap;
 	bool HasMetallicMap;
-	bool HasRougnessMap;
+	bool HasRoughnessMap;
 	bool HasAOMap;
 };
 
@@ -143,11 +143,6 @@ struct FragmentProperties
 	vec3 Specular;
 	vec3 Normal;
 
-	vec3 Albedo;
-	vec3 Metallic;
-	vec3 Roughness;
-	vec3 AO;
-
 	mat3 TBN;
 	vec3 TangentViewPos;
 	vec3 TangentFragPos;
@@ -163,9 +158,9 @@ struct SceneProperties
 	float Exposure;
 };
 
-#define MAX_DIRECTIONAL_LIGHTS 10
-#define MAX_POINT_LIGHTS 10
-#define MAX_SPOT_LIGHTS 10
+#define MAX_DIRECTIONAL_LIGHTS 25
+#define MAX_POINT_LIGHTS 25
+#define MAX_SPOT_LIGHTS 25
 
 const float PI = 3.14159265359;
 
@@ -189,11 +184,11 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 void main()
 {
-	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRougnessMap && u_Material.HasAOMap;
+	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRoughnessMap && u_Material.HasAOMap;
 	const float gamma = 2.2;
 	vec4 finalColor = vec4(1.0);
 
-	if (!pbr)
+	if (pbr == false)
 	{
 		vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
 
@@ -250,7 +245,7 @@ void main()
 		// Set the output color
 		finalColor = vec4(mapped, fragColor.a);
 	}
-	else if (pbr)
+	else
 	{
 		vec2 size = fragmentIn.TexCoord * fragmentIn.TexScale;
 		vec3 albedo = pow(texture(u_Material.AlbedoMap, size).rgb, vec3(gamma));
