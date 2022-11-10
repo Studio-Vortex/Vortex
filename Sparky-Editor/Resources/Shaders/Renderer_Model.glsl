@@ -80,8 +80,11 @@ struct Material
 	sampler2D NormalMap;
 	float Shininess;
 
+	vec3 Albedo;
 	sampler2D AlbedoMap;
+	float Metallic;
 	sampler2D MetallicMap;
+	float Roughness;
 	sampler2D RoughnessMap;
 	sampler2D AOMap;
 	
@@ -143,6 +146,11 @@ struct FragmentProperties
 	vec3 Specular;
 	vec3 Normal;
 
+	vec3 Albedo;
+	float Metallic;
+	float Roughness;
+	float AO;
+
 	mat3 TBN;
 	vec3 TangentViewPos;
 	vec3 TangentFragPos;
@@ -163,6 +171,7 @@ struct SceneProperties
 #define MAX_SPOT_LIGHTS 25
 
 const float PI = 3.14159265359;
+const float GAMMA = 2.2;
 
 uniform sampler2D        u_Texture;
 uniform Material         u_Material;
@@ -175,8 +184,6 @@ vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, 
 vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties);
 vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties);
 
-float CalculateAttenuation(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic);
-
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
@@ -184,27 +191,28 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 void main()
 {
+	vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
+
+	FragmentProperties properties;
+
+	properties.Diffuse = ((u_Material.HasDiffuseMap) ? texture(u_Material.DiffuseMap, textureScale).rgb : vec3(1.0));
+	properties.Specular = ((u_Material.HasSpecularMap) ? texture(u_Material.SpecularMap, textureScale).rgb : vec3(1.0));
+	properties.Normal = normalize(fragmentIn.TBN * texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0);
+
+	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(GAMMA)) : u_Material.Albedo);
+	properties.Metallic = ((u_Material.HasAlbedoMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
+	properties.Roughness = ((u_Material.HasAlbedoMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
+	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureScale).r : 1.0);
+
+	properties.TBN = fragmentIn.TBN;
+	properties.TangentFragPos = properties.TBN * fragmentIn.Position;
+	properties.TangentViewPos = properties.TBN * u_SceneProperties.CameraPosition;
+
 	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRoughnessMap && u_Material.HasAOMap;
-	const float gamma = 2.2;
 	vec4 finalColor = vec4(1.0);
 
-	if (pbr == false)
+	if (!pbr)
 	{
-		vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
-
-		vec3 diffuse = ((u_Material.HasDiffuseMap) ? texture(u_Material.DiffuseMap, textureScale).rgb : vec3(1.0));
-		vec3 specular = ((u_Material.HasSpecularMap) ? texture(u_Material.SpecularMap, textureScale).rgb : vec3(1.0));
-		vec3 normal = texture(u_Material.NormalMap, textureScale).rgb;
-		normal = normal * 2.0 - 1.0;
-
-		FragmentProperties properties;
-		properties.Diffuse = diffuse;
-		properties.Specular = specular;
-		properties.Normal = normalize(fragmentIn.TBN * normal);
-		properties.TBN = fragmentIn.TBN;
-		properties.TangentFragPos = fragmentIn.TBN * fragmentIn.Position;
-		properties.TangentViewPos = fragmentIn.TBN * u_SceneProperties.CameraPosition;
-
 		vec3 lightColor = vec3(0.0);
 
 		// Phase 1: Directional lighting
@@ -240,28 +248,20 @@ void main()
 		// Apply Gamma Correction and Exposure Tone Mapping
 		float exposure = u_SceneProperties.Exposure;
 		vec3 mapped = vec3(1.0) - exp(-(lightColor * fragColor.rgb) * exposure);
-		mapped = pow(mapped, vec3(1.0 / gamma));
+		mapped = pow(mapped, vec3(1.0 / GAMMA));
 
 		// Set the output color
 		finalColor = vec4(mapped, fragColor.a);
 	}
 	else
 	{
-		vec2 size = fragmentIn.TexCoord * fragmentIn.TexScale;
-		vec3 albedo = pow(texture(u_Material.AlbedoMap, size).rgb, vec3(gamma));
-		float metallic = texture(u_Material.MetallicMap, size).r;
-		float roughness = texture(u_Material.RoughnessMap, size).r;
-		float ao = texture(u_Material.AOMap, size).r;
-
-		vec3 normal = texture(u_Material.NormalMap, size).rgb;
-		normal = normal * 2.0 - 1.0;
-		vec3 N = normalize(fragmentIn.TBN * normal);
+		vec3 N = properties.Normal;
 		vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.WorldPosition);
 
 		// Calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
 		// of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
 		vec3 F0 = vec3(0.04);
-		F0 = mix(F0, albedo, metallic);
+		F0 = mix(F0, properties.Albedo, properties.Metallic);
 
 		// Reflectance equation
 		vec3 Lo = vec3(0.0);
@@ -276,8 +276,8 @@ void main()
 			vec3 radiance = u_PointLights[i].Color * attenuation;
 
 			// Cook-Torrance BRDF
-			float NDF = DistributionGGX(N, H, roughness);
-			float G   = GeometrySmith(N, V, L, roughness);
+			float NDF = DistributionGGX(N, H, properties.Roughness);
+			float G   = GeometrySmith(N, V, L, properties.Roughness);
 			vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
 			vec3 numerator = NDF * G * F;
@@ -293,16 +293,16 @@ void main()
 			// Multiply kD by the inverse metalness such that only non-metals 
 			// have diffuse lighting, or a linear blend if partly metal (pure metals
 			// have no diffuse light).
-			kD *= 1.0 - metallic;
+			kD *= 1.0 - properties.Metallic;
 
 			// Scale light by NdotL
 			float NdotL = max(dot(N, L), 0.0);
 
 			// Add to outgoing radiance Lo
-			Lo += (kD * albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 		}
 
-		vec3 ambient = vec3(0.03) * albedo * ao;
+		vec3 ambient = vec3(0.03) * properties.Albedo * properties.AO;
 
 		vec3 color = ambient + Lo;
 
@@ -310,7 +310,7 @@ void main()
 		color = color / (color + vec3(1.0));
 
 		// Gamma correct
-		color = pow(color, vec3(1.0 / gamma));
+		color = pow(color, vec3(1.0 / GAMMA));
 
 		finalColor = vec4(color, 1.0);
 	}
@@ -375,10 +375,48 @@ float CalculateAttenuation(vec3 lightPosition, vec3 fragPosition, float constant
 	return 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 }
 
+vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties)
+{
+	// Ambient shading
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse * properties.AO;
+
+	// Diffuse shading
+	vec3 normal;
+	vec3 lightDir;
+
+	if (material.HasNormalMap)
+	{
+		normal = properties.Normal; // Tangent space normal
+		lightDir = properties.TBN * normalize(-lightSource.Direction);
+	}
+	else
+	{
+		normal = normalize(fragmentIn.Normal);
+		lightDir = normalize(-lightSource.Direction);
+	}
+
+	float diff = CalculateDiffuse(normal, lightDir);
+	vec3 diffuse = lightSource.Diffuse * diff * properties.Diffuse;
+	
+	// Specular shading
+	vec3 viewDir;
+
+	if (material.HasNormalMap)
+		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
+	else
+		viewDir = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
+
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
+	vec3 specular = lightSource.Specular * spec * properties.Specular;
+
+	return lightSource.Color * (ambient + diffuse + specular);
+}
+
 vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties)
 {
 	// Ambient shading
-	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse * properties.AO;
 
 	// Diffuse shading
 	vec3 normal;
@@ -424,48 +462,10 @@ vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProp
 	return lightSource.Color * (ambient + diffuse + specular);
 }
 
-vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties)
-{
-	// Ambient shading
-	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
-
-	// Diffuse shading
-	vec3 normal;
-	vec3 lightDir;
-
-	if (material.HasNormalMap)
-	{
-		normal = properties.Normal; // Tangent space normal
-		lightDir = properties.TBN * normalize(-lightSource.Direction);
-	}
-	else
-	{
-		normal = normalize(fragmentIn.Normal);
-		lightDir = normalize(-lightSource.Direction);
-	}
-
-	float diff = CalculateDiffuse(normal, lightDir);
-	vec3 diffuse = lightSource.Diffuse * diff * properties.Diffuse;
-	
-	// Specular shading
-	vec3 viewDir;
-
-	if (material.HasNormalMap)
-		viewDir = properties.TBN * normalize(properties.TangentViewPos - properties.TangentFragPos);
-	else
-		viewDir = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
-
-	vec3 halfwayDir = normalize(lightDir + viewDir);
-	float spec = CalculateSpecular(normal, halfwayDir, material.Shininess);
-	vec3 specular = lightSource.Specular * spec * properties.Specular;
-
-	return lightSource.Color * (ambient + diffuse + specular);
-}
-
 vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties)
 {
 	// Ambient shading
-	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse;
+	vec3 ambient = lightSource.Ambient * material.Ambient * properties.Diffuse * properties.AO;
 
 	// Diffuse shading
 	vec3 normal;

@@ -100,7 +100,6 @@ namespace Sparky {
 		enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
 		MeshType Type = MeshType::Cube;
 		SharedRef<Model> Mesh = nullptr;
-		SharedRef<Texture2D> Texture = nullptr;
 		Math::vec2 Scale = Math::vec2(1.0f);
 		bool Reflective = false;
 		bool Refractive = false;

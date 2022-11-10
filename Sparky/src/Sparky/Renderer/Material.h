@@ -13,9 +13,15 @@ namespace Sparky {
 		SharedRef<Texture2D> NormalMap = nullptr;
 		float Shininess = 32.0f;
 
+		Math::vec3 Albedo = Math::vec3(1.0f);
 		SharedRef<Texture2D> AlbedoMap = nullptr;
+
+		float Metallic = 0.5f;
 		SharedRef<Texture2D> MetallicMap = nullptr;
+
+		float Roughness = 0.5f;
 		SharedRef<Texture2D> RoughnessMap = nullptr;
+
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
 	};
 
@@ -39,11 +45,20 @@ namespace Sparky {
 		float GetShininess() const;
 		void SetShininess(float shininess);
 
+		const Math::vec3& GetAlbedo() const;
+		void SetAlbedo(const Math::vec3& albedo);
+
 		const SharedRef<Texture2D>& GetAlbedoMap() const;
 		void SetAlbedoMap(const SharedRef<Texture2D>& albedoMap);
 
+		float GetMetallic() const;
+		void SetMetallic(float metallic);
+
 		const SharedRef<Texture2D>& GetMetallicMap() const;
 		void SetMetallicMap(const SharedRef<Texture2D>& metallicMap);
+
+		float GetRoughness() const;
+		void SetRoughness(float roughness);
 
 		const SharedRef<Texture2D>& GetRoughnessMap() const;
 		void SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap);

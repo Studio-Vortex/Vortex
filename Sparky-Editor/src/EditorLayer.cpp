@@ -467,7 +467,7 @@ namespace Sparky {
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
 
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
-							m_HoveredEntity.GetComponent<MeshRendererComponent>().Texture = texture;
+							m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetDiffuseMap(texture);
 					}
 					else
 						SP_CORE_WARN("Could not load texture - {}", texturePath.filename().string());

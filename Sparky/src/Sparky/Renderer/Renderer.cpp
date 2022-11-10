@@ -279,7 +279,7 @@ namespace Sparky {
 
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 
-			SharedRef<Texture2D> texture = ((meshRenderer.Texture) ? meshRenderer.Texture : s_Data.WhiteTexture);
+			SharedRef<Texture2D> texture = s_Data.WhiteTexture;
 			uint32_t textureSlot = 1;
 			texture->Bind(textureSlot);
 			shader->SetInt("u_Texture", textureSlot);
@@ -326,7 +326,10 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasAlbedoMap", true);
 			}
 			else
+			{
 				shader->SetBool("u_Material.HasAlbedoMap", false);
+				shader->SetFloat3("u_Material.Albedo", material->GetAlbedo());
+			}
 
 			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
 			{
@@ -336,7 +339,10 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasMetallicMap", true);
 			}
 			else
+			{
 				shader->SetBool("u_Material.HasMetallicMap", false);
+				shader->SetFloat("u_Material.Metallic", material->GetMetallic());
+			}
 
 			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
 			{
@@ -346,7 +352,10 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasRoughnessMap", true);
 			}
 			else
+			{
 				shader->SetBool("u_Material.HasRoughnessMap", false);
+				shader->SetFloat("u_Material.Roughness", material->GetRoughness());
+			}
 
 			if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
 			{

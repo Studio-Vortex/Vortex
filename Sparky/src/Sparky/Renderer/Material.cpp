@@ -56,6 +56,16 @@ namespace Sparky {
 		m_Properties.Shininess = shininess;
 	}
 
+    const Math::vec3& Material::GetAlbedo() const
+    {
+		return m_Properties.Albedo;
+    }
+
+    void Material::SetAlbedo(const Math::vec3& albedo)
+    {
+		m_Properties.Albedo = albedo;
+    }
+
     const SharedRef<Texture2D>& Material::GetAlbedoMap() const
     {
 		return m_Properties.AlbedoMap;
@@ -66,6 +76,16 @@ namespace Sparky {
 		m_Properties.AlbedoMap = albedoMap;
     }
 
+    float Material::GetMetallic() const
+    {
+		return m_Properties.Metallic;
+    }
+
+    void Material::SetMetallic(float metallic)
+    {
+		m_Properties.Metallic = metallic;
+    }
+
     const SharedRef<Texture2D>& Material::GetMetallicMap() const
     {
 		return m_Properties.MetallicMap;
@@ -74,6 +94,16 @@ namespace Sparky {
     void Material::SetMetallicMap(const SharedRef<Texture2D>& metallicMap)
     {
 		m_Properties.MetallicMap = metallicMap;
+    }
+
+    float Material::GetRoughness() const
+    {
+		return m_Properties.Roughness;
+    }
+
+    void Material::SetRoughness(float roughness)
+    {
+		m_Properties.Roughness = roughness;
     }
 
     const SharedRef<Texture2D>& Material::GetRoughnessMap() const

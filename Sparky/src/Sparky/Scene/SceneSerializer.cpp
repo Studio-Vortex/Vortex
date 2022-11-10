@@ -342,8 +342,7 @@ namespace Sparky {
 			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 			out << YAML::Key << "MeshType" << YAML::Value << MeshRendererMeshTypeToString(meshRendererComponent.Type);
-			if (meshRendererComponent.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << meshRendererComponent.Texture->GetPath();
+
 			if (meshRendererComponent.Mesh)
 			{
 				SharedRef<Model> model = meshRendererComponent.Mesh;
@@ -369,13 +368,18 @@ namespace Sparky {
 				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
 				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
 				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
-
 				if (albedoMap)
 					out << YAML::Key << "AlbedoMapPath" << YAML::Value << albedoMap->GetPath();
+				else
+					out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
 				if (metallicMap)
 					out << YAML::Key << "MetallicMapPath" << YAML::Value << metallicMap->GetPath();
+				else
+					out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
 				if (roughnessMap)
 					out << YAML::Key << "RoughnessMapPath" << YAML::Value << roughnessMap->GetPath();
+				else
+					out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << ambientOcclusionMap->GetPath();
 			}
@@ -743,8 +747,6 @@ namespace Sparky {
 
 					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
-					if (meshComponent["TexturePath"])
-						meshRendererComponent.Texture = Texture2D::Create(meshComponent["TexturePath"].as<std::string>());
 					if (meshComponent["MeshSource"])
 						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity);
 
@@ -762,10 +764,16 @@ namespace Sparky {
 
 					if (meshComponent["AlbedoMapPath"])
 						material->SetAlbedoMap(Texture2D::Create(meshComponent["AlbedoMapPath"].as<std::string>()));
+					if (meshComponent["Albedo"])
+						material->SetAlbedo(meshComponent["Albedo"].as<Math::vec3>());
 					if (meshComponent["MetallicMapPath"])
 						material->SetMetallicMap(Texture2D::Create(meshComponent["MetallicMapPath"].as<std::string>()));
+					if (meshComponent["Metallic"])
+						material->SetMetallic(meshComponent["Metallic"].as<float>());
 					if (meshComponent["RoughnessMapPath"])
 						material->SetRoughnessMap(Texture2D::Create(meshComponent["RoughnessMapPath"].as<std::string>()));
+					if (meshComponent["Roughness"])
+						material->SetRoughness(meshComponent["Roughness"].as<float>());
 					if (meshComponent["AmbientOcclusionMapPath"])
 						material->SetAmbientOcclusionMap(Texture2D::Create(meshComponent["AmbientOcclusionMapPath"].as<std::string>()));
 

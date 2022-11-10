@@ -240,12 +240,6 @@ namespace Sparky {
 		#region MeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetTexture(ulong entityID, out string texturePathString);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetTexture(ulong entityID, string texturePathString);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

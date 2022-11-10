@@ -755,32 +755,6 @@ namespace Sparky {
 
 #pragma region Mesh Renderer Component
 
-	static void MeshRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const std::string& texturePath = entity.GetComponent<MeshRendererComponent>().Texture->GetPath();
-
-		outTexturePathString = mono_string_new_wrapper(texturePath.c_str());
-	}
-
-	static void MeshRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
-	{
-		char* texturePathCStr = mono_string_to_utf8(texturePathString);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
-
-		mono_free(texturePathCStr);
-	}
-
 	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -1990,8 +1964,6 @@ namespace Sparky {
 
 #pragma region Mesh Renderer Component
 
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetTexture);
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetTexture);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
 

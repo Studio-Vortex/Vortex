@@ -246,20 +246,6 @@
 	{
 		public MeshType Type;
 
-		public string Texture
-		{
-			get
-			{
-				InternalCalls.MeshRendererComponent_GetTexture(Entity.ID, out string texturePath);
-				return texturePath;
-			}
-
-			set
-			{
-				InternalCalls.MeshRendererComponent_SetTexture(Entity.ID, value);
-			}
-		}
-
 		public Vector2 Scale
 		{
 			get
