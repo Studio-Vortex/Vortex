@@ -560,11 +560,18 @@ namespace Sparky
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::vec3& cameraPosition, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuadBillboard(const Math::vec3& cameraPosition, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
 		Math::mat4 transform = Math::LookAt(translation, cameraPosition, { 0.0f, 1.0f, 0.0f }) * Math::Scale({ size.x, size.y, 1.0f });
 
-		Renderer2D::DrawQuad(Math::Inverse(transform), color);
+		Renderer2D::DrawQuad(Math::Inverse(transform), color, entityID);
+	}
+
+	void Renderer2D::DrawQuadBillboard(const Math::vec3& cameraPosition, const Math::vec3& translation, const SharedRef<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID)
+	{
+		Math::mat4 transform = Math::LookAt(translation, cameraPosition, { 0.0f, 1.0f, 0.0f });
+
+		Renderer2D::DrawQuad(Math::Inverse(transform), texture, size, color, entityID);
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec3& color)

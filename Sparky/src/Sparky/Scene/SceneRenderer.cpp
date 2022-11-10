@@ -15,13 +15,19 @@ namespace Sparky {
 		// Render 2D
 		{
 			bool sceneCamera = false;
+			Math::vec3 cameraPosition;
 
 			if (typeid(TCamera).name() == typeid(EditorCamera).name())
-				Renderer2D::BeginScene(reinterpret_cast<EditorCamera&>(activeCamera));
+			{
+				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
+				Renderer2D::BeginScene(editorCamera);
+				cameraPosition = editorCamera.GetPosition();
+			}
 			else
 			{
 				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform.GetTransform());
 				sceneCamera = true;
+				cameraPosition = sceneCameraTransform.Translation;
 			}
 
 			// Render Sprites
@@ -77,37 +83,40 @@ namespace Sparky {
 			}
 
 			// Render Scene Icons
+			if (!sceneCamera)
 			{
-				auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
-
-				for (const auto entity : view)
 				{
-					const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+					auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
 
-					Renderer::RenderCameraIcon(transformComponent, sceneCamera, ColorToVec4(Color::White),(int)(entt::entity)entity);
+					for (const auto entity : view)
+					{
+						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+
+						Renderer::RenderCameraIcon(transformComponent, cameraPosition, ColorToVec4(Color::White), (int)(entt::entity)entity);
+					}
 				}
-			}
 
-			{
-				auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
-
-				for (const auto entity : view)
 				{
-					const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
-					SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-					
-					Renderer::RenderLightSourceIcon(transformComponent, sceneCamera, lightSource->GetColor(), (int)(entt::entity)entity);
+					auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
+
+					for (const auto entity : view)
+					{
+						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
+						SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+
+						Renderer::RenderLightSourceIcon(transformComponent, cameraPosition, lightSource->GetColor(), (int)(entt::entity)entity);
+					}
 				}
-			}
 
-			{
-				auto view = sceneRegistry.view<TransformComponent, AudioSourceComponent>();
-
-				for (const auto entity : view)
 				{
-					const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
+					auto view = sceneRegistry.view<TransformComponent, AudioSourceComponent>();
 
-					Renderer::RenderAudioSourceIcon(transformComponent, sceneCamera, ColorToVec4(Color::White),(int)(entt::entity)entity);
+					for (const auto entity : view)
+					{
+						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
+
+						Renderer::RenderAudioSourceIcon(transformComponent, cameraPosition, ColorToVec4(Color::White), (int)(entt::entity)entity);
+					}
 				}
 			}
 

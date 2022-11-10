@@ -153,22 +153,19 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
 	{
-		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.CameraIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
 	{
-		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.LightSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
 	}
 
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, bool sceneRunning, const Math::vec3& color, int entityID)
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
 	{
-		if (!sceneRunning)
-			Renderer2D::DrawQuad(transform.GetTransform() * Math::Scale(Math::vec3(0.75f)), s_Data.AudioSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0 }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
 	}
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
@@ -273,18 +270,13 @@ namespace Sparky {
 			shader = s_Data.ModelShader;
 			shader->Enable();
 
-			s_Data.ModelShader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
-			s_Data.ModelShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
-			s_Data.ModelShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
-
-			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
-
-			SharedRef<Texture2D> texture = s_Data.WhiteTexture;
-			uint32_t textureSlot = 1;
-			texture->Bind(textureSlot);
-			shader->SetInt("u_Texture", textureSlot);
+			shader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
+			shader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
+			shader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
 
 			shader->SetMat4("u_Model", transform.GetTransform());
+
+			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 
 			if (SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap())
 			{

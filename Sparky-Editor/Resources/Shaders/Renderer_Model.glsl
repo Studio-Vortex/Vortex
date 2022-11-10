@@ -197,11 +197,11 @@ void main()
 
 	properties.Diffuse = ((u_Material.HasDiffuseMap) ? texture(u_Material.DiffuseMap, textureScale).rgb : vec3(1.0));
 	properties.Specular = ((u_Material.HasSpecularMap) ? texture(u_Material.SpecularMap, textureScale).rgb : vec3(1.0));
-	properties.Normal = normalize(fragmentIn.TBN * texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0);
+	properties.Normal = normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0));
 
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(GAMMA)) : u_Material.Albedo);
-	properties.Metallic = ((u_Material.HasAlbedoMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
-	properties.Roughness = ((u_Material.HasAlbedoMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
+	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
+	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureScale).r : 1.0);
 
 	properties.TBN = fragmentIn.TBN;
@@ -239,19 +239,13 @@ void main()
 				lightColor += CalculateSpotLight(u_SpotLights[i], u_Material, properties);
 		}
 
-		vec4 fragColor = texture(u_Texture, textureScale);
-
-		// Discard the pixel/fragment if it has an alpha of zero
-		if (fragColor.a == 0.0)
-			discard;
-
 		// Apply Gamma Correction and Exposure Tone Mapping
 		float exposure = u_SceneProperties.Exposure;
-		vec3 mapped = vec3(1.0) - exp(-(lightColor * fragColor.rgb) * exposure);
+		vec3 mapped = vec3(1.0) - exp(-(lightColor) * exposure);
 		mapped = pow(mapped, vec3(1.0 / GAMMA));
 
 		// Set the output color
-		finalColor = vec4(mapped, fragColor.a);
+		finalColor = vec4(mapped, 1.0);
 	}
 	else
 	{
