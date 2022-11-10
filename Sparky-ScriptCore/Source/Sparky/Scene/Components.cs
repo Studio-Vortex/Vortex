@@ -178,8 +178,15 @@
 		}
 	}
 
+	public enum LightType
+	{
+		Directional, Point, Spot,
+	}
+
 	public class LightSource : Component
 	{
+		public LightType Type;
+
 		public Vector3 Ambient
 		{
 			get
@@ -233,6 +240,19 @@
 			set
 			{
 				InternalCalls.LightSourceComponent_SetColor(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 Direction
+		{
+			get
+			{
+				InternalCalls.LightSourceComponent_GetDirection(Entity.ID, out Vector3 direction);
+				return direction;
+			}
+			set
+			{
+				InternalCalls.LightSourceComponent_SetDirection(Entity.ID, ref value);
 			}
 		}
 	}

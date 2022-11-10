@@ -267,12 +267,6 @@ namespace Sparky {
 					Gui::EndTabItem();
 				}
 
-				if (Gui::BeginTabItem("Runtime"))
-				{
-
-					Gui::EndTabItem();
-				}
-
 				if (Gui::BeginTabItem("Build"))
 				{
 					char buffer[256];

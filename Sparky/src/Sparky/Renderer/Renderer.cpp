@@ -153,19 +153,19 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, const Math::vec3& color, int entityID)
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), { color.r, color.g, color.b, 1.0f }, entityID);
+		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)

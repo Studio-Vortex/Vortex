@@ -235,6 +235,12 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_SetColor(ulong entityID, ref Vector3 color);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_GetDirection(ulong entityID, out Vector3 outDirection);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetDirection(ulong entityID, ref Vector3 direction);
+
 		#endregion
 
 		#region MeshRenderer

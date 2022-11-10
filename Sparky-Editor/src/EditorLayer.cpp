@@ -1146,12 +1146,13 @@ namespace Sparky {
 		Entity startingCube = m_EditorScene->CreateEntity("Cube");
 		startingCube.AddComponent<MeshRendererComponent>();
 
-		Entity startingPointLight1 = m_EditorScene->CreateEntity("Point Light");
-		startingPointLight1.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingPointLight1.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+		Entity startingPointLight = m_EditorScene->CreateEntity("Point Light");
+		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
 
 		Entity startingCamera = m_EditorScene->CreateEntity("Camera");
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 		TransformComponent& cameraTransform = startingCamera.GetTransform();
 		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
 		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);

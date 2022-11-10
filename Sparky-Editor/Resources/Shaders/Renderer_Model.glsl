@@ -15,7 +15,6 @@ layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out VertexOut {
 	vec3       Position;
-	vec3       WorldPosition;
 	vec3       Normal;
 	vec4       Tangent;
 	vec2       TexCoord;
@@ -32,7 +31,6 @@ uniform highp mat4 u_Projection;
 void main()
 {
 	vertexOut.Position = a_Position;
-	vertexOut.WorldPosition = vec3(u_Model * vec4(a_Position, 1.0));
 	vertexOut.Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 	vertexOut.Tangent = vec4(normalize(mat3(u_Model) * a_Tangent.xyz), a_Tangent.w);
 	vertexOut.TexCoord = a_TexCoord;
@@ -45,9 +43,7 @@ void main()
 	vec3 T = normalize(vertexOut.Tangent.xyz);
 	T = (T - dot(T, N) * N);
 	vec3 B = cross(normalize(vertexOut.Normal), vertexOut.Tangent.xyz) * vertexOut.Tangent.w;
-	mat3 TBN = mat3(T, B, N);
-	TBN = transpose(TBN);
-	vertexOut.TBN = TBN;
+	vertexOut.TBN = mat3(T, B, N);
 	
 	gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
 }
@@ -62,7 +58,6 @@ layout (location = 1) out int o_EntityID;
 in VertexOut
 {
 	vec3       Position;
-	vec3       WorldPosition;
 	vec3       Normal;
 	vec4       Tangent;
 	vec2       TexCoord;
@@ -184,6 +179,8 @@ vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, 
 vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties);
 vec3 CalculateSpotLight(SpotLight lightSource, Material material, FragmentProperties properties);
 
+float CalculateAttenuation(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic);
+
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
@@ -193,23 +190,23 @@ void main()
 {
 	vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
 
+	vec4 finalColor = vec4(1.0);
+	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRoughnessMap && u_Material.HasAOMap;
+
 	FragmentProperties properties;
+	properties.TBN = (pbr) ? fragmentIn.TBN : transpose(fragmentIn.TBN);
 
 	properties.Diffuse = ((u_Material.HasDiffuseMap) ? texture(u_Material.DiffuseMap, textureScale).rgb : vec3(1.0));
 	properties.Specular = ((u_Material.HasSpecularMap) ? texture(u_Material.SpecularMap, textureScale).rgb : vec3(1.0));
-	properties.Normal = normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0));
+	properties.Normal = ((u_Material.HasNormalMap) ? normalize(properties.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0)) : fragmentIn.Normal);
 
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(GAMMA)) : u_Material.Albedo);
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureScale).r : 1.0);
 
-	properties.TBN = fragmentIn.TBN;
 	properties.TangentFragPos = properties.TBN * fragmentIn.Position;
 	properties.TangentViewPos = properties.TBN * u_SceneProperties.CameraPosition;
-
-	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRoughnessMap && u_Material.HasAOMap;
-	vec4 finalColor = vec4(1.0);
 
 	if (!pbr)
 	{
@@ -250,7 +247,7 @@ void main()
 	else
 	{
 		vec3 N = properties.Normal;
-		vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.WorldPosition);
+		vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
 
 		// Calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
 		// of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
@@ -260,13 +257,12 @@ void main()
 		// Reflectance equation
 		vec3 Lo = vec3(0.0);
 
+		// Calculate per-light radiance
 		for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
 		{
-			// Calculate per-light radiance
-			vec3 L = normalize(u_PointLights[i].Position - fragmentIn.WorldPosition);
+			vec3 L = normalize(u_PointLights[i].Position - fragmentIn.Position);
 			vec3 H = normalize(V + L);
-			float distance = length(u_PointLights[i].Position - fragmentIn.WorldPosition);
-			float attenuation = 1.0 / (distance * distance);
+			float attenuation = CalculateAttenuation(u_PointLights[i].Position, fragmentIn.Position, u_PointLights[i].Constant, u_PointLights[i].Linear, u_PointLights[i].Quadratic);
 			vec3 radiance = u_PointLights[i].Color * attenuation;
 
 			// Cook-Torrance BRDF

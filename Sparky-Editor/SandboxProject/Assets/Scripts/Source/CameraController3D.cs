@@ -12,8 +12,11 @@ namespace Sandbox {
 		public Vector3 WalkSpeed = new Vector3(4.0f, 0.0f, 4.0f);
 		public Vector3 RunSpeed = new Vector3(10.0f, 0.0f, 10.0f);
 		public Vector3 RotationSpeed = new Vector3(100.0f, 100.0f, 0.0f);
+		public Entity SpotLight;
+		public LightSource FlashlightSource;
 		
 		public bool FixedRotation;
+		public bool Flashlight;
 
 		private Vector3 m_Velocity;
 		private Vector3 m_Rotation;
@@ -21,6 +24,8 @@ namespace Sandbox {
 		public override void OnCreate()
 		{
 			Window.ShowMouseCursor(false);
+			SpotLight = FindEntityByName("FlashLight");
+			FlashlightSource = SpotLight.GetComponent<LightSource>();
 		}
 
 		public override void OnUpdate(float delta)
@@ -48,6 +53,9 @@ namespace Sandbox {
 			if (!FixedRotation)
 				ProcessRotation();
 
+			if (Flashlight)
+				UpdateFlashlight();
+
 			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
 				m_Velocity *= ShiftModifer;
 
@@ -58,7 +66,7 @@ namespace Sandbox {
 			transform.Rotation += m_Rotation;
 		}
 
-		private void ProcessRotation()
+		void ProcessRotation()
 		{
 			float rightAxisX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
 			if (rightAxisX < -ControllerDeadzone || rightAxisX > ControllerDeadzone)
@@ -78,6 +86,12 @@ namespace Sandbox {
 				float roll = Math.Max(MaxRoll_Down, transform.Rotation.X);
 				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
+		}
+
+		void UpdateFlashlight()
+		{
+			SpotLight.transform.Translation = transform.Translation;
+			FlashlightSource.Direction = transform.Forward;
 		}
 	}
 

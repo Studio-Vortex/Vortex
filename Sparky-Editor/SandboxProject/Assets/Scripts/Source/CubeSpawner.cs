@@ -61,10 +61,6 @@ namespace Sandbox {
 		void SpawnCube()
 		{
 			Entity cube = new Entity("Cube");
-			MeshRenderer mesh = cube.AddComponent<MeshRenderer>();
-
-			int randomNum = RandomDevice.RangedInt(0, 2);
-			mesh.Texture = $"Assets/Textures/{m_Textures[randomNum]}";
 
 			float translationX = RandomDevice.RangedFloat(0.0f, MaxPosition.X);
 			float translationY = RandomDevice.RangedFloat(1.0f, MaxPosition.Y);

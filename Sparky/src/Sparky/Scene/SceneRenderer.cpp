@@ -4,7 +4,6 @@
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
-#include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
 namespace Sparky {
@@ -92,7 +91,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-						Renderer::RenderCameraIcon(transformComponent, cameraPosition, ColorToVec4(Color::White), (int)(entt::entity)entity);
+						Renderer::RenderCameraIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
 					}
 				}
 
@@ -102,9 +101,8 @@ namespace Sparky {
 					for (const auto entity : view)
 					{
 						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
-						SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 
-						Renderer::RenderLightSourceIcon(transformComponent, cameraPosition, lightSource->GetColor(), (int)(entt::entity)entity);
+						Renderer::RenderLightSourceIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
 					}
 				}
 
@@ -115,7 +113,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
 
-						Renderer::RenderAudioSourceIcon(transformComponent, cameraPosition, ColorToVec4(Color::White), (int)(entt::entity)entity);
+						Renderer::RenderAudioSourceIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
 					}
 				}
 			}

@@ -2,17 +2,14 @@
 #include "ScriptRegistry.h"
 
 #include "Sparky/Core/Application.h"
+#include "Sparky/Core/Input.h"
+#include "Sparky/Core/UUID.h"
 
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
 #include "Sparky/Audio/AudioSource.h"
-
-#include "Sparky/Core/UUID.h"
-#include "Sparky/Core/MouseCodes.h"
-#include "Sparky/Core/KeyCodes.h"
-#include "Sparky/Core/Input.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Renderer2D.h"
@@ -749,6 +746,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetColor(*color);
+	}
+
+	static void LightSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outDirection = entity.GetComponent<LightSourceComponent>().Source->GetDirection();
+	}
+
+	static void LightSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetDirection(*direction);
 	}
 
 #pragma endregion
@@ -1959,6 +1976,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetSpecular);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
 
 #pragma endregion
 
