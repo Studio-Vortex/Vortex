@@ -32,11 +32,18 @@ namespace Sparky {
 		return b2_staticBody;
 	}
 
+	struct PhysicsSceneData
+	{
+		
+	};
+
+	static PhysicsSceneData* m_PhysicsScene = nullptr;
+
 	Scene::Scene() { }
 
 	Scene::~Scene()
 	{
-		delete m_PhysicsWorld;
+		delete m_PhysicsWorld2D;
 	}
 
 	template<typename... Component>
@@ -177,7 +184,7 @@ namespace Sparky {
 					}
 				}
 
-				m_PhysicsWorld->DestroyBody(entityRuntimePhysicsBody);
+				m_PhysicsWorld2D->DestroyBody(entityRuntimePhysicsBody);
 			}
 		}
 
@@ -195,6 +202,7 @@ namespace Sparky {
 		m_IsRunning = true;
 		m_DebugMode = false;
 
+		OnPhysics3DStart();
 		OnPhysics2DStart();
 
 		// Scripting
@@ -244,16 +252,19 @@ namespace Sparky {
 			}
 		}
 
+		OnPhysics3DStop();
 		OnPhysics2DStop();
 	}
 
 	void Scene::OnSimulationStart()
 	{
+		OnPhysics3DStart();
 		OnPhysics2DStart();
 	}
 
 	void Scene::OnSimulationStop()
 	{
+		OnPhysics3DStop();
 		OnPhysics2DStop();
 	}
 
@@ -284,6 +295,7 @@ namespace Sparky {
 			}
 
 			// Update Physics Bodies
+			OnPhysics3DUpdate(delta);
 			OnPhysics2DUpdate(delta);
 
 			if (m_StepFrames)
@@ -308,6 +320,7 @@ namespace Sparky {
 		if (primarySceneCamera != nullptr)
 			m_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, m_Registry);
 		
+		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
 		OnLightSourceUpdate();
@@ -317,6 +330,7 @@ namespace Sparky {
 	{
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
+			OnPhysics3DUpdate(delta);
 			OnPhysics2DUpdate(delta);
 
 			if (m_StepFrames)
@@ -485,6 +499,11 @@ namespace Sparky {
 		}
 	}
 
+	void Scene::OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
+	{
+		
+	}
+
 	void Scene::OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
 	{
 		b2BodyDef bodyDef;
@@ -492,7 +511,7 @@ namespace Sparky {
 		bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
 		bodyDef.angle = transform.Rotation.z;
 
-		b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+		b2Body* body = m_PhysicsWorld2D->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb2d.FixedRotation);
 
 		rb2d.RuntimeBody = body;
@@ -552,9 +571,25 @@ namespace Sparky {
 		}
 	}
 
+	void Scene::OnPhysics3DStart()
+	{
+		m_PhysicsScene = new PhysicsSceneData();
+
+	}
+
+	void Scene::OnPhysics3DUpdate(TimeStep delta)
+	{
+
+	}
+
+	void Scene::OnPhysics3DStop()
+	{
+		delete m_PhysicsScene;
+	}
+
 	void Scene::OnPhysics2DStart()
 	{
-		m_PhysicsWorld = new b2World({ s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y });
+		m_PhysicsWorld2D = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
 
@@ -570,7 +605,7 @@ namespace Sparky {
 
 	void Scene::OnPhysics2DUpdate(TimeStep delta)
 	{
-		m_PhysicsWorld->SetGravity({ s_PhysicsWorldGravity.x, s_PhysicsWorldGravity.y });
+		m_PhysicsWorld2D->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
 		// Physics
 		{
@@ -601,7 +636,7 @@ namespace Sparky {
 					body->SetAwake(true);
 			}
 
-			m_PhysicsWorld->Step(delta, s_PhysicsWorldVeloctityIterations, s_PhysicsWorldPositionIterations);
+			m_PhysicsWorld2D->Step(delta, s_PhysicsWorld2DVeloctityIterations, s_PhysicsWorld2DPositionIterations);
 
 			// Get transform from Box2D
 			for (auto e : view)
@@ -624,8 +659,8 @@ namespace Sparky {
 
 	void Scene::OnPhysics2DStop()
 	{
-		delete m_PhysicsWorld;
-		m_PhysicsWorld = nullptr;
+		delete m_PhysicsWorld2D;
+		m_PhysicsWorld2D = nullptr;
 		m_PhysicsBodyDataMap.clear();
 	}
 

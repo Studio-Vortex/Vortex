@@ -54,16 +54,16 @@ namespace Sparky {
 
 		size_t GetEntityCount() const { return m_Registry.alive(); }
 
-		b2World* GetPhysicsWorld() { return m_PhysicsWorld; }
+		b2World* GetPhysicsWorld2D() { return m_PhysicsWorld2D; }
 
-		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorldVeloctityIterations; }
-		static void SetPhysicsWorld2DVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorldVeloctityIterations = veloctiyIterations; }
+		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorld2DVeloctityIterations; }
+		static void SetPhysicsWorld2DVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
 
-		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorldPositionIterations; }
-		static void SetPhysicsWorld2DPositionIterations(int32_t positionIterations) { s_PhysicsWorldPositionIterations = positionIterations; }
+		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorld2DPositionIterations; }
+		static void SetPhysicsWorld2DPositionIterations(int32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
 		
-		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorldGravity; }
-		static void SetPhysicsWorld2DGravitty(const Math::vec2& gravity) { s_PhysicsWorldGravity = gravity; }
+		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorld2DGravity; }
+		static void SetPhysicsWorld2DGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
 
 		Entity DuplicateEntity(Entity entity);
 
@@ -86,7 +86,12 @@ namespace Sparky {
 		void OnParticleEmitterUpdate(TimeStep delta);
 		void OnLightSourceUpdate();
 
+		void OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
 		void OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
+
+		void OnPhysics3DStart();
+		void OnPhysics3DUpdate(TimeStep delta);
+		void OnPhysics3DStop();
 
 		void OnPhysics2DStart();
 		void OnPhysics2DUpdate(TimeStep delta);
@@ -102,11 +107,11 @@ namespace Sparky {
 		bool m_IsPaused = false;
 		bool m_DebugMode = false; // Editor-only
 
-		b2World* m_PhysicsWorld = nullptr;
+		b2World* m_PhysicsWorld2D = nullptr;
 		
-		inline static Math::vec2 s_PhysicsWorldGravity = Math::vec2(0.0f, -9.8f);
-		inline static int32_t s_PhysicsWorldVeloctityIterations = 6;
-		inline static int32_t s_PhysicsWorldPositionIterations = 2;
+		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.8f);
+		inline static int32_t s_PhysicsWorld2DVeloctityIterations = 6;
+		inline static int32_t s_PhysicsWorld2DPositionIterations = 2;
 
 		std::unordered_map<b2Fixture*, UniqueRef<PhysicsBodyData>> m_PhysicsBodyDataMap;
 

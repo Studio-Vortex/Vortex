@@ -30,6 +30,7 @@ IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
+IncludeDir["tinygltf"] = "Sparky/vendor/tinygltf"
 IncludeDir["tinyobjloader"] = "Sparky/vendor/tinyobjloader"
 IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
 
@@ -70,8 +71,9 @@ project "Sparky"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/miniaudio/miniaudio/miniaudio.h",
-		"%{prj.name}/vendor/stb_image/**.h",
-		"%{prj.name}/vendor/stb_image/**.cpp",
+		"%{prj.name}/vendor/tinygltf/**.h",
+		"%{prj.name}/vendor/tinygltf/**.hpp",
+		"%{prj.name}/vendor/tinygltf/**.cpp",
 		"%{prj.name}/vendor/tinyobjloader/tiny_obj_loader.h",
 
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
@@ -102,6 +104,7 @@ project "Sparky"
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
 		"%{IncludeDir.yaml_cpp}",
 	}
@@ -205,6 +208,7 @@ project "Sparky-Editor"
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
 	}
 
@@ -309,6 +313,7 @@ project "Sparky-Runtime"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
 	}
 

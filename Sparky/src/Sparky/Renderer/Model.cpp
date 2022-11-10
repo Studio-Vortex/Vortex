@@ -6,6 +6,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include <tiny_gltf.h>
+
 namespace Sparky {
 
 	namespace Utils {
@@ -49,7 +51,7 @@ namespace Sparky {
 			}
 		}
 
-		static Mesh LoadMeshFromFile(const std::string& filepath, const Math::mat4& transform)
+		static Mesh LoadMeshFromOBJFile(const std::string& filepath, const Math::mat4& transform)
 		{
 			tinyobj::attrib_t attributes;
 			std::vector<tinyobj::shape_t> shapes;
@@ -107,6 +109,11 @@ namespace Sparky {
 			return { vertices, indices };
 		}
 
+		static Mesh LoadMeshFromGLTFFile(const std::string& filepath, const Math::mat4& transform)
+		{
+
+		}
+
 	}
 
 	static constexpr const char* DEFAULT_MESH_SOURCE_PATHS[] = {
@@ -122,7 +129,7 @@ namespace Sparky {
 	Model::Model(const std::string& filepath, Entity entity)
 		: m_Filepath(filepath)
 	{
-		Mesh mesh = Utils::LoadMeshFromFile(m_Filepath, entity.GetTransform().GetTransform());
+		Mesh mesh = Utils::LoadMeshFromOBJFile(m_Filepath, entity.GetTransform().GetTransform());
 
 		m_Material = Material::Create(MaterialProperties());
 
@@ -166,7 +173,7 @@ namespace Sparky {
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
 	{
-		Mesh mesh = Utils::LoadMeshFromFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
+		Mesh mesh = Utils::LoadMeshFromOBJFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
 
 		m_Material = nullptr;
 

@@ -165,6 +165,72 @@ namespace Sparky {
 
 #pragma region Physics Components
 
+	struct RigidBodyComponent
+	{
+		enum class BodyType { Static = 0, Dynamic, Kinematic };
+		BodyType Type = BodyType::Static;
+
+		// Storage for runtime
+		void* RuntimeBody = nullptr;
+
+		RigidBodyComponent() = default;
+		RigidBodyComponent(const RigidBodyComponent&) = default;
+	};
+
+	struct BoxColliderComponent
+	{
+		Math::vec3 Offset = Math::vec3(0.0f);
+		Math::vec3 Size = Math::vec3(0.5f);
+
+		// TODO: Move into physics material in the future
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		BoxColliderComponent() = default;
+		BoxColliderComponent(const BoxColliderComponent&) = default;
+	};
+
+	struct SphereColliderComponent
+	{
+		Math::vec3 Offset = Math::vec3(0.0f);
+		float Radius = 0.5f;
+
+		// TODO: Move into physics material in the future
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		SphereColliderComponent() = default;
+		SphereColliderComponent(const SphereColliderComponent&) = default;
+	};
+
+	struct CapsuleColliderComponent
+	{
+		Math::vec2 Offset = Math::vec2(0.0f);
+		Math::vec3 Size = Math::vec3(0.5f);
+
+		// TODO: Move into physics material in the future
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		CapsuleColliderComponent() = default;
+		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
+	};
+
 	struct RigidBody2DComponent
 	{
 		enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -255,7 +321,7 @@ namespace Sparky {
 		ComponentGroup<TransformComponent,
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
 		AudioSourceComponent, AudioListenerComponent,
-		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		RigidBodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		ScriptComponent, NativeScriptComponent>;
 
 }

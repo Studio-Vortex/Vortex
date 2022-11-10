@@ -1292,7 +1292,7 @@ namespace Sparky {
 		
 		// Create an instance of the callback and initialize it
 		RayCastCallback raycastCallback;
-		contextScene->GetPhysicsWorld()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
+		contextScene->GetPhysicsWorld2D()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
 
 		*outResult = RayCastHit2D(raycastCallback, contextScene);
 
