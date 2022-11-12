@@ -72,9 +72,9 @@ namespace Sparky {
 				Gui::TableNextColumn();
 				for (auto& shader : shaders)
 				{
-					if (shader->GetName() != "Renderer_Model") continue;
+					if (shader->GetName() != "Renderer_PBR") continue;
 					if (Gui::Button("Recompile"))
-						shader->ReCompile();
+						shader->Reload();
 				}
 
 				Gui::EndTable();

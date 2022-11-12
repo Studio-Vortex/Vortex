@@ -205,7 +205,7 @@ namespace Sparky {
 		glUseProgram(NULL);
 	}
 
-	void OpenGLShader::ReCompile()
+	void OpenGLShader::Reload()
 	{
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);

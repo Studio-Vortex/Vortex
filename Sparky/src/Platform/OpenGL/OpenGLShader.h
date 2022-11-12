@@ -34,7 +34,7 @@ namespace Sparky {
 
 		inline const std::string& GetName() const override { return m_Name; };
 
-		void ReCompile() override;
+		void Reload() override;
 
 		void SetUniform(const std::string& uniformName, int v) const;
 		void SetUniform(const std::string& uniformName, int* data, uint32_t count) const;

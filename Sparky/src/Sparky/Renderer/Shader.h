@@ -26,7 +26,7 @@ namespace Sparky {
 		virtual void SetFloat3(const std::string& name, const Math::vec3& vector) const = 0;
 		virtual void SetFloat4(const std::string& name, const Math::vec4& vector) const = 0;
 
-		virtual void ReCompile() = 0;
+		virtual void Reload() = 0;
 
 		virtual const std::string& GetName() const = 0;
 
