@@ -277,8 +277,6 @@ namespace Sparky {
 			shader = pbr ? s_Data.PBRShader : s_Data.BasicLightingShader;
 			shader->Enable();
 
-			shader->SetMat4("u_Model", transform.GetTransform());
-
 			if (!pbr)
 				shader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
 			shader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
@@ -371,6 +369,8 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasAOMap", false);
 		}
 
+		shader->SetMat4("u_Model", transform.GetTransform());
+
 		Submit(shader, model->GetVertexArray());
 
 #if SP_RENDERER_STATISTICS
@@ -382,7 +382,7 @@ namespace Sparky {
 	{
 		RenderCommand::DisableDepthMask();
 		s_Data.SkyboxShader->Enable();
-		s_Data.SkyboxShader->SetInt("u_Skybox", 0);
+		s_Data.SkyboxShader->SetInt("u_EnvironmentMap", 0);
 		s_Data.SkyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 		s_Data.SkyboxShader->SetMat4("u_Projection", projection);
 
@@ -469,9 +469,9 @@ namespace Sparky {
 		std::vector<SharedRef<Shader>> shaders;
 		shaders.push_back(s_Data.BasicLightingShader);
 		shaders.push_back(s_Data.PBRShader);
+		shaders.push_back(s_Data.SkyboxShader);
 		shaders.push_back(s_Data.ReflectiveShader);
 		shaders.push_back(s_Data.RefractiveShader);
-		shaders.push_back(s_Data.SkyboxShader);
 		return shaders;
 	}
 

@@ -1,6 +1,5 @@
 //-------------------------
-// - Sparky Game Engine -
-// Renderer Skybox Shader with Texturing
+// - Sparky Game Engine Renderer Skybox Shader -
 //-------------------------
 
 #type vertex
@@ -29,16 +28,18 @@ layout (location = 1) out int o_EntityID;
 
 in vec3 f_TexCoord;
 
-uniform samplerCube u_Skybox;
+uniform samplerCube u_EnvironmentMap;
+
+const float GAMMA = 2.2;
 
 void main()
 {
-	vec4 skybox = texture(u_Skybox, f_TexCoord);
+	vec3 envColor = texture(u_EnvironmentMap, f_TexCoord).rgb;
 
-	// Apply Gamma correction
-	float gamma = 2.2;
-	vec4 finalColor = vec4(pow(skybox.rgb, vec3(1.0 / gamma)), skybox.a);
+	// HDR Tonemap and Gamma Correction
+	envColor = envColor / (envColor + vec3(1.0));
+	envColor = pow(envColor, vec3(1.0 / GAMMA));
 
-	o_Color = finalColor;
+	o_Color = vec4(envColor, 1.0);
 	o_EntityID = -1;
 }

@@ -58,7 +58,7 @@ namespace Sparky {
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(const TransformComponent& transform, const Math::vec2& scale);
+		void OnUpdate(const Math::vec2& scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }
@@ -81,7 +81,7 @@ namespace Sparky {
 		std::vector<ModelVertex> m_Vertices;
 		std::vector<SharedRef<Texture2D>> m_Textures;
 
-		Math::mat4 m_EntityTransform;
+		Math::vec2 m_TextureScale;
 
 		SharedRef<VertexArray> m_Vao = nullptr;
 		SharedRef<VertexBuffer> m_Vbo = nullptr;

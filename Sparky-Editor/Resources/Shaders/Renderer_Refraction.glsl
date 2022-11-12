@@ -19,18 +19,19 @@ out vec2       f_TexCoord;
 out vec2       f_TexScale;
 out flat int   f_EntityID;
 
-uniform highp mat4 u_ViewProjection;
+uniform mat4 u_ViewProjection;
+uniform mat4 u_Model;
 
 void main()
 {
-	f_Position = a_Position;
+	f_Position = vec3(u_Model * vec4(a_Position, 1.0));
 	f_Normal = a_Normal;
 	f_TexCoord = a_TexCoord;
 	f_TexScale = a_TexScale;
 	
 	f_EntityID = a_EntityID;
 	
-	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * vec4(f_Position, 1.0);
 }
 
 

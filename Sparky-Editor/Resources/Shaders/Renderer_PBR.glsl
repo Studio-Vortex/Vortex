@@ -16,7 +16,6 @@ layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out DATA
 {
-	vec3       WorldPosition;
 	vec3       Position;
 	vec3       Normal;
 	vec3       Tangent;
@@ -32,13 +31,12 @@ uniform mat4 u_ViewProjection;
 
 void main()
 {
-	vertexOut.WorldPosition = vec3(u_Model * vec4(a_Position, 1.0));
-	vertexOut.Position = a_Position;
-	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
+	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
 
 	mat3 model = mat3(u_Model);
 	vertexOut.Normal = model * a_Normal;
-	vertexOut.Tangent = vec3(normalize(mat3(u_Model) * a_Tangent.xyz));
+	vertexOut.Tangent = model * a_Tangent.xyz;
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 
@@ -61,7 +59,6 @@ layout (location = 1) out int o_EntityID;
 
 in DATA
 {
-	vec3       WorldPosition;
 	vec3       Position;
 	vec3       Normal;
 	vec3       Tangent;
@@ -165,7 +162,12 @@ void main()
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use F0 of 0.04
 	// if it's a metal, use the albedo color as F0 (metallic workflow)
-	vec3 F0 = vec3(0.04);
+	vec3 F;
+	if (properties.Metallic < 0.5)
+		F = vec3(0.04);
+	else
+		F = properties.Albedo;
+	vec3 F0 = F;
 	F0 = mix(F0, properties.Albedo, properties.Metallic);
 
 	// Reflectance equation
@@ -181,8 +183,9 @@ void main()
 
 		// Cook-Torrance BRDF
 		float NDF = DistributionGGX(N, H, properties.Roughness);
-		float G   = GeometrySmith(N, V, L, properties.Roughness);
-		vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0, properties.Roughness);
+		float G = GeometrySmith(N, V, L, properties.Roughness);
+		float cosTheta = max(dot(H, V), 0.0);
+		vec3 F = FresnelSchlick(cosTheta, F0, properties.Roughness);
 
 		vec3 numerator = NDF * G * F;
 		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent division by 0
@@ -192,11 +195,10 @@ void main()
 		vec3 kS = F;
 		// For energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
-		// relationship the diffuse component (kD) should equal 1.0 - kS.
+		// relationship the diffuse component (kD) should equal 1.0 - kS
 		vec3 kD = vec3(1.0) - kS;
 		// Multiply kD by the inverse metalness such that only non-metals 
-		// have diffuse lighting, or a linear blend if partly metal (pure metals
-		// have no diffuse light).
+		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
 		kD *= 1.0 - properties.Metallic;
 
 		// Scale light by NdotL

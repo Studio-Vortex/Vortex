@@ -441,14 +441,13 @@ namespace Sparky {
 
 	void Scene::OnModelUpdate()
 	{
-		auto view = m_Registry.view<TransformComponent, MeshRendererComponent>();
+		auto view = m_Registry.view<MeshRendererComponent>();
 
 		for (auto& entity : view)
 		{
-			auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
+			auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
 
-			SharedRef<Model> model = meshRendererComponent.Mesh;
-			model->OnUpdate(transformComponent, meshRendererComponent.Scale);
+			meshRendererComponent.Mesh->OnUpdate(meshRendererComponent.Scale);
 		}
 	}
 

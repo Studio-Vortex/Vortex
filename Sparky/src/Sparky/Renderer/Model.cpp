@@ -253,25 +253,15 @@ namespace Sparky {
 		m_Vertices = m_OriginalVertices;
 	}
 
-	void Model::OnUpdate(const TransformComponent& transform, const Math::vec2& scale)
+	void Model::OnUpdate(const Math::vec2& scale)
 	{
-		Math::mat4 entityTransform = transform.GetTransform();
-
-		if (m_EntityTransform != entityTransform)
+		if (m_TextureScale != scale)
 		{
-			uint32_t i = 0;
 			for (auto& vertex : m_Vertices)
-			{
-				vertex.Position = entityTransform * Math::vec4(m_OriginalVertices[i].Position, 1.0f);
 				vertex.TexScale = scale;
-
-				i++;
-			}
 
 			uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
 			m_Vbo->SetData(m_Vertices.data(), dataSize);
-
-			m_EntityTransform = entityTransform;
 		}
 	}
 

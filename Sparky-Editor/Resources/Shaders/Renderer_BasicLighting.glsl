@@ -29,12 +29,12 @@ uniform mat4 u_ViewProjection;
 
 void main()
 {
-	vertexOut.Position = a_Position;
-	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
+	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
 
 	mat3 model = mat3(u_Model);
 	vertexOut.Normal = model * a_Normal;
-	vertexOut.Tangent = vec3(normalize(mat3(u_Model) * a_Tangent.xyz));
+	vertexOut.Tangent = model * a_Tangent.xyz;
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 
