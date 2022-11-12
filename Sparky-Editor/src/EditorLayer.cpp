@@ -480,7 +480,7 @@ namespace Sparky {
 					{
 						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
 
-						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform(), m_HoveredEntity);
+						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform(), (int)(entt::entity)m_HoveredEntity);
 						meshRenderer.Type = MeshRendererComponent::MeshType::Custom;
 					}
 				}

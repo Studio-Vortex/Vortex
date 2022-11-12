@@ -748,7 +748,7 @@ namespace Sparky {
 					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
 					if (meshComponent["MeshSource"])
-						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity.GetTransform(), deserializedEntity);
+						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
 
 					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
 					if (meshComponent["Ambient"])

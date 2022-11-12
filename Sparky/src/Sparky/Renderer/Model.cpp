@@ -135,52 +135,13 @@ namespace Sparky {
 	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
 		: m_Filepath(filepath)
 	{
-		std::filesystem::path path = std::filesystem::path(filepath);
-		Mesh mesh;
+		LoadModelFromFile(filepath, transform, entityID);
+	}
 
-		if (path.filename().extension() == ".obj")
-			mesh = Utils::LoadMeshFromOBJFile(m_Filepath, transform.GetTransform());
-		else if (path.filename().extension() == ".gltf")
-			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
-
-		m_Material = Material::Create(MaterialProperties());
-
-		m_OriginalVertices.resize(mesh.Vertices.size());
-
-		// Store the original mesh vertices
-		uint32_t i = 0;
-		for (const auto& vertex : mesh.Vertices)
-		{
-			ModelVertex& v = m_OriginalVertices[i++];
-			v.Position = vertex.Position;
-			v.Normal = vertex.Normal;
-			v.Tangent = vertex.Tangent;
-			v.TextureCoord = vertex.TextureCoord;
-			v.TexScale = Math::vec2(1.0f);
-			v.EntityID = (int)(entt::entity)entityID;
-		}
-
-		m_Vao = VertexArray::Create();
-
-		uint32_t indexCount = mesh.Indices.size();
-		
-		uint32_t dataSize = m_OriginalVertices.size() * sizeof(ModelVertex);
-		m_Vbo = VertexBuffer::Create(m_OriginalVertices.data(), dataSize);
-		m_Vbo->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal"   },
-			{ ShaderDataType::Float4, "a_Tangent"  },
-			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float2, "a_TexScale" },
-			{ ShaderDataType::Int,    "a_EntityID" },
-		});
-
-		m_Vao->AddVertexBuffer(m_Vbo);
-
-		m_Ibo = IndexBuffer::Create(mesh.Indices.data(), indexCount);
-		m_Vao->SetIndexBuffer(m_Ibo);
-
-		m_Vertices = m_OriginalVertices;
+	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
+	{
+		m_Filepath = DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(defaultMesh)];
+		LoadModelFromFile(m_Filepath, transform, entityID);
 	}
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
@@ -242,6 +203,56 @@ namespace Sparky {
 		m_Vao->AddVertexBuffer(m_Vbo);
 	}
 
+	void Model::LoadModelFromFile(const std::string& filepath, const TransformComponent& transform, int entityID)
+	{
+		std::filesystem::path path = std::filesystem::path(filepath);
+		Mesh mesh;
+
+		if (path.filename().extension() == ".obj")
+			mesh = Utils::LoadMeshFromOBJFile(m_Filepath, transform.GetTransform());
+		else if (path.filename().extension() == ".gltf")
+			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
+
+		m_Material = Material::Create(MaterialProperties());
+
+		m_OriginalVertices.resize(mesh.Vertices.size());
+
+		// Store the original mesh vertices
+		uint32_t i = 0;
+		for (const auto& vertex : mesh.Vertices)
+		{
+			ModelVertex& v = m_OriginalVertices[i++];
+			v.Position = vertex.Position;
+			v.Normal = vertex.Normal;
+			v.Tangent = vertex.Tangent;
+			v.TextureCoord = vertex.TextureCoord;
+			v.TexScale = Math::vec2(1.0f);
+			v.EntityID = (int)(entt::entity)entityID;
+		}
+
+		m_Vao = VertexArray::Create();
+
+		uint32_t indexCount = mesh.Indices.size();
+
+		uint32_t dataSize = m_OriginalVertices.size() * sizeof(ModelVertex);
+		m_Vbo = VertexBuffer::Create(m_OriginalVertices.data(), dataSize);
+		m_Vbo->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal"   },
+			{ ShaderDataType::Float4, "a_Tangent"  },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+			{ ShaderDataType::Float2, "a_TexScale" },
+			{ ShaderDataType::Int,    "a_EntityID" },
+			});
+
+		m_Vao->AddVertexBuffer(m_Vbo);
+
+		m_Ibo = IndexBuffer::Create(mesh.Indices.data(), indexCount);
+		m_Vao->SetIndexBuffer(m_Ibo);
+
+		m_Vertices = m_OriginalVertices;
+	}
+
 	void Model::OnUpdate(const TransformComponent& transform, const Math::vec2& scale)
 	{
 		Math::mat4 entityTransform = transform.GetTransform();
@@ -272,6 +283,11 @@ namespace Sparky {
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
 	{
 		return CreateShared<Model>(filepath, transform, entityID);
+	}
+
+	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
+	{
+		return CreateShared<Model>(defaultMesh, transform, entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshRendererComponent::MeshType meshType)

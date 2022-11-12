@@ -75,13 +75,13 @@ namespace Sparky {
 				}
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
-					{
-						Entity entity{ entityID, m_ContextScene.get() };
+				{
+					Entity entity{ entityID, m_ContextScene.get() };
 
-						// If the name lines up with the search box we can show it
-						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
-							DrawEntityNode(entity);
-					});
+					// If the name lines up with the search box we can show it
+					if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
+						DrawEntityNode(entity);
+				});
 
 				// Left click anywhere on the panel to deselect entity
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
@@ -129,6 +129,14 @@ namespace Sparky {
 		}
 	}
 
+	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene)
+	{
+		entity = contextScene->CreateEntity(name);
+		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
+		meshRenderer.Type = static_cast<MeshRendererComponent::MeshType>(defaultMesh);
+		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), (int)(entt::entity)entity);
+	}
+
 	void SceneHierarchyPanel::DisplayCreateEntityMenu()
 	{
 		if (Gui::MenuItem("Create Empty"))
@@ -138,52 +146,31 @@ namespace Sparky {
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Cube");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>();
-			}
+				CreateModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Sphere"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Sphere");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Sphere;
-			}
+				CreateModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Capsule"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Capsule");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Capsule;
-			}
+				CreateModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Cone"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Cone");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Cone;
-			}
+				CreateModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Cylinder"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Cylinder");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Cylinder;
-			}
+				CreateModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Plane"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Plane");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Plane;
-			}
+				CreateModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Torus"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Torus");
-				m_SelectedEntity.AddComponent<MeshRendererComponent>().Type = MeshRendererComponent::MeshType::Torus;
-			}
+				CreateModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene);
 
 			Gui::EndMenu();
 		}
@@ -257,7 +244,43 @@ namespace Sparky {
 
 		if (Gui::BeginMenu("Physics"))
 		{
-			if (Gui::MenuItem("Static Box Collider 2D"))
+			if (Gui::MenuItem("Box Collider"))
+			{
+				CreateModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
+				m_SelectedEntity.AddComponent<RigidBodyComponent>();
+				m_SelectedEntity.AddComponent<BoxColliderComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Sphere Collider"))
+			{
+				CreateModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene);
+				m_SelectedEntity.AddComponent<RigidBodyComponent>();
+				m_SelectedEntity.AddComponent<SphereColliderComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Capsule Collider"))
+			{
+				CreateModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene);
+				m_SelectedEntity.AddComponent<RigidBodyComponent>();
+				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Static Mesh Collider"))
+			{
+				CreateModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
+				m_SelectedEntity.AddComponent<RigidBodyComponent>();
+				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
+			}
+
+			Gui::Separator();
+
+			if (Gui::MenuItem("Box Collider 2D"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Box Collider2D");
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
@@ -267,33 +290,11 @@ namespace Sparky {
 
 			Gui::Separator();
 
-			if (Gui::MenuItem("Static Circle Collider 2D"))
+			if (Gui::MenuItem("Circle Collider 2D"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Circle Collider2D");
 				m_SelectedEntity.AddComponent<CircleRendererComponent>();
 				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
-			}
-
-			Gui::Separator();
-
-			if (Gui::MenuItem("Dynamic Box Collider 2D"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Box Collider2D");
-				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
-				auto& rb2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-				rb2d.Type = RigidBody2DComponent::BodyType::Dynamic;
-				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
-			}
-
-			Gui::Separator();
-
-			if (Gui::MenuItem("Dynamic Circle Collider 2D"))
-			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Circle Collider2D");
-				m_SelectedEntity.AddComponent<CircleRendererComponent>();
-				auto& cc2d = m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-				cc2d.Type = RigidBody2DComponent::BodyType::Dynamic;
 				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
 			}
 
@@ -379,7 +380,7 @@ namespace Sparky {
 			}
 			Gui::Separator();
 
-			if (Gui::MenuItem("Delete Entity", "Del"))
+			if (Gui::MenuItem("Delete Entity", "Del") && m_SelectedEntity)
 				m_EntityShouldBeDestroyed = true;
 
 			Gui::EndPopup();
@@ -589,54 +590,48 @@ namespace Sparky {
 			Gui::Spacing();
 			Gui::Separator();
 
-			static const char* componentNames[] = {
-				"Camera",
-				"Skybox",
-				"Light Source",
-				"Mesh Renderer",
-				"Sprite Renderer",
-				"Circle Renderer",
-				"Particle Emitter",
-				"Audio Source",
-				"Audio Listener",
-				"RigidBody 2D",
-				"Box Collider 2D",
-				"Circle Collider 2D",
-				"C# Script",
-				"C++ Script"
-			};
+			if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
+				DisplayAddComponentPopup<CameraComponent>(name);
+			if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<SkyboxComponent>(componentName);
+			if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<LightSourceComponent>(componentName);
+			if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<MeshRendererComponent>(componentName);
+			if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<SpriteRendererComponent>(componentName);
+			if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<CircleRendererComponent>(componentName);
+			if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<ParticleEmitterComponent>(componentName);
 
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[0]))
-				DisplayAddComponentPopup<CameraComponent>(componentNames[0]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[1]))
-				DisplayAddComponentPopup<SkyboxComponent>(componentNames[1]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[2]))
-				DisplayAddComponentPopup<LightSourceComponent>(componentNames[2]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[3]))
-				DisplayAddComponentPopup<MeshRendererComponent>(componentNames[3]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[4]))
-				DisplayAddComponentPopup<SpriteRendererComponent>(componentNames[4]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[5]))
-				DisplayAddComponentPopup<CircleRendererComponent>(componentNames[5]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[6]))
-				DisplayAddComponentPopup<ParticleEmitterComponent>(componentNames[6]);
+			if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<AudioSourceComponent>(componentName);
+			if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<AudioListenerComponent>(componentName);
 
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[7]))
-				DisplayAddComponentPopup<AudioSourceComponent>(componentNames[7]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[8]))
-				DisplayAddComponentPopup<AudioListenerComponent>(componentNames[8]);
+			if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<RigidBodyComponent>(componentName);
+			if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<BoxColliderComponent>(componentName);
+			if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<SphereColliderComponent>(componentName);
+			if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<CapsuleColliderComponent>(componentName);
+			if (const char* componentName = "Static Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<StaticMeshColliderComponent>(componentName);
 
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[9]))
-				DisplayAddComponentPopup<RigidBody2DComponent>(componentNames[9]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[10]))
-			DisplayAddComponentPopup<BoxCollider2DComponent>(componentNames[10]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[11]))
-				DisplayAddComponentPopup<CircleCollider2DComponent>(componentNames[11]);
+			if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<RigidBody2DComponent>(componentName);
+			if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<BoxCollider2DComponent>(componentName);
+			if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<CircleCollider2DComponent>(componentName);
 
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[12]))
-				DisplayAddComponentPopup<ScriptComponent>(componentNames[12]);
-			if (m_ComponentSearchInputTextFilter.PassFilter(componentNames[13]))
-				DisplayAddComponentPopup<NativeScriptComponent>(componentNames[13], true);
+			if (const char* componentName = "C# Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<ScriptComponent>(componentName);
+			if (const char* componentName = "C++ Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<NativeScriptComponent>(componentName, true);
 
 			Gui::EndPopup();
 		}
@@ -859,16 +854,6 @@ namespace Sparky {
 			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
 
-			static const char* defaultMeshSourcePaths[] = {
-				"Resources/Meshes/Default/Cube.obj",
-				"Resources/Meshes/Default/Sphere.obj",
-				"Resources/Meshes/Default/Capsule.obj",
-				"Resources/Meshes/Default/Cone.obj",
-				"Resources/Meshes/Default/Cylinder.obj",
-				"Resources/Meshes/Default/Plane.obj",
-				"Resources/Meshes/Default/Torus.obj",
-			};
-
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
 
@@ -885,9 +870,9 @@ namespace Sparky {
 						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
 
 						if (component.Type != MeshRendererComponent::MeshType::Custom)
-							component.Mesh = Model::Create(std::string(defaultMeshSourcePaths[i]), entity.GetTransform(), entity);
+							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), (int)(entt::entity)entity);
 						else
-							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), entity);
+							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), (int)(entt::entity)entity);
 					}
 
 					if (isSelected)
@@ -916,7 +901,7 @@ namespace Sparky {
 					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj")
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), entity);
+						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), (int)(entt::entity)entity);
 						component.Type = MeshRendererComponent::MeshType::Custom;
 					}
 					else
@@ -1601,6 +1586,69 @@ namespace Sparky {
 				Gui::Indent();
 				Gui::TreePop();
 			}
+		});
+
+		DrawComponent<RigidBodyComponent>("RigidBody", entity, [](auto& component)
+		{
+			const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyType = bodyTypes[(uint32_t)component.Type];
+
+			if (Gui::BeginCombo("Body Type", currentBodyType))
+			{
+				uint32_t arraySize = SP_ARRAYCOUNT(bodyTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
+				{
+					bool isSelected = strcmp(currentBodyType, bodyTypes[i]) == 0;
+					if (Gui::Selectable(bodyTypes[i], isSelected))
+					{
+						currentBodyType = bodyTypes[i];
+						component.Type = static_cast<RigidBodyComponent::BodyType>(i);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
+				}
+
+				Gui::EndCombo();
+			}
+		});
+
+		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto& component)
+		{
+			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f);
+			Gui::DragFloat3("Size", Math::ValuePtr(component.Size), 0.01f);
+			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto& component)
+		{
+			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f);
+			Gui::DragFloat("Radius", &component.Radius, 0.01, 0.01f);
+			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](auto& component)
+		{
+			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
+			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<StaticMeshColliderComponent>("Static Mesh Collider", entity, [](auto& component)
+		{
+			
 		});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)

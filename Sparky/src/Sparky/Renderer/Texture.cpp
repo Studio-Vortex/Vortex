@@ -44,20 +44,4 @@ namespace Sparky {
 		return nullptr;
 	}
 	
-	SharedRef<Texture2D> Texture2D::Create(bool flipVertical, const std::string& hdrPath)
-	{
-		switch (Renderer::GetGraphicsAPI())
-		{
-			case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(flipVertical, hdrPath);
-#ifdef SP_PLATFORM_WINDOWS
-			case RendererAPI::API::Direct3D: return nullptr;
-#endif // SP_PLATFORM_WINDOWS
-			case RendererAPI::API::Vulkan:   return nullptr;
-		}
-
-		SP_CORE_ASSERT(false, "Unknown Renderer API!");
-		return nullptr;
-	}
-
 }

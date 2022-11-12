@@ -695,21 +695,7 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
 	{
-		static const char* meshSourcePaths[] = {
-			"Resources/Meshes/Default/Cube.obj",
-			"Resources/Meshes/Default/Sphere.obj",
-			"Resources/Meshes/Default/Capsule.obj",
-			"Resources/Meshes/Default/Cone.obj",
-			"Resources/Meshes/Default/Cylinder.obj",
-			"Resources/Meshes/Default/Plane.obj",
-			"Resources/Meshes/Default/Torus.obj",
-		};
-
-		uint32_t componentType = static_cast<uint32_t>(component.Type);
-		SP_CORE_TRACE("COMPONENT TYPE: {}", componentType);
-
-		if (componentType < 7)
-			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity.GetTransform(), entity);
+		component.Mesh = Model::Create(Model::Default::Cube, entity.GetTransform(), (int)(entt::entity)entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

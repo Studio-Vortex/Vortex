@@ -231,6 +231,14 @@ namespace Sparky {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 	};
 
+	struct StaticMeshColliderComponent
+	{
+		uint32_t TODO;
+
+		StaticMeshColliderComponent() = default;
+		StaticMeshColliderComponent(const StaticMeshColliderComponent&) = default;
+	};
+
 	struct RigidBody2DComponent
 	{
 		enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -319,9 +327,15 @@ namespace Sparky {
 
 	using AllComponents =
 		ComponentGroup<TransformComponent,
-		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
+		// Rendering
+		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
+		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
+		// Audio
 		AudioSourceComponent, AudioListenerComponent,
-		RigidBodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		// Physics
+		RigidBodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, StaticMeshColliderComponent,
+		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		// Script
 		ScriptComponent, NativeScriptComponent>;
 
 }

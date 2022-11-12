@@ -6,8 +6,6 @@
 
 #include "Sparky/Renderer/LightSource.h"
 
-#include "Sparky/Asset/AssetRegistry.h"
-
 namespace Sparky {
 
 	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
@@ -21,8 +19,6 @@ namespace Sparky {
 
 	struct RendererInternalData
 	{
-		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
-
 		SharedRef<Shader> ModelShader = nullptr;
 		SharedRef<Shader> ReflectiveShader = nullptr;
 		SharedRef<Shader> RefractiveShader = nullptr;
@@ -30,15 +26,11 @@ namespace Sparky {
 
 		SharedRef<Model> SkyboxMesh = nullptr;
 
-		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1; // 0 = White Texture
-
 		float RefractiveIndex = 1.52f; // Glass
 
 		static constexpr inline uint32_t MaxDirectionalLights = 25;
 		static constexpr inline uint32_t MaxPointLights = 25;
 		static constexpr inline uint32_t MaxSpotLights = 25;
-		static constexpr inline uint32_t MaxSceneLightSources = MaxDirectionalLights + MaxPointLights + MaxSpotLights;
 
 		uint32_t ActiveDirectionalLights = 0;
 		uint32_t ActivePointLights = 0;

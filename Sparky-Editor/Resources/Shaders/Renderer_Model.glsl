@@ -163,15 +163,15 @@ struct SceneProperties
 #define MAX_POINT_LIGHTS 25
 #define MAX_SPOT_LIGHTS 25
 
-const float PI = 3.14159265359;
-const float GAMMA = 2.2;
-
 uniform sampler2D        u_Texture;
 uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
+
+const float PI = 3.14159265359;
+const float GAMMA = 2.2;
 
 vec3 CalculateDirectionalLight(DirectionalLight lightSource, Material material, FragmentProperties properties);
 vec3 CalculatePointLight(PointLight lightSource, Material material, FragmentProperties properties);
@@ -188,7 +188,6 @@ void main()
 {
 	vec2 textureScale = fragmentIn.TexCoord * fragmentIn.TexScale;
 
-	vec4 finalColor = vec4(1.0);
 	bool pbr = u_Material.HasAlbedoMap && u_Material.HasMetallicMap && u_Material.HasRoughnessMap && u_Material.HasAOMap;
 
 	FragmentProperties properties;
@@ -205,6 +204,8 @@ void main()
 
 	properties.TangentFragPos = properties.TBN * fragmentIn.Position;
 	properties.TangentViewPos = properties.TBN * u_SceneProperties.CameraPosition;
+
+	vec4 finalColor = vec4(1.0);
 
 	if (false)
 	{

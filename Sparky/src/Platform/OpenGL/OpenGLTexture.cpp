@@ -81,46 +81,6 @@ namespace Sparky {
 		}
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(bool flipVertical, const std::string& hdrPath)
-		: m_Path(hdrPath), m_Slot()
-	{
-		SP_PROFILE_FUNCTION();
-
-		if (flipVertical)
-			stbi_set_flip_vertically_on_load(true);
-		else
-			stbi_set_flip_vertically_on_load(false);
-
-		int width, height, channels;
-		float* data = nullptr;
-		{
-			SP_PROFILE_SCOPE("stbi_loadf - OpenGLTexture2D::OpenGLTexture2D(bool, const std::string&)")
-			data = stbi_loadf(hdrPath.c_str(), &width, &height, &channels, 0);
-		}
-		SP_CORE_ASSERT(data, "Failed to load Image!");
-
-		if (data)
-		{
-			m_Width = width;
-			m_Height = height;
-
-			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-			glTextureStorage2D(m_RendererID, 1, GL_RGB16F, m_Width, m_Height);
-
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGB, GL_FLOAT, data);
-
-			stbi_image_free(data);
-
-			m_IsLoaded = true;
-		}
-	}
-
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		SP_PROFILE_FUNCTION();

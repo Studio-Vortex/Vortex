@@ -46,8 +46,15 @@ namespace Sparky {
 	class Model
 	{
 	public:
+		enum class Default
+		{
+			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
+		};
+
+	public:
 		Model() = default;
 		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
+		Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
@@ -61,7 +68,11 @@ namespace Sparky {
 		uint32_t GetQuadCount() const;
 
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
+		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
+
+	private:
+		void LoadModelFromFile(const std::string& filepath, const TransformComponent& transform, int entityID);
 
 	private:
 		std::string m_Filepath;
