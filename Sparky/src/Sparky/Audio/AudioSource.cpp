@@ -132,4 +132,9 @@ namespace Sparky {
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
 
+    SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
+    {
+        return CreateShared<AudioSource>(filepath);
+    }
+
 }

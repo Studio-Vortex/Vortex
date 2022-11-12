@@ -16,7 +16,6 @@ layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 out VertexOut {
 	vec3       Position;
 	vec3       Normal;
-	vec4       Tangent;
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
@@ -31,8 +30,8 @@ uniform highp mat4 u_Projection;
 void main()
 {
 	vertexOut.Position = a_Position;
-	vertexOut.Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
-	vertexOut.Tangent = vec4(normalize(mat3(u_Model) * a_Tangent.xyz), a_Tangent.w);
+	vertexOut.Normal = (transpose(inverse(u_Model)) * vec4(a_Normal, 1.0)).rgb;
+	vec4 tangent = vec4(normalize(mat3(u_Model) * a_Tangent.xyz), a_Tangent.w);
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 
@@ -40,9 +39,9 @@ void main()
 
 	// Calculate the Tangent Bitangent Normal Matrix
 	vec3 N = normalize(vertexOut.Normal);
-	vec3 T = normalize(vertexOut.Tangent.xyz);
+	vec3 T = normalize(tangent.xyz);
 	T = (T - dot(T, N) * N);
-	vec3 B = cross(normalize(vertexOut.Normal), vertexOut.Tangent.xyz) * vertexOut.Tangent.w;
+	vec3 B = -normalize(cross(vertexOut.Normal, tangent.xyz) * tangent.w);
 	vertexOut.TBN = mat3(T, B, N);
 	
 	gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
@@ -59,7 +58,6 @@ in VertexOut
 {
 	vec3       Position;
 	vec3       Normal;
-	vec4       Tangent;
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
@@ -184,7 +182,7 @@ float CalculateAttenuation(vec3 lightPosition, vec3 fragPosition, float constant
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 F0);
+vec3 FresnelSchlick(float cosTheta, vec3 F0, float rougness);
 
 void main()
 {
@@ -208,7 +206,7 @@ void main()
 	properties.TangentFragPos = properties.TBN * fragmentIn.Position;
 	properties.TangentViewPos = properties.TBN * u_SceneProperties.CameraPosition;
 
-	if (!pbr)
+	if (false)
 	{
 		vec3 lightColor = vec3(0.0);
 
@@ -269,7 +267,7 @@ void main()
 			// Cook-Torrance BRDF
 			float NDF = DistributionGGX(N, H, properties.Roughness);
 			float G   = GeometrySmith(N, V, L, properties.Roughness);
-			vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0);
+			vec3 F    = FresnelSchlick(max(dot(H, V), 0.0), F0, properties.Roughness);
 
 			vec3 numerator = NDF * G * F;
 			float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent division by 0
@@ -345,9 +343,9 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 FresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0, float roughness)
 {
-	return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 float CalculateDiffuse(vec3 normal, vec3 lightDir)

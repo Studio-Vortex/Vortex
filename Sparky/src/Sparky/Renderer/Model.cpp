@@ -111,7 +111,13 @@ namespace Sparky {
 
 		static Mesh LoadMeshFromGLTFFile(const std::string& filepath, const Math::mat4& transform)
 		{
+			tinygltf::Model model;
+			tinygltf::TinyGLTF loader;
+			std::string warning;
+			std::string error;
 
+			bool success = loader.LoadASCIIFromFile(&model, &error, &warning, filepath);
+			SP_CORE_ASSERT(success, "{}: {}", warning, error);
 		}
 
 	}
@@ -126,10 +132,16 @@ namespace Sparky {
 		"Resources/Meshes/Default/Torus.obj",
 	};
 
-	Model::Model(const std::string& filepath, Entity entity)
+	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
 		: m_Filepath(filepath)
 	{
-		Mesh mesh = Utils::LoadMeshFromOBJFile(m_Filepath, entity.GetTransform().GetTransform());
+		std::filesystem::path path = std::filesystem::path(filepath);
+		Mesh mesh;
+
+		if (path.filename().extension() == ".obj")
+			mesh = Utils::LoadMeshFromOBJFile(m_Filepath, transform.GetTransform());
+		else if (path.filename().extension() == ".gltf")
+			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
 
 		m_Material = Material::Create(MaterialProperties());
 
@@ -145,7 +157,7 @@ namespace Sparky {
 			v.Tangent = vertex.Tangent;
 			v.TextureCoord = vertex.TextureCoord;
 			v.TexScale = Math::vec2(1.0f);
-			v.EntityID = (int)(entt::entity)entity;
+			v.EntityID = (int)(entt::entity)entityID;
 		}
 
 		m_Vao = VertexArray::Create();
@@ -257,9 +269,9 @@ namespace Sparky {
 		return m_Ibo->GetCount() / 3;
 	}
 
-	SharedRef<Model> Model::Create(const std::string& filepath, Entity entity)
+	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
 	{
-		return CreateShared<Model>(filepath, entity);
+		return CreateShared<Model>(filepath, transform, entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshRendererComponent::MeshType meshType)

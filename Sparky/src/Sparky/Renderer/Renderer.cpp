@@ -6,6 +6,8 @@
 
 #include "Sparky/Renderer/LightSource.h"
 
+#include "Sparky/Asset/AssetRegistry.h"
+
 namespace Sparky {
 
 	static constexpr const char* MODEL_SHADER_PATH = "Resources/Shaders/Renderer_Model.glsl";
@@ -20,8 +22,6 @@ namespace Sparky {
 	struct RendererInternalData
 	{
 		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
-
-		SharedRef<Texture2D> WhiteTexture = nullptr; // Default texture
 
 		SharedRef<Shader> ModelShader = nullptr;
 		SharedRef<Shader> ReflectiveShader = nullptr;
@@ -62,10 +62,6 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		RenderCommand::Init();
-
-		s_Data.WhiteTexture = Texture2D::Create(1, 1);
-		uint32_t whiteTextureData = 0xffffffff;
-		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data.ModelShader = Shader::Create(MODEL_SHADER_PATH);
 		s_Data.ReflectiveShader = Shader::Create(REFLECTIVE_SHADER_PATH);
@@ -387,18 +383,18 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		//Math::vec3 translation;
-		//Math::vec3 rotation;
-		//Math::vec3 scale;
-		//Math::DecomposeTransform(transform.GetTransform(), translation, rotation, scale);
+		Math::mat4 entityTransform = transform.GetTransform();
+		Math::vec3 scale = transform.Scale;
+		Math::vec4 color = ColorToVec4(Color::Orange);
 
-		// Translate by the scale instead of translation
-		//                                              here
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y + (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), ColorToVec4(Color::Orange));
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y - (transform.Scale.y / 2.0f), transform.Translation.z }) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(scale.x * 0.5f, 0.0f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }), color);
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(-scale.x * 0.5f, 0.0f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }), color);
 
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z + (transform.Scale.z / 2.0f) }), ColorToVec4(Color::Orange));
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate({ transform.Translation.x, transform.Translation.y, transform.Translation.z - (transform.Scale.z / 2.0f) }), ColorToVec4(Color::Orange));
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, scale.y * 0.5f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), color);
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, -scale.y * 0.5f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), color);
+
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, 0.0f, scale.z * 0.5f)), color);
+		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, 0.0f, -scale.z * 0.5f)), color);
 	}
 
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)

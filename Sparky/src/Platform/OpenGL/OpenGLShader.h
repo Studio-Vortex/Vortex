@@ -4,6 +4,7 @@
 
 #include "Sparky/Core/Math.h"
 
+#include <unordered_map>
 #include <string>
 
 // TODO: REMOVE!!!
@@ -59,6 +60,8 @@ namespace Sparky {
 		uint32_t m_RendererID = 0;
 		std::string m_Filepath;
 		std::string m_Name;
+
+		mutable std::unordered_map<std::string, int32_t> m_UniformLocationCache;
 	};
 
 }

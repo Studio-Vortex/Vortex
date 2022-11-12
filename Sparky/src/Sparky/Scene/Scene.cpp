@@ -58,6 +58,7 @@ namespace Sparky {
 		([&]()
 		{
 			auto view = src.view<TComponent>();
+
 			for (auto srcEntity : view)
 			{
 				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
@@ -705,9 +706,10 @@ namespace Sparky {
 		};
 
 		uint32_t componentType = static_cast<uint32_t>(component.Type);
+		SP_CORE_TRACE("COMPONENT TYPE: {}", componentType);
 
 		if (componentType < 7)
-			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity);
+			component.Mesh = Model::Create(std::string(meshSourcePaths[componentType]), entity.GetTransform(), entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

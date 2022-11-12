@@ -69,6 +69,8 @@ namespace Sparky {
 
 		float GetAmountComplete();
 
+		static SharedRef<AudioSource> Create(const std::string& filepath);
+
 	private:
 		inline static uint32_t s_ListenerCount = 0;
 

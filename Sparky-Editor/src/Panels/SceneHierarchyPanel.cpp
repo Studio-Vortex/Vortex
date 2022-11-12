@@ -885,9 +885,9 @@ namespace Sparky {
 						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
 
 						if (component.Type != MeshRendererComponent::MeshType::Custom)
-							component.Mesh = Model::Create(std::string(defaultMeshSourcePaths[i]), entity);
+							component.Mesh = Model::Create(std::string(defaultMeshSourcePaths[i]), entity.GetTransform(), entity);
 						else
-							component.Mesh = Model::Create(std::string(buffer), entity);
+							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), entity);
 					}
 
 					if (isSelected)
@@ -916,7 +916,7 @@ namespace Sparky {
 					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj")
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity);
+						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), entity);
 						component.Type = MeshRendererComponent::MeshType::Custom;
 					}
 					else
@@ -1435,7 +1435,7 @@ namespace Sparky {
 						if (component.Source)
 							component.Source->Stop();
 
-						component.Source = CreateShared<AudioSource>(audioSourcePath.string());
+						component.Source = AudioSource::Create(audioSourcePath.string());
 					}
 					else
 						SP_CORE_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());

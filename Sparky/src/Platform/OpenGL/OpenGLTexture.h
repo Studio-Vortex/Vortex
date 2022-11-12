@@ -11,6 +11,7 @@ namespace Sparky {
 	public:
 		OpenGLTexture2D(uint32_t width, uint32_t height);
 		OpenGLTexture2D(const std::string& path, bool flipVertical);
+		OpenGLTexture2D(bool flipVertical, const std::string& hdrPath);
 		~OpenGLTexture2D() override;
 
 		inline uint32_t GetWidth() const override { return m_Width; }

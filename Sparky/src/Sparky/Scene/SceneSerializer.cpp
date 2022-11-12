@@ -748,7 +748,7 @@ namespace Sparky {
 					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
 					if (meshComponent["MeshSource"])
-						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity);
+						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity.GetTransform(), deserializedEntity);
 
 					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
 					if (meshComponent["Ambient"])
@@ -836,7 +836,7 @@ namespace Sparky {
 					auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
 
 					if (audioSourceComponent["AudioSourcePath"])
-						asc.Source = CreateShared<AudioSource>(audioSourceComponent["AudioSourcePath"].as<std::string>());
+						asc.Source = AudioSource::Create(audioSourceComponent["AudioSourcePath"].as<std::string>());
 
 					auto soundProps = audioSourceComponent["SoundSettings"];
 

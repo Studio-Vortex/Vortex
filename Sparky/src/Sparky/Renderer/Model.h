@@ -11,8 +11,6 @@
 
 namespace Sparky {
 
-	class Entity;
-
 	struct ModelVertex
 	{
 		Math::vec3 Position;
@@ -49,7 +47,7 @@ namespace Sparky {
 	{
 	public:
 		Model() = default;
-		Model(const std::string& filepath, Entity entity);
+		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
 
@@ -62,7 +60,7 @@ namespace Sparky {
 
 		uint32_t GetQuadCount() const;
 
-		static SharedRef<Model> Create(const std::string& filepath, Entity entity);
+		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
 
 	private:

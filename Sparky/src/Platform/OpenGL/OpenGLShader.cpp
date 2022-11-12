@@ -336,7 +336,14 @@ namespace Sparky {
 
 	int OpenGLShader::GetUniformLocation(const std::string& uniformName) const
 	{
-		return glGetUniformLocation(m_RendererID, uniformName.c_str());
+		auto it = m_UniformLocationCache.find(uniformName);
+		if (it != m_UniformLocationCache.end())
+			return it->second;
+
+		int32_t location = glGetUniformLocation(m_RendererID, uniformName.c_str());
+		SP_CORE_ASSERT(location != -1, "Uniform was not found!");
+		m_UniformLocationCache[uniformName] = location;
+		return location;
 	}
 
 }

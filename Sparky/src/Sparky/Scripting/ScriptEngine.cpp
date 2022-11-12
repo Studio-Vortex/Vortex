@@ -247,7 +247,7 @@ namespace Sparky {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
-		s_Data->CompilationSuccessSound = CreateShared<AudioSource>("Resources/Sounds/Compile.wav");
+		s_Data->CompilationSuccessSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 	}
 
 	void ScriptEngine::Shutdown()

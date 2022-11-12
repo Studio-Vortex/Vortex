@@ -1,6 +1,8 @@
 #include "sppch.h"
 #include "OpenGLSkybox.h"
 
+#include "Sparky/Renderer/Texture.h"
+
 #include <Glad/glad.h>
 #include <stb_image.h>
 
