@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Sparky/Core/Base.h"
+#include "Sparky/Renderer/Shader.h"
 #include "Sparky/Renderer/Texture.h"
 
 namespace Sparky {
 
 	struct SPARKY_API MaterialProperties
 	{
+		SharedRef<Shader> Shader;
+
 		Math::vec3 Ambient = Math::vec3(1.0f);
 		SharedRef<Texture2D> DiffuseMap = nullptr;
 		SharedRef<Texture2D> SpecularMap = nullptr;
@@ -28,7 +31,13 @@ namespace Sparky {
 	class SPARKY_API Material
 	{
 	public:
+		Material() = default;
 		Material(const MaterialProperties& props);
+
+		void Bind() const;
+		void Unbind() const;
+
+		const SharedRef<Shader>& GetShader() const;
 
 		const Math::vec3& GetAmbient() const;
 		void SetAmbient(const Math::vec3& ambient);
@@ -68,7 +77,22 @@ namespace Sparky {
 
 		static SharedRef<Material> Create(const MaterialProperties& props);
 
-	private:
+	protected:
 		MaterialProperties m_Properties;
 	};
+
+	class SPARKY_API MaterialInstance : public Material
+	{
+	public:
+		MaterialInstance();
+		MaterialInstance(const SharedRef<Material>& material);
+		~MaterialInstance() = default;
+
+		static SharedRef<MaterialInstance> Create();
+		static SharedRef<MaterialInstance> Create(const SharedRef<Material>& material);
+
+	private:
+		SharedRef<Material> m_BaseMaterial;
+	};
+
 }

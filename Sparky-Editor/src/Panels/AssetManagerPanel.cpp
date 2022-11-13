@@ -54,13 +54,22 @@ namespace Sparky {
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
 			Gui::PopFont();
 
+			Gui::SameLine();
+			const char* buttonText = "Recompile All";
+			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + (Gui::CalcTextSize(buttonText).x * 0.5f));
+			if (Gui::Button(buttonText))
+			{
+				for (auto& shader : shaders)
+					shader->Reload();
+			}
+
 			if (Gui::BeginTable("Shaders", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 			{
 				Gui::TableSetupColumn("Shader");
 				Gui::TableSetupColumn("Recompile");
 				Gui::TableHeadersRow();
 
-				uint32_t offset = 80;
+				uint32_t offset = 85;
 				Gui::TableNextColumn();
 				for (const auto& shaderName : shaderNames)
 				{
@@ -72,9 +81,9 @@ namespace Sparky {
 				Gui::TableNextColumn();
 				for (auto& shader : shaders)
 				{
-					if (shader->GetName() != "Renderer_PBR") continue;
-					if (Gui::Button("Recompile"))
-						shader->Reload();
+					if (shader->GetName() == "Renderer_PBR")
+						if (Gui::Button("Reload"))
+							shader->Reload();
 				}
 
 				Gui::EndTable();

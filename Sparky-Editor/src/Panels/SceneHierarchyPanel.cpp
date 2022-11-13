@@ -1615,6 +1615,23 @@ namespace Sparky {
 
 				Gui::EndCombo();
 			}
+
+			if (Gui::TreeNodeEx("Contraints", treeNodeFlags))
+			{
+				Gui::Text("X");
+				Gui::SameLine();
+				Gui::Checkbox("##XConstraint", &component.ConstrainXAxis);
+
+				Gui::Text("Y");
+				Gui::SameLine();
+				Gui::Checkbox("##YConstraint", &component.ConstrainYAxis);
+
+				Gui::Text("Z");
+				Gui::SameLine();
+				Gui::Checkbox("##ZConstraint", &component.ConstrainZAxis);
+
+				Gui::TreePop();
+			}
 		});
 
 		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto& component)
@@ -1624,7 +1641,6 @@ namespace Sparky {
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
 		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto& component)

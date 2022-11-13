@@ -118,6 +118,8 @@ namespace Sparky {
 
 			bool success = loader.LoadASCIIFromFile(&model, &error, &warning, filepath);
 			SP_CORE_ASSERT(success, "{}: {}", warning, error);
+
+			return Mesh();
 		}
 
 	}
@@ -133,22 +135,28 @@ namespace Sparky {
 	};
 
 	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
-		: m_Filepath(filepath)
+		: m_Filepath(filepath), m_MaterialInstance(MaterialInstance::Create())
+	{
+		LoadModelFromFile(filepath, transform, entityID);
+	}
+
+	Model::Model(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID)
+		: m_Filepath(filepath), m_MaterialInstance(materialInstance)
 	{
 		LoadModelFromFile(filepath, transform, entityID);
 	}
 
 	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
+		: m_MaterialInstance(MaterialInstance::Create())
 	{
 		m_Filepath = DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(defaultMesh)];
 		LoadModelFromFile(m_Filepath, transform, entityID);
 	}
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
+		: m_MaterialInstance(nullptr)
 	{
 		Mesh mesh = Utils::LoadMeshFromOBJFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
-
-		m_Material = nullptr;
 
 		m_Vao = VertexArray::Create();
 
@@ -213,8 +221,6 @@ namespace Sparky {
 		else if (path.filename().extension() == ".gltf")
 			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
 
-		m_Material = Material::Create(MaterialProperties());
-
 		m_OriginalVertices.resize(mesh.Vertices.size());
 
 		// Store the original mesh vertices
@@ -243,7 +249,7 @@ namespace Sparky {
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float2, "a_TexScale" },
 			{ ShaderDataType::Int,    "a_EntityID" },
-			});
+		});
 
 		m_Vao->AddVertexBuffer(m_Vbo);
 
@@ -255,10 +261,14 @@ namespace Sparky {
 
 	void Model::OnUpdate(const Math::vec2& scale)
 	{
-		if (m_TextureScale != scale)
+		bool scaleChanged = m_TextureScale != scale;
+
+		if (scaleChanged)
 		{
 			for (auto& vertex : m_Vertices)
 				vertex.TexScale = scale;
+
+			m_TextureScale = scale;
 
 			uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
 			m_Vbo->SetData(m_Vertices.data(), dataSize);
@@ -271,6 +281,11 @@ namespace Sparky {
 	}
 
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
+	{
+		return CreateShared<Model>(filepath, transform, entityID);
+	}
+
+	SharedRef<Model> Model::Create(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID)
 	{
 		return CreateShared<Model>(filepath, transform, entityID);
 	}

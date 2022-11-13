@@ -11,6 +11,8 @@
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
+#include <q3.h>
+
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
@@ -18,6 +20,19 @@
 #include <box2d/b2_polygon_shape.h>
 
 namespace Sparky {
+
+	static q3BodyType RigidBodyTypeToQu3eBody(RigidBodyComponent::BodyType bodyType)
+	{
+		switch (bodyType)
+		{
+			case Sparky::RigidBodyComponent::BodyType::Static:    return eStaticBody;
+			case Sparky::RigidBodyComponent::BodyType::Dynamic:   return eDynamicBody;
+			case Sparky::RigidBodyComponent::BodyType::Kinematic: return eKinematicBody;
+		}
+
+		SP_CORE_ASSERT(false, "Unknown body type!");
+		return eStaticBody;
+	}
 
 	static b2BodyType RigidBody2DTypeToBox2DBody(RigidBody2DComponent::BodyType bodyType)
 	{
@@ -32,17 +47,11 @@ namespace Sparky {
 		return b2_staticBody;
 	}
 
-	struct PhysicsSceneData
-	{
-		
-	};
-
-	static PhysicsSceneData* m_PhysicsScene = nullptr;
-
 	Scene::Scene() { }
 
 	Scene::~Scene()
 	{
+		delete m_PhysicsScene;
 		delete m_PhysicsWorld2D;
 	}
 
@@ -501,7 +510,37 @@ namespace Sparky {
 
 	void Scene::OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
 	{
-		
+		q3BodyDef bodyDef;
+		bodyDef.bodyType = RigidBodyTypeToQu3eBody(rigidbody.Type);
+		bodyDef.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
+		bodyDef.lockAxisX = rigidbody.ConstrainXAxis;
+		bodyDef.lockAxisY = rigidbody.ConstrainYAxis;
+		bodyDef.lockAxisZ = rigidbody.ConstrainZAxis;
+
+		q3Body* body = m_PhysicsScene->CreateBody(bodyDef);
+
+		rigidbody.RuntimeBody = body;
+
+		if (entity.HasComponent<BoxColliderComponent>())
+		{
+			auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			
+			q3BoxDef boxDef;
+			q3Transform t;
+			q3Identity(t);
+			t.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
+			Math::mat3 tr = Math::mat3((transform.GetTransform()));
+			Math::vec3 x = Math::vec3(tr[0][0]);
+			Math::vec3 y = Math::vec3(tr[1][0]);
+			Math::vec3 z = Math::vec3(tr[2][0]);
+			t.rotation = q3Rotate({ x.x, y.z, z.x }, { x.x, y.z, z.z }, { x.x, y.y, z.z });
+			boxDef.Set(t, { boxCollider.Size.x * transform.Scale.x, boxCollider.Size.y * transform.Scale.y, boxCollider.Size.z * transform.Scale.z });
+			boxDef.SetDensity(boxCollider.Density);
+			boxDef.SetFriction(boxCollider.Friction);
+			boxDef.SetRestitution(boxCollider.Restitution);
+
+			body->AddBox(boxDef);
+		}
 	}
 
 	void Scene::OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
@@ -515,6 +554,7 @@ namespace Sparky {
 		body->SetFixedRotation(rb2d.FixedRotation);
 
 		rb2d.RuntimeBody = body;
+		
 
 		if (entity.HasComponent<BoxCollider2DComponent>())
 		{
@@ -573,18 +613,80 @@ namespace Sparky {
 
 	void Scene::OnPhysics3DStart()
 	{
-		m_PhysicsScene = new PhysicsSceneData();
+		m_PhysicsScene = new q3Scene(1.0f / 120.0f);
 
+		auto view = m_Registry.view<RigidBodyComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			auto& transform = entity.GetTransform();
+			auto& rb = entity.GetComponent<RigidBodyComponent>();
+
+			OnCreatePhysicsBody(entity, transform, rb);
+		}
 	}
 
 	void Scene::OnPhysics3DUpdate(TimeStep delta)
 	{
+		// Physics
+		{
+			// Copies transform from Sparky to Qu3e
+			auto view = m_Registry.view<RigidBodyComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
+				// If a rigidbody component is added during runtime we can create the physics body here
+				if (rigidbody.RuntimeBody == nullptr)
+					OnCreatePhysicsBody(entity, transform, rigidbody);
+
+				q3Body* body = (q3Body*)rigidbody.RuntimeBody;
+				Math::vec3 translation = transform.Translation;
+				Math::vec3 rotation = transform.Rotation;
+
+				const auto& bodyPosition = body->GetTransform().position;
+				const auto& bodyOrientation = body->GetTransform().rotation;
+				
+				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyPosition.z != transform.Translation.z;
+
+				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 1.0f, 0.0f, 0.0f }, rotation.x);
+				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 0.0f, 1.0f, 0.0f }, rotation.y);
+				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 0.0f, 0.0f, 1.0f }, rotation.z);
+				body->SetTransform({ transform.Translation.x, transform.Translation.y,  transform.Translation.z });
+
+				if (awake)
+					body->SetToAwake();
+			}
+
+			m_PhysicsScene->Step();
+
+			// Get transform from Qu3e
+			for (auto e : view)
+			{
+				Entity entity{ e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+				if (rigidbody.RuntimeBody == nullptr)
+					OnCreatePhysicsBody(entity, transform, rigidbody);
+
+				q3Body* body = (q3Body*)rigidbody.RuntimeBody;
+				const auto& position = body->GetTransform().position;
+				transform.Translation.x = position.x;
+				transform.Translation.y = position.y;
+				transform.Translation.z = position.z;
+
+				//transform.Rotation.z = body->GetTransform().rotation;
+			}
+		}
 	}
 
 	void Scene::OnPhysics3DStop()
 	{
-		delete m_PhysicsScene;
+		m_PhysicsScene->Shutdown();
 	}
 
 	void Scene::OnPhysics2DStart()
@@ -593,10 +695,10 @@ namespace Sparky {
 
 		auto view = m_Registry.view<RigidBody2DComponent>();
 
-		for (auto e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			auto& transform = entity.GetComponent<TransformComponent>();
+			auto& transform = entity.GetTransform();
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
 			OnCreatePhysicsBody2D(entity, transform, rb2d);
@@ -622,7 +724,7 @@ namespace Sparky {
 					OnCreatePhysicsBody2D(entity, transform, rb2d);
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				glm::vec3 translation = transform.Translation;
+				Math::vec3 translation = transform.Translation;
 				float angle = transform.Rotation.z;
 
 				const auto& bodyPosition = body->GetPosition();
@@ -716,6 +818,16 @@ namespace Sparky {
 		AudioSource::AddAudioListener();
 	}
 	
+	template <> void Scene::OnComponentAdded<RigidBodyComponent>(Entity entity, RigidBodyComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<BoxColliderComponent>(Entity entity, BoxColliderComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<SphereColliderComponent>(Entity entity, SphereColliderComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<CapsuleColliderComponent>(Entity entity, CapsuleColliderComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<StaticMeshColliderComponent>(Entity entity, StaticMeshColliderComponent& component) { }
+
 	template <> void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }

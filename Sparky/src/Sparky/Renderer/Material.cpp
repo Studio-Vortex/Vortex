@@ -6,6 +6,68 @@ namespace Sparky {
 	Material::Material(const MaterialProperties& props)
 		: m_Properties(props) { }
 
+	void Material::Bind() const
+	{
+		if (m_Properties.AlbedoMap)
+		{
+			m_Properties.AlbedoMap->Bind(0);
+			m_Properties.Shader->SetInt("u_Material.AlbedoMap", 0);
+		}
+		if (m_Properties.AmbientOcclusionMap)
+		{
+			m_Properties.AmbientOcclusionMap->Bind(1);
+			m_Properties.Shader->SetInt("u_Material.AOMap", 1);
+		}
+		if (m_Properties.DiffuseMap)
+		{
+			m_Properties.DiffuseMap->Bind(2);
+			m_Properties.Shader->SetInt("u_Material.DiffuseMap", 2);
+		}
+		if (m_Properties.MetallicMap)
+		{
+			m_Properties.MetallicMap->Bind(3);
+			m_Properties.Shader->SetInt("u_Material.MetallicMap", 3);
+		}
+		if (m_Properties.NormalMap)
+		{
+			m_Properties.NormalMap->Bind(4);
+			m_Properties.Shader->SetInt("u_Material.NormalMap", 4);
+		}
+		if (m_Properties.RoughnessMap)
+		{
+			m_Properties.RoughnessMap->Bind(5);
+			m_Properties.Shader->SetInt("u_Material.RoughnessMap", 5);
+		}
+		if (m_Properties.SpecularMap)
+		{
+			m_Properties.SpecularMap->Bind(6);
+			m_Properties.Shader->SetInt("u_Material.SpecularMap", 6);
+		}
+	}
+
+	void Material::Unbind() const
+	{
+		if (m_Properties.AlbedoMap)
+			m_Properties.AlbedoMap->Unbind();
+		if (m_Properties.AmbientOcclusionMap)
+			m_Properties.AmbientOcclusionMap->Unbind();
+		if (m_Properties.DiffuseMap)
+			m_Properties.DiffuseMap->Unbind();
+		if (m_Properties.MetallicMap)
+			m_Properties.MetallicMap->Unbind();
+		if (m_Properties.NormalMap)
+			m_Properties.NormalMap->Unbind();
+		if (m_Properties.RoughnessMap)
+			m_Properties.RoughnessMap->Unbind();
+		if (m_Properties.SpecularMap)
+			m_Properties.SpecularMap->Unbind();
+	}
+
+    const SharedRef<Shader>& Material::GetShader() const
+    {
+		return m_Properties.Shader;
+    }
+
     const Math::vec3& Material::GetAmbient() const
     {
 		return m_Properties.Ambient;
@@ -129,6 +191,27 @@ namespace Sparky {
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
 		return CreateShared<Material>(props);
+	}
+
+	MaterialInstance::MaterialInstance()
+	{
+		m_BaseMaterial = MaterialInstance::Create(Material::Create(MaterialProperties()));
+	}
+
+	MaterialInstance::MaterialInstance(const SharedRef<Material>& material)
+		: m_BaseMaterial(material)
+	{
+
+	}
+
+	SharedRef<MaterialInstance> MaterialInstance::Create()
+	{
+		return CreateShared<MaterialInstance>();
+	}
+
+	SharedRef<MaterialInstance> MaterialInstance::Create(const SharedRef<Material>& material)
+	{
+		return CreateShared<MaterialInstance>(material);
 	}
 
 }

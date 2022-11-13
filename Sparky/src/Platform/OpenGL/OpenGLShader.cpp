@@ -341,7 +341,6 @@ namespace Sparky {
 			return it->second;
 
 		int32_t location = glGetUniformLocation(m_RendererID, uniformName.c_str());
-		SP_CORE_ASSERT(location != -1, "Uniform was not found!");
 		m_UniformLocationCache[uniformName] = location;
 		return location;
 	}

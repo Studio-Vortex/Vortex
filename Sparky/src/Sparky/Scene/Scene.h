@@ -7,6 +7,8 @@
 
 #include <entt/entt.hpp>
 
+class q3Scene;
+
 class b2World;
 class b2Fixture;
 
@@ -106,6 +108,8 @@ namespace Sparky {
 		bool m_IsRunning = false;
 		bool m_IsPaused = false;
 		bool m_DebugMode = false; // Editor-only
+
+		q3Scene* m_PhysicsScene = nullptr;
 
 		b2World* m_PhysicsWorld2D = nullptr;
 		

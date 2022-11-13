@@ -173,6 +173,10 @@ namespace Sparky {
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
 
+		bool ConstrainXAxis = false;
+		bool ConstrainYAxis = false;
+		bool ConstrainZAxis = false;
+
 		RigidBodyComponent() = default;
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 	};
@@ -186,10 +190,6 @@ namespace Sparky {
 		float Density = 1.0f;
 		float Friction = 0.5f;
 		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
-
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
 
 		BoxColliderComponent() = default;
 		BoxColliderComponent(const BoxColliderComponent&) = default;

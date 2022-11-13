@@ -166,9 +166,9 @@ namespace Sparky {
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
 	{
-		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 
-		s_Data.BasicLightingShader->Enable();
+
+		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 
 		switch (lightSourceComponent.Type)
 		{
@@ -179,6 +179,7 @@ namespace Sparky {
 				if (i + 1 > RendererInternalData::MaxDirectionalLights)
 					break;
 
+ 				s_Data.BasicLightingShader->Enable();
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
@@ -196,6 +197,7 @@ namespace Sparky {
 				if (i + 1 > s_Data.MaxPointLights)
 					break;
 
+ 				s_Data.BasicLightingShader->Enable();
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
@@ -208,6 +210,7 @@ namespace Sparky {
 				s_Data.BasicLightingShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
 				s_Data.BasicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
+ 				s_Data.PBRShader->Enable();
 				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
@@ -229,6 +232,7 @@ namespace Sparky {
 				if (i + 1 > RendererInternalData::MaxSpotLights)
 					break;
 
+ 				s_Data.BasicLightingShader->Enable();
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
@@ -257,7 +261,7 @@ namespace Sparky {
 
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
-		SharedRef<Material> material = model->GetMaterial();
+		SharedRef<MaterialInstance> material = model->GetMaterial();
 		bool pbr = (bool)material->GetAlbedoMap(); // TODO Rework this
 
 		if (meshRenderer.Reflective)

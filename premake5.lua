@@ -28,6 +28,7 @@ IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
 IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
 IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
+IncludeDir["qu3e"] = "Sparky/vendor/qu3e/src"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["tinygltf"] = "Sparky/vendor/tinygltf"
@@ -46,6 +47,7 @@ group "External Dependencies"
 	include "Sparky/vendor/GLFW"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
+	include "Sparky/vendor/qu3e"
 	include "Sparky/vendor/yaml-cpp"
 group ""
 
@@ -102,6 +104,7 @@ project "Sparky"
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.qu3e}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.tinygltf}",
@@ -117,6 +120,7 @@ project "Sparky"
 		"ImGui",
 		"%{Library.mono}",
 		"opengl32.lib",
+		"qu3e",
 		"yaml-cpp",
 	}
 

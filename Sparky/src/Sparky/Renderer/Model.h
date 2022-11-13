@@ -54,6 +54,7 @@ namespace Sparky {
 	public:
 		Model() = default;
 		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
+		Model(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
 		Model(MeshRendererComponent::MeshType meshType);
 		~Model() = default;
@@ -61,13 +62,14 @@ namespace Sparky {
 		void OnUpdate(const Math::vec2& scale);
 
 		inline const std::string& GetPath() const { return m_Filepath; }
-		const SharedRef<Material>& GetMaterial() const { return m_Material; }
+		const SharedRef<MaterialInstance>& GetMaterial() const { return m_MaterialInstance; }
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
 		const std::vector<SharedRef<Texture2D>>& GetTextures() const { return m_Textures; }
 
 		uint32_t GetQuadCount() const;
 
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
+		static SharedRef<Model> Create(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
 
@@ -76,7 +78,7 @@ namespace Sparky {
 
 	private:
 		std::string m_Filepath;
-		SharedRef<Material> m_Material;
+		SharedRef<MaterialInstance> m_MaterialInstance;
 		std::vector<ModelVertex> m_OriginalVertices;
 		std::vector<ModelVertex> m_Vertices;
 		std::vector<SharedRef<Texture2D>> m_Textures;
