@@ -1621,10 +1621,12 @@ namespace Sparky {
 				Gui::Text("X");
 				Gui::SameLine();
 				Gui::Checkbox("##XConstraint", &component.ConstrainXAxis);
+				Gui::SameLine();
 
 				Gui::Text("Y");
 				Gui::SameLine();
 				Gui::Checkbox("##YConstraint", &component.ConstrainYAxis);
+				Gui::SameLine();
 
 				Gui::Text("Z");
 				Gui::SameLine();

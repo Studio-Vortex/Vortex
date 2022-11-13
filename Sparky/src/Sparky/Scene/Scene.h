@@ -7,25 +7,15 @@
 
 #include <entt/entt.hpp>
 
-class q3Scene;
-
-class b2World;
-class b2Fixture;
-
 namespace Sparky {
 
 	class Entity;
 
-	struct PhysicsBodyData
-	{
-		UUID EntityUUID;
-	};
-
 	class Scene
 	{
 	public:
-		Scene();
-		~Scene();
+		Scene() = default;
+		~Scene() = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
 
@@ -56,17 +46,6 @@ namespace Sparky {
 
 		size_t GetEntityCount() const { return m_Registry.alive(); }
 
-		b2World* GetPhysicsWorld2D() { return m_PhysicsWorld2D; }
-
-		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorld2DVeloctityIterations; }
-		static void SetPhysicsWorld2DVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
-
-		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorld2DPositionIterations; }
-		static void SetPhysicsWorld2DPositionIterations(int32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
-		
-		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorld2DGravity; }
-		static void SetPhysicsWorld2DGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
-
 		Entity DuplicateEntity(Entity entity);
 
 		Entity GetEntityWithUUID(UUID uuid);
@@ -88,17 +67,6 @@ namespace Sparky {
 		void OnParticleEmitterUpdate(TimeStep delta);
 		void OnLightSourceUpdate();
 
-		void OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
-		void OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
-
-		void OnPhysics3DStart();
-		void OnPhysics3DUpdate(TimeStep delta);
-		void OnPhysics3DStop();
-
-		void OnPhysics2DStart();
-		void OnPhysics2DUpdate(TimeStep delta);
-		void OnPhysics2DStop();
-
 	private:
 		entt::registry m_Registry;
 		SceneRenderer m_SceneRenderer;
@@ -108,16 +76,6 @@ namespace Sparky {
 		bool m_IsRunning = false;
 		bool m_IsPaused = false;
 		bool m_DebugMode = false; // Editor-only
-
-		q3Scene* m_PhysicsScene = nullptr;
-
-		b2World* m_PhysicsWorld2D = nullptr;
-		
-		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.8f);
-		inline static int32_t s_PhysicsWorld2DVeloctityIterations = 6;
-		inline static int32_t s_PhysicsWorld2DPositionIterations = 2;
-
-		std::unordered_map<b2Fixture*, UniqueRef<PhysicsBodyData>> m_PhysicsBodyDataMap;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

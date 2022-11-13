@@ -129,6 +129,12 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Distance(T v0, T v1)
+	{
+		return glm::distance(v0, v1);
+	}
+
+	template <typename T>
 	static auto Quaternion(T v)
 	{
 		return glm::quat(v);

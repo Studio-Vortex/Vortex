@@ -139,17 +139,17 @@ namespace Sparky {
 				{
 					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
 
-					static Math::vec2 gravity = Scene::GetPhysicsWorld2DGravity();
+					static Math::vec2 gravity = Physics2D::GetPhysicsWorld2DGravity();
 					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity), 0.1f))
-						Scene::SetPhysicsWorld2DGravitty(gravity);
+						Physics2D::SetPhysicsWorld2DGravitty(gravity);
 
-					static int32_t velocityIterations = Scene::GetPhysicsWorld2DVeloctiyIterations();
+					static int32_t velocityIterations = Physics2D::GetPhysicsWorld2DVeloctiyIterations();
 					if (Gui::DragInt("2D Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
-						Scene::SetPhysicsWorld2DVelocityIterations(velocityIterations);
+						Physics2D::SetPhysicsWorld2DVelocityIterations(velocityIterations);
 
-					static int32_t positionIterations = Scene::GetPhysicsWorld2DPositionIterations();
+					static int32_t positionIterations = Physics2D::GetPhysicsWorld2DPositionIterations();
 					Gui::DragInt("2D Position Iterations", &positionIterations, 1.0f, 1, 100);
-					Scene::SetPhysicsWorld2DPositionIterations(positionIterations);
+					Physics2D::SetPhysicsWorld2DPositionIterations(positionIterations);
 
 					Gui::Checkbox("Show Physics Colliders", &m_Settings.ShowColliders);
 

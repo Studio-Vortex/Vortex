@@ -11,49 +11,10 @@
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
-#include <q3.h>
-
-#include <box2d/b2_world.h>
-#include <box2d/b2_body.h>
-#include <box2d/b2_fixture.h>
-#include <box2d/b2_circle_shape.h>
-#include <box2d/b2_polygon_shape.h>
+#include "Sparky/Physics/Physics3D.h"
+#include "Sparky/Physics/Physics2D.h"
 
 namespace Sparky {
-
-	static q3BodyType RigidBodyTypeToQu3eBody(RigidBodyComponent::BodyType bodyType)
-	{
-		switch (bodyType)
-		{
-			case Sparky::RigidBodyComponent::BodyType::Static:    return eStaticBody;
-			case Sparky::RigidBodyComponent::BodyType::Dynamic:   return eDynamicBody;
-			case Sparky::RigidBodyComponent::BodyType::Kinematic: return eKinematicBody;
-		}
-
-		SP_CORE_ASSERT(false, "Unknown body type!");
-		return eStaticBody;
-	}
-
-	static b2BodyType RigidBody2DTypeToBox2DBody(RigidBody2DComponent::BodyType bodyType)
-	{
-		switch (bodyType)
-		{
-			case Sparky::RigidBody2DComponent::BodyType::Static:    return b2_staticBody;
-			case Sparky::RigidBody2DComponent::BodyType::Dynamic:   return b2_dynamicBody;
-			case Sparky::RigidBody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
-		}
-
-		SP_CORE_ASSERT(false, "Unknown body type!");
-		return b2_staticBody;
-	}
-
-	Scene::Scene() { }
-
-	Scene::~Scene()
-	{
-		delete m_PhysicsScene;
-		delete m_PhysicsWorld2D;
-	}
 
 	template<typename... Component>
 	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -157,46 +118,8 @@ namespace Sparky {
 		if (isEntityInstance)
 			ScriptEngine::OnDestroyEntity(entity);
 
-		// Destroy the physics body and fixture if they exist
 		if (entity.HasComponent<RigidBody2DComponent>())
-		{
-			b2Body* entityRuntimePhysicsBody = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
-			
-			if (entityRuntimePhysicsBody != nullptr)
-			{
-				if (entity.HasComponent<BoxCollider2DComponent>())
-				{
-					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture;
-
-					// Remove the fixture and release the stored user data
-					if (fixture != nullptr)
-					{
-						auto it = m_PhysicsBodyDataMap.find(fixture);
-						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
-						m_PhysicsBodyDataMap.erase(it->first);
-
-						entityRuntimePhysicsBody->DestroyFixture(fixture);
-					}
-				}
-
-				if (entity.HasComponent<CircleCollider2DComponent>())
-				{
-					b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
-
-					// Remove the fixture and release the stored user data
-					if (fixture != nullptr)
-					{
-						auto it = m_PhysicsBodyDataMap.find(fixture);
-						SP_CORE_ASSERT(it != m_PhysicsBodyDataMap.end(), "Physics body was not found in Physics Body Data Map!");
-						m_PhysicsBodyDataMap.erase(it->first);
-
-						entityRuntimePhysicsBody->DestroyFixture(fixture);
-					}
-				}
-
-				m_PhysicsWorld2D->DestroyBody(entityRuntimePhysicsBody);
-			}
-		}
+			Physics2D::DestroyPhysicsBody(entity);
 
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
@@ -212,8 +135,8 @@ namespace Sparky {
 		m_IsRunning = true;
 		m_DebugMode = false;
 
-		OnPhysics3DStart();
-		OnPhysics2DStart();
+		Physics3D::OnPhysicsSimulate(m_Registry, this);
+		Physics2D::OnPhysicsSimulate(m_Registry, this);
 
 		// Scripting
 		{
@@ -262,20 +185,20 @@ namespace Sparky {
 			}
 		}
 
-		OnPhysics3DStop();
-		OnPhysics2DStop();
+		Physics3D::OnPhysicsStop();
+		Physics2D::OnPhysicsStop();
 	}
 
 	void Scene::OnSimulationStart()
 	{
-		OnPhysics3DStart();
-		OnPhysics2DStart();
+		Physics3D::OnPhysicsSimulate(m_Registry, this);
+		Physics2D::OnPhysicsSimulate(m_Registry, this);
 	}
 
 	void Scene::OnSimulationStop()
 	{
-		OnPhysics3DStop();
-		OnPhysics2DStop();
+		Physics3D::OnPhysicsStop();
+		Physics2D::OnPhysicsStop();
 	}
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
@@ -305,8 +228,8 @@ namespace Sparky {
 			}
 
 			// Update Physics Bodies
-			OnPhysics3DUpdate(delta);
-			OnPhysics2DUpdate(delta);
+			Physics3D::OnPhysicsUpdate(delta, m_Registry, this);
+			Physics2D::OnPhysicsUpdate(delta, m_Registry, this);
 
 			if (m_StepFrames)
 				m_StepFrames--;
@@ -340,8 +263,8 @@ namespace Sparky {
 	{
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			OnPhysics3DUpdate(delta);
-			OnPhysics2DUpdate(delta);
+			Physics3D::OnPhysicsUpdate(delta, m_Registry, this);
+			Physics2D::OnPhysicsUpdate(delta, m_Registry, this);
 
 			if (m_StepFrames)
 				m_StepFrames--;
@@ -506,264 +429,6 @@ namespace Sparky {
 				}
 			}
 		}
-	}
-
-	void Scene::OnCreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
-	{
-		q3BodyDef bodyDef;
-		bodyDef.bodyType = RigidBodyTypeToQu3eBody(rigidbody.Type);
-		bodyDef.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
-		bodyDef.lockAxisX = rigidbody.ConstrainXAxis;
-		bodyDef.lockAxisY = rigidbody.ConstrainYAxis;
-		bodyDef.lockAxisZ = rigidbody.ConstrainZAxis;
-
-		q3Body* body = m_PhysicsScene->CreateBody(bodyDef);
-
-		rigidbody.RuntimeBody = body;
-
-		if (entity.HasComponent<BoxColliderComponent>())
-		{
-			auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-			
-			q3BoxDef boxDef;
-			q3Transform t;
-			q3Identity(t);
-			t.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
-			Math::mat3 tr = Math::mat3((transform.GetTransform()));
-			Math::vec3 x = Math::vec3(tr[0][0]);
-			Math::vec3 y = Math::vec3(tr[1][0]);
-			Math::vec3 z = Math::vec3(tr[2][0]);
-			t.rotation = q3Rotate({ x.x, y.z, z.x }, { x.x, y.z, z.z }, { x.x, y.y, z.z });
-			boxDef.Set(t, { boxCollider.Size.x * transform.Scale.x, boxCollider.Size.y * transform.Scale.y, boxCollider.Size.z * transform.Scale.z });
-			boxDef.SetDensity(boxCollider.Density);
-			boxDef.SetFriction(boxCollider.Friction);
-			boxDef.SetRestitution(boxCollider.Restitution);
-
-			body->AddBox(boxDef);
-		}
-	}
-
-	void Scene::OnCreatePhysicsBody2D(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
-	{
-		b2BodyDef bodyDef;
-		bodyDef.type = RigidBody2DTypeToBox2DBody(rb2d.Type);
-		bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-		bodyDef.angle = transform.Rotation.z;
-
-		b2Body* body = m_PhysicsWorld2D->CreateBody(&bodyDef);
-		body->SetFixedRotation(rb2d.FixedRotation);
-
-		rb2d.RuntimeBody = body;
-		
-
-		if (entity.HasComponent<BoxCollider2DComponent>())
-		{
-			auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-
-			b2PolygonShape boxShape;
-			// Automatically set the collider size to the scale of the entity
-			boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
-
-			b2FixtureDef fixtureDef;
-
-			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
-			physicsBodyData->EntityUUID = entity.GetUUID();
-			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
-
-			fixtureDef.shape = &boxShape;
-			fixtureDef.density = bc2d.Density;
-			fixtureDef.friction = bc2d.Friction;
-			fixtureDef.restitution = bc2d.Restitution;
-			fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-
-			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
-
-			// Store the fixture and the user data in our map
-			if (m_PhysicsBodyDataMap.find(fixture) == m_PhysicsBodyDataMap.end())
-				m_PhysicsBodyDataMap[fixture] = std::move(physicsBodyData);
-		}
-
-		if (entity.HasComponent<CircleCollider2DComponent>())
-		{
-			auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
-
-			b2CircleShape circleShape;
-			circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-			circleShape.m_radius = transform.Scale.x * cc2d.Radius;
-
-			b2FixtureDef fixtureDef;
-
-			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
-			physicsBodyData->EntityUUID = entity.GetUUID();
-			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
-
-			fixtureDef.shape = &circleShape;
-			fixtureDef.density = cc2d.Density;
-			fixtureDef.friction = cc2d.Friction;
-			fixtureDef.restitution = cc2d.Restitution;
-			fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-
-			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
-
-			// Store the fixture and the user data in our map
-			if (m_PhysicsBodyDataMap.find(fixture) == m_PhysicsBodyDataMap.end())
-				m_PhysicsBodyDataMap[fixture] = std::move(physicsBodyData);
-		}
-	}
-
-	void Scene::OnPhysics3DStart()
-	{
-		m_PhysicsScene = new q3Scene(1.0f / 120.0f);
-
-		auto view = m_Registry.view<RigidBodyComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-			auto& transform = entity.GetTransform();
-			auto& rb = entity.GetComponent<RigidBodyComponent>();
-
-			OnCreatePhysicsBody(entity, transform, rb);
-		}
-	}
-
-	void Scene::OnPhysics3DUpdate(TimeStep delta)
-	{
-		// Physics
-		{
-			// Copies transform from Sparky to Qu3e
-			auto view = m_Registry.view<RigidBodyComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-				// If a rigidbody component is added during runtime we can create the physics body here
-				if (rigidbody.RuntimeBody == nullptr)
-					OnCreatePhysicsBody(entity, transform, rigidbody);
-
-				q3Body* body = (q3Body*)rigidbody.RuntimeBody;
-				Math::vec3 translation = transform.Translation;
-				Math::vec3 rotation = transform.Rotation;
-
-				const auto& bodyPosition = body->GetTransform().position;
-				const auto& bodyOrientation = body->GetTransform().rotation;
-				
-				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyPosition.z != transform.Translation.z;
-
-				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 1.0f, 0.0f, 0.0f }, rotation.x);
-				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 0.0f, 1.0f, 0.0f }, rotation.y);
-				//body->SetTransform({ transform.Translation.x, transform.Translation.y, transform.Translation.z }, { 0.0f, 0.0f, 1.0f }, rotation.z);
-				body->SetTransform({ transform.Translation.x, transform.Translation.y,  transform.Translation.z });
-
-				if (awake)
-					body->SetToAwake();
-			}
-
-			m_PhysicsScene->Step();
-
-			// Get transform from Qu3e
-			for (auto e : view)
-			{
-				Entity entity{ e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-				if (rigidbody.RuntimeBody == nullptr)
-					OnCreatePhysicsBody(entity, transform, rigidbody);
-
-				q3Body* body = (q3Body*)rigidbody.RuntimeBody;
-				const auto& position = body->GetTransform().position;
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Translation.z = position.z;
-
-				//transform.Rotation.z = body->GetTransform().rotation;
-			}
-		}
-	}
-
-	void Scene::OnPhysics3DStop()
-	{
-		m_PhysicsScene->Shutdown();
-	}
-
-	void Scene::OnPhysics2DStart()
-	{
-		m_PhysicsWorld2D = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
-
-		auto view = m_Registry.view<RigidBody2DComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-			auto& transform = entity.GetTransform();
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-			OnCreatePhysicsBody2D(entity, transform, rb2d);
-		}
-	}
-
-	void Scene::OnPhysics2DUpdate(TimeStep delta)
-	{
-		m_PhysicsWorld2D->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
-
-		// Physics
-		{
-			// Copies transform from Sparky to Box2D
-			auto view = m_Registry.view<RigidBody2DComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				// If a rb2d component is added during runtime we can create the physics body here
-				if (rb2d.RuntimeBody == nullptr)
-					OnCreatePhysicsBody2D(entity, transform, rb2d);
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				Math::vec3 translation = transform.Translation;
-				float angle = transform.Rotation.z;
-
-				const auto& bodyPosition = body->GetPosition();
-				const float bodyAngle = body->GetAngle();
-
-				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
-
-				body->SetTransform({ translation.x, translation.y }, angle);
-
-				if (awake)
-					body->SetAwake(true);
-			}
-
-			m_PhysicsWorld2D->Step(delta, s_PhysicsWorld2DVeloctityIterations, s_PhysicsWorld2DPositionIterations);
-
-			// Get transform from Box2D
-			for (auto e : view)
-			{
-				Entity entity{ e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-				if (rb2d.RuntimeBody == nullptr)
-					OnCreatePhysicsBody2D(entity, transform, rb2d);
-
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
-			}
-		}
-	}
-
-	void Scene::OnPhysics2DStop()
-	{
-		delete m_PhysicsWorld2D;
-		m_PhysicsWorld2D = nullptr;
-		m_PhysicsBodyDataMap.clear();
 	}
 
 	template <typename T>

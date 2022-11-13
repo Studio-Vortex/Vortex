@@ -11,6 +11,9 @@
 
 #include "Sparky/Audio/AudioSource.h"
 
+#include "Sparky/Physics/Physics3D.h"
+#include "Sparky/Physics/Physics2D.h"
+
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/LightSource.h"
@@ -1292,7 +1295,7 @@ namespace Sparky {
 		
 		// Create an instance of the callback and initialize it
 		RayCastCallback raycastCallback;
-		contextScene->GetPhysicsWorld2D()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
+		Physics2D::GetPhysicsScene()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
 
 		*outResult = RayCastHit2D(raycastCallback, contextScene);
 
