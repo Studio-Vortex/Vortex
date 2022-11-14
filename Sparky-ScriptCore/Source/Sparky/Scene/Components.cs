@@ -374,6 +374,13 @@
 	public class AudioSource : Component
 	{
 		public string Source;
+		public bool IsPlaying
+		{
+			get
+			{
+				return InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
+			}
+		}
 
 		public void Play()
 		{
@@ -409,6 +416,43 @@
 			set
 			{
 				InternalCalls.RigidBody2DComponent_SetBodyType(Entity.ID, value);
+			}
+		}
+
+		public Vector2 Velocity
+		{
+			get
+			{
+				InternalCalls.RigidBody2DComponent_GetVelocity(Entity.ID, out Vector2 velocity);
+				return velocity;
+			}
+			set
+			{
+				InternalCalls.RigidBody2DComponent_SetVelocity(Entity.ID, ref value);
+			}
+		}
+
+		public float Drag
+		{
+			get
+			{
+				return InternalCalls.RigidBody2DComponent_GetDrag(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
+			}
+		}
+
+		public bool FreezeRotation
+		{
+			get
+			{
+				return InternalCalls.RigidBody2DComponent_GetFixedRotation(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBody2DComponent_SetFixedRotation(Entity.ID, value);
 			}
 		}
 

@@ -10,16 +10,18 @@
 #include "Sparky/Renderer/Skybox.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
+#include "Sparky/Core/Application.h"
+
 #include <yaml-cpp/yaml.h>
 
 #include <fstream>
 
-namespace YAML
-{
+namespace YAML {
+
 	template<>
-	struct convert<glm::vec2>
+	struct convert<Sparky::Math::vec2>
 	{
-		static Node encode(const glm::vec2& rhs)
+		static Node encode(const Sparky::Math::vec2& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -28,7 +30,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec2& rhs)
+		static bool decode(const Node& node, Sparky::Math::vec2& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 2)
 				return false;
@@ -40,9 +42,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::vec3>
+	struct convert<Sparky::Math::vec3>
 	{
-		static Node encode(const glm::vec3& rhs)
+		static Node encode(const Sparky::Math::vec3& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -52,7 +54,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec3& rhs)
+		static bool decode(const Node& node, Sparky::Math::vec3& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 3)
 				return false;
@@ -65,9 +67,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::vec4>
+	struct convert<Sparky::Math::vec4>
 	{
-		static Node encode(const glm::vec4& rhs)
+		static Node encode(const Sparky::Math::vec4& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -78,7 +80,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec4& rhs)
+		static bool decode(const Node& node, Sparky::Math::vec4& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 4)
 				return false;
@@ -107,6 +109,28 @@ namespace YAML
 			return true;
 		}
 	};
+
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
+	YAML::Emitter& operator<<(YAML::Emitter& out, const Sparky::Math::vec3& vector)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << vector.x << vector.y << vector.z << YAML::EndSeq;
+		return out;
+	}
+
+	YAML::Emitter& operator<<(YAML::Emitter& out, const Sparky::Math::vec4& vector)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << vector.x << vector.y << vector.z << vector.w << YAML::EndSeq;
+		return out;
+	}
+
 }
 
 namespace Sparky {
@@ -124,471 +148,466 @@ namespace Sparky {
 		break;                                        \
 	}
 
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
+	namespace Utils {
 
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Math::vec3& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Math::vec4& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << vector.w << YAML::EndSeq;
-		return out;
-	}
-
-	static std::string LightTypeToString(LightSourceComponent::LightType lightType)
-	{
-		switch (lightType)
+		static std::string LightTypeToString(LightSourceComponent::LightType lightType)
 		{
-			case LightSourceComponent::LightType::Directional:  return "Directional";
-			case LightSourceComponent::LightType::Point:        return "Point";
-			case LightSourceComponent::LightType::Spot:         return "Spot";
+			switch (lightType)
+			{
+				case LightSourceComponent::LightType::Directional:  return "Directional";
+				case LightSourceComponent::LightType::Point:        return "Point";
+				case LightSourceComponent::LightType::Spot:         return "Spot";
+			}
+
+			SP_CORE_ASSERT(false, "Unknown Light Type!");
+			return {};
 		}
 
-		SP_CORE_ASSERT(false, "Unknown Light Type!");
-		return {};
-	}
-
-	static LightSourceComponent::LightType LightTypeFromString(const std::string& lightTypeString)
-	{
-		if (lightTypeString == "Directional")  return LightSourceComponent::LightType::Directional;
-		if (lightTypeString == "Point")        return LightSourceComponent::LightType::Point;
-		if (lightTypeString == "Spot")         return LightSourceComponent::LightType::Spot;
-
-		SP_CORE_ASSERT(false, "Unknown Light Type!");
-		return LightSourceComponent::LightType::Directional;
-	}
-
-	static std::string MeshRendererMeshTypeToString(MeshRendererComponent::MeshType meshType)
-	{
-		switch (meshType)
+		static LightSourceComponent::LightType LightTypeFromString(const std::string& lightTypeString)
 		{
-			case MeshRendererComponent::MeshType::Cube:     return "Cube";
-			case MeshRendererComponent::MeshType::Sphere:   return "Sphere";
-			case MeshRendererComponent::MeshType::Capsule:  return "Capsule";
-			case MeshRendererComponent::MeshType::Cone:     return "Cone";
-			case MeshRendererComponent::MeshType::Cylinder: return "Cylinder";
-			case MeshRendererComponent::MeshType::Plane:    return "Plane";
-			case MeshRendererComponent::MeshType::Torus:    return "Torus";
-			case MeshRendererComponent::MeshType::Custom:   return "Custom";
+			if (lightTypeString == "Directional")  return LightSourceComponent::LightType::Directional;
+			if (lightTypeString == "Point")        return LightSourceComponent::LightType::Point;
+			if (lightTypeString == "Spot")         return LightSourceComponent::LightType::Spot;
+
+			SP_CORE_ASSERT(false, "Unknown Light Type!");
+			return LightSourceComponent::LightType::Directional;
 		}
 
-		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
-		return {};
-	}
-
-	static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
-	{
-		if (meshTypeString == "Cube")     return MeshRendererComponent::MeshType::Cube;
-		if (meshTypeString == "Sphere")   return MeshRendererComponent::MeshType::Sphere;
-		if (meshTypeString == "Capsule")  return MeshRendererComponent::MeshType::Capsule;
-		if (meshTypeString == "Cone")     return MeshRendererComponent::MeshType::Cone;
-		if (meshTypeString == "Cylinder") return MeshRendererComponent::MeshType::Cylinder;
-		if (meshTypeString == "Plane")    return MeshRendererComponent::MeshType::Plane;
-		if (meshTypeString == "Torus")    return MeshRendererComponent::MeshType::Torus;
-		if (meshTypeString == "Custom")   return MeshRendererComponent::MeshType::Custom;
-
-		SP_CORE_ASSERT(false, "Unknown Mesh Type!");
-		return MeshRendererComponent::MeshType::Cube;
-	}
-
-	static std::string RigidBody2DBodyTypeToString(RigidBody2DComponent::BodyType bodyType)
-	{
-		switch (bodyType)
+		static std::string MeshRendererMeshTypeToString(MeshRendererComponent::MeshType meshType)
 		{
-			case RigidBody2DComponent::BodyType::Static:    return "Static";
-			case RigidBody2DComponent::BodyType::Dynamic:   return "Dynamic";
-			case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
+			switch (meshType)
+			{
+				case MeshRendererComponent::MeshType::Cube:     return "Cube";
+				case MeshRendererComponent::MeshType::Sphere:   return "Sphere";
+				case MeshRendererComponent::MeshType::Capsule:  return "Capsule";
+				case MeshRendererComponent::MeshType::Cone:     return "Cone";
+				case MeshRendererComponent::MeshType::Cylinder: return "Cylinder";
+				case MeshRendererComponent::MeshType::Plane:    return "Plane";
+				case MeshRendererComponent::MeshType::Torus:    return "Torus";
+				case MeshRendererComponent::MeshType::Custom:   return "Custom";
+			}
+
+			SP_CORE_ASSERT(false, "Unknown Mesh Type!");
+			return {};
 		}
 
-		SP_CORE_ASSERT(false, "Unknown Body Type!");
-		return {};
-	}
+		static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
+		{
+			if (meshTypeString == "Cube")     return MeshRendererComponent::MeshType::Cube;
+			if (meshTypeString == "Sphere")   return MeshRendererComponent::MeshType::Sphere;
+			if (meshTypeString == "Capsule")  return MeshRendererComponent::MeshType::Capsule;
+			if (meshTypeString == "Cone")     return MeshRendererComponent::MeshType::Cone;
+			if (meshTypeString == "Cylinder") return MeshRendererComponent::MeshType::Cylinder;
+			if (meshTypeString == "Plane")    return MeshRendererComponent::MeshType::Plane;
+			if (meshTypeString == "Torus")    return MeshRendererComponent::MeshType::Torus;
+			if (meshTypeString == "Custom")   return MeshRendererComponent::MeshType::Custom;
 
-	static RigidBody2DComponent::BodyType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
-	{
-		if (bodyTypeString == "Static")    return RigidBody2DComponent::BodyType::Static;
-		if (bodyTypeString == "Dynamic")   return RigidBody2DComponent::BodyType::Dynamic;
-		if (bodyTypeString == "Kinematic") return RigidBody2DComponent::BodyType::Kinematic;
+			SP_CORE_ASSERT(false, "Unknown Mesh Type!");
+			return MeshRendererComponent::MeshType::Cube;
+		}
 
-		SP_CORE_ASSERT(false, "Unknown Body Type!");
-		return RigidBody2DComponent::BodyType::Static;
+		static std::string RigidBody2DBodyTypeToString(RigidBody2DComponent::BodyType bodyType)
+		{
+			switch (bodyType)
+			{
+				case RigidBody2DComponent::BodyType::Static:    return "Static";
+				case RigidBody2DComponent::BodyType::Dynamic:   return "Dynamic";
+				case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
+			}
+
+			SP_CORE_ASSERT(false, "Unknown Body Type!");
+			return {};
+		}
+
+		static RigidBody2DComponent::BodyType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
+		{
+			if (bodyTypeString == "Static")    return RigidBody2DComponent::BodyType::Static;
+			if (bodyTypeString == "Dynamic")   return RigidBody2DComponent::BodyType::Dynamic;
+			if (bodyTypeString == "Kinematic") return RigidBody2DComponent::BodyType::Kinematic;
+
+			SP_CORE_ASSERT(false, "Unknown Body Type!");
+			return RigidBody2DComponent::BodyType::Static;
+		}
+
+		static void SerializeEntity(YAML::Emitter& out, Entity entity)
+		{
+			SP_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
+
+			out << YAML::BeginMap; // Entity
+			out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
+
+			if (entity.HasComponent<TagComponent>())
+			{
+				auto& tagComponent = entity.GetComponent<TagComponent>();
+				out << YAML::Key << "TagComponent" << YAML::Value << YAML::BeginMap; // TagComponent
+				out << YAML::Key << "Tag" << YAML::Value << tagComponent.Tag;
+				out << YAML::Key << "Marker" << YAML::Value << tagComponent.Marker;
+
+				out << YAML::EndMap; // TagComponent
+			}
+
+			if (entity.HasComponent<TransformComponent>())
+			{
+				out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
+				auto& transform = entity.GetComponent<TransformComponent>();
+				out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
+				out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+				out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
+
+				out << YAML::EndMap; // TransformComponent
+			}
+
+			if (entity.HasComponent<CameraComponent>())
+			{
+				out << YAML::Key << "CameraComponent";
+				out << YAML::BeginMap; // CameraComponent
+
+				auto& cameraComponent = entity.GetComponent<CameraComponent>();
+				auto& camera = cameraComponent.Camera;
+
+				out << YAML::Key << "Camera" << YAML::Value;
+				out << YAML::BeginMap; // Camera
+				out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
+				out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
+				out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
+				out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
+				out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
+				out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
+				out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+				out << YAML::EndMap; // Camera
+
+				out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
+				out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
+
+				out << YAML::EndMap; // CameraComponent
+			}
+
+			if (entity.HasComponent<SkyboxComponent>())
+			{
+				out << YAML::Key << "SkyboxComponent";
+				out << YAML::BeginMap; // SkyboxComponent
+
+				auto& lightComponent = entity.GetComponent<SkyboxComponent>();
+
+				SharedRef<Skybox> skybox = lightComponent.Source;
+				out << YAML::Key << "SourcePath" << skybox->GetDirectoryPath();
+
+				out << YAML::EndMap; // SkyboxComponent
+			}
+
+			if (entity.HasComponent<LightSourceComponent>())
+			{
+				out << YAML::Key << "LightSourceComponent";
+				out << YAML::BeginMap; // LightSourceComponent
+
+				auto& lightComponent = entity.GetComponent<LightSourceComponent>();
+
+				out << YAML::Key << "LightType" << YAML::Value << Utils::LightTypeToString(lightComponent.Type);
+
+				SharedRef<LightSource> lightSource = lightComponent.Source;
+				out << YAML::Key << "Ambient" << YAML::Value << lightSource->GetAmbient();
+				out << YAML::Key << "Diffuse" << YAML::Value << lightSource->GetDiffuse();
+				out << YAML::Key << "Specular" << YAML::Value << lightSource->GetSpecular();
+				out << YAML::Key << "Color" << YAML::Value << lightSource->GetColor();
+
+				switch (lightComponent.Type)
+				{
+					case LightSourceComponent::LightType::Directional:
+					{
+						out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+						break;
+					}
+					case LightSourceComponent::LightType::Point:
+					{
+						out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+						out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
+						break;
+					}
+					case LightSourceComponent::LightType::Spot:
+					{
+						out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+						out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+						out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
+						out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
+						out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
+
+						break;
+					}
+				}
+
+				out << YAML::EndMap; // LightSourceComponent
+			}
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
+
+				auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+				out << YAML::Key << "MeshType" << YAML::Value << Utils::MeshRendererMeshTypeToString(meshRendererComponent.Type);
+
+				if (meshRendererComponent.Mesh)
+				{
+					SharedRef<Model> model = meshRendererComponent.Mesh;
+					out << YAML::Key << "MeshSource" << YAML::Value << model->GetPath();
+
+					SharedRef<Material> material = model->GetMaterial();
+
+					out << YAML::Key << "Ambient" << YAML::Value << material->GetAmbient();
+
+					SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
+					SharedRef<Texture2D> specularMap = material->GetSpecularMap();
+					SharedRef<Texture2D> normalMap = material->GetNormalMap();
+					if (diffuseMap)
+						out << YAML::Key << "DiffuseMapPath" << YAML::Value << diffuseMap->GetPath();
+					if (specularMap)
+						out << YAML::Key << "SpecularMapPath" << YAML::Value << specularMap->GetPath();
+					if (normalMap)
+						out << YAML::Key << "NormalMapPath" << YAML::Value << normalMap->GetPath();
+
+					out << YAML::Key << "Shininess" << material->GetShininess();
+
+					SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+					SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+					SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+					if (albedoMap)
+						out << YAML::Key << "AlbedoMapPath" << YAML::Value << albedoMap->GetPath();
+					else
+						out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
+					if (metallicMap)
+						out << YAML::Key << "MetallicMapPath" << YAML::Value << metallicMap->GetPath();
+					else
+						out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
+					if (roughnessMap)
+						out << YAML::Key << "RoughnessMapPath" << YAML::Value << roughnessMap->GetPath();
+					else
+						out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
+					if (ambientOcclusionMap)
+						out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << ambientOcclusionMap->GetPath();
+				}
+				out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
+				out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
+				out << YAML::Key << "Refractive" << YAML::Value << meshRendererComponent.Refractive;
+
+				out << YAML::EndMap; // MeshRendererComponent
+			}
+
+			if (entity.HasComponent<SpriteRendererComponent>())
+			{
+				out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
+
+				auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
+
+				out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
+				if (spriteComponent.Texture)
+					out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
+				out << YAML::Key << "TextureScale" << YAML::Value << spriteComponent.Scale;
+
+				out << YAML::EndMap; // SpriteRendererComponent
+			}
+
+			if (entity.HasComponent<CircleRendererComponent>())
+			{
+				out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
+
+				auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
+
+				out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
+				out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
+				out << YAML::Key << "Fade" << YAML::Value << circleComponent.Fade;
+
+				out << YAML::EndMap; // CircleRendererComponent
+			}
+
+			if (entity.HasComponent<ParticleEmitterComponent>())
+			{
+				out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
+
+				auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+				SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+
+				ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
+
+				out << YAML::Key << "ColorBegin" << YAML::Value << emitterProperties.ColorBegin;
+				out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
+				out << YAML::Key << "LifeTime" << YAML::Value << emitterProperties.LifeTime;
+				out << YAML::Key << "Position" << YAML::Value << emitterProperties.Position;
+				out << YAML::Key << "Rotation" << YAML::Value << emitterProperties.Rotation;
+				out << YAML::Key << "SizeBegin" << YAML::Value << emitterProperties.SizeBegin;
+				out << YAML::Key << "SizeEnd" << YAML::Value << emitterProperties.SizeEnd;
+				out << YAML::Key << "SizeVariation" << YAML::Value << emitterProperties.SizeVariation;
+				out << YAML::Key << "Velocity" << YAML::Value << emitterProperties.Velocity;
+				out << YAML::Key << "VelocityVariation" << YAML::Value << emitterProperties.VelocityVariation;
+
+				out << YAML::EndMap; // ParticleEmitterComponent
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
+
+				auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+
+				if (audioSourceComponent.Source)
+				{
+					const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
+
+					out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
+
+					out << YAML::Key << "SoundSettings" << YAML::Value;
+					out << YAML::BeginMap; // SoundSettings
+					out << YAML::Key << "Position" << YAML::Value << soundProperties.Position;
+					out << YAML::Key << "Direction" << YAML::Value << soundProperties.Direction;
+					out << YAML::Key << "Veloctiy" << YAML::Value << soundProperties.Veloctiy;
+
+					out << YAML::Key << "Cone" << YAML::Value;
+					out << YAML::BeginMap; // Cone
+					out << YAML::Key << "InnerAngle" << YAML::Value << soundProperties.Cone.InnerAngle;
+					out << YAML::Key << "OuterAngle" << YAML::Value << soundProperties.Cone.OuterAngle;
+					out << YAML::Key << "OuterGain" << YAML::Value << soundProperties.Cone.OuterGain;
+					out << YAML::EndMap; // Cone
+
+					out << YAML::Key << "MinDistance" << YAML::Value << soundProperties.MinDistance;
+					out << YAML::Key << "MaxDistance" << YAML::Value << soundProperties.MaxDistance;
+					out << YAML::Key << "Pitch" << YAML::Value << soundProperties.Pitch;
+					out << YAML::Key << "DopplerFactor" << YAML::Value << soundProperties.DopplerFactor;
+					out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
+
+					out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
+					out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
+					out << YAML::EndMap; // SoundSettings
+				}
+
+				out << YAML::EndMap; // AudioSourceComponent
+			}
+
+			if (entity.HasComponent<RigidBody2DComponent>())
+			{
+				out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
+
+				auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
+				out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type);
+				out << YAML::Key << "Velocity" << YAML::Value << rb2dComponent.Velocity;
+				out << YAML::Key << "Drag" << YAML::Value << rb2dComponent.Drag;
+				out << YAML::Key << "FreezeRotation" << YAML::Value << rb2dComponent.FixedRotation;
+
+				out << YAML::EndMap; // Rigidbody2DComponent
+			}
+
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
+
+				auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
+				out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
+				out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
+				out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
+				out << YAML::Key << "Friction" << YAML::Value << bc2dComponent.Friction;
+				out << YAML::Key << "Restitution" << YAML::Value << bc2dComponent.Restitution;
+				out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2dComponent.RestitutionThreshold;
+				out << YAML::Key << "IsTrigger" << YAML::Value << bc2dComponent.IsTrigger;
+
+				out << YAML::EndMap; // BoxCollider2DComponent
+			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
+
+				auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
+				out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
+				out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
+				out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
+				out << YAML::Key << "Friction" << YAML::Value << cc2dComponent.Friction;
+				out << YAML::Key << "Restitution" << YAML::Value << cc2dComponent.Restitution;
+				out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2dComponent.RestitutionThreshold;
+
+				out << YAML::EndMap; // CircleCollider2DComponent
+			}
+
+			// TODO: This may need reworking, specifically the random empty() check
+			// if the script class name is empty don't even try to serialize, just move on
+			if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
+			{
+				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
+
+				auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+				out << YAML::Key << "ClassName" << YAML::Value << scriptComponent.ClassName;
+
+				// Fields
+				SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
+				const auto& fields = entityClass->GetFields();
+
+				if (fields.size() > 0)
+				{
+					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+					out << YAML::Key << "ScriptFields" << YAML::Value;
+					out << YAML::BeginSeq;
+
+					for (const auto& [name, field] : fields)
+					{
+						if (entityFields.find(name) == entityFields.end())
+							continue;
+
+						out << YAML::BeginMap; // ScriptFields
+
+						out << YAML::Key << "Name" << YAML::Value << name;
+						out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+						out << YAML::Key << "Data" << YAML::Value;
+
+						ScriptFieldInstance& scriptField = entityFields.at(name);
+
+						switch (field.Type)
+						{
+							WRITE_SCRIPT_FIELD(Float, float)
+							WRITE_SCRIPT_FIELD(Double, double)
+							WRITE_SCRIPT_FIELD(Bool, bool)
+							WRITE_SCRIPT_FIELD(Char, int8_t)
+							WRITE_SCRIPT_FIELD(Short, int16_t)
+							WRITE_SCRIPT_FIELD(Int, int32_t)
+							WRITE_SCRIPT_FIELD(Long, int64_t)
+							WRITE_SCRIPT_FIELD(Byte, uint8_t)
+							WRITE_SCRIPT_FIELD(UShort, uint16_t)
+							WRITE_SCRIPT_FIELD(UInt, uint32_t)
+							WRITE_SCRIPT_FIELD(ULong, uint64_t)
+							WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
+							WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
+							WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
+							WRITE_SCRIPT_FIELD(Entity, UUID)
+						}
+
+						out << YAML::EndMap; // ScriptFields
+					}
+
+					out << YAML::EndSeq;
+				}
+
+				out << YAML::EndMap; // ScriptComponent
+			}
+
+			out << YAML::EndMap; // Entity
+		}
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
 		: m_Scene(scene) { }
 
-	static void SerializeEntity(YAML::Emitter& out, Entity entity)
-	{
-		SP_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
-
-		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
-
-		if (entity.HasComponent<TagComponent>())
-		{
-			out << YAML::Key << "TagComponent" << YAML::Value << YAML::BeginMap; // TagComponent
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
-			out << YAML::Key << "Tag" << YAML::Value << tag;
-
-			out << YAML::EndMap; // TagComponent
-		}
-		
-		if (entity.HasComponent<TransformComponent>())
-		{
-			out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
-			auto& transform = entity.GetComponent<TransformComponent>();
-			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-			out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
-			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
-
-			out << YAML::EndMap; // TransformComponent
-		}
-
-		if (entity.HasComponent<CameraComponent>())
-		{
-			out << YAML::Key << "CameraComponent";
-			out << YAML::BeginMap; // CameraComponent
-
-			auto& cameraComponent = entity.GetComponent<CameraComponent>();
-			auto& camera = cameraComponent.Camera;
-
-			out << YAML::Key << "Camera" << YAML::Value;
-			out << YAML::BeginMap; // Camera
-			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
-			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
-			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
-			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
-			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
-			out << YAML::EndMap; // Camera
-
-			out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
-			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
-
-			out << YAML::EndMap; // CameraComponent
-		}
-
-		if (entity.HasComponent<SkyboxComponent>())
-		{
-			out << YAML::Key << "SkyboxComponent";
-			out << YAML::BeginMap; // SkyboxComponent
-
-			auto& lightComponent = entity.GetComponent<SkyboxComponent>();
-
-			SharedRef<Skybox> skybox = lightComponent.Source;
-			out << YAML::Key << "SourcePath" << skybox->GetDirectoryPath();
-
-			out << YAML::EndMap; // SkyboxComponent
-		}
-
-		if (entity.HasComponent<LightSourceComponent>())
-		{
-			out << YAML::Key << "LightSourceComponent";
-			out << YAML::BeginMap; // LightSourceComponent
-
-			auto& lightComponent = entity.GetComponent<LightSourceComponent>();
-
-			out << YAML::Key << "LightType" << YAML::Value << LightTypeToString(lightComponent.Type);
-			
-			SharedRef<LightSource> lightSource = lightComponent.Source;
-			out << YAML::Key << "Ambient" << YAML::Value << lightSource->GetAmbient();
-			out << YAML::Key << "Diffuse" << YAML::Value << lightSource->GetDiffuse();
-			out << YAML::Key << "Specular" << YAML::Value << lightSource->GetSpecular();
-			out << YAML::Key << "Color" << YAML::Value << lightSource->GetColor();
-
-			switch (lightComponent.Type)
-			{
-				case LightSourceComponent::LightType::Directional:
-				{
-					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
-					break;
-				}
-				case LightSourceComponent::LightType::Point:
-				{
-					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
-					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
-					break;
-				}
-				case LightSourceComponent::LightType::Spot:
-				{
-					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
-					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
-					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
-					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
-					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
-
-					break;
-				}
-			}
-
-			out << YAML::EndMap; // LightSourceComponent
-		}
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
-
-			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
-
-			out << YAML::Key << "MeshType" << YAML::Value << MeshRendererMeshTypeToString(meshRendererComponent.Type);
-
-			if (meshRendererComponent.Mesh)
-			{
-				SharedRef<Model> model = meshRendererComponent.Mesh;
-				out << YAML::Key << "MeshSource" << YAML::Value << model->GetPath();
-
-				SharedRef<Material> material = model->GetMaterial();
-
-				out << YAML::Key << "Ambient" << YAML::Value << material->GetAmbient();
-
-				SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
-				SharedRef<Texture2D> specularMap = material->GetSpecularMap();
-				SharedRef<Texture2D> normalMap = material->GetNormalMap();
-				if (diffuseMap)
-					out << YAML::Key << "DiffuseMapPath" << YAML::Value << diffuseMap->GetPath();
-				if (specularMap)
-					out << YAML::Key << "SpecularMapPath" << YAML::Value << specularMap->GetPath();
-				if (normalMap)
-					out << YAML::Key << "NormalMapPath" << YAML::Value << normalMap->GetPath();
-
-				out << YAML::Key << "Shininess" << material->GetShininess();
-
-				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
-				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
-				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
-				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
-				if (albedoMap)
-					out << YAML::Key << "AlbedoMapPath" << YAML::Value << albedoMap->GetPath();
-				else
-					out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
-				if (metallicMap)
-					out << YAML::Key << "MetallicMapPath" << YAML::Value << metallicMap->GetPath();
-				else
-					out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
-				if (roughnessMap)
-					out << YAML::Key << "RoughnessMapPath" << YAML::Value << roughnessMap->GetPath();
-				else
-					out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
-				if (ambientOcclusionMap)
-					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << ambientOcclusionMap->GetPath();
-			}
-			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
-			out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
-			out << YAML::Key << "Refractive" << YAML::Value << meshRendererComponent.Refractive;
-
-			out << YAML::EndMap; // MeshRendererComponent
-		}
-
-		if (entity.HasComponent<SpriteRendererComponent>())
-		{
-			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
-			
-			auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
-
-			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
-			if (spriteComponent.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
-			out << YAML::Key << "TextureScale" << YAML::Value << spriteComponent.Scale;
-
-			out << YAML::EndMap; // SpriteRendererComponent
-		}
-		
-		if (entity.HasComponent<CircleRendererComponent>())
-		{
-			out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
-			
-			auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
-
-			out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
-			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
-			out << YAML::Key << "Fade" << YAML::Value << circleComponent.Fade;
-
-			out << YAML::EndMap; // CircleRendererComponent
-		}
-
-		if (entity.HasComponent<ParticleEmitterComponent>())
-		{
-			out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
-
-			auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
-
-			ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
-
-			out << YAML::Key << "ColorBegin" << YAML::Value << emitterProperties.ColorBegin;
-			out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
-			out << YAML::Key << "LifeTime" << YAML::Value << emitterProperties.LifeTime;
-			out << YAML::Key << "Position" << YAML::Value << emitterProperties.Position;
-			out << YAML::Key << "Rotation" << YAML::Value << emitterProperties.Rotation;
-			out << YAML::Key << "SizeBegin" << YAML::Value << emitterProperties.SizeBegin;
-			out << YAML::Key << "SizeEnd" << YAML::Value << emitterProperties.SizeEnd;
-			out << YAML::Key << "SizeVariation" << YAML::Value << emitterProperties.SizeVariation;
-			out << YAML::Key << "Velocity" << YAML::Value << emitterProperties.Velocity;
-			out << YAML::Key << "VelocityVariation" << YAML::Value << emitterProperties.VelocityVariation;
-
-			out << YAML::EndMap; // ParticleEmitterComponent
-		}
-
-		if (entity.HasComponent<AudioSourceComponent>())
-		{
-			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
-
-			auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
-
-			if (audioSourceComponent.Source)
-			{
-				const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
-
-				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
-
-				out << YAML::Key << "SoundSettings" << YAML::Value;
-				out << YAML::BeginMap; // SoundSettings
-				out << YAML::Key << "Position" << YAML::Value << soundProperties.Position;
-				out << YAML::Key << "Direction" << YAML::Value << soundProperties.Direction;
-				out << YAML::Key << "Veloctiy" << YAML::Value << soundProperties.Veloctiy;
-
-				out << YAML::Key << "Cone" << YAML::Value;
-				out << YAML::BeginMap; // Cone
-				out << YAML::Key << "InnerAngle" << YAML::Value << soundProperties.Cone.InnerAngle;
-				out << YAML::Key << "OuterAngle" << YAML::Value << soundProperties.Cone.OuterAngle;
-				out << YAML::Key << "OuterGain" << YAML::Value << soundProperties.Cone.OuterGain;
-				out << YAML::EndMap; // Cone
-
-				out << YAML::Key << "MinDistance" << YAML::Value << soundProperties.MinDistance;
-				out << YAML::Key << "MaxDistance" << YAML::Value << soundProperties.MaxDistance;
-				out << YAML::Key << "Pitch" << YAML::Value << soundProperties.Pitch;
-				out << YAML::Key << "DopplerFactor" << YAML::Value << soundProperties.DopplerFactor;
-				out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
-
-				out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
-				out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
-				out << YAML::EndMap; // SoundSettings
-			}
-
-			out << YAML::EndMap; // AudioSourceComponent
-		}
-
-		if (entity.HasComponent<RigidBody2DComponent>())
-		{
-			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
-
-			auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
-			out << YAML::Key << "BodyType" << YAML::Value << RigidBody2DBodyTypeToString(rb2dComponent.Type);
-			out << YAML::Key << "FixedRotation" << YAML::Value << rb2dComponent.FixedRotation;
-
-			out << YAML::EndMap; // Rigidbody2DComponent
-		}
-
-		if (entity.HasComponent<BoxCollider2DComponent>())
-		{
-			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
-
-			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
-			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
-			out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
-			out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
-			out << YAML::Key << "Friction" << YAML::Value << bc2dComponent.Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << bc2dComponent.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2dComponent.RestitutionThreshold;
-
-			out << YAML::EndMap; // BoxCollider2DComponent
-		}
-		
-		if (entity.HasComponent<CircleCollider2DComponent>())
-		{
-			out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
-
-			auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
-			out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
-			out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
-			out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
-			out << YAML::Key << "Friction" << YAML::Value << cc2dComponent.Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << cc2dComponent.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2dComponent.RestitutionThreshold;
-
-			out << YAML::EndMap; // CircleCollider2DComponent
-		}
-
-		// TODO: This may need reworking, specifically the random empty() check
-		// if the script class name is empty don't even try to serialize, just move on
-		if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
-		{
-			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
-
-			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-			out << YAML::Key << "ClassName" << YAML::Value << scriptComponent.ClassName;
-
-			// Fields
-			SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
-			const auto& fields = entityClass->GetFields();
-
-			if (fields.size() > 0)
-			{
-				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
-
-				out << YAML::Key << "ScriptFields" << YAML::Value;
-				out << YAML::BeginSeq;
-
-				for (const auto& [name, field] : fields)
-				{
-					if (entityFields.find(name) == entityFields.end())
-						continue;
-
-					out << YAML::BeginMap; // ScriptFields
-
-					out << YAML::Key << "Name" << YAML::Value << name;
-					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
-					out << YAML::Key << "Data" << YAML::Value;
-					
-					ScriptFieldInstance& scriptField = entityFields.at(name);
-
-					switch (field.Type)
-					{
-						WRITE_SCRIPT_FIELD(Float,   float)
-						WRITE_SCRIPT_FIELD(Double,  double)
-						WRITE_SCRIPT_FIELD(Bool,    bool)
-						WRITE_SCRIPT_FIELD(Char,    int8_t)
-						WRITE_SCRIPT_FIELD(Short,   int16_t)
-						WRITE_SCRIPT_FIELD(Int,     int32_t)
-						WRITE_SCRIPT_FIELD(Long,    int64_t)
-						WRITE_SCRIPT_FIELD(Byte,    uint8_t)
-						WRITE_SCRIPT_FIELD(UShort,  uint16_t)
-						WRITE_SCRIPT_FIELD(UInt,    uint32_t)
-						WRITE_SCRIPT_FIELD(ULong,   uint64_t)
-						WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
-						WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
-						WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
-						WRITE_SCRIPT_FIELD(Entity,  UUID)
-					}
-
-					out << YAML::EndMap; // ScriptFields
-				}
-
-				out << YAML::EndSeq;
-			}
-
-			out << YAML::EndMap; // ScriptComponent
-		}
-
-		out << YAML::EndMap; // Entity
-	}
-
 	void SceneSerializer::Serialize(const std::string& filepath)
 	{
+		size_t extensionPos = filepath.find(".");
+		size_t lastSlashPos = filepath.find_last_of("/\\");
+		size_t length = filepath.length();
+		bool invalidFile = length == 0;
+
+		SP_CORE_TRACE(filepath);
+		SP_CORE_TRACE(extensionPos);
+		std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos + 1, extensionPos);
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+		out << YAML::Key << "Scene" << YAML::Value << sceneName;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		m_Scene->m_Registry.each([&](auto entityID)
@@ -597,7 +616,7 @@ namespace Sparky {
 			if (!entity)
 				return;
 
-			SerializeEntity(out, entity);
+			Utils::SerializeEntity(out, entity);
 		});
 
 		out << YAML::EndSeq;
@@ -639,15 +658,21 @@ namespace Sparky {
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string name;
+				std::string marker;
+
 				auto tagComponent = entity["TagComponent"];
+
 				if (tagComponent)
 				{
-					name = tagComponent["Tag"].as<std::string>();
+					if (tagComponent["Tag"])
+						name = tagComponent["Tag"].as<std::string>();
+					if (tagComponent["Marker"])
+						marker = tagComponent["Marker"].as<std::string>();
 				}
 
-				SP_CORE_TRACE("Deserialized Entity with ID = {}, name = {}", uuid, name);
+				SP_CORE_TRACE("Deserialized Entity: UUID = {}, Tag = {}, Marker = {}", uuid, name, marker);
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name, marker);
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
@@ -694,7 +719,7 @@ namespace Sparky {
 
 					lightComponent.Source = CreateShared<LightSource>(LightSourceProperties());
 
-					lightComponent.Type = LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
+					lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
 					if (lightSourceComponent["Ambient"])
 						lightComponent.Source->SetAmbient(lightSourceComponent["Ambient"].as<Math::vec3>());
 					if (lightSourceComponent["Diffuse"])
@@ -745,7 +770,7 @@ namespace Sparky {
 				{
 					auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
 
-					meshRendererComponent.Type = MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
+					meshRendererComponent.Type = Utils::MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
 					if (meshComponent["MeshSource"])
 						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
@@ -882,8 +907,13 @@ namespace Sparky {
 				{
 					auto& rb2d = deserializedEntity.AddComponent<RigidBody2DComponent>();
 
-					rb2d.Type = RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
-					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
+					rb2d.Type = Utils::RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
+					if (rigidbody2DComponent["Velocity"])
+						rb2d.Velocity = rigidbody2DComponent["Velocity"].as<Math::vec2>();
+					if (rigidbody2DComponent["Drag"])
+						rb2d.Drag = rigidbody2DComponent["Drag"].as<float>();
+					if (rigidbody2DComponent["FreezeRotation"])
+						rb2d.FixedRotation = rigidbody2DComponent["FreezeRotation"].as<bool>();
 				}
 
 				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
@@ -897,6 +927,8 @@ namespace Sparky {
 					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
 					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+					if (boxCollider2DComponent["IsTrigger"])
+						bc2d.IsTrigger = boxCollider2DComponent["IsTrigger"].as<bool>();
 				}
 
 				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];

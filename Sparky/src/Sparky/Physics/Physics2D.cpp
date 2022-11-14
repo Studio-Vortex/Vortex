@@ -70,6 +70,10 @@ namespace Sparky {
 				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
 
 				body->SetTransform({ translation.x, translation.y }, angle);
+				if (rb2d.Velocity != Math::vec2(0.0f))
+					body->SetLinearVelocity({ rb2d.Velocity.x, rb2d.Velocity.y });
+				body->SetLinearDamping(rb2d.Drag);
+				body->SetFixedRotation(rb2d.FixedRotation);
 
 				if (awake)
 					body->SetAwake(true);
@@ -108,6 +112,9 @@ namespace Sparky {
 		b2BodyDef bodyDef;
 		bodyDef.type = Utils::RigidBody2DTypeToBox2DBody(rb2d.Type);
 		bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+		bodyDef.fixedRotation = rb2d.FixedRotation;
+		bodyDef.linearVelocity = b2Vec2(rb2d.Velocity.x, rb2d.Velocity.y);
+		bodyDef.linearDamping = rb2d.Drag;
 		bodyDef.angle = transform.Rotation.z;
 
 		b2Body* body = s_PhysicsScene->CreateBody(&bodyDef);
@@ -130,6 +137,7 @@ namespace Sparky {
 			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
 
 			fixtureDef.shape = &boxShape;
+			fixtureDef.isSensor = bc2d.IsTrigger;
 			fixtureDef.density = bc2d.Density;
 			fixtureDef.friction = bc2d.Friction;
 			fixtureDef.restitution = bc2d.Restitution;

@@ -72,9 +72,21 @@ namespace Sparky {
 		return (float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<uint32_t>::max();
 	}
 
+	static float s_DeltaTime = 0.0f;
+
 	float Time::GetTime()
 	{
 		return glfwGetTime();
+	}
+
+	float Time::GetDeltaTime()
+	{
+		return s_DeltaTime;
+	}
+
+	void Time::SetDeltaTime(float delta)
+	{
+		s_DeltaTime = delta;
 	}
 
 }

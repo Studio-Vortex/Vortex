@@ -1130,6 +1130,24 @@ namespace Sparky {
 		return false;
 	}
 
+	void EditorLayer::CreateStartingEntities()
+	{
+		// Starting Entities
+		Entity startingCube = m_ActiveScene->CreateEntity("Cube");
+		startingCube.AddComponent<MeshRendererComponent>();
+
+		Entity startingPointLight = m_ActiveScene->CreateEntity("Point Light");
+		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+
+		Entity startingCamera = m_ActiveScene->CreateEntity("Camera");
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
+		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);
+	}
+
 	void EditorLayer::CreateNewScene()
 	{
 		if (m_SceneState != SceneState::Edit)
@@ -1141,20 +1159,7 @@ namespace Sparky {
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
 
-		// Starting Entities
-		Entity startingCube = m_EditorScene->CreateEntity("Cube");
-		startingCube.AddComponent<MeshRendererComponent>();
-
-		Entity startingPointLight = m_EditorScene->CreateEntity("Point Light");
-		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
-
-		Entity startingCamera = m_EditorScene->CreateEntity("Camera");
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
-		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);
+		CreateStartingEntities();
 	}
 
 	void EditorLayer::OpenExistingScene()

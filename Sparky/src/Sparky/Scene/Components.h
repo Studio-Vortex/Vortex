@@ -23,12 +23,33 @@ namespace Sparky {
 
 	struct TagComponent
 	{
-		std::string Tag;
+		std::string Tag = "";
+		std::string Marker = "UnTagged";
+		inline static std::vector<std::string> Markers = { "UnTagged", "Start", "Finish", "Player", "MainCamera" };
 
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag) { }
+
+		inline void AddMarker(const std::string& marker)
+		{
+			Markers.push_back(marker);
+			s_AddedMarkers.push_back(marker);
+		}
+
+		inline static void ResetAddedMarkers()
+		{
+			s_AddedMarkers.clear();
+		}
+
+		inline static const auto& GetAddedMarkers()
+		{
+			return s_AddedMarkers;
+		}
+
+	private:
+		inline static std::vector<std::string> s_AddedMarkers;
 	};
 
 	struct TransformComponent
@@ -44,7 +65,7 @@ namespace Sparky {
 		TransformComponent(const Math::vec3& translation, const Math::vec3& rotation, const Math::vec3& scale)
 			: Translation(translation), Rotation(rotation), Scale(scale) { }
 
-		Math::mat4 GetTransform() const
+		inline Math::mat4 GetTransform() const
 		{
 			Math::mat4 rotation = Math::ToMat4(Math::Quaternion(Rotation));
 			Math::mat4 result = Math::Translate(Translation) * rotation * Math::Scale(Scale);
@@ -245,6 +266,9 @@ namespace Sparky {
 		BodyType Type = BodyType::Static;
 		bool FixedRotation = false;
 
+		Math::vec2 Velocity = Math::vec2(0.0f);
+		float Drag = 0.0f;
+
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
 
@@ -262,6 +286,8 @@ namespace Sparky {
 		float Friction = 0.5f;
 		float Restitution = 0.0f;
 		float RestitutionThreshold = 0.5f;
+
+		bool IsTrigger = false;
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;

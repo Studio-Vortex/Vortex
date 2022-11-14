@@ -363,6 +363,9 @@ namespace Sparky {
 		#region AudioSource
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsPlaying(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_Play(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -389,6 +392,24 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_GetVelocity(ulong entityID, out Vector2 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetVelocity(ulong entityID, ref Vector2 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetDrag(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetDrag(ulong entityID, float drag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBody2DComponent_GetFixedRotation(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetFixedRotation(ulong entityID, bool freeze);
 
 		#endregion
 
@@ -527,6 +548,16 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Vector3_DotProductVec3(ref Vector3 left, ref Vector3 right);
+
+		#endregion
+
+		#region Time
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Time_GetElapsed();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Time_GetDeltaTime();
 
 		#endregion
 

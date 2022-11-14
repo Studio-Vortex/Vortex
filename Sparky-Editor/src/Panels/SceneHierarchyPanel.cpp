@@ -8,6 +8,9 @@ namespace Sparky {
 
 	extern const std::filesystem::path g_AssetPath;
 
+	// TODO: (Once we have a project system)
+	// On Project load call TagComponent::ResetAddedMarkers();
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
 	{
 		SetContext(context);
@@ -105,27 +108,7 @@ namespace Sparky {
 
 		if (s_ShowInspectorPanel)
 		{
-			Gui::Begin("Inspector", &s_ShowInspectorPanel);
-
-			if (m_SelectedEntity)
-				DrawComponents(m_SelectedEntity);
-			else
-			{
-				const char* name = "None";
-
-				if (hoveredEntity && m_ContextScene)
-				{
-					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
-
-					if (!tag.empty())
-						name = tag.c_str();
-				}
-
-				Gui::SetCursorPosX(10.0f);
-				Gui::Text("Hovered Entity: %s", name);
-			}
-
-			Gui::End();
+			DisplayInsectorPanel(hoveredEntity);
 		}
 	}
 
@@ -331,6 +314,58 @@ namespace Sparky {
 			}
 
 			Gui::EndMenu();
+		}
+	}
+
+	void SceneHierarchyPanel::DisplayInsectorPanel(Entity hoveredEntity)
+	{
+		Gui::Begin("Inspector", &s_ShowInspectorPanel);
+
+		if (m_SelectedEntity)
+			DrawComponents(m_SelectedEntity);
+		else
+		{
+			const char* name = "None";
+
+			if (hoveredEntity && m_ContextScene)
+			{
+				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+
+				if (!tag.empty())
+					name = tag.c_str();
+			}
+
+			Gui::SetCursorPosX(10.0f);
+			Gui::Text("Hovered Entity: %s", name);
+		}
+
+		Gui::End();
+	}
+
+	void SceneHierarchyPanel::DisplayAddMarkerPopup(TagComponent& tagComponent)
+	{
+		Gui::Spacing();
+		Gui::TextCentered("Add Marker", 5.0f);
+		Gui::Separator();
+		Gui::Spacing();
+
+		std::string buffer;
+		std::string& marker = tagComponent.Marker;
+		size_t markerSize = marker.size();
+
+		if (marker.empty())
+		{
+			buffer.reserve(10);
+		}
+		else
+			buffer.resize(markerSize);
+			memcpy(buffer.data(), marker.data(), markerSize);
+
+		if (Gui::InputText("##Marker", buffer.data(), sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) && !buffer.empty())
+		{
+			tagComponent.Marker = buffer;
+			tagComponent.AddMarker(buffer);
+			Gui::SetWindowFocus("Scene");
 		}
 	}
 
@@ -540,9 +575,10 @@ namespace Sparky {
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		if (entity.HasComponent<TagComponent>())
+		// Tag Component
 		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto& tagComponent = entity.GetComponent<TagComponent>();
+			auto& tag = tagComponent.Tag;
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
@@ -556,28 +592,83 @@ namespace Sparky {
 			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
 			{
 				tag = std::string(buffer);
-				
+
 				// Set the focus to the scene panel otherwise the keyboard focus will still be on the input text box
 				if (m_EntityShouldBeRenamed)
 					Gui::SetWindowFocus("Scene");
 
 				m_EntityShouldBeRenamed = false;
 			}
-		}
 
-		Gui::SameLine();
-		Gui::PushItemWidth(-1);
+			Gui::SameLine();
+			Gui::PushItemWidth(-1);
 
-		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-		if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
-		{
-			Gui::OpenPopup("AddComponent");
+			if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
+			{
+				Gui::OpenPopup("AddComponent");
 
-			// We should reset the search bar here
-			memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
-			m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+				// We should reset the search bar here
+				memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+				m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+			}
+
+			auto& markers = tagComponent.Markers;
+			if (auto currentMarkerIt = std::find(markers.begin(), markers.end(), tagComponent.Marker);
+				currentMarkerIt != markers.end()
+			) {
+				const char* currentMarker = (*currentMarkerIt).c_str();
+
+				if (Gui::BeginCombo("##Marker", currentMarker))
+				{
+					uint32_t arraySize = markers.size();
+
+					for (uint32_t i = 0; i < arraySize; i++)
+					{
+						bool isSelected = strcmp(currentMarker, markers[i].c_str()) == 0;
+						if (Gui::Selectable(markers[i].c_str(), isSelected))
+						{
+							currentMarker = markers[i].c_str();
+							tagComponent.Marker = markers[i];
+						}
+
+						if (isSelected)
+							Gui::SetItemDefaultFocus();
+
+						if (i != arraySize - 1)
+							Gui::Separator();
+						else // The last marker in the markers vector
+						{
+							Gui::Separator();
+
+							const char* addMarkerButtonText = "Add Marker";
+							if (Gui::Button(addMarkerButtonText, { Gui::GetContentRegionAvail().x, Gui::CalcTextSize(addMarkerButtonText).y * 1.5f }))
+							{
+								m_DisplayAddMarkerPopup = true;
+							}
+
+							if (m_DisplayAddMarkerPopup)
+							{
+								Gui::OpenPopup("AddMarker");
+								m_DisplayAddMarkerPopup = false;
+							}
+							if (Gui::BeginPopup("AddMarker"))
+							{
+								DisplayAddMarkerPopup(tagComponent);
+
+								Gui::EndPopup();
+							}
+						}
+					}
+
+					Gui::EndCombo();
+				}
+			}
+			else
+				for (auto& marker : tagComponent.Markers)
+					SP_CORE_TRACE(marker);
 		}
 
 		if (Gui::BeginPopup("AddComponent"))
@@ -1697,7 +1788,9 @@ namespace Sparky {
 				Gui::EndCombo();
 			}
 
-			Gui::Checkbox("Fixed Rotation", &component.FixedRotation);
+			Gui::DragFloat2("Velocity", Math::ValuePtr(component.Velocity), 0.01f);
+			Gui::DragFloat("Drag", &component.Drag, 0.01f, 0.01f, 1.0f);
+			Gui::Checkbox("Freeze Rotation", &component.FixedRotation);
 		});
 
 		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
@@ -1708,6 +1801,7 @@ namespace Sparky {
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			Gui::Checkbox("Is Tigger", &component.IsTrigger);
 		});
 
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)

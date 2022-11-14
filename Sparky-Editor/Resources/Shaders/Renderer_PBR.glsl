@@ -114,9 +114,7 @@ struct FragmentProperties
 
 struct SceneProperties
 {
-	int ActiveDirectionalLights;
 	int ActivePointLights;
-	int ActiveSpotLights;
 
 	vec3 CameraPosition;
 	float Exposure;

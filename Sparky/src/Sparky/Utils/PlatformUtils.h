@@ -28,6 +28,8 @@ namespace Sparky {
 	{
 	public:
 		static float GetTime();
+		static float GetDeltaTime();
+		static void SetDeltaTime(float delta);
 	};
 
 }

@@ -19,6 +19,7 @@
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
+#include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Core/Log.h"
 
 #include <mono/metadata/object.h>
@@ -1137,6 +1138,16 @@ namespace Sparky {
 
 #pragma region AudioSource Component
 
+	static bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
+	}
+
 	static void AudioSourceComponent_Play(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -1235,6 +1246,66 @@ namespace Sparky {
 		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
+	}
+
+	static void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
+	}
+
+	static float RigidBody2DComponent_GetDrag(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBody2DComponent>().Drag;
+	}
+
+	static void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBody2DComponent>().Drag = drag;
+	}
+
+	static bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
+	}
+
+	static void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
 	}
 
 #pragma endregion
@@ -1668,6 +1739,20 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Time
+
+	static float Time_GetElapsed()
+	{
+		return Time::GetTime();
+	}
+
+	static float Time_GetDeltaTime()
+	{
+		return Time::GetDeltaTime();
+	}
+
+#pragma endregion
+
 #pragma region Input
 
 	static bool Input_IsKeyDown(KeyCode key)
@@ -2064,6 +2149,7 @@ namespace Sparky {
 
 #pragma region Audio Source Component
 
+		SP_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 
@@ -2077,6 +2163,12 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetDrag);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetDrag);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
+		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
 
 #pragma endregion
 
@@ -2170,6 +2262,13 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
 		SP_ADD_INTERNAL_CALL(Vector3_DotProductVec3);
+
+#pragma endregion
+
+#pragma region Time
+
+		SP_ADD_INTERNAL_CALL(Time_GetElapsed);
+		SP_ADD_INTERNAL_CALL(Time_GetDeltaTime);
 
 #pragma endregion
 

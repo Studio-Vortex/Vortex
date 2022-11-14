@@ -128,6 +128,7 @@ namespace Sparky {
 
 			float time = Time::GetTime();
 			TimeStep delta = time - m_LastFrameTime;
+			Time::SetDeltaTime(delta);
 			m_LastFrameTime = time;
 
 			ExecuteMainThreadQueue();

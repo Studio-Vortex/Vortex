@@ -30,6 +30,7 @@ namespace Sparky {
 
 		// Window Attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Properties.EventCallback = callback; }
+		void SetTitle(const std::string& title) override;
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 

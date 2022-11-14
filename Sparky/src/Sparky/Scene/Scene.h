@@ -20,7 +20,7 @@ namespace Sparky {
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
 
 		Entity CreateEntity(const std::string& name = std::string());
-		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool isEntityInstance = false);
 
 		void OnRuntimeStart();

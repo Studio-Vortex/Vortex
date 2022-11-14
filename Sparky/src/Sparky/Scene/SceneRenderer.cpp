@@ -63,8 +63,8 @@ namespace Sparky {
 
 					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
 					
-					if (!particleEmitter->IsActive())
-						continue;
+					/*if (!particleEmitter->IsActive())
+						continue;*/
 
 					const auto& particles = particleEmitter->GetParticles();
 

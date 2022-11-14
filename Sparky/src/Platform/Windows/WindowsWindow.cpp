@@ -252,7 +252,13 @@ namespace Sparky {
 		}
 	}
 
-	void WindowsWindow::SetVSync(bool enabled)
+    void WindowsWindow::SetTitle(const std::string& title)
+    {
+		m_Properties.Title = title;
+		glfwSetWindowTitle(m_Window, title.c_str());
+    }
+
+    void WindowsWindow::SetVSync(bool enabled)
 	{
 		SP_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);

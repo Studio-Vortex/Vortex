@@ -46,7 +46,7 @@ namespace Sparky {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		inline static bool s_ShowPanel = true;
+		inline static bool s_ShowPanel = false;
 
 	private:
 		Settings m_Settings;

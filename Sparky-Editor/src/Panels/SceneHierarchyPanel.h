@@ -30,8 +30,12 @@ namespace Sparky {
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
 
 	private:
+		void DisplayInsectorPanel(Entity hoveredEntity);
+
 		template <typename TComponent>
 		void DisplayAddComponentPopup(const std::string& name, bool lastComponent = false, bool allowMultiple = false);
+
+		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
@@ -48,6 +52,7 @@ namespace Sparky {
 		ImGuiTextFilter m_EntityClassNameInputTextFilter;
 		bool m_EntityShouldBeRenamed = false;
 		bool m_EntityShouldBeDestroyed = false;
+		bool m_DisplayAddMarkerPopup = false;
 	};
 
 	template <typename TComponent>

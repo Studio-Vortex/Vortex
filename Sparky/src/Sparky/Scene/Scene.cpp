@@ -97,13 +97,14 @@ namespace Sparky {
 		return CreateEntityWithUUID(UUID(), name);
 	}
 
-	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name, const std::string& marker)
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
+		tag.Marker = marker.empty() ? "UnTagged" : marker;
 
 		// Store the entity's UUID and the entt handle in our Entity map
 		// entity here will be implicitly converted to an entt handle
@@ -398,9 +399,10 @@ namespace Sparky {
 			// Set the starting particle position to the entity's translation
 			particleEmitter->GetProperties().Position = entity.GetTransform().Translation;
 
+			particleEmitter->OnUpdate(delta);
+
 			if (particleEmitter->IsActive())
 			{
-				particleEmitter->OnUpdate(delta);
 				particleEmitter->EmitParticle();
 			}
 		}

@@ -35,6 +35,8 @@ namespace Sparky {
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
 
+		void CreateStartingEntities();
+
 		void CreateNewScene();
 		void OpenExistingScene();
 		void OpenScene(const std::filesystem::path& path);

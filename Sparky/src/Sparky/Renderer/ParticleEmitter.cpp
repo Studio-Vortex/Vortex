@@ -20,9 +20,6 @@ namespace Sparky {
 	void ParticleEmitter::Stop()
 	{
 		m_IsActive = false;
-
-		for (auto& particle : m_ParticlePool)
-			EmitParticle();
 	}
 
 	void ParticleEmitter::OnUpdate(TimeStep delta)

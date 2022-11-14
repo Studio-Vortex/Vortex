@@ -177,29 +177,24 @@ void main()
 
 	vec3 lightColor = vec3(0.0);
 
-	// Phase 1: Directional lighting
 	int activeDirectionalLights = u_SceneProperties.ActiveDirectionalLights;
+	int activePointLights = u_SceneProperties.ActivePointLights;
+	int activeSpotLights = u_SceneProperties.ActiveSpotLights;
+
+	// Phase 1: Directional lighting
 	if (activeDirectionalLights > 0)
-	{
 		for (int i = 0; i < activeDirectionalLights; i++)
 			lightColor += CalculateDirectionalLight(u_DirectionalLights[i], u_Material, properties);
-	}
 
 	// Phase 2: Point lights
-	int activePointLights = u_SceneProperties.ActivePointLights;
 	if (activePointLights > 0)
-	{
 		for (int i = 0; i < activePointLights; i++)
 			lightColor += CalculatePointLight(u_PointLights[i], u_Material, properties);
-	}
 
 	// Phase 3: Spot light
-	int activeSpotLights = u_SceneProperties.ActiveSpotLights;
 	if (activeSpotLights > 0)
-	{
 		for (int i = 0; i < activeSpotLights; i++)
 			lightColor += CalculateSpotLight(u_SpotLights[i], u_Material, properties);
-	}
 
 	// Apply Gamma Correction and Exposure Tone Mapping
 	float exposure = u_SceneProperties.Exposure;
