@@ -85,6 +85,7 @@ namespace Sparky {
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
+		Math::vec4 m_Physics3DColliderColor = ColorToVec4(Color::Green);
 		Math::vec4 m_Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
 		Math::vec3 m_EditorClearColor = Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
 
@@ -155,7 +156,7 @@ namespace Sparky {
 		};
 
 		SettingsPanel::Settings m_Settings{ 
-			m_Physics2DColliderColor, m_ShowPhysicsColliders, m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes,
+			m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders, m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes,
 			m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
 		};
 		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);

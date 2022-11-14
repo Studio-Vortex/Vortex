@@ -24,7 +24,7 @@ namespace Sparky {
 	
 	void Physics3D::OnPhysicsSimulate(entt::registry& sceneRegistry, Scene* contextScene)
 	{
-		s_PhysicsScene = new q3Scene(1.0f / 120.0f);
+		s_PhysicsScene = new q3Scene(1.0f / 120.0f, { s_PhysicsSceneGravity.x, s_PhysicsSceneGravity.y, s_PhysicsSceneGravity.z }, s_PhysicsSceneIterations);
 
 		auto view = sceneRegistry.view<RigidBodyComponent>();
 
@@ -40,6 +40,9 @@ namespace Sparky {
 
 	void Physics3D::OnPhysicsUpdate(TimeStep delta, entt::registry& sceneRegistry, Scene* contextScene)
 	{
+		s_PhysicsScene->SetGravity({ s_PhysicsSceneGravity.x, s_PhysicsSceneGravity.y, s_PhysicsSceneGravity.z });
+		s_PhysicsScene->SetIterations(s_PhysicsSceneIterations);
+
 		// Physics
 		{
 			// Copies transform from Sparky to Qu3e
@@ -135,5 +138,14 @@ namespace Sparky {
 		}
 	}
 
+	void Physics3D::DestroyPhysicsBody(Entity entity)
+	{
+		// Destroy the physics body if it exists
+
+		q3Body* entityRuntimePhysicsBody = (q3Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
+
+		if (entityRuntimePhysicsBody != nullptr)
+			s_PhysicsScene->RemoveBody(entityRuntimePhysicsBody);
+	}
 
 }

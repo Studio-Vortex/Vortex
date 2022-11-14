@@ -20,10 +20,12 @@ namespace Sparky {
 
 			if (s_Loaded3DShaders.empty())
 			{
-				auto shaders3D = Renderer::GetLoadedShaders();
+				auto shaders3D = Renderer::GetShaderLibrary();
 
-				for (const auto& shader : shaders3D)
-					s_Loaded3DShaders.push_back(shader);
+				auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
+
+				for (it = shaders3D->begin(); it != shaders3D->end(); it++)
+					s_Loaded3DShaders.push_back(it->second);
 			}
 
 			static std::vector<std::string> shaderNames;

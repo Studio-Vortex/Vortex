@@ -1794,7 +1794,7 @@ namespace Sparky {
 						if (field.Type == ScriptFieldType::Float)
 						{
 							float data = scriptInstance->GetFieldValue<float>(name);
-							if (Gui::DragFloat(name.c_str(), &data))
+							if (Gui::DragFloat(name.c_str(), &data, 0.01f))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Double)

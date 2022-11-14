@@ -81,4 +81,9 @@ namespace Sparky {
 		return m_Shaders.find(name) != m_Shaders.end();
 	}
 
+	SharedRef<ShaderLibrary> ShaderLibrary::Create()
+	{
+		return CreateShared<ShaderLibrary>();
+	}
+
 }

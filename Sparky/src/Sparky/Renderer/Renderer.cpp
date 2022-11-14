@@ -20,11 +20,7 @@ namespace Sparky {
 
 	struct RendererInternalData
 	{
-		SharedRef<Shader> BasicLightingShader = nullptr;
-		SharedRef<Shader> PBRShader = nullptr;
-		SharedRef<Shader> SkyboxShader = nullptr;
-		SharedRef<Shader> ReflectiveShader = nullptr;
-		SharedRef<Shader> RefractiveShader = nullptr;
+		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
 
 		SharedRef<Model> SkyboxMesh = nullptr;
 
@@ -57,11 +53,12 @@ namespace Sparky {
 
 		RenderCommand::Init();
 
-		s_Data.BasicLightingShader = Shader::Create(BASIC_LIGHTING_SHADER_PATH);
-		s_Data.PBRShader = Shader::Create(PBR_SHADER_PATH);
-		s_Data.SkyboxShader = Shader::Create(SKYBOX_SHADER_PATH);
-		s_Data.ReflectiveShader = Shader::Create(REFLECTIVE_SHADER_PATH);
-		s_Data.RefractiveShader = Shader::Create(REFRACTIVE_SHADER_PATH);
+		s_Data.ShaderLibrary = ShaderLibrary::Create();
+		s_Data.ShaderLibrary->Load("BasicLighting", BASIC_LIGHTING_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
 
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
 
@@ -113,26 +110,30 @@ namespace Sparky {
 
 		Math::mat4 viewProjection = projection * view;
 
-		s_Data.BasicLightingShader->Enable();
-		s_Data.BasicLightingShader->SetMat4("u_ViewProjection", viewProjection);
-		s_Data.BasicLightingShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
-		s_Data.BasicLightingShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		SharedRef<Shader> basicLightingShader = s_Data.ShaderLibrary->Get("BasicLighting");
+		basicLightingShader->Enable();
+		basicLightingShader->SetMat4("u_ViewProjection", viewProjection);
+		basicLightingShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		basicLightingShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 
-		s_Data.PBRShader->Enable();
-		s_Data.PBRShader->SetMat4("u_ViewProjection", viewProjection);
-		s_Data.PBRShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
-		s_Data.PBRShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+		pbrShader->SetMat4("u_ViewProjection", viewProjection);
+		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 
-		s_Data.ReflectiveShader->Enable();
-		s_Data.ReflectiveShader->SetMat4("u_ViewProjection", viewProjection);
-		s_Data.ReflectiveShader->SetInt("u_Skybox", 0);
-		s_Data.ReflectiveShader->SetFloat3("u_CameraPosition", cameraPosition);
+		SharedRef<Shader> reflectiveShader = s_Data.ShaderLibrary->Get("Reflective");
+		reflectiveShader->Enable();
+		reflectiveShader->SetMat4("u_ViewProjection", viewProjection);
+		reflectiveShader->SetInt("u_Skybox", 0);
+		reflectiveShader->SetFloat3("u_CameraPosition", cameraPosition);
 
-		s_Data.RefractiveShader->Enable();
-		s_Data.RefractiveShader->SetMat4("u_ViewProjection", viewProjection);
-		s_Data.RefractiveShader->SetInt("u_Skybox", 0);
-		s_Data.RefractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
-		s_Data.RefractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
+		SharedRef<Shader> refractiveShader = s_Data.ShaderLibrary->Get("Refractive");
+		refractiveShader->Enable();
+		refractiveShader->SetMat4("u_ViewProjection", viewProjection);
+		refractiveShader->SetInt("u_Skybox", 0);
+		refractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
+		refractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
 
 		s_Data.ActiveDirectionalLights = 0;
 		s_Data.ActivePointLights = 0;
@@ -166,9 +167,9 @@ namespace Sparky {
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
 	{
-
-
 		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+		SharedRef<Shader> basicLightingShader = s_Data.ShaderLibrary->Get("BasicLighting");
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 
 		switch (lightSourceComponent.Type)
 		{
@@ -179,12 +180,12 @@ namespace Sparky {
 				if (i + 1 > RendererInternalData::MaxDirectionalLights)
 					break;
 
- 				s_Data.BasicLightingShader->Enable();
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				basicLightingShader->Enable();
+				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
+				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
 
 				i++;
 
@@ -197,29 +198,29 @@ namespace Sparky {
 				if (i + 1 > s_Data.MaxPointLights)
 					break;
 
- 				s_Data.BasicLightingShader->Enable();
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				basicLightingShader->Enable();
+				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
+				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
 
-				s_Data.BasicLightingShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
-				s_Data.BasicLightingShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
-				s_Data.BasicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
+				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
+				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
+				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
- 				s_Data.PBRShader->Enable();
-				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
-				s_Data.PBRShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				pbrShader->Enable();
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
 
-				s_Data.PBRShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
-				s_Data.PBRShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
-				s_Data.PBRShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
+				pbrShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
+				pbrShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
+				pbrShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
 				i++;
 
@@ -232,21 +233,21 @@ namespace Sparky {
 				if (i + 1 > RendererInternalData::MaxSpotLights)
 					break;
 
- 				s_Data.BasicLightingShader->Enable();
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Color", i).c_str(), lightSource->GetColor());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
-				s_Data.BasicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
-				s_Data.BasicLightingShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				s_Data.BasicLightingShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+				basicLightingShader->Enable();
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Color", i).c_str(), lightSource->GetColor());
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
+				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
 
-				s_Data.BasicLightingShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
-				s_Data.BasicLightingShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
-				s_Data.BasicLightingShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
+				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
+				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
+				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
 
 				i++;
 
@@ -266,19 +267,19 @@ namespace Sparky {
 
 		if (meshRenderer.Reflective)
 		{
-			shader = s_Data.ReflectiveShader;
+			shader = s_Data.ShaderLibrary->Get("Reflective");
 			shader->Enable();
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 		}
 		else if (meshRenderer.Refractive)
 		{
-			shader = s_Data.RefractiveShader;
+			shader = s_Data.ShaderLibrary->Get("Refractive");
 			shader->Enable();
 			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
 		}
 		else
 		{
-			shader = pbr ? s_Data.PBRShader : s_Data.BasicLightingShader;
+			shader = pbr ? s_Data.ShaderLibrary->Get("PBR") : s_Data.ShaderLibrary->Get("BasicLighting");
 			shader->Enable();
 
 			if (!pbr)
@@ -385,10 +386,12 @@ namespace Sparky {
 	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox)
 	{
 		RenderCommand::DisableDepthMask();
-		s_Data.SkyboxShader->Enable();
-		s_Data.SkyboxShader->SetInt("u_EnvironmentMap", 0);
-		s_Data.SkyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
-		s_Data.SkyboxShader->SetMat4("u_Projection", projection);
+
+		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
+		skyboxShader->Enable();
+		skyboxShader->SetInt("u_EnvironmentMap", 0);
+		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
+		skyboxShader->SetMat4("u_Projection", projection);
 
 		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
@@ -468,15 +471,9 @@ namespace Sparky {
 		s_Data.SceneExposure = exposure;
 	}
 
-	std::vector<SharedRef<Shader>> Renderer::GetLoadedShaders()
+	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
-		std::vector<SharedRef<Shader>> shaders;
-		shaders.push_back(s_Data.BasicLightingShader);
-		shaders.push_back(s_Data.PBRShader);
-		shaders.push_back(s_Data.SkyboxShader);
-		shaders.push_back(s_Data.ReflectiveShader);
-		shaders.push_back(s_Data.RefractiveShader);
-		return shaders;
+		return s_Data.ShaderLibrary;
 	}
 
 }

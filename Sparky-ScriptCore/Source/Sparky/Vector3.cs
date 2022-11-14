@@ -50,12 +50,12 @@
 
 		public static Vector3 Cross(Vector3 left, Vector3 right)
 		{
-			InternalCalls.Algebra_CrossProductVec3(ref left, ref right, out Vector3 result);
+			InternalCalls.Vector3_CrossProductVec3(ref left, ref right, out Vector3 result);
 			return result;
 		}
 		public static float Dot(Vector3 left, Vector3 right)
 		{
-			return InternalCalls.Algebra_DotProductVec3(ref left, ref right);
+			return InternalCalls.Vector3_DotProductVec3(ref left, ref right);
 		}
 
 		public static Vector3 operator -(Vector3 vector)

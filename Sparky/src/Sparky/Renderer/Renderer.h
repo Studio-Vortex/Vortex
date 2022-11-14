@@ -57,7 +57,7 @@ namespace Sparky {
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
 
-		static std::vector<SharedRef<Shader>> GetLoadedShaders();
+		static SharedRef<ShaderLibrary> GetShaderLibrary();
 
 	private:
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);

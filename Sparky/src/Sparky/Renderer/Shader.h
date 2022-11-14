@@ -47,6 +47,14 @@ namespace Sparky {
 
 		bool Exists(const std::string& name) const;
 
+		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator begin() { return m_Shaders.begin(); }
+		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator end() { return m_Shaders.end(); }
+
+		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator begin() const { return m_Shaders.begin(); }
+		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator end() const { return m_Shaders.end(); }
+
+		static SharedRef<ShaderLibrary> Create();
+
 	private:
 		std::unordered_map<std::string, SharedRef<Shader>> m_Shaders;
 	};

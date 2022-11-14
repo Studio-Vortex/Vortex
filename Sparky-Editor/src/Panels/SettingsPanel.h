@@ -10,6 +10,7 @@ namespace Sparky {
 		struct Settings
 		{
 			// Physics
+			Math::vec4& Physics3DColliderColor;
 			Math::vec4& Physics2DColliderColor;
 			bool& ShowColliders;
 

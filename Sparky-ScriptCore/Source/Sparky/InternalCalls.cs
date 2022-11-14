@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration.Assemblies;
 using System.Runtime.CompilerServices;
 
 namespace Sparky {
@@ -490,13 +489,44 @@ namespace Sparky {
 
 		#endregion
 
-		#region Algebra
+		#region Mathf
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Algebra_CrossProductVec3(ref Vector3 left, ref Vector3 right, out Vector3 result);
+		internal extern static float Mathf_GetPI();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Algebra_DotProductVec3(ref Vector3 left, ref Vector3 right);
+		internal extern static double Mathf_GetPI_D();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Sin(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Cos(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Tan(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Max(float x, float y);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Min(float x, float y);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Deg2Rad(float degrees);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Rad2Deg(float radians);
+
+		#endregion
+
+		#region Vector3
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Vector3_CrossProductVec3(ref Vector3 left, ref Vector3 right, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Vector3_DotProductVec3(ref Vector3 left, ref Vector3 right);
 
 		#endregion
 

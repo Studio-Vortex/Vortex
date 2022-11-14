@@ -137,11 +137,21 @@ namespace Sparky {
 
 				if (Gui::BeginTabItem("Physics"))
 				{
+					Gui::ColorEdit4("3D Collider Color", Math::ValuePtr(m_Settings.Physics3DColliderColor));
+
+					static Math::vec3 gravity3D = Physics3D::GetPhysicsSceneGravity();
+					if (Gui::DragFloat3("3D Gravity", Math::ValuePtr(gravity3D), 0.1f))
+						Physics3D::SetPhysicsSceneGravitty(gravity3D);
+
+					static int32_t physicsIterations = Physics3D::GetPhysicsSceneIterations();
+					if (Gui::DragInt("3D Iterations", &physicsIterations, 1.0f, 1, 100))
+						Physics3D::SetPhysicsSceneIterations(physicsIterations);
+
 					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
 
-					static Math::vec2 gravity = Physics2D::GetPhysicsWorld2DGravity();
-					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity), 0.1f))
-						Physics2D::SetPhysicsWorld2DGravitty(gravity);
+					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorld2DGravity();
+					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity2D), 0.1f))
+						Physics2D::SetPhysicsWorld2DGravitty(gravity2D);
 
 					static int32_t velocityIterations = Physics2D::GetPhysicsWorld2DVeloctiyIterations();
 					if (Gui::DragInt("2D Velocity Iterations", &velocityIterations, 1.0f, 1, 100))

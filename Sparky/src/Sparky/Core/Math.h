@@ -87,6 +87,18 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Max(T x, T y)
+	{
+		return glm::max(x, y);
+	}
+
+	template <typename T>
+	static auto Min(T x, T y)
+	{
+		return glm::min(x, y);
+	}
+
+	template <typename T>
 	static auto Cos(T v)
 	{
 		return glm::cos(v);

@@ -54,7 +54,7 @@ namespace Sandbox {
 			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
 			IsGrounded = hit.Hit;
 
-			if (hit.Hit && hit.Tag == "Grass Collider")
+			if (IsGrounded && hit.Tag == "Grass Collider")
 			{
 				m_Sprite.Color = new Vector4(0.8f, 0.4f, 0.4f, 1.0f);
 				entity.Destroy(scriptInstance: false);

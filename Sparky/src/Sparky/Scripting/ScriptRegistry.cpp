@@ -1605,14 +1605,63 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Algebra
+#pragma region Mathf
 
-	static void Algebra_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
+	static float Mathf_GetPI()
+	{
+		return Math::PI;
+	}
+
+	static double Mathf_GetPI_D()
+	{
+		return Math::PI_D;
+	}
+
+	static float Mathf_Sin(float in)
+	{
+		return Math::Sin(in);
+	}
+
+	static float Mathf_Cos(float in)
+	{
+		return Math::Cos(in);
+	}
+
+	static float Mathf_Tan(float in)
+	{
+		return Math::Tan(in);
+	}
+
+	static float Mathf_Max(float x, float y)
+	{
+		return Math::Max(x, y);
+	}
+
+	static float Mathf_Min(float x, float y)
+	{
+		return Math::Min(x, y);
+	}
+
+	static float Mathf_Deg2Rad(float degrees)
+	{
+		return Math::Deg2Rad(degrees);
+	}
+
+	static float Mathf_Rad2Deg(float radians)
+	{
+		return Math::Rad2Deg(radians);
+	}
+
+#pragma endregion
+
+#pragma region Vector3
+
+	static void Vector3_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
 	{
 		*outResult = Math::Cross(*left, *right);
 	}
 
-	static float Algebra_DotProductVec3(Math::vec3* left, Math::vec3* right)
+	static float Vector3_DotProductVec3(Math::vec3* left, Math::vec3* right)
 	{
 		return Math::Dot(*left, *right);
 	}
@@ -2103,10 +2152,24 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Algebra
+#pragma region Mathf
 
-		SP_ADD_INTERNAL_CALL(Algebra_CrossProductVec3);
-		SP_ADD_INTERNAL_CALL(Algebra_DotProductVec3);
+		SP_ADD_INTERNAL_CALL(Mathf_GetPI);
+		SP_ADD_INTERNAL_CALL(Mathf_GetPI_D);
+		SP_ADD_INTERNAL_CALL(Mathf_Sin);
+		SP_ADD_INTERNAL_CALL(Mathf_Cos);
+		SP_ADD_INTERNAL_CALL(Mathf_Tan);
+		SP_ADD_INTERNAL_CALL(Mathf_Max);
+		SP_ADD_INTERNAL_CALL(Mathf_Max);
+		SP_ADD_INTERNAL_CALL(Mathf_Deg2Rad);
+		SP_ADD_INTERNAL_CALL(Mathf_Rad2Deg);
+
+#pragma endregion
+
+#pragma region Vector3
+
+		SP_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
+		SP_ADD_INTERNAL_CALL(Vector3_DotProductVec3);
 
 #pragma endregion
 

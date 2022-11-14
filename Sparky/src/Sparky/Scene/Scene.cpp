@@ -118,6 +118,9 @@ namespace Sparky {
 		if (isEntityInstance)
 			ScriptEngine::OnDestroyEntity(entity);
 
+		if (entity.HasComponent<RigidBodyComponent>())
+			Physics3D::DestroyPhysicsBody(entity);
+
 		if (entity.HasComponent<RigidBody2DComponent>())
 			Physics2D::DestroyPhysicsBody(entity);
 
