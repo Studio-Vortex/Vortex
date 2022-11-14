@@ -69,6 +69,8 @@ namespace Sparky {
 
 		float GetAmountComplete();
 
+		static void Copy(const SharedRef<AudioSource>& dstAudioSource, const SharedRef<AudioSource>& srcAudioSource);
+
 		static SharedRef<AudioSource> Create(const std::string& filepath);
 
 	private:

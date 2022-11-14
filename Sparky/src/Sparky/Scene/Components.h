@@ -23,9 +23,10 @@ namespace Sparky {
 
 	struct TagComponent
 	{
-		std::string Tag = "";
-		std::string Marker = "UnTagged";
 		inline static std::vector<std::string> Markers = { "UnTagged", "Start", "Finish", "Player", "MainCamera" };
+
+		std::string Tag = "";
+		std::string Marker = Markers[0];
 
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;

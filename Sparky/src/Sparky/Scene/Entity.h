@@ -60,6 +60,7 @@ namespace Sparky {
 
 		UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
 		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
+		const std::string& GetMarker() { return GetComponent<TagComponent>().Marker; }
 		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
 		inline bool operator==(const Entity& other) const

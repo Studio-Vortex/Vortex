@@ -345,7 +345,7 @@ namespace Sparky {
 	void SceneHierarchyPanel::DisplayAddMarkerPopup(TagComponent& tagComponent)
 	{
 		Gui::Spacing();
-		Gui::TextCentered("Add Marker", 5.0f);
+		Gui::TextCentered("New Marker", 5.0f);
 		Gui::Separator();
 		Gui::Spacing();
 
@@ -667,10 +667,13 @@ namespace Sparky {
 				}
 			}
 			else
-				for (auto& marker : tagComponent.Markers)
-					SP_CORE_TRACE(marker);
+			{
+				// Add to markers vector because it's not a default marker
+				tagComponent.AddMarker(tagComponent.Marker);
+			}
 		}
 
+		Gui::PopItemWidth();
 		if (Gui::BeginPopup("AddComponent"))
 		{
 			// Search Bar + Filtering
@@ -727,7 +730,6 @@ namespace Sparky {
 			Gui::EndPopup();
 		}
 
-		Gui::PopItemWidth();
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{

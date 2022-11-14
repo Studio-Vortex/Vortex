@@ -96,6 +96,19 @@ namespace Sparky {
 		m_Properties.OuterCutoff = outerCutoff;
 	}
 
+	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
+	{
+		dstLightSource->SetAmbient(srcLightSource->GetAmbient());
+		dstLightSource->SetAttenuation(srcLightSource->GetAttenuation());
+		dstLightSource->SetColor(srcLightSource->GetColor());
+		dstLightSource->SetCutOff(srcLightSource->GetCutOff());
+		dstLightSource->SetOuterCutOff(srcLightSource->GetOuterCutOff());
+		dstLightSource->SetDiffuse(srcLightSource->GetDiffuse());
+		dstLightSource->SetDirection(srcLightSource->GetDirection());
+		dstLightSource->SetPosition(srcLightSource->GetPosition());
+		dstLightSource->SetSpecular(srcLightSource->GetSpecular());
+	}
+
     SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)
     {
 		return CreateShared<LightSource>(props);

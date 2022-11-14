@@ -132,6 +132,22 @@ namespace Sparky {
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
 
+	void AudioSource::Copy(const SharedRef<AudioSource>& dstAudioSource, const SharedRef<AudioSource>& srcAudioSource)
+	{
+		const auto& props = srcAudioSource->GetProperties();
+		dstAudioSource->SetCone(props.Cone);
+		dstAudioSource->SetDirection(props.Direction);
+		dstAudioSource->SetDopplerFactor(props.DopplerFactor);
+		dstAudioSource->SetLoop(props.Loop);
+		dstAudioSource->SetMaxDistance(props.MaxDistance);
+		dstAudioSource->SetMinDistance(props.MinDistance);
+		dstAudioSource->SetPitch(props.Pitch);
+		dstAudioSource->SetPosition(props.Position);
+		dstAudioSource->SetSpacialized(props.Spacialized);
+		dstAudioSource->SetVelocity(props.Veloctiy);
+		dstAudioSource->SetVolume(props.Volume);
+	}
+
     SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
     {
         return CreateShared<AudioSource>(filepath);

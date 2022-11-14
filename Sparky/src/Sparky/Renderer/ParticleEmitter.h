@@ -41,6 +41,7 @@ namespace Sparky {
 
 		const ParticleEmitterProperties& GetProperties() const { return m_Properties; }
 		ParticleEmitterProperties& GetProperties() { return m_Properties; }
+		void SetProperties(const ParticleEmitterProperties& props);
 
 		const std::vector<Particle>& GetParticles() const { return m_ParticlePool; }
 
@@ -52,6 +53,8 @@ namespace Sparky {
 		void EmitParticle();
 
 		bool IsActive() const { return m_IsActive; }
+
+		static void Copy(const SharedRef<ParticleEmitter>& dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter);
 
 		static SharedRef<ParticleEmitter> Create(const ParticleEmitterProperties& props);
 

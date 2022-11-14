@@ -73,6 +73,12 @@ namespace Sparky {
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_GetTag(ulong entityID, out string tag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_GetMarker(ulong entityID, out string marker);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddCamera(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -140,9 +146,6 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_CreateWithName(string name);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_GetName(ulong entityID, out string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_FindEntityByName(string name);

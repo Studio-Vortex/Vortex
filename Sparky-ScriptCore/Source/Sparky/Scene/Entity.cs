@@ -6,12 +6,22 @@ namespace Sparky {
 	{
 		public readonly ulong ID;
 		public Transform transform;
+
 		public string Tag
 		{
 			get
 			{
-				InternalCalls.Entity_GetName(ID, out string name);
+				InternalCalls.Entity_GetTag(ID, out string name);
 				return name;
+			}
+		}
+
+		public string Marker
+		{
+			get
+			{
+				InternalCalls.Entity_GetMarker(ID, out string marker);
+				return marker;
 			}
 		}
 

@@ -45,16 +45,49 @@ namespace Sparky {
 		([&]()
 		{
 			if (src.HasComponent<TComponent>())
+			{
 				dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
 
-			// If we copy a script component, we should probably copy all of the script field values as well
-			if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
-			{
-				const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
-				auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+				// Copy Resources
+				{
+					if (typeid(TComponent).name() == typeid(MeshRendererComponent).name())
+					{
+						const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
+						const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
+						Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
+					}
 
-				for (const auto& [name, field] : sourceScriptFieldMap)
-					destinationScriptFieldMap[name] = field;
+					if (typeid(TComponent).name() == typeid(LightSourceComponent).name())
+					{
+						const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
+						const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
+						LightSource::Copy(destinationLightSource, sourceLightSource);
+					}
+
+					if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
+					{
+						const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
+						const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
+						AudioSource::Copy(destinationAudioSource, sourceAudioSource);
+					}
+
+					if (typeid(TComponent).name() == typeid(ParticleEmitterComponent).name())
+					{
+						const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
+						const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
+						ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
+					}
+
+					// If we copy a script component, we should probably copy all of the script field values as well
+					if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
+					{
+						const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
+						auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+
+						for (const auto& [name, field] : sourceScriptFieldMap)
+							destinationScriptFieldMap[name] = field;
+					}
+				}
 			}
 		}(), ...);
 	}
@@ -92,9 +125,9 @@ namespace Sparky {
 		return destination;
 	}
 
-	Entity Scene::CreateEntity(const std::string& name)
+	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
 	{
-		return CreateEntityWithUUID(UUID(), name);
+		return CreateEntityWithUUID(UUID(), name, marker);
 	}
 
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name, const std::string& marker)
@@ -330,7 +363,8 @@ namespace Sparky {
 	Entity Scene::DuplicateEntity(Entity src)
 	{
 		std::string name = src.GetName();
-		Entity dest = CreateEntity(name);
+		std::string marker = src.GetMarker();
+		Entity dest = CreateEntity(name, marker);
 
 		// Copy components (except IDComponent and TagComponent)
 		CopyComponentIfExists(AllComponents{}, dest, src);

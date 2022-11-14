@@ -51,6 +51,8 @@ namespace Sparky {
 		float GetOuterCutOff() const;
 		void SetOuterCutOff(float outerCutoff);
 
+		static void Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource);
+
 		static SharedRef<LightSource> Create(const LightSourceProperties& props);
 
 	private:

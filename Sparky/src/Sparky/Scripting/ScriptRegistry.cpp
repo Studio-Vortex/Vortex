@@ -207,6 +207,30 @@ namespace Sparky {
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
+	static void Entity_GetTag(UUID entityUUID, MonoString* outEntityTag)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const std::string& name = entity.GetName();
+
+		outEntityTag = mono_string_new_wrapper(name.c_str());
+	}
+
+	static void Entity_GetMarker(UUID entityUUID, MonoString* outEntityMarker)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const std::string& marker = entity.GetMarker();
+
+		outEntityMarker = mono_string_new_wrapper(marker.c_str());
+	}
+
 	static void Entity_AddCamera(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -425,18 +449,6 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CircleCollider2DComponent>();
-	}
-	
-	static void Entity_GetName(UUID entityUUID, MonoString* outEntityName)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const std::string& name = entity.GetName();
-
-		outEntityName = mono_string_new_wrapper(name.c_str());
 	}
 
 	static uint64_t Entity_CreateWithName(MonoString* name)
@@ -2037,6 +2049,9 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
 
+		SP_ADD_INTERNAL_CALL(Entity_GetTag);
+		SP_ADD_INTERNAL_CALL(Entity_GetMarker);
+
 		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
 
@@ -2071,7 +2086,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleCollider2D);
 
 		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
-		SP_ADD_INTERNAL_CALL(Entity_GetName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		SP_ADD_INTERNAL_CALL(Entity_Destroy);

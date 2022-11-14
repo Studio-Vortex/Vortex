@@ -69,6 +69,17 @@ namespace Sparky {
 		m_PoolIndex = --m_PoolIndex % m_ParticlePool.size();
 	}
 
+	void ParticleEmitter::Copy(const SharedRef<ParticleEmitter>& dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter)
+	{
+		const auto& props = srcEmitter->GetProperties();
+		dstEmitter->SetProperties(props);
+	}
+
+	void ParticleEmitter::SetProperties(const ParticleEmitterProperties& props)
+	{
+		m_Properties = props;
+	}
+
 	SharedRef<ParticleEmitter> ParticleEmitter::Create(const ParticleEmitterProperties& props)
 	{
 		return CreateShared<ParticleEmitter>(props);

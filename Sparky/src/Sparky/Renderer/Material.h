@@ -75,6 +75,8 @@ namespace Sparky {
 		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
 		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);
 
+		static void Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial);
+
 		static SharedRef<Material> Create(const MaterialProperties& props);
 
 	protected:

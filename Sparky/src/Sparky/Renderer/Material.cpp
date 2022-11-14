@@ -188,6 +188,22 @@ namespace Sparky {
 		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
     }
 
+	void Material::Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial)
+	{
+		dstMaterial->SetAmbient(srcMaterial->GetAmbient());
+		dstMaterial->SetDiffuseMap(srcMaterial->GetDiffuseMap());
+		dstMaterial->SetSpecularMap(srcMaterial->GetSpecularMap());
+		dstMaterial->SetNormalMap(srcMaterial->GetNormalMap());
+		dstMaterial->SetShininess(srcMaterial->GetShininess());
+		dstMaterial->SetAlbedoMap(srcMaterial->GetAlbedoMap());
+		dstMaterial->SetAlbedo(srcMaterial->GetAlbedo());
+		dstMaterial->SetMetallicMap(srcMaterial->GetMetallicMap());
+		dstMaterial->SetMetallic(srcMaterial->GetMetallic());
+		dstMaterial->SetRoughnessMap(srcMaterial->GetRoughnessMap());
+		dstMaterial->SetRoughness(srcMaterial->GetRoughness());
+		dstMaterial->SetAmbientOcclusionMap(srcMaterial->GetAmbientOcclusionMap());
+	}
+
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
 		return CreateShared<Material>(props);

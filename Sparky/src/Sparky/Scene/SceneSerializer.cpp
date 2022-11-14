@@ -604,6 +604,7 @@ namespace Sparky {
 		SP_CORE_TRACE(filepath);
 		SP_CORE_TRACE(extensionPos);
 		std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos + 1, extensionPos);
+		SP_CORE_TRACE(sceneName);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
