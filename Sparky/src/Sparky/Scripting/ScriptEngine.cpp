@@ -211,8 +211,22 @@ namespace Sparky {
 		InitMono();
 		ScriptRegistry::RegisterMethods();
 
-		LoadAssembly("Resources/Scripts/Sparky-ScriptCore.dll");
-		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
+		std::filesystem::path coreAssemblyPath = "Resources/Scripts/Sparky-ScriptCore.dll";
+		bool status = LoadAssembly(coreAssemblyPath);
+		if (!status)
+		{
+			SP_CORE_ERROR("Failed to load Sparky-ScriptCore: path {}", coreAssemblyPath);
+			return;
+		}
+
+		std::filesystem::path appAssemblyPath = "SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
+		status = LoadAppAssembly(appAssemblyPath);
+		if (!status)
+		{
+			SP_CORE_ERROR("Failed to load App Assembly: path {}", appAssemblyPath);
+			return;
+		}
+
 		LoadAssemblyClasses();
 
 		ScriptRegistry::RegisterComponents();
@@ -266,31 +280,37 @@ namespace Sparky {
 		s_Data->RootDomain = nullptr;
 	}
 
-	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
+	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
-		// Create an App Domain
 		char name[20] = "SparkyScriptRuntime";
 		s_Data->AppDomain = mono_domain_create_appdomain(name, nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
-		// Move this
 		s_Data->CoreAssemblyFilepath = filepath;
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
+
+		if (s_Data->CoreAssembly == nullptr)
+			return false;
+
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-		//Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
+
+		return true;
 	}
 
-	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
+	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
-		// Move this
 		s_Data->AppAssemblyFilepath = filepath;
 		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
-		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
-		//Utils::PrintAssemblyTypes(s_Data->AppAssembly);
 
-		// TODO HARDCODED FILEPATH
+		if (s_Data->AppAssembly == nullptr)
+			return false;
+
+		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
+
 		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
+
+		return true;
 	}
 
 	void ScriptEngine::ReloadAssembly()
@@ -360,9 +380,14 @@ namespace Sparky {
 		UUID uuid = entity.GetUUID();
 		auto it = s_Data->EntityInstances.find(uuid);
 
-		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnUpdate(delta);
+		if (it != s_Data->EntityInstances.end())
+		{
+			it->second->InvokeOnUpdate(delta);
+		}
+		else
+		{
+			SP_CORE_ERROR("Failed to find ScriptInstance for Entity: tag {}", entity.GetName());
+		}
 	}
 
 	void ScriptEngine::OnDestroyEntity(Entity entity)
@@ -434,9 +459,16 @@ namespace Sparky {
 	{
 		auto it = s_Data->EntityInstances.find(uuid);
 
-		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Entity was not found in Entity Instance Map!");
-
-		return it->second->GetManagedObject();
+		if (it != s_Data->EntityInstances.end())
+		{
+			return it->second->GetManagedObject();
+		}
+		else
+		{
+			Entity entity = s_Data->ContextScene->GetEntityWithUUID(uuid);
+			SP_CORE_ERROR("Failed to find ScriptInstance for Entity: tag {}", entity.GetName());
+			return nullptr;
+		}
 	}
 
 	std::vector<MonoAssemblyTypeInfo> Sparky::ScriptEngine::GetCoreAssemblyTypeInfo()
