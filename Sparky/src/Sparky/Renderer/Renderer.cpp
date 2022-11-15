@@ -36,6 +36,8 @@ namespace Sparky {
 
 		float SceneExposure = 1.0f;
 
+		bool RenderWithPBROnly = false;
+
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
@@ -263,7 +265,7 @@ namespace Sparky {
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
 		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap(); // TODO Rework this
+		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly; // TODO Rework this
 
 		if (meshRenderer.Reflective)
 		{
@@ -469,6 +471,16 @@ namespace Sparky {
 	void Renderer::SetSceneExposure(float exposure)
 	{
 		s_Data.SceneExposure = exposure;
+	}
+
+	void Renderer::EnablePBR()
+	{
+		s_Data.RenderWithPBROnly = true;
+	}
+
+	void Renderer::DisablePBR()
+	{
+		s_Data.RenderWithPBROnly = false;
 	}
 
 	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()

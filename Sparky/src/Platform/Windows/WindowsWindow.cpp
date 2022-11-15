@@ -252,13 +252,13 @@ namespace Sparky {
 		}
 	}
 
-    void WindowsWindow::SetTitle(const std::string& title)
-    {
+	void WindowsWindow::SetTitle(const std::string& title)
+	{
 		m_Properties.Title = title;
 		glfwSetWindowTitle(m_Window, title.c_str());
-    }
+	}
 
-    void WindowsWindow::SetVSync(bool enabled)
+	void WindowsWindow::SetVSync(bool enabled)
 	{
 		SP_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);
@@ -268,6 +268,17 @@ namespace Sparky {
 	bool WindowsWindow::IsVSync() const
 	{
 		return m_Properties.VSync;
+	}
+
+	void WindowsWindow::CenterWindow() const
+	{
+		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+
+		int posX = (videoMode->width  >> 1) - ((int)m_Properties.Size.x >> 1);
+		int posY = (videoMode->height >> 1) - ((int)m_Properties.Size.y >> 1);
+
+		glfwSetWindowPos(m_Window, posX, posY);
 	}
 
 	void WindowsWindow::SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const

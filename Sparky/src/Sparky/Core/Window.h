@@ -42,6 +42,8 @@ namespace Sparky {
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
 
+		virtual void CenterWindow() const = 0;
+
 		virtual void* GetNativeWindowHandle() const = 0;
 
 		virtual void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const = 0;

@@ -34,6 +34,8 @@ namespace Sparky {
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
+		void CenterWindow() const override;
+
 		inline void* GetNativeWindowHandle() const override { return m_Window; }
 
 		void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const override;

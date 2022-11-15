@@ -37,6 +37,9 @@ namespace Sparky {
 		m_Window = Window::Create(windowProps);
 		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
+		if (!m_Properties.MaximizeWindow)
+			m_Window->CenterWindow();
+
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
 		RenderCommand::SetCullMode(m_Properties.CullMode);
 

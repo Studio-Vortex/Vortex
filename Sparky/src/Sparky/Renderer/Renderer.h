@@ -57,6 +57,9 @@ namespace Sparky {
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
 
+		static void EnablePBR();
+		static void DisablePBR();
+
 		static SharedRef<ShaderLibrary> GetShaderLibrary();
 
 	private:

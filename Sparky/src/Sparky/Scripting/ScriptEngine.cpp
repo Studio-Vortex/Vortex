@@ -471,7 +471,7 @@ namespace Sparky {
 		}
 	}
 
-	std::vector<MonoAssemblyTypeInfo> Sparky::ScriptEngine::GetCoreAssemblyTypeInfo()
+	std::vector<MonoAssemblyTypeInfo> ScriptEngine::GetCoreAssemblyTypeInfo()
 	{
 		return Utils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
