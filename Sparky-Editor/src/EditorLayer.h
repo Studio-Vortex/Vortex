@@ -3,6 +3,7 @@
 #include <Sparky.h>
 #include <Sparky/Renderer/EditorCamera.h>
 
+#include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
@@ -10,7 +11,6 @@
 #include "Panels/AssetManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
-#include "Panels/SettingsPanel.h"
 #include "Panels/ConsolePanel.h"
 #include "Panels/AboutPanel.h"
 
@@ -36,6 +36,11 @@ namespace Sparky {
 		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
 
 		void CreateStartingEntities();
+
+		void CreateNewProject();
+		void OpenExistingProject();
+		void OpenProject(const std::filesystem::path& path);
+		void SaveProject();
 
 		void CreateNewScene();
 		void OpenExistingScene();
@@ -75,10 +80,11 @@ namespace Sparky {
 
 	private:
 		EditorCamera m_EditorCamera;
-		SharedRef<Framebuffer> m_Framebuffer;
+		SharedRef<Framebuffer> m_Framebuffer = nullptr;
 
-		SharedRef<Scene> m_ActiveScene;
-		SharedRef<Scene> m_EditorScene;
+		SharedRef<Scene> m_ActiveScene = nullptr;
+		SharedRef<Scene> m_EditorScene = nullptr;
+		SharedRef<Project> m_ActiveProject = nullptr;
 		
 		std::filesystem::path m_EditorScenePath;
 
@@ -89,7 +95,7 @@ namespace Sparky {
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 		Math::vec4 m_Physics3DColliderColor = ColorToVec4(Color::Green);
 		Math::vec4 m_Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
-		Math::vec3 m_EditorClearColor = Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
+		Math::vec3 m_RendererClearColor = Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
 
 		float m_EditorCameraFOV = 45.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
@@ -115,16 +121,16 @@ namespace Sparky {
 		
 		// Editor resources
 
-		SharedRef<Texture2D> m_PlayIcon;
-		SharedRef<Texture2D> m_PauseIcon;
-		SharedRef<Texture2D> m_StopIcon;
-		SharedRef<Texture2D> m_SimulateIcon;
-		SharedRef<Texture2D> m_StepIcon;
-		SharedRef<Texture2D> m_LocalModeIcon;
-		SharedRef<Texture2D> m_WorldModeIcon;
-		SharedRef<Texture2D> m_TranslateToolIcon;
-		SharedRef<Texture2D> m_RotateToolIcon;
-		SharedRef<Texture2D> m_ScaleToolIcon;
+		SharedRef<Texture2D> m_PlayIcon = nullptr;
+		SharedRef<Texture2D> m_PauseIcon = nullptr;
+		SharedRef<Texture2D> m_StopIcon = nullptr;
+		SharedRef<Texture2D> m_SimulateIcon = nullptr;
+		SharedRef<Texture2D> m_StepIcon = nullptr;
+		SharedRef<Texture2D> m_LocalModeIcon = nullptr;
+		SharedRef<Texture2D> m_WorldModeIcon = nullptr;
+		SharedRef<Texture2D> m_TranslateToolIcon = nullptr;
+		SharedRef<Texture2D> m_RotateToolIcon = nullptr;
+		SharedRef<Texture2D> m_ScaleToolIcon = nullptr;
 
 		uint32_t m_TranslationMode = 0; // Local mode
 
@@ -132,6 +138,7 @@ namespace Sparky {
 
 		// Panels
 
+		ProjectSettingsPanel m_ProjectSettingsPanel;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 		ScriptRegistryPanel m_ScriptRegistryPanel;
@@ -153,15 +160,15 @@ namespace Sparky {
 		bool m_DrawGizmoGrid = false;
 		float m_GizmoGridSize = 1.0f;
 
-		SettingsPanel::Settings::GizmoSettings m_GizmoSettings{
-			m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize
-		};
 
-		SettingsPanel::Settings m_Settings{ 
-			m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders, m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes,
-			m_EditorCameraFOV, m_EditorClearColor, m_GizmoSettings, m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime)
+		ProjectProperties m_Settings{
+			ProjectProperties::ScriptingProperties{ "Assets", "", false },
+			ProjectProperties::RendererProperties{ m_RendererClearColor },
+			ProjectProperties::PhysicsProperties{ m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders },
+			ProjectProperties::EditorProperties{ m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes, m_EditorCameraFOV },
+			ProjectProperties::GizmoProperties{ m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize },
+			ProjectProperties::BuildProperties{ m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime) }
 		};
-		SettingsPanel m_SettingsPanel = SettingsPanel(m_Settings);
 
 		SceneState m_SceneState = SceneState::Edit;
 	};

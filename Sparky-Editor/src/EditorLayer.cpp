@@ -1,12 +1,13 @@
 #include "EditorLayer.h"
 
-#include <Sparky/Scene/Components.h>
 #include <Sparky/Scene/SceneSerializer.h>
+#include <Sparky/Project/ProjectSerializer.h>
 #include <Sparky/Renderer/RenderCommand.h>
-#include <Sparky/Utils/PlatformUtils.h>
 #include <Sparky/Scripting/ScriptEngine.h>
 #include <Sparky/Scripting/ScriptRegistry.h>
 #include <Sparky/Audio/AudioEngine.h>
+#include <Sparky/Utils/PlatformUtils.h>
+#include <Sparky/Scene/Components.h>
 
 #include <ImGuizmo.h>
 
@@ -43,7 +44,7 @@ namespace Sparky {
 		m_RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
 		m_ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
 
-		m_EditorScene = CreateShared<Scene>();
+		m_EditorScene = Scene::Create();
 		m_ActiveScene = m_EditorScene;
 
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
@@ -58,7 +59,7 @@ namespace Sparky {
 			CreateNewScene(); // Start the editor off with a fresh scene
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
-		RenderCommand::SetClearColor(m_EditorClearColor);
+		RenderCommand::SetClearColor(m_RendererClearColor);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -397,7 +398,7 @@ namespace Sparky {
 				Gui::Separator();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				Gui::Separator();
-				Gui::MenuItem("Settings", nullptr, &m_SettingsPanel.IsOpen());
+				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel.IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -415,13 +416,13 @@ namespace Sparky {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
+			m_ProjectSettingsPanel.OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialViewerPanel.OnGuiRender();
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
-			m_SettingsPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
 			m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 			m_AboutPanel.OnGuiRender();
@@ -1148,12 +1149,58 @@ namespace Sparky {
 		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);
 	}
 
+	void EditorLayer::CreateNewProject()
+	{
+
+	}
+
+	void EditorLayer::OpenExistingProject()
+	{
+		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
+
+		if (!filepath.empty())
+			OpenProject(filepath);
+	}
+
+	void EditorLayer::OpenProject(const std::filesystem::path& path)
+	{
+		if (m_SceneState != SceneState::Edit)
+			OnSceneStop();
+
+		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
+
+		if (path.extension().string() != ".sproject")
+		{
+			SP_WARN("Could not load {} - not a project file", path.filename().string());
+			return;
+		}
+
+		SharedRef<Project> newProject = Project::Create(ProjectProperties());
+		ProjectSerializer serializer(newProject);
+
+		std::string name = std::format("{} Project Load Time", path.filename().string());
+		InstrumentationTimer timer(name.c_str());
+
+		if (serializer.Deserialize(path.string()))
+		{
+			m_ActiveProject = newProject;
+
+			m_SceneHierarchyPanel.SetContext(m_EditorScene);
+			m_ProjectSettingsPanel.SetContext(m_ActiveProject);
+		}
+	}
+
+	void EditorLayer::SaveProject()
+	{
+
+	}
+
 	void EditorLayer::CreateNewScene()
 	{
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		m_ActiveScene = CreateShared<Scene>();
+		m_ActiveScene = Scene::Create();
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
@@ -1187,7 +1234,7 @@ namespace Sparky {
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		std::string name = std::format("{} Load Time", path.filename().string());
+		std::string name = std::format("{} Scene Load Time", path.filename().string());
 		InstrumentationTimer timer(name.c_str());
 
 		if (serializer.Deserialize(path.string()))

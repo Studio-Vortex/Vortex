@@ -27,6 +27,9 @@ namespace Gui = ImGui;
 #include "Sparky/Physics/Physics3D.h"
 #include "Sparky/Physics/Physics2D.h"
 
+/// Project
+#include "Sparky/Project/Project.h"
+
 /// Scene
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Scene/Entity.h"

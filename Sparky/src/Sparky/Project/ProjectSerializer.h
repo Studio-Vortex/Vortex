@@ -1,15 +1,15 @@
-#pragma once
-
-#include "Sparky/Scene/Scene.h"
 #include "Sparky/Core/Base.h"
+#include "Sparky/Project/Project.h"
+
+#include <string>
 
 namespace Sparky {
 
-	class SceneSerializer
+	class ProjectSerializer
 	{
 	public:
-		SceneSerializer(const SharedRef<Scene>& scene);
-		
+		ProjectSerializer(const SharedRef<Project>& project);
+
 		void Serialize(const std::string& filepath);
 		void SerializeRuntime(const std::string& filepath);
 
@@ -17,7 +17,7 @@ namespace Sparky {
 		bool DeserializeRuntime(const std::string& filepath);
 
 	private:
-		SharedRef<Scene> m_Scene = nullptr;
+		SharedRef<Project> m_Project = nullptr;
 	};
 
 }

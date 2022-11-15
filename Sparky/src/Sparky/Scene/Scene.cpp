@@ -546,4 +546,8 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
+	SharedRef<Scene> Scene::Create()
+	{
+		return CreateShared<Scene>();
+	}
 }

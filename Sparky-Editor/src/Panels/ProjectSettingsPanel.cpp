@@ -1,8 +1,13 @@
-#include "SettingsPanel.h"
+#include "ProjectSettingsPanel.h"
 
 namespace Sparky {
+	
+	void ProjectSettingsPanel::SetContext(const SharedRef<Project>& project)
+	{
+		m_Properties = project->GetProperties();
+	}
 
-	void SettingsPanel::OnGuiRender(bool showDefault)
+	void ProjectSettingsPanel::OnGuiRender(bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -10,14 +15,14 @@ namespace Sparky {
 
 		if (s_ShowPanel || showDefault)
 		{
-			Gui::Begin("Settings", &s_ShowPanel);
+			Gui::Begin("Project Settings", &s_ShowPanel);
 
 			if (Gui::BeginTabBar("##Tabs"))
 			{
 				if (Gui::BeginTabItem("Renderer"))
 				{
-					if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Settings.ClearColor)))
-						RenderCommand::SetClearColor(m_Settings.ClearColor);
+					if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Properties.RendererProps.ClearColor)))
+						RenderCommand::SetClearColor(m_Properties.RendererProps.ClearColor);
 					
 					float lineWidth = Renderer2D::GetLineWidth();
 					if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
@@ -137,7 +142,7 @@ namespace Sparky {
 
 				if (Gui::BeginTabItem("Physics"))
 				{
-					Gui::ColorEdit4("3D Collider Color", Math::ValuePtr(m_Settings.Physics3DColliderColor));
+					Gui::ColorEdit4("3D Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
 
 					static Math::vec3 gravity3D = Physics3D::GetPhysicsSceneGravity();
 					if (Gui::DragFloat3("3D Gravity", Math::ValuePtr(gravity3D), 0.1f))
@@ -147,7 +152,7 @@ namespace Sparky {
 					if (Gui::DragInt("3D Iterations", &physicsIterations, 1.0f, 1, 100))
 						Physics3D::SetPhysicsSceneIterations(physicsIterations);
 
-					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Settings.Physics2DColliderColor));
+					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
 
 					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorld2DGravity();
 					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity2D), 0.1f))
@@ -161,7 +166,7 @@ namespace Sparky {
 					Gui::DragInt("2D Position Iterations", &positionIterations, 1.0f, 1, 100);
 					Physics2D::SetPhysicsWorld2DPositionIterations(positionIterations);
 
-					Gui::Checkbox("Show Physics Colliders", &m_Settings.ShowColliders);
+					Gui::Checkbox("Show Physics Colliders", &m_Properties.PhysicsProps.ShowColliders);
 
 					Gui::EndTabItem();
 				}
@@ -232,9 +237,9 @@ namespace Sparky {
 						Gui::EndCombo();
 					}
 
-					Gui::DragScalar("Frame Step Count", ImGuiDataType_U32, &m_Settings.FrameStepCount);
-					Gui::Checkbox("Draw Editor Grid", &m_Settings.DrawEditorGrid);
-					Gui::Checkbox("Draw Editor Axes", &m_Settings.DrawEditorAxes);
+					Gui::DragScalar("Frame Step Count", ImGuiDataType_U32, &m_Properties.EditorProps.FrameStepCount);
+					Gui::Checkbox("Draw Editor Grid", &m_Properties.EditorProps.DrawEditorGrid);
+					Gui::Checkbox("Draw Editor Axes", &m_Properties.EditorProps.DrawEditorAxes);
 
 					Gui::Spacing();
 
@@ -249,7 +254,7 @@ namespace Sparky {
 					if (Gui::DragFloat3("Move Speed", Math::ValuePtr(moveSpeed), 0.01f, 0.01f, 1.0f, "%.2f"))
 						EditorCamera::SetMoveSpeed(moveSpeed);
 
-					Gui::DragFloat("Camera FOV", &m_Settings.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
+					Gui::DragFloat("Camera FOV", &m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
 					static bool lockEditorCameraRotation = false;
 					if (Gui::Checkbox("Lock Camera Rotation", &lockEditorCameraRotation))
@@ -265,14 +270,14 @@ namespace Sparky {
 					Gui::Spacing();
 
 					// Minimums don't work here for some reason
-					Gui::Checkbox("Enabled", &m_Settings.Gizmos.Enabled);
-					Gui::Checkbox("Orthographic Gizmos", &m_Settings.Gizmos.IsOrthographic);
-					Gui::Checkbox("Snap", &m_Settings.Gizmos.SnapEnabled);
-					Gui::DragFloat("Snap Value", &m_Settings.Gizmos.SnapValue, 0.05f, 0.05f, 0.0f, "%.2f");
-					Gui::DragFloat("Rotation Snap Value", &m_Settings.Gizmos.RotationSnapValue, 1.0f, 1.0f, 0.0f, "%.2f");
-					Gui::Checkbox("Draw Grid", &m_Settings.Gizmos.DrawGrid);
-					if (m_Settings.Gizmos.DrawGrid)
-						Gui::DragFloat("Grid Size", &m_Settings.Gizmos.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
+					Gui::Checkbox("Enabled", &m_Properties.GizmoProps.Enabled);
+					Gui::Checkbox("Orthographic Gizmos", &m_Properties.GizmoProps.IsOrthographic);
+					Gui::Checkbox("Snap", &m_Properties.GizmoProps.SnapEnabled);
+					Gui::DragFloat("Snap Value", &m_Properties.GizmoProps.SnapValue, 0.05f, 0.05f, 0.0f, "%.2f");
+					Gui::DragFloat("Rotation Snap Value", &m_Properties.GizmoProps.RotationSnapValue, 1.0f, 1.0f, 0.0f, "%.2f");
+					Gui::Checkbox("Draw Grid", &m_Properties.GizmoProps.DrawGrid);
+					if (m_Properties.GizmoProps.DrawGrid)
+						Gui::DragFloat("Grid Size", &m_Properties.GizmoProps.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
 
 					Gui::EndTabItem();
 				}
@@ -280,11 +285,11 @@ namespace Sparky {
 				if (Gui::BeginTabItem("Build"))
 				{
 					char buffer[256];
-					strcpy(buffer, m_Settings.CurrentEditorScenePath.string().c_str());
+					strcpy(buffer, m_Properties.BuildProps.CurrentEditorScenePath.string().c_str());
 					Gui::InputText("Active Scene", buffer, 256, ImGuiInputTextFlags_ReadOnly);
 
 					if (Gui::Button("Build and Run"))
-						m_Settings.LaunchRuntimeCallback();
+						m_Properties.BuildProps.LaunchRuntimeCallback();
 
 					Gui::EndTabItem();
 				}

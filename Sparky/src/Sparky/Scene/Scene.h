@@ -59,6 +59,8 @@ namespace Sparky {
 			return m_Registry.view<TComponent...>();
 		}
 
+		static SharedRef<Scene> Create();
+
 	private:
 		template <typename T>
 		void OnComponentAdded(Entity entity, T& component);
