@@ -245,7 +245,7 @@ public class Untitled : Entity
 
 				if (Gui::MenuItem("Open in File Explorer"))
 				{
-					FileSystem::OpenDirectory(m_CurrentDirectory.string().c_str());
+					FileSystem::OpenFileExplorer(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();

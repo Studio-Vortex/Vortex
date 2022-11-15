@@ -2,6 +2,7 @@
 #include "ScriptEngine.h"
 
 #include "Sparky/Core/Application.h"
+#include "Sparky/Core/Buffer.h"
 #include "Sparky/Scene/Entity.h"
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Audio/AudioSource.h"
@@ -45,43 +46,19 @@ namespace Sparky {
 
 	namespace Utils {
 
-		// TODO: Move to FileSystem class
-		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize)
-		{
-			std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-			if (!stream)
-			{
-				// Failed to open the file
-				return nullptr;
-			}
-
-			std::streampos end = stream.tellg();
-			stream.seekg(0, std::ios::beg);
-			uint64_t size = end - stream.tellg();
-
-			if (size == 0)
-			{
-				// File is empty
-				return nullptr;
-			}
-
-			char* buffer = new char[size];
-			stream.read((char*)buffer, size);
-			stream.close();
-
-			*outSize = (uint32_t)size;
-			return buffer;
-		}
-
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false)
 		{
-			uint32_t fileSize = 0;
-			char* fileData = ReadBytes(filepath, &fileSize);
+			UniqueBuffer fileData = FileSystem::ReadBytes(filepath);
+
+			if (!fileData)
+			{
+
+				return nullptr;
+			}
 
 			// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
 			MonoImageOpenStatus status;
-			MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+			MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
 
 			if (status != MONO_IMAGE_OK)
 			{
@@ -98,23 +75,17 @@ namespace Sparky {
 
 				if (std::filesystem::exists(pdbPath))
 				{
-					uint32_t pdbFileSize = 0;
-					char* pdbFileData = ReadBytes(pdbPath, &pdbFileSize);
+					UniqueBuffer pdbFileData = FileSystem::ReadBytes(pdbPath);
 
-					mono_debug_open_image_from_memory(image, (const mono_byte*)pdbFileData, (int)pdbFileSize);
+					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
 
 					SP_CORE_INFO("PDB Loaded: {}", pdbPath);
-
-					delete[] pdbFileData;
 				}
 			}
 
 			std::string pathString = filepath.string();
 			MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
 			mono_image_close(image);
-
-			// Don't forget to free the file data
-			delete[] fileData;
 
 			return assembly;
 		}

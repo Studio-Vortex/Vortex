@@ -1156,7 +1156,7 @@ namespace Sparky {
 
 	void EditorLayer::OpenExistingProject()
 	{
-		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
+		std::string filepath = FileSystem::OpenFileDialog("Sparky Scene (*.sparky)\0*.sparky\0");
 
 		if (!filepath.empty())
 			OpenProject(filepath);
@@ -1211,7 +1211,7 @@ namespace Sparky {
 
 	void EditorLayer::OpenExistingScene()
 	{
-		std::string filepath = FileSystem::OpenFile("Sparky Scene (*.sparky)\0*.sparky\0");
+		std::string filepath = FileSystem::OpenFileDialog("Sparky Scene (*.sparky)\0*.sparky\0");
 
 		if (!filepath.empty())
 			OpenScene(filepath);
@@ -1249,7 +1249,7 @@ namespace Sparky {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileSystem::SaveFile("Sparky Scene (*.sparky)\0*.sparky\0");
+		std::string filepath = FileSystem::SaveFileDialog("Sparky Scene (*.sparky)\0*.sparky\0");
 
 		if (!filepath.empty())
 		{

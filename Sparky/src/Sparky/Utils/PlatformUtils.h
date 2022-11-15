@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Sparky/Core/Buffer.h"
+
 #include <string>
 #include <random>
 
@@ -8,9 +10,10 @@ namespace Sparky {
 	class FileSystem
 	{
 	public:
-		static std::string OpenFile(const char* fileFilter);
-		static std::string SaveFile(const char* fileFilter);
-		static void OpenDirectory(const char* directoryName);
+		static std::string OpenFileDialog(const char* fileFilter);
+		static std::string SaveFileDialog(const char* fileFilter);
+		static void OpenFileExplorer(const char* directoryName);
+		static Buffer ReadBytes(const std::filesystem::path& filepath);
 		static void LaunchApplication(const char* binaryPath, const char* args);
 	};
 

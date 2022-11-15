@@ -12,7 +12,7 @@
 
 namespace Sparky {
 
-	std::string FileSystem::OpenFile(const char* fileFilter)
+	std::string FileSystem::OpenFileDialog(const char* fileFilter)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
@@ -32,7 +32,7 @@ namespace Sparky {
 		return std::string();
 	}
 	
-	std::string FileSystem::SaveFile(const char* fileFilter)
+	std::string FileSystem::SaveFileDialog(const char* fileFilter)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
@@ -52,9 +52,36 @@ namespace Sparky {
 		return std::string();
 	}
 
-	void FileSystem::OpenDirectory(const char* directoryName)
+	void FileSystem::OpenFileExplorer(const char* directoryName)
 	{
 		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
+	}
+
+	Buffer FileSystem::ReadBytes(const std::filesystem::path& filepath)
+	{
+		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
+
+		if (!stream)
+		{
+			// Failed to open the file
+			return Buffer();
+		}
+
+		std::streampos end = stream.tellg();
+		stream.seekg(0, std::ios::beg);
+		uint64_t size = end - stream.tellg();
+
+		if (size == 0)
+		{
+			// File is empty
+			return Buffer();
+		}
+
+		Buffer result(size);
+		stream.read(result.As<char>(), result.Size);
+		stream.close();
+
+		return result;
 	}
 
 	void FileSystem::LaunchApplication(const char* binaryPath, const char* args)
