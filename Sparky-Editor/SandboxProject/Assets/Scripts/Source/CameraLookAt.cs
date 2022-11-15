@@ -8,13 +8,13 @@ namespace Sandbox {
 		Camera m_Camera;
 		AudioSource m_Sound;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Camera = GetComponent<Camera>();
 			m_Sound = GetComponent<AudioSource>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (Input.IsGamepadButtonDown(Gamepad.LeftBumper))
 				m_Sound.Play();

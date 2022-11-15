@@ -1,4 +1,5 @@
 ﻿using Sparky;
+using System;
 
 namespace Sandbox {
 
@@ -11,14 +12,14 @@ namespace Sandbox {
 		private AudioSource audioSource;
 		private ParticleEmitter particleEmitter;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			rigidbody = GetComponent<RigidBody2D>();
 			audioSource = GetComponent<AudioSource>();
 			particleEmitter = GetComponent<ParticleEmitter>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			ProcessThrust();
 			ProcessRotation();
@@ -27,6 +28,8 @@ namespace Sandbox {
 			{
 				Application.Shutdown();
 			}
+
+			ProcessHit();
 		}
 
 		void ProcessThrust()
@@ -62,6 +65,40 @@ namespace Sandbox {
 			rigidbody.FreezeRotation = true; // freezing rotation so we can manually rotate
 			transform.Rotate(Vector3.Forward * rotation * Time.DeltaTime);
 			rigidbody.FreezeRotation = false; // unfreeze so physics system can take over
+		}
+
+		void ProcessHit()
+		{
+			Vector2 pos = transform.Translation.XY;
+			Vector2 groundPoint = pos;
+			groundPoint.Y -= transform.Scale.Y / 1.9f;
+			Entity entity = Physics2D.Raycast(pos, groundPoint, out RayCastHit2D downHit, true);
+
+			if (downHit.Hit)
+				ProcessEntity(entity);
+		}
+
+		void ProcessEntity(Entity entity)
+		{
+			switch (entity.Marker)
+			{
+				case "Start":
+					
+					break;
+				case "Finish":
+					// TODO: Load next level here
+					break;
+				case "Obstacle":
+				default:
+					ReloadLevel();
+					break;
+			}
+		}
+
+		void ReloadLevel()
+		{
+			SceneManager.LoadScene("Boost_01");
+			
 		}
 	}
 

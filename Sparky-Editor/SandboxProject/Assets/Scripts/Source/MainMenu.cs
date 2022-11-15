@@ -9,14 +9,14 @@ namespace Sandbox {
 		public float ControllerDeadzone = 0.15f;
 		public Vector3 Velocity;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			// Called once before the first frame
 
 			GetComponent<AudioSource>().Play();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			// Called once every frame
 
@@ -38,7 +38,7 @@ namespace Sandbox {
 			transform.Translate(Velocity * Speed * delta);
 		}
 
-		public override void OnGui()
+		protected override void OnGui()
 		{
 			Gui.Begin("Main Menu", Window.GetPosition(), Window.GetSize());
 			Gui.Text("Use the left stick to move around");

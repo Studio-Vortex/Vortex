@@ -12,14 +12,14 @@ namespace Sandbox {
 		public bool ShowRaycast;
 		private BoxCollider2D m_BoxCollider;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_BoxCollider = GetComponent<BoxCollider2D>();
 			DestinationReached = false;
 			StartY = transform.Translation.Y;
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Vector2 landingPoint = transform.Translation.XY;
 			landingPoint.Y += m_BoxCollider.Size.Y + m_BoxCollider.Offset.Y + 0.1f;

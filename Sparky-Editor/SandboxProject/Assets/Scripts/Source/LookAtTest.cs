@@ -8,13 +8,13 @@ namespace Sandbox {
 		public Entity player;
 		public Vector3 StartPos;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			player = FindEntityByName("Player");
 			StartPos = transform.Translation;
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			transform.Translation = StartPos;
 			transform.LookAt(player.transform.Translation);

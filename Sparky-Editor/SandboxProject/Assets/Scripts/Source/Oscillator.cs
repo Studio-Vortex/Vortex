@@ -9,12 +9,12 @@ namespace Sandbox {
 		public float Period = 2f;
 		private Vector3 StartPosition;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			StartPosition = transform.Translation;
 		}
 
-		public override void OnUpdate(float deltaTime)
+		protected override void OnUpdate(float deltaTime)
 		{
 			float cycles = Time.Elapsed / Period;
 

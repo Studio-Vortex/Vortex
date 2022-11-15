@@ -73,10 +73,10 @@ namespace Sparky {
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_GetTag(ulong entityID, out string tag);
+		internal extern static string Entity_GetTag(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_GetMarker(ulong entityID, out string marker);
+		internal extern static string Entity_GetMarker(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddCamera(ulong entityID);
@@ -264,7 +264,7 @@ namespace Sparky {
 		internal extern static void SpriteRendererComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_GetTexture(ulong entityID, out string texturePathString);
+		internal extern static string SpriteRendererComponent_GetTexture(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, string texturePathString);

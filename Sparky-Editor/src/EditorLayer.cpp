@@ -9,7 +9,6 @@
 #include <Sparky/Audio/AudioEngine.h>
 
 #include <ImGuizmo.h>
-#include <ImGradient.h>
 
 namespace Sparky {
 
@@ -112,6 +111,7 @@ namespace Sparky {
 			{
 				if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
 				{
+					// TODO: REMOVE HARDCODED PATH
 					OpenScene(std::filesystem::path(std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded)));
 					OnScenePlay();
 					ScriptRegistry::ResetSceneToBeLoaded();
@@ -446,7 +446,7 @@ namespace Sparky {
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 }, m_ActiveScene->IsPaused() ? ImVec4{ 1.0f, 1.0f, 1.0f, 0.5f } : ImVec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
@@ -687,7 +687,7 @@ namespace Sparky {
 					OnSceneStop();
 			}
 			else if (Gui::IsItemHovered())
-				DisplayTooltipFunc("Simulate Physics");
+				DisplayTooltipFunc(hasPlayButton ? "Simulate Physics" : "Stop");
 
 			Gui::SameLine();
 		}

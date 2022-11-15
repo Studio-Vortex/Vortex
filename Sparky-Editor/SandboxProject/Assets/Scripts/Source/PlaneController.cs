@@ -16,13 +16,13 @@ namespace Sandbox {
 
 		private bool m_ThrottleOn = false;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Camera = FindEntityByName("Camera");
 			m_PointLight = FindEntityByName("Point Light");
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 				Scene.Pause();
@@ -92,7 +92,7 @@ namespace Sandbox {
 				m_Camera.transform.Rotate(transform.Up * RotationSpeed * delta * axisRightX);
 		}
 
-		public override void OnGui()
+		protected override void OnGui()
 		{
 			if (!Scene.IsPaused())
 				return;

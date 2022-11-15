@@ -10,13 +10,13 @@ namespace Sandbox {
 		private Vector3 m_Velocity;
 		private bool m_Left;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Left = true;
 			GetComponent<ParticleEmitter>().Start();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (m_Left)
 			{
@@ -36,7 +36,7 @@ namespace Sandbox {
 			transform.Translation += m_Velocity;
 		}
 
-		public override void OnDestroy()
+		protected override void OnDestroy()
 		{
 			Debug.Log("MovingWall OnDestroy() Called!");
 		}

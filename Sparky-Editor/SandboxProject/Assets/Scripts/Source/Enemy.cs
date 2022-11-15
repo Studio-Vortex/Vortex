@@ -11,14 +11,14 @@ namespace Sandbox {
 		private Transform m_TargetTransform;
 		private RigidBody2D m_RigidBody;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Target = FindEntityByName("Player");
 			m_TargetTransform = m_Target.GetComponent<Transform>();
 			m_RigidBody = GetComponent<RigidBody2D>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Vector3 targetPosition = m_TargetTransform.Translation;
 
@@ -35,7 +35,7 @@ namespace Sandbox {
 			m_RigidBody.ApplyForce(m_Velocity.XY, true);
 		}
 
-		public override void OnDestroy()
+		protected override void OnDestroy()
 		{
 			Debug.Log("Enemy Killed");
 		}

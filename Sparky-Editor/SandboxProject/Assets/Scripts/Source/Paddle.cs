@@ -8,12 +8,12 @@ namespace Sandbox {
 		public float Speed;
 		private Vector3 m_Velocity;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			Debug.Log("Welcome to Sparky!");
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(Gamepad.AxisLeftY) > 0.25f)
 				m_Velocity.Y = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);

@@ -21,14 +21,14 @@ namespace Sandbox {
 		private Vector3 m_Velocity;
 		private Vector3 m_Rotation;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			Window.ShowMouseCursor(false);
 			SpotLight = FindEntityByName("FlashLight");
 			FlashlightSource = SpotLight.GetComponent<LightSource>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
 

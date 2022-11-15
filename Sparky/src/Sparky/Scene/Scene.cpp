@@ -33,6 +33,10 @@ namespace Sparky {
 			{
 				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
+				// Copy the entity's marker
+				auto& srcTagComponent = src.get<TagComponent>(srcEntity);
+				dst.emplace_or_replace<TagComponent>(dstEntity, srcTagComponent);
+
 				auto& srcComponent = src.get<TComponent>(srcEntity);
 				dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
 			}

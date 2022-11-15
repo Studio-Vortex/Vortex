@@ -5,7 +5,7 @@ namespace Sandbox {
 
 	public class A1_OpeningScene : Entity
 	{
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			GetComponent<AudioSource>().Play();
 		}

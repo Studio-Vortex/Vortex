@@ -32,7 +32,7 @@ namespace Sandbox {
 
 		private Camera2D m_CameraEntity;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_BoxCollider = GetComponent<BoxCollider2D>();
@@ -45,7 +45,7 @@ namespace Sandbox {
 			Debug.Info("Platformer Player is loose!");
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Vector2 playerFootPoint = new Vector2(transform.Translation.X, (transform.Translation.Y - m_BoxCollider.Size.Y) + m_BoxCollider.Offset.Y);
 			Vector2 groundPoint = playerFootPoint;
@@ -146,7 +146,7 @@ namespace Sandbox {
 			AnimationReady = false;
 		}
 
-		public override void OnDestroy()
+		protected override void OnDestroy()
 		{
 			Debug.Info("Sandbox.PlatformerPlayer::OnDestroy()");
 		}

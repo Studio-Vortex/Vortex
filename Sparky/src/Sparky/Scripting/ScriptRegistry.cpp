@@ -23,6 +23,7 @@
 #include "Sparky/Core/Log.h"
 
 #include <mono/metadata/object.h>
+#include <mono/jit/jit.h>
 #include <mono/metadata/reflection.h>
 
 #include <box2d/b2_body.h>
@@ -186,7 +187,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		char* sceneNameCStr = mono_string_to_utf8(sceneName);
-		s_SceneToBeLoaded = sceneNameCStr;
+		s_SceneToBeLoaded = std::string(sceneNameCStr);
 		mono_free(sceneNameCStr);
 	}
 
@@ -207,28 +208,24 @@ namespace Sparky {
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
-	static void Entity_GetTag(UUID entityUUID, MonoString* outEntityTag)
+	static MonoString* Entity_GetTag(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const std::string& name = entity.GetName();
-
-		outEntityTag = mono_string_new_wrapper(name.c_str());
+		return mono_string_new(mono_domain_get(), entity.GetName().c_str());
 	}
 
-	static void Entity_GetMarker(UUID entityUUID, MonoString* outEntityMarker)
+	static MonoString* Entity_GetMarker(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const std::string& marker = entity.GetMarker();
-
-		outEntityMarker = mono_string_new_wrapper(marker.c_str());
+		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
 	}
 
 	static void Entity_AddCamera(UUID entityUUID)
@@ -842,7 +839,7 @@ namespace Sparky {
 		*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
 	}
 
-	static void SpriteRendererComponent_GetTexture(UUID entityUUID, MonoString* outTexturePathString)
+	static MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -851,7 +848,7 @@ namespace Sparky {
 
 		const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
 
-		outTexturePathString = mono_string_new_wrapper(texturePath.c_str());
+		return mono_string_new(mono_domain_get(), texturePath.c_str());
 	}
 
 	static void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
@@ -1360,13 +1357,18 @@ namespace Sparky {
 			{
 				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
 				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
-				Tag = mono_string_new_wrapper(contextScene->GetEntityWithUUID(reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID).GetName().c_str());
+				UUID entityUUID = reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
+				Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+				Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
+
+				if (ScriptEngine::GetEntityScriptInstance(entityUUID) != nullptr)
+					ScriptEngine::OnCollisionEntity(entity); // Call the Entity's OnCollision Function
 			}
 			else
 			{
 				Point = Math::vec2();
 				Normal = Math::vec2();
-				Tag = mono_string_new_wrapper("");
+				Tag = mono_string_new(mono_domain_get(), "");
 			}
 		}
 	};
@@ -1390,9 +1392,13 @@ namespace Sparky {
 		}
 
 		if (outResult->Hit)
+		{
 			return reinterpret_cast<PhysicsBodyData*>(raycastCallback.fixture->GetUserData().pointer)->EntityUUID;
+		}
 		else
+		{
 			return 0; // Invalid entity
+		}
 	}
 
 #pragma endregion

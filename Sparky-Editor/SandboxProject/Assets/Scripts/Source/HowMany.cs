@@ -11,7 +11,7 @@ namespace Sandbox {
 		public float Depth;
 		List<Entity> m_Cubes;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Cubes = new List<Entity>();
 
@@ -36,7 +36,7 @@ namespace Sandbox {
 			}
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			foreach (Entity cube in m_Cubes)
 			{

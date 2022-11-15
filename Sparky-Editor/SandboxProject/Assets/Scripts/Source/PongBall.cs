@@ -15,7 +15,7 @@ namespace Sandbox {
 		private CircleCollider2D m_CircleCollider;
 		private AudioSource m_HitSound;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_CircleCollider = GetComponent<CircleCollider2D>();
@@ -23,7 +23,7 @@ namespace Sandbox {
 			m_HitSound = GetComponent<AudioSource>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			float currentX = transform.Translation.X;
 			float currentY = transform.Translation.Y;

@@ -15,7 +15,7 @@ namespace Sandbox {
 		private List<Entity> m_SpawnedCubes;
 		private bool m_Flip = false;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_TimeToWait = WaitTime;
 			m_SpawnedCubes = new List<Entity>();
@@ -25,7 +25,7 @@ namespace Sandbox {
 			m_Textures[2] = "Crate_2.png";
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (Input.IsGamepadButtonDown(Gamepad.Up))
 				SceneManager.LoadScene("Physics2D");

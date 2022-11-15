@@ -8,12 +8,12 @@ namespace Sandbox {
 		public float DistanceToPlayer;
 		private Entity m_Player;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Player = FindEntityByName("Player");
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (m_Player != null)
 				transform.Translation = new Vector3(m_Player.transform.Translation.XY, DistanceToPlayer);

@@ -9,13 +9,13 @@ namespace Sandbox {
 		private List<Vector3> t0Hits;
 		private List<Vector3> t1Hits;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			t0Hits = new List<Vector3>();
 			t1Hits = new List<Vector3>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			int width = 160, height = 90;
 			float aspectRatio = width / (float)height;

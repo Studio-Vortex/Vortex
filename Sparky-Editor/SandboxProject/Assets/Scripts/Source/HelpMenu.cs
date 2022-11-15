@@ -5,13 +5,13 @@ namespace Sandbox {
 
 	public class HelpMenu : Entity
 	{
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (Input.IsGamepadButtonDown(Gamepad.ButtonY))
 				SceneManager.LoadScene("Platformer2");
 		}
 
-		public override void OnGui()
+		protected override void OnGui()
 		{
 			Gui.Begin("Tutorial", Window.GetPosition());
 

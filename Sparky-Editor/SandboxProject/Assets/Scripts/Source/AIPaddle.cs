@@ -11,13 +11,13 @@ namespace Sandbox {
 		private Vector3 m_BallPosition;
 		private Vector3 m_Velocity;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Ball = FindEntityByName("Ball");
 			m_BallTransform = m_Ball.GetComponent<Transform>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			m_BallPosition = m_BallTransform.Translation;
 

@@ -12,12 +12,12 @@ namespace Sandbox {
 		private SpriteRenderer m_Sprite;
 		public bool Over = false;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Sprite = GetComponent<SpriteRenderer>();
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			if (DelayStart > 0.0f)
 				DelayStart -= delta;

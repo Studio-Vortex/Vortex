@@ -17,14 +17,14 @@ namespace Sandbox {
 		private RigidBody2D m_Rigidbody;
 		private const float FRICTION = 2.0f;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
 			m_CameraEntity = FindEntityByName("Camera");
 			m_Flashlight = FindEntityByName("Flash Light");
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			IsGrounded = Grounded();
 			SetEntityPositions();

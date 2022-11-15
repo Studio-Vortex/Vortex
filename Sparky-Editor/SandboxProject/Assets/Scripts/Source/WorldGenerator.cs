@@ -10,7 +10,7 @@ namespace Sandbox {
 		public float Offset;
 		public float Step;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			// Called once before the first frame
 			for (float y = 0; y < Rows; y += Step)
@@ -32,7 +32,7 @@ namespace Sandbox {
 			}
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			// Called once every frame
 		}

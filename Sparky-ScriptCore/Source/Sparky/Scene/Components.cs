@@ -301,8 +301,7 @@
 		{
 			get
 			{
-				InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID, out string texturePath);
-				return texturePath;
+				return InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
 			}
 
 			set

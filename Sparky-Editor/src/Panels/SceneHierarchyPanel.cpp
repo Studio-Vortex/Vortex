@@ -621,7 +621,7 @@ namespace Sparky {
 			) {
 				const char* currentMarker = (*currentMarkerIt).c_str();
 
-				if (Gui::BeginCombo("##Marker", currentMarker))
+				if (Gui::BeginCombo("##Marker", currentMarker, ImGuiComboFlags_HeightLarge))
 				{
 					uint32_t arraySize = markers.size();
 

@@ -135,10 +135,10 @@ namespace YAML {
 
 namespace Sparky {
 
-#define WRITE_SCRIPT_FIELD(FieldType, Type)           \
-			case ScriptFieldType::FieldType:          \
-				out << scriptField.GetValue<Type>();  \
-				break;
+#define WRITE_SCRIPT_FIELD(FieldType, Type)   \
+	case ScriptFieldType::FieldType:          \
+		out << scriptField.GetValue<Type>();  \
+		break;
 
 #define READ_SCRIPT_FIELD(FieldType, Type)            \
 	case ScriptFieldType::FieldType:                  \
@@ -597,14 +597,11 @@ namespace Sparky {
 	void SceneSerializer::Serialize(const std::string& filepath)
 	{
 		size_t extensionPos = filepath.find(".");
-		size_t lastSlashPos = filepath.find_last_of("/\\");
+		size_t lastSlashPos = filepath.find_last_of("/\\") + 1;
 		size_t length = filepath.length();
 		bool invalidFile = length == 0;
 
-		SP_CORE_TRACE(filepath);
-		SP_CORE_TRACE(extensionPos);
-		std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos + 1, extensionPos);
-		SP_CORE_TRACE(sceneName);
+		std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos, extensionPos - lastSlashPos);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -649,6 +646,7 @@ namespace Sparky {
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
+		Application::Get().GetWindow().SetTitle("Sparky Editor - (Release x64) GL - " + sceneName);
 		SP_CORE_TRACE("Deserializing Scene '{}'", sceneName);
 
 		auto entities = data["Entities"];

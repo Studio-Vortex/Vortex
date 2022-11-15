@@ -11,8 +11,7 @@ namespace Sparky {
 		{
 			get
 			{
-				InternalCalls.Entity_GetTag(ID, out string name);
-				return name;
+				return InternalCalls.Entity_GetTag(ID);
 			}
 		}
 
@@ -20,8 +19,7 @@ namespace Sparky {
 		{
 			get
 			{
-				InternalCalls.Entity_GetMarker(ID, out string marker);
-				return marker;
+				return InternalCalls.Entity_GetMarker(ID);
 			}
 		}
 
@@ -39,11 +37,11 @@ namespace Sparky {
 			transform = GetComponent<Transform>();
 		}
 
-		public virtual void OnCreate() { }
-		public virtual void OnUpdate(float delta) { }
-		public virtual void OnDestroy() { }
-		public virtual void OnCollision() { }
-		public virtual void OnGui() { }
+		protected virtual void OnCreate() { }
+		protected virtual void OnUpdate(float delta) { }
+		protected virtual void OnDestroy() { }
+		protected virtual void OnCollision() { }
+		protected virtual void OnGui() { }
 
 		public bool HasComponent<T>()
 			where T : Component, new()

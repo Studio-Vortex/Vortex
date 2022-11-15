@@ -10,11 +10,11 @@ namespace Sandbox {
 		public float RunSpeed;
 		public float Deadzone = 0.15f;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Vector3 velocity = Vector3.Zero;
 

@@ -13,7 +13,7 @@ namespace Sandbox {
 		private Camera2D m_Camera;
 		private SpriteRenderer m_SpriteRenderer;
 
-		public override void OnCreate()
+		protected override void OnCreate()
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
@@ -23,7 +23,7 @@ namespace Sandbox {
 			Speed *= 1.5f;
 		}
 
-		public override void OnUpdate(float delta)
+		protected override void OnUpdate(float delta)
 		{
 			Time += delta;
 
