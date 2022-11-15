@@ -57,7 +57,7 @@ namespace Sparky {
 		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
 	}
 
-	Buffer FileSystem::ReadBytes(const std::filesystem::path& filepath)
+	Buffer FileSystem::ReadBinary(const std::filesystem::path& filepath)
 	{
 		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
@@ -83,6 +83,33 @@ namespace Sparky {
 
 		return result;
 	}
+
+    std::string FileSystem::ReadText(const std::filesystem::path& filepath)
+    {
+		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
+
+		if (!stream)
+		{
+			// Failed to open the file
+			return "";
+		}
+
+		std::streampos end = stream.tellg();
+		stream.seekg(0, std::ios::beg);
+		uint64_t size = end - stream.tellg();
+
+		if (size == 0)
+		{
+			// File is empty
+			return "";
+		}
+
+		std::string result;
+		stream.read(result.data(), size);
+		stream.close();
+
+		return result;
+    }
 
 	void FileSystem::LaunchApplication(const char* binaryPath, const char* args)
 	{

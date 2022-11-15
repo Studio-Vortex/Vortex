@@ -13,7 +13,8 @@ namespace Sparky {
 		static std::string OpenFileDialog(const char* fileFilter);
 		static std::string SaveFileDialog(const char* fileFilter);
 		static void OpenFileExplorer(const char* directoryName);
-		static Buffer ReadBytes(const std::filesystem::path& filepath);
+		static Buffer ReadBinary(const std::filesystem::path& filepath);
+		static std::string ReadText(const std::filesystem::path& filepath);
 		static void LaunchApplication(const char* binaryPath, const char* args);
 	};
 

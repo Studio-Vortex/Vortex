@@ -48,7 +48,7 @@ namespace Sparky {
 
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false)
 		{
-			UniqueBuffer fileData = FileSystem::ReadBytes(filepath);
+			UniqueBuffer fileData = FileSystem::ReadBinary(filepath);
 
 			if (!fileData)
 			{
@@ -75,7 +75,7 @@ namespace Sparky {
 
 				if (std::filesystem::exists(pdbPath))
 				{
-					UniqueBuffer pdbFileData = FileSystem::ReadBytes(pdbPath);
+					UniqueBuffer pdbFileData = FileSystem::ReadBinary(pdbPath);
 
 					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
 
