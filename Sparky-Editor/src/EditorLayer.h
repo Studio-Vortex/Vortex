@@ -30,6 +30,7 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
+		void UI_Toolbar();
 		void OnOverlayRender();
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
@@ -37,10 +38,14 @@ namespace Sparky {
 
 		void CreateStartingEntities();
 
+		// Project
+
 		void CreateNewProject();
 		void OpenExistingProject();
 		void OpenProject(const std::filesystem::path& path);
 		void SaveProject();
+
+		// Scene
 
 		void CreateNewScene();
 		void OpenExistingScene();
@@ -53,15 +58,18 @@ namespace Sparky {
 		void OnScenePlay();
 		void OnScenePause();
 		void OnSceneResume();
-		void StopAudioSourcesToBeResumed();
 		void OnSceneStop();
 		void RestartScene();
 
 		void OnSceneSimulate();
 		void RestartSceneSimulation();
 
-		void AddEmptyEntity();
-		void DuplicateSelectedEntity();
+		// Audio
+
+		void PauseAudioSources();
+		void ResumeAudioSources();
+		void StopAudioSources();
+		void RestartAudioSources();
 
 		// Gizmos
 
@@ -70,13 +78,14 @@ namespace Sparky {
 		void OnRotationToolSelected();
 		void OnScaleToolSelected();
 
-		// Panels
-
-		void UI_Toolbar();
-
 		// Editor Callbacks
 
 		void OnLaunchRuntime();
+
+		// Helper
+
+		void AddEmptyEntity();
+		void DuplicateSelectedEntity();
 
 	private:
 		EditorCamera m_EditorCamera;
@@ -159,7 +168,6 @@ namespace Sparky {
 		float m_RotationSnapValue = 45.0f;
 		bool m_DrawGizmoGrid = false;
 		float m_GizmoGridSize = 1.0f;
-
 
 		ProjectProperties m_Settings{
 			ProjectProperties::ScriptingProperties{ "Assets", "", false },

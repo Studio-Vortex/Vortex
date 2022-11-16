@@ -43,7 +43,7 @@ namespace Sandbox {
 					DelayEnd -= delta;
 
 				if (DelayEnd <= 0.0f)
-					SceneManager.LoadScene("MainMenu");
+					SceneManager.LoadScene("Boost_01");
 
 				m_Sprite.Color = color;
 			}

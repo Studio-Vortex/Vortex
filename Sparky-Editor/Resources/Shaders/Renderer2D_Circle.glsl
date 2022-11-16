@@ -62,6 +62,6 @@ void main()
 	vec4 finalColor = vec4(pow(f_Color.rgb, vec3(1.0 / gamma)), f_Color.a * circle);
 
     // Set output color
-    o_Color = finalColor;
+    o_Color = f_Color * circle;
 	o_EntityID = f_EntityID;
 }

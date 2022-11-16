@@ -62,8 +62,8 @@ namespace Sparky {
 		static SharedRef<Scene> Create();
 
 	private:
-		template <typename T>
-		void OnComponentAdded(Entity entity, T& component);
+		template <typename TComponent>
+		void OnComponentAdded(Entity entity, TComponent& component);
 
 		void OnModelUpdate();
 		void OnParticleEmitterUpdate(TimeStep delta);

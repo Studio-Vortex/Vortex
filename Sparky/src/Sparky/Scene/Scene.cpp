@@ -199,10 +199,10 @@ namespace Sparky {
 
 		ScriptEngine::OnRuntimeStop();
 
+		// Stop all active audio sources in the scene
 		{
 			auto view = m_Registry.view<AudioSourceComponent>();
 
-			// Stop all audio sources in the scene
 			for (auto& e : view)
 			{
 				Entity entity{ e, this };
@@ -213,6 +213,7 @@ namespace Sparky {
 			}
 		}
 
+		// Stop all active particle emitters in the scene
 		{
 			auto view = m_Registry.view<ParticleEmitterComponent>();
 
@@ -421,7 +422,7 @@ namespace Sparky {
 		{
 			auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
 
-			meshRendererComponent.Mesh->OnUpdate(meshRendererComponent.Scale);
+			meshRendererComponent.Mesh->OnUpdate((int)entity, meshRendererComponent.Scale);
 		}
 	}
 
@@ -440,9 +441,7 @@ namespace Sparky {
 			particleEmitter->OnUpdate(delta);
 
 			if (particleEmitter->IsActive())
-			{
 				particleEmitter->EmitParticle();
-			}
 		}
 	}
 
@@ -456,28 +455,15 @@ namespace Sparky {
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 			
-			switch (lightSourceComponent.Type)
-			{
-				case LightSourceComponent::LightType::Directional:
-				{
-					break;
-				}
-				case LightSourceComponent::LightType::Point:
-				case LightSourceComponent::LightType::Spot:
-				{
-					Math::vec3 position = entity.GetTransform().Translation;
-					lightSource->SetPosition(position);
-					
-					break;
-				}
-			}
+			Math::vec3 position = entity.GetTransform().Translation;
+			lightSource->SetPosition(position);
 		}
 	}
 
-	template <typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component)
+	template <typename TComponent>
+	void Scene::OnComponentAdded(Entity entity, TComponent& component)
 	{
-		static_assert(sizeof(T) != 0);
+		static_assert(sizeof(TComponent) != 0);
 	}
 
 	template <> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }

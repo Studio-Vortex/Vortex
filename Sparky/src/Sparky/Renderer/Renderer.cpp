@@ -4,6 +4,7 @@
 #include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
+#include "Sparky/Asset/AssetRegistry.h"
 #include "Sparky/Renderer/LightSource.h"
 
 namespace Sparky {
@@ -258,7 +259,7 @@ namespace Sparky {
 		}
 	}
 
-	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer, int entityID)
+	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer)
 	{
 		SP_PROFILE_FUNCTION();
 

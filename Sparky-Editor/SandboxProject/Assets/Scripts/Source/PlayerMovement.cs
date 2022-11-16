@@ -17,8 +17,14 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float delta)
 		{
+			UpdateSpeed();
 			ProcessMovement();
 			m_Camera.transform.Translation = transform.Translation + CameraOffset;
+		}
+
+		void UpdateSpeed()
+		{
+			Speed += Time.DeltaTime;
 		}
 
 		void ProcessMovement()

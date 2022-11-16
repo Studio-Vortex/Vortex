@@ -25,7 +25,7 @@ namespace Sparky {
 
 			m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
-			m_RuntimeScene = CreateShared<Scene>();
+			m_RuntimeScene = Scene::Create();
 			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 			const auto& sceneFilePath = commandLineArgs[1];
@@ -135,7 +135,7 @@ namespace Sparky {
 		{
 			m_RuntimeScene->OnRuntimeStop();
 
-			SharedRef<Scene> newScene = CreateShared<Scene>();
+			SharedRef<Scene> newScene = Scene::Create();
 			m_RuntimeScene.swap(newScene);
 			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -157,7 +157,7 @@ namespace Sparky {
 		{
 			SP_WARN("Could not load {} - not a scene file", filepath.filename().string());
 			system("pause");
-			exit(0);
+			Application::Get().Close();
 			return false;
 		}
 

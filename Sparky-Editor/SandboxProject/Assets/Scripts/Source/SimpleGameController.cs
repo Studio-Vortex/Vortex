@@ -15,11 +15,13 @@ namespace Sandbox {
 		private Entity m_CameraEntity;
 		private Entity m_Flashlight;
 		private RigidBody2D m_Rigidbody;
+		private AudioSource m_AudioSource;
 		private const float FRICTION = 2.0f;
 
 		protected override void OnCreate()
 		{
 			m_Rigidbody = GetComponent<RigidBody2D>();
+			m_AudioSource = GetComponent<AudioSource>();
 			m_CameraEntity = FindEntityByName("Camera");
 			m_Flashlight = FindEntityByName("Flash Light");
 		}
@@ -54,7 +56,11 @@ namespace Sandbox {
 				velocity *= FRICTION;
 
 			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
+			{
 				m_Rigidbody.ApplyForce(Vector2.Up * JumpForce, true);
+				if (!m_AudioSource.IsPlaying)
+					m_AudioSource.Play();
+			}
 
 			if (Input.IsKeyDown(KeyCode.Escape))
 				Application.Shutdown();

@@ -35,11 +35,11 @@ namespace Sparky {
 		AudioEngine::PlayFromSound(&m_Sound);
 	}
 
-    void AudioSource::Pause()
-    {
+	void AudioSource::Pause()
+	{
 		if (m_Initialized)
 			AudioEngine::PauseSound(&m_Sound);
-    }
+	}
 
 	void AudioSource::Restart()
 	{
@@ -148,9 +148,9 @@ namespace Sparky {
 		dstAudioSource->SetVolume(props.Volume);
 	}
 
-    SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
-    {
-        return CreateShared<AudioSource>(filepath);
-    }
+	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
+	{
+		return CreateShared<AudioSource>(filepath);
+	}
 
 }

@@ -28,11 +28,10 @@ namespace Sparky {
 		props.WindowHeight = 900;
 		props.SampleCount = 1;
 		props.MaximizeWindow = true;
-		props.WindowDecorated = true;
+		props.WindowDecorated = false;
 		props.VSync = true;
 		props.EnableGUI = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
-		props.CullMode = RendererAPI::TriangleCullMode::None;
 
 		//props.WorkingDirectory = "../Sparky-Editor";
 		props.WorkingDirectory = "C:/dev/Sparky Engine";

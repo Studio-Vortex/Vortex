@@ -52,18 +52,17 @@ namespace Sparky {
 
 			if (!fileData)
 			{
-
 				return nullptr;
 			}
 
-			// NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
+			// NOTE: We can't use this image for anything other than loading the assembly
+			//       because this image doesn't have a reference to the assembly
 			MonoImageOpenStatus status;
 			MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
 
 			if (status != MONO_IMAGE_OK)
 			{
 				const char* errorMessage = mono_image_strerror(status);
-				// Log some error message using the errorMessage data
 				SP_CORE_ERROR("Mono Assembly Error: {}", errorMessage);
 				return nullptr;
 			}
@@ -79,7 +78,7 @@ namespace Sparky {
 
 					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
 
-					SP_CORE_INFO("PDB Loaded: {}", pdbPath);
+					SP_CORE_INFO("PDB Loaded : {}", pdbPath);
 				}
 			}
 
@@ -170,7 +169,7 @@ namespace Sparky {
 
 		bool DebuggingEnabled = true;
 
-		SharedRef<AudioSource> CompilationSuccessSound;
+		SharedRef<AudioSource> AppAssemblyReloadSound;
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
@@ -199,7 +198,7 @@ namespace Sparky {
 				std::this_thread::sleep_for(250ms);
 
 				ScriptEngine::ReloadAssembly();
-				s_Data->CompilationSuccessSound->Play();
+				s_Data->AppAssemblyReloadSound->Play();
 			});
 		}
 	}
@@ -213,17 +212,19 @@ namespace Sparky {
 
 		std::filesystem::path coreAssemblyPath = "Resources/Scripts/Sparky-ScriptCore.dll";
 		bool status = LoadAssembly(coreAssemblyPath);
+
 		if (!status)
 		{
-			SP_CORE_ERROR("Failed to load Sparky-ScriptCore: path {}", coreAssemblyPath);
+			SP_CORE_ERROR("Failed to load Sparky-ScriptCore from path: {}", coreAssemblyPath);
 			return;
 		}
 
 		std::filesystem::path appAssemblyPath = "SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
 		status = LoadAppAssembly(appAssemblyPath);
+		
 		if (!status)
 		{
-			SP_CORE_ERROR("Failed to load App Assembly: path {}", appAssemblyPath);
+			SP_CORE_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
 			return;
 		}
 
@@ -232,7 +233,7 @@ namespace Sparky {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
-		s_Data->CompilationSuccessSound = AudioSource::Create("Resources/Sounds/Compile.wav");
+		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -307,6 +308,7 @@ namespace Sparky {
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
+		// TODO:           -----------------------------------------------------         Should be a more dynamic path, perhaps from a project file
 		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
@@ -386,7 +388,7 @@ namespace Sparky {
 		}
 		else
 		{
-			SP_CORE_ERROR("Failed to find ScriptInstance for Entity: tag {}", entity.GetName());
+			SP_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 		}
 	}
 
@@ -466,7 +468,7 @@ namespace Sparky {
 		else
 		{
 			Entity entity = s_Data->ContextScene->GetEntityWithUUID(uuid);
-			SP_CORE_ERROR("Failed to find ScriptInstance for Entity: tag {}", entity.GetName());
+			SP_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 			return nullptr;
 		}
 	}

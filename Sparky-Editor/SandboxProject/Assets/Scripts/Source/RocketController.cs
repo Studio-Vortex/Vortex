@@ -1,5 +1,6 @@
 ﻿using Sparky;
 using System;
+using System.Threading;
 
 namespace Sandbox {
 
@@ -7,6 +8,7 @@ namespace Sandbox {
 	{
 		public float mainThrust = 100f;
 		public float rotationThrust = 1f;
+		public static int level = 1;
 
 		private RigidBody2D rigidbody;
 		private AudioSource audioSource;
@@ -71,8 +73,8 @@ namespace Sandbox {
 		{
 			Vector2 pos = transform.Translation.XY;
 			Vector2 groundPoint = pos;
-			groundPoint.Y -= transform.Scale.Y / 1.9f;
-			Entity entity = Physics2D.Raycast(pos, groundPoint, out RayCastHit2D downHit, true);
+			groundPoint.Y -= transform.Scale.Y / 1.8f;
+			Entity entity = Physics2D.Raycast(pos, groundPoint, out RayCastHit2D downHit);
 
 			if (downHit.Hit)
 				ProcessEntity(entity);
@@ -86,7 +88,7 @@ namespace Sandbox {
 					
 					break;
 				case "Finish":
-					// TODO: Load next level here
+					LoadNextLevel(entity);
 					break;
 				case "Obstacle":
 				default:
@@ -95,10 +97,50 @@ namespace Sandbox {
 			}
 		}
 
+		private static void LoadNextLevel(Entity entity)
+		{
+			// TODO: Load next level here
+			AudioSource audioSource = entity.GetComponent<AudioSource>();
+			if (!audioSource.IsPlaying)
+				audioSource.Play();
+
+			// Wait for x seconds
+			Thread.Sleep(3000);
+
+			// Load next level
+			if (level == 1)
+			{
+				SceneManager.LoadScene("Boost_02");
+				level++;
+			}
+			else if (level == 2)
+			{
+				SceneManager.LoadScene("Boost_03");
+				level++;
+			}
+			else
+			{
+				SceneManager.LoadScene("Boost_01");
+				level = 1;
+			}
+		}
+
 		void ReloadLevel()
 		{
-			SceneManager.LoadScene("Boost_01");
-			
+			Entity ground = FindEntityByName("Ground");
+			AudioSource audioSource = ground.GetComponent<AudioSource>();
+
+			if (!audioSource.IsPlaying)
+				audioSource.Play();
+
+			Thread.Sleep(3000);
+
+			if (level == 1)
+				SceneManager.LoadScene("Boost_01");
+			else if (level == 2)
+				SceneManager.LoadScene("Boost_02");
+			else
+				SceneManager.LoadScene("Boost_03");
 		}
 	}
 

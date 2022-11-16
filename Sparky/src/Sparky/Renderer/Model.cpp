@@ -259,15 +259,20 @@ namespace Sparky {
 		m_Vertices = m_OriginalVertices;
 	}
 
-	void Model::OnUpdate(const Math::vec2& scale)
+	void Model::OnUpdate(int entityID, const Math::vec2& scale)
 	{
+		bool entityIDChanged = m_EntityID != entityID;
 		bool scaleChanged = m_TextureScale != scale;
 
-		if (scaleChanged)
+		if (scaleChanged || entityIDChanged)
 		{
 			for (auto& vertex : m_Vertices)
+			{
 				vertex.TexScale = scale;
+				vertex.EntityID = entityID;
+			}
 
+			m_EntityID = entityID;
 			m_TextureScale = scale;
 
 			uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);

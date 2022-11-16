@@ -62,9 +62,6 @@ namespace Sparky {
 					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(entity);
 
 					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
-					
-					/*if (!particleEmitter->IsActive())
-						continue;*/
 
 					const auto& particles = particleEmitter->GetParticles();
 
@@ -162,7 +159,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(transformComponent, meshRendererComponent, (int)(entt::entity)entity);
+						Renderer::DrawModel(transformComponent, meshRendererComponent);
 				}
 			}
 

@@ -18,6 +18,7 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
+		void OpenProject(const std::string& filepath);
 		void LaunchEditor();
 
 	private:

@@ -8,13 +8,7 @@
 
 namespace Sparky {
 
-	template <typename Texture2D, typename... Args>
-	SharedRef<Texture2D> AssetRegistry::LoadAsset(const std::string& assetName, Args&&... args)
-	{
-		SharedRef<Texture2D> asset = Texture2D::Create(std::forward<Args>(args)...);
-		s_Textures.push_back(std::make_pair(assetName, asset));
-		return asset;
-	}
+
 
 	void AssetRegistry::ClearAssets()
 	{

@@ -35,17 +35,17 @@ namespace Sparky {
 		windowProps.Decorated = m_Properties.WindowDecorated;
 
 		m_Window = Window::Create(windowProps);
-		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
 
 		if (!m_Properties.MaximizeWindow)
 			m_Window->CenterWindow();
 
+		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
+
+		// Init engine sub-systems
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
-		RenderCommand::SetCullMode(m_Properties.CullMode);
 
-		AudioEngine::Init();
 		Renderer::Init();
-
+		AudioEngine::Init();
 		ScriptEngine::Init();
 		Random::Init();
 

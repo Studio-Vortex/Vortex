@@ -608,7 +608,8 @@ namespace Sparky {
 		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
 		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
 
-		auto DisplayTooltipFunc = [](const char* message) {
+		auto DisplayTooltipFunc = [](const char* message) -> void
+		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
 			Gui::BeginTooltip();
 			Gui::Text(message);
@@ -662,15 +663,15 @@ namespace Sparky {
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 			{
-				StopAudioSourcesToBeResumed();
-
 				if (hasSimulateButton)
 					OnScenePlay();
 				else
 					OnSceneStop();
 			}
 			else if (Gui::IsItemHovered())
+			{
 				DisplayTooltipFunc((hasSimulateButton) ? "Play" : "Stop");
+			}
 
 			Gui::SameLine();
 		}
@@ -680,8 +681,6 @@ namespace Sparky {
 			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
 			{
-				StopAudioSourcesToBeResumed();
-
 				if (hasPlayButton)
 					OnSceneSimulate();
 				else
@@ -738,7 +737,9 @@ namespace Sparky {
 				Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
 		}
 		else
+		{
 			Renderer2D::BeginScene(m_EditorCamera);
+		}
 
 		// Render Editor Grid
 		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
@@ -1151,7 +1152,7 @@ namespace Sparky {
 
 	void EditorLayer::CreateNewProject()
 	{
-
+		m_ActiveProject = Project::Create(ProjectProperties());
 	}
 
 	void EditorLayer::OpenExistingProject()
@@ -1275,17 +1276,7 @@ namespace Sparky {
 
 	void EditorLayer::OnScenePlay()
 	{
-		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		// Stop audio sources that were playing before the play button was pressed
-		for (auto& e : view)
-		{
-			Entity entity{ e, m_ActiveScene.get() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			
-			if (audioSource->IsPlaying())
-				audioSource->Stop();
-		}
+		StopAudioSources();
 
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
@@ -1309,11 +1300,24 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Edit)
 			return;
 
+		PauseAudioSources();
+
+		m_ActiveScene->SetPaused(true);
+	}
+
+	void EditorLayer::OnSceneResume()
+	{
+		ResumeAudioSources();
+
+		m_ActiveScene->SetPaused(false);
+	}
+
+	void EditorLayer::PauseAudioSources()
+	{
 		if (m_SceneState == SceneState::Play)
 		{
 			auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
 
-			// Pause all audio sources in the scene
 			for (auto& e : view)
 			{
 				Entity entity{ e, m_ActiveScene.get() };
@@ -1325,11 +1329,9 @@ namespace Sparky {
 				}
 			}
 		}
-
-		m_ActiveScene->SetPaused(true);
 	}
 
-	void EditorLayer::OnSceneResume()
+	void EditorLayer::ResumeAudioSources()
 	{
 		if (m_SceneState == SceneState::Play)
 		{
@@ -1341,16 +1343,34 @@ namespace Sparky {
 				m_AudioSourcesToResume.clear();
 			}
 		}
-
-		m_ActiveScene->SetPaused(false);
 	}
 
-	void EditorLayer::StopAudioSourcesToBeResumed()
+	void EditorLayer::StopAudioSources()
 	{
-		for (auto& audioSource : m_AudioSourcesToResume)
-			audioSource->Stop();
+		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
 
-		m_AudioSourcesToResume.clear();
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_ActiveScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+		}
+	}
+
+	void EditorLayer::RestartAudioSources()
+	{
+		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity{ e, m_ActiveScene.get() };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (audioSource->IsPlaying())
+				audioSource->Restart();
+		}
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -1378,16 +1398,7 @@ namespace Sparky {
 
 	void EditorLayer::RestartScene()
 	{
-		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		// Restart audio sources
-		for (auto& e : view)
-		{
-			Entity entity{ e, m_ActiveScene.get() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (audioSource->IsPlaying())
-				audioSource->Restart();
-		}
+		RestartAudioSources();
 
 		OnScenePlay();
 	}

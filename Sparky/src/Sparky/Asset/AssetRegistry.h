@@ -2,7 +2,7 @@
 
 #include "Sparky/Core/Base.h"
 
-#include <vector>
+#include <unordered_map>
 #include <string>
 
 namespace Sparky {
@@ -11,6 +11,11 @@ namespace Sparky {
 	class AudioSource;
 	class Material;
 	class Model;
+
+	enum class AssetType
+	{
+		Texture = 0, AudioSource, Material, Model,
+	};
 
 	class SPARKY_API AssetRegistry
 	{
@@ -24,16 +29,10 @@ namespace Sparky {
 		inline static void ClearAssets();
 
 	private:
-		using TextureAsset  = std::pair<std::string, SharedRef<Texture2D>>;
-		using AudioAsset    = std::pair<std::string, SharedRef<AudioSource>>;
-		using MaterialAsset = std::pair<std::string, SharedRef<Material>>;
-		using ModelAsset    = std::pair<std::string, SharedRef<Model>>;
-
-	private:
-		inline static std::vector<TextureAsset> s_Textures;
-		inline static std::vector<AudioAsset> s_AudioSources;
-		inline static std::vector<MaterialAsset> s_Materials;
-		inline static std::vector<ModelAsset> s_Models;
+		inline static std::unordered_map<std::string, SharedRef<Texture2D>> s_Textures;
+		inline static std::unordered_map<std::string, SharedRef<AudioSource>> s_AudioSources;
+		inline static std::unordered_map<std::string, SharedRef<Material>> s_Materials;
+		inline static std::unordered_map<std::string, SharedRef<Model>> s_Models;
 	};
 
 }

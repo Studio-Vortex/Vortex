@@ -136,10 +136,7 @@ namespace Sparky {
 
 	void LauncherLayer::LaunchEditor()
 	{
-		if (m_ProjectPath.empty())
-			FileSystem::LaunchApplication("build\\Release\\Sparky-Editor.exe", "");
-		else
-			FileSystem::LaunchApplication("build\\Release\\Sparky-Editor.exe", m_ProjectPath.string().c_str());
+		FileSystem::LaunchApplication("build\\Release\\Sparky-Editor.exe", m_ProjectPath.string().c_str());
 	}
 
 }
