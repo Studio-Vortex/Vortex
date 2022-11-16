@@ -5,8 +5,6 @@
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Core/TimeStep.h"
 
-#include <entt/entt.hpp>
-
 class q3Scene;
 
 namespace Sparky {
@@ -17,8 +15,8 @@ namespace Sparky {
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
 		static void DestroyPhysicsBody(Entity entity);
 
-		static void OnPhysicsSimulate(entt::registry& sceneRegistry, Scene* contextScene);
-		static void OnPhysicsUpdate(TimeStep delta, entt::registry& sceneRegistry, Scene* contextScene);
+		static void OnPhysicsSimulate(Scene* contextScene);
+		static void OnPhysicsUpdate(TimeStep delta, Scene* contextScene);
 		static void OnPhysicsStop();
 
 		static q3Scene* GetPhysicsScene() { return s_PhysicsScene; }

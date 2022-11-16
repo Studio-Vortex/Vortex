@@ -5,8 +5,6 @@
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Core/TimeStep.h"
 
-#include <entt/entt.hpp>
-
 class b2World;
 class b2Fixture;
 
@@ -23,8 +21,8 @@ namespace Sparky {
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
 		static void DestroyPhysicsBody(Entity entity);
 
-		static void OnPhysicsSimulate(entt::registry& sceneRegistry, Scene* contextScene);
-		static void OnPhysicsUpdate(TimeStep delta, entt::registry& sceneRegistry, Scene* contextScene);
+		static void OnPhysicsSimulate(Scene* contextScene);
+		static void OnPhysicsUpdate(TimeStep delta, Scene* contextScene);
 		static void OnPhysicsStop();
 
 		static b2World* GetPhysicsScene() { return s_PhysicsScene; }

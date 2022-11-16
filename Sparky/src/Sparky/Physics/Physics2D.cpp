@@ -26,11 +26,11 @@ namespace Sparky {
 
 	}
 
-	void Physics2D::OnPhysicsSimulate(entt::registry& sceneRegistry, Scene* contextScene)
+	void Physics2D::OnPhysicsSimulate(Scene* contextScene)
 	{
 		s_PhysicsScene = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
-		auto view = sceneRegistry.view<RigidBody2DComponent>();
+		auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
 
 		for (const auto e : view)
 		{
@@ -42,14 +42,14 @@ namespace Sparky {
 		}
 	}
 
-	void Physics2D::OnPhysicsUpdate(TimeStep delta, entt::registry& sceneRegistry, Scene* contextScene)
+	void Physics2D::OnPhysicsUpdate(TimeStep delta, Scene* contextScene)
 	{
 		s_PhysicsScene->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
 		// Physics
 		{
 			// Copies transform from Sparky to Box2D
-			auto view = sceneRegistry.view<RigidBody2DComponent>();
+			auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
 			for (auto e : view)
 			{
 				Entity entity = { e, contextScene };

@@ -22,11 +22,11 @@ namespace Sparky {
 
 	}
 	
-	void Physics3D::OnPhysicsSimulate(entt::registry& sceneRegistry, Scene* contextScene)
+	void Physics3D::OnPhysicsSimulate(Scene* contextScene)
 	{
 		s_PhysicsScene = new q3Scene(1.0f / 120.0f, { s_PhysicsSceneGravity.x, s_PhysicsSceneGravity.y, s_PhysicsSceneGravity.z }, s_PhysicsSceneIterations);
 
-		auto view = sceneRegistry.view<RigidBodyComponent>();
+		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
 		for (const auto e : view)
 		{
@@ -38,7 +38,7 @@ namespace Sparky {
 		}
 	}
 
-	void Physics3D::OnPhysicsUpdate(TimeStep delta, entt::registry& sceneRegistry, Scene* contextScene)
+	void Physics3D::OnPhysicsUpdate(TimeStep delta, Scene* contextScene)
 	{
 		s_PhysicsScene->SetGravity({ s_PhysicsSceneGravity.x, s_PhysicsSceneGravity.y, s_PhysicsSceneGravity.z });
 		s_PhysicsScene->SetIterations(s_PhysicsSceneIterations);
@@ -46,7 +46,7 @@ namespace Sparky {
 		// Physics
 		{
 			// Copies transform from Sparky to Qu3e
-			auto view = sceneRegistry.view<RigidBodyComponent>();
+			auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 			for (auto e : view)
 			{
 				Entity entity = { e, contextScene };
