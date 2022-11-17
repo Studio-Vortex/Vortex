@@ -26,8 +26,8 @@ namespace Sparky {
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
-		void OnSimulationStart();
-		void OnSimulationStop();
+		void OnPhysicsSimulationStart();
+		void OnPhysicsSimulationStop();
 
 		void OnUpdateRuntime(TimeStep delta);
 		void OnUpdateSimulation(TimeStep delta, EditorCamera& camera);

@@ -15,9 +15,9 @@ namespace Sparky {
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
 		static void DestroyPhysicsBody(Entity entity);
 
-		static void OnPhysicsSimulate(Scene* contextScene);
-		static void OnPhysicsUpdate(TimeStep delta, Scene* contextScene);
-		static void OnPhysicsStop();
+		static void OnSimulationStart(Scene* contextScene);
+		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
+		static void OnSimulationStop();
 
 		static q3Scene* GetPhysicsScene() { return s_PhysicsScene; }
 
@@ -31,7 +31,7 @@ namespace Sparky {
 		inline static q3Scene* s_PhysicsScene = nullptr;
 
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);
-		inline static int32_t s_PhysicsSceneIterations = 20;
+		inline static int32_t s_PhysicsSceneIterations = 8;
 	};
 
 }

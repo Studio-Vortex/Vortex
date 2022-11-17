@@ -26,7 +26,7 @@ namespace Sparky {
 
 	}
 
-	void Physics2D::OnPhysicsSimulate(Scene* contextScene)
+	void Physics2D::OnSimulationStart(Scene* contextScene)
 	{
 		s_PhysicsScene = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
@@ -42,7 +42,7 @@ namespace Sparky {
 		}
 	}
 
-	void Physics2D::OnPhysicsUpdate(TimeStep delta, Scene* contextScene)
+	void Physics2D::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
 		s_PhysicsScene->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
@@ -50,6 +50,7 @@ namespace Sparky {
 		{
 			// Copies transform from Sparky to Box2D
 			auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
+
 			for (auto e : view)
 			{
 				Entity entity = { e, contextScene };
@@ -67,13 +68,36 @@ namespace Sparky {
 				const auto& bodyPosition = body->GetPosition();
 				const float bodyAngle = body->GetAngle();
 
-				bool awake = bodyPosition.x != transform.Translation.x || bodyPosition.y != transform.Translation.y || bodyAngle != angle;
+				bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
 
 				body->SetTransform({ translation.x, translation.y }, angle);
 				if (rb2d.Velocity != Math::vec2(0.0f))
 					body->SetLinearVelocity({ rb2d.Velocity.x, rb2d.Velocity.y });
 				body->SetLinearDamping(rb2d.Drag);
 				body->SetFixedRotation(rb2d.FixedRotation);
+
+				if (entity.HasComponent<BoxCollider2DComponent>())
+				{
+					auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+					b2Fixture* fixture = (b2Fixture*)bc2d.RuntimeFixture;
+
+					fixture->SetDensity(bc2d.Density);
+					fixture->SetFriction(bc2d.Friction);
+					fixture->SetRestitution(bc2d.Restitution);
+					fixture->SetRestitutionThreshold(bc2d.RestitutionThreshold);
+					fixture->SetSensor(bc2d.IsTrigger);
+				}
+
+				if (entity.HasComponent<CircleCollider2DComponent>())
+				{
+					auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+					b2Fixture* fixture = (b2Fixture*)cc2d.RuntimeFixture;
+
+					fixture->SetDensity(cc2d.Density);
+					fixture->SetFriction(cc2d.Friction);
+					fixture->SetRestitution(cc2d.Restitution);
+					fixture->SetRestitutionThreshold(cc2d.RestitutionThreshold);
+				}
 
 				if (awake)
 					body->SetAwake(true);
@@ -100,7 +124,7 @@ namespace Sparky {
 		}
 	}
 
-	void Physics2D::OnPhysicsStop()
+	void Physics2D::OnSimulationStop()
 	{
 		delete s_PhysicsScene;
 		s_PhysicsScene = nullptr;
@@ -145,6 +169,8 @@ namespace Sparky {
 
 			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
 
+			bc2d.RuntimeFixture = fixture;
+
 			// Store the fixture and the user data in our map
 			if (s_PhysicsBodyDataMap.find(fixture) == s_PhysicsBodyDataMap.end())
 				s_PhysicsBodyDataMap[fixture] = std::move(physicsBodyData);
@@ -171,6 +197,8 @@ namespace Sparky {
 			fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
 
 			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+
+			cc2d.RuntimeFixture = fixture;
 
 			// Store the fixture and the user data in our map
 			if (s_PhysicsBodyDataMap.find(fixture) == s_PhysicsBodyDataMap.end())

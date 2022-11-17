@@ -99,6 +99,12 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Sqrt(T x)
+	{
+		return glm::sqrt(x);
+	}
+
+	template <typename T>
 	static auto Cos(T v)
 	{
 		return glm::cos(v);
@@ -114,6 +120,18 @@ namespace Sparky::Math {
 	static auto Tan(T v)
 	{
 		return glm::tan(v);
+	}
+
+	template <typename T>
+	static auto Atan(T v)
+	{
+		return glm::atan(v);
+	}
+
+	template <typename T>
+	static auto Atan2(T v0, T v1)
+	{
+		return glm::atan2(v0, v1);
 	}
 
 	template <typename T>

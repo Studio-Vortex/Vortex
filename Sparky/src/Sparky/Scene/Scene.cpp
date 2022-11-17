@@ -176,8 +176,7 @@ namespace Sparky {
 		m_IsRunning = true;
 		m_DebugMode = false;
 
-		Physics3D::OnPhysicsSimulate(this);
-		Physics2D::OnPhysicsSimulate(this);
+		OnPhysicsSimulationStart();
 
 		// Scripting
 		{
@@ -227,20 +226,19 @@ namespace Sparky {
 			}
 		}
 
-		Physics3D::OnPhysicsStop();
-		Physics2D::OnPhysicsStop();
+		OnPhysicsSimulationStop();
 	}
 
-	void Scene::OnSimulationStart()
+	void Scene::OnPhysicsSimulationStart()
 	{
-		Physics3D::OnPhysicsSimulate(this);
-		Physics2D::OnPhysicsSimulate(this);
+		Physics3D::OnSimulationStart(this);
+		Physics2D::OnSimulationStart(this);
 	}
 
-	void Scene::OnSimulationStop()
+	void Scene::OnPhysicsSimulationStop()
 	{
-		Physics3D::OnPhysicsStop();
-		Physics2D::OnPhysicsStop();
+		Physics3D::OnSimulationStop();
+		Physics2D::OnSimulationStop();
 	}
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
@@ -270,8 +268,8 @@ namespace Sparky {
 			}
 
 			// Update Physics Bodies
-			Physics3D::OnPhysicsUpdate(delta, this);
-			Physics2D::OnPhysicsUpdate(delta, this);
+			Physics3D::OnSimulationUpdate(delta, this);
+			Physics2D::OnSimulationUpdate(delta, this);
 
 			if (m_StepFrames)
 				m_StepFrames--;
@@ -305,8 +303,8 @@ namespace Sparky {
 	{
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			Physics3D::OnPhysicsUpdate(delta, this);
-			Physics2D::OnPhysicsUpdate(delta, this);
+			Physics3D::OnSimulationUpdate(delta, this);
+			Physics2D::OnSimulationUpdate(delta, this);
 
 			if (m_StepFrames)
 				m_StepFrames--;

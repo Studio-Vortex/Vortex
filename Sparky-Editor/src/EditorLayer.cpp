@@ -1380,7 +1380,7 @@ namespace Sparky {
 		if (m_SceneState == SceneState::Play)
 			m_ActiveScene->OnRuntimeStop();
 		else if (m_SceneState == SceneState::Simulate)
-			m_ActiveScene->OnSimulationStop();
+			m_ActiveScene->OnPhysicsSimulationStop();
 
 		m_SceneState = SceneState::Edit;
 
@@ -1414,7 +1414,7 @@ namespace Sparky {
 			m_SceneViewportMaximized = true;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnSimulationStart();
+		m_ActiveScene->OnPhysicsSimulationStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}

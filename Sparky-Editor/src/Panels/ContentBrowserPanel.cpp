@@ -21,24 +21,41 @@ namespace Sparky {
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
-		if (s_ShowPanel)
+		if (!s_ShowPanel)
+			return;
+
+		Gui::Begin("Content Browser", &s_ShowPanel);
+
+		// Left
+		float directoryContainerWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 165.0f);
+		Gui::BeginChild("Left Pane", ImVec2(directoryContainerWidth, 0));
+
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
+		if (Gui::TreeNodeEx("Contents", treeNodeFlags))
 		{
-			Gui::Begin("Content Browser", &s_ShowPanel);
+			Gui::Unindent();
 
-			// Left
-			float directoryButtonsContainierWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 145.0f);
-			Gui::BeginChild("Left Pane", ImVec2(directoryButtonsContainierWidth, 0), false);
-
-			Gui::TextCentered(g_AssetPath.string().c_str(), 5.0f);
-			Gui::SetCursorPosY(28.5f);
-			Gui::Separator();
-
-			for (auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
+			for (const auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
 			{
 				if (!assetDirectoryEntry.is_directory())
 					continue;
 
-				if (Gui::Button(assetDirectoryEntry.path().filename().string().c_str(), ImVec2{ Gui::GetContentRegionAvail().x, 0.0f }))
+				const ImGuiTreeNodeFlags directoryTreeNodeFlags = ((m_CurrentDirectory == assetDirectoryEntry.path()) ? ImGuiTreeNodeFlags_Selected : 0) |
+					ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+				if (Gui::TreeNodeEx(assetDirectoryEntry.path().filename().string().c_str(), directoryTreeNodeFlags))
+				{
+					for (const auto& directoryEntry : std::filesystem::directory_iterator(assetDirectoryEntry))
+					{
+						const std::string& path = directoryEntry.path().filename().string();
+
+						Gui::Selectable(path.c_str());
+					}
+
+					Gui::TreePop();
+				}
+				else if (Gui::IsItemClicked(ImGuiMouseButton_Left))
 				{
 					// Clear the search input text so it does not interfere with the child directory
 					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
@@ -47,21 +64,24 @@ namespace Sparky {
 					m_CurrentDirectory = assetDirectoryEntry.path();
 				}
 			}
-			Gui::EndChild();
 
-			Gui::SameLine();
-
-			// Right
-			Gui::BeginGroup();
-			Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
-
-			RenderFileExplorer();
-
-			Gui::EndChild();
-			Gui::EndGroup();
-
-			Gui::End();
+			Gui::TreePop();
+			Gui::Indent();
 		}
+
+		Gui::EndChild();
+		Gui::SameLine();
+
+		// Right
+		Gui::BeginGroup();
+		Gui::BeginChild("Right Pane", ImVec2(0, Gui::GetContentRegionAvail().y));
+
+		RenderFileExplorer();
+
+		Gui::EndChild();
+		Gui::EndGroup();
+
+		Gui::End();
 	}
 
 	void ContentBrowserPanel::RenderRightClickPopupMenu()
@@ -175,8 +195,8 @@ public class Untitled : Entity
 		if (columnCount < 1)
 			columnCount = 1;
 		
-		//                                       leave some space for the icon size tools
-		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 68.0f), false);
+		//                                                leave some space for the thumbnail size tool
+		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 45.0f), false);
 
 		Gui::Columns(columnCount, 0, false);
 
@@ -465,10 +485,10 @@ public class Untitled : Entity
 		Gui::Separator();
 		Gui::Spacing();
 
-		Gui::SliderFloat("Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
-		static float newPadding = padding / 4.0f;
-		if (Gui::SliderFloat("Padding", &newPadding, 1.0f, 16.0f, "%.0f"))
-			padding = newPadding * 4.0f;
+		Gui::PushItemWidth(-1);
+		Gui::SliderFloat("##Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
+		Gui::PopItemWidth();
+		padding = thumbnailSize / 6.0f;
 	}
 
 }
