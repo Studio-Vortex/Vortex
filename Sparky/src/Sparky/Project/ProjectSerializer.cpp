@@ -52,7 +52,6 @@ namespace Sparky {
 		out << YAML::EndSeq;
 		
 		out << YAML::Key << "BuildProperties" << YAML::BeginSeq;
-		out << YAML::Key << "StartupScene" << YAML::Value << props.BuildProps.CurrentEditorScenePath.string();
 		out << YAML::EndSeq;
 
 		out << YAML::EndSeq;

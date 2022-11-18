@@ -8,6 +8,7 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
 #include "Panels/MaterialViewerPanel.h"
+#include "Panels/BuildSettingsPanel.h"
 #include "Panels/AssetManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
@@ -80,7 +81,7 @@ namespace Sparky {
 
 		// Editor Callbacks
 
-		void OnLaunchRuntime();
+		void OnLaunchRuntime(const std::filesystem::path& path);
 
 		// Helper
 
@@ -152,6 +153,7 @@ namespace Sparky {
 		ContentBrowserPanel m_ContentBrowserPanel;
 		ScriptRegistryPanel m_ScriptRegistryPanel;
 		MaterialViewerPanel m_MaterialViewerPanel;
+		BuildSettingsPanel m_BuildSettingsPanel;
 		AssetManagerPanel m_AssetManagerPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
@@ -175,7 +177,6 @@ namespace Sparky {
 			ProjectProperties::PhysicsProperties{ m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders },
 			ProjectProperties::EditorProperties{ m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes, m_EditorCameraFOV },
 			ProjectProperties::GizmoProperties{ m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize },
-			ProjectProperties::BuildProperties{ m_EditorScenePath, SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime) }
 		};
 
 		SceneState m_SceneState = SceneState::Edit;

@@ -10,6 +10,7 @@
 #include "Sparky/Renderer/ParticleEmitter.h"
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Asset/AssetRegistry.h"
 
 #include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"

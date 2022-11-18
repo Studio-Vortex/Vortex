@@ -291,18 +291,6 @@ namespace Sparky {
 					Gui::EndTabItem();
 				}
 
-				if (Gui::BeginTabItem("Build"))
-				{
-					char buffer[256];
-					strcpy(buffer, m_Properties.BuildProps.CurrentEditorScenePath.string().c_str());
-					Gui::InputText("Active Scene", buffer, 256, ImGuiInputTextFlags_ReadOnly);
-
-					if (Gui::Button("Build and Run"))
-						m_Properties.BuildProps.LaunchRuntimeCallback();
-
-					Gui::EndTabItem();
-				}
-
 				Gui::EndTabBar();
 			}
 

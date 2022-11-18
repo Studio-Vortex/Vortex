@@ -41,12 +41,6 @@ namespace Sparky {
 			bool DrawGrid;
 			float GridSize;
 		} GizmoProps;
-
-		struct BuildProperties
-		{
-			std::filesystem::path CurrentEditorScenePath;
-			std::function<void()> LaunchRuntimeCallback;
-		} BuildProps;
 	};
 
 	class Project

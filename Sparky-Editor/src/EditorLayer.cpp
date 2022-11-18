@@ -60,6 +60,8 @@ namespace Sparky {
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 		RenderCommand::SetClearColor(m_RendererClearColor);
+
+		m_BuildSettingsPanel.SetContext(SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -398,6 +400,8 @@ namespace Sparky {
 				Gui::Separator();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				Gui::Separator();
+				Gui::MenuItem("Build Settings", nullptr, &m_BuildSettingsPanel.IsOpen());
+				Gui::Separator();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel.IsOpen());
 
 				Gui::EndMenu();
@@ -421,6 +425,7 @@ namespace Sparky {
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialViewerPanel.OnGuiRender();
+			m_BuildSettingsPanel.OnGuiRender();
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
@@ -722,9 +727,9 @@ namespace Sparky {
 		Gui::PopStyleColor(3);
 	}
 
-	void EditorLayer::OnLaunchRuntime()
+	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
 	{
-		FileSystem::LaunchApplication("runtime\\Release\\Sparky-Runtime.exe", m_EditorScenePath.string().c_str());
+		FileSystem::LaunchApplication("runtime\\Release\\Sparky-Runtime.exe", path.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()
@@ -1107,7 +1112,7 @@ namespace Sparky {
 
 			case Mouse::ButtonRight:
 			{
-				if (m_SceneViewportHovered)
+				if (m_SceneViewportHovered && m_SceneState != SceneState::Play)
 					Application::Get().GetWindow().ShowMouseCursor(false, true);
 
 				break;

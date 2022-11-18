@@ -2,6 +2,7 @@
 
 #include "Sparky/Core/PlatformDetection.h"
 
+#include <vector>
 #include <memory>
 
 // DLL support
