@@ -45,7 +45,8 @@ namespace Sparky {
 
 			if (Gui::Button("Build and Run"))
 			{
-				m_LaunchRuntimeCallback(m_StartupPath);
+				if (m_LaunchRuntimeCallback && !m_StartupPath.empty())
+					m_LaunchRuntimeCallback(m_StartupPath);
 			}
 
 			Gui::End();

@@ -424,7 +424,7 @@ namespace Sparky {
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialViewerPanel.OnGuiRender();
+			m_MaterialViewerPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
 			m_BuildSettingsPanel.OnGuiRender();
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();

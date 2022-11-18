@@ -329,10 +329,13 @@ namespace Sparky {
 
 			if (hoveredEntity && m_ContextScene)
 			{
-				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+				if (hoveredEntity.HasComponent<TagComponent>())
+				{
+					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
 
-				if (!tag.empty())
-					name = tag.c_str();
+					if (!tag.empty())
+						name = tag.c_str();
+				}
 			}
 
 			Gui::SetCursorPosX(10.0f);

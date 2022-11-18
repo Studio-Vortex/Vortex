@@ -2,36 +2,95 @@
 
 namespace Sparky {
 
-	void MaterialViewerPanel::OnGuiRender(bool showDefault)
+	static void RenderTexture(SharedRef<Texture2D> texture)
+	{
+		ImVec2 textureSize = { 112, 112 };
+		Gui::ImageButton(reinterpret_cast<void*>(texture->GetRendererID()), textureSize, { 0, 1 }, { 1, 0 });
+
+		Gui::Separator();
+		Gui::Text("Path: %s", texture->GetPath().c_str());
+		Gui::Text("Width: %u", texture->GetWidth());
+		Gui::Text("Height: %u", texture->GetHeight());
+		Gui::Separator();
+	}
+
+	void MaterialViewerPanel::OnGuiRender(Entity selectedEntity, bool showDefault)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
+		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
+
 		if (s_ShowPanel || showDefault)
 		{
 			Gui::Begin("Material Viewer", &s_ShowPanel);
 
-			if (m_CurrentTexture)
+			if (selectedEntity && selectedEntity.HasComponent<MeshRendererComponent>())
 			{
-				ImVec2 textureSize = { 128, 128 };
+				SharedRef<Model> model = selectedEntity.GetComponent<MeshRendererComponent>().Mesh;
 
-				Gui::ImageButton(reinterpret_cast<void*>(m_CurrentTexture->GetRendererID()), textureSize, { 0, 1 }, { 1, 0 });
+				if (model)
+				{
+					SharedRef<Material> material = model->GetMaterial();
 
-				Gui::Separator();
+					if (material)
+					{
+						SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+						if (albedoMap)
+						{
+							RenderTexture(albedoMap);
+						}
+						else
+						{
+							RenderTexture(checkerboardIcon);
+						}
 
-				Gui::Text("Path: %s", m_CurrentTexture->GetPath().c_str());
-				Gui::Text("Width: %u", m_CurrentTexture->GetWidth());
-				Gui::Text("Height: %u", m_CurrentTexture->GetHeight());
+						SharedRef<Texture2D> normalMap = material->GetNormalMap();
+						if (normalMap)
+						{
+							RenderTexture(normalMap);
+						}
+						else
+						{
+							RenderTexture(checkerboardIcon);
+						}
+
+						SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+						if (metallicMap)
+						{
+							RenderTexture(metallicMap);
+						}
+						else
+						{
+							RenderTexture(checkerboardIcon);
+						}
+
+						SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+						if (roughnessMap)
+						{
+							RenderTexture(roughnessMap);
+						}
+						else
+						{
+							RenderTexture(checkerboardIcon);
+						}
+
+						SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+						if (ambientOcclusionMap)
+						{
+							RenderTexture(ambientOcclusionMap);
+						}
+						else
+						{
+							RenderTexture(checkerboardIcon);
+						}
+					}
+				}
 			}
 			
 			Gui::End();
 		}
-	}
-
-	void MaterialViewerPanel::SetTexture(const SharedRef<Texture2D>& texture)
-	{
-		m_CurrentTexture = texture;
 	}
 
 }

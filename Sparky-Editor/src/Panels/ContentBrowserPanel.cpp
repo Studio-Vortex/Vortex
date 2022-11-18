@@ -435,6 +435,11 @@ public class Untitled : Entity
 			{
 				const wchar_t* itemPath = relativePath.c_str();
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
+				Gui::BeginTooltip();
+				std::string path = directoryEntry.path().relative_path().string();
+				size_t lastSlash = path.find_last_of("/\\") + 1;
+				Gui::Text("%s", path.substr(lastSlash).c_str());
+				Gui::EndTooltip();
 				Gui::EndDragDropSource();
 			}
 
