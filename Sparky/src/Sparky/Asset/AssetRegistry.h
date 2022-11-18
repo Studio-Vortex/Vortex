@@ -20,8 +20,8 @@ namespace Sparky {
 	class SPARKY_API AssetRegistry
 	{
 	public:
-		template <typename TAsset, typename... Args>
-		inline static SharedRef<TAsset> LoadAsset(const std::string& assetName, Args&&... args);
+		template <typename TAsset, typename ... Args>
+		inline static SharedRef<TAsset> LoadAsset(const std::string& assetName, Args&& ... args);
 
 		template <typename TAsset>
 		inline static SharedRef<TAsset> GetAsset(const std::string& assetName);
@@ -34,5 +34,11 @@ namespace Sparky {
 		inline static std::unordered_map<std::string, SharedRef<Material>> s_Materials;
 		inline static std::unordered_map<std::string, SharedRef<Model>> s_Models;
 	};
+
+	template <typename TAsset, typename ... Args>
+	inline SharedRef<TAsset> AssetRegistry::LoadAsset(const std::string& assetName, Args&& ... args)
+	{
+		SharedRef<TAsset> asset = TAsset::Create(std::forward<Args>);
+	}
 
 }

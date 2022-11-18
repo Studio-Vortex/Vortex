@@ -127,6 +127,18 @@ namespace Sparky {
 		internal extern static void Entity_RemoveAudioListener(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddRigidBody(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveRigidBody(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddBoxCollider(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveBoxCollider(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_AddRigidBody2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -373,6 +385,19 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_Stop(ulong entityID);
+
+		#endregion
+
+		#region RigidBody
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_ApplyLinearForce(ulong entityID, ref Vector3 force);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_ApplyLinearImpulse(ulong entityID, ref Vector3 impulse);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_ApplyTorque(ulong entityID, ref Vector3 torque);
 
 		#endregion
 

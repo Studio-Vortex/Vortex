@@ -112,13 +112,9 @@ namespace Sparky {
 				auto& transform = entity.GetComponent<TransformComponent>();
 				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb2d.RuntimeBody == nullptr)
-					CreatePhysicsBody(entity, transform, rb2d);
-
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
+				transform.Translation = Math::vec3(position.x, position.y, transform.Translation.z);
 				transform.Rotation.z = body->GetAngle();
 			}
 		}
@@ -142,7 +138,6 @@ namespace Sparky {
 		bodyDef.angle = transform.Rotation.z;
 
 		b2Body* body = s_PhysicsScene->CreateBody(&bodyDef);
-		body->SetFixedRotation(rb2d.FixedRotation);
 
 		rb2d.RuntimeBody = body;
 
@@ -152,7 +147,7 @@ namespace Sparky {
 
 			b2PolygonShape boxShape;
 			// Automatically set the collider size to the scale of the entity
-			boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
+			boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,	b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
 
 			b2FixtureDef fixtureDef;
 

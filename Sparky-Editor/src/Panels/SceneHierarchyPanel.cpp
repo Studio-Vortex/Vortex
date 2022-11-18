@@ -1709,6 +1709,9 @@ namespace Sparky {
 				Gui::EndCombo();
 			}
 
+			Gui::DragFloat3("Velocity", Math::ValuePtr(component.Velocity), 0.01f);
+			Gui::DragFloat("Drag", &component.Drag, 0.01f, 0.01f, 1.0f);
+
 			if (Gui::TreeNodeEx("Contraints", treeNodeFlags))
 			{
 				Gui::Text("X");
@@ -1736,6 +1739,7 @@ namespace Sparky {
 			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::Checkbox("Is Trigger", &component.IsTrigger);
 		});
 
 		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto& component)

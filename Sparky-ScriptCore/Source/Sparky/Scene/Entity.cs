@@ -77,6 +77,8 @@ namespace Sparky {
 					case "Sparky.ParticleEmitter":  InternalCalls.Entity_AddParticleEmitter(ID);  break;
 					case "Sparky.AudioSource":      InternalCalls.Entity_AddAudioSource(ID);      break;
 					case "Sparky.AudioListener":    InternalCalls.Entity_AddAudioListener(ID);    break;
+					case "Sparky.RigidBody":        InternalCalls.Entity_AddRigidBody(ID);        break;
+					case "Sparky.BoxCollider":      InternalCalls.Entity_AddBoxCollider(ID);      break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_AddRigidBody2D(ID);      break;
 					case "Sparky.BoxCollider2D":    InternalCalls.Entity_AddBoxCollider2D(ID);    break;
 					case "Sparky.CircleCollider2D": InternalCalls.Entity_AddCircleCollider2D(ID); break;
@@ -105,6 +107,8 @@ namespace Sparky {
 					case "Sparky.ParticleEmitter":  InternalCalls.Entity_RemoveParticleEmitter(ID);  break;
 					case "Sparky.AudioSource":      InternalCalls.Entity_RemoveAudioSource(ID);      break;
 					case "Sparky.AudioListener":    InternalCalls.Entity_RemoveAudioListener(ID);    break;
+					case "Sparky.RigidBody":        InternalCalls.Entity_RemoveRigidBody(ID);        break;
+					case "Sparky.BoxCollider":      InternalCalls.Entity_RemoveBoxCollider(ID);      break;
 					case "Sparky.RigidBody2D":      InternalCalls.Entity_RemoveRigidBody2D(ID);      break;
 					case "Sparky.BoxCollider2D":    InternalCalls.Entity_RemoveBoxCollider2D(ID);    break;
 					case "Sparky.CircleCollider2D": InternalCalls.Entity_RemoveCircleCollider2D(ID); break;

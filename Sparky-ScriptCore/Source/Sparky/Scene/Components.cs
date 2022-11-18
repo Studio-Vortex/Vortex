@@ -1,4 +1,6 @@
-﻿namespace Sparky {
+﻿using System.Runtime.CompilerServices;
+
+namespace Sparky {
 
 	public abstract class Component
 	{
@@ -400,6 +402,24 @@
 	public enum RigidBody2DType
 	{
 		Static, Dynamic, Kinematic,
+	}
+
+	public class RigidBody : Component
+	{
+		public void ApplyLinearForce(Vector3 force)
+		{
+			InternalCalls.RigidBodyComponent_ApplyLinearForce(Entity.ID, ref force);
+		}
+
+		public void ApplyLinearImpulse(Vector3 impulse)
+		{
+			InternalCalls.RigidBodyComponent_ApplyLinearImpulse(Entity.ID, ref impulse);
+		}
+
+		public void ApplyTorque(Vector3 torque)
+		{
+			InternalCalls.RigidBodyComponent_ApplyTorque(Entity.ID, ref torque);
+		}
 	}
 
 	public class RigidBody2D : Component

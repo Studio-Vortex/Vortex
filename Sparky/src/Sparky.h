@@ -24,7 +24,7 @@ namespace Gui = ImGui;
 #include "Sparky/Audio/AudioListener.h"
 
 /// Physics
-#include "Sparky/Physics/Physics3D.h"
+#include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
 
 /// Project

@@ -11,7 +11,7 @@
 
 #include "Sparky/Audio/AudioSource.h"
 
-#include "Sparky/Physics/Physics3D.h"
+#include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
@@ -25,6 +25,8 @@
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>
 #include <mono/metadata/reflection.h>
+
+#include <q3.h>
 
 #include <box2d/b2_body.h>
 #include <box2d/b2_world.h>
@@ -386,6 +388,46 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<AudioListenerComponent>();
+	}
+
+	static void Entity_AddRigidBody(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<RigidBodyComponent>();
+	}
+
+	static void Entity_RemoveRigidBody(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<RigidBodyComponent>();
+	}
+
+	static void Entity_AddBoxCollider(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.AddComponent<BoxColliderComponent>();
+	}
+
+	static void Entity_RemoveBoxCollider(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.RemoveComponent<BoxColliderComponent>();
 	}
 
 	static void Entity_AddRigidBody2D(UUID entityUUID)
@@ -1179,7 +1221,47 @@ namespace Sparky {
 
 #pragma endregion
 
-#pragma region Rigidbody2D Component
+#pragma region RigidBody Component
+
+	static void RigidBodyComponent_ApplyLinearForce(UUID entityUUID, Math::vec3* force)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
+		body->ApplyLinearForce(q3Vec3(force->x, force->y, force->z));
+	}
+
+	static void RigidBodyComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec3* impulse)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
+		body->ApplyLinearImpulse(q3Vec3(impulse->x, impulse->y, impulse->z));
+	}
+
+	static void RigidBodyComponent_ApplyTorque(UUID entityUUID, Math::vec3* torque)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
+		body->ApplyTorque(q3Vec3(torque->x, torque->y, torque->z));
+	}
+
+#pragma endregion
+
+#pragma region RigidBody2D Component
 
 	static void RigidBody2DComponent_GetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType* outBodyType)
 	{
@@ -2082,6 +2164,12 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_AddAudioListener);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioListener);
 
+		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody);
+
+		SP_ADD_INTERNAL_CALL(Entity_AddBoxCollider);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider);
+		
 		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody2D);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody2D);
 
@@ -2172,6 +2260,14 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
+
+#pragma endregion
+
+#pragma region RigidBody Component
+
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearForce);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearImpulse);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyTorque);
 
 #pragma endregion
 

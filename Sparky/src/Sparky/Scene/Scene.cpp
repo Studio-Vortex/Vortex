@@ -11,7 +11,7 @@
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 
-#include "Sparky/Physics/Physics3D.h"
+#include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
 
 namespace Sparky {
@@ -157,7 +157,7 @@ namespace Sparky {
 			ScriptEngine::OnDestroyEntity(entity);
 
 		if (entity.HasComponent<RigidBodyComponent>())
-			Physics3D::DestroyPhysicsBody(entity);
+			Physics::DestroyPhysicsBody(entity);
 
 		if (entity.HasComponent<RigidBody2DComponent>())
 			Physics2D::DestroyPhysicsBody(entity);
@@ -231,13 +231,13 @@ namespace Sparky {
 
 	void Scene::OnPhysicsSimulationStart()
 	{
-		Physics3D::OnSimulationStart(this);
+		Physics::OnSimulationStart(this);
 		Physics2D::OnSimulationStart(this);
 	}
 
 	void Scene::OnPhysicsSimulationStop()
 	{
-		Physics3D::OnSimulationStop();
+		Physics::OnSimulationStop();
 		Physics2D::OnSimulationStop();
 	}
 
@@ -268,7 +268,7 @@ namespace Sparky {
 			}
 
 			// Update Physics Bodies
-			Physics3D::OnSimulationUpdate(delta, this);
+			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
 			if (m_StepFrames)
@@ -303,7 +303,7 @@ namespace Sparky {
 	{
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			Physics3D::OnSimulationUpdate(delta, this);
+			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
 			if (m_StepFrames)
@@ -312,6 +312,11 @@ namespace Sparky {
 
 		// Render
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
+
+		// Update Components
+		OnModelUpdate();
+		OnParticleEmitterUpdate(delta);
+		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)

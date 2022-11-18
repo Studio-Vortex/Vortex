@@ -133,7 +133,7 @@ namespace Sparky {
 			case SceneState::Simulate:
 			{
 				const Math::vec2& mousePos = Input::GetMousePosition();
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame)
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					m_EditorCamera.OnUpdate(delta);
 
 				float editorCameraFOV = m_EditorCamera.GetFOV();

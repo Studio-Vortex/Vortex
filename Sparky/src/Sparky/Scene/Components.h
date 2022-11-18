@@ -192,6 +192,9 @@ namespace Sparky {
 		enum class BodyType { Static = 0, Dynamic, Kinematic };
 		BodyType Type = BodyType::Static;
 
+		Math::vec3 Velocity = Math::vec3(0.0f);
+		float Drag = 0.0f;
+
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
 
@@ -206,12 +209,14 @@ namespace Sparky {
 	struct BoxColliderComponent
 	{
 		Math::vec3 Offset = Math::vec3(0.0f);
-		Math::vec3 Size = Math::vec3(0.5f);
+		Math::vec3 Size = Math::vec3(1.0f);
 
 		// TODO: Move into physics material in the future
 		float Density = 1.0f;
 		float Friction = 0.5f;
 		float Restitution = 0.0f;
+
+		bool IsTrigger = false;
 
 		BoxColliderComponent() = default;
 		BoxColliderComponent(const BoxColliderComponent&) = default;
