@@ -85,7 +85,6 @@ namespace Sparky {
 
 		// Helper
 
-		void AddEmptyEntity();
 		void DuplicateSelectedEntity();
 
 	private:

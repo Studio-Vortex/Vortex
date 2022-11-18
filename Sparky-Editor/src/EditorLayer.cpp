@@ -255,7 +255,8 @@ namespace Sparky {
 			{
 				if (inEditMode)
 				{
-					if (m_SceneHierarchyPanel.GetSelectedEntity())
+					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+					if (selectedEntity)
 					{
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
@@ -274,11 +275,8 @@ namespace Sparky {
 
 					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
 						OnSceneSimulate();
-					Gui::Separator();
 
-					if (Gui::MenuItem("Add Empty Entity", "Ctrl+A"))
-						AddEmptyEntity();
-					if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+					if (selectedEntity)
 					{
 						Gui::Separator();
 
@@ -421,7 +419,7 @@ namespace Sparky {
 		if (!m_SceneViewportMaximized)
 		{
 			m_ProjectSettingsPanel.OnGuiRender();
-			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity);
+			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel.OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialViewerPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
@@ -507,7 +505,7 @@ namespace Sparky {
 
 		if (Gui::BeginPopup("SceneCreateEntityMenu"))
 		{
-			m_SceneHierarchyPanel.DisplayCreateEntityMenu();
+			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
 
 			Gui::PopStyleVar();
 			Gui::EndPopup();
@@ -1427,16 +1425,6 @@ namespace Sparky {
 	void EditorLayer::RestartSceneSimulation()
 	{
 		OnSceneSimulate();
-	}
-
-	void EditorLayer::AddEmptyEntity()
-	{
-		if (m_SceneState != SceneState::Edit)
-			return;
-
-		Entity newEntity = m_ActiveScene->CreateEntity();
-		m_SceneHierarchyPanel.SetSelectedEntity(newEntity);
-		m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

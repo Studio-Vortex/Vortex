@@ -12,7 +12,7 @@ namespace Sparky {
 
 		void SetContext(const SharedRef<Scene>& context);
 
-		void OnGuiRender(Entity hoveredEntity);
+		void OnGuiRender(Entity hoveredEntity, const EditorCamera& editorCamera);
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
@@ -24,7 +24,7 @@ namespace Sparky {
 
 		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
-		void DisplayCreateEntityMenu();
+		void DisplayCreateEntityMenu(const EditorCamera& editorCamera);
 
 		inline bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }

@@ -34,7 +34,7 @@ namespace Sparky {
 		m_ComponentSearchInputTextFilter.Build();
 	}
 
-	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity)
+	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera& editorCamera)
 	{
 		if (s_ShowSceneHierarchyPanel)
 		{
@@ -53,7 +53,7 @@ namespace Sparky {
 
 			if (Gui::BeginPopup("CreateEntity"))
 			{
-				DisplayCreateEntityMenu();
+				DisplayCreateEntityMenu(editorCamera);
 
 				Gui::EndPopup();
 			}
@@ -97,7 +97,7 @@ namespace Sparky {
 				// Right-click on blank space in scene hierarchy panel
 				if (Gui::BeginPopupContextWindow(0, 1, false))
 				{
-					DisplayCreateEntityMenu();
+					DisplayCreateEntityMenu(editorCamera);
 
 					Gui::EndPopup();
 				}
@@ -112,48 +112,57 @@ namespace Sparky {
 		}
 	}
 
-	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene)
+	inline static Math::vec3 GetEditorCameraForwardPosition(const EditorCamera& editorCamera)
+	{
+		return editorCamera.GetPosition() + (editorCamera.GetForwardDirection() * 3.0f);
+	}
+
+	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera& editorCamera)
 	{
 		entity = contextScene->CreateEntity(name);
 		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
 		meshRenderer.Type = static_cast<MeshRendererComponent::MeshType>(defaultMesh);
 		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), (int)(entt::entity)entity);
+		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 	}
 
-	void SceneHierarchyPanel::DisplayCreateEntityMenu()
+	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera& editorCamera)
 	{
 		if (Gui::MenuItem("Create Empty"))
+		{
 			m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
+			m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+		}
 		Gui::Separator();
 
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-				CreateModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
+				CreateModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Sphere"))
-				CreateModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene);
+				CreateModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Capsule"))
-				CreateModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene);
+				CreateModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Cone"))
-				CreateModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene);
+				CreateModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Cylinder"))
-				CreateModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene);
+				CreateModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Plane"))
-				CreateModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene);
+				CreateModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
 			Gui::Separator();
 
 			if (Gui::MenuItem("Torus"))
-				CreateModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene);
+				CreateModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			Gui::EndMenu();
 		}
@@ -164,6 +173,7 @@ namespace Sparky {
 			if (Gui::MenuItem("Quad"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 			}
 
@@ -172,6 +182,7 @@ namespace Sparky {
 			if (Gui::MenuItem("Circle"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 				m_SelectedEntity.AddComponent<CircleRendererComponent>();
 			}
 
@@ -186,6 +197,7 @@ namespace Sparky {
 				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::Separator();
 
@@ -194,6 +206,7 @@ namespace Sparky {
 				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
 				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::EndMenu();
 		}
@@ -205,6 +218,7 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
 				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Directional;
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::Separator();
 
@@ -212,13 +226,15 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
 				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::Separator();
-			
+
 			if (Gui::MenuItem("Spot"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
 				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Spot;
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::EndMenu();
@@ -229,36 +245,40 @@ namespace Sparky {
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
+				CreateModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<BoxColliderComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene);
+				CreateModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<SphereColliderComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene);
+				CreateModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
 
 			if (Gui::MenuItem("Static Mesh Collider"))
 			{
-				CreateModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene);
+				CreateModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
@@ -269,6 +289,7 @@ namespace Sparky {
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
 				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
@@ -279,6 +300,7 @@ namespace Sparky {
 				m_SelectedEntity.AddComponent<CircleRendererComponent>();
 				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
 				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::EndMenu();
@@ -291,6 +313,7 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Source");
 				m_SelectedEntity.AddComponent<AudioSourceComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::Separator();
@@ -299,6 +322,7 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
 				m_SelectedEntity.AddComponent<AudioListenerComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::EndMenu();
@@ -311,6 +335,7 @@ namespace Sparky {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Particle Emitter");
 				m_SelectedEntity.AddComponent<ParticleEmitterComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
 			Gui::EndMenu();
