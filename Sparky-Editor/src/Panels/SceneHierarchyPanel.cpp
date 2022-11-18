@@ -386,8 +386,10 @@ namespace Sparky {
 			buffer.reserve(10);
 		}
 		else
+		{
 			buffer.resize(markerSize);
 			memcpy(buffer.data(), marker.data(), markerSize);
+		}
 
 		if (Gui::InputText("##Marker", buffer.data(), sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) && !buffer.empty())
 		{

@@ -10,8 +10,6 @@
 #include "Sparky/Renderer/Skybox.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
-#include "Sparky/Core/Application.h"
-
 #include <yaml-cpp/yaml.h>
 
 #include <fstream>
@@ -699,7 +697,6 @@ namespace Sparky {
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		Application::Get().GetWindow().SetTitle("Sparky Editor - (Release x64) GL - " + sceneName);
 		SP_CORE_TRACE("Deserializing Scene '{}'", sceneName);
 
 		auto entities = data["Entities"];
