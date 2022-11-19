@@ -29,7 +29,6 @@ IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
 IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
 IncludeDir["PhysX"] = "Sparky/vendor/PhysX/include"
-IncludeDir["qu3e"] = "Sparky/vendor/qu3e/src"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
 IncludeDir["tinygltf"] = "Sparky/vendor/tinygltf"
@@ -57,7 +56,6 @@ group "External Dependencies"
 	include "Sparky/vendor/GLFW"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
-	include "Sparky/vendor/qu3e"
 	include "Sparky/vendor/yaml-cpp"
 group ""
 
@@ -68,7 +66,7 @@ project "Sparky"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -115,7 +113,6 @@ project "Sparky"
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.PhysX}",
-		"%{IncludeDir.qu3e}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.tinygltf}",
@@ -138,7 +135,6 @@ project "Sparky"
 		"%{Library.PhysXFoundation}",
 		"%{Library.PhysXPvd}",
 		"opengl32.lib",
-		"qu3e",
 		"yaml-cpp",
 	}
 
@@ -216,7 +212,7 @@ project "Sparky-Editor"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -238,9 +234,15 @@ project "Sparky-Editor"
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
+	}
+	
+	defines
+	{
+		"PX_PHYSX_STATIC_LIB",
 	}
 
 	links
@@ -260,18 +262,26 @@ project "Sparky-Editor"
 		defines "SP_RELEASE"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 project "Sparky-Launcher"
 	location "Sparky-Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -290,7 +300,14 @@ project "Sparky-Launcher"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.miniaudio}",
+		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
+	}
+
+	defines
+	{
+		"PX_PHYSX_STATIC_LIB",
 	}
 
 	links
@@ -310,11 +327,19 @@ project "Sparky-Launcher"
 		defines "SP_RELEASE"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 group ""
 
 
@@ -324,7 +349,7 @@ project "Sparky-Runtime"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -343,9 +368,16 @@ project "Sparky-Runtime"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.miniaudio}",
+		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
+	}
+
+	defines
+	{
+		"PX_PHYSX_STATIC_LIB",
 	}
 
 	links
@@ -365,11 +397,19 @@ project "Sparky-Runtime"
 		defines "SP_RELEASE"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 group ""
 
 
@@ -379,7 +419,7 @@ project "Testbed"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -398,7 +438,14 @@ project "Testbed"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.miniaudio}",
+		"%{IncludeDir.PhysX}",
+		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
+	}
+
+	defines
+	{
+		"PX_PHYSX_STATIC_LIB",
 	}
 
 	links
@@ -418,11 +465,19 @@ project "Testbed"
 		defines "SP_RELEASE"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 group ""
 
 

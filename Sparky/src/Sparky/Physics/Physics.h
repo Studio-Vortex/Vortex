@@ -5,7 +5,7 @@
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Core/TimeStep.h"
 
-class q3Scene;
+#include <PhysX/PxPhysicsAPI.h>
 
 namespace Sparky {
 
@@ -19,8 +19,6 @@ namespace Sparky {
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
 		static void OnSimulationStop();
 
-		static q3Scene* GetPhysicsScene() { return s_PhysicsScene; }
-
 		static int32_t GetPhysicsSceneIterations() { return s_PhysicsSceneIterations; }
 		static void SetPhysicsSceneIterations(int32_t positionIterations) { s_PhysicsSceneIterations = positionIterations; }
 
@@ -28,7 +26,13 @@ namespace Sparky {
 		static void SetPhysicsSceneGravitty(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
 
 	private:
-		inline static q3Scene* s_PhysicsScene = nullptr;
+		inline static physx::PxDefaultAllocator s_DefaultAllocator;
+		inline static physx::PxDefaultErrorCallback s_ErrorCallback;
+		inline static physx::PxFoundation* s_Foundation = nullptr;
+		inline static physx::PxPhysics* s_Physics = nullptr;
+		inline static physx::PxDefaultCpuDispatcher* s_Dispatcher = nullptr;
+		inline static physx::PxScene* s_PhysicsScene = nullptr;
+		inline static physx::PxTolerancesScale s_ToleranceScale;
 
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);
 		inline static int32_t s_PhysicsSceneIterations = 20;

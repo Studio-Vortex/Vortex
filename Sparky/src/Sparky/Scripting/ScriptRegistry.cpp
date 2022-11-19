@@ -26,8 +26,6 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/reflection.h>
 
-#include <q3.h>
-
 #include <box2d/b2_body.h>
 #include <box2d/b2_world.h>
 #include <box2d/b2_fixture.h>
@@ -1231,8 +1229,6 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
-		body->ApplyLinearForce(q3Vec3(force->x, force->y, force->z));
 	}
 
 	static void RigidBodyComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec3* impulse)
@@ -1243,8 +1239,6 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
-		body->ApplyLinearImpulse(q3Vec3(impulse->x, impulse->y, impulse->z));
 	}
 
 	static void RigidBodyComponent_ApplyTorque(UUID entityUUID, Math::vec3* torque)
@@ -1255,8 +1249,6 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		q3Body* body = (q3Body*)rigidbody.RuntimeBody;
-		body->ApplyTorque(q3Vec3(torque->x, torque->y, torque->z));
 	}
 
 #pragma endregion
