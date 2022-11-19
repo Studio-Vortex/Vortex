@@ -736,6 +736,8 @@ namespace Sparky {
 
 			if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<RigidBodyComponent>(componentName);
+			if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<PhysicsMaterialComponent>(componentName);
 			if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<BoxColliderComponent>(componentName);
 			if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -759,7 +761,6 @@ namespace Sparky {
 
 			Gui::EndPopup();
 		}
-
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
@@ -1716,7 +1717,7 @@ namespace Sparky {
 
 		DrawComponent<RigidBodyComponent>("RigidBody", entity, [](auto& component)
 		{
-			const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
+			const char* bodyTypes[] = { "Static", "Dynamic" };
 			const char* currentBodyType = bodyTypes[(uint32_t)component.Type];
 
 			if (Gui::BeginCombo("Body Type", currentBodyType))
@@ -1742,56 +1743,77 @@ namespace Sparky {
 				Gui::EndCombo();
 			}
 
-			Gui::DragFloat3("Velocity", Math::ValuePtr(component.Velocity), 0.01f);
-			Gui::DragFloat("Drag", &component.Drag, 0.01f, 0.01f, 1.0f);
+			Gui::DragFloat("Mass", &component.Mass, 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat("Linear Drag", &component.LinearDrag, 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat("Angular Drag", &component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
-			if (Gui::TreeNodeEx("Contraints", treeNodeFlags))
+			Gui::Text("Disable Gravity");
+			Gui::SameLine();
+			Gui::Checkbox("##DisableGravity", &component.DisableGravity);
+			Gui::Text("Is Kinematic");
+			Gui::SameLine();
+			Gui::Checkbox("##IsKinematic", &component.IsKinematic);
+
+			if (Gui::TreeNodeEx("Constraints", treeNodeFlags))
 			{
+				Gui::Text("Position");
+				Gui::SameLine();
 				Gui::Text("X");
 				Gui::SameLine();
-				Gui::Checkbox("##XConstraint", &component.ConstrainXAxis);
+				Gui::Checkbox("##XTranslationConstraint", &component.LockPositionX);
 				Gui::SameLine();
-
 				Gui::Text("Y");
 				Gui::SameLine();
-				Gui::Checkbox("##YConstraint", &component.ConstrainYAxis);
+				Gui::Checkbox("##YTranslationConstraint", &component.LockPositionY);
 				Gui::SameLine();
-
 				Gui::Text("Z");
 				Gui::SameLine();
-				Gui::Checkbox("##ZConstraint", &component.ConstrainZAxis);
+				Gui::Checkbox("##ZTranslationConstraint", &component.LockPositionZ);
+				Gui::Text("Rotation");
+				Gui::SameLine();
+				Gui::Text("X");
+				Gui::SameLine();
+				Gui::Checkbox("##XRotationConstraint", &component.LockRotationX);
+				Gui::SameLine();
+				Gui::Text("Y");
+				Gui::SameLine();
+				Gui::Checkbox("##YRotationConstraint", &component.LockRotationY);
+				Gui::SameLine();
+				Gui::Text("Z");
+				Gui::SameLine();
+				Gui::Checkbox("##ZRotationConstraint", &component.LockRotationZ);
 
 				Gui::TreePop();
 			}
 		});
 
+		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](auto& component)
+		{
+			Gui::DragFloat("Static Friction", &component.StaticFriction, 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat("Dynamic Friction", &component.DynamicFriction, 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat("Bounciness", &component.Bounciness, 0.01f, 0.01f, 1.0f, "%.2f");
+		});
+
 		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f);
-			Gui::DragFloat3("Size", Math::ValuePtr(component.Size), 0.01f);
-			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			Gui::DragFloat3("Half Size", Math::ValuePtr(component.HalfSize), 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
 			Gui::Checkbox("Is Trigger", &component.IsTrigger);
 		});
 
 		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f);
-			Gui::DragFloat("Radius", &component.Radius, 0.01, 0.01f);
-			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			Gui::DragFloat("Radius", &component.Radius, 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::Checkbox("Is Trigger", &component.IsTrigger);
 		});
 
 		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
-			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			Gui::DragFloat("Radius", &component.Radius, 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat("Height", &component.Height, 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
+			Gui::Checkbox("Is Trigger", &component.IsTrigger);
 		});
 
 		DrawComponent<StaticMeshColliderComponent>("Static Mesh Collider", entity, [](auto& component)

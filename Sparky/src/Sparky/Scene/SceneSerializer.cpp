@@ -233,7 +233,6 @@ namespace Sparky {
 			{
 				case RigidBodyComponent::BodyType::Static:    return "Static";
 				case RigidBodyComponent::BodyType::Dynamic:   return "Dynamic";
-				case RigidBodyComponent::BodyType::Kinematic: return "Kinematic";
 			}
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
@@ -244,7 +243,6 @@ namespace Sparky {
 		{
 			if (bodyTypeString == "Static")    return RigidBodyComponent::BodyType::Static;
 			if (bodyTypeString == "Dynamic")   return RigidBodyComponent::BodyType::Dynamic;
-			if (bodyTypeString == "Kinematic") return RigidBodyComponent::BodyType::Kinematic;
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
 			return RigidBodyComponent::BodyType::Static;
@@ -510,11 +508,6 @@ namespace Sparky {
 
 				auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 				out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type);
-				out << YAML::Key << "Velocity" << YAML::Value << rigidbodyComponent.Velocity;
-				out << YAML::Key << "Drag" << YAML::Value << rigidbodyComponent.Drag;
-				out << YAML::Key << "FreezeXRotation" << YAML::Value << rigidbodyComponent.ConstrainXAxis;
-				out << YAML::Key << "FreezeYRotation" << YAML::Value << rigidbodyComponent.ConstrainYAxis;
-				out << YAML::Key << "FreezeZRotation" << YAML::Value << rigidbodyComponent.ConstrainZAxis;
 
 				out << YAML::EndMap; // RigidbodyComponent
 			}
@@ -524,14 +517,36 @@ namespace Sparky {
 				out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
 
 				auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
+				out << YAML::Key << "HalfSize" << YAML::Value << boxColliderComponent.HalfSize;
 				out << YAML::Key << "Offset" << YAML::Value << boxColliderComponent.Offset;
-				out << YAML::Key << "Size" << YAML::Value << boxColliderComponent.Size;
-				out << YAML::Key << "Density" << YAML::Value << boxColliderComponent.Density;
-				out << YAML::Key << "Friction" << YAML::Value << boxColliderComponent.Friction;
-				out << YAML::Key << "Restitution" << YAML::Value << boxColliderComponent.Restitution;
 				out << YAML::Key << "IsTrigger" << YAML::Value << boxColliderComponent.IsTrigger;
 
 				out << YAML::EndMap; // BoxColliderComponent
+			}
+
+			if (entity.HasComponent<SphereColliderComponent>())
+			{
+				out << YAML::Key << "SphereColliderComponent" << YAML::BeginMap; // SphereColliderComponent
+
+				auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
+				out << YAML::Key << "Radius" << YAML::Value << sphereColliderComponent.Radius;
+				out << YAML::Key << "Offset" << YAML::Value << sphereColliderComponent.Offset;
+				out << YAML::Key << "IsTrigger" << YAML::Value << sphereColliderComponent.IsTrigger;
+
+				out << YAML::EndMap; // SphereColliderComponent
+			}
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				out << YAML::Key << "CapsuleColliderComponent" << YAML::BeginMap; // CapsuleColliderComponent
+
+				auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
+				out << YAML::Key << "Radius" << YAML::Value << capsuleColliderComponent.Radius;
+				out << YAML::Key << "Height" << YAML::Value << capsuleColliderComponent.Height;
+				out << YAML::Key << "Offset" << YAML::Value << capsuleColliderComponent.Offset;
+				out << YAML::Key << "IsTrigger" << YAML::Value << capsuleColliderComponent.IsTrigger;
+
+				out << YAML::EndMap; // CapsuleColliderComponent
 			}
 
 			if (entity.HasComponent<RigidBody2DComponent>())
@@ -962,16 +977,6 @@ namespace Sparky {
 					auto& rigidbody = deserializedEntity.AddComponent<RigidBodyComponent>();
 
 					rigidbody.Type = Utils::RigidBodyBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
-					if (rigidbodyComponent["Velocity"])
-						rigidbody.Velocity = rigidbodyComponent["Velocity"].as<Math::vec3>();
-					if (rigidbodyComponent["Drag"])
-						rigidbody.Drag = rigidbodyComponent["Drag"].as<float>();
-					if (rigidbodyComponent["FreezeXRotation"])
-						rigidbody.ConstrainXAxis = rigidbodyComponent["FreezeXRotation"].as<bool>();
-					if (rigidbodyComponent["FreezeYRotation"])
-						rigidbody.ConstrainYAxis = rigidbodyComponent["FreezeYRotation"].as<bool>();
-					if (rigidbodyComponent["FreezeZRotation"])
-						rigidbody.ConstrainZAxis = rigidbodyComponent["FreezeZRotation"].as<bool>();
 				}
 
 				auto boxColliderComponent = entity["BoxColliderComponent"];
@@ -979,13 +984,31 @@ namespace Sparky {
 				{
 					auto& boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
 
+					boxCollider.HalfSize = boxColliderComponent["HalfSize"].as<glm::vec3>();
 					boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
-					boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
-					boxCollider.Density = boxColliderComponent["Density"].as<float>();
-					boxCollider.Friction = boxColliderComponent["Friction"].as<float>();
-					boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
 					if (boxColliderComponent["IsTrigger"])
 						boxCollider.IsTrigger = boxColliderComponent["IsTrigger"].as<bool>();
+				}
+
+				auto sphereColliderComponent = entity["SphereColliderComponent"];
+				if (sphereColliderComponent)
+				{
+					auto& sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+
+					sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
+					sphereCollider.Offset = sphereColliderComponent["Offset"].as<Math::vec3>();
+					sphereCollider.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
+				}
+
+				auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
+				if (capsuleColliderComponent)
+				{
+					auto& capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
+
+					capsuleCollider.Radius = capsuleColliderComponent["Radius"].as<float>();
+					capsuleCollider.Height = capsuleColliderComponent["Height"].as<float>();
+					capsuleCollider.Offset = capsuleColliderComponent["Offset"].as<Math::vec3>();
+					capsuleCollider.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

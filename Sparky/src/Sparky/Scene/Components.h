@@ -190,33 +190,53 @@ namespace Sparky {
 
 	struct RigidBodyComponent
 	{
-		enum class BodyType { Static = 0, Dynamic, Kinematic };
+		enum class BodyType { None = -1, Static, Dynamic };
 		BodyType Type = BodyType::Static;
 
-		Math::vec3 Velocity = Math::vec3(0.0f);
-		float Drag = 0.0f;
+		uint32_t LayerID = 0;
 
-		// Storage for runtime
-		void* RuntimeBody = nullptr;
+		float Mass = 1.0f;
+		float LinearDrag = 0.01f;
+		float AngularDrag = 0.05f;
+		bool DisableGravity = false;
+		bool IsKinematic = false;
 
-		bool ConstrainXAxis = false;
-		bool ConstrainYAxis = false;
-		bool ConstrainZAxis = false;
+		enum class CollisionDetectionType : uint32_t
+		{
+			Discrete,
+			Continuous,
+			ContinuousSpeculative
+		};
+
+		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
+
+		bool LockPositionX = false;
+		bool LockPositionY = false;
+		bool LockPositionZ = false;
+		bool LockRotationX = false;
+		bool LockRotationY = false;
+		bool LockRotationZ = false;
+
+		void* RuntimeActor = nullptr;
 
 		RigidBodyComponent() = default;
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 	};
 
+	struct PhysicsMaterialComponent
+	{
+		float StaticFriction = 1.0F;
+		float DynamicFriction = 1.0F;
+		float Bounciness = 1.0F;
+
+		PhysicsMaterialComponent() = default;
+		PhysicsMaterialComponent(const PhysicsMaterialComponent&) = default;
+	};
+
 	struct BoxColliderComponent
 	{
+		Math::vec3 HalfSize = Math::vec3(0.5f);
 		Math::vec3 Offset = Math::vec3(0.0f);
-		Math::vec3 Size = Math::vec3(1.0f);
-
-		// TODO: Move into physics material in the future
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-
 		bool IsTrigger = false;
 
 		BoxColliderComponent() = default;
@@ -225,17 +245,9 @@ namespace Sparky {
 
 	struct SphereColliderComponent
 	{
-		Math::vec3 Offset = Math::vec3(0.0f);
 		float Radius = 0.5f;
-
-		// TODO: Move into physics material in the future
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
-
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
+		Math::vec3 Offset = Math::vec3(0.0f);
+		bool IsTrigger = false;
 
 		SphereColliderComponent() = default;
 		SphereColliderComponent(const SphereColliderComponent&) = default;
@@ -243,17 +255,10 @@ namespace Sparky {
 
 	struct CapsuleColliderComponent
 	{
-		Math::vec2 Offset = Math::vec2(0.0f);
-		Math::vec3 Size = Math::vec3(0.5f);
-
-		// TODO: Move into physics material in the future
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
-
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
+		float Radius = 0.5f;
+		float Height = 1.0f;
+		Math::vec3 Offset = Math::vec3(0.0f);
+		bool IsTrigger = false;
 
 		CapsuleColliderComponent() = default;
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;

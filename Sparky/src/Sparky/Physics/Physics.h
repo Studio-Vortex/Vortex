@@ -5,8 +5,6 @@
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Core/TimeStep.h"
 
-#include <PhysX/PxPhysicsAPI.h>
-
 namespace Sparky {
 
 	class Physics
@@ -26,16 +24,55 @@ namespace Sparky {
 		static void SetPhysicsSceneGravitty(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
 
 	private:
-		inline static physx::PxDefaultAllocator s_DefaultAllocator;
-		inline static physx::PxDefaultErrorCallback s_ErrorCallback;
-		inline static physx::PxFoundation* s_Foundation = nullptr;
-		inline static physx::PxPhysics* s_Physics = nullptr;
-		inline static physx::PxDefaultCpuDispatcher* s_Dispatcher = nullptr;
-		inline static physx::PxScene* s_PhysicsScene = nullptr;
-		inline static physx::PxTolerancesScale s_ToleranceScale;
-
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);
 		inline static int32_t s_PhysicsSceneIterations = 20;
+	};
+
+	enum class FilterGroup : uint32_t
+	{
+		Static = BIT(0),
+		Dynamic = BIT(1),
+		Kinematic = BIT(2),
+		All = Static | Dynamic | Kinematic
+	};
+
+	enum class BroadphaseType
+	{
+		SweepAndPrune,
+		MultiBoxPrune,
+		AutomaticBoxPrune
+	};
+
+	enum class FrictionType
+	{
+		Patch,
+		OneDirectional,
+		TwoDirectional
+	};
+
+	enum class CookingResult
+	{
+		Success,
+		ZeroAreaTestFailed,
+		PolygonLimitReached,
+		LargeTriangle,
+		InvalidMesh,
+		Failure,
+		None
+	};
+
+	enum class ForceMode : uint8_t
+	{
+		Force = 0,
+		Impulse,
+		VelocityChange,
+		Acceleration
+	};
+
+	enum class ActorLockFlag : uint8_t
+	{
+		TranslationX = BIT(0), TranslationY = BIT(1), TranslationZ = BIT(2), Translation = TranslationX | TranslationY | TranslationZ,
+		RotationX = BIT(3), RotationY = BIT(4), RotationZ = BIT(5), Rotation = RotationX | RotationY | RotationZ
 	};
 
 }

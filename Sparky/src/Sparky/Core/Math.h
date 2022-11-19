@@ -203,6 +203,16 @@ namespace Sparky::Math {
 		return glm::value_ptr(value);
 	}
 
+	static auto EulerAngles(const quaternion& rotationQuat)
+	{
+		return glm::eulerAngles(rotationQuat);
+	}
+
+	static auto Decompose(const mat4& transform, vec3& scale, quaternion& orientation, vec3& translation, vec3& skew, vec4& perspective)
+	{
+		return glm::decompose(transform, scale, orientation, translation, skew, perspective);
+	}
+
 	static bool DecomposeTransform(const mat4& transform, vec3& translation, vec3& rotation, vec3& scale)
 	{
 		// From glm::decompose in matrix_decompose.inl
