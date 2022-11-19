@@ -541,6 +541,8 @@ namespace Sparky {
 				out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type);
 				out << YAML::Key << "Velocity" << YAML::Value << rb2dComponent.Velocity;
 				out << YAML::Key << "Drag" << YAML::Value << rb2dComponent.Drag;
+				out << YAML::Key << "AngularDrag" << YAML::Value << rb2dComponent.AngularDrag;
+				out << YAML::Key << "GravityScale" << YAML::Value << rb2dComponent.GravityScale;
 				out << YAML::Key << "FreezeRotation" << YAML::Value << rb2dComponent.FixedRotation;
 
 				out << YAML::EndMap; // Rigidbody2DComponent
@@ -993,6 +995,10 @@ namespace Sparky {
 						rb2d.Velocity = rigidbody2DComponent["Velocity"].as<Math::vec2>();
 					if (rigidbody2DComponent["Drag"])
 						rb2d.Drag = rigidbody2DComponent["Drag"].as<float>();
+					if (rigidbody2DComponent["AngularDrag"])
+						rb2d.AngularDrag = rigidbody2DComponent["AngularDrag"].as<float>();
+					if (rigidbody2DComponent["GravityScale"])
+						rb2d.GravityScale = rigidbody2DComponent["GravityScale"].as<float>();
 					if (rigidbody2DComponent["FreezeRotation"])
 						rb2d.FixedRotation = rigidbody2DComponent["FreezeRotation"].as<bool>();
 				}

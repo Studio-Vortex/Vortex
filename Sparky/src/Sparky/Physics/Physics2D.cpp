@@ -74,6 +74,8 @@ namespace Sparky {
 				if (rb2d.Velocity != Math::vec2(0.0f))
 					body->SetLinearVelocity({ rb2d.Velocity.x, rb2d.Velocity.y });
 				body->SetLinearDamping(rb2d.Drag);
+				body->SetAngularDamping(rb2d.AngularDrag);
+				body->SetGravityScale(rb2d.GravityScale);
 				body->SetFixedRotation(rb2d.FixedRotation);
 
 				if (entity.HasComponent<BoxCollider2DComponent>())
@@ -135,6 +137,8 @@ namespace Sparky {
 		bodyDef.fixedRotation = rb2d.FixedRotation;
 		bodyDef.linearVelocity = b2Vec2(rb2d.Velocity.x, rb2d.Velocity.y);
 		bodyDef.linearDamping = rb2d.Drag;
+		bodyDef.angularDamping = rb2d.AngularDrag;
+		bodyDef.gravityScale = rb2d.GravityScale;
 		bodyDef.angle = transform.Rotation.z;
 
 		b2Body* body = s_PhysicsScene->CreateBody(&bodyDef);

@@ -1826,6 +1826,8 @@ namespace Sparky {
 
 			Gui::DragFloat2("Velocity", Math::ValuePtr(component.Velocity), 0.01f);
 			Gui::DragFloat("Drag", &component.Drag, 0.01f, 0.01f, 1.0f);
+			Gui::DragFloat("Angular Drag", &component.AngularDrag, 0.01f, 0.01f, 1.0f);
+			Gui::DragFloat("Gravity Scale", &component.GravityScale, 0.01f, 0.01f, 1.0f);
 			Gui::Checkbox("Freeze Rotation", &component.FixedRotation);
 		});
 

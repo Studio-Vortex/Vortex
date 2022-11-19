@@ -274,6 +274,8 @@ namespace Sparky {
 
 		Math::vec2 Velocity = Math::vec2(0.0f);
 		float Drag = 0.0f;
+		float AngularDrag = 0.05f;
+		float GravityScale = 1.0f;
 
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
