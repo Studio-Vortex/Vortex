@@ -297,6 +297,7 @@ namespace Sparky {
 				out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
 				out << YAML::EndMap; // Camera
 
+				out << YAML::Key << "ClearColor" << YAML::Value << cameraComponent.ClearColor;
 				out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
 				out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
 
@@ -751,6 +752,8 @@ namespace Sparky {
 					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
+					if (cameraComponent["ClearColor"])
+						cc.ClearColor = cameraComponent["ClearColor"].as<Math::vec3>();
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}

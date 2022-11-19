@@ -10,11 +10,6 @@ namespace Sparky {
 			std::string CSharpAssemblyPath = "";
 			bool EnableDebugging = false;
 		} ScriptingProps;
-		
-		struct RendererProperties
-		{
-			Math::vec3 ClearColor;
-		} RendererProps;
 
 		struct PhysicsProperties
 		{

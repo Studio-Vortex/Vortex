@@ -104,7 +104,6 @@ namespace Sparky {
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 		Math::vec4 m_Physics3DColliderColor = ColorToVec4(Color::Green);
 		Math::vec4 m_Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
-		Math::vec3 m_RendererClearColor = Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) };
 
 		float m_EditorCameraFOV = 45.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
@@ -172,7 +171,6 @@ namespace Sparky {
 
 		ProjectProperties m_Settings{
 			ProjectProperties::ScriptingProperties{ "Assets", "", false },
-			ProjectProperties::RendererProperties{ m_RendererClearColor },
 			ProjectProperties::PhysicsProperties{ m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders },
 			ProjectProperties::EditorProperties{ m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes, m_EditorCameraFOV },
 			ProjectProperties::GizmoProperties{ m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize },

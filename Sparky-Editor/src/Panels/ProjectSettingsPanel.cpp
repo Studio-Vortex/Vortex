@@ -21,9 +21,6 @@ namespace Sparky {
 			{
 				if (Gui::BeginTabItem("Renderer"))
 				{
-					if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(m_Properties.RendererProps.ClearColor)))
-						RenderCommand::SetClearColor(m_Properties.RendererProps.ClearColor);
-					
 					float lineWidth = Renderer2D::GetLineWidth();
 					if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
 						Renderer2D::SetLineWidth(lineWidth);

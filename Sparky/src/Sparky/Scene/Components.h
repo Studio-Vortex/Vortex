@@ -81,6 +81,7 @@ namespace Sparky {
 	struct CameraComponent
 	{
 		SceneCamera Camera;
+		Math::vec3 ClearColor = Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)); // Dark blue
 		bool Primary = true;
 		bool FixedAspectRatio = false;
 

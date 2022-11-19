@@ -24,10 +24,6 @@ namespace Sparky {
 		out << YAML::Key << "EnableDebugging" << YAML::Value << props.ScriptingProps.EnableDebugging;
 		out << YAML::EndSeq;
 
-		out << YAML::Key << "RendererProperties" << YAML::BeginSeq;
-		out << YAML::Key << "ClearColor" << YAML::Value << props.RendererProps.ClearColor;
-		out << YAML::EndSeq;
-
 		out << YAML::Key << "PhysicsProperties" << YAML::BeginSeq;
 		out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
 		out << YAML::Key << "Physics3DColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;

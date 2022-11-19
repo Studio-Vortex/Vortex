@@ -285,14 +285,20 @@ namespace Sparky {
 			
 			if (primaryCameraEntity)
 			{
-				primarySceneCamera = &primaryCameraEntity.GetComponent<CameraComponent>().Camera;
+				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+				primarySceneCamera = &cameraComponent.Camera;
 				primarySceneCameraTransform = primaryCameraEntity.GetTransform();
+
+				// Set Clear color
+				RenderCommand::SetClearColor(cameraComponent.ClearColor);
 			}
 		}
 
 		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (primarySceneCamera != nullptr)
+		{
 			m_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, m_Registry);
+		}
 		
 		// Update Components
 		OnModelUpdate();
@@ -324,6 +330,15 @@ namespace Sparky {
 	{
 		// Render
 		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
+
+		Entity primaryCameraEntity = GetPrimaryCameraEntity();
+		if (primaryCameraEntity)
+		{
+			const auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+
+			// Set Clear color
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
+		}
 
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -480,6 +495,8 @@ namespace Sparky {
 	{
 		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+		RenderCommand::SetClearColor(component.ClearColor);
 	}
 
 	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)
@@ -508,6 +525,7 @@ namespace Sparky {
 	
 	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
 	{
+		
 	}
 
 	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)

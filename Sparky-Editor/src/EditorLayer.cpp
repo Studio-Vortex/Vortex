@@ -59,7 +59,6 @@ namespace Sparky {
 			CreateNewScene(); // Start the editor off with a fresh scene
 
 		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
-		RenderCommand::SetClearColor(m_RendererClearColor);
 
 		m_BuildSettingsPanel.SetContext(SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 	}
@@ -1237,6 +1236,9 @@ namespace Sparky {
 		SharedRef<Scene> newScene = CreateShared<Scene>();
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+		// Default clear color
+		RenderCommand::SetClearColor(Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)));
 
 		std::string name = std::format("{} Scene Load Time", path.filename().string());
 		InstrumentationTimer timer(name.c_str());

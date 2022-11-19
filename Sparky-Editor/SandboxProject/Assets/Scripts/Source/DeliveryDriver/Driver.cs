@@ -8,14 +8,18 @@ namespace Sandbox {
 		public float moveSpeed;
 		public float steerSpeed;
 
+		private BoxCollider2D boxCollider;
+
 		protected override void OnCreate()
 		{
+			boxCollider = GetComponent<BoxCollider2D>();
 		}
 
 		protected override void OnUpdate(float delta)
 		{
 			ProcessRotation();
 			ProcessMovement();
+			ProcessDelivery();
 		}
 
 		void ProcessRotation()
@@ -40,6 +44,20 @@ namespace Sandbox {
 				velocity = -transform.Up;
 
 			transform.Translate(velocity * moveSpeed * Time.DeltaTime);
+		}
+
+		void ProcessDelivery()
+		{
+			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + (transform.Up.XY / 2.0f), out RayCastHit2D hit);
+			
+			if (other.Marker == "Package")
+			{
+				Debug.Log("Package picked up!");
+			}
+			else if (other.Marker == "Customer")
+			{
+				Debug.Log("Delivered package!");
+			}
 		}
 	}
 

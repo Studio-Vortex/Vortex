@@ -820,6 +820,9 @@ namespace Sparky {
 			}
 			else
 			{
+				if (Gui::ColorEdit3("Clear Color", Math::ValuePtr(component.ClearColor)))
+					RenderCommand::SetClearColor(component.ClearColor);
+
 				float orthoSize = camera.GetOrthographicSize();
 				if (Gui::DragFloat("Size", &orthoSize))
 					camera.SetOrthographicSize(orthoSize);
