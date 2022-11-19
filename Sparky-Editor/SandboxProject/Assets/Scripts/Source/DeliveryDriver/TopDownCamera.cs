@@ -4,7 +4,7 @@ namespace Sandbox {
 
 	public class TopDownCamera : Entity
 	{
-		private Entity driver;
+		Entity driver;
 
 		protected override void OnCreate()
 		{

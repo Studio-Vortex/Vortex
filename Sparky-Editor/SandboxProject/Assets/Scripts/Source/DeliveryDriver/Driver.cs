@@ -7,12 +7,17 @@ namespace Sandbox {
 	{
 		public float moveSpeed;
 		public float steerSpeed;
+		public float slowSpeed;
+		public float boostSpeed;
+		public bool hasPackage;
 
-		private BoxCollider2D boxCollider;
+		Vector4 hasPackageColor = new Vector4(0.2f, 0.8f, 0.2f, 1.0f);
+		Vector4 noPackageColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		SpriteRenderer spriteRenderer;
 
 		protected override void OnCreate()
 		{
-			boxCollider = GetComponent<BoxCollider2D>();
+			spriteRenderer = GetComponent<SpriteRenderer>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -48,17 +53,30 @@ namespace Sandbox {
 
 		void ProcessDelivery()
 		{
-			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + (transform.Up.XY / 2.0f), out RayCastHit2D hit);
+			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + transform.Up.XY, out RayCastHit2D hit);
 			
-			if (other.Marker == "Package")
+			if (other.Marker == "Package" && !hasPackage)
 			{
-				Debug.Log("Package picked up!");
+				hasPackage = true;
+				spriteRenderer.Color = hasPackageColor;
+				other.Destroy(false);
 			}
-			else if (other.Marker == "Customer")
+			else if (other.Marker == "Customer" && hasPackage)
 			{
-				Debug.Log("Delivered package!");
+				hasPackage = false;
+				spriteRenderer.Color = noPackageColor;
+			}
+			else if (other.Marker == "Boost")
+			{
+				moveSpeed = boostSpeed;
+				other.Destroy(false);
+			}
+			else if (other.Marker == "UnTagged")
+			{
+				moveSpeed = slowSpeed;
 			}
 		}
+
 	}
 
 }

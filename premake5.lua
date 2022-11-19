@@ -28,6 +28,7 @@ IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
 IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
 IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
+IncludeDir["PhysX"] = "Sparky/vendor/PhysX/include"
 IncludeDir["qu3e"] = "Sparky/vendor/qu3e/src"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
@@ -37,10 +38,19 @@ IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
 
 LibraryDir = {}
 LibraryDir["Mono"] = "%{wks.location}/Sparky/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["PhysX"] = "%{wks.location}/Sparky/vendor/PhysX/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["mono"] = "%{LibraryDir.Mono}/mono-2.0-sgen.lib" -- dll binary must be included in build
 --Library["mono"] = "%{LibraryDir.Mono}/libmono-static-sgen.lib"
+
+Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX_static_64.lib"
+Library["PhysXCharacterKinematic"] = "%{LibraryDir.PhysX}/PhysXCharacterKinematic_static_64.lib"
+Library["PhysXCommon"] = "%{LibraryDir.PhysX}/PhysXCommon_static_64.lib"
+Library["PhysXCooking"] = "%{LibraryDir.PhysX}/PhysXCooking_static_64.lib"
+Library["PhysXExtensions"] = "%{LibraryDir.PhysX}/PhysXExtensions_static_64.lib"
+Library["PhysXFoundation"] = "%{LibraryDir.PhysX}/PhysXFoundation_static_64.lib"
+Library["PhysXPvd"] = "%{LibraryDir.PhysX}/PhysXPvdSDK_static_64.lib"
 
 group "External Dependencies"
 	include "Sparky/vendor/Box2D"
@@ -87,7 +97,7 @@ project "Sparky"
 
 	defines
 	{
-		"_CRT_SECURE_NO_WARNINGS",
+		"PX_PHYSX_STATIC_LIB", "_CRT_SECURE_NO_WARNINGS",
 	}
 
 	includedirs
@@ -104,6 +114,7 @@ project "Sparky"
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.qu3e}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
@@ -119,6 +130,13 @@ project "Sparky"
 		"GLFW",
 		"ImGui",
 		"%{Library.mono}",
+		"%{Library.PhysX}",
+		"%{Library.PhysXCharacterKinematic}",
+		"%{Library.PhysXCommon}",
+		"%{Library.PhysXCooking}",
+		"%{Library.PhysXExtensions}",
+		"%{Library.PhysXFoundation}",
+		"%{Library.PhysXPvd}",
 		"opengl32.lib",
 		"qu3e",
 		"yaml-cpp",
@@ -148,11 +166,19 @@ project "Sparky"
 		defines "SP_RELEASE"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 	filter "configurations:Dist"
 		defines "SP_DIST"
 		runtime "Release"
 		optimize "on"
+		defines
+		{
+			"NDEBUG" -- PhysX Requires This
+		}
 
 
 project "Sparky-ScriptCore"
@@ -211,6 +237,7 @@ project "Sparky-Editor"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
+		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.tinygltf}",
 		"%{IncludeDir.tinyobjloader}",
