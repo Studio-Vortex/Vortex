@@ -170,6 +170,12 @@ namespace Sparky::Math {
 		return glm::quat(v);
 	}
 
+	template <typename T>
+	static auto ToQuaternion(T v)
+	{
+		return glm::toQuat(v);
+	}
+
 	static quaternion GetOrientation(float pitch, float yaw, float roll)
 	{
 		return quaternion(vec3(pitch, yaw, roll));

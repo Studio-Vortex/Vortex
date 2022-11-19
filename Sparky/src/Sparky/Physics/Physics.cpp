@@ -30,14 +30,58 @@ namespace Sparky {
 			return { translation, orientation, scale };
 		}
 
-		static physx::PxTransform SparkyTransformToPxTransform(const Math::mat4& transform)
+		physx::PxQuat ToPhysXQuat(const Math::quaternion& quat)
 		{
-			auto [translation, rotationQuat, scale] = GetTransformDecomposition(transform);
-			Math::vec3 rotation = Math::EulerAngles(rotationQuat);
+			return physx::PxQuat(quat.x, quat.y, quat.z, quat.w);
+		}
 
-			physx::PxTransform physxTransform(physx::PxVec3(translation.x, translation.y, translation.z));
-			physxTransform.rotate(physx::PxVec3(rotation.x, rotation.y, rotation.z));
-			return physxTransform;
+		physx::PxVec3 ToPhysXVector(const Math::vec3& vector)
+		{
+			return physx::PxVec3(vector.x, vector.y, vector.z);
+		}
+
+		physx::PxVec4 ToPhysXVector(const Math::vec4& vector)
+		{
+			return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
+		}
+
+		physx::PxTransform ToPhysXTransform(const Math::mat4& matrix)
+		{
+			physx::PxQuat r = ToPhysXQuat(Math::Normalize(Math::ToQuaternion(matrix)));
+			physx::PxVec3 p = ToPhysXVector(Math::vec3(matrix[3]));
+			return physx::PxTransform(p, r);
+		}
+
+		physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix)
+		{
+			return *(physx::PxMat44*)&matrix;
+		}
+
+		Math::quaternion FromPhysXQuat(const physx::PxQuat& quat)
+		{
+			return Math::quaternion(quat.w, quat.x, quat.y, quat.z);
+		}
+
+		Math::vec3 FromPhysXVector(const physx::PxVec3& vector)
+		{
+			return Math::vec3(vector.x, vector.y, vector.z);
+		}
+
+		Math::vec4 FromPhysXVector(const physx::PxVec4& vector)
+		{
+			return Math::vec4(vector.x, vector.y, vector.z, vector.w);
+		}
+
+		Math::mat4 FromPhysXTransform(const physx::PxTransform& transform)
+		{
+			Math::quaternion rotation = FromPhysXQuat(transform.q);
+			Math::vec3 position = FromPhysXVector(transform.p);
+			return Math::Translate(position) * Math::ToMat4(rotation);
+		}
+
+		Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
+		{
+			return *(Math::mat4*)&matrix;
 		}
 		
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
@@ -48,6 +92,7 @@ namespace Sparky {
 
 			// contact callback;
 			const physx::PxU32 numShapes = actor->getNbShapes();
+
 			physx::PxShape** shapes = (physx::PxShape**)s_Data.DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);
 			actor->getShapes(shapes, numShapes);
 
@@ -112,33 +157,16 @@ namespace Sparky {
 				CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-			const auto& position = actor->getGlobalPose().p;
-			const physx::PxQuat& physicsBodyRotation = actor->getGlobalPose().q;
-
-			auto [translation, rotationQuat, scale] = Utils::GetTransformDecomposition(trx);
-			Math::vec3 rotation = Math::EulerAngles(rotationQuat);
+			auto [t, r, scale] = Utils::GetTransformDecomposition(trx);
 
 			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			{
-				// If the rigidbody is dynamic, the position of the entity is determined by the rigidbody
-				// TODO: Get rotation from RigidActor
-				float xAngle, yAngle, zAngle;
-				physx::PxVec3 axis;
-				physicsBodyRotation.toRadiansAndUnitAxis(xAngle, axis);
-				physicsBodyRotation.toRadiansAndUnitAxis(yAngle, axis);
-				physicsBodyRotation.toRadiansAndUnitAxis(zAngle, axis);
-
-				trx = Math::Translate({ position.x, position.y, position.z }) *
-					Math::ToMat4(Math::quaternion({ xAngle, yAngle, zAngle })) *
-					Math::Scale(scale);
-
-				transform.Translation = { position.x, position.y, position.z };
-				transform.Rotation = { xAngle, yAngle, zAngle };
+				entity.SetTransform(Utils::FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
 			}
 			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 			{
 				// If the rigidbody is static, make sure the actor is at the entitys position
-				actor->setGlobalPose(Utils::SparkyTransformToPxTransform(trx));
+				actor->setGlobalPose(Utils::ToPhysXTransform(trx));
 			}
 		}
 	}
@@ -158,11 +186,11 @@ namespace Sparky {
 
 		if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 		{
-			actor = s_Data.PhysicsFactory->createRigidStatic(Utils::SparkyTransformToPxTransform(trx));
+			actor = s_Data.PhysicsFactory->createRigidStatic(Utils::ToPhysXTransform(trx));
 		}
 		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(Utils::SparkyTransformToPxTransform(trx));
+			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(Utils::ToPhysXTransform(trx));
 			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);
@@ -172,12 +200,12 @@ namespace Sparky {
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
 
+			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 			actor = dynamicActor;
 		}
 
 		SP_CORE_ASSERT(actor, "Failed to create Physics Actor!");
 		rigidbody.RuntimeActor = actor;
-		s_Data.PhysicsScene->addActor(*actor);
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
@@ -199,7 +227,9 @@ namespace Sparky {
 			}
 
 			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
-			shape->setLocalPose(Utils::SparkyTransformToPxTransform(Math::Translate(boxCollider.Offset)));
+			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !boxCollider.IsTrigger);
+			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, boxCollider.IsTrigger);
+			shape->setLocalPose(Utils::ToPhysXTransform(Math::Translate(boxCollider.Offset)));
 		}
 
 		if (entity.HasComponent<SphereColliderComponent>())
@@ -221,16 +251,9 @@ namespace Sparky {
 				material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 			}
 
-			physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
-
-			physx::PxRigidDynamic* rigidBodyActor = actor->is<physx::PxRigidDynamic>();
-
-			if (rigidBodyActor)
-			{
-				rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, true);
-				rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, true);
-				rigidBodyActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, true);
-			}
+			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
+			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !sphereCollider.IsTrigger);
+			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
 		}
 
 		if (entity.HasComponent<CapsuleColliderComponent>())
@@ -253,6 +276,8 @@ namespace Sparky {
 			}
 
 			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
+			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !capsuleCollider.IsTrigger);
+			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
 
 			// Make sure that the capsule is facing up (+Y)
 			shape->setLocalPose(physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1))));
@@ -263,6 +288,8 @@ namespace Sparky {
 			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
 		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+
+		s_Data.PhysicsScene->addActor(*actor);
 	}
 
 	void Physics::DestroyPhysicsBody(Entity entity)

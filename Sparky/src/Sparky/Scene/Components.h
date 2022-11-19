@@ -72,6 +72,11 @@ namespace Sparky {
 			Math::mat4 result = Math::Translate(Translation) * rotation * Math::Scale(Scale);
 			return result;
 		}
+
+		inline void SetTransform(const Math::mat4& transform)
+		{
+			Math::DecomposeTransform(transform, Translation, Rotation, Scale);
+		}
 	};
 
 #pragma endregion
