@@ -144,7 +144,8 @@ namespace Sparky {
 	{
 		q3BodyDef bodyDef;
 		bodyDef.bodyType = Utils::RigidBodyTypeToQu3eBody(rigidbody.Type);
-		bodyDef.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
+		q3Identity(bodyDef.position);
+		//bodyDef.position.Set(transform.Translation.x, transform.Translation.y, transform.Translation.z);
 		bodyDef.lockAxisX = rigidbody.ConstrainXAxis;
 		bodyDef.lockAxisY = rigidbody.ConstrainYAxis;
 		bodyDef.lockAxisZ = rigidbody.ConstrainZAxis;

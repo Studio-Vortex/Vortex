@@ -41,7 +41,8 @@ namespace Sparky {
 		void ResetCameraPositionToWorldOrigin();
 		void MoveToPosition(const Math::vec3& translation);
 
-		static void LockCameraRotation(bool lockRotation) { s_LockEditorCameraRotation = lockRotation; }
+		static void LockToForwardOnly(bool lockRotation) { s_LockForward = lockRotation; }
+		static void LockToDownOnly(bool lockRotation) { s_LockDown = lockRotation; }
 		static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }
 		static void SetMoveSpeed(const Math::vec3 moveSpeed) { s_MoveSpeed = moveSpeed; }
 
@@ -79,7 +80,8 @@ namespace Sparky {
 
 		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
 
-		inline static bool s_LockEditorCameraRotation = false;
+		inline static bool s_LockForward = false;
+		inline static bool s_LockDown = false;
 		inline static Math::vec3 s_MoveSpeed = { 5.0f, 5.0f, 5.0f };
 
 	};

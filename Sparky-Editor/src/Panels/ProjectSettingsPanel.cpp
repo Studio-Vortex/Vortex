@@ -265,9 +265,13 @@ namespace Sparky {
 
 					Gui::DragFloat("Camera FOV", &m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
-					static bool lockEditorCameraRotation = false;
-					if (Gui::Checkbox("Lock Camera Rotation", &lockEditorCameraRotation))
-						EditorCamera::LockCameraRotation(lockEditorCameraRotation);
+					static bool lockFacingForward = false;
+					if (Gui::Checkbox("Lock Camera Rotation To Forward", &lockFacingForward))
+						EditorCamera::LockToForwardOnly(lockFacingForward);
+
+					static bool lockFacingDown = false;
+					if (Gui::Checkbox("Lock Camera Rotation To Down", &lockFacingDown))
+						EditorCamera::LockToDownOnly(lockFacingDown);
 
 					Gui::Spacing();
 

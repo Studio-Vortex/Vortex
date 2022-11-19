@@ -21,8 +21,15 @@ namespace Sparky {
 
 	void EditorCamera::UpdateView()
 	{
-		if (s_LockEditorCameraRotation)
+		if (s_LockForward)
+		{
 			m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
+		}
+		else if (s_LockDown)
+		{
+			m_Yaw = 0.0f;
+			m_Pitch = Math::Deg2Rad(90.f);
+		}
 
 		m_Position = CalcualtePosition();
 
