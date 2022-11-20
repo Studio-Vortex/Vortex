@@ -56,7 +56,7 @@ namespace Sparky {
 		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data.ToleranceScale);
 		sceneDescription.gravity = physx::PxVec3(gravity.x, gravity.y, gravity.z);
 
-		s_Data.Dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+		s_Data.Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 		sceneDescription.cpuDispatcher = s_Data.Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
 		s_Data.PhysicsScene = s_Data.PhysicsFactory->createScene(sceneDescription);
@@ -153,9 +153,10 @@ namespace Sparky {
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			Math::vec3 scale = transform.Scale;
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-			physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x, boxCollider.HalfSize.y, boxCollider.HalfSize.z);
+			physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x * scale.x, boxCollider.HalfSize.y * scale.y, boxCollider.HalfSize.z * scale.z);
 			physx::PxMaterial* material = nullptr;
 
 			if (entity.HasComponent<PhysicsMaterialComponent>())
