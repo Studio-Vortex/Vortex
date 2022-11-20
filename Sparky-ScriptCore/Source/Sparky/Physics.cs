@@ -1,4 +1,6 @@
-﻿namespace Sparky {
+﻿using System.Runtime.CompilerServices;
+
+namespace Sparky {
 
 	public struct RayCastHit2D
 	{
@@ -18,6 +20,22 @@
 				return null;
 
 			return new Entity(entityID);
+		}
+	}
+
+	public struct RaycastHit
+	{
+		public ulong EntityID { get; private set; }
+		public Vector3 Position { get; private set; }
+		public Vector3 Normal { get; private set; }
+		public float Distance { get; private set; }
+	}
+
+	public static class Physics
+	{
+		public static bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out RaycastHit hit)
+		{
+			return InternalCalls.Physics_Raycast(ref origin, ref direction, maxDistance, out hit);
 		}
 	}
 

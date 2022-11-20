@@ -5,7 +5,21 @@
 #include "Sparky/Scene/Components.h"
 #include "Sparky/Core/TimeStep.h"
 
+namespace physx {
+
+	class PxScene;
+
+}
+
 namespace Sparky {
+
+	struct RaycastHit
+	{
+		uint64_t EntityID;
+		Math::vec3 Position;
+		Math::vec3 Normal;
+		float Distance;
+	};
 
 	class Physics
 	{
@@ -16,6 +30,8 @@ namespace Sparky {
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
 		static void OnSimulationStop();
+
+		static physx::PxScene* GetPhysicsScene();
 
 		static int32_t GetPhysicsSceneIterations() { return s_PhysicsSceneIterations; }
 		static void SetPhysicsSceneIterations(int32_t positionIterations) { s_PhysicsSceneIterations = positionIterations; }

@@ -1,7 +1,7 @@
 #include "sppch.h"
 #include "Physics.h"
 
-#include <PhysX/PxPhysicsAPI.h>
+#include "Sparky/Physics/PhysXAPIHelpers.h"
 
 namespace Sparky {
 
@@ -20,70 +20,6 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static std::tuple<Math::vec3, Math::quaternion, Math::vec3> GetTransformDecomposition(const Math::mat4& transform)
-		{
-			Math::vec3 scale, translation, skew;
-			Math::vec4 perspective;
-			Math::quaternion orientation;
-			Math::Decompose(transform, scale, orientation, translation, skew, perspective);
-
-			return { translation, orientation, scale };
-		}
-
-		physx::PxQuat ToPhysXQuat(const Math::quaternion& quat)
-		{
-			return physx::PxQuat(quat.x, quat.y, quat.z, quat.w);
-		}
-
-		physx::PxVec3 ToPhysXVector(const Math::vec3& vector)
-		{
-			return physx::PxVec3(vector.x, vector.y, vector.z);
-		}
-
-		physx::PxVec4 ToPhysXVector(const Math::vec4& vector)
-		{
-			return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
-		}
-
-		physx::PxTransform ToPhysXTransform(const Math::mat4& matrix)
-		{
-			physx::PxQuat r = ToPhysXQuat(Math::Normalize(Math::ToQuaternion(matrix)));
-			physx::PxVec3 p = ToPhysXVector(Math::vec3(matrix[3]));
-			return physx::PxTransform(p, r);
-		}
-
-		physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix)
-		{
-			return *(physx::PxMat44*)&matrix;
-		}
-
-		Math::quaternion FromPhysXQuat(const physx::PxQuat& quat)
-		{
-			return Math::quaternion(quat.w, quat.x, quat.y, quat.z);
-		}
-
-		Math::vec3 FromPhysXVector(const physx::PxVec3& vector)
-		{
-			return Math::vec3(vector.x, vector.y, vector.z);
-		}
-
-		Math::vec4 FromPhysXVector(const physx::PxVec4& vector)
-		{
-			return Math::vec4(vector.x, vector.y, vector.z, vector.w);
-		}
-
-		Math::mat4 FromPhysXTransform(const physx::PxTransform& transform)
-		{
-			Math::quaternion rotation = FromPhysXQuat(transform.q);
-			Math::vec3 position = FromPhysXVector(transform.p);
-			return Math::Translate(position) * Math::ToMat4(rotation);
-		}
-
-		Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
-		{
-			return *(Math::mat4*)&matrix;
-		}
-		
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
 		{
 			physx::PxFilterData filterData;
@@ -104,6 +40,7 @@ namespace Sparky {
 
 			s_Data.DefaultAllocator.deallocate(shapes);
 		}
+
 	}
 
 	static void InitPhysicsScene(const Math::vec3& gravity)
@@ -123,6 +60,11 @@ namespace Sparky {
 		sceneDescription.cpuDispatcher = s_Data.Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
 		s_Data.PhysicsScene = s_Data.PhysicsFactory->createScene(sceneDescription);
+	}
+
+	physx::PxScene* Physics::GetPhysicsScene()
+	{
+		return s_Data.PhysicsScene;
 	}
 
 	void Physics::OnSimulationStart(Scene* contextScene)
@@ -157,16 +99,16 @@ namespace Sparky {
 				CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-			auto [t, r, scale] = Utils::GetTransformDecomposition(trx);
+			auto [t, r, scale] = GetTransformDecomposition(trx);
 
 			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			{
-				entity.SetTransform(Utils::FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
+				entity.SetTransform(FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
 			}
 			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 			{
 				// If the rigidbody is static, make sure the actor is at the entitys position
-				actor->setGlobalPose(Utils::ToPhysXTransform(trx));
+				actor->setGlobalPose(ToPhysXTransform(trx));
 			}
 		}
 	}
@@ -186,12 +128,13 @@ namespace Sparky {
 
 		if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 		{
-			actor = s_Data.PhysicsFactory->createRigidStatic(Utils::ToPhysXTransform(trx));
+			actor = s_Data.PhysicsFactory->createRigidStatic(ToPhysXTransform(trx));
 		}
 		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(Utils::ToPhysXTransform(trx));
-			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
+			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(trx));
+
+			dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);
 			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidbody.LockPositionY);
@@ -229,7 +172,7 @@ namespace Sparky {
 			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
 			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !boxCollider.IsTrigger);
 			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, boxCollider.IsTrigger);
-			shape->setLocalPose(Utils::ToPhysXTransform(Math::Translate(boxCollider.Offset)));
+			shape->setLocalPose(ToPhysXTransform(Math::Translate(boxCollider.Offset)));
 		}
 
 		if (entity.HasComponent<SphereColliderComponent>())

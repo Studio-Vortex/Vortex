@@ -12,6 +12,7 @@
 #include "Sparky/Audio/AudioSource.h"
 
 #include "Sparky/Physics/Physics.h"
+#include "Sparky/Physics/PhysXAPIHelpers.h"
 #include "Sparky/Physics/Physics2D.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
@@ -1253,6 +1254,29 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Physics
+
+	static bool Physics_Raycast(Math::vec3* origin, Math::vec3* direction, float maxDistance, RaycastHit* outHit)
+	{
+		physx::PxScene* scene = Physics::GetPhysicsScene();
+		physx::PxRaycastBuffer hitInfo;
+		bool result = scene->raycast(ToPhysXVector(*origin), ToPhysXVector(Math::Normalize(*direction)), maxDistance, hitInfo);
+
+		if (result)
+		{
+			Entity& entity = *(Entity*)hitInfo.block.actor->userData;
+
+			outHit->EntityID = entity.GetUUID();
+			outHit->Position = FromPhysXVector(hitInfo.block.position);
+			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
+			outHit->Distance = hitInfo.block.distance;
+		}
+
+		return result;
+	}
+
+#pragma endregion
+
 #pragma region RigidBody2D Component
 
 	static void RigidBody2DComponent_GetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType* outBodyType)
@@ -2260,6 +2284,12 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearForce);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyTorque);
+
+#pragma endregion
+
+#pragma region Physics
+
+		SP_ADD_INTERNAL_CALL(Physics_Raycast);
 
 #pragma endregion
 

@@ -401,6 +401,13 @@ namespace Sparky {
 
 		#endregion
 
+		#region Physics
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool Physics_Raycast(ref Vector3 origin, ref Vector3 direction, float maxDistance, out RaycastHit hit);
+
+		#endregion
+
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
