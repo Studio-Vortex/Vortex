@@ -404,21 +404,24 @@ namespace Sparky {
 		Static, Dynamic, Kinematic,
 	}
 
+	public enum ForceMode
+	{
+		Force = 0,          // A standard force, using Force = mass * distance / time^2
+		Impulse,            // An Impulse force, using Force = mass * distance / time
+		VelocityChange,     // An Impulse that ignores the objects mass, e.g Force = distance / time
+		Acceleration        // A constant force, not accounting for mass, e.g Force = distance / time^2
+	}
+
 	public class RigidBody : Component
 	{
-		public void ApplyLinearForce(Vector3 force)
+		public void ApplyLinearForce(Vector3 force, ForceMode forceMode)
 		{
-			InternalCalls.RigidBodyComponent_ApplyLinearForce(Entity.ID, ref force);
+			InternalCalls.RigidBodyComponent_ApplyLinearForce(Entity.ID, ref force, forceMode);
 		}
 
-		public void ApplyLinearImpulse(Vector3 impulse)
+		public void ApplyTorque(Vector3 torque, ForceMode forceMode)
 		{
-			InternalCalls.RigidBodyComponent_ApplyLinearImpulse(Entity.ID, ref impulse);
-		}
-
-		public void ApplyTorque(Vector3 torque)
-		{
-			InternalCalls.RigidBodyComponent_ApplyTorque(Entity.ID, ref torque);
+			InternalCalls.RigidBodyComponent_ApplyTorque(Entity.ID, ref torque, forceMode);
 		}
 	}
 

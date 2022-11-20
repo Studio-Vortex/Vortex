@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Sparky {
+﻿namespace Sparky {
 
 	public struct RayCastHit2D
 	{

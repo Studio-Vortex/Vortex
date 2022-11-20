@@ -1222,7 +1222,7 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
-	static void RigidBodyComponent_ApplyLinearForce(UUID entityUUID, Math::vec3* force)
+	static void RigidBodyComponent_ApplyLinearForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1230,9 +1230,18 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+		if (rigidbody.Type != RigidBodyComponent::BodyType::Dynamic || rigidbody.IsKinematic)
+		{
+			SP_CORE_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 	}
 
-	static void RigidBodyComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec3* impulse)
+	static void RigidBodyComponent_ApplyTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1240,16 +1249,15 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-	}
 
-	static void RigidBodyComponent_ApplyTorque(UUID entityUUID, Math::vec3* torque)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		if (rigidbody.Type != RigidBodyComponent::BodyType::Dynamic || rigidbody.IsKinematic)
+		{
+			SP_CORE_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
+			return;
+		}
 
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 	}
 
 #pragma endregion
@@ -2282,7 +2290,6 @@ namespace Sparky {
 #pragma region RigidBody Component
 
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearForce);
-		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearImpulse);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyTorque);
 
 #pragma endregion
