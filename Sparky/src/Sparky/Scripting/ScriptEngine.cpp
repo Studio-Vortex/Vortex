@@ -467,7 +467,7 @@ namespace Sparky {
 		}
 		else
 		{
-			Entity entity = s_Data->ContextScene->GetEntityWithUUID(uuid);
+			Entity entity = s_Data->ContextScene->FindEntityByUUID(uuid);
 			SP_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 			return nullptr;
 		}

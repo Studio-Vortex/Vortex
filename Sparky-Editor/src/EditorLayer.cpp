@@ -536,7 +536,7 @@ namespace Sparky {
 
 			// Entity transform
 			TransformComponent& entityTransformComponent = selectedEntity.GetTransform();
-			Math::mat4 entityTransform = entityTransformComponent.GetTransform();
+			Math::mat4 entityTransform = m_ActiveScene->GetTransformRelativeToParent(selectedEntity);
 
 			// Snapping
 			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -586,12 +586,27 @@ namespace Sparky {
 				Math::vec3 translation;
 				Math::vec3 rotation;
 				Math::vec3 scale;
-
 				Math::DecomposeTransform(entityTransform, translation, rotation, scale);
-				Math::vec3 deltaRotation = rotation - entityTransformComponent.Rotation;
-				entityTransformComponent.Translation = translation;
-				entityTransformComponent.Rotation += deltaRotation;
-				entityTransformComponent.Scale = scale;
+
+				Entity parent = m_ActiveScene->FindEntityByUUID(selectedEntity.Parent());
+				if (parent)
+				{
+					Math::vec3 parentTranslation;
+					Math::vec3 parentRotation;
+					Math::vec3 parentScale;
+					Math::DecomposeTransform(m_ActiveScene->GetTransformRelativeToParent(parent), parentTranslation, parentRotation, parentScale);
+					Math::vec3 deltaRotation = (rotation - parentRotation) - entityTransformComponent.Rotation;
+					entityTransformComponent.Translation = translation - parentTranslation;
+					entityTransformComponent.Rotation += deltaRotation;
+					entityTransformComponent.Scale = parentScale;
+				}
+				else
+				{
+					Math::vec3 deltaRotation = rotation - entityTransformComponent.Rotation;
+					entityTransformComponent.Translation = translation;
+					entityTransformComponent.Rotation += deltaRotation;
+					entityTransformComponent.Scale = scale;
+				}
 			}
 		}
 

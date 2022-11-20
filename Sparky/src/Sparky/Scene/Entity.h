@@ -59,10 +59,50 @@ namespace Sparky {
 		}
 
 		UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
+
+		Scene* GetContextScene() { return m_Scene; }
+		
 		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
 		const std::string& GetMarker() { return GetComponent<TagComponent>().Marker; }
+		
 		void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
 		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
+
+		UUID Parent() const { return GetComponent<ParentComponent>().ParentUUID; }
+		void SetParent(UUID parentUUID) { GetComponent<ParentComponent>().ParentUUID = parentUUID; }
+
+		std::vector<UUID>& Children() { return GetComponent<ChildrenComponent>().Children; }
+		const std::vector<UUID>& Children() const { return GetComponent<ChildrenComponent>().Children; }
+		void AddChild(UUID childUUID) { GetComponent<ChildrenComponent>().Children.push_back(childUUID); }
+
+		bool HasParent() { return m_Scene->FindEntityByUUID(Parent()); }
+
+		bool IsAncesterOf(Entity entity)
+		{
+			const auto& children = Children();
+
+			if (children.size() == 0)
+				return false;
+
+			for (UUID child : children)
+			{
+				if (child == entity.GetUUID())
+					return true;
+			}
+
+			for (UUID child : children)
+			{
+				if (m_Scene->FindEntityByUUID(child).IsAncesterOf(entity))
+					return true;
+			}
+
+			return false;
+		}
+
+		bool IsDescendantOf(Entity entity)
+		{
+			return entity.IsAncesterOf(*this);
+		}
 
 		inline bool operator==(const Entity& other) const
 		{

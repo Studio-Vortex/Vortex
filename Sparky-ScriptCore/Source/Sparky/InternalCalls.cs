@@ -391,10 +391,10 @@ namespace Sparky {
 		#region RigidBody
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_ApplyLinearForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
+		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_ApplyTorque(ulong entityID, ref Vector3 torque, ForceMode forceMode);
+		internal extern static void RigidBodyComponent_AddTorque(ulong entityID, ref Vector3 torque, ForceMode forceMode);
 
 		#endregion
 

@@ -79,6 +79,22 @@ namespace Sparky {
 		}
 	};
 
+	struct ParentComponent
+	{
+		UUID ParentUUID = 0;
+
+		ParentComponent() = default;
+		ParentComponent(const ParentComponent&) = default;
+	};
+
+	struct ChildrenComponent
+	{
+		std::vector<UUID> Children;
+
+		ChildrenComponent() = default;
+		ChildrenComponent(const ChildrenComponent&) = default;
+	};
+
 #pragma endregion
 
 #pragma region Rendering Components
@@ -371,7 +387,9 @@ namespace Sparky {
 	};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent,
+		ComponentGroup<
+		// Core
+		TransformComponent, ParentComponent, ChildrenComponent,
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,

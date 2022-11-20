@@ -40,6 +40,8 @@ namespace Sparky {
 		{
 			Gui::Begin("Scene Hierarchy", &s_ShowSceneHierarchyPanel);
 
+			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
+
 			// Search Bar + Filtering
 			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
 			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
@@ -82,9 +84,38 @@ namespace Sparky {
 					Entity entity{ entityID, m_ContextScene.get() };
 
 					// If the name lines up with the search box we can show it
-					if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
+					if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.Parent() == 0)
 						DrawEntityNode(entity);
 				});
+
+				if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
+				{
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+
+					if (payload)
+					{
+						UUID droppedHandle = *((UUID*)payload->Data);
+						Entity e = m_ContextScene->FindEntityByUUID(droppedHandle);
+						Entity previousParent = m_ContextScene->FindEntityByUUID(e.Parent());
+
+						if (previousParent)
+						{
+							auto& children = previousParent.Children();
+							children.erase(std::remove(children.begin(), children.end(), droppedHandle), children.end());
+
+							Math::mat4 parentTransform = m_ContextScene->GetTransformRelativeToParent(previousParent);
+							Math::vec3 parentTranslation, parentRotation, parentScale;
+							Math::DecomposeTransform(parentTransform, parentTranslation, parentRotation, parentScale);
+
+							e.GetTransform().Translation = e.GetTransform().Translation + parentTranslation;
+						}
+
+						e.SetParent(0);
+					}
+
+					ImGui::EndDragDropTarget();
+				}
+
 
 				// Left click anywhere on the panel to deselect entity
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
@@ -410,14 +441,10 @@ namespace Sparky {
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		bool opened = Gui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		if (entity.Children().empty())
+			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		if (Gui::BeginDragDropSource())
-		{
-			UUID uuid = entity.GetUUID();
-			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", (const void*)&uuid, sizeof(UUID), ImGuiCond_Once);
-			Gui::EndDragDropSource();
-		}
+		bool opened = Gui::TreeNodeEx((void*)(uint32_t)entity, flags, tag.c_str());
 
 		if (Gui::IsItemClicked())
 		{
@@ -451,12 +478,59 @@ namespace Sparky {
 			Gui::EndPopup();
 		}
 
+		if (Gui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			UUID entityUUID = entity.GetUUID();
+			Gui::Text(entity.GetName().c_str());
+			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &entityUUID, sizeof(UUID));
+			Gui::EndDragDropSource();
+		}
+
+		if (Gui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+
+			if (payload)
+			{
+				UUID droppedHandle = *((UUID*)payload->Data);
+				Entity e = m_ContextScene->FindEntityByUUID(droppedHandle);
+
+				if (!entity.IsDescendantOf(e))
+				{
+					// Remove from previous parent
+					Entity previousParent = m_ContextScene->FindEntityByUUID(e.Parent());
+					if (previousParent)
+					{
+						auto& parentChildren = previousParent.Children();
+						parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), droppedHandle), parentChildren.end());
+					}
+
+					Math::mat4 parentTransform = m_ContextScene->GetTransformRelativeToParent(entity);
+					Math::vec3 parentTranslation, parentRotation, parentScale;
+					Math::DecomposeTransform(parentTransform, parentTranslation, parentRotation, parentScale);
+
+					e.GetTransform().Translation = e.GetTransform().Translation - parentTranslation;
+					e.SetParent(entity.GetUUID());
+					entity.Children().push_back(droppedHandle);
+
+					SP_CORE_INFO("Dropping Entity {0} on {1}", droppedHandle, entity.GetUUID());
+				}
+
+				SP_CORE_INFO("Dropping Entity {0} on {1}", droppedHandle, entity.GetUUID());
+			}
+
+			Gui::EndDragDropTarget();
+		}
+
 		if (opened)
 		{
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = Gui::TreeNodeEx((void*)9817239, flags, tag.c_str());
-			if (opened)
-				Gui::TreePop();
+			for (auto& child : entity.Children())
+			{
+				Entity childEntity = m_ContextScene->FindEntityByUUID(child);
+				if (childEntity)
+					DrawEntityNode(childEntity);
+			}
+
 			Gui::TreePop();
 		}
 
@@ -2310,7 +2384,7 @@ namespace Sparky {
 									{
 										UUID* entityUUID = (UUID*)payload->Data;
 										
-										if (Entity entity = m_ContextScene->GetEntityWithUUID(*entityUUID))
+										if (Entity entity = m_ContextScene->FindEntityByUUID(*entityUUID))
 										{
 											ScriptFieldInstance& fieldInstance = entityFields[name];
 											fieldInstance.Field = field;

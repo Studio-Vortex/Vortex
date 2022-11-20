@@ -255,6 +255,27 @@ namespace Sparky {
 			out << YAML::BeginMap; // Entity
 			out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
+			if (entity.HasComponent<ParentComponent>())
+			{
+				auto& parentComponent = entity.GetComponent<ParentComponent>();
+				out << YAML::Key << "Parent" << YAML::Value << parentComponent.ParentUUID;
+			}
+
+			if (entity.HasComponent<ChildrenComponent>())
+			{
+				auto& childrenComponent = entity.GetComponent<ChildrenComponent>();
+				out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
+
+				for (auto& child : childrenComponent.Children)
+				{
+					out << YAML::BeginMap;
+					out << YAML::Key << "Handle" << YAML::Value << child;
+					out << YAML::EndMap;
+				}
+
+				out << YAML::EndSeq;
+			}
+
 			if (entity.HasComponent<TagComponent>())
 			{
 				auto& tagComponent = entity.GetComponent<TagComponent>();
@@ -737,9 +758,21 @@ namespace Sparky {
 						marker = tagComponent["Marker"].as<std::string>();
 				}
 
-				SP_CORE_TRACE("Deserialized Entity: UUID = {}, Tag = {}, Marker = {}", uuid, name, marker);
-
 				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name, marker);
+
+				uint64_t parentHandle = entity["Parent"] ? entity["Parent"].as<uint64_t>() : 0;
+				deserializedEntity.SetParent(static_cast<UUID>(parentHandle));
+
+				const auto children = entity["Children"];
+
+				if (children)
+				{
+					for (auto& child : children)
+					{
+						uint64_t childHandle = child["Handle"].as<uint64_t>();
+						deserializedEntity.AddChild(static_cast<UUID>(childHandle));
+					}
+				}
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)

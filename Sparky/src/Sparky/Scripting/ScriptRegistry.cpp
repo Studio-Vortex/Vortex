@@ -200,7 +200,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
@@ -213,7 +213,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return mono_string_new(mono_domain_get(), entity.GetName().c_str());
@@ -223,7 +223,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
@@ -233,7 +233,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<CameraComponent>();
@@ -243,7 +243,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CameraComponent>();
@@ -253,7 +253,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<LightSourceComponent>();
@@ -263,7 +263,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<LightSourceComponent>();
@@ -273,7 +273,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<MeshRendererComponent>();
@@ -283,7 +283,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<MeshRendererComponent>();
@@ -293,7 +293,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<SpriteRendererComponent>();
@@ -303,7 +303,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<SpriteRendererComponent>();
@@ -313,7 +313,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<CircleRendererComponent>();
@@ -323,7 +323,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CircleRendererComponent>();
@@ -333,7 +333,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<ParticleEmitterComponent>();
@@ -343,7 +343,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<ParticleEmitterComponent>();
@@ -353,7 +353,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<AudioSourceComponent>();
@@ -363,7 +363,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<AudioSourceComponent>();
@@ -373,7 +373,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<AudioListenerComponent>();
@@ -383,7 +383,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<AudioListenerComponent>();
@@ -393,7 +393,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<RigidBodyComponent>();
@@ -403,7 +403,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<RigidBodyComponent>();
@@ -413,7 +413,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<BoxColliderComponent>();
@@ -423,7 +423,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<BoxColliderComponent>();
@@ -433,7 +433,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<RigidBody2DComponent>();
@@ -443,7 +443,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<RigidBody2DComponent>();
@@ -453,7 +453,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<BoxCollider2DComponent>();
@@ -463,7 +463,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<BoxCollider2DComponent>();
@@ -473,7 +473,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.AddComponent<CircleCollider2DComponent>();
@@ -483,7 +483,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.RemoveComponent<CircleCollider2DComponent>();
@@ -527,7 +527,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		contextScene->DestroyEntity(entity, isScriptInstance);
@@ -541,7 +541,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
@@ -551,7 +551,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TransformComponent>().Translation = *translation;
@@ -561,7 +561,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
@@ -576,7 +576,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		// Since we store rotation in radians we must convert to radians here
@@ -591,7 +591,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outScale = entity.GetComponent<TransformComponent>().Scale;
@@ -601,7 +601,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TransformComponent>().Scale = *scale;
@@ -611,7 +611,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
@@ -624,7 +624,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
@@ -637,7 +637,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
@@ -650,7 +650,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		TransformComponent& transform = entity.GetTransform();
@@ -671,7 +671,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outPrimary = entity.GetComponent<CameraComponent>().Primary;
@@ -681,7 +681,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CameraComponent>().Primary = primary;
@@ -691,7 +691,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
@@ -701,7 +701,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
@@ -711,7 +711,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		Math::vec3 eyePos = entity.GetComponent<TransformComponent>().Translation;
@@ -726,7 +726,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outAmbient = entity.GetComponent<LightSourceComponent>().Source->GetAmbient();
@@ -736,7 +736,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetAmbient(*ambient);
@@ -746,7 +746,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outDiffuse = entity.GetComponent<LightSourceComponent>().Source->GetDiffuse();
@@ -756,7 +756,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetDiffuse(*diffuse);
@@ -766,7 +766,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outSpecular = entity.GetComponent<LightSourceComponent>().Source->GetSpecular();
@@ -776,7 +776,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetSpecular(*specular);
@@ -786,7 +786,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outColor = entity.GetComponent<LightSourceComponent>().Source->GetColor();
@@ -796,7 +796,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetColor(*color);
@@ -806,7 +806,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outDirection = entity.GetComponent<LightSourceComponent>().Source->GetDirection();
@@ -816,7 +816,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<LightSourceComponent>().Source->SetDirection(*direction);
@@ -830,7 +830,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outScale = entity.GetComponent<MeshRendererComponent>().Scale;
@@ -840,7 +840,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
@@ -854,7 +854,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
@@ -864,7 +864,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
@@ -874,7 +874,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
@@ -884,7 +884,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
@@ -898,7 +898,7 @@ namespace Sparky {
 
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
@@ -910,7 +910,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
@@ -924,7 +924,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outColor = entity.GetComponent<CircleRendererComponent>().Color;
@@ -934,7 +934,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleRendererComponent>().Color = *color;
@@ -944,7 +944,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
@@ -954,7 +954,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
@@ -964,7 +964,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
@@ -974,7 +974,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleRendererComponent>().Fade = fade;
@@ -988,7 +988,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
@@ -998,7 +998,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
@@ -1008,7 +1008,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
@@ -1018,7 +1018,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
@@ -1028,7 +1028,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
@@ -1038,7 +1038,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
@@ -1048,7 +1048,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
@@ -1058,7 +1058,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
@@ -1068,7 +1068,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
@@ -1078,7 +1078,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
@@ -1088,7 +1088,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
@@ -1098,7 +1098,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
@@ -1108,7 +1108,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
@@ -1118,7 +1118,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
@@ -1128,7 +1128,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
@@ -1138,7 +1138,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
@@ -1148,7 +1148,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
@@ -1158,7 +1158,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
@@ -1168,7 +1168,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
@@ -1178,7 +1178,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
@@ -1192,7 +1192,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
@@ -1202,7 +1202,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<AudioSourceComponent>().Source->Play();
@@ -1212,7 +1212,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<AudioSourceComponent>().Source->Stop();
@@ -1222,11 +1222,11 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
-	static void RigidBodyComponent_ApplyLinearForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
+	static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
@@ -1241,11 +1241,11 @@ namespace Sparky {
 		actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 	}
 
-	static void RigidBodyComponent_ApplyTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
+	static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
@@ -1291,7 +1291,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outBodyType = entity.GetComponent<RigidBody2DComponent>().Type;
@@ -1301,7 +1301,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		b2BodyType type;
@@ -1319,7 +1319,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
@@ -1331,7 +1331,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
@@ -1343,7 +1343,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
@@ -1355,7 +1355,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
@@ -1367,7 +1367,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
@@ -1377,7 +1377,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
@@ -1387,7 +1387,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return entity.GetComponent<RigidBody2DComponent>().Drag;
@@ -1397,7 +1397,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<RigidBody2DComponent>().Drag = drag;
@@ -1407,7 +1407,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
@@ -1417,7 +1417,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
@@ -1464,7 +1464,7 @@ namespace Sparky {
 				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
 				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
 				UUID entityUUID = reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
-				Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+				Entity entity = contextScene->FindEntityByUUID(entityUUID);
 				Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
 
 				if (ScriptEngine::GetEntityScriptInstance(entityUUID) != nullptr)
@@ -1515,7 +1515,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
@@ -1525,7 +1525,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
@@ -1535,7 +1535,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
@@ -1545,7 +1545,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
@@ -1555,7 +1555,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
@@ -1565,7 +1565,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetDensity(density);
@@ -1577,7 +1577,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
@@ -1587,7 +1587,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
@@ -1597,7 +1597,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
@@ -1607,7 +1607,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
@@ -1617,7 +1617,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
@@ -1627,7 +1627,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitutionThreshold(restitutionThreshold);
@@ -1641,7 +1641,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
@@ -1651,7 +1651,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
@@ -1661,7 +1661,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
@@ -1671,7 +1671,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
@@ -1681,7 +1681,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
@@ -1691,7 +1691,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetDensity(density);
@@ -1703,7 +1703,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
@@ -1713,7 +1713,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
@@ -1723,7 +1723,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
@@ -1733,7 +1733,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
@@ -1743,7 +1743,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
@@ -1753,7 +1753,7 @@ namespace Sparky {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->GetEntityWithUUID(entityUUID);
+		Entity entity = contextScene->FindEntityByUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
@@ -2289,8 +2289,8 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
-		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyLinearForce);
-		SP_ADD_INTERNAL_CALL(RigidBodyComponent_ApplyTorque);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 
 #pragma endregion
 

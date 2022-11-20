@@ -414,14 +414,14 @@ namespace Sparky {
 
 	public class RigidBody : Component
 	{
-		public void ApplyLinearForce(Vector3 force, ForceMode forceMode)
+		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_ApplyLinearForce(Entity.ID, ref force, forceMode);
+			InternalCalls.RigidBodyComponent_AddForce(Entity.ID, ref force, forceMode);
 		}
 
-		public void ApplyTorque(Vector3 torque, ForceMode forceMode)
+		public void AddTorque(Vector3 torque, ForceMode forceMode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_ApplyTorque(Entity.ID, ref torque, forceMode);
+			InternalCalls.RigidBodyComponent_AddTorque(Entity.ID, ref torque, forceMode);
 		}
 	}
 

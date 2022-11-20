@@ -140,9 +140,13 @@ namespace Sparky {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
+
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 		tag.Marker = marker.empty() ? "UnTagged" : marker;
+
+		entity.AddComponent<ParentComponent>();
+		entity.AddComponent<ChildrenComponent>();
 
 		// Store the entity's UUID and the entt handle in our Entity map
 		// entity here will be implicitly converted to an entt handle
@@ -299,7 +303,7 @@ namespace Sparky {
 		{
 			m_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, m_Registry);
 		}
-		
+
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -340,6 +344,7 @@ namespace Sparky {
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 		}
 
+		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
 		OnLightSourceUpdate();
@@ -396,11 +401,18 @@ namespace Sparky {
 		return dest;
 	}
 
-	Entity Scene::GetEntityWithUUID(UUID uuid)
+	Entity Scene::FindEntityByUUID(UUID uuid)
 	{
-		SP_CORE_ASSERT(m_EntityMap.find(uuid) != m_EntityMap.end(), "UUID was not present in Entity Map!");
+		auto view = m_Registry.view<IDComponent>();
 
-		return Entity{ m_EntityMap.at(uuid), this};
+		for (auto entity : view)
+		{
+			auto& idComponent = m_Registry.get<IDComponent>(entity);
+			if (idComponent.ID == uuid)
+				return Entity(entity, this);
+		}
+
+		return Entity{};
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -416,6 +428,20 @@ namespace Sparky {
 		}
 
 		return Entity{};
+	}
+
+	Math::mat4 Scene::GetTransformRelativeToParent(Entity entity)
+	{
+		Math::mat4 transform(1.0f);
+
+		Entity parent = FindEntityByUUID(entity.Parent());
+
+		if (parent)
+		{
+			transform = GetTransformRelativeToParent(parent);
+		}
+
+		return transform * entity.GetTransform().GetTransform();
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -491,6 +517,10 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
 	
+	template <> void Scene::OnComponentAdded<ParentComponent>(Entity entity, ParentComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<ChildrenComponent>(Entity entity, ChildrenComponent& component) { }
+
 	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
 		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
