@@ -255,18 +255,14 @@ namespace Sparky {
 			out << YAML::BeginMap; // Entity
 			out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
-			if (entity.HasComponent<ParentComponent>())
+			if (entity.HasComponent<HierarchyComponent>())
 			{
-				auto& parentComponent = entity.GetComponent<ParentComponent>();
-				out << YAML::Key << "Parent" << YAML::Value << parentComponent.ParentUUID;
-			}
-
-			if (entity.HasComponent<ChildrenComponent>())
-			{
-				auto& childrenComponent = entity.GetComponent<ChildrenComponent>();
+				auto& hierarchyComponent = entity.GetComponent<HierarchyComponent>();
+				out << YAML::Key << "Parent" << YAML::Value << hierarchyComponent.ParentUUID;
+				
 				out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
 
-				for (auto& child : childrenComponent.Children)
+				for (auto& child : hierarchyComponent.Children)
 				{
 					out << YAML::BeginMap;
 					out << YAML::Key << "Handle" << YAML::Value << child;

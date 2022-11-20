@@ -145,8 +145,7 @@ namespace Sparky {
 		tag.Tag = name.empty() ? "Entity" : name;
 		tag.Marker = marker.empty() ? "UnTagged" : marker;
 
-		entity.AddComponent<ParentComponent>();
-		entity.AddComponent<ChildrenComponent>();
+		entity.AddComponent<HierarchyComponent>();
 
 		// Store the entity's UUID and the entt handle in our Entity map
 		// entity here will be implicitly converted to an entt handle
@@ -155,7 +154,7 @@ namespace Sparky {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity, bool isEntityInstance)
+	void Scene::DestroyEntity(Entity entity, bool isEntityInstance, bool excludeChildren)
 	{
 		// Call the entitys OnDestroy function if they are a script instance
 		if (isEntityInstance)
@@ -166,6 +165,16 @@ namespace Sparky {
 
 		if (entity.HasComponent<RigidBody2DComponent>())
 			Physics2D::DestroyPhysicsBody(entity);
+
+		if (!excludeChildren)
+		{
+			for (size_t i = 0; i < entity.Children().size(); i++)
+			{
+				const auto& childID = entity.Children()[i];
+				Entity child = FindEntityByUUID(childID);
+				DestroyEntity(child, isEntityInstance, excludeChildren);
+			}
+		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
 		m_Registry.destroy(entity);
@@ -517,9 +526,7 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
 	
-	template <> void Scene::OnComponentAdded<ParentComponent>(Entity entity, ParentComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<ChildrenComponent>(Entity entity, ChildrenComponent& component) { }
+	template <> void Scene::OnComponentAdded<HierarchyComponent>(Entity entity, HierarchyComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{

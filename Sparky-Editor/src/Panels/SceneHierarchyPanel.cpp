@@ -83,9 +83,12 @@ namespace Sparky {
 				{
 					Entity entity{ entityID, m_ContextScene.get() };
 
-					// If the name lines up with the search box we can show it
-					if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.Parent() == 0)
-						DrawEntityNode(entity);
+					if (entity)
+					{
+						// If the name lines up with the search box we can show it
+						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.Parent() == 0)
+							DrawEntityNode(entity);
+					}
 				});
 
 				if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
@@ -102,12 +105,6 @@ namespace Sparky {
 						{
 							auto& children = previousParent.Children();
 							children.erase(std::remove(children.begin(), children.end(), droppedHandle), children.end());
-
-							Math::mat4 parentTransform = m_ContextScene->GetTransformRelativeToParent(previousParent);
-							Math::vec3 parentTranslation, parentRotation, parentScale;
-							Math::DecomposeTransform(parentTransform, parentTranslation, parentRotation, parentScale);
-
-							e.GetTransform().Translation = e.GetTransform().Translation + parentTranslation;
 						}
 
 						e.SetParent(0);
@@ -505,18 +502,9 @@ namespace Sparky {
 						parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), droppedHandle), parentChildren.end());
 					}
 
-					Math::mat4 parentTransform = m_ContextScene->GetTransformRelativeToParent(entity);
-					Math::vec3 parentTranslation, parentRotation, parentScale;
-					Math::DecomposeTransform(parentTransform, parentTranslation, parentRotation, parentScale);
-
-					e.GetTransform().Translation = e.GetTransform().Translation - parentTranslation;
 					e.SetParent(entity.GetUUID());
 					entity.Children().push_back(droppedHandle);
-
-					SP_CORE_INFO("Dropping Entity {0} on {1}", droppedHandle, entity.GetUUID());
 				}
-
-				SP_CORE_INFO("Dropping Entity {0} on {1}", droppedHandle, entity.GetUUID());
 			}
 
 			Gui::EndDragDropTarget();
@@ -828,10 +816,8 @@ namespace Sparky {
 			if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<CircleCollider2DComponent>(componentName);
 
-			if (const char* componentName = "C# Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ScriptComponent>(componentName);
-			if (const char* componentName = "C++ Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<NativeScriptComponent>(componentName, true);
+			if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<ScriptComponent>(componentName, true);
 
 			Gui::EndPopup();
 		}
@@ -1951,7 +1937,7 @@ namespace Sparky {
 			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
 		});
 
-		DrawComponent<ScriptComponent>("C# Script", entity, [&](auto& component)
+		DrawComponent<ScriptComponent>("Script", entity, [&](auto& component)
 		{
 			std::vector<std::string> entityClassNameStrings;
 			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);

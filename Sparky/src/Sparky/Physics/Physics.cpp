@@ -83,7 +83,7 @@ namespace Sparky {
 	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
 		constexpr float stepSize = 0.016666660f;
-		s_Data.PhysicsScene->simulate(stepSize);
+		s_Data.PhysicsScene->simulate(delta);
 		s_Data.PhysicsScene->fetchResults(true);
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
@@ -103,7 +103,9 @@ namespace Sparky {
 
 			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			{
+				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 				entity.SetTransform(FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
+				UpdateActorFlags(rigidbody, dynamicActor);
 			}
 			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 			{
@@ -134,21 +136,8 @@ namespace Sparky {
 		{
 			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(trx));
 
-			dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
-			dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
+			UpdateActorFlags(rigidbody, dynamicActor);
 
-			dynamicActor->setMass(rigidbody.Mass);
-			dynamicActor->setLinearDamping(rigidbody.LinearDrag);
-			dynamicActor->setAngularDamping(rigidbody.AngularDrag);
-
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidbody.LockPositionY);
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidbody.LockPositionZ);
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidbody.LockRotationX);
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
-			dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
-
-			physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 			actor = dynamicActor;
 		}
 
@@ -241,11 +230,36 @@ namespace Sparky {
 		s_Data.PhysicsScene->addActor(*actor);
 	}
 
+	void Physics::UpdateActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
+	{
+		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
+		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
+
+		dynamicActor->setMass(rigidbody.Mass);
+		dynamicActor->setLinearDamping(rigidbody.LinearDrag);
+		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
+
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidbody.LockPositionY);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidbody.LockPositionZ);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidbody.LockRotationX);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
+
+		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
+	}
+
 	void Physics::DestroyPhysicsBody(Entity entity)
 	{
 		// Destroy the physics body if it exists
 
-		
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxActor* actor = static_cast<physx::PxActor*>(rigidbody.RuntimeActor);
+
+		if (actor != nullptr)
+		{
+			s_Data.PhysicsScene->removeActor(*actor);
+		}
 	}
 
 }

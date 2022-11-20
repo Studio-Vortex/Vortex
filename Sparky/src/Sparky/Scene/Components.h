@@ -53,6 +53,17 @@ namespace Sparky {
 		inline static std::vector<std::string> s_AddedMarkers;
 	};
 
+	struct HierarchyComponent
+	{
+		UUID ParentUUID = 0;
+		std::vector<UUID> Children;
+
+		HierarchyComponent() = default;
+		HierarchyComponent(const HierarchyComponent&) = default;
+		HierarchyComponent(UUID parentUUID)
+			: ParentUUID(parentUUID) { }
+	};
+
 	struct TransformComponent
 	{
 		Math::vec3 Translation = Math::vec3(0.0f);
@@ -77,22 +88,6 @@ namespace Sparky {
 		{
 			Math::DecomposeTransform(transform, Translation, Rotation, Scale);
 		}
-	};
-
-	struct ParentComponent
-	{
-		UUID ParentUUID = 0;
-
-		ParentComponent() = default;
-		ParentComponent(const ParentComponent&) = default;
-	};
-
-	struct ChildrenComponent
-	{
-		std::vector<UUID> Children;
-
-		ChildrenComponent() = default;
-		ChildrenComponent(const ChildrenComponent&) = default;
 	};
 
 #pragma endregion
@@ -389,7 +384,7 @@ namespace Sparky {
 	using AllComponents =
 		ComponentGroup<
 		// Core
-		TransformComponent, ParentComponent, ChildrenComponent,
+		HierarchyComponent, TransformComponent,
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,

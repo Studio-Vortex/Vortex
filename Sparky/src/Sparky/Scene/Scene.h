@@ -21,7 +21,7 @@ namespace Sparky {
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
-		void DestroyEntity(Entity entity, bool isEntityInstance = false);
+		void DestroyEntity(Entity entity, bool isEntityInstance = false, bool excludeChildren = false);
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();

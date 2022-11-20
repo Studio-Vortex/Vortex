@@ -68,12 +68,12 @@ namespace Sparky {
 		void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
 		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
-		UUID Parent() const { return GetComponent<ParentComponent>().ParentUUID; }
-		void SetParent(UUID parentUUID) { GetComponent<ParentComponent>().ParentUUID = parentUUID; }
+		UUID Parent() const { return GetComponent<HierarchyComponent>().ParentUUID; }
+		void SetParent(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 
-		std::vector<UUID>& Children() { return GetComponent<ChildrenComponent>().Children; }
-		const std::vector<UUID>& Children() const { return GetComponent<ChildrenComponent>().Children; }
-		void AddChild(UUID childUUID) { GetComponent<ChildrenComponent>().Children.push_back(childUUID); }
+		std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
+		const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
+		void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
 
 		bool HasParent() { return m_Scene->FindEntityByUUID(Parent()); }
 
