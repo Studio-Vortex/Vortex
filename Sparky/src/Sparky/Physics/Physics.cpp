@@ -49,8 +49,8 @@ namespace Sparky {
 		s_Data.Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Data.DefaultAllocator, s_Data.ErrorCallback);
 		SP_CORE_ASSERT(s_Data.Foundation, "Failed to create Physics Scene Foundation!");
 
-		s_Data.ToleranceScale.length = 100.0f; // Typical length of an object
-		s_Data.ToleranceScale.speed = 981.0f; // Typical speed of an object, gravity * speed is a reasonable choice
+		s_Data.ToleranceScale.length = 1.0; // Typical length of an object
+		s_Data.ToleranceScale.speed = 100.0f; // Typical speed of an object, gravity * speed is a reasonable choice
 		s_Data.PhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data.Foundation, s_Data.ToleranceScale, true, nullptr);
 
 		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data.ToleranceScale);
@@ -103,8 +103,9 @@ namespace Sparky {
 
 			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 				entity.SetTransform(FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
+
+				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 				UpdateActorFlags(rigidbody, dynamicActor);
 			}
 			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)

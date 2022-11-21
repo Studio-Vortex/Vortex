@@ -228,7 +228,7 @@ namespace Sparky {
 			return;
 		}
 
-		LoadAssemblyClasses();
+		LoadAssemblyClasses(false);
 
 		ScriptRegistry::RegisterComponents();
 
@@ -488,7 +488,7 @@ namespace Sparky {
 		return s_Data->CoreAssemblyImage;
 	}
 
-	void ScriptEngine::LoadAssemblyClasses()
+	void ScriptEngine::LoadAssemblyClasses(bool displayClassNames)
 	{
 		s_Data->EntityClasses.clear();
 
@@ -522,21 +522,24 @@ namespace Sparky {
 			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
-			int fieldCount = mono_class_num_fields(monoClass);
-			SP_CORE_WARN("{} has {} fields: ", className, fieldCount);
-			void* iterator = nullptr;
-			while (MonoClassField* classField = mono_class_get_fields(monoClass, &iterator))
+			if (displayClassNames)
 			{
-				const char* fieldName = mono_field_get_name(classField);
-				uint32_t flags = mono_field_get_flags(classField);
-
-				if (flags & MONO_FIELD_ATTR_PUBLIC)
+				int fieldCount = mono_class_num_fields(monoClass);
+				SP_CORE_WARN("{} has {} fields: ", className, fieldCount);
+				void* iterator = nullptr;
+				while (MonoClassField* classField = mono_class_get_fields(monoClass, &iterator))
 				{
-					MonoType* type = mono_field_get_type(classField);
-					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
-					SP_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+					const char* fieldName = mono_field_get_name(classField);
+					uint32_t flags = mono_field_get_flags(classField);
 
-					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
+					if (flags & MONO_FIELD_ATTR_PUBLIC)
+					{
+						MonoType* type = mono_field_get_type(classField);
+						ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+						SP_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+
+						scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
+					}
 				}
 			}
 		}

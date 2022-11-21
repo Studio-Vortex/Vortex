@@ -50,6 +50,9 @@
 
 namespace Sparky {
 
+	void InitalizeEngine();
+	void ShutdownEngine();
+
 	template <typename T>
 	using UniqueRef = std::unique_ptr<T>;
 

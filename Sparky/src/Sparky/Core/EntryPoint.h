@@ -10,10 +10,7 @@
 
 	int main(int argc, char* argv[])
 	{
-		// TODO: This should be reworked
-		ShowWindow(GetConsoleWindow(), SW_HIDE);
-
-		Sparky::Log::Init();
+		Sparky::InitalizeEngine();
 
 		while (g_ApplicationRunning)
 		{
@@ -29,6 +26,8 @@
 			delete app;
 			SP_PROFILE_END_SESSION();
 		}
+
+		Sparky::ShutdownEngine();
 	}
 
 #elif SP_PLATFORM_MACOS

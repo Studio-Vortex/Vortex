@@ -202,7 +202,7 @@ namespace Sparky {
 		static void ShutdownMono();
 
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
-		static void LoadAssemblyClasses();
+		static void LoadAssemblyClasses(bool displayClassNames = false);
 
 	private:
 		friend class ScriptClass;
