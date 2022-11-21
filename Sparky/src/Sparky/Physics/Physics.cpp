@@ -41,6 +41,16 @@ namespace Sparky {
 			s_Data.DefaultAllocator.deallocate(shapes);
 		}
 
+		static void ReplaceVectorComponent(Math::vec3& vector, const physx::PxVec3& replacementVector)
+		{
+			if (vector.x == 0.0f)
+				vector.x = replacementVector.x;
+			if (vector.y == 0.0f)
+				vector.y = replacementVector.y;
+			if (vector.z == 0.0f)
+				vector.z = replacementVector.z;
+		}
+
 	}
 
 	static void InitPhysicsScene(const Math::vec3& gravity)
@@ -241,11 +251,29 @@ namespace Sparky {
 		dynamicActor->setSolverIterationCounts(s_PhysicsSolverIterations,  s_PhysicsSolverVelocityIterations);
 
 		dynamicActor->setMass(rigidbody.Mass);
+
 		if (rigidbody.LinearVelocity != Math::vec3(0.0f))
-			dynamicActor->setLinearVelocity(ToPhysXVector(rigidbody.LinearVelocity));
+		{
+			Math::vec3 linearVelocity = rigidbody.LinearVelocity;
+			physx::PxVec3 actorVelocity = dynamicActor->getLinearVelocity();
+			// If any component of the vector is 0 just use the actors velocity
+			Utils::ReplaceVectorComponent(linearVelocity, actorVelocity);
+
+			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
+		}
+
 		dynamicActor->setLinearDamping(rigidbody.LinearDrag);
+
 		if (rigidbody.AngularVelocity != Math::vec3(0.0f))
-			dynamicActor->setAngularVelocity(ToPhysXVector(rigidbody.AngularVelocity));
+		{
+			Math::vec3 angularVelocity = rigidbody.AngularVelocity;
+			physx::PxVec3 actorVelocity = dynamicActor->getAngularVelocity();
+			// If any component of the vector is 0 just use the actors velocity
+			Utils::ReplaceVectorComponent(angularVelocity, actorVelocity);
+
+			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
+		}
+
 		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
 
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);

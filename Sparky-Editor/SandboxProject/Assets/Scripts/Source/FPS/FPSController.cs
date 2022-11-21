@@ -5,12 +5,13 @@ namespace Sandbox {
 
 	public class FPSController : Entity
 	{
-		public float MaxRoll_Up = 60.0f;
-		public float MaxRoll_Down = -60.0f;
-		public float TimeBetweenShots = 1.0f;
-		public Vector3 WalkSpeed = new Vector3(4.0f, 0.0f, 4.0f);
-		public Vector3 RunSpeed = new Vector3(10.0f, 0.0f, 10.0f);
-		public Vector3 RotationSpeed = new Vector3(100.0f, 100.0f, 0.0f);
+		public float MaxRoll_Up = 60f;
+		public float MaxRoll_Down = -60f;
+		public float TimeBetweenShots = 1f;
+		public float BulletSpeed = 50f;
+		public Vector3 WalkSpeed = new Vector3(4f, 0f, 4f);
+		public Vector3 RunSpeed = new Vector3(10f, 0f, 10f);
+		public Vector3 RotationSpeed = new Vector3(100f, 100f, 0f);
 
 		private float m_TimeBetweenShot;
 		private Vector3 m_Velocity;
@@ -35,7 +36,7 @@ namespace Sandbox {
 			float rightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (rightTrigger > 0.0f && m_TimeBetweenShot <= 0.0f)
 			{
-				CreateNewEntity();
+				FireBullet();
 			}
 
 			if (m_TimeBetweenShot <= 0.0f)
@@ -97,15 +98,15 @@ namespace Sandbox {
 			}
 		}
 
-		Entity CreateNewEntity()
+		void FireBullet()
 		{
 			Entity entity = new Entity($"");
 			entity.AddComponent<MeshRenderer>();
+			entity.transform.Translation = transform.Translation + transform.Forward;
+
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
-			rigidbody.AddForce(transform.Forward * 5000.0f * Time.DeltaTime);
-
-			return entity;
+			rigidbody.Velocity = transform.Forward * BulletSpeed;
 		}
 	}
 
