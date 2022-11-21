@@ -40,7 +40,9 @@ namespace Sparky {
 
 #define SP_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Sparky.InternalCalls::" #icall, icall)
 
+	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityAddComponentFuncs;
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
+	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityRemoveComponentFuncs;
 
 	static std::string s_SceneToBeLoaded = "";
 
@@ -184,6 +186,19 @@ namespace Sparky {
 
 #pragma region Entity
 
+	static void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		SP_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "Managed type was not found in Map!");
+		
+		s_EntityAddComponentFuncs.at(managedType)(entity);
+	}
+
 	static bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -192,9 +207,22 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		SP_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Function Map!");
-		
+		SP_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Map!");
+
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
+	}
+
+	static void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		SP_CORE_ASSERT(s_EntityRemoveComponentFuncs.find(managedType) != s_EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
+
+		s_EntityRemoveComponentFuncs.at(managedType)(entity);
 	}
 
 	static MonoString* Entity_GetTag(UUID entityUUID)
@@ -215,266 +243,6 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
-	}
-
-	static void Entity_AddCamera(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<CameraComponent>();
-	}
-
-	static void Entity_RemoveCamera(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<CameraComponent>();
-	}
-
-	static void Entity_AddLightSource(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<LightSourceComponent>();
-	}
-
-	static void Entity_RemoveLightSource(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<LightSourceComponent>();
-	}
-
-	static void Entity_AddMeshRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<MeshRendererComponent>();
-	}
-
-	static void Entity_RemoveMeshRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<MeshRendererComponent>();
-	}
-
-	static void Entity_AddSpriteRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<SpriteRendererComponent>();
-	}
-
-	static void Entity_RemoveSpriteRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<SpriteRendererComponent>();
-	}
-	
-	static void Entity_AddCircleRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<CircleRendererComponent>();
-	}
-
-	static void Entity_RemoveCircleRenderer(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<CircleRendererComponent>();
-	}
-
-	static void Entity_AddParticleEmitter(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<ParticleEmitterComponent>();
-	}
-
-	static void Entity_RemoveParticleEmitter(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<ParticleEmitterComponent>();
-	}
-
-	static void Entity_AddAudioSource(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<AudioSourceComponent>();
-	}
-
-	static void Entity_RemoveAudioSource(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<AudioSourceComponent>();
-	}
-
-	static void Entity_AddAudioListener(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<AudioListenerComponent>();
-	}
-
-	static void Entity_RemoveAudioListener(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<AudioListenerComponent>();
-	}
-
-	static void Entity_AddRigidBody(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<RigidBodyComponent>();
-	}
-
-	static void Entity_RemoveRigidBody(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<RigidBodyComponent>();
-	}
-
-	static void Entity_AddBoxCollider(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<BoxColliderComponent>();
-	}
-
-	static void Entity_RemoveBoxCollider(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<BoxColliderComponent>();
-	}
-
-	static void Entity_AddRigidBody2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<RigidBody2DComponent>();
-	}
-
-	static void Entity_RemoveRigidBody2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<RigidBody2DComponent>();
-	}
-
-	static void Entity_AddBoxCollider2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<BoxCollider2DComponent>();
-	}
-
-	static void Entity_RemoveBoxCollider2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<BoxCollider2DComponent>();
-	}
-
-	static void Entity_AddCircleCollider2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.AddComponent<CircleCollider2DComponent>();
-	}
-
-	static void Entity_RemoveCircleCollider2D(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.RemoveComponent<CircleCollider2DComponent>();
 	}
 
 	static uint64_t Entity_CreateWithName(MonoString* name)
@@ -2251,7 +2019,9 @@ namespace Sparky {
 				return;
 			}
 
+			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddComponent<TComponent>(); };
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<TComponent>(); };
+			s_EntityRemoveComponentFuncs[managedType] = [](Entity entity) { entity.RemoveComponent<TComponent>(); };
 		}(), ...);
 	}
 
@@ -2264,6 +2034,8 @@ namespace Sparky {
 	void ScriptRegistry::RegisterComponents()
 	{
 		s_EntityHasComponentFuncs.clear();
+		s_EntityAddComponentFuncs.clear();
+		s_EntityRemoveComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
 	}
 
@@ -2316,50 +2088,12 @@ namespace Sparky {
 
 #pragma region Entity
 
+		SP_ADD_INTERNAL_CALL(Entity_AddComponent);
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveComponent);
 
 		SP_ADD_INTERNAL_CALL(Entity_GetTag);
 		SP_ADD_INTERNAL_CALL(Entity_GetMarker);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddCamera);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveCamera);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddLightSource);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveLightSource);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddMeshRenderer);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveMeshRenderer);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddSpriteRenderer);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveSpriteRenderer);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddCircleRenderer);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleRenderer);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddParticleEmitter);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveParticleEmitter);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddAudioSource);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioSource);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddAudioListener);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveAudioListener);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddBoxCollider);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider);
-		
-		SP_ADD_INTERNAL_CALL(Entity_AddRigidBody2D);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveRigidBody2D);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddBoxCollider2D);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveBoxCollider2D);
-
-		SP_ADD_INTERNAL_CALL(Entity_AddCircleCollider2D);
-		SP_ADD_INTERNAL_CALL(Entity_RemoveCircleCollider2D);
-
 		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);

@@ -107,6 +107,8 @@ namespace Sandbox {
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.Velocity = transform.Forward * BulletSpeed;
+
+			entity.AddComponent<BoxCollider>();
 		}
 	}
 

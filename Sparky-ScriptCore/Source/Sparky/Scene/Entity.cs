@@ -65,29 +65,14 @@ namespace Sparky {
 		{
 			if (!HasComponent<T>())
 			{
-				string componentName = typeof(T).ToString();
-
-				switch (componentName)
-				{
-					case "Sparky.Camera":           InternalCalls.Entity_AddCamera(ID);           break;
-					case "Sparky.LightSource":      InternalCalls.Entity_AddLightSource(ID);      break;
-					case "Sparky.MeshRenderer":     InternalCalls.Entity_AddMeshRenderer(ID);     break;
-					case "Sparky.SpriteRenderer":   InternalCalls.Entity_AddSpriteRenderer(ID);   break;
-					case "Sparky.CircleRenderer":   InternalCalls.Entity_AddCircleRenderer(ID);   break;
-					case "Sparky.ParticleEmitter":  InternalCalls.Entity_AddParticleEmitter(ID);  break;
-					case "Sparky.AudioSource":      InternalCalls.Entity_AddAudioSource(ID);      break;
-					case "Sparky.AudioListener":    InternalCalls.Entity_AddAudioListener(ID);    break;
-					case "Sparky.RigidBody":        InternalCalls.Entity_AddRigidBody(ID);        break;
-					case "Sparky.BoxCollider":      InternalCalls.Entity_AddBoxCollider(ID);      break;
-					case "Sparky.RigidBody2D":      InternalCalls.Entity_AddRigidBody2D(ID);      break;
-					case "Sparky.BoxCollider2D":    InternalCalls.Entity_AddBoxCollider2D(ID);    break;
-					case "Sparky.CircleCollider2D": InternalCalls.Entity_AddCircleCollider2D(ID); break;
-				}
-
+				Type componentType = typeof(T);
+				InternalCalls.Entity_AddComponent(ID, componentType);
 				return GetComponent<T>();
 			}
-
-			return null;
+			else
+			{
+				return GetComponent<T>();
+			}
 		}
 
 		public void RemoveComponent<T>()
@@ -95,24 +80,8 @@ namespace Sparky {
 		{
 			if (HasComponent<T>())
 			{
-				string componentName = typeof(T).ToString();
-
-				switch (componentName)
-				{
-					case "Sparky.Camera":           InternalCalls.Entity_RemoveCamera(ID);           break;
-					case "Sparky.LightSource":      InternalCalls.Entity_RemoveLightSource(ID);      break;
-					case "Sparky.MeshRenderer":     InternalCalls.Entity_RemoveMeshRenderer(ID);     break;
-					case "Sparky.SpriteRenderer":   InternalCalls.Entity_RemoveSpriteRenderer(ID);   break;
-					case "Sparky.CircleRenderer":   InternalCalls.Entity_RemoveCircleRenderer(ID);   break;
-					case "Sparky.ParticleEmitter":  InternalCalls.Entity_RemoveParticleEmitter(ID);  break;
-					case "Sparky.AudioSource":      InternalCalls.Entity_RemoveAudioSource(ID);      break;
-					case "Sparky.AudioListener":    InternalCalls.Entity_RemoveAudioListener(ID);    break;
-					case "Sparky.RigidBody":        InternalCalls.Entity_RemoveRigidBody(ID);        break;
-					case "Sparky.BoxCollider":      InternalCalls.Entity_RemoveBoxCollider(ID);      break;
-					case "Sparky.RigidBody2D":      InternalCalls.Entity_RemoveRigidBody2D(ID);      break;
-					case "Sparky.BoxCollider2D":    InternalCalls.Entity_RemoveBoxCollider2D(ID);    break;
-					case "Sparky.CircleCollider2D": InternalCalls.Entity_RemoveCircleCollider2D(ID); break;
-				}
+				Type componentType = typeof(T);
+				InternalCalls.Entity_RemoveComponent(ID, componentType);
 			}
 		}
 
@@ -135,7 +104,7 @@ namespace Sparky {
 
 		public void Destroy(bool scriptInstance = true)
 		{
-			InternalCalls.Entity_Destroy(ID, isScriptInstance: scriptInstance);
+			InternalCalls.Entity_Destroy(ID, scriptInstance);
 		}
 	}
 

@@ -63,91 +63,19 @@ namespace Sparky {
 		#region Entity
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddComponent(ulong entityID, Type componentType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_RemoveComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetTag(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetMarker(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddCamera(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveCamera(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddLightSource(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveLightSource(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddMeshRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveMeshRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddSpriteRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveSpriteRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddCircleRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveCircleRenderer(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddParticleEmitter(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveParticleEmitter(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddAudioSource(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveAudioSource(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddAudioListener(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveAudioListener(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddRigidBody(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveRigidBody(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddBoxCollider(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveBoxCollider(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddRigidBody2D(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveRigidBody2D(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddBoxCollider2D(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveBoxCollider2D(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_AddCircleCollider2D(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Entity_RemoveCircleCollider2D(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_CreateWithName(string name);
