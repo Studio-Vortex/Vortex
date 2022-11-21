@@ -93,7 +93,6 @@ namespace Sparky {
 
 		SharedRef<Scene> m_ActiveScene = nullptr;
 		SharedRef<Scene> m_EditorScene = nullptr;
-		SharedRef<Project> m_ActiveProject = nullptr;
 		
 		std::filesystem::path m_EditorScenePath;
 
@@ -102,30 +101,16 @@ namespace Sparky {
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
-		Math::vec4 m_Physics3DColliderColor = ColorToVec4(Color::Green);
-		Math::vec4 m_Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
 
-		float m_EditorCameraFOV = 45.0f;
 		float m_EditorCameraFOVLastFrame = 0.0f;
 		int32_t m_GizmoType = -1;
 
 		bool m_ShowSceneCreateEntityMenu = false;
-
-		bool m_DrawEditorGrid = true;
-		bool m_DrawEditorAxes = true;
 		bool m_EditorDebugViewEnabled = false;
-
-		bool m_ShowPhysicsColliders = false;
-
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportMaximized = false;
 		bool m_MaximizeOnPlay = false;
-
-		enum class SceneState
-		{
-			Edit = 0, Play = 1, Simulate = 2,
-		};
 		
 		// Editor resources
 
@@ -147,9 +132,9 @@ namespace Sparky {
 
 		// Panels
 
-		ProjectSettingsPanel m_ProjectSettingsPanel;
+		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-		ContentBrowserPanel m_ContentBrowserPanel;
+		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
 		ScriptRegistryPanel m_ScriptRegistryPanel;
 		MaterialViewerPanel m_MaterialViewerPanel;
 		BuildSettingsPanel m_BuildSettingsPanel;
@@ -161,20 +146,9 @@ namespace Sparky {
 
 		// Settings
 
-		uint32_t m_FrameStepCount = 1;
-		bool m_GizmosEnabled = true;
-		bool m_GizmoSnapEnabled = true;
-		bool m_OrthographicGizmos = false;
-		float m_SnapValue = 0.5f;
-		float m_RotationSnapValue = 45.0f;
-		bool m_DrawGizmoGrid = false;
-		float m_GizmoGridSize = 1.0f;
-
-		ProjectProperties m_Settings{
-			ProjectProperties::ScriptingProperties{ "Assets", "", false },
-			ProjectProperties::PhysicsProperties{ m_Physics3DColliderColor, m_Physics2DColliderColor, m_ShowPhysicsColliders },
-			ProjectProperties::EditorProperties{ m_FrameStepCount, m_DrawEditorGrid, m_DrawEditorAxes, m_EditorCameraFOV },
-			ProjectProperties::GizmoProperties{ m_GizmosEnabled, m_OrthographicGizmos, m_GizmoSnapEnabled, m_SnapValue, m_RotationSnapValue, m_DrawGizmoGrid, m_GizmoGridSize },
+		enum class SceneState
+		{
+			Edit = 0, Play = 1, Simulate = 2,
 		};
 
 		SceneState m_SceneState = SceneState::Edit;

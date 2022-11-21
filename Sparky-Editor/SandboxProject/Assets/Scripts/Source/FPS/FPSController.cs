@@ -49,13 +49,7 @@ namespace Sandbox {
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
 
-			DebugRenderer.BeginScene();
-			Debug.Log(transform.Translation.ToString());
-			DebugRenderer.DrawQuadBillboard(transform.Translation + transform.Forward,
-				new Vector2(1.0f),
-				new Vector4(1, 0, 0, 1)
-			);
-			DebugRenderer.Flush();
+			DrawReticle();
 		}
 
 		void ProcessMovement()
@@ -115,11 +109,18 @@ namespace Sandbox {
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.Velocity = transform.Forward * BulletSpeed;
-			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
+			//rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
 
 			gunshotSound.Play();
 
 			m_TimeBetweenShot = TimeBetweenShots;
+		}
+
+		void DrawReticle()
+		{
+			DebugRenderer.BeginScene();
+			DebugRenderer.DrawQuadBillboard(transform.Translation + transform.Forward, new Vector2(0.01f), new Vector4(0, 0, 0, 1));
+			DebugRenderer.Flush();
 		}
 	}
 

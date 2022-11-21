@@ -2,10 +2,8 @@
 
 namespace Sparky {
 	
-	void ProjectSettingsPanel::SetContext(const SharedRef<Project>& project)
-	{
-		m_Properties = project->GetProperties();
-	}
+	ProjectSettingsPanel::ProjectSettingsPanel(const SharedRef<Project>& project)
+		: m_Properties(project->GetProperties()) { }
 
 	void ProjectSettingsPanel::OnGuiRender(bool showDefault)
 	{

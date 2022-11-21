@@ -13,8 +13,6 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath;
-
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer") { }
 
@@ -53,15 +51,16 @@ namespace Sparky {
 		auto commandLineArgs = appProps.CommandLineArgs;
 		if (commandLineArgs.Count > 1)
 		{
-			auto sceneFilePath = commandLineArgs[1];
-			OpenScene(std::filesystem::path(sceneFilePath));
+			auto projectFilepath = commandLineArgs[1];
+			OpenProject(std::filesystem::path(projectFilepath));
 		}
 		else
-			CreateNewScene(); // Start the editor off with a fresh scene
+		{
+			// TODO: Prompt user to select Project Name and Directory
+			CreateNewProject(); // Start the editor off with a fresh project
+		}
 
-		m_EditorCamera = EditorCamera(m_EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
-
-		m_BuildSettingsPanel.SetContext(SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+		m_EditorCamera = EditorCamera(Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 	}
 
 	void EditorLayer::OnDetach() { }
@@ -69,6 +68,9 @@ namespace Sparky {
 	void EditorLayer::OnUpdate(TimeStep delta)
 	{
 		SP_PROFILE_FUNCTION();
+
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -104,7 +106,7 @@ namespace Sparky {
 
 				float editorCameraFOV = m_EditorCamera.GetFOV();
 				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera.SetFOV(m_EditorCameraFOV);
+					m_EditorCamera.SetFOV(projectProps.EditorProps.EditorCameraFOV);
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 
@@ -140,7 +142,7 @@ namespace Sparky {
 
 				float editorCameraFOV = m_EditorCamera.GetFOV();
 				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera.SetFOV(m_EditorCameraFOV);
+					m_EditorCamera.SetFOV(projectProps.EditorProps.EditorCameraFOV);
 
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
@@ -148,7 +150,7 @@ namespace Sparky {
 		}
 
 		m_MousePosLastFrame = Input::GetMousePosition();
-		m_EditorCameraFOVLastFrame = m_EditorCameraFOV;
+		m_EditorCameraFOVLastFrame = projectProps.EditorProps.EditorCameraFOV;
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -173,6 +175,9 @@ namespace Sparky {
 	void EditorLayer::OnGuiRender()
 	{
 		SP_PROFILE_FUNCTION();
+
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
 		
 		static bool scenePanelOpen = true;
 
@@ -382,7 +387,7 @@ namespace Sparky {
 				Gui::Separator();
 				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
 				Gui::Separator();
-				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.IsOpen());
+				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				Gui::Separator();
@@ -400,7 +405,7 @@ namespace Sparky {
 				Gui::Separator();
 				Gui::MenuItem("Build Settings", nullptr, &m_BuildSettingsPanel.IsOpen());
 				Gui::Separator();
-				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel.IsOpen());
+				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -418,9 +423,9 @@ namespace Sparky {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			m_ProjectSettingsPanel.OnGuiRender();
+			m_ProjectSettingsPanel->OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
-			m_ContentBrowserPanel.OnGuiRender();
+			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialViewerPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
 			m_BuildSettingsPanel.OnGuiRender();
@@ -462,7 +467,7 @@ namespace Sparky {
 
 				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga")
 				{
-					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path texturePath = filePath;
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 					if (texture->IsLoaded())
 					{
@@ -470,14 +475,14 @@ namespace Sparky {
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
 
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
-							m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetDiffuseMap(texture);
+							m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedoMap(texture);
 					}
 					else
 						SP_CORE_WARN("Could not load texture - {}", texturePath.filename().string());
 				}
 				else if (filePath.extension().string() == ".obj")
 				{
-					std::filesystem::path modelPath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path modelPath = filePath;
 
 					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
 					{
@@ -488,7 +493,7 @@ namespace Sparky {
 					}
 				}
 				else if (filePath.extension().string() == ".sparky")
-					OpenScene(std::filesystem::path(g_AssetPath) / path);
+					OpenScene(filePath);
 			}
 
 			Gui::EndDragDropTarget();
@@ -523,8 +528,8 @@ namespace Sparky {
 
 		if (showGizmos)
 		{
-			ImGuizmo::Enable(m_GizmosEnabled);
-			ImGuizmo::SetOrthographic(m_OrthographicGizmos);
+			ImGuizmo::Enable(projectProps.GizmoProps.Enabled);
+			ImGuizmo::SetOrthographic(projectProps.GizmoProps.IsOrthographic);
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
@@ -539,18 +544,18 @@ namespace Sparky {
 
 			// Snapping
 			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? m_RotationSnapValue : m_SnapValue;
+			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? projectProps.GizmoProps.RotationSnapValue : projectProps.GizmoProps.SnapValue;
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
 
 			ImGuizmo::Manipulate(
 				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
 				static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(transform),
-				nullptr, (controlPressed&& m_GizmoSnapEnabled) ? snapValues.data() : nullptr
+				nullptr, (controlPressed&& projectProps.GizmoProps.SnapEnabled) ? snapValues.data() : nullptr
 			);
 
-			if (m_DrawGizmoGrid)
-				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), m_GizmoGridSize);
+			if (projectProps.GizmoProps.DrawGrid)
+				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), projectProps.GizmoProps.GridSize);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -580,6 +585,9 @@ namespace Sparky {
 
 	void EditorLayer::UI_Toolbar()
 	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
 		Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 		auto& colors = Gui::GetStyle().Colors;
 		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
@@ -698,7 +706,7 @@ namespace Sparky {
 
 				SharedRef<Texture2D> icon = m_StepIcon;
 				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
-					m_ActiveScene->Step(m_FrameStepCount);
+					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
 				else if (Gui::IsItemHovered())
 					DisplayTooltipFunc("Next Frame");
 			}
@@ -714,6 +722,9 @@ namespace Sparky {
 
 	void EditorLayer::OnOverlayRender()
 	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
 		if (m_SceneState == SceneState::Play)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
@@ -727,7 +738,7 @@ namespace Sparky {
 		}
 
 		// Render Editor Grid
-		if ((m_SceneState != SceneState::Play && m_DrawEditorGrid) || m_EditorDebugViewEnabled)
+		if ((m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid) || m_EditorDebugViewEnabled)
 		{
 			float axisLineLength = 1'000.0f;
 			float gridLineLength = 750.0f;
@@ -737,7 +748,7 @@ namespace Sparky {
 			float originalLineWidth = Renderer2D::GetLineWidth();
 
 			// Render Axes
-			if (m_DrawEditorAxes)
+			if (projectProps.EditorProps.DrawEditorAxes)
 			{
 				Renderer2D::SetLineWidth(5.0f);
 				Renderer2D::DrawLine({ -axisLineLength, 0.0f + 0.02f, 0.0f }, { axisLineLength, 0.0f + 0.02f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
@@ -753,7 +764,7 @@ namespace Sparky {
 			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
 			{
 				// Skip the origin lines
-				if (x == 0 && m_DrawEditorAxes)
+				if (x == 0 && projectProps.EditorProps.DrawEditorAxes)
 					continue;
 
 				Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
@@ -763,7 +774,7 @@ namespace Sparky {
 			for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
 			{
 				// Skip the origin lines
-				if (z == 0 && m_DrawEditorAxes)
+				if (z == 0 && projectProps.EditorProps.DrawEditorAxes)
 					continue;
 
 				Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
@@ -772,7 +783,7 @@ namespace Sparky {
 			Renderer2D::Flush();
 		}
 		
-		if (m_ShowPhysicsColliders)
+		if (projectProps.PhysicsProps.ShowColliders)
 		{
 			float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
 			if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
@@ -792,7 +803,7 @@ namespace Sparky {
 						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Scale(scale);
 
-					Renderer2D::DrawRect(transform, m_Physics2DColliderColor);
+					Renderer2D::DrawRect(transform, projectProps.PhysicsProps.Physics2DColliderColor);
 				}
 			}
 
@@ -810,7 +821,7 @@ namespace Sparky {
 						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Scale(scale);
 
-					Renderer2D::DrawCircle(transform, m_Physics2DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
+					Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
 				}
 			}
 		}
@@ -1137,12 +1148,12 @@ namespace Sparky {
 
 	void EditorLayer::CreateNewProject()
 	{
-		m_ActiveProject = Project::Create(ProjectProperties());
+		Project::New();
 	}
 
 	void EditorLayer::OpenExistingProject()
 	{
-		std::string filepath = FileSystem::OpenFileDialog("Sparky Scene (*.sparky)\0*.sparky\0");
+		std::string filepath = FileSystem::OpenFileDialog("Sparky Project (*.sproject)\0*.sproject\0");
 
 		if (!filepath.empty())
 			OpenProject(filepath);
@@ -1153,7 +1164,7 @@ namespace Sparky {
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
-		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
+		m_HoveredEntity = Entity{};
 
 		if (path.extension().string() != ".sproject")
 		{
@@ -1161,24 +1172,25 @@ namespace Sparky {
 			return;
 		}
 
-		SharedRef<Project> newProject = Project::Create(ProjectProperties());
-		ProjectSerializer serializer(newProject);
-
-		std::string name = std::format("{} Project Load Time", path.filename().string());
-		InstrumentationTimer timer(name.c_str());
-
-		if (serializer.Deserialize(path.string()))
+		if (Project::Load(path))
 		{
-			m_ActiveProject = newProject;
+			std::string projectName = std::format("{} Project Load Time", path.filename().string());
+			InstrumentationTimer timer(projectName.c_str());
 
-			m_SceneHierarchyPanel.SetContext(m_EditorScene);
-			m_ProjectSettingsPanel.SetContext(m_ActiveProject);
+			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
+			OpenScene(startScenePath.string());
+
+			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(Project::GetActive());
+			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
+			m_BuildSettingsPanel.SetContext(SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+
+			TagComponent::ResetAddedMarkers();
 		}
 	}
 
 	void EditorLayer::SaveProject()
 	{
-
+		//Project::SaveActive();
 	}
 
 	void EditorLayer::CreateNewScene()

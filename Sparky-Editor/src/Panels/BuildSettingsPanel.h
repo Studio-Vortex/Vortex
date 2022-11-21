@@ -21,7 +21,7 @@ namespace Sparky {
 		inline static bool s_ShowPanel = false;
 
 	private:
-		std::filesystem::path m_StartupPath;
+		std::filesystem::path m_ProjectPath;
 		LaunchRuntimeFn m_LaunchRuntimeCallback = nullptr;
 	};
 

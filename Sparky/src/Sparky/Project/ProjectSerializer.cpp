@@ -1,92 +1,130 @@
 #include "sppch.h"
 #include "ProjectSerializer.h"
 
-#include <yaml-cpp/yaml.h>
+#include "Sparky/Utils/YAML_SerializationUtils.h"
+
+#include <fstream>
 
 namespace Sparky {
 
 	ProjectSerializer::ProjectSerializer(const SharedRef<Project>& project)
 		: m_Project(project) { }
 
-	void ProjectSerializer::Serialize(const std::string& filepath)
+	bool ProjectSerializer::Serialize(const std::filesystem::path& path)
 	{
 		const ProjectProperties& props = m_Project->GetProperties();
 
 		YAML::Emitter out;
 
-		out << YAML::BeginMap;
+		out << YAML::BeginMap; // Project Properties
+		out << YAML::Key << "Project" << YAML::Value << YAML::BeginMap; // Project
 
-		out << YAML::Key << "ProjectSettings" << YAML::BeginSeq;
-		
-		out << YAML::Key << "ScriptingProperties" << YAML::BeginSeq;
-		out << YAML::Key << "AssetDirectory" << YAML::Value << props.ScriptingProps.AssetDirectory;
-		out << YAML::Key << "CSharpAssemblyPath" << YAML::Value << props.ScriptingProps.CSharpAssemblyPath;
-		out << YAML::Key << "EnableDebugging" << YAML::Value << props.ScriptingProps.EnableDebugging;
-		out << YAML::EndSeq;
+		{
+			out << YAML::Key << "General" << YAML::BeginMap; // General
+			{
+				out << YAML::Key << "Name" << YAML::Value << props.General.Name;
+				out << YAML::Key << "AssetDirectory" << YAML::Value << props.General.AssetDirectory.string();
+				out << YAML::Key << "ScriptBinaryPath" << YAML::Value << props.General.ScriptBinaryPath.string();
+				out << YAML::Key << "StartScene" << YAML::Value << props.General.StartScene.string();
+				out << YAML::Key << "EnableMonoDebugging" << YAML::Value << props.General.EnableMonoDebugging;
+			}
+			out << YAML::EndMap; // General
 
-		out << YAML::Key << "PhysicsProperties" << YAML::BeginSeq;
-		out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
-		out << YAML::Key << "Physics3DColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
-		out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
-		out << YAML::EndSeq;
-		
-		out << YAML::Key << "EditorProperties" << YAML::BeginSeq;
-		out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
-		out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
-		out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
-		out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
-		out << YAML::EndSeq;
-		
-		out << YAML::Key << "GizmoProperties" << YAML::BeginSeq;
-		out << YAML::Key << "DrawGrid" << YAML::Value << props.GizmoProps.DrawGrid;
-		out << YAML::Key << "Enabled" << YAML::Value << props.GizmoProps.Enabled;
-		out << YAML::Key << "GridSize" << YAML::Value << props.GizmoProps.GridSize;
-		out << YAML::Key << "IsOrthographic" << YAML::Value << props.GizmoProps.IsOrthographic;
-		out << YAML::Key << "RotationSnapValue" << YAML::Value << props.GizmoProps.RotationSnapValue;
-		out << YAML::Key << "SnapEnabled" << YAML::Value << props.GizmoProps.SnapEnabled;
-		out << YAML::Key << "SnapValue" << YAML::Value << props.GizmoProps.SnapValue;
-		out << YAML::EndSeq;
-		
-		out << YAML::Key << "BuildProperties" << YAML::BeginSeq;
-		out << YAML::EndSeq;
+			out << YAML::Key << "PhysicsProperties" << YAML::BeginMap; // Physics Properties
+			{
+				out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
+				out << YAML::Key << "Physics3DColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
+				out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
+			}
+			out << YAML::EndMap; // Physics Properties
 
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
+			out << YAML::Key << "EditorProperties" << YAML::BeginMap; // Editior Properties
+			{
+				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
+				out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
+				out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
+				out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
+			}
+			out << YAML::EndMap; // Editior Properties
 
-		std::ofstream fout(filepath);
+			out << YAML::Key << "GizmoProperties" << YAML::BeginMap; // Gizmo Properties
+			{
+				out << YAML::Key << "DrawGrid" << YAML::Value << props.GizmoProps.DrawGrid;
+				out << YAML::Key << "Enabled" << YAML::Value << props.GizmoProps.Enabled;
+				out << YAML::Key << "GridSize" << YAML::Value << props.GizmoProps.GridSize;
+				out << YAML::Key << "IsOrthographic" << YAML::Value << props.GizmoProps.IsOrthographic;
+				out << YAML::Key << "RotationSnapValue" << YAML::Value << props.GizmoProps.RotationSnapValue;
+				out << YAML::Key << "SnapEnabled" << YAML::Value << props.GizmoProps.SnapEnabled;
+				out << YAML::Key << "SnapValue" << YAML::Value << props.GizmoProps.SnapValue;
+			}
+			out << YAML::EndMap; // Gizmo Properties
+		}
+
+		out << YAML::EndMap; // Project
+		out << YAML::EndMap; // Project Properties
+
+		std::ofstream fout(path);
 		fout << out.c_str();
-	}
-
-	void ProjectSerializer::SerializeRuntime(const std::string& filepath)
-	{
-		SP_CORE_ASSERT(false, "Not Implemented Yet!");
-	}
-
-	bool ProjectSerializer::Deserialize(const std::string& filepath)
-	{
-		YAML::Node data;
-		try
-		{
-			data = YAML::LoadFile(filepath);
-		}
-		catch (YAML::ParserException& e)
-		{
-			SP_CORE_ERROR("Failed to load .sproject file '{}'\n     {}", filepath, e.what());
-			return false;
-		}
-
-		if (!data["ProjectSettings"])
-			return false;
-
-		
 
 		return true;
 	}
 
-	bool ProjectSerializer::DeserializeRuntime(const std::string& filepath)
+	bool ProjectSerializer::Deserialize(const std::filesystem::path& path)
 	{
-		SP_CORE_ASSERT(false, "Not Implemented Yet!");
-		return false;
+		ProjectProperties& props = m_Project->GetProperties();
+
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(path.string());
+		}
+		catch (YAML::ParserException& e)
+		{
+			SP_CORE_ERROR("Failed to load project file '{}'\n     {}", path, e.what());
+			return false;
+		}
+
+		auto projectData = data["Project"];
+
+		if (!projectData)
+			return false;
+
+		{
+			auto generalData = projectData["General"];
+			props.General.AssetDirectory = generalData["AssetDirectory"].as<std::string>();
+			props.General.EnableMonoDebugging = generalData["EnableMonoDebugging"].as<bool>();
+			props.General.Name = generalData["Name"].as<std::string>();
+			props.General.ScriptBinaryPath = generalData["ScriptBinaryPath"].as<std::string>();
+			props.General.StartScene = generalData["StartScene"].as<std::string>();
+		}
+
+		{
+			auto physicsData = projectData["PhysicsProperties"];
+			props.PhysicsProps.Physics2DColliderColor = physicsData["Physics2DColliderColor"].as<Math::vec4>();
+			props.PhysicsProps.Physics3DColliderColor = physicsData["Physics3DColliderColor"].as<Math::vec4>();
+			props.PhysicsProps.ShowColliders = physicsData["ShowPhysicsColliders"].as<bool>();
+		}
+
+		{
+			auto editorData = projectData["EditorProperties"];
+			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
+			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
+			props.EditorProps.EditorCameraFOV = editorData["EditorCameraFOV"].as<float>();
+			props.EditorProps.FrameStepCount = editorData["FrameStepCount"].as<uint32_t>();
+		}
+
+		{
+			auto gizmoData = projectData["GizmoProperties"];
+			props.GizmoProps.DrawGrid = gizmoData["DrawGrid"].as<bool>();
+			props.GizmoProps.Enabled = gizmoData["Enabled"].as<bool>();
+			props.GizmoProps.GridSize = gizmoData["GridSize"].as<float>();
+			props.GizmoProps.IsOrthographic = gizmoData["IsOrthographic"].as<bool>();
+			props.GizmoProps.RotationSnapValue = gizmoData["RotationSnapValue"].as<float>();
+			props.GizmoProps.SnapEnabled = gizmoData["SnapEnabled"].as<bool>();
+			props.GizmoProps.SnapValue = gizmoData["SnapValue"].as<float>();
+		}
+
+		return true;
 	}
 
 }

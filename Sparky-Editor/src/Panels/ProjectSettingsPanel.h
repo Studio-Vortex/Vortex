@@ -7,9 +7,7 @@ namespace Sparky {
 	class ProjectSettingsPanel
 	{
 	public:
-		ProjectSettingsPanel() = default;
-		
-		void SetContext(const SharedRef<Project>& project);
+		ProjectSettingsPanel(const SharedRef<Project>& project);
 
 		void OnGuiRender(bool showDefault = false);
 		bool& IsOpen() { return s_ShowPanel; }
@@ -18,7 +16,7 @@ namespace Sparky {
 		inline static bool s_ShowPanel = false;
 
 	private:
-		ProjectProperties m_Properties;
+		ProjectProperties& m_Properties;
 	};
 
 }

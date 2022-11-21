@@ -1,12 +1,12 @@
 #include "BuildSettingsPanel.h"
 
 namespace Sparky {
-	
-	extern const std::filesystem::path g_AssetPath;
 
 	void BuildSettingsPanel::SetContext(const LaunchRuntimeFn& callback)
 	{
 		m_LaunchRuntimeCallback = callback;
+		auto projectFilename = std::format("{}.sproject", Project::GetActive()->GetProperties().General.Name);
+		m_ProjectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);
 	}
 
 	void BuildSettingsPanel::OnGuiRender(bool showDefault)
@@ -21,32 +21,17 @@ namespace Sparky {
 
 			char buffer[256];
 
-			if (m_StartupPath.empty())
+			if (m_ProjectPath.empty())
 				memset(buffer, 0, sizeof(buffer));
 			else
-				memcpy(buffer, m_StartupPath.string().c_str(), m_StartupPath.string().length());
+				memcpy(buffer, m_ProjectPath.string().c_str(), m_ProjectPath.string().length());
 
 			Gui::InputText("Startup Scene", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-
-					if ((std::filesystem::path(path).extension().string()) == ".sparky")
-					{
-						m_StartupPath = std::filesystem::path(g_AssetPath) / path;
-					}
-				}
-
-				Gui::EndDragDropTarget();
-			}
-
 			if (Gui::Button("Build and Run"))
 			{
-				if (m_LaunchRuntimeCallback && !m_StartupPath.empty())
-					m_LaunchRuntimeCallback(m_StartupPath);
+				if (m_LaunchRuntimeCallback && !m_ProjectPath.empty())
+					m_LaunchRuntimeCallback(m_ProjectPath);
 			}
 
 			Gui::End();

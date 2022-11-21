@@ -10,126 +10,11 @@
 #include "Sparky/Renderer/Skybox.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
-#include <yaml-cpp/yaml.h>
+#include "Sparky/Project/Project.h"
+
+#include "Sparky/Utils/YAML_SerializationUtils.h"
 
 #include <fstream>
-
-namespace YAML {
-
-	template<>
-	struct convert<Sparky::Math::vec2>
-	{
-		static Node encode(const Sparky::Math::vec2& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.SetStyle(EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Sparky::Math::vec2& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 2)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Sparky::Math::vec3>
-	{
-		static Node encode(const Sparky::Math::vec3& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.SetStyle(EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Sparky::Math::vec3& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Sparky::Math::vec4>
-	{
-		static Node encode(const Sparky::Math::vec4& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.push_back(rhs.w);
-			node.SetStyle(EmitterStyle::Flow);
-			return node;
-		}
-
-		static bool decode(const Node& node, Sparky::Math::vec4& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Sparky::UUID>
-	{
-		static Node encode(const Sparky::UUID& uuid)
-		{
-			Node node;
-			node.push_back((uint64_t)uuid);
-			return node;
-		}
-
-		static bool decode(const Node& node, Sparky::UUID& uuid)
-		{
-			uuid = node.as<uint64_t>();
-			return true;
-		}
-	};
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Sparky::Math::vec3& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Sparky::Math::vec4& vector)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << vector.x << vector.y << vector.z << vector.w << YAML::EndSeq;
-		return out;
-	}
-
-}
 
 namespace Sparky {
 
@@ -820,7 +705,8 @@ namespace Sparky {
 				{
 					auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-					skybox.Source = Skybox::Create(skyboxComponent["SourcePath"].as<std::string>());
+					auto path = Project::GetAssetFileSystemPath(skyboxComponent["SourcePath"].as<std::string>()).string();
+					skybox.Source = Skybox::Create(path);
 				}
 
 				auto lightSourceComponent = entity["LightSourceComponent"];
@@ -884,34 +770,48 @@ namespace Sparky {
 					meshRendererComponent.Type = Utils::MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
 					if (meshComponent["MeshSource"])
-						meshRendererComponent.Mesh = Model::Create(meshComponent["MeshSource"].as<std::string>(), deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
+					{
+						std::string modelPath = meshComponent["MeshSource"].as<std::string>();
+						std::string assetPath = modelPath;
+
+						if (Model::IsDefaultMesh(modelPath))
+						{
+							assetPath = modelPath;
+						}
+						else
+						{
+							assetPath = Project::GetAssetFileSystemPath(modelPath).string();
+						}
+
+						meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
+					}
 
 					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
 					if (meshComponent["Ambient"])
 						material->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
 					if (meshComponent["DiffuseMapPath"])
-						material->SetDiffuseMap(Texture2D::Create(meshComponent["DiffuseMapPath"].as<std::string>()));
+						material->SetDiffuseMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["DiffuseMapPath"].as<std::string>()).string()));
 					if (meshComponent["SpecularMapPath"])
-						material->SetSpecularMap(Texture2D::Create(meshComponent["SpecularMapPath"].as<std::string>()));
+						material->SetSpecularMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["SpecularMapPath"].as<std::string>()).string()));
 					if (meshComponent["NormalMapPath"])
-						material->SetNormalMap(Texture2D::Create(meshComponent["NormalMapPath"].as<std::string>()));
+						material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
 					if (meshComponent["Shininess"])
 						material->SetShininess(meshComponent["Shininess"].as<float>());
 
 					if (meshComponent["AlbedoMapPath"])
-						material->SetAlbedoMap(Texture2D::Create(meshComponent["AlbedoMapPath"].as<std::string>()));
+						material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AlbedoMapPath"].as<std::string>()).string()));
 					if (meshComponent["Albedo"])
 						material->SetAlbedo(meshComponent["Albedo"].as<Math::vec3>());
 					if (meshComponent["MetallicMapPath"])
-						material->SetMetallicMap(Texture2D::Create(meshComponent["MetallicMapPath"].as<std::string>()));
+						material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["MetallicMapPath"].as<std::string>()).string()));
 					if (meshComponent["Metallic"])
 						material->SetMetallic(meshComponent["Metallic"].as<float>());
 					if (meshComponent["RoughnessMapPath"])
-						material->SetRoughnessMap(Texture2D::Create(meshComponent["RoughnessMapPath"].as<std::string>()));
+						material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["RoughnessMapPath"].as<std::string>()).string()));
 					if (meshComponent["Roughness"])
 						material->SetRoughness(meshComponent["Roughness"].as<float>());
 					if (meshComponent["AmbientOcclusionMapPath"])
-						material->SetAmbientOcclusionMap(Texture2D::Create(meshComponent["AmbientOcclusionMapPath"].as<std::string>()));
+						material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
 
 					if (meshComponent["TextureScale"])
 						meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();
@@ -930,7 +830,7 @@ namespace Sparky {
 					spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 
 					if (spriteComponent["TexturePath"])
-						spriteRendererComponent.Texture = Texture2D::Create(spriteComponent["TexturePath"].as<std::string>());
+						spriteRendererComponent.Texture = Texture2D::Create(Project::GetAssetFileSystemPath(spriteComponent["TexturePath"].as<std::string>()).string());
 
 					if (spriteComponent["TextureScale"])
 						spriteRendererComponent.Scale = spriteComponent["TextureScale"].as<Math::vec2>();
@@ -972,7 +872,7 @@ namespace Sparky {
 					auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
 
 					if (audioSourceComponent["AudioSourcePath"])
-						asc.Source = AudioSource::Create(audioSourceComponent["AudioSourcePath"].as<std::string>());
+						asc.Source = AudioSource::Create(Project::GetAssetFileSystemPath(audioSourceComponent["AudioSourcePath"].as<std::string>()).string());
 
 					auto soundProps = audioSourceComponent["SoundSettings"];
 

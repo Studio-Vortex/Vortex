@@ -28,9 +28,9 @@ namespace Sparky {
 			m_RuntimeScene = Scene::Create();
 			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-			const auto& sceneFilePath = commandLineArgs[1];
+			const auto& projectFilepath = commandLineArgs[1];
 
-			OpenScene(std::filesystem::path(sceneFilePath));
+			OpenProject(std::filesystem::path(projectFilepath));
 			RenderCommand::SetClearColor(Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) });
 		}
 	}
@@ -127,6 +127,30 @@ namespace Sparky {
 
 			m_AudioSourcesToResume.clear();
 		}
+	}
+
+	bool RuntimeLayer::OpenProject(const std::filesystem::path& filepath)
+	{
+		if (filepath.extension().string() != ".sproject")
+		{
+			SP_WARN("Could not load {} - not a project file", filepath.filename().string());
+			return false;
+		}
+
+		if (Project::Load(filepath))
+		{
+			std::string projectName = std::format("{} Project Load Time", filepath.filename().string());
+			InstrumentationTimer timer(projectName.c_str());
+
+			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
+			OpenScene(startScenePath.string());
+
+			TagComponent::ResetAddedMarkers();
+
+			return true;
+		}
+
+		return false;
 	}
 
 	bool RuntimeLayer::OpenScene(const std::filesystem::path& filepath)

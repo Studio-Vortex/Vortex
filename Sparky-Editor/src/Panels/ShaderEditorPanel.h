@@ -6,8 +6,6 @@
 
 namespace Sparky {
 
-	static constexpr size_t SHADER_BUFFER_SIZE = 50'000;
-
 	class ShaderEditorPanel
 	{
 	public:

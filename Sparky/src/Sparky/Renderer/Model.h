@@ -9,6 +9,8 @@
 #include "Sparky/Renderer/Buffer.h"
 #include "Sparky/Renderer/Shader.h"
 
+#include <string>
+
 namespace Sparky {
 
 	class Entity;
@@ -48,6 +50,25 @@ namespace Sparky {
 	class Model
 	{
 	public:
+		// TODO: move to asset system when we have one
+		inline static std::vector<std::string> DefaultMeshSourcePaths = {
+			"Resources/Meshes/Default/Cube.obj",
+			"Resources/Meshes/Default/Sphere.obj",
+			"Resources/Meshes/Default/Capsule.obj",
+			"Resources/Meshes/Default/Cone.obj",
+			"Resources/Meshes/Default/Cylinder.obj",
+			"Resources/Meshes/Default/Plane.obj",
+			"Resources/Meshes/Default/Torus.obj",
+		};
+
+		// Same with this
+		static bool IsDefaultMesh(const std::string& path)
+		{
+			auto it = std::find(DefaultMeshSourcePaths.begin(), DefaultMeshSourcePaths.end(), path);
+			bool isDefaultMesh = it != DefaultMeshSourcePaths.end();
+			return it != DefaultMeshSourcePaths.end();
+		}
+
 		enum class Default
 		{
 			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,

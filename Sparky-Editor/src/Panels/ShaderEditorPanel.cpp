@@ -4,8 +4,6 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath;
-
 	ShaderEditorPanel::ShaderEditorPanel()
 	{
 		m_TextEditor.SetShowWhitespaces(false);
@@ -43,7 +41,7 @@ namespace Sparky {
 				std::filesystem::path filePath = std::filesystem::path(path);
 
 				if (filePath.extension().string() == ".glsl")
-					LoadShaderFile(std::filesystem::path(g_AssetPath) / path);
+					LoadShaderFile(std::filesystem::path(path));
 				else
 					SP_WARN("Could not load shader {}", filePath.filename().string());
 			}

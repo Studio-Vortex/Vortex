@@ -10,11 +10,8 @@ namespace Sparky {
 	public:
 		ProjectSerializer(const SharedRef<Project>& project);
 
-		void Serialize(const std::string& filepath);
-		void SerializeRuntime(const std::string& filepath);
-
-		bool Deserialize(const std::string& filepath);
-		bool DeserializeRuntime(const std::string& filepath);
+		bool Serialize(const std::filesystem::path& path);
+		bool Deserialize(const std::filesystem::path& path);
 
 	private:
 		SharedRef<Project> m_Project = nullptr;

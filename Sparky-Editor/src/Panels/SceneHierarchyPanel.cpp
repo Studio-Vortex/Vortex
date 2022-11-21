@@ -6,11 +6,6 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath;
-
-	// TODO: (Once we have a project system)
-	// On Project load call TagComponent::ResetAddedMarkers();
-
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
 	{
 		SetContext(context);
@@ -921,7 +916,7 @@ namespace Sparky {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path skyboxDirectoryPath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path skyboxDirectoryPath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual directory otherwise we will have trouble loading it
 					if (std::filesystem::is_directory(skyboxDirectoryPath))
@@ -1083,7 +1078,7 @@ namespace Sparky {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path modelFilepath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path modelFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj")
@@ -1137,7 +1132,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1186,7 +1181,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1235,7 +1230,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1284,7 +1279,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1340,7 +1335,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1396,7 +1391,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1452,7 +1447,7 @@ namespace Sparky {
 						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1522,7 +1517,7 @@ namespace Sparky {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path texturePath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
@@ -1598,7 +1593,7 @@ namespace Sparky {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path audioSourcePath = std::filesystem::path(g_AssetPath) / path;
+					std::filesystem::path audioSourcePath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
 					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")

@@ -6,10 +6,8 @@
 
 namespace Sparky {
 
-	extern const std::filesystem::path g_AssetPath = "Assets";
-
 	ContentBrowserPanel::ContentBrowserPanel()
-		: m_CurrentDirectory(g_AssetPath)
+		: m_BaseDirectory(Project::GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
 	{
 		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
 		m_AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");
@@ -36,7 +34,7 @@ namespace Sparky {
 		{
 			Gui::Unindent();
 
-			for (const auto& assetDirectoryEntry : std::filesystem::directory_iterator(g_AssetPath))
+			for (const auto& assetDirectoryEntry : std::filesystem::directory_iterator(m_BaseDirectory))
 			{
 				if (!assetDirectoryEntry.is_directory())
 					continue;
@@ -158,7 +156,7 @@ public class Untitled : Entity
 				m_TextureMap.erase(it);
 		}
 
-		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(g_AssetPath));
+		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(m_BaseDirectory));
 		float originalFrameRounding = Gui::GetStyle().FrameRounding;
 		Gui::GetStyle().FrameRounding = 5.0f;
 		if (Gui::Button("  <--  "))
@@ -203,7 +201,7 @@ public class Untitled : Entity
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& currentPath = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(currentPath, g_AssetPath);
+			std::filesystem::path relativePath = currentPath;
 			std::string filenameString = relativePath.filename().string();
 			bool skipDirectoryEntry = false;
 

@@ -124,16 +124,6 @@ namespace Sparky {
 
 	}
 
-	static constexpr const char* DEFAULT_MESH_SOURCE_PATHS[] = {
-		"Resources/Meshes/Default/Cube.obj",
-		"Resources/Meshes/Default/Sphere.obj",
-		"Resources/Meshes/Default/Capsule.obj",
-		"Resources/Meshes/Default/Cone.obj",
-		"Resources/Meshes/Default/Cylinder.obj",
-		"Resources/Meshes/Default/Plane.obj",
-		"Resources/Meshes/Default/Torus.obj",
-	};
-
 	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
 		: m_Filepath(filepath), m_MaterialInstance(MaterialInstance::Create())
 	{
@@ -149,14 +139,14 @@ namespace Sparky {
 	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
 		: m_MaterialInstance(MaterialInstance::Create())
 	{
-		m_Filepath = DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(defaultMesh)];
+		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
 		LoadModelFromFile(m_Filepath, transform, entityID);
 	}
 
 	Model::Model(MeshRendererComponent::MeshType meshType)
 		: m_MaterialInstance(nullptr)
 	{
-		Mesh mesh = Utils::LoadMeshFromOBJFile(DEFAULT_MESH_SOURCE_PATHS[static_cast<uint32_t>(meshType)], Math::Identity());
+		Mesh mesh = Utils::LoadMeshFromOBJFile(DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], Math::Identity());
 
 		m_Vao = VertexArray::Create();
 
