@@ -11,13 +11,13 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static b2BodyType RigidBody2DTypeToBox2DBody(RigidBody2DComponent::BodyType bodyType)
+		static b2BodyType RigidBody2DTypeToBox2DBody(RigidBody2DType bodyType)
 		{
 			switch (bodyType)
 			{
-				case Sparky::RigidBody2DComponent::BodyType::Static:    return b2_staticBody;
-				case Sparky::RigidBody2DComponent::BodyType::Dynamic:   return b2_dynamicBody;
-				case Sparky::RigidBody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
+				case Sparky::RigidBody2DType::Static:    return b2_staticBody;
+				case Sparky::RigidBody2DType::Dynamic:   return b2_dynamicBody;
+				case Sparky::RigidBody2DType::Kinematic: return b2_kinematicBody;
 			}
 
 			SP_CORE_ASSERT(false, "Unknown body type!");

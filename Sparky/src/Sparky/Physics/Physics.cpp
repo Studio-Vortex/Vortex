@@ -100,14 +100,14 @@ namespace Sparky {
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
 			auto [t, r, scale] = GetTransformDecomposition(trx);
 
-			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
+			if (rigidbody.Type == RigidBodyType::Dynamic)
 			{
 				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 
 				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(scale));
 				UpdateActorFlags(rigidbody, dynamicActor);
 			}
-			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
+			else if (rigidbody.Type == RigidBodyType::Static)
 			{
 				// If the rigidbody is static, make sure the actor is at the entitys position
 				actor->setGlobalPose(ToPhysXTransform(trx));
@@ -133,11 +133,11 @@ namespace Sparky {
 
 		Math::mat4 entityTransform = transform.GetTransform();
 
-		if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
+		if (rigidbody.Type == RigidBodyType::Static)
 		{
 			actor = s_Data.PhysicsFactory->createRigidStatic(ToPhysXTransform(entityTransform));
 		}
-		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
+		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
 			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
 			UpdateActorFlags(rigidbody, dynamicActor);
@@ -225,9 +225,9 @@ namespace Sparky {
 		}
 
 		// Set Filters
-		if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
+		if (rigidbody.Type == RigidBodyType::Static)
 			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
-		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
+		else if (rigidbody.Type == RigidBodyType::Dynamic)
 			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data.PhysicsScene->addActor(*actor);

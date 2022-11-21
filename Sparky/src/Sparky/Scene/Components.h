@@ -204,10 +204,11 @@ namespace Sparky {
 
 #pragma region Physics Components
 
+	enum class RigidBodyType { None = -1, Static, Dynamic };
+
 	struct RigidBodyComponent
 	{
-		enum class BodyType { None = -1, Static, Dynamic };
-		BodyType Type = BodyType::Static;
+		RigidBodyType Type = RigidBodyType::Static;
 
 		uint32_t LayerID = 0;
 
@@ -288,10 +289,12 @@ namespace Sparky {
 		StaticMeshColliderComponent(const StaticMeshColliderComponent&) = default;
 	};
 
+
+	enum class RigidBody2DType { Static = 0, Dynamic, Kinematic };
+
 	struct RigidBody2DComponent
 	{
-		enum class BodyType { Static = 0, Dynamic, Kinematic };
-		BodyType Type = BodyType::Static;
+		RigidBody2DType Type = RigidBody2DType::Static;
 		bool FixedRotation = false;
 
 		Math::vec2 Velocity = Math::vec2(0.0f);

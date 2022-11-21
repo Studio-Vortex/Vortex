@@ -204,48 +204,48 @@ namespace Sparky {
 			return MeshRendererComponent::MeshType::Cube;
 		}
 
-		static std::string RigidBody2DBodyTypeToString(RigidBody2DComponent::BodyType bodyType)
+		static std::string RigidBody2DBodyTypeToString(RigidBody2DType bodyType)
 		{
 			switch (bodyType)
 			{
-				case RigidBody2DComponent::BodyType::Static:    return "Static";
-				case RigidBody2DComponent::BodyType::Dynamic:   return "Dynamic";
-				case RigidBody2DComponent::BodyType::Kinematic: return "Kinematic";
+				case RigidBody2DType::Static:    return "Static";
+				case RigidBody2DType::Dynamic:   return "Dynamic";
+				case RigidBody2DType::Kinematic: return "Kinematic";
 			}
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
 			return {};
 		}
 
-		static RigidBody2DComponent::BodyType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
+		static RigidBody2DType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
 		{
-			if (bodyTypeString == "Static")    return RigidBody2DComponent::BodyType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBody2DComponent::BodyType::Dynamic;
-			if (bodyTypeString == "Kinematic") return RigidBody2DComponent::BodyType::Kinematic;
+			if (bodyTypeString == "Static")    return RigidBody2DType::Static;
+			if (bodyTypeString == "Dynamic")   return RigidBody2DType::Dynamic;
+			if (bodyTypeString == "Kinematic") return RigidBody2DType::Kinematic;
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
-			return RigidBody2DComponent::BodyType::Static;
+			return RigidBody2DType::Static;
 		}
 
-		static std::string RigidBodyBodyTypeToString(RigidBodyComponent::BodyType bodyType)
+		static std::string RigidBodyBodyTypeToString(RigidBodyType bodyType)
 		{
 			switch (bodyType)
 			{
-				case RigidBodyComponent::BodyType::Static:    return "Static";
-				case RigidBodyComponent::BodyType::Dynamic:   return "Dynamic";
+				case RigidBodyType::Static:    return "Static";
+				case RigidBodyType::Dynamic:   return "Dynamic";
 			}
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
 			return {};
 		}
 
-		static RigidBodyComponent::BodyType RigidBodyBodyTypeFromString(const std::string& bodyTypeString)
+		static RigidBodyType RigidBodyBodyTypeFromString(const std::string& bodyTypeString)
 		{
-			if (bodyTypeString == "Static")    return RigidBodyComponent::BodyType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBodyComponent::BodyType::Dynamic;
+			if (bodyTypeString == "Static")    return RigidBodyType::Static;
+			if (bodyTypeString == "Dynamic")   return RigidBodyType::Dynamic;
 
 			SP_CORE_ASSERT(false, "Unknown Body Type!");
-			return RigidBodyComponent::BodyType::Static;
+			return RigidBodyType::Static;
 		}
 
 		static void SerializeEntity(YAML::Emitter& out, Entity entity)

@@ -101,8 +101,11 @@ namespace Sandbox {
 		{
 			Entity entity = new Entity($"");
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
+			Debug.Log($"{rigidbody.BodyType}");
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.AddForce(transform.Forward * 5,000f);
+
+			//Debug.Log($"{rigidbody.BodyType.ToString()}");
 
 			return entity;
 		}

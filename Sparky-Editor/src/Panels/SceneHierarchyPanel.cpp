@@ -1790,7 +1790,7 @@ namespace Sparky {
 					if (Gui::Selectable(bodyTypes[i], isSelected))
 					{
 						currentBodyType = bodyTypes[i];
-						component.Type = static_cast<RigidBodyComponent::BodyType>(i);
+						component.Type = static_cast<RigidBodyType>(i);
 					}
 
 					if (isSelected)
@@ -1896,7 +1896,7 @@ namespace Sparky {
 					if (Gui::Selectable(bodyTypes[i], isSelected))
 					{
 						currentBodyType = bodyTypes[i];
-						component.Type = static_cast<RigidBody2DComponent::BodyType>(i);
+						component.Type = static_cast<RigidBody2DType>(i);
 					}
 
 					if (isSelected)

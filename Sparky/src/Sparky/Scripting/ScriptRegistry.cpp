@@ -1210,7 +1210,7 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
-	static RigidBodyComponent::BodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
+	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1220,7 +1220,7 @@ namespace Sparky {
 		return entity.GetComponent<RigidBodyComponent>().Type;
 	}
 
-	static void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyComponent::BodyType bodyType)
+	static void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1229,12 +1229,13 @@ namespace Sparky {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
+		// Destroy the physics body and create a new one if the type is different
 		if (bodyType != rigidbody.Type)
 		{
-			// Destroy the physics body, a new one will be created on the next frame
 			Physics::DestroyPhysicsBody(entity);
 			rigidbody.Type = bodyType;
 			rigidbody.RuntimeActor = nullptr;
+			Physics::CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
 		}
 	}
 
@@ -1247,7 +1248,7 @@ namespace Sparky {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-		if (rigidbody.Type != RigidBodyComponent::BodyType::Dynamic || rigidbody.IsKinematic)
+		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
 			SP_CORE_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
 			return;
@@ -1266,7 +1267,7 @@ namespace Sparky {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-		if (rigidbody.Type != RigidBodyComponent::BodyType::Dynamic || rigidbody.IsKinematic)
+		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
 			SP_CORE_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
 			return;
@@ -1303,7 +1304,7 @@ namespace Sparky {
 
 #pragma region RigidBody2D Component
 
-	static RigidBody2DComponent::BodyType RigidBody2DComponent_GetBodyType(UUID entityUUID)
+	static RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1313,7 +1314,7 @@ namespace Sparky {
 		return entity.GetComponent<RigidBody2DComponent>().Type;
 	}
 
-	static void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType bodyType)
+	static void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1323,9 +1324,9 @@ namespace Sparky {
 		b2BodyType type;
 		switch (bodyType)
 		{
-			case Sparky::RigidBody2DComponent::BodyType::Static:    type = b2_staticBody;    break;
-			case Sparky::RigidBody2DComponent::BodyType::Dynamic:   type = b2_dynamicBody;   break;
-			case Sparky::RigidBody2DComponent::BodyType::Kinematic: type = b2_kinematicBody; break;
+			case Sparky::RigidBody2DType::Static:    type = b2_staticBody;    break;
+			case Sparky::RigidBody2DType::Dynamic:   type = b2_dynamicBody;   break;
+			case Sparky::RigidBody2DType::Kinematic: type = b2_kinematicBody; break;
 		}
 
 		((b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody)->SetType(type);
