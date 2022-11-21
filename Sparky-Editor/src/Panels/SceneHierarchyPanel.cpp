@@ -1804,9 +1804,9 @@ namespace Sparky {
 			}
 
 			Gui::DragFloat("Mass", &component.Mass, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat3("Linear Velocity", Math::ValuePtr(component.LinearVelocity), 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat3("Linear Velocity", Math::ValuePtr(component.LinearVelocity), 1.0f, 0.0f, 0.0f, "%.2f");
 			Gui::DragFloat("Linear Drag", &component.LinearDrag, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat3("Angular Velocity", Math::ValuePtr(component.AngularVelocity), 0.01f, 0.01f, 1.0f, "%.2f");
+			Gui::DragFloat3("Angular Velocity", Math::ValuePtr(component.AngularVelocity), 1.0f, 0.0f, 0.0f, "%.2f");
 			Gui::DragFloat("Angular Drag", &component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
 			Gui::Text("Disable Gravity");

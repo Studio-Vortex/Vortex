@@ -1029,7 +1029,7 @@ namespace Sparky {
 						rigidbody.IsKinematic = rigidbodyComponent["IsKinematic"].as<bool>();
 					if (rigidbodyComponent["LinearDrag"])
 						rigidbody.LinearDrag = rigidbodyComponent["LinearDrag"].as<float>();
-					if (rigidbodyComponent["LinearVeloctiy"])
+					if (rigidbodyComponent["LinearVelocity"])
 						rigidbody.LinearVelocity = rigidbodyComponent["LinearVelocity"].as<Math::vec3>();
 					if (rigidbodyComponent["LockPositionX"])
 						rigidbody.LockPositionX = rigidbodyComponent["LockPositionX"].as<bool>();
