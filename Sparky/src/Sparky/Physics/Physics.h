@@ -34,8 +34,11 @@ namespace Sparky {
 
 		static physx::PxScene* GetPhysicsScene();
 
-		static int32_t GetPhysicsSceneIterations() { return s_PhysicsSceneIterations; }
-		static void SetPhysicsSceneIterations(int32_t positionIterations) { s_PhysicsSceneIterations = positionIterations; }
+		static uint32_t GetPhysicsPositionIterations() { return s_PhysicsSolverIterations; }
+		static void SetPhysicsPositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
+
+		static uint32_t GetPhysicsVelocityIterations() { return s_PhysicsSolverVelocityIterations; }
+		static void SetPhysicsVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsSolverVelocityIterations = veloctiyIterations; }
 
 		static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
 		static void SetPhysicsSceneGravitty(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
@@ -45,7 +48,9 @@ namespace Sparky {
 
 	private:
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);
-		inline static int32_t s_PhysicsSceneIterations = 20;
+		inline static uint32_t s_PhysicsSolverIterations = 8;
+		inline static uint32_t s_PhysicsSolverVelocityIterations = 2;
+		inline constexpr static float s_FixedTimeStep = 1.0f / 100.0f;
 	};
 
 	enum class FilterGroup : uint32_t

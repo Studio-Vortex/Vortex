@@ -82,8 +82,7 @@ namespace Sparky {
 
 	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
-		constexpr float stepSize = 0.016666660f;
-		s_Data.PhysicsScene->simulate(delta);
+		s_Data.PhysicsScene->simulate(s_FixedTimeStep);
 		s_Data.PhysicsScene->fetchResults(true);
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
@@ -103,9 +102,9 @@ namespace Sparky {
 
 			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 			{
-				entity.SetTransform(FromPhysXTransform(actor->getGlobalPose()) * Math::Scale(scale));
-
 				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
+
+				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(scale));
 				UpdateActorFlags(rigidbody, dynamicActor);
 			}
 			else if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
@@ -127,18 +126,16 @@ namespace Sparky {
 	{
 		physx::PxRigidActor* actor = nullptr;
 
-		Math::mat4 trx = transform.GetTransform();
+		Math::mat4 entityTransform = transform.GetTransform();
 
 		if (rigidbody.Type == RigidBodyComponent::BodyType::Static)
 		{
-			actor = s_Data.PhysicsFactory->createRigidStatic(ToPhysXTransform(trx));
+			actor = s_Data.PhysicsFactory->createRigidStatic(ToPhysXTransform(entityTransform));
 		}
 		else if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(trx));
-
+			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
 			UpdateActorFlags(rigidbody, dynamicActor);
-
 			actor = dynamicActor;
 		}
 
@@ -235,6 +232,8 @@ namespace Sparky {
 	{
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
+
+		dynamicActor->setSolverIterationCounts(s_PhysicsSolverIterations,  s_PhysicsSolverVelocityIterations);
 
 		dynamicActor->setMass(rigidbody.Mass);
 		dynamicActor->setLinearDamping(rigidbody.LinearDrag);

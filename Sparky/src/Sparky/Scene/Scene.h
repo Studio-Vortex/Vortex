@@ -48,12 +48,15 @@ namespace Sparky {
 
 		Entity DuplicateEntity(Entity entity);
 
-		Entity FindEntityByUUID(UUID uuid);
+		Entity TryGetEntityWithUUID(UUID uuid);
 		Entity FindEntityByName(std::string_view name);
 
 		Entity GetPrimaryCameraEntity();
 
-		Math::mat4 GetTransformRelativeToParent(Entity entity);
+		void ConvertToLocalSpace(Entity entity);
+		void ConvertToWorldSpace(Entity entity);
+		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity, bool accountForPhysicsActor = false);
+		TransformComponent GetWorldSpaceTransform(Entity entity);
 
 		template <typename... TComponent>
 		auto GetAllEntitiesWith()

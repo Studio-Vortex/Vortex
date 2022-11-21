@@ -86,7 +86,7 @@ namespace Sparky {
 					if (entity)
 					{
 						// If the name lines up with the search box we can show it
-						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.Parent() == 0)
+						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.GetParentUUID() == 0)
 							DrawEntityNode(entity);
 					}
 				});
@@ -98,8 +98,8 @@ namespace Sparky {
 					if (payload)
 					{
 						UUID droppedHandle = *((UUID*)payload->Data);
-						Entity e = m_ContextScene->FindEntityByUUID(droppedHandle);
-						Entity previousParent = m_ContextScene->FindEntityByUUID(e.Parent());
+						Entity e = m_ContextScene->TryGetEntityWithUUID(droppedHandle);
+						Entity previousParent = m_ContextScene->TryGetEntityWithUUID(e.GetParentUUID());
 
 						if (previousParent)
 						{
@@ -490,12 +490,12 @@ namespace Sparky {
 			if (payload)
 			{
 				UUID droppedHandle = *((UUID*)payload->Data);
-				Entity e = m_ContextScene->FindEntityByUUID(droppedHandle);
+				Entity e = m_ContextScene->TryGetEntityWithUUID(droppedHandle);
 
 				if (!entity.IsDescendantOf(e))
 				{
 					// Remove from previous parent
-					Entity previousParent = m_ContextScene->FindEntityByUUID(e.Parent());
+					Entity previousParent = m_ContextScene->TryGetEntityWithUUID(e.GetParentUUID());
 					if (previousParent)
 					{
 						auto& parentChildren = previousParent.Children();
@@ -514,7 +514,7 @@ namespace Sparky {
 		{
 			for (auto& child : entity.Children())
 			{
-				Entity childEntity = m_ContextScene->FindEntityByUUID(child);
+				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
 				if (childEntity)
 					DrawEntityNode(childEntity);
 			}
@@ -2370,7 +2370,7 @@ namespace Sparky {
 									{
 										UUID* entityUUID = (UUID*)payload->Data;
 										
-										if (Entity entity = m_ContextScene->FindEntityByUUID(*entityUUID))
+										if (Entity entity = m_ContextScene->TryGetEntityWithUUID(*entityUUID))
 										{
 											ScriptFieldInstance& fieldInstance = entityFields[name];
 											fieldInstance.Field = field;

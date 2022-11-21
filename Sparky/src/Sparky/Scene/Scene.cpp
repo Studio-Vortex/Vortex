@@ -171,7 +171,7 @@ namespace Sparky {
 			for (size_t i = 0; i < entity.Children().size(); i++)
 			{
 				const auto& childID = entity.Children()[i];
-				Entity child = FindEntityByUUID(childID);
+				Entity child = TryGetEntityWithUUID(childID);
 				DestroyEntity(child, isEntityInstance, excludeChildren);
 			}
 		}
@@ -410,7 +410,7 @@ namespace Sparky {
 		return dest;
 	}
 
-	Entity Scene::FindEntityByUUID(UUID uuid)
+	Entity Scene::TryGetEntityWithUUID(UUID uuid)
 	{
 		auto view = m_Registry.view<IDComponent>();
 
@@ -439,19 +439,62 @@ namespace Sparky {
 		return Entity{};
 	}
 
-	Math::mat4 Scene::GetTransformRelativeToParent(Entity entity)
+	void Scene::ConvertToLocalSpace(Entity entity)
 	{
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+		if (!parent)
+			return;
+
+		auto& transform = entity.GetTransform();
+		Math::mat4 parentTransform = GetWorldSpaceTransformMatrix(parent);
+
+		Math::mat4 localTransform = Math::Inverse(parentTransform) * transform.GetTransform();
+		Math::DecomposeTransform(localTransform, transform.Translation, transform.Rotation, transform.Scale);
+	}
+
+	void Scene::ConvertToWorldSpace(Entity entity)
+	{
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+		if (!parent)
+			return;
+
+		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
+		auto& entityTransform = entity.GetTransform();
+		Math::DecomposeTransform(transform, entityTransform.Translation, entityTransform.Rotation, entityTransform.Scale);
+	}
+
+	Math::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity, bool accountForPhysicsActor)
+	{
+		if (accountForPhysicsActor && entity.HasComponent<RigidBodyComponent>())
+		{
+			const auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
+				return entity.GetTransform().GetTransform();
+		}
+
 		Math::mat4 transform(1.0f);
 
-		Entity parent = FindEntityByUUID(entity.Parent());
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
 		if (parent)
 		{
-			transform = GetTransformRelativeToParent(parent);
+			transform = GetWorldSpaceTransformMatrix(parent);
 		}
 
 		return transform * entity.GetTransform().GetTransform();
 	}
+
+    TransformComponent Scene::GetWorldSpaceTransform(Entity entity)
+    {
+		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
+		TransformComponent transformComponent;
+		Math::DecomposeTransform(transform, transformComponent.Translation, transformComponent.Rotation, transformComponent.Scale);
+
+        return transformComponent;
+    }
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{

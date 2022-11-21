@@ -154,9 +154,13 @@ namespace Sparky {
 					if (Gui::DragFloat3("3D Gravity", Math::ValuePtr(gravity3D), 0.1f))
 						Physics::SetPhysicsSceneGravitty(gravity3D);
 
-					static int32_t physicsIterations = Physics::GetPhysicsSceneIterations();
-					if (Gui::DragInt("3D Iterations", &physicsIterations, 1.0f, 1, 100))
-						Physics::SetPhysicsSceneIterations(physicsIterations);
+					static int32_t physicsPositionIterations = Physics::GetPhysicsPositionIterations();
+					if (Gui::DragInt("3D Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
+						Physics::SetPhysicsPositionIterations(physicsPositionIterations);
+
+					static int32_t physicsVelocityIterations = Physics::GetPhysicsVelocityIterations();
+					if (Gui::DragInt("3D Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
+						Physics::SetPhysicsVelocityIterations(physicsVelocityIterations);
 
 					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
 
