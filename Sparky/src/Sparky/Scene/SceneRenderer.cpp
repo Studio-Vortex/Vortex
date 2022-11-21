@@ -18,19 +18,18 @@ namespace Sparky {
 		// Render 2D
 		{
 			bool sceneCamera = false;
-			Math::vec3 cameraPosition;
+			Math::mat4 cameraView;
 
 			if (typeid(TCamera).name() == typeid(EditorCamera).name())
 			{
 				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
 				Renderer2D::BeginScene(editorCamera);
-				cameraPosition = editorCamera.GetPosition();
+				cameraView = Math::Inverse(TransformComponent{ editorCamera.GetPosition(), {-editorCamera.GetPitch(), -editorCamera.GetYaw(), 0.0f}, {1, 1, 1} }.GetTransform());
 			}
 			else
 			{
 				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform.GetTransform());
 				sceneCamera = true;
-				cameraPosition = sceneCameraTransform.Translation;
 			}
 
 			// Render Sprites
@@ -92,7 +91,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-						Renderer::RenderCameraIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
+						Renderer::RenderCameraIcon(transformComponent, cameraView, (int)(entt::entity)entity);
 					}
 				}
 
@@ -103,7 +102,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-						Renderer::RenderLightSourceIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
+						Renderer::RenderLightSourceIcon(transformComponent, cameraView, (int)(entt::entity)entity);
 					}
 				}
 
@@ -114,7 +113,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
 
-						Renderer::RenderAudioSourceIcon(transformComponent, cameraPosition, (int)(entt::entity)entity);
+						Renderer::RenderAudioSourceIcon(transformComponent, cameraView, (int)(entt::entity)entity);
 					}
 				}
 			}

@@ -8,10 +8,12 @@ namespace Sandbox {
 		public float Speed;
 		public Vector3 CameraOffset;
 
-		private Entity m_Camera;
+		RigidBody rigidbody;
+		Entity m_Camera;
 
 		protected override void OnCreate()
 		{
+			rigidbody = GetComponent<RigidBody>();
 			m_Camera = FindEntityByName("Camera");
 		}
 
@@ -40,7 +42,7 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D))
 				velocity = Vector3.Right;
 
-			transform.Translate(velocity * Speed * Time.DeltaTime);
+			rigidbody.AddForce(velocity * Speed * Time.DeltaTime);
 		}
 	}
 

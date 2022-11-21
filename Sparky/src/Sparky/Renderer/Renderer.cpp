@@ -19,6 +19,8 @@ namespace Sparky {
 	static constexpr const char* LIGHT_SOURCE_ICON_PATH = "Resources/Icons/Scene/LightSourceIcon.png";
 	static constexpr const char* AUDIO_SOURCE_ICON_PATH = "Resources/Icons/Scene/AudioSourceIcon.png";
 
+#define SP_USE_PBR_RENDERER 1
+
 	struct RendererInternalData
 	{
 		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
@@ -153,19 +155,19 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::vec3& cameraPosition, int entityID)
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraPosition, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
@@ -266,7 +268,7 @@ namespace Sparky {
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
 		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly; // TODO Rework this
+		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly || SP_USE_PBR_RENDERER; // TODO Rework this
 
 		if (meshRenderer.Reflective)
 		{

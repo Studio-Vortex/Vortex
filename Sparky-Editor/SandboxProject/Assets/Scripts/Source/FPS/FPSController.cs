@@ -13,9 +13,10 @@ namespace Sandbox {
 		public Vector3 RunSpeed = new Vector3(10f, 0f, 10f);
 		public Vector3 RotationSpeed = new Vector3(100f, 100f, 0f);
 
-		private float m_TimeBetweenShot;
-		private Vector3 m_Velocity;
-		private Vector3 m_Rotation;
+		float m_TimeBetweenShot;
+		Vector3 m_Velocity;
+		Vector3 m_Rotation;
+		AudioSource gunshotSound;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -24,6 +25,7 @@ namespace Sandbox {
 		{
 			Input.ShowMouseCursor = false;
 			m_TimeBetweenShot = TimeBetweenShots;
+			gunshotSound = GetComponent<AudioSource>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -39,11 +41,6 @@ namespace Sandbox {
 				FireBullet();
 			}
 
-			if (m_TimeBetweenShot <= 0.0f)
-			{
-				m_TimeBetweenShot = TimeBetweenShots;
-			}
-
 			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
 
 			m_Velocity *= speed * delta;
@@ -51,6 +48,14 @@ namespace Sandbox {
 
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
+
+			DebugRenderer.BeginScene();
+			Debug.Log(transform.Translation.ToString());
+			DebugRenderer.DrawQuadBillboard(transform.Translation + transform.Forward,
+				new Vector2(1.0f),
+				new Vector4(1, 0, 0, 1)
+			);
+			DebugRenderer.Flush();
 		}
 
 		void ProcessMovement()
@@ -101,14 +106,20 @@ namespace Sandbox {
 		void FireBullet()
 		{
 			Entity entity = new Entity("Bullet");
-			entity.AddComponent<MeshRenderer>();
 			entity.transform.Translation = transform.Translation + transform.Forward;
+			entity.transform.Scale = new Vector3(0.5f);
+
+			entity.AddComponent<MeshRenderer>();
+			entity.AddComponent<BoxCollider>();
 
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.Velocity = transform.Forward * BulletSpeed;
+			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
 
-			entity.AddComponent<BoxCollider>();
+			gunshotSound.Play();
+
+			m_TimeBetweenShot = TimeBetweenShots;
 		}
 	}
 

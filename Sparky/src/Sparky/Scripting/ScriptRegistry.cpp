@@ -128,8 +128,9 @@ namespace Sparky {
 			return;
 		}
 
-		Math::vec3 cameraPosition(primaryCameraEntity.GetTransform().Translation);
-		Renderer2D::DrawQuadBillboard(cameraPosition, *translation, *size, *color);
+		Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
+
+		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 	}
 
 	static void DebugRenderer_Flush()

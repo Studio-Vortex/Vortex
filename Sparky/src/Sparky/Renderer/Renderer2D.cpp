@@ -560,18 +560,112 @@ namespace Sparky
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::vec3& cameraPosition, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color)
 	{
-		Math::mat4 transform = Math::LookAt(translation, cameraPosition, { 0.0f, 1.0f, 0.0f }) * Math::Scale({ size.x, size.y, 1.0f });
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
+			NextBatch();
 
-		Renderer2D::DrawQuad(Math::Inverse(transform), color, entityID);
+		const float textureIndex = 0.0f; // White Texture
+		const Math::vec2 textureScale = Math::vec2(1.0f);
+
+		glm::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
+		glm::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * (s_Data.QuadVertexPositions[0].x) * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[1].x * size.x + camUpWS * s_Data.QuadVertexPositions[1].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[2].x * size.x + camUpWS * s_Data.QuadVertexPositions[2].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[3].x * size.x + camUpWS * s_Data.QuadVertexPositions[3].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += 6;
+
+		s_Data.Renderer2DStatistics.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::vec3& cameraPosition, const Math::vec3& translation, const SharedRef<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const SharedRef<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
-		Math::mat4 transform = Math::LookAt(translation, cameraPosition, { 0.0f, 1.0f, 0.0f });
+		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
+			NextBatch();
 
-		Renderer2D::DrawQuad(Math::Inverse(transform), texture, size, color, entityID);
+		float textureIndex = 0.0f;
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (s_Data.TextureSlots[i].get() == texture.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.TextureSlotIndex;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+			s_Data.TextureSlotIndex++;
+		}
+
+		const Math::vec2 textureScale = Math::vec2(1.0f);
+
+		glm::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
+		glm::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * (s_Data.QuadVertexPositions[0].x) * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[1].x * size.x + camUpWS * s_Data.QuadVertexPositions[1].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[2].x * size.x + camUpWS * s_Data.QuadVertexPositions[2].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[3].x * size.x + camUpWS * s_Data.QuadVertexPositions[3].y * size.y;
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += 6;
+
+		s_Data.Renderer2DStatistics.QuadCount++;
 	}
 
 	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec3& color)
