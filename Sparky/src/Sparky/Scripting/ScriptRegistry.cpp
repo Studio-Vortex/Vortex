@@ -1239,6 +1239,146 @@ namespace Sparky {
 		}
 	}
 
+	static float RigidBodyComponent_GetMass(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().Mass;
+	}
+
+	static void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().Mass = mass;
+	}
+
+	static void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outVelocity = entity.GetComponent<RigidBodyComponent>().LinearVelocity;
+	}
+
+	static void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().LinearVelocity = *velocity;
+	}
+
+	static float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().LinearDrag;
+	}
+
+	static void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().LinearDrag = drag;
+	}
+
+	static void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outVelocity = entity.GetComponent<RigidBodyComponent>().AngularVelocity;
+	}
+
+	static void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().AngularVelocity = *velocity;
+	}
+
+	static float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().AngularDrag;
+	}
+
+	static void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().AngularDrag = drag;
+	}
+
+	static bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().DisableGravity;
+	}
+
+	static void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().DisableGravity = disabled;
+	}
+
+	static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().IsKinematic;
+	}
+
+	static void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
+	}
+
 	static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2308,6 +2448,20 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetMass);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetMass);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetLinearVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetLinearVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetLinearDrag);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetLinearDrag);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetAngularVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetAngularVelocity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetAngularDrag);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetAngularDrag);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetDisableGravity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 

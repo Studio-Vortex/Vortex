@@ -402,6 +402,92 @@
 			}
 		}
 
+		public float Mass
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetMass(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetMass(Entity.ID, value);
+			}
+		}
+
+		public Vector3 Velocity
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetLinearVelocity(Entity.ID, out Vector3 velocity);
+				return velocity;
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
+			}
+		}
+
+		public float Drag
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetLinearDrag(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetLinearDrag(Entity.ID, value);
+			}
+		}
+
+		public Vector3 AngularVelocity
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID, out Vector3 velocity);
+				return velocity;
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, ref value);
+			}
+		}
+
+		public float AngularDrag
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
+			}
+		}
+
+		public bool DisableGravity
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetDisableGravity(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetDisableGravity(Entity.ID, value);
+			}
+		}
+
+		public bool IsKinematic
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetIsKinematic(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
+			}
+		}
+
 		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{
 			InternalCalls.RigidBodyComponent_AddForce(Entity.ID, ref force, forceMode);

@@ -100,12 +100,10 @@ namespace Sandbox {
 		Entity CreateNewEntity()
 		{
 			Entity entity = new Entity($"");
+			entity.AddComponent<MeshRenderer>();
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
-			Debug.Log($"{rigidbody.BodyType}");
 			rigidbody.BodyType = RigidBodyType.Dynamic;
-			rigidbody.AddForce(transform.Forward * 5,000f);
-
-			//Debug.Log($"{rigidbody.BodyType.ToString()}");
+			rigidbody.AddForce(transform.Forward * 5000.0f * Time.DeltaTime);
 
 			return entity;
 		}

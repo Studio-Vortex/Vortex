@@ -241,7 +241,11 @@ namespace Sparky {
 		dynamicActor->setSolverIterationCounts(s_PhysicsSolverIterations,  s_PhysicsSolverVelocityIterations);
 
 		dynamicActor->setMass(rigidbody.Mass);
+		if (rigidbody.LinearVelocity != Math::vec3(0.0f))
+			dynamicActor->setLinearVelocity(ToPhysXVector(rigidbody.LinearVelocity));
 		dynamicActor->setLinearDamping(rigidbody.LinearDrag);
+		if (rigidbody.AngularVelocity != Math::vec3(0.0f))
+			dynamicActor->setAngularVelocity(ToPhysXVector(rigidbody.AngularVelocity));
 		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
 
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);

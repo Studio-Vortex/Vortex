@@ -525,6 +525,19 @@ namespace Sparky {
 
 				auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 				out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type);
+				out << YAML::Key << "AngularDrag" << YAML::Value << rigidbodyComponent.AngularDrag;
+				out << YAML::Key << "AngularVelocity" << YAML::Value << rigidbodyComponent.AngularVelocity;
+				out << YAML::Key << "DisableGravity" << YAML::Value << rigidbodyComponent.DisableGravity;
+				out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
+				out << YAML::Key << "LinearDrag" << YAML::Value << rigidbodyComponent.LinearDrag;
+				out << YAML::Key << "LinearVelocity" << YAML::Value << rigidbodyComponent.LinearVelocity;
+				out << YAML::Key << "LockPositionX" << YAML::Value << rigidbodyComponent.LockPositionX;
+				out << YAML::Key << "LockPositionY" << YAML::Value << rigidbodyComponent.LockPositionY;
+				out << YAML::Key << "LockPositionZ" << YAML::Value << rigidbodyComponent.LockPositionZ;
+				out << YAML::Key << "LockRotationX" << YAML::Value << rigidbodyComponent.LockRotationX;
+				out << YAML::Key << "LockRotationY" << YAML::Value << rigidbodyComponent.LockRotationY;
+				out << YAML::Key << "LockRotationZ" << YAML::Value << rigidbodyComponent.LockRotationZ;
+				out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
 
 				out << YAML::EndMap; // RigidbodyComponent
 			}
@@ -1006,6 +1019,32 @@ namespace Sparky {
 					auto& rigidbody = deserializedEntity.AddComponent<RigidBodyComponent>();
 
 					rigidbody.Type = Utils::RigidBodyBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
+					if (rigidbodyComponent["AngularDrag"])
+						rigidbody.AngularDrag = rigidbodyComponent["AngularDrag"].as<float>();
+					if (rigidbodyComponent["AngularVelocity"])
+						rigidbody.AngularVelocity = rigidbodyComponent["AngularVelocity"].as<Math::vec3>();
+					if (rigidbodyComponent["DisableGravity"])
+						rigidbody.DisableGravity = rigidbodyComponent["DisableGravity"].as<bool>();
+					if (rigidbodyComponent["IsKinematic"])
+						rigidbody.IsKinematic = rigidbodyComponent["IsKinematic"].as<bool>();
+					if (rigidbodyComponent["LinearDrag"])
+						rigidbody.LinearDrag = rigidbodyComponent["LinearDrag"].as<float>();
+					if (rigidbodyComponent["LinearVeloctiy"])
+						rigidbody.LinearVelocity = rigidbodyComponent["LinearVelocity"].as<Math::vec3>();
+					if (rigidbodyComponent["LockPositionX"])
+						rigidbody.LockPositionX = rigidbodyComponent["LockPositionX"].as<bool>();
+					if (rigidbodyComponent["LockPositionY"])
+						rigidbody.LockPositionY = rigidbodyComponent["LockPositionY"].as<bool>();
+					if (rigidbodyComponent["LockPositionZ"])
+						rigidbody.LockPositionZ = rigidbodyComponent["LockPositionZ"].as<bool>();
+					if (rigidbodyComponent["LockRotationX"])
+						rigidbody.LockRotationX = rigidbodyComponent["LockRotationX"].as<bool>();
+					if (rigidbodyComponent["LockRotationY"])
+						rigidbody.LockRotationY = rigidbodyComponent["LockRotationY"].as<bool>();
+					if (rigidbodyComponent["LockRotationZ"])
+						rigidbody.LockRotationZ = rigidbodyComponent["LockRotationZ"].as<bool>();
+					if (rigidbodyComponent["Mass"])
+						rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 				}
 
 				auto boxColliderComponent = entity["BoxColliderComponent"];

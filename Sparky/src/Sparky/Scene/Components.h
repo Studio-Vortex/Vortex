@@ -213,7 +213,9 @@ namespace Sparky {
 		uint32_t LayerID = 0;
 
 		float Mass = 1.0f;
+		Math::vec3 LinearVelocity = Math::vec3(0.0f);
 		float LinearDrag = 0.01f;
+		Math::vec3 AngularVelocity = Math::vec3(0.0f);
 		float AngularDrag = 0.05f;
 		bool DisableGravity = false;
 		bool IsKinematic = false;

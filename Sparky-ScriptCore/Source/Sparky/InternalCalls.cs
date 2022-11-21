@@ -390,6 +390,48 @@ namespace Sparky {
 		internal extern static void RigidBodyComponent_SetBodyType(ulong entityID, RigidBodyType bodyType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetMass(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetMass(ulong entityID, float mass);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetLinearVelocity(ulong entityID, out Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetLinearVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetLinearDrag(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetLinearDrag(ulong entityID, float drag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetAngularVelocity(ulong entityID, out Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetAngularDrag(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetAngularDrag(ulong entityID, float drag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_GetDisableGravity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetDisableGravity(ulong entityID, bool disabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_GetIsKinematic(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID, bool isKinematic);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
