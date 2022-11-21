@@ -157,7 +157,7 @@ namespace Sparky {
 		{
 			SP_WARN("Could not load {} - not a scene file", filepath.filename().string());
 			system("pause");
-			Application::Get().Close();
+			Application::Get().Quit();
 			return false;
 		}
 

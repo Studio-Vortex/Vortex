@@ -3,13 +3,17 @@
 
 #include "Sparky/Renderer/Renderer.h"
 #include "Sparky/Renderer/Renderer2D.h"
-
 #include "Sparky/Renderer/ParticleEmitter.h"
+
+#include "Sparky/Scene/SceneCamera.h"
+#include "Sparky/Renderer/EditorCamera.h"
+
+#include "Sparky/Scene/Scene.h"
 
 namespace Sparky {
 
 	template <typename TCamera>
-	static void RenderScene(TCamera& activeCamera, const TransformComponent& sceneCameraTransform, entt::registry& sceneRegistry)
+	static void RenderScene(TCamera& activeCamera, const TransformComponent& sceneCameraTransform, Scene* scene)
 	{
 		// Render 2D
 		{
@@ -31,7 +35,7 @@ namespace Sparky {
 
 			// Render Sprites
 			{
-				auto view = sceneRegistry.view<TransformComponent, SpriteRendererComponent>();
+				auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
 
 				for (const auto entity : view)
 				{
@@ -43,7 +47,7 @@ namespace Sparky {
 
 			// Render Circles
 			{
-				auto group = sceneRegistry.group<TransformComponent>(entt::get<CircleRendererComponent>);
+				auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
 
 				for (const auto entity : group)
 				{
@@ -55,7 +59,7 @@ namespace Sparky {
 
 			// Render Particles
 			{
-				auto view = sceneRegistry.view<TransformComponent, ParticleEmitterComponent>();
+				auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
 
 				for (const auto& entity : view)
 				{
@@ -82,7 +86,7 @@ namespace Sparky {
 			if (!sceneCamera)
 			{
 				{
-					auto view = sceneRegistry.view<TransformComponent, CameraComponent>();
+					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
 
 					for (const auto entity : view)
 					{
@@ -93,7 +97,7 @@ namespace Sparky {
 				}
 
 				{
-					auto view = sceneRegistry.view<TransformComponent, LightSourceComponent>();
+					auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
 
 					for (const auto entity : view)
 					{
@@ -104,7 +108,7 @@ namespace Sparky {
 				}
 
 				{
-					auto view = sceneRegistry.view<TransformComponent, AudioSourceComponent>();
+					auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
 
 					for (const auto entity : view)
 					{
@@ -125,7 +129,7 @@ namespace Sparky {
 				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
 				Renderer::BeginScene(editorCamera);
 
-				SceneRenderer::RenderSkybox(editorCamera.GetViewMatrix(), editorCamera.GetProjection(), sceneRegistry);
+				SceneRenderer::RenderSkybox(editorCamera.GetViewMatrix(), editorCamera.GetProjection(), scene);
 			}
 			else
 			{
@@ -135,12 +139,12 @@ namespace Sparky {
 				Math::mat4 view = Math::Inverse(sceneCameraTransform.GetTransform());
 				Math::mat4 projection = sceneCamera.GetProjection();
 
-				SceneRenderer::RenderSkybox(view, projection, sceneRegistry);
+				SceneRenderer::RenderSkybox(view, projection, scene);
 			}
 
 			// Render Light Sources
 			{
-				auto view = sceneRegistry.view<LightSourceComponent>();
+				auto view = scene->GetAllEntitiesWith<LightSourceComponent>();
 
 				for (auto& entity : view)
 				{
@@ -152,7 +156,7 @@ namespace Sparky {
 
 			// Render Meshes
 			{
-				auto view = sceneRegistry.view<TransformComponent, MeshRendererComponent>();
+				auto view = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
 				for (const auto entity : view)
 				{
@@ -167,19 +171,19 @@ namespace Sparky {
 		}
 	}
 
-	void SceneRenderer::RenderFromSceneCamera(SceneCamera& sceneCamera, const TransformComponent& cameraTransform, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderFromSceneCamera(SceneCamera& sceneCamera, const TransformComponent& cameraTransform, Scene* scene)
 	{
-		RenderScene(sceneCamera, cameraTransform, sceneRegistry);
+		RenderScene(sceneCamera, cameraTransform, scene);
 	}
 
-	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, Scene* scene)
 	{
-		RenderScene(editorCamera, TransformComponent(), sceneRegistry);
+		RenderScene(editorCamera, TransformComponent(), scene);
 	}
 
-	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, entt::registry& sceneRegistry)
+	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
 	{
-		auto skyboxView = sceneRegistry.view<SkyboxComponent>();
+		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
 
 		if (!skyboxView.empty())
 		{

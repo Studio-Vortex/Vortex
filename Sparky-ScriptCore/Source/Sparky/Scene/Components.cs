@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Sparky {
+﻿namespace Sparky {
 
 	public abstract class Component
 	{
@@ -180,11 +178,6 @@ namespace Sparky {
 		}
 	}
 
-	public enum LightType
-	{
-		Directional, Point, Spot,
-	}
-
 	public class LightSource : Component
 	{
 		public LightType Type;
@@ -257,11 +250,6 @@ namespace Sparky {
 				InternalCalls.LightSourceComponent_SetDirection(Entity.ID, ref value);
 			}
 		}
-	}
-
-	public enum MeshType
-	{
-		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
 	}
 
 	public class MeshRenderer : Component
@@ -399,21 +387,21 @@ namespace Sparky {
 		
 	}
 
-	public enum RigidBody2DType
-	{
-		Static, Dynamic, Kinematic,
-	}
-
-	public enum ForceMode
-	{
-		Force = 0,          // A standard force, using Force = mass * distance / time^2
-		Impulse,            // An Impulse force, using Force = mass * distance / time
-		VelocityChange,     // An Impulse that ignores the objects mass, e.g Force = distance / time
-		Acceleration        // A constant force, not accounting for mass, e.g Force = distance / time^2
-	}
-
 	public class RigidBody : Component
 	{
+		public RigidBodyType BodyType
+		{
+			get
+			{
+				return InternalCalls.RigidBodyComponent_GetBodyType(Entity.ID);
+			}
+
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
+			}
+		}
+
 		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{
 			InternalCalls.RigidBodyComponent_AddForce(Entity.ID, ref force, forceMode);
@@ -427,12 +415,11 @@ namespace Sparky {
 
 	public class RigidBody2D : Component
 	{
-		public RigidBody2DType Type
+		public RigidBody2DType BodyType
 		{
 			get
 			{
-				InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID, out RigidBody2DType bodyType);
-				return bodyType;
+				return InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);
 			}
 
 			set

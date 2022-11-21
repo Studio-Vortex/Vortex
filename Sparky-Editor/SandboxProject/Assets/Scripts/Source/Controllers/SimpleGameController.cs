@@ -63,7 +63,7 @@ namespace Sandbox {
 			}
 
 			if (Input.IsKeyDown(KeyCode.Escape))
-				Application.Shutdown();
+				Application.Quit();
 
 			m_Rigidbody.ApplyLinearImpulse(velocity, true);
 		}

@@ -245,7 +245,7 @@ namespace Sparky {
 				Gui::Separator();
 
 				if (Gui::MenuItem("Exit"))
-					Application::Get().Close();
+					Application::Get().Quit();
 
 				Gui::EndMenu();
 			}
@@ -533,8 +533,8 @@ namespace Sparky {
 			Math::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
-			TransformComponent& entityTransformComponent = selectedEntity.GetTransform();
-			Math::mat4 entityTransform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+			TransformComponent& entityTransform = selectedEntity.GetTransform();
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 			// Snapping
 			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -544,39 +544,30 @@ namespace Sparky {
 
 			ImGuizmo::Manipulate(
 				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
-				static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
+				static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(transform),
 				nullptr, (controlPressed&& m_GizmoSnapEnabled) ? snapValues.data() : nullptr
 			);
 
 			if (m_DrawGizmoGrid)
-				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(entityTransform), m_GizmoGridSize);
+				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), m_GizmoGridSize);
 
 			if (ImGuizmo::IsUsing())
 			{
-				Math::vec3 translation;
-				Math::vec3 rotation;
-				Math::vec3 scale;
-				Math::DecomposeTransform(entityTransform, translation, rotation, scale);
-
 				Entity parent = m_ActiveScene->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
+
 				if (parent)
 				{
-					Math::vec3 parentTranslation;
-					Math::vec3 parentRotation;
-					Math::vec3 parentScale;
-					Math::DecomposeTransform(m_ActiveScene->GetWorldSpaceTransformMatrix(parent), parentTranslation, parentRotation, parentScale);
-					Math::vec3 deltaRotation = (rotation - parentRotation) - entityTransformComponent.Rotation;
-					entityTransformComponent.Translation = translation - parentTranslation;
-					entityTransformComponent.Rotation += deltaRotation;
-					entityTransformComponent.Scale = parentScale;
+					Math::mat4 parentTransform = m_ActiveScene->GetWorldSpaceTransformMatrix(parent);
+					transform = Math::Inverse(parentTransform) * transform;
 				}
-				else
-				{
-					Math::vec3 deltaRotation = rotation - entityTransformComponent.Rotation;
-					entityTransformComponent.Translation = translation;
-					entityTransformComponent.Rotation += deltaRotation;
-					entityTransformComponent.Scale = scale;
-				}
+
+				Math::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+				Math::vec3 deltaRotation = rotation - entityTransform.Rotation;
+				entityTransform.Translation = translation;
+				entityTransform.Rotation += deltaRotation;
+				entityTransform.Scale = scale;
 			}
 		}
 

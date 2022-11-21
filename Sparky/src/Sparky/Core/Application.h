@@ -58,7 +58,7 @@ namespace Sparky {
 
 		const ApplicationProperties& GetProperties() const { return m_Properties; }
 
-		void Close();
+		void Quit();
 
 		void SubmitToMainThread(const std::function<void()>& func);
 

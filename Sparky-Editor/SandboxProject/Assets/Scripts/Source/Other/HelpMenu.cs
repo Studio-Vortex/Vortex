@@ -13,7 +13,7 @@ namespace Sandbox {
 
 		protected override void OnGui()
 		{
-			Gui.Begin("Tutorial", Window.GetPosition());
+			Gui.Begin("Tutorial", Application.GetPosition());
 
 			Gui.Text("Welcome!");
 			Gui.Spacing();

@@ -48,19 +48,15 @@ namespace Sparky {
 
 #pragma region Application
 
-	static void Application_Shutdown()
+	static void Application_Quit()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Application::Get().Close();
+		Application::Get().Quit();
 	}
 
-#pragma endregion
-
-#pragma region Window
-
-	static void Window_GetSize(Math::vec2* outSize)
+	static void Application_GetSize(Math::vec2* outSize)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -68,7 +64,7 @@ namespace Sparky {
 		*outSize = Application::Get().GetWindow().GetSize();
 	}
 
-	static void Window_GetPosition(Math::vec2* outPosition)
+	static void Application_GetPosition(Math::vec2* outPosition)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -76,20 +72,12 @@ namespace Sparky {
 		*outPosition = Application::Get().GetWindow().GetPosition();
 	}
 
-	static bool Window_IsMaximized()
+	static bool Application_IsMaximized()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		return Application::Get().GetWindow().IsMaximized();
-	}
-
-	static void Window_ShowMouseCursor(bool enabled)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		Application::Get().GetWindow().ShowMouseCursor(enabled);
 	}
 
 #pragma endregion
@@ -1222,6 +1210,34 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
+	static RigidBodyComponent::BodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().Type;
+	}
+
+	static void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyComponent::BodyType bodyType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+		if (bodyType != rigidbody.Type)
+		{
+			// Destroy the physics body, a new one will be created on the next frame
+			Physics::DestroyPhysicsBody(entity);
+			rigidbody.Type = bodyType;
+			rigidbody.RuntimeActor = nullptr;
+		}
+	}
+
 	static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -1287,14 +1303,14 @@ namespace Sparky {
 
 #pragma region RigidBody2D Component
 
-	static void RigidBody2DComponent_GetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType* outBodyType)
+	static RigidBody2DComponent::BodyType RigidBody2DComponent_GetBodyType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outBodyType = entity.GetComponent<RigidBody2DComponent>().Type;
+		return entity.GetComponent<RigidBody2DComponent>().Type;
 	}
 
 	static void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DComponent::BodyType bodyType)
@@ -1909,7 +1925,13 @@ namespace Sparky {
 		return Input::GetGamepadAxis(axis);
 	}
 
-	// TODO Input_Mouse functions
+	static void Input_ShowMouseCursor(bool enabled)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Application::Get().GetWindow().ShowMouseCursor(enabled);
+	}
 
 #pragma endregion
 
@@ -2120,16 +2142,10 @@ namespace Sparky {
 
 #pragma region Application
 
-		SP_ADD_INTERNAL_CALL(Application_Shutdown);
-
-#pragma endregion
-
-#pragma region Window
-
-		SP_ADD_INTERNAL_CALL(Window_GetSize);
-		SP_ADD_INTERNAL_CALL(Window_GetPosition);
-		SP_ADD_INTERNAL_CALL(Window_IsMaximized);
-		SP_ADD_INTERNAL_CALL(Window_ShowMouseCursor);
+		SP_ADD_INTERNAL_CALL(Application_Quit);
+		SP_ADD_INTERNAL_CALL(Application_GetSize);
+		SP_ADD_INTERNAL_CALL(Application_GetPosition);
+		SP_ADD_INTERNAL_CALL(Application_IsMaximized);
 
 #pragma endregion
 
@@ -2289,6 +2305,8 @@ namespace Sparky {
 
 #pragma region RigidBody Component
 
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 
@@ -2425,6 +2443,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);
 		SP_ADD_INTERNAL_CALL(Input_GetGamepadAxis);
+		SP_ADD_INTERNAL_CALL(Input_ShowMouseCursor);
 
 #pragma endregion
 

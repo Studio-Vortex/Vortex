@@ -64,7 +64,7 @@ namespace Sandbox {
 				SceneManager.LoadScene("Platformer");
 
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
-				Application.Shutdown();
+				Application.Quit();
 
 			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
 			{

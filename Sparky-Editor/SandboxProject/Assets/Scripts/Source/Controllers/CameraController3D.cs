@@ -23,7 +23,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			Window.ShowMouseCursor(false);
+			Input.ShowMouseCursor = false;
 			SpotLight = FindEntityByName("FlashLight");
 			FlashlightSource = SpotLight.GetComponent<LightSource>();
 		}
@@ -33,7 +33,7 @@ namespace Sandbox {
 			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
 
 			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
-				Application.Shutdown();
+				Application.Quit();
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
 				transform.Translate(-transform.Forward * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));

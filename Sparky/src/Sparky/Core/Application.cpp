@@ -81,7 +81,7 @@ namespace Sparky {
 		m_LayerStack.PushOverlay(overlay);
 	}
 
-	void Application::Close()
+	void Application::Quit()
 	{
 		m_Running = false;
 		g_ApplicationRunning = false;

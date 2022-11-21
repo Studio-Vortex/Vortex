@@ -22,7 +22,7 @@ void Sandbox2D::OnUpdate(Sparky::TimeStep delta)
 	m_CameraController.OnUpdate(delta);
 
 	if (Sparky::Input::IsKeyPressed(Sparky::Key::Escape))
-		Sparky::Application::Get().Close();
+		Sparky::Application::Get().Quit();
 
 	// Render
 	// Reset stats here

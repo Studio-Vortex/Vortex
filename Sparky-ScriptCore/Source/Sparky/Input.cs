@@ -2,6 +2,14 @@
 
 	public static class Input
 	{
+		public static bool ShowMouseCursor
+		{
+			set
+			{
+				InternalCalls.Input_ShowMouseCursor(value);
+			}
+		}
+
 		public static bool IsKeyDown(KeyCode key)
 		{
 			return InternalCalls.Input_IsKeyDown(key);

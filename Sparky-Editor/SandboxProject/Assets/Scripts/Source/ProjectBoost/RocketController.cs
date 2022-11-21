@@ -28,7 +28,7 @@ namespace Sandbox {
 
 			if (Input.IsKeyDown(KeyCode.Escape))
 			{
-				Application.Shutdown();
+				Application.Quit();
 			}
 
 			ProcessHit();

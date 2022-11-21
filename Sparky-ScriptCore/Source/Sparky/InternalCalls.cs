@@ -8,23 +8,16 @@ namespace Sparky {
 		#region Application
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Application_Shutdown();
-
-		#endregion
-
-		#region Window
+		internal extern static void Application_Quit();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Window_GetSize(out Vector2 size);
+		internal extern static void Application_GetSize(out Vector2 size);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Window_GetPosition(out Vector2 position);
+		internal extern static void Application_GetPosition(out Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Window_IsMaximized();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Window_ShowMouseCursor(bool enabled);
+		internal extern static bool Application_IsMaximized();
 
 		#endregion
 
@@ -391,6 +384,12 @@ namespace Sparky {
 		#region RigidBody
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetBodyType(ulong entityID, RigidBodyType bodyType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -408,7 +407,7 @@ namespace Sparky {
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody2DComponent_GetBodyType(ulong entityID, out RigidBody2DType bodyType);
+		internal extern static RigidBody2DType RigidBody2DComponent_GetBodyType(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_SetBodyType(ulong entityID, RigidBody2DType bodyType);
@@ -612,6 +611,9 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Input_GetGamepadAxis(Gamepad gamepadAxis);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Input_ShowMouseCursor(bool enabled);
 
 		#endregion
 

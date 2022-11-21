@@ -3,7 +3,7 @@
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Core/TimeStep.h"
 #include "Sparky/Scene/Components.h"
-#include "Sparky/Scene/SceneRenderer.h"
+#include "Sparky/Renderer/EditorCamera.h"
 
 #include <entt/entt.hpp>
 
@@ -55,7 +55,7 @@ namespace Sparky {
 
 		void ConvertToLocalSpace(Entity entity);
 		void ConvertToWorldSpace(Entity entity);
-		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity, bool accountForPhysicsActor = false);
+		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
 		TransformComponent GetWorldSpaceTransform(Entity entity);
 
 		template <typename... TComponent>
@@ -76,7 +76,6 @@ namespace Sparky {
 
 	private:
 		entt::registry m_Registry;
-		SceneRenderer m_SceneRenderer;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		uint32_t m_StepFrames = 0;

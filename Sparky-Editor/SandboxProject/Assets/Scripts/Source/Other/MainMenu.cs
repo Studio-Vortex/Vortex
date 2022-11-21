@@ -40,7 +40,7 @@ namespace Sandbox {
 
 		protected override void OnGui()
 		{
-			Gui.Begin("Main Menu", Window.GetPosition(), Window.GetSize());
+			Gui.Begin("Main Menu", Application.GetPosition(), Application.GetSize());
 			Gui.Text("Use the left stick to move around");
 			Gui.Text("Press A to load the next scene!");
 

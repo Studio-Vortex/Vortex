@@ -11,6 +11,7 @@
 #include "Sparky/Scene/ScriptableEntity.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Asset/AssetRegistry.h"
+#include "Sparky/Scene/SceneRenderer.h"
 
 #include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
@@ -102,6 +103,8 @@ namespace Sparky {
 	{
 		CopyComponentIfExists<TComponent...>(dst, src);
 	}
+
+	static SceneRenderer s_SceneRenderer;
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
 	{
@@ -310,7 +313,7 @@ namespace Sparky {
 		// If there is a primary camera in the scene we can render from the camera's point of view
 		if (primarySceneCamera != nullptr)
 		{
-			m_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, m_Registry);
+			s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
 		}
 
 		// Update Components
@@ -331,7 +334,7 @@ namespace Sparky {
 		}
 
 		// Render
-		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
+		s_SceneRenderer.RenderFromEditorCamera(camera, this);
 
 		// Update Components
 		OnModelUpdate();
@@ -342,7 +345,7 @@ namespace Sparky {
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
 		// Render
-		m_SceneRenderer.RenderFromEditorCamera(camera, m_Registry);
+		s_SceneRenderer.RenderFromEditorCamera(camera, this);
 
 		Entity primaryCameraEntity = GetPrimaryCameraEntity();
 		if (primaryCameraEntity)
@@ -448,9 +451,8 @@ namespace Sparky {
 
 		auto& transform = entity.GetTransform();
 		Math::mat4 parentTransform = GetWorldSpaceTransformMatrix(parent);
-
 		Math::mat4 localTransform = Math::Inverse(parentTransform) * transform.GetTransform();
-		Math::DecomposeTransform(localTransform, transform.Translation, transform.Rotation, transform.Scale);
+		transform.SetTransform(localTransform);
 	}
 
 	void Scene::ConvertToWorldSpace(Entity entity)
@@ -462,19 +464,11 @@ namespace Sparky {
 
 		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
 		auto& entityTransform = entity.GetTransform();
-		Math::DecomposeTransform(transform, entityTransform.Translation, entityTransform.Rotation, entityTransform.Scale);
+		entityTransform.SetTransform(transform);
 	}
 
-	Math::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity, bool accountForPhysicsActor)
+	Math::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity)
 	{
-		if (accountForPhysicsActor && entity.HasComponent<RigidBodyComponent>())
-		{
-			const auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-			if (rigidbody.Type == RigidBodyComponent::BodyType::Dynamic)
-				return entity.GetTransform().GetTransform();
-		}
-
 		Math::mat4 transform(1.0f);
 
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
@@ -491,8 +485,7 @@ namespace Sparky {
     {
 		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
 		TransformComponent transformComponent;
-		Math::DecomposeTransform(transform, transformComponent.Translation, transformComponent.Rotation, transformComponent.Scale);
-
+		transformComponent.SetTransform(transform);
         return transformComponent;
     }
 
