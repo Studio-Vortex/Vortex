@@ -100,7 +100,7 @@ namespace Sandbox {
 
 		void FireBullet()
 		{
-			Entity entity = new Entity($"");
+			Entity entity = new Entity("Bullet");
 			entity.AddComponent<MeshRenderer>();
 			entity.transform.Translation = transform.Translation + transform.Forward;
 

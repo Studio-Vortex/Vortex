@@ -499,6 +499,26 @@
 		}
 	}
 
+	public class BoxCollider : Component
+	{
+
+	}
+
+	public class SphereCollider : Component
+	{
+
+	}
+
+	public class CapsuleCollider : Component
+	{
+
+	}
+
+	public class StaticMeshCollider : Component
+	{
+
+	}
+
 	public class RigidBody2D : Component
 	{
 		public RigidBody2DType BodyType

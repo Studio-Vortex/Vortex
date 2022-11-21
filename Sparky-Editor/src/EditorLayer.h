@@ -136,6 +136,7 @@ namespace Sparky {
 		SharedRef<Texture2D> m_StepIcon = nullptr;
 		SharedRef<Texture2D> m_LocalModeIcon = nullptr;
 		SharedRef<Texture2D> m_WorldModeIcon = nullptr;
+		SharedRef<Texture2D> m_SelectToolIcon = nullptr;
 		SharedRef<Texture2D> m_TranslateToolIcon = nullptr;
 		SharedRef<Texture2D> m_RotateToolIcon = nullptr;
 		SharedRef<Texture2D> m_ScaleToolIcon = nullptr;

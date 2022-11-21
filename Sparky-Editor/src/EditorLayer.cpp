@@ -40,6 +40,7 @@ namespace Sparky {
 
 		m_LocalModeIcon = Texture2D::Create("Resources/Icons/Scene/LocalMode.png");
 		m_WorldModeIcon = Texture2D::Create("Resources/Icons/Scene/WorldMode.png");
+		m_SelectToolIcon = Texture2D::Create("Resources/Icons/Scene/SelectTool.png");
 		m_TranslateToolIcon = Texture2D::Create("Resources/Icons/Scene/TranslateTool.png");
 		m_RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
 		m_ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
@@ -611,7 +612,13 @@ namespace Sparky {
 		else if (Gui::IsItemHovered())
 			DisplayTooltipFunc("World Mode");
 
-		Gui::SetCursorPos({ size * 6, 10.0f });
+		Gui::SetCursorPos({ size * 5, 10.0f });
+		if (Gui::ImageButton((void*)m_SelectToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
+			OnTranslationToolSelected();
+		else if (Gui::IsItemHovered())
+			DisplayTooltipFunc("Select Tool");
+
+		Gui::SameLine();
 		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
 			OnTranslationToolSelected();
 		else if (Gui::IsItemHovered())
