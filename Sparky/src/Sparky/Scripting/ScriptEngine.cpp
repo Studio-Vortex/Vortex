@@ -522,24 +522,27 @@ namespace Sparky {
 			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
-			if (displayClassNames)
-			{
-				int fieldCount = mono_class_num_fields(monoClass);
-				SP_CORE_WARN("{} has {} fields: ", className, fieldCount);
-				void* iterator = nullptr;
-				while (MonoClassField* classField = mono_class_get_fields(monoClass, &iterator))
-				{
-					const char* fieldName = mono_field_get_name(classField);
-					uint32_t flags = mono_field_get_flags(classField);
+			int fieldCount = mono_class_num_fields(monoClass);
 
-					if (flags & MONO_FIELD_ATTR_PUBLIC)
-					{
-						MonoType* type = mono_field_get_type(classField);
-						ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+			if (displayClassNames)
+				SP_CORE_WARN("{} has {} fields: ", className, fieldCount);
+
+			void* iterator = nullptr;
+
+			while (MonoClassField* classField = mono_class_get_fields(monoClass, &iterator))
+			{
+				const char* fieldName = mono_field_get_name(classField);
+				uint32_t flags = mono_field_get_flags(classField);
+
+				if (flags & MONO_FIELD_ATTR_PUBLIC)
+				{
+					MonoType* type = mono_field_get_type(classField);
+					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+
+					if (displayClassNames)
 						SP_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
 
-						scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
-					}
+					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
 				}
 			}
 		}

@@ -117,9 +117,14 @@ namespace Sparky {
 
 	void Physics::OnSimulationStop()
 	{
-		s_Data.PhysicsScene->release();
-		s_Data.PhysicsFactory->release();
-		s_Data.Foundation->release();
+		bool simulationStarted = (bool)(s_Data.Foundation && s_Data.PhysicsFactory && s_Data.PhysicsScene);
+
+		if (simulationStarted)
+		{
+			s_Data.PhysicsScene->release();
+			s_Data.PhysicsFactory->release();
+			s_Data.Foundation->release();
+		}
 	}
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)

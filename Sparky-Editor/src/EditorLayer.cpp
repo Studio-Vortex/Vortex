@@ -520,9 +520,7 @@ namespace Sparky {
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
 		bool showGizmos = (selectedEntity && currentGizmoToolIsValid && notInPlayMode && !altPressed);
 
-		bool sceneIsInDebugMode = selectedEntity && m_ActiveScene->IsInDebugMode();
-
-		if (showGizmos || sceneIsInDebugMode)
+		if (showGizmos)
 		{
 			ImGuizmo::Enable(m_GizmosEnabled);
 			ImGuizmo::SetOrthographic(m_OrthographicGizmos);
@@ -541,45 +539,17 @@ namespace Sparky {
 			// Snapping
 			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? m_RotationSnapValue : m_SnapValue;
-
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
 
-			if (sceneIsInDebugMode)
-			{
-				Entity primaryCameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			ImGuizmo::Manipulate(
+				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
+				static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
+				nullptr, (controlPressed&& m_GizmoSnapEnabled) ? snapValues.data() : nullptr
+			);
 
-				if (primaryCameraEntity)
-				{
-					TransformComponent& primaryCameraTransformComponent = primaryCameraEntity.GetTransform();
-
-					Math::quaternion orientation = Math::quaternion(Math::vec3(-primaryCameraTransformComponent.Rotation.x, -primaryCameraTransformComponent.Rotation.y, 0.0f));
-					Math::vec3 cameraPosition = primaryCameraTransformComponent.Translation - Math::Rotate(orientation, Math::vec3(0.0f, 0.0f, -1.0f));
-					Math::mat4 cameraViewMatrix = Math::Translate(cameraPosition) * Math::ToMat4(orientation);
-					cameraViewMatrix = Math::Inverse(cameraViewMatrix);
-					Math::mat4 cameraProjectionMatrix = primaryCameraEntity.GetComponent<CameraComponent>().Camera.GetProjection();
-
-					ImGuizmo::Manipulate(
-						Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix),
-						static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
-						nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
-					);
-
-					if (m_DrawGizmoGrid)
-						ImGuizmo::DrawGrid(Math::ValuePtr(cameraViewMatrix), Math::ValuePtr(cameraProjectionMatrix), Math::ValuePtr(entityTransform), m_GizmoGridSize);
-				}
-			}
-			else
-			{
-				ImGuizmo::Manipulate(
-					Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
-					static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(entityTransform),
-					nullptr, (controlPressed && m_GizmoSnapEnabled) ? snapValues.data() : nullptr
-				);
-
-				if (m_DrawGizmoGrid)
-					ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(entityTransform), m_GizmoGridSize);
-			}
+			if (m_DrawGizmoGrid)
+				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(entityTransform), m_GizmoGridSize);
 
 			if (ImGuizmo::IsUsing())
 			{
