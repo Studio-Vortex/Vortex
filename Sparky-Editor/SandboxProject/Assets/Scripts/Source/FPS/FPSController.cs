@@ -25,7 +25,7 @@ namespace Sandbox {
 		{
 			Input.ShowMouseCursor = false;
 			m_TimeBetweenShot = TimeBetweenShots;
-			gunshotSound = GetComponent<AudioSource>();
+			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -109,7 +109,7 @@ namespace Sandbox {
 			RigidBody rigidbody = entity.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.Velocity = transform.Forward * BulletSpeed;
-			//rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
+			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
 
 			gunshotSound.Play();
 

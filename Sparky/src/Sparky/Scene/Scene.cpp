@@ -303,7 +303,7 @@ namespace Sparky {
 			{
 				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
 				primarySceneCamera = &cameraComponent.Camera;
-				primarySceneCameraTransform = primaryCameraEntity.GetTransform();
+				primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
 
 				// Set Clear color
 				RenderCommand::SetClearColor(cameraComponent.ClearColor);
