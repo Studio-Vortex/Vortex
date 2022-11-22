@@ -18,7 +18,6 @@ namespace Sandbox {
 		Vector3 m_Rotation;
 		AudioSource gunshotSound;
 		ParticleEmitter muzzleBlast;
-		Entity bulletContainter;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -29,7 +28,6 @@ namespace Sandbox {
 			m_TimeBetweenShot = TimeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
-			bulletContainter = FindEntityByName("Bullet Container");
 		}
 
 		protected override void OnUpdate(float delta)
@@ -54,7 +52,6 @@ namespace Sandbox {
 
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
-
 		}
 
 		void ProcessMovement()
@@ -102,28 +99,28 @@ namespace Sandbox {
 			}
 		}
 
-		void FireBullet()
+		Entity FireBullet()
 		{
-			Entity entity = new Entity("Bullet");
-			entity.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
-			entity.transform.Scale = new Vector3(0.5f);
+			Entity bullet = new Entity("Bullet");
+			bullet.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
+			bullet.transform.Scale = new Vector3(0.5f);
 
-			entity.AddComponent<MeshRenderer>();
-			entity.AddComponent<BoxCollider>();
+			bullet.AddComponent<MeshRenderer>();
+			bullet.AddComponent<BoxCollider>();
 
-			RigidBody rigidbody = entity.AddComponent<RigidBody>();
+			RigidBody rigidbody = bullet.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
 			rigidbody.Velocity = transform.Forward * BulletSpeed;
 			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
 
 			gunshotSound.Play();
 			muzzleBlast.Velocity = transform.Forward;
-			muzzleBlast.Offset = transform.Forward;
+			muzzleBlast.Offset = transform.Forward * 2.0f;
 			muzzleBlast.Start();
 
-			bulletContainter.AddChild(entity);
-
 			m_TimeBetweenShot = TimeBetweenShots;
+
+			return bullet;
 		}
 	}
 

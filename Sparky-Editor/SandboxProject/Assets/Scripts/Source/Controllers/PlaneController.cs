@@ -11,36 +11,21 @@ namespace Sandbox {
 		public Vector3 CameraOffset;
 		public Vector3 Velocity;
 		public Vector3 Rotation;
-		Entity m_Camera;
-		Entity m_PointLight;
-
-		private bool m_ThrottleOn = false;
 
 		protected override void OnCreate()
 		{
-			m_Camera = FindEntityByName("Camera");
-			m_PointLight = FindEntityByName("Point Light");
 		}
 
 		protected override void OnUpdate(float delta)
 		{
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
-				Scene.Pause();
-
-			m_Camera.transform.Translation = transform.Translation + CameraOffset;
-			//m_Camera.transform.LookAt(transform.Translation);
-			//m_Camera.transform.Rotation = transform.Rotation * 0.5f;
-
-			Vector3 lightPos = transform.Translation + Vector3.Up;
-			m_PointLight.transform.Translation = lightPos;
+			Velocity = Vector3.Zero;
+			Rotation = Vector3.Zero;
 
 			ProcessMovement(delta);
 			ProcessRotation(delta);
-			ProcessCameraRotation(delta);
 
 			transform.Translate(Velocity);
 			transform.Rotate(Rotation);
-			Rotation *= 0.5f;
 		}
 
 		void ProcessMovement(float delta)
@@ -51,19 +36,7 @@ namespace Sandbox {
 
 			float axisRightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (axisRightTrigger > Deadzone)
-			{
 				Velocity = transform.Forward * MoveSpeed * delta * axisRightTrigger;
-
-				if (!m_ThrottleOn)
-				{
-					m_ThrottleOn = true;
-				}
-
-				MoveSpeed += delta;
-			}
-
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonB))
-				Velocity *= 0.25f;
 		}
 
 		void ProcessRotation(float delta)
@@ -82,27 +55,6 @@ namespace Sandbox {
 				Rotation = transform.Up * RotationSpeed * delta;
 			if (Input.IsGamepadButtonDown(Gamepad.RightBumper))
 				Rotation = transform.Up * -RotationSpeed * delta;
-		}
-
-		void ProcessCameraRotation(float delta)
-		{
-			// left right rotation
-			float axisRightX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
-			if (axisRightX > Deadzone || axisRightX < -Deadzone)
-				m_Camera.transform.Rotate(transform.Up * RotationSpeed * delta * axisRightX);
-		}
-
-		protected override void OnGui()
-		{
-			if (!Scene.IsPaused())
-				return;
-
-			Gui.Begin("Pause Menu", new Vector2(), new Vector2());
-			
-			if (Gui.Button("Resume"))
-				Scene.Resume();
-
-			Gui.End();
 		}
 	}
 
