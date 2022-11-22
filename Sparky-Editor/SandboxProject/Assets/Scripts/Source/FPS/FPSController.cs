@@ -18,6 +18,7 @@ namespace Sandbox {
 		Vector3 m_Rotation;
 		AudioSource gunshotSound;
 		ParticleEmitter muzzleBlast;
+		Entity bulletContainter;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -28,6 +29,7 @@ namespace Sandbox {
 			m_TimeBetweenShot = TimeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
+			bulletContainter = FindEntityByName("Bullet Container");
 		}
 
 		protected override void OnUpdate(float delta)
@@ -103,7 +105,7 @@ namespace Sandbox {
 		void FireBullet()
 		{
 			Entity entity = new Entity("Bullet");
-			entity.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + transform.Right + (transform.Up * 0.25f);
+			entity.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
 			entity.transform.Scale = new Vector3(0.5f);
 
 			entity.AddComponent<MeshRenderer>();
@@ -118,6 +120,8 @@ namespace Sandbox {
 			muzzleBlast.Velocity = transform.Forward;
 			muzzleBlast.Offset = transform.Forward;
 			muzzleBlast.Start();
+
+			bulletContainter.AddChild(entity);
 
 			m_TimeBetweenShot = TimeBetweenShots;
 		}

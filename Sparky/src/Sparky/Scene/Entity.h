@@ -74,6 +74,13 @@ namespace Sparky {
 		std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
 		const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
 		void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
+		void RemoveChild(UUID childUUID)
+		{
+			auto& children = Children();
+			auto it = std::find(children.begin(), children.end(), childUUID);
+			SP_CORE_ASSERT(it != children.end());
+			children.erase(it);
+		}
 
 		bool HasParent() { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 

@@ -84,6 +84,9 @@ namespace Sparky {
 		internal extern static ulong Entity_FindEntityByName(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_AddChild(ulong parentEntityID, ulong childEntityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static object Entity_GetScriptInstance(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

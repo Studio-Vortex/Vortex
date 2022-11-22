@@ -273,6 +273,39 @@ namespace Sparky {
 		return entity.GetUUID();
 	}
 
+	static bool Entity_AddChild(UUID parentUUID, UUID childUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+
+		if (parent && child)
+		{
+			parent.AddChild(child.GetUUID());
+			return true;
+		}
+
+		SP_CORE_WARN("Parent or Child UUID was Invalid!");
+		return false;
+	}
+
+	static bool Entity_RemoveChild(UUID parentUUID, UUID childUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+
+		if (parent && child)
+		{
+			parent.RemoveChild(child.GetUUID());
+			return true;
+		}
+
+		return false;
+	}
+
 	static MonoObject* Entity_GetScriptInstance(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2073,17 +2106,10 @@ namespace Sparky {
 
 	void ScriptRegistry::RegisterMethods()
 	{
-
-#pragma region Application
-
 		SP_ADD_INTERNAL_CALL(Application_Quit);
 		SP_ADD_INTERNAL_CALL(Application_GetSize);
 		SP_ADD_INTERNAL_CALL(Application_GetPosition);
 		SP_ADD_INTERNAL_CALL(Application_IsMaximized);
-
-#pragma endregion
-
-#pragma region Debug Renderer
 
 		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_BeginScene);
@@ -2091,38 +2117,23 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
-#pragma endregion
-
-#pragma region Scene
-
 		SP_ADD_INTERNAL_CALL(Scene_IsPaused);
 		SP_ADD_INTERNAL_CALL(Scene_Pause);
 		SP_ADD_INTERNAL_CALL(Scene_Resume);
 
-#pragma endregion
-
-#pragma region SceneManager
-
 		SP_ADD_INTERNAL_CALL(SceneManager_LoadScene);
-
-#pragma endregion
-
-#pragma region Entity
 
 		SP_ADD_INTERNAL_CALL(Entity_AddComponent);
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveComponent);
-
 		SP_ADD_INTERNAL_CALL(Entity_GetTag);
 		SP_ADD_INTERNAL_CALL(Entity_GetMarker);
 		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
 		SP_ADD_INTERNAL_CALL(Entity_FindEntityByName);
+		SP_ADD_INTERNAL_CALL(Entity_AddChild);
+		SP_ADD_INTERNAL_CALL(Entity_RemoveChild);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		SP_ADD_INTERNAL_CALL(Entity_Destroy);
-
-#pragma endregion
-
-#pragma region Transform Component
 
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
@@ -2135,19 +2146,11 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_LookAt);
 
-#pragma endregion
-
-#pragma region Camera Component
-
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_LookAt);
-
-#pragma endregion
-
-#pragma region Light Source Component
 
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetAmbient);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetAmbient);
@@ -2160,16 +2163,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
 
-#pragma endregion
-
-#pragma region Mesh Renderer Component
-
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
-
-#pragma endregion
-
-#pragma region Sprite Renderer Component
 
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);
@@ -2178,10 +2173,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetScale);
 
-#pragma endregion
-
-#pragma region Circle Renderer Component
-
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetThickness);
@@ -2189,17 +2180,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_GetFade);
 		SP_ADD_INTERNAL_CALL(CircleRendererComponent_SetFade);
 
-#pragma endregion
-
-#pragma region Audio Source Component
-
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
-
-#pragma endregion
-
-#pragma region RigidBody Component
 
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
@@ -2220,15 +2203,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 
-#pragma endregion
-
-#pragma region Physics
-
 		SP_ADD_INTERNAL_CALL(Physics_Raycast);
-
-#pragma endregion
-
-#pragma region RigidBody2D Component
 
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
@@ -2243,15 +2218,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
 		SP_ADD_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
 
-#pragma endregion
-
-#pragma region Physics2D
-
 		SP_ADD_INTERNAL_CALL(Physics2D_Raycast);
-
-#pragma endregion
-
-#pragma region Box Collider2D Component
 
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);
@@ -2266,10 +2233,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetRestitutionThreshold);
 
-#pragma endregion
-
-#pragma region Circle Collider2D Component
-
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetOffset);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetOffset);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetRadius);
@@ -2282,10 +2245,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitution);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_GetRestitutionThreshold);
 		SP_ADD_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
-
-#pragma endregion
-
-#pragma region Particle Emitter Component
 
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetVelocity);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetVelocity);
@@ -2310,16 +2269,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_Start);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_Stop);
 
-#pragma endregion
-
-#pragma region RandomDevice
-
 		SP_ADD_INTERNAL_CALL(RandomDevice_RangedInt32);
 		SP_ADD_INTERNAL_CALL(RandomDevice_RangedFloat);
-
-#pragma endregion
-
-#pragma region Mathf
 
 		SP_ADD_INTERNAL_CALL(Mathf_GetPI);
 		SP_ADD_INTERNAL_CALL(Mathf_GetPI_D);
@@ -2331,23 +2282,11 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Mathf_Deg2Rad);
 		SP_ADD_INTERNAL_CALL(Mathf_Rad2Deg);
 
-#pragma endregion
-
-#pragma region Vector3
-
 		SP_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
 		SP_ADD_INTERNAL_CALL(Vector3_DotProductVec3);
 
-#pragma endregion
-
-#pragma region Time
-
 		SP_ADD_INTERNAL_CALL(Time_GetElapsed);
 		SP_ADD_INTERNAL_CALL(Time_GetDeltaTime);
-
-#pragma endregion
-
-#pragma region Input
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
@@ -2356,10 +2295,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);
 		SP_ADD_INTERNAL_CALL(Input_GetGamepadAxis);
 		SP_ADD_INTERNAL_CALL(Input_ShowMouseCursor);
-
-#pragma endregion
-
-#pragma region Gui
 
 		SP_ADD_INTERNAL_CALL(Gui_Begin);
 		SP_ADD_INTERNAL_CALL(Gui_BeginWithPosition);
@@ -2371,18 +2306,11 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Gui_Text);
 		SP_ADD_INTERNAL_CALL(Gui_Button);
 
-#pragma endregion
-
-#pragma region Debug
-
 		SP_ADD_INTERNAL_CALL(Debug_Log);
 		SP_ADD_INTERNAL_CALL(Debug_Info);
 		SP_ADD_INTERNAL_CALL(Debug_Warn);
 		SP_ADD_INTERNAL_CALL(Debug_Error);
 		SP_ADD_INTERNAL_CALL(Debug_Critical);
-
-#pragma endregion
-
 	}
 
 }
