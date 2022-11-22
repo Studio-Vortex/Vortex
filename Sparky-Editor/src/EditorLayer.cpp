@@ -177,7 +177,7 @@ namespace Sparky {
 		SP_PROFILE_FUNCTION();
 
 		SharedRef<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
+		ProjectProperties& projectProps = activeProject->GetProperties();
 		
 		static bool scenePanelOpen = true;
 
@@ -335,7 +335,7 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("View"))
 			{
-				Gui::MenuItem("Maximize On Play", nullptr, &m_MaximizeOnPlay);
+				Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay);
 				Gui::Separator();
 
 				if (m_SceneViewportMaximized)
@@ -1139,6 +1139,7 @@ namespace Sparky {
 		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
 
 		Entity startingCamera = m_ActiveScene->CreateEntity("Camera");
+		startingCamera.AddComponent<AudioListenerComponent>();
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
 		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 		TransformComponent& cameraTransform = startingCamera.GetTransform();
@@ -1286,7 +1287,7 @@ namespace Sparky {
 
 		m_SceneState = SceneState::Play;
 
-		if (m_MaximizeOnPlay)
+		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -1384,7 +1385,7 @@ namespace Sparky {
 
 		m_SceneState = SceneState::Edit;
 
-		if (m_MaximizeOnPlay)
+		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = false;
 
 		m_ActiveScene = m_EditorScene;
@@ -1410,7 +1411,7 @@ namespace Sparky {
 
 		m_SceneState = SceneState::Simulate;
 
-		if (m_MaximizeOnPlay)
+		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);

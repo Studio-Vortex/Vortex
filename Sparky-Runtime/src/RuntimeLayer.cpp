@@ -31,7 +31,6 @@ namespace Sparky {
 			const auto& projectFilepath = commandLineArgs[1];
 
 			OpenProject(std::filesystem::path(projectFilepath));
-			RenderCommand::SetClearColor(Math::vec3{ (38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f) });
 		}
 	}
 

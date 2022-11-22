@@ -261,7 +261,7 @@ namespace Sparky {
 		}
 	}
 
-	void Renderer::DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer)
+	void Renderer::DrawModel(const Math::mat4& transform, const MeshRendererComponent& meshRenderer)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -379,7 +379,7 @@ namespace Sparky {
 				shader->SetBool("u_Material.HasAOMap", false);
 		}
 
-		shader->SetMat4("u_Model", transform.GetTransform());
+		shader->SetMat4("u_Model", transform);
 
 		Submit(shader, model->GetVertexArray());
 

@@ -18,7 +18,7 @@ namespace Sparky {
 		void OnEvent(Event& e) override;
 
 	private:
-		void OpenProject(const std::string& filepath);
+		void DisplayCreateProjectPopup();
 		void LaunchEditor();
 
 	private:
@@ -26,6 +26,8 @@ namespace Sparky {
 		SharedRef<Texture2D> m_SparkyLogoIcon;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		std::filesystem::path m_ProjectPath = std::filesystem::path();
+
+		bool m_CreateNewProject = false;
 	};
 
 }

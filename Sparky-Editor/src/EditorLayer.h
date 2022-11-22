@@ -110,7 +110,6 @@ namespace Sparky {
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportMaximized = false;
-		bool m_MaximizeOnPlay = false;
 		
 		// Editor resources
 

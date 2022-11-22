@@ -30,7 +30,7 @@ namespace Sparky {
 
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		if (Gui::TreeNodeEx("Contents", treeNodeFlags))
+		if (Gui::TreeNodeEx(Project::GetActive()->GetName().c_str(), treeNodeFlags))
 		{
 			Gui::Unindent();
 

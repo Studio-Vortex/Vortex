@@ -13,6 +13,7 @@ Project:
     DrawGridAxes: true
     DrawGrid: true
     EditorCameraFOV: 45
+    MaximizeOnPlay: false
     FrameStepCount: 1
   GizmoProperties:
     DrawGrid: false

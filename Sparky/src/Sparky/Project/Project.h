@@ -30,6 +30,7 @@ namespace Sparky {
 			uint32_t FrameStepCount = 1;
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
+			bool MaximizeOnPlay = false;
 			float EditorCameraFOV = 45.0f;
 		} EditorProps;
 
@@ -74,6 +75,8 @@ namespace Sparky {
 			SP_CORE_ASSERT(s_ActiveProject, "No active project!");
 			return GetAssetDirectory() / path;
 		}
+
+		inline const std::string& GetName() const { return m_Properties.General.Name; }
 
 		static SharedRef<Project> New();
 		static SharedRef<Project> Load(const std::filesystem::path& path);

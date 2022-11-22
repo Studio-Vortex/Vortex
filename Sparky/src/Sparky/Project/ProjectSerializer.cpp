@@ -43,6 +43,7 @@ namespace Sparky {
 				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
 				out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
 				out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
+				out << YAML::Key << "MaximizeOnPlay" << YAML::Value << props.EditorProps.MaximizeOnPlay;
 				out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
 			}
 			out << YAML::EndMap; // Editior Properties
@@ -110,6 +111,7 @@ namespace Sparky {
 			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
 			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
 			props.EditorProps.EditorCameraFOV = editorData["EditorCameraFOV"].as<float>();
+			props.EditorProps.MaximizeOnPlay = editorData["MaximizeOnPlay"].as<bool>();
 			props.EditorProps.FrameStepCount = editorData["FrameStepCount"].as<uint32_t>();
 		}
 

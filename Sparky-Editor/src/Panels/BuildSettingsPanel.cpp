@@ -24,7 +24,8 @@ namespace Sparky {
 			if (m_ProjectPath.empty())
 				memset(buffer, 0, sizeof(buffer));
 			else
-				memcpy(buffer, m_ProjectPath.string().c_str(), m_ProjectPath.string().length());
+				memcpy(buffer, m_ProjectPath.string().c_str(), m_ProjectPath.string().size());
+			buffer[m_ProjectPath.string().size()] = '\0';
 
 			Gui::InputText("Startup Scene", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 

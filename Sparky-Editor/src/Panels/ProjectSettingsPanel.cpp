@@ -17,6 +17,21 @@ namespace Sparky {
 
 			if (Gui::BeginTabBar("##Tabs"))
 			{
+				if (Gui::BeginTabItem("General"))
+				{
+					char buffer[256];
+					std::string& projectName = m_Properties.General.Name;
+					memcpy(buffer, projectName.c_str(), projectName.size());
+					buffer[projectName.size()] = '\0';
+
+					if (Gui::InputText("Project Name", buffer, sizeof(buffer)))
+					{
+						projectName = std::string(buffer);
+					}
+
+					Gui::EndTabItem();
+				}
+
 				if (Gui::BeginTabItem("Renderer"))
 				{
 					float lineWidth = Renderer2D::GetLineWidth();

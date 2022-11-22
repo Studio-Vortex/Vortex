@@ -33,7 +33,7 @@ namespace Sparky {
 		static void RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID = -1);
 
 		static void RenderLightSource(const LightSourceComponent& lightSourceComponent);
-		static void DrawModel(const TransformComponent& transform, const MeshRendererComponent& meshRenderer);
+		static void DrawModel(const Math::mat4& transform, const MeshRendererComponent& meshRenderer);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
 		static void DrawCubeWireframe(const TransformComponent& transform);

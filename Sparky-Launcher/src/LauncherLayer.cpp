@@ -83,8 +83,13 @@ namespace Sparky {
 
 		i = 1;
 
-		for (auto& directoryEntry : std::filesystem::directory_iterator("Assets\\Scenes"))
+		for (auto& directoryEntry : std::filesystem::recursive_directory_iterator("."))
 		{
+			if (directoryEntry.path().string().find(".sproject") == std::string::npos)
+			{
+				continue;
+			}
+
 			size_t lastBackslashPos = directoryEntry.path().string().find_last_of('\\') + 1;
 			size_t dotPos = directoryEntry.path().string().find_last_of('.');
 			std::string projectName = directoryEntry.path().string().substr(lastBackslashPos, dotPos - lastBackslashPos);
@@ -104,35 +109,55 @@ namespace Sparky {
 		
 		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 
-		Gui::BeginChild("Right", contentRegionAvail);
+		if (!m_CreateNewProject)
+		{
+			Gui::BeginChild("Right", contentRegionAvail);
 
-		Gui::PushFont(hugeFont);
-		Gui::TextCentered("Sparky Game Engine", 24.0f);
-		Gui::PopFont();
-		Gui::Spacing();
-		Gui::Spacing();
-		Gui::Separator();
+			Gui::PushFont(hugeFont);
+			Gui::TextCentered("Sparky Game Engine", 24.0f);
+			Gui::PopFont();
+			Gui::Spacing();
+			Gui::Spacing();
+			Gui::Separator();
 
-		ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
-		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
-		Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
+			ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
+			Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
+			Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
 
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+			Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+			Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+			Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-		ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
-		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
-		if (Gui::Button("Launch Editor", buttonSize))
-			LaunchEditor();
+			ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
+			Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
+			const char* buttonText = selectedProject == 0 ? "Create Project" : "Open Project";
+			static bool show = false;
+			if (Gui::Button(buttonText, buttonSize))
+			{
+				if (selectedProject == 0) // Create a new project
+				{
+					m_CreateNewProject = true;
+				}
+				else
+				{
+					LaunchEditor();
+				}
+			}
 
-		Gui::PopStyleColor(3);
-		Gui::PopStyleVar(3);
-		Gui::EndChild();
+			Gui::PopStyleColor(3);
+			Gui::PopStyleVar(3);
+			Gui::EndChild();
+		}
+		
 		Gui::End();
 	}
 
 	void LauncherLayer::OnEvent(Event& e) { }
+
+	void LauncherLayer::DisplayCreateProjectPopup()
+	{
+		
+	}
 
 	void LauncherLayer::LaunchEditor()
 	{

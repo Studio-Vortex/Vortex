@@ -5,6 +5,7 @@
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 
+#include "Sparky/Scene/Entity.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/EditorCamera.h"
 
@@ -40,7 +41,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transformComponent.GetTransform(), spriteRendererComponent, (int)(entt::entity)entity);
+					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), spriteRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -52,7 +53,7 @@ namespace Sparky {
 				{
 					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(entity);
 
-					Renderer2D::DrawCircle(transformComponent.GetTransform(), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
+					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
 				}
 			}
 
@@ -91,7 +92,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 
-						Renderer::RenderCameraIcon(transformComponent, cameraView, (int)(entt::entity)entity);
+						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
 					}
 				}
 
@@ -102,7 +103,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-						Renderer::RenderLightSourceIcon(transformComponent, cameraView, (int)(entt::entity)entity);
+						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
 					}
 				}
 
@@ -113,7 +114,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
 
-						Renderer::RenderAudioSourceIcon(transformComponent, cameraView, (int)(entt::entity)entity);
+						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
 					}
 				}
 			}
@@ -162,7 +163,7 @@ namespace Sparky {
 					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
 
 					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(transformComponent, meshRendererComponent);
+						Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), meshRendererComponent);
 				}
 			}
 
