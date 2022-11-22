@@ -18,6 +18,10 @@ namespace Sparky {
 			bool EnableMonoDebugging = false;
 		} General;
 
+		struct RendererProperties {
+			bool DisplaySceneIconsInEditor = true;
+		} RendererProps;
+
 		struct PhysicsProperties
 		{
 			Math::vec4 Physics3DColliderColor = ColorToVec4(Color::Green);

@@ -9,6 +9,7 @@
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/EditorCamera.h"
 
+#include "Sparky/Project/Project.h"
 #include "Sparky/Scene/Scene.h"
 
 namespace Sparky {
@@ -87,7 +88,7 @@ namespace Sparky {
 			}
 
 			// Render Scene Icons
-			if (!sceneCamera)
+			if (!sceneCamera && Project::GetActive()->GetProperties().RendererProps.DisplaySceneIconsInEditor)
 			{
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();

@@ -30,6 +30,12 @@ namespace Sparky {
 			}
 			out << YAML::EndMap; // General
 
+			out << YAML::Key << "RendererProperties" << YAML::BeginMap; // RendererProperties
+			{
+				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
+			}
+			out << YAML::EndMap; // RendererProperties
+
 			out << YAML::Key << "PhysicsProperties" << YAML::BeginMap; // Physics Properties
 			{
 				out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
@@ -97,6 +103,11 @@ namespace Sparky {
 			props.General.Name = generalData["Name"].as<std::string>();
 			props.General.ScriptBinaryPath = generalData["ScriptBinaryPath"].as<std::string>();
 			props.General.StartScene = generalData["StartScene"].as<std::string>();
+		}
+
+		{
+			auto rendererData = projectData["RendererProperties"];
+			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
 		}
 
 		{

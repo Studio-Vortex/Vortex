@@ -5,6 +5,8 @@ Project:
     ScriptBinaryPath: "Scripts/Binaries/Sandbox.dll"
     StartScene: "Scenes/FPSDemo.sparky"
     EnableMonoDebugging: false
+  RendererProperties:
+    DisplaySceneIconsInEditor: true
   PhysicsProperties:
     Physics2DColliderColor: [0.172549024, 0.592156887, 0.654901981, 1]
     Physics3DColliderColor: [0, 1, 0, 1]

@@ -1553,6 +1553,7 @@ namespace Sparky {
 
 			Gui::DragFloat3("Velocity", Math::ValuePtr(emitterProperties.Velocity), 0.25f, 0.1f, 0.0f, "%.2f");
 			Gui::DragFloat3("Velocity Variation", Math::ValuePtr(emitterProperties.VelocityVariation), 0.25f, 0.1f, 0.0f, "%.2f");
+			Gui::DragFloat3("Offset", Math::ValuePtr(emitterProperties.Offset), 0.25f, 0.0f, 0.0f, "%.2f");
 			Gui::DragFloat2("Size Start", Math::ValuePtr(emitterProperties.SizeBegin), 0.25f, 0.1f, 0.0f, "%.2f");
 			Gui::DragFloat2("Size End", Math::ValuePtr(emitterProperties.SizeEnd), 0.25f, 0.1f, 0.0f, "%.2f");
 			Gui::DragFloat2("Size Variation", Math::ValuePtr(emitterProperties.SizeVariation), 0.25f, 0.1f, 0.0f, "%.2f");
