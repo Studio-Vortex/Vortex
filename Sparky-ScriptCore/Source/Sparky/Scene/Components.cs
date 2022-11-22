@@ -796,6 +796,20 @@
 			}
 		}
 
+		public Vector3 Offset
+		{
+			get
+			{
+				InternalCalls.ParticleEmitterComponent_GetOffset(Entity.ID, out Vector3 offset);
+				return offset;
+			}
+
+			set
+			{
+				InternalCalls.ParticleEmitterComponent_SetOffset(Entity.ID, ref value);
+			}
+		}
+
 		public Vector2 SizeBegin
 		{
 			get

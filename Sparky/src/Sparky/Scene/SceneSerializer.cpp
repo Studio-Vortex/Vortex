@@ -355,6 +355,7 @@ namespace Sparky {
 				out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
 				out << YAML::Key << "LifeTime" << YAML::Value << emitterProperties.LifeTime;
 				out << YAML::Key << "Position" << YAML::Value << emitterProperties.Position;
+				out << YAML::Key << "Offset" << YAML::Value << emitterProperties.Offset;
 				out << YAML::Key << "Rotation" << YAML::Value << emitterProperties.Rotation;
 				out << YAML::Key << "SizeBegin" << YAML::Value << emitterProperties.SizeBegin;
 				out << YAML::Key << "SizeEnd" << YAML::Value << emitterProperties.SizeEnd;
@@ -856,6 +857,8 @@ namespace Sparky {
 					emitterProperties.ColorEnd = particleEmitterComponent["ColorEnd"].as<Math::vec4>();
 					emitterProperties.LifeTime = particleEmitterComponent["LifeTime"].as<float>();
 					emitterProperties.Position = particleEmitterComponent["Position"].as<Math::vec3>();
+					if (particleEmitterComponent["Offset"])
+						emitterProperties.Offset = particleEmitterComponent["Offset"].as<Math::vec3>();
 					emitterProperties.Rotation = particleEmitterComponent["Rotation"].as<float>();
 					emitterProperties.SizeBegin = particleEmitterComponent["SizeBegin"].as<Math::vec2>();
 					emitterProperties.SizeEnd = particleEmitterComponent["SizeEnd"].as<Math::vec2>();

@@ -247,6 +247,12 @@ namespace Sparky {
 		internal extern static void ParticleEmitterComponent_SetVelocityVariation(ulong entityID, ref Vector3 velocityVariation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_GetOffset(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ParticleEmitterComponent_SetOffset(ulong entityID, ref Vector3 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void ParticleEmitterComponent_GetSizeBegin(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

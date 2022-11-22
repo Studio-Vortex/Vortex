@@ -8,6 +8,7 @@ namespace Sparky {
 	struct ParticleEmitterProperties
 	{
 		Math::vec3 Position;
+		Math::vec3 Offset = Math::vec3(0.0f);
 		Math::vec3 Velocity = Math::vec3(1.0f);
 		Math::vec3 VelocityVariation = Math::vec3(1.0f);
 		Math::vec2 SizeBegin = Math::vec2(1.0f);

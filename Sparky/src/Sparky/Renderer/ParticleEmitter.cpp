@@ -45,7 +45,8 @@ namespace Sparky {
 	{
 		Particle& particle = m_ParticlePool[m_PoolIndex];
 		particle.Active = true;
-		particle.Position = m_Properties.Position;
+		particle.Position = m_Properties.Position + m_Properties.Offset;
+
 		if (m_Properties.Rotation != 0.0f)
 			particle.Rotation = Random::Float() * 2.0f * Math::PI;
 		else

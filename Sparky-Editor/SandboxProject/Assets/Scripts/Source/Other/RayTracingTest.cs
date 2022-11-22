@@ -19,7 +19,7 @@ namespace Sandbox {
 		{
 			int width = 160, height = 90;
 			float aspectRatio = width / (float)height;
-			float length = 2.0f;
+			float length = 3.0f;
 			float radius = 0.5f;
 			Vector2 quadSize = new Vector2(.05f);
 			Vector4 quadColor = new Vector4(0, 1, 0, 1);
@@ -66,7 +66,7 @@ namespace Sandbox {
 						rayColor = new Vector4(1, 0, 1, 1);
 					}
 
-					//DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
+					DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
 				}
 			}
 

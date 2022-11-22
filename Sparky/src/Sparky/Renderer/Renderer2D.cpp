@@ -953,13 +953,13 @@ namespace Sparky
 		memset(&s_Data.Renderer2DStatistics, NULL, sizeof(s_Data.Renderer2DStatistics));
 	}
 
-    std::vector<SharedRef<Shader>> Renderer2D::GetLoadedShaders()
-    {
+	std::vector<SharedRef<Shader>> Renderer2D::GetLoadedShaders()
+	{
 		std::vector<SharedRef<Shader>> shaders;
 		shaders.push_back(s_Data.QuadShader);
 		shaders.push_back(s_Data.CircleShader);
 		shaders.push_back(s_Data.LineShader);
 		return shaders;
-    }
+	}
 
 }

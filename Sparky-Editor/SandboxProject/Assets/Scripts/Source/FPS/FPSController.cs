@@ -17,6 +17,7 @@ namespace Sandbox {
 		Vector3 m_Velocity;
 		Vector3 m_Rotation;
 		AudioSource gunshotSound;
+		ParticleEmitter muzzleBlast;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -26,6 +27,7 @@ namespace Sandbox {
 			Input.ShowMouseCursor = false;
 			m_TimeBetweenShot = TimeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
+			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -34,6 +36,8 @@ namespace Sandbox {
 			ProcessRotation();
 
 			m_TimeBetweenShot -= Time.DeltaTime;
+
+			muzzleBlast.Stop();
 
 			float rightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (rightTrigger > 0.0f && m_TimeBetweenShot <= 0.0f)
@@ -49,7 +53,6 @@ namespace Sandbox {
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
 
-			DrawReticle();
 		}
 
 		void ProcessMovement()
@@ -112,15 +115,11 @@ namespace Sandbox {
 			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1) * BulletSpeed);
 
 			gunshotSound.Play();
+			muzzleBlast.Velocity = transform.Forward;
+			muzzleBlast.Offset = transform.Forward;
+			muzzleBlast.Start();
 
 			m_TimeBetweenShot = TimeBetweenShots;
-		}
-
-		void DrawReticle()
-		{
-			DebugRenderer.BeginScene();
-			DebugRenderer.DrawQuadBillboard(transform.Translation + (transform.Forward * 2.0f), new Vector2(0.05f), new Vector4(0, 0, 0, 1));
-			DebugRenderer.Flush();
 		}
 	}
 

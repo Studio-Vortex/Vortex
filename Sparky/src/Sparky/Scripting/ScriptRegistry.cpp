@@ -128,7 +128,7 @@ namespace Sparky {
 			return;
 		}
 
-		Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
+		Math::mat4 cameraView = primaryCameraEntity.GetTransform().GetTransform();
 
 		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 	}
@@ -779,6 +779,26 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
+	}
+
+	static void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset;
+	}
+
+	static void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset = *offset;
 	}
 
 	static void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
@@ -2271,6 +2291,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetVelocity);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetVelocityVariation);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetVelocityVariation);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetOffset);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetSizeBegin);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_SetSizeBegin);
 		SP_ADD_INTERNAL_CALL(ParticleEmitterComponent_GetSizeEnd);
