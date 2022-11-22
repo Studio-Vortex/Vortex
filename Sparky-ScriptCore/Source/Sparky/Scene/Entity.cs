@@ -95,6 +95,16 @@ namespace Sparky {
 			return new Entity(entityID);
 		}
 
+		public bool AddChild(Entity child)
+		{
+			return InternalCalls.Entity_AddChild(ID, child.ID);
+		}
+
+		public bool RemoveChild(Entity child)
+		{
+			return InternalCalls.Entity_RemoveChild(ID, child.ID);
+		}
+
 		public T As<T>()
 			where T : Entity, new()
 		{
