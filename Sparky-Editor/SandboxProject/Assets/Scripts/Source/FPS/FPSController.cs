@@ -100,7 +100,7 @@ namespace Sandbox {
 		void FireBullet()
 		{
 			Entity entity = new Entity("Bullet");
-			entity.transform.Translation = transform.Translation + transform.Forward;
+			entity.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + transform.Right + (transform.Up * 0.25f);
 			entity.transform.Scale = new Vector3(0.5f);
 
 			entity.AddComponent<MeshRenderer>();
@@ -119,7 +119,7 @@ namespace Sandbox {
 		void DrawReticle()
 		{
 			DebugRenderer.BeginScene();
-			DebugRenderer.DrawQuadBillboard(transform.Translation + transform.Forward, new Vector2(0.01f), new Vector4(0, 0, 0, 1));
+			DebugRenderer.DrawQuadBillboard(transform.Translation + (transform.Forward * 2.0f), new Vector2(0.05f), new Vector4(0, 0, 0, 1));
 			DebugRenderer.Flush();
 		}
 	}

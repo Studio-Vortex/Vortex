@@ -526,7 +526,7 @@ namespace Sparky {
 			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
 
 			// Set the starting particle position to the entity's translation
-			particleEmitter->GetProperties().Position = entity.GetTransform().Translation;
+			particleEmitter->GetProperties().Position = GetWorldSpaceTransform(entity).Translation;
 
 			particleEmitter->OnUpdate(delta);
 
@@ -545,7 +545,7 @@ namespace Sparky {
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 			
-			Math::vec3 position = entity.GetTransform().Translation;
+			Math::vec3 position = GetWorldSpaceTransform(entity).Translation;
 			lightSource->SetPosition(position);
 		}
 	}
