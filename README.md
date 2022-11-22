@@ -51,3 +51,6 @@ If you make changes to the engine, or if you want to regenerate project files, r
 
 - Sponza model in full chrome
 ![Sponza in chrome](Sparky-Editor/Resources/Images/Engine/SponzaChrome.png)
+
+- FPS Demo with Nvidia PhysX
+![FPS Demo game](Sparky-Editor/Resources/Images/Engine/FPSDemo.png)
