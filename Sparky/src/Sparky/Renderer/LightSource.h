@@ -4,6 +4,7 @@ namespace Sparky {
 
 	struct LightSourceProperties
 	{
+		Math::vec3 Radiance = Math::vec3(1.0f);
 		Math::vec3 Ambient = Math::vec3(0.2f);
 		Math::vec3 Diffuse = Math::vec3(0.5f);
 		Math::vec3 Specular = Math::vec3(0.5f);
@@ -23,6 +24,9 @@ namespace Sparky {
 	{
 	public:
 		LightSource(const LightSourceProperties& props);
+
+		const Math::vec3& GetRadiance() const;
+		void SetRadiance(const Math::vec3& radiance);
 
 		const Math::vec3& GetAmbient() const;
 		void SetAmbient(const Math::vec3& ambient);

@@ -27,7 +27,7 @@ namespace Sparky {
 
 		SharedRef<Texture2D> m_DirectoryIcon;
 		SharedRef<Texture2D> m_AudioFileIcon;
-		SharedRef<Texture2D> m_ModelFileIcon;
+		SharedRef<Texture2D> m_OBJIcon;
 		SharedRef<Texture2D> m_CodeFileIcon;
 		SharedRef<Texture2D> m_SceneIcon;
 		SharedRef<Texture2D> m_FileIcon;

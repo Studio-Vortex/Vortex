@@ -139,6 +139,10 @@ namespace Sparky {
 					if (Gui::DragFloat("Scene Exposure", &sceneExposure, 0.01f, 0.01f, 1.0f, "%.2f"))
 						Renderer::SetSceneExposure(sceneExposure);
 
+					float gamma = Renderer::GetSceneGamma();
+					if (Gui::DragFloat("Gamma", &gamma, 0.01f, 0.01f, 1.0f, "%.2f"))
+						Renderer::SetSceneGamma(gamma);
+
 					ProjectProperties& projectProps = Project::GetActive()->GetProperties();
 
 					static bool displaySceneIcons = projectProps.RendererProps.DisplaySceneIconsInEditor;

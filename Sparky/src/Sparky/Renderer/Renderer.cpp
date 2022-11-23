@@ -16,10 +16,10 @@ namespace Sparky {
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
+	static constexpr const char* POINT_LIGHT_ICON_PATH = "Resources/Icons/Scene/PointLight.png";
+	static constexpr const char* SPOT_LIGHT_ICON_PATH = "Resources/Icons/Scene/SpotLight.png";
 	static constexpr const char* LIGHT_SOURCE_ICON_PATH = "Resources/Icons/Scene/LightSourceIcon.png";
 	static constexpr const char* AUDIO_SOURCE_ICON_PATH = "Resources/Icons/Scene/AudioSourceIcon.png";
-
-#define SP_USE_PBR_RENDERER 1
 
 	struct RendererInternalData
 	{
@@ -38,6 +38,7 @@ namespace Sparky {
 		uint32_t ActiveSpotLights = 0;
 
 		float SceneExposure = 1.0f;
+		float SceneGamma = 2.2f;
 
 		bool RenderWithPBROnly = false;
 
@@ -46,6 +47,8 @@ namespace Sparky {
 
 		// Editor Resources
 		SharedRef<Texture2D> CameraIcon = nullptr;
+		SharedRef<Texture2D> PointLightIcon = nullptr;
+		SharedRef<Texture2D> SpotLightIcon = nullptr;
 		SharedRef<Texture2D> LightSourceIcon = nullptr;
 		SharedRef<Texture2D> AudioSourceIcon = nullptr;
 	};
@@ -68,6 +71,8 @@ namespace Sparky {
 		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
 
 		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
+		s_Data.PointLightIcon = Texture2D::Create(POINT_LIGHT_ICON_PATH);
+		s_Data.SpotLightIcon = Texture2D::Create(SPOT_LIGHT_ICON_PATH);
 		s_Data.LightSourceIcon = Texture2D::Create(LIGHT_SOURCE_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
@@ -126,6 +131,7 @@ namespace Sparky {
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 
 		SharedRef<Shader> reflectiveShader = s_Data.ShaderLibrary->Get("Reflective");
 		reflectiveShader->Enable();
@@ -160,9 +166,20 @@ namespace Sparky {
 		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource,const Math::mat4& cameraTransform, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		switch (lightSource.Type)
+		{
+			case LightSourceComponent::LightType::Directional:
+				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				break;
+			case LightSourceComponent::LightType::Point:
+				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				break;
+			case LightSourceComponent::LightType::Spot:
+				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				break;
+		}
 	}
 
 	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
@@ -217,6 +234,7 @@ namespace Sparky {
 				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
 				pbrShader->Enable();
+				//pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
@@ -268,7 +286,7 @@ namespace Sparky {
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
 		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly || SP_USE_PBR_RENDERER; // TODO Rework this
+		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly; // TODO Rework this
 
 		if (meshRenderer.Reflective)
 		{
@@ -474,6 +492,16 @@ namespace Sparky {
 	void Renderer::SetSceneExposure(float exposure)
 	{
 		s_Data.SceneExposure = exposure;
+	}
+
+	float Renderer::GetSceneGamma()
+	{
+		return s_Data.SceneGamma;
+	}
+
+	void Renderer::SetSceneGamma(float gamma)
+	{
+		s_Data.SceneGamma = gamma;
 	}
 
 	void Renderer::EnablePBR()

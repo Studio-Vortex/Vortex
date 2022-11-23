@@ -108,7 +108,7 @@ namespace Sparky {
 					{
 						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
 
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
+						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), lightSourceComponent, cameraView, (int)(entt::entity)entity);
 					}
 				}
 
@@ -147,7 +147,7 @@ namespace Sparky {
 				SceneRenderer::RenderSkybox(view, projection, scene);
 			}
 
-			// Render Light Sources
+			// Light pass
 			{
 				auto view = scene->GetAllEntitiesWith<LightSourceComponent>();
 
@@ -159,7 +159,7 @@ namespace Sparky {
 				}
 			}
 
-			// Render Meshes
+			// Geometry pass
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 

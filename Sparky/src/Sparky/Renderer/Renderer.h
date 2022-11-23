@@ -29,7 +29,7 @@ namespace Sparky {
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
 		static void RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID = -1);
-		static void RenderLightSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID = -1);
+		static void RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraTransform, int entityID = -1);
 		static void RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID = -1);
 
 		static void RenderLightSource(const LightSourceComponent& lightSourceComponent);
@@ -56,6 +56,9 @@ namespace Sparky {
 
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
+
+		static float GetSceneGamma();
+		static void SetSceneGamma(float gamma);
 
 		static void EnablePBR();
 		static void DisablePBR();

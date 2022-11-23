@@ -209,9 +209,9 @@ namespace Sparky {
 				out << YAML::Key << "SkyboxComponent";
 				out << YAML::BeginMap; // SkyboxComponent
 
-				auto& lightComponent = entity.GetComponent<SkyboxComponent>();
+				auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 
-				SharedRef<Skybox> skybox = lightComponent.Source;
+				SharedRef<Skybox> skybox = skyboxComponent.Source;
 				out << YAML::Key << "SourcePath" << skybox->GetDirectoryPath();
 
 				out << YAML::EndMap; // SkyboxComponent
@@ -227,6 +227,7 @@ namespace Sparky {
 				out << YAML::Key << "LightType" << YAML::Value << Utils::LightTypeToString(lightComponent.Type);
 
 				SharedRef<LightSource> lightSource = lightComponent.Source;
+				out << YAML::Key << "Radiance" << YAML::Value << lightSource->GetRadiance();
 				out << YAML::Key << "Ambient" << YAML::Value << lightSource->GetAmbient();
 				out << YAML::Key << "Diffuse" << YAML::Value << lightSource->GetDiffuse();
 				out << YAML::Key << "Specular" << YAML::Value << lightSource->GetSpecular();
@@ -718,6 +719,8 @@ namespace Sparky {
 					lightComponent.Source = CreateShared<LightSource>(LightSourceProperties());
 
 					lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
+					if (lightSourceComponent["Radiance"])
+						lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
 					if (lightSourceComponent["Ambient"])
 						lightComponent.Source->SetAmbient(lightSourceComponent["Ambient"].as<Math::vec3>());
 					if (lightSourceComponent["Diffuse"])

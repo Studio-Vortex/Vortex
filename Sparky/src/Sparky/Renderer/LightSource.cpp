@@ -6,6 +6,16 @@ namespace Sparky {
 	LightSource::LightSource(const LightSourceProperties& props)
 		: m_Properties(props) { }
 
+    const Math::vec3& LightSource::GetRadiance() const
+    {
+		return m_Properties.Radiance;
+    }
+
+    void LightSource::SetRadiance(const Math::vec3& radiance)
+    {
+		m_Properties.Radiance = radiance;
+    }
+
 	const Math::vec3& LightSource::GetAmbient() const
 	{
 		return m_Properties.Ambient;
@@ -98,6 +108,7 @@ namespace Sparky {
 
 	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
 	{
+		dstLightSource->SetRadiance(srcLightSource->GetRadiance());
 		dstLightSource->SetAmbient(srcLightSource->GetAmbient());
 		dstLightSource->SetAttenuation(srcLightSource->GetAttenuation());
 		dstLightSource->SetColor(srcLightSource->GetColor());

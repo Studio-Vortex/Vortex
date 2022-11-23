@@ -1012,6 +1012,10 @@ namespace Sparky {
 				}
 			}
 
+			Math::vec3 radiance = lightSource->GetRadiance();
+			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
+				lightSource->SetRadiance(radiance);
+
 			Math::vec3 ambient = lightSource->GetAmbient();
 			if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
 				lightSource->SetAmbient(ambient);

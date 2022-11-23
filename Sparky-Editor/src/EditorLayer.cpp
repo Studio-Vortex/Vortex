@@ -835,7 +835,7 @@ namespace Sparky {
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				Renderer::DrawCubeWireframe(entityTransform);
+				Renderer::DrawCubeWireframe(m_ActiveScene->GetWorldSpaceTransform(selectedEntity));
 			}
 			else if (selectedEntity.HasComponent<CameraComponent>())
 			{
@@ -846,12 +846,12 @@ namespace Sparky {
 					//Renderer::DrawFrustum(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
 				}
 
-				Renderer2D::DrawRect(entityTransform.GetTransform(), ColorToVec4(Color::Orange));
+				Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
 			}
 			else
 			{
 				//Orange
-				Renderer2D::DrawRect(entityTransform.GetTransform(), ColorToVec4(Color::Orange));
+				Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
 			}
 		}
 
