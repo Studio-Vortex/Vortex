@@ -1329,6 +1329,49 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region Character Controller Component
+
+	static void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+
+		physx::PxControllerFilters filters; // TODO
+		physx::PxController* controller = static_cast<physx::PxController*>(characterControllerComponent.RuntimeController);
+
+		auto gravity = Physics::GetPhysicsSceneGravity();
+
+		if (!characterControllerComponent.DisableGravity)
+			characterControllerComponent.SpeedDown += gravity.y * Time::GetDeltaTime();
+
+		Math::vec3 movement = *displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
+
+		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
+
+		physx::PxControllerState state;
+		controller->getState(state);
+		// test if grounded
+		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+			characterControllerComponent.SpeedDown = gravity.y * 0.01f;
+	}
+
+	static void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		characterController.SpeedDown = -1.0f * jumpForce;
+	}
+
+#pragma endregion
+
 #pragma region RigidBody2D Component
 
 	static RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
@@ -2272,6 +2315,9 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
+
+		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
+		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump);
 
 		SP_ADD_INTERNAL_CALL(Physics_Raycast);
 

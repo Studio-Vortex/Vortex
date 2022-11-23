@@ -29,6 +29,11 @@ namespace Sparky {
 		return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
 	}
 
+	static physx::PxExtendedVec3 ToPhysxExtendedVector(const Math::vec3& vector)
+	{
+		return physx::PxExtendedVec3(vector.x, vector.y, vector.z);
+	}
+
 	static physx::PxTransform ToPhysXTransform(const Math::mat4& matrix)
 	{
 		physx::PxQuat r = ToPhysXQuat(Math::Normalize(Math::ToQuaternion(matrix)));
@@ -44,6 +49,11 @@ namespace Sparky {
 	static Math::quaternion FromPhysXQuat(const physx::PxQuat& quat)
 	{
 		return Math::quaternion(quat.w, quat.x, quat.y, quat.z);
+	}
+
+	static Math::vec3 FromPhysXExtendedVector(const physx::PxExtendedVec3& vector)
+	{
+		return Math::vec3(vector.x, vector.y, vector.z);
 	}
 
 	static Math::vec3 FromPhysXVector(const physx::PxVec3& vector)

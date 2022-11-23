@@ -437,7 +437,7 @@ namespace Sparky {
 				out << YAML::Key << "DisableGravity" << YAML::Key << characterController.DisableGravity;
 				out << YAML::Key << "LayerID" << YAML::Key << characterController.LayerID;
 				out << YAML::Key << "SlopeLimitDegrees" << YAML::Key << characterController.SlopeLimitDegrees;
-				out << YAML::Key << "SlopeOffset" << YAML::Key << characterController.SlopeOffset;
+				out << YAML::Key << "StepOffset" << YAML::Key << characterController.StepOffset;
 
 				out << YAML::EndMap; // CharacterControllerComponent
 			}
@@ -986,7 +986,7 @@ namespace Sparky {
 					characterController.DisableGravity = characterControllerComponent["DisableGravity"].as<bool>();
 					characterController.LayerID = characterControllerComponent["LayerID"].as<uint32_t>();
 					characterController.SlopeLimitDegrees = characterControllerComponent["SlopeLimitDegrees"].as<float>();
-					characterController.SlopeOffset = characterControllerComponent["SlopeOffset"].as<float>();
+					characterController.StepOffset = characterControllerComponent["StepOffset"].as<float>();
 				}
 
 				auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];

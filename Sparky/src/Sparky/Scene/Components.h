@@ -244,10 +244,13 @@ namespace Sparky {
 
 	struct CharacterControllerComponent
 	{
+		float SpeedDown = 0.0f;
 		float SlopeLimitDegrees = 45.0f;
-		float SlopeOffset = 0.0f;
+		float StepOffset = 0.0f;
 		uint32_t LayerID = 0;
 		bool DisableGravity = false;
+
+		void* RuntimeController = nullptr;
 
 		CharacterControllerComponent() = default;
 		CharacterControllerComponent(const CharacterControllerComponent&) = default;

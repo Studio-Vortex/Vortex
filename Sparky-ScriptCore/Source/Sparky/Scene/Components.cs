@@ -536,6 +536,31 @@ namespace Sparky {
 		}
 	}
 
+	public class CharacterController : Component
+	{
+		public float SlopeLimitDegrees;
+		public float SlopeOffset;
+		public ulong LayerID;
+		public bool DisableGravity;
+
+		public void Move(Vector3 displacement)
+		{
+			InternalCalls.CharacterControllerComponent_Move(Entity.ID, ref displacement);
+		}
+
+		public void Jump(float force)
+		{
+			InternalCalls.CharacterControllerComponent_Jump(Entity.ID, force);
+		}
+	}
+
+	public class PhysicsMaterial : Component
+	{
+		public float StaticFriction;
+		public float DynamicFriction;
+		public float Bounciness;
+	}
+
 	public class BoxCollider : Component
 	{
 

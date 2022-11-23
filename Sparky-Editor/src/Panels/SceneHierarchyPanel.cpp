@@ -793,6 +793,8 @@ namespace Sparky {
 
 			if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<RigidBodyComponent>(componentName);
+			if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<CharacterControllerComponent>(componentName);
 			if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<PhysicsMaterialComponent>(componentName);
 			if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -1847,6 +1849,13 @@ namespace Sparky {
 
 				Gui::TreePop();
 			}
+		});
+
+		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
+		{
+			Gui::DragFloat("Slope Limit", &component.SlopeLimitDegrees);
+			Gui::DragFloat("Step Offset", &component.StepOffset);
+			Gui::Checkbox("Disable Gravity", &component.DisableGravity);
 		});
 
 		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](auto& component)

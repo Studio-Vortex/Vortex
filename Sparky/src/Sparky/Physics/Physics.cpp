@@ -12,6 +12,7 @@ namespace Sparky {
 		physx::PxFoundation* Foundation = nullptr;
 		physx::PxPhysics* PhysicsFactory = nullptr;
 		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
+		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale ToleranceScale;
 	};
@@ -64,12 +65,21 @@ namespace Sparky {
 		s_Data.PhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data.Foundation, s_Data.ToleranceScale, true, nullptr);
 
 		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data.ToleranceScale);
-		sceneDescription.gravity = physx::PxVec3(gravity.x, gravity.y, gravity.z);
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
 		s_Data.Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
+
+		sceneDescription.gravity = ToPhysXVector(gravity);
+		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
+		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
+
 		sceneDescription.cpuDispatcher = s_Data.Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
+
 		s_Data.PhysicsScene = s_Data.PhysicsFactory->createScene(sceneDescription);
+		s_Data.ControllerManager = PxCreateControllerManager(*s_Data.PhysicsScene);
 	}
 
 	physx::PxScene* Physics::GetPhysicsScene()
@@ -101,7 +111,7 @@ namespace Sparky {
 		{
 			Entity entity{ e, contextScene };
 			auto& transform = entity.GetTransform();
-			auto trx = transform.GetTransform();
+			const auto trx = transform.GetTransform();
 			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.RuntimeActor)
@@ -122,6 +132,28 @@ namespace Sparky {
 				// If the rigidbody is static, make sure the actor is at the entitys position
 				actor->setGlobalPose(ToPhysXTransform(trx));
 			}
+
+			// Synchronize controller transform
+			if (entity.HasComponent<CharacterControllerComponent>())
+			{
+				const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+				const physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
+
+				Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());
+
+				if (entity.HasComponent<CapsuleColliderComponent>())
+				{
+					const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+					position -= capsuleCollider.Offset;
+				}
+				else if (entity.HasComponent<BoxColliderComponent>())
+				{
+					const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+					position -= boxCollider.Offset;
+				}
+
+				transform.Translation = position;
+			}
 		}
 	}
 
@@ -131,6 +163,7 @@ namespace Sparky {
 
 		if (simulationStarted)
 		{
+			s_Data.ControllerManager->release();
 			s_Data.PhysicsScene->release();
 			s_Data.PhysicsFactory->release();
 			s_Data.Foundation->release();
@@ -156,6 +189,77 @@ namespace Sparky {
 
 		SP_CORE_ASSERT(actor, "Failed to create Physics Actor!");
 		rigidbody.RuntimeActor = actor;
+
+		if (entity.HasComponent<CharacterControllerComponent>())
+		{
+			const TransformComponent& transform = entity.GetTransform();
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+				
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
+
+				physx::PxCapsuleControllerDesc desc;
+				desc.position = ToPhysxExtendedVector(transform.Translation + capsuleCollider.Offset);
+				desc.height = capsuleCollider.Height * transform.Scale.y;
+				desc.radius = capsuleCollider.Radius * radiusScale;
+				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
+				desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
+				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.stepOffset = characterController.StepOffset;
+				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.material = material;
+				desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+				characterController.RuntimeController = s_Data.ControllerManager->createController(desc);
+			}
+			else if (entity.HasComponent<BoxColliderComponent>())
+			{
+				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				physx::PxBoxControllerDesc desc;
+				desc.position = ToPhysxExtendedVector(transform.Translation + boxCollider.Offset);
+				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
+				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
+				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
+				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
+				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.stepOffset = characterController.StepOffset;
+				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.material = material;
+				desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+				characterController.RuntimeController = s_Data.ControllerManager->createController(desc);
+			}
+		}
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
@@ -292,6 +396,12 @@ namespace Sparky {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 		physx::PxActor* actor = static_cast<physx::PxActor*>(rigidbody.RuntimeActor);
+
+		if (entity.HasComponent<CharacterControllerComponent>())
+		{
+			physx::PxController* controller = static_cast<physx::PxController*>(entity.GetComponent<CharacterControllerComponent>().RuntimeController);
+			controller->release();
+		}
 
 		if (actor != nullptr)
 		{

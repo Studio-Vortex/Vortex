@@ -401,6 +401,16 @@ namespace Sparky {
 
 		#endregion
 
+		#region CharacterController
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_Move(ulong entityID, ref Vector3 displacement);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_Jump(ulong entityID, float jumpForce);
+
+		#endregion
+
 		#region RigidBody2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

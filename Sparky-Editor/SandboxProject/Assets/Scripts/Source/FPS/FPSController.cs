@@ -14,11 +14,11 @@ namespace Sandbox {
 		public Vector3 RotationSpeed = new Vector3(100f, 100f, 0f);
 
 		float m_TimeBetweenShot;
-		Vector3 m_Velocity;
 		Vector3 m_Rotation;
 		AudioSource gunshotSound;
 		ParticleEmitter muzzleBlast;
 		RigidBody rigidbody;
+		CharacterController controller;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -28,6 +28,7 @@ namespace Sandbox {
 			Input.ShowMouseCursor = false;
 			m_TimeBetweenShot = TimeBetweenShots;
 			rigidbody = GetComponent<RigidBody>();
+			controller = GetComponent<CharacterController>()
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 		}
