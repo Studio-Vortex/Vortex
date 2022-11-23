@@ -1,4 +1,6 @@
-﻿namespace Sparky {
+﻿using System;
+
+namespace Sparky {
 
 	public abstract class Component
 	{
@@ -170,11 +172,6 @@
 			{
 				InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
 			}
-		}
-
-		public void LookAt(Vector3 point, Vector3 up)
-		{
-			InternalCalls.CameraComponent_LookAt(Entity.ID, ref point, ref up);
 		}
 	}
 
@@ -389,6 +386,32 @@
 
 	public class RigidBody : Component
 	{
+		public Vector3 Translation
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetTranslation(Entity.ID, out Vector3 result);
+				return result;
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetTranslation(Entity.ID, ref value);
+			}
+		}
+
+		public Vector3 Rotation
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Vector3 result);
+				return result;
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetRotation(Entity.ID, ref value);
+			}
+		}
+
 		public RigidBodyType BodyType
 		{
 			get
@@ -487,6 +510,20 @@
 				InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
 			}
 		}
+
+		public void Translate(Vector3 translation)
+		{
+			InternalCalls.RigidBodyComponent_Translate(Entity.ID, ref translation);
+		}
+
+		public void Translate(float x, float y, float z) => Translate(new Vector3(x, y, z));
+
+		public void Rotate(Vector3 rotation)
+		{
+			InternalCalls.RigidBodyComponent_Rotate(Entity.ID, ref rotation);
+		}
+
+		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
 
 		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{

@@ -18,6 +18,7 @@ namespace Sandbox {
 		Vector3 m_Rotation;
 		AudioSource gunshotSound;
 		ParticleEmitter muzzleBlast;
+		RigidBody rigidbody;
 
 		const float ShiftModifer = 2.0f;
 		const float ControllerDeadzone = 0.15f;
@@ -26,6 +27,7 @@ namespace Sandbox {
 		{
 			Input.ShowMouseCursor = false;
 			m_TimeBetweenShot = TimeBetweenShots;
+			rigidbody = GetComponent<RigidBody>();
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 		}
@@ -44,14 +46,6 @@ namespace Sandbox {
 			{
 				FireBullet();
 			}
-
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
-
-			m_Velocity *= speed * delta;
-			m_Rotation *= RotationSpeed * delta;
-
-			transform.Translation += m_Velocity;
-			transform.Rotation += m_Rotation;
 		}
 
 		void ProcessMovement()
@@ -59,19 +53,14 @@ namespace Sandbox {
 			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+				rigidbody.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+				rigidbody.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
+				rigidbody.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
-
-			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
-				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > ControllerDeadzone)
-				m_Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
+				rigidbody.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
 
 			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
 				m_Velocity *= ShiftModifer;
@@ -90,12 +79,12 @@ namespace Sandbox {
 			if (transform.Rotation.X >= MaxRoll_Up)
 			{
 				float roll = Math.Min(MaxRoll_Up, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
+				rigidbody.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 			if (transform.Rotation.X <= MaxRoll_Down)
 			{
 				float roll = Math.Max(MaxRoll_Down, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
+				rigidbody.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 		}
 

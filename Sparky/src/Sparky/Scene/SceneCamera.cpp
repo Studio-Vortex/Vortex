@@ -38,11 +38,6 @@ namespace Sparky {
 		m_ViewportSize = { (float)width, (float)height };
 	}
 
-    void SceneCamera::LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
-    {
-		m_ProjectionMatrix = Math::LookAt(eyePos, point, up);
-    }
-
     void SceneCamera::ReCalculateProjection()
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)

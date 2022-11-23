@@ -5,28 +5,33 @@ namespace Sandbox {
 
 	public class PhysicsTest : Entity
 	{
-		public float speed = 2000f;
-		RigidBody rigidBody;
+		RigidBody rigidbody;
 
 		protected override void OnCreate()
 		{
-			rigidBody = GetComponent<RigidBody>();
+			rigidbody = GetComponent<RigidBody>();
 		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
 			if (Input.IsKeyDown(KeyCode.W))
-				rigidBody.AddForce(Vector3.Forward * speed * Time.DeltaTime);
+				rigidbody.Translation += transform.Forward * Time.DeltaTime;
 			else if (Input.IsKeyDown(KeyCode.S))
-				rigidBody.AddForce(Vector3.Back * speed * Time.DeltaTime);
+				rigidbody.Translation -= transform.Forward * Time.DeltaTime;
 
 			if (Input.IsKeyDown(KeyCode.A))
-				rigidBody.AddForce(Vector3.Left * speed * Time.DeltaTime);
+				rigidbody.Translation -= transform.Right * Time.DeltaTime;
 			else if (Input.IsKeyDown(KeyCode.D))
-				rigidBody.AddForce(Vector3.Right * speed * Time.DeltaTime);
+				rigidbody.Translation += transform.Right * Time.DeltaTime;
+
+			if (Input.IsKeyDown(KeyCode.R))
+				rigidbody.Rotation += Vector3.Right * Time.DeltaTime;
 
 			if (Input.IsKeyDown(KeyCode.Space))
-				rigidBody.AddForce(Vector3.Up * speed * Time.DeltaTime);
+				rigidbody.AddForce(Vector3.Up * 2500 * Time.DeltaTime);
+
+			if (Input.IsKeyDown(KeyCode.LeftShift))
+				rigidbody.AddTorque(Vector3.Right * 50.0f * Time.DeltaTime);
 		}
 	}
 

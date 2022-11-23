@@ -242,6 +242,17 @@ namespace Sparky {
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 	};
 
+	struct CharacterControllerComponent
+	{
+		float SlopeLimitDegrees = 45.0f;
+		float SlopeOffset = 0.0f;
+		uint32_t LayerID = 0;
+		bool DisableGravity = false;
+
+		CharacterControllerComponent() = default;
+		CharacterControllerComponent(const CharacterControllerComponent&) = default;
+	};
+
 	struct PhysicsMaterialComponent
 	{
 		float StaticFriction = 1.0F;
@@ -396,7 +407,8 @@ namespace Sparky {
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics
-		RigidBodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, StaticMeshColliderComponent,
+		RigidBodyComponent, CharacterControllerComponent, PhysicsMaterialComponent, BoxColliderComponent,
+		SphereColliderComponent, CapsuleColliderComponent, StaticMeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		// Script
 		ScriptComponent, NativeScriptComponent>;

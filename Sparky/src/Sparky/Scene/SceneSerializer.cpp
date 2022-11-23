@@ -410,7 +410,7 @@ namespace Sparky {
 			{
 				out << YAML::Key << "RigidbodyComponent" << YAML::BeginMap; // RigidbodyComponent
 
-				auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
+				const auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 				out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type);
 				out << YAML::Key << "AngularDrag" << YAML::Value << rigidbodyComponent.AngularDrag;
 				out << YAML::Key << "AngularVelocity" << YAML::Value << rigidbodyComponent.AngularVelocity;
@@ -429,11 +429,36 @@ namespace Sparky {
 				out << YAML::EndMap; // RigidbodyComponent
 			}
 
+			if (entity.HasComponent<CharacterControllerComponent>())
+			{
+				out << YAML::Key << "CharacterControllerComponent" << YAML::BeginMap; // CharacterControllerComponent
+
+				const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+				out << YAML::Key << "DisableGravity" << YAML::Key << characterController.DisableGravity;
+				out << YAML::Key << "LayerID" << YAML::Key << characterController.LayerID;
+				out << YAML::Key << "SlopeLimitDegrees" << YAML::Key << characterController.SlopeLimitDegrees;
+				out << YAML::Key << "SlopeOffset" << YAML::Key << characterController.SlopeOffset;
+
+				out << YAML::EndMap; // CharacterControllerComponent
+			}
+
+			if (entity.HasComponent<PhysicsMaterialComponent>())
+			{
+				out << YAML::Key << "PhysicsMaterialComponent" << YAML::BeginMap; // PhysicsMaterialComponent
+
+				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+				out << YAML::Key << "StaticFriction" << YAML::Key << physicsMaterial.StaticFriction;
+				out << YAML::Key << "DynamicFriction" << YAML::Key << physicsMaterial.DynamicFriction;
+				out << YAML::Key << "Bounciness" << YAML::Key << physicsMaterial.Bounciness;
+
+				out << YAML::EndMap; // PhysicsMaterialComponent
+			}
+
 			if (entity.HasComponent<BoxColliderComponent>())
 			{
 				out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
 
-				auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
+				const auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
 				out << YAML::Key << "HalfSize" << YAML::Value << boxColliderComponent.HalfSize;
 				out << YAML::Key << "Offset" << YAML::Value << boxColliderComponent.Offset;
 				out << YAML::Key << "IsTrigger" << YAML::Value << boxColliderComponent.IsTrigger;
@@ -951,6 +976,27 @@ namespace Sparky {
 						rigidbody.LockRotationZ = rigidbodyComponent["LockRotationZ"].as<bool>();
 					if (rigidbodyComponent["Mass"])
 						rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
+				}
+
+				auto characterControllerComponent = entity["CharacterControllerComponent"];
+				if (characterControllerComponent)
+				{
+					auto& characterController = deserializedEntity.AddComponent<CharacterControllerComponent>();
+
+					characterController.DisableGravity = characterControllerComponent["DisableGravity"].as<bool>();
+					characterController.LayerID = characterControllerComponent["LayerID"].as<uint32_t>();
+					characterController.SlopeLimitDegrees = characterControllerComponent["SlopeLimitDegrees"].as<float>();
+					characterController.SlopeOffset = characterControllerComponent["SlopeOffset"].as<float>();
+				}
+
+				auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];
+				if (physicsMaterialComponent)
+				{
+					auto& physicsMaterial = deserializedEntity.AddComponent<PhysicsMaterialComponent>();
+
+					physicsMaterial.StaticFriction = physicsMaterialComponent["StaticFriction"].as<float>();
+					physicsMaterial.DynamicFriction = physicsMaterialComponent["DynamicFriction"].as<float>();
+					physicsMaterial.Bounciness = physicsMaterialComponent["Bounciness"].as<bool>();
 				}
 
 				auto boxColliderComponent = entity["BoxColliderComponent"];

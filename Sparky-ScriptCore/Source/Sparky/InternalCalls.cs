@@ -145,9 +145,6 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CameraComponent_LookAt(ulong entityID, ref Vector3 point, ref Vector3 up);
-
 		#endregion
 
 		#region LightSource
@@ -322,6 +319,24 @@ namespace Sparky {
 		#endregion
 
 		#region RigidBody
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetTranslation(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetTranslation(ulong entityID, ref Vector3 translation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_Translate(ulong entityID, ref Vector3 translation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_Rotate(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);

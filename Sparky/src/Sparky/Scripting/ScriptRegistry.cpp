@@ -497,17 +497,6 @@ namespace Sparky {
 		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
 	}
 
-	static void CameraComponent_LookAt(UUID entityUUID, Math::vec3* point, Math::vec3* up)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		Math::vec3 eyePos = entity.GetComponent<TransformComponent>().Translation;
-		entity.GetComponent<CameraComponent>().Camera.LookAt(eyePos, *point, *up);
-	}
-
 #pragma endregion
 
 #pragma region Light Source Component
@@ -1031,6 +1020,82 @@ namespace Sparky {
 #pragma endregion
 
 #pragma region RigidBody Component
+
+	static void RigidBodyComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outTranslation = FromPhysXVector(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose().p);
+	}
+
+	static void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& transformComponent = entity.GetTransform();
+		auto entityTransform = TransformComponent{ *translation, transformComponent.Rotation, transformComponent.Scale }.GetTransform();
+		auto physxTransform = ToPhysXTransform(entityTransform);
+
+		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+	}
+
+	static void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outRotation = Math::EulerAngles(FromPhysXTransform(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose()));
+	}
+
+	static void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& transformComponent = entity.GetTransform();
+		auto entityTransform = TransformComponent{ transformComponent.Translation, *rotation, transformComponent.Scale }.GetTransform();
+		auto physxTransform = ToPhysXTransform(entityTransform);
+
+		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+	}
+
+	static void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& transformComponent = entity.GetTransform();
+		auto entityTransform = TransformComponent{ transformComponent.Translation + *translation, transformComponent.Rotation, transformComponent.Scale }.GetTransform();
+		auto physxTransform = ToPhysXTransform(entityTransform);
+
+		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+	}
+
+	static void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& transformComponent = entity.GetTransform();
+		auto entityTransform = TransformComponent{ transformComponent.Translation, transformComponent.Rotation + *rotation, transformComponent.Scale }.GetTransform();
+		auto physxTransform = ToPhysXTransform(entityTransform);
+
+		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+	}
 
 	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
 	{
@@ -2150,7 +2215,6 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
-		SP_ADD_INTERNAL_CALL(CameraComponent_LookAt);
 
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetAmbient);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetAmbient);
@@ -2184,6 +2248,12 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
 		SP_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetTranslation);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetTranslation);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetRotation);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetRotation);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_Translate);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_Rotate);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetMass);
