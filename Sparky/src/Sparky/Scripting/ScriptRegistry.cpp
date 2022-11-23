@@ -1976,6 +1976,16 @@ namespace Sparky {
 		return Input::IsKeyReleased(key);
 	}
 
+	static bool Input_IsMouseButtonDown(MouseCode mouseButton)
+	{
+		return Input::IsMouseButtonPressed(mouseButton);
+	}
+
+	static bool Input_IsMouseButtonUp(MouseCode mouseButton)
+	{
+		return Input::IsMouseButtonReleased(mouseButton);
+	}
+
 	static void Input_GetMousePosition(Math::vec2* outPosition)
 	{
 		*outPosition = Input::GetMousePosition();
@@ -2407,6 +2417,8 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		SP_ADD_INTERNAL_CALL(Input_IsKeyUp);
+		SP_ADD_INTERNAL_CALL(Input_IsMouseButtonDown);
+		SP_ADD_INTERNAL_CALL(Input_IsMouseButtonUp);
 		SP_ADD_INTERNAL_CALL(Input_GetMousePosition);
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);

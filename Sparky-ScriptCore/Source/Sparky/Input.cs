@@ -20,6 +20,16 @@
 			return InternalCalls.Input_IsKeyUp(key);
 		}
 
+		public static bool IsMouseButtonDown(MouseButton mouseButton)
+		{
+			return InternalCalls.Input_IsMouseButtonDown(mouseButton);
+		}
+
+		public static bool IsMouseButtonUp(MouseButton mouseButton)
+		{
+			return InternalCalls.Input_IsMouseButtonUp(mouseButton);
+		}
+
 		public static Vector2 GetMousePosition()
 		{
 			InternalCalls.Input_GetMousePosition(out Vector2 position);

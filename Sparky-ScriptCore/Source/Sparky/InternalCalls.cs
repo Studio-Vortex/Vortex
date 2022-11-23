@@ -608,6 +608,12 @@ namespace Sparky {
 		internal extern static bool Input_IsKeyUp(KeyCode key);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonDown(MouseButton mouseButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonUp(MouseButton mouseButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Input_GetMousePosition(out Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
