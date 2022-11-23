@@ -147,6 +147,8 @@ namespace Sparky {
 
 	}
 
+	static bool s_ScriptEngineInitalized = false;
+
 	struct ScriptEngineData
 	{
 		MonoDomain* RootDomain = nullptr;
@@ -204,10 +206,6 @@ namespace Sparky {
 
 	void ScriptEngine::Init()
 	{
-		// If we try to load a new project resart the script engine
-		if (s_Data)
-			Shutdown();
-
 		s_Data = new ScriptEngineData();
 
 		InitMono();
@@ -233,19 +231,25 @@ namespace Sparky {
 			return;
 		}
 
-		LoadAssemblyClasses(false);
+		LoadAssemblyClasses();
 
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = ScriptClass("Sparky", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
+		s_ScriptEngineInitalized = true;
 	}
 
 	void ScriptEngine::Shutdown()
 	{
+		if (!s_ScriptEngineInitalized)
+			return;
+
 		ShutdownMono();
 
 		delete s_Data;
+
+		s_ScriptEngineInitalized = false;
 	}
 
 	void ScriptEngine::InitMono()

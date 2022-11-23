@@ -109,45 +109,45 @@ namespace Sparky {
 		
 		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 
-		if (!m_CreateNewProject)
+		Gui::BeginChild("Right", contentRegionAvail);
+
+		Gui::PushFont(hugeFont);
+		Gui::TextCentered("Sparky Game Engine", 24.0f);
+		Gui::PopFont();
+		Gui::Spacing();
+		Gui::Spacing();
+		Gui::Separator();
+
+		ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
+		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
+		Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+		ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
+		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
+		const char* buttonText = selectedProject == 0 ? "Create Project" : "Open Project";
+		static bool show = false;
+		if (Gui::Button(buttonText, buttonSize) && !m_CreateNewProject)
 		{
-			Gui::BeginChild("Right", contentRegionAvail);
-
-			Gui::PushFont(hugeFont);
-			Gui::TextCentered("Sparky Game Engine", 24.0f);
-			Gui::PopFont();
-			Gui::Spacing();
-			Gui::Spacing();
-			Gui::Separator();
-
-			ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
-			Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
-			Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
-
-			Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-			Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-			Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-			ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
-			Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
-			const char* buttonText = selectedProject == 0 ? "Create Project" : "Open Project";
-			static bool show = false;
-			if (Gui::Button(buttonText, buttonSize))
+			if (selectedProject == 0) // Create a new project
 			{
-				if (selectedProject == 0) // Create a new project
-				{
-					m_CreateNewProject = true;
-				}
-				else
-				{
-					LaunchEditor();
-				}
+				m_CreateNewProject = true;
 			}
-
-			Gui::PopStyleColor(3);
-			Gui::PopStyleVar(3);
-			Gui::EndChild();
+			else
+			{
+				LaunchEditor();
+			}
 		}
+
+		if (m_CreateNewProject)
+			DisplayCreateProjectPopup();
+
+		Gui::PopStyleColor(3);
+		Gui::PopStyleVar(3);
+		Gui::EndChild();
 		
 		Gui::End();
 	}
