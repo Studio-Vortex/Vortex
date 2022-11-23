@@ -10,6 +10,7 @@
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Debug/Instrumentor.h"
+#include "Sparky/Project/Project.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/class.h>
@@ -23,8 +24,6 @@
 
 namespace Sparky {
 
-	static constexpr const char* APP_ASSEMBLY_PATH = "C:/dev/Sparky_Game_Engine/Sparky/Sparky-Editor/SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
-	
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
 		{ "System.Single",  ScriptFieldType::Float   },
@@ -205,6 +204,10 @@ namespace Sparky {
 
 	void ScriptEngine::Init()
 	{
+		// If we try to load a new project resart the script engine
+		if (s_Data)
+			Shutdown();
+
 		s_Data = new ScriptEngineData();
 
 		InitMono();
@@ -219,7 +222,9 @@ namespace Sparky {
 			return;
 		}
 
-		std::filesystem::path appAssemblyPath = "SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
+		const auto& projectProps = Project::GetActive()->GetProperties();
+
+		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.General.ScriptBinaryPath);
 		status = LoadAppAssembly(appAssemblyPath);
 		
 		if (!status)
@@ -308,8 +313,7 @@ namespace Sparky {
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
-		// TODO:           -----------------------------------------------------         Should be a more dynamic path, perhaps from a project file
-		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
 		return true;

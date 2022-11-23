@@ -1178,6 +1178,7 @@ namespace Sparky {
 			std::string projectName = std::format("{} Project Load Time", path.filename().string());
 			InstrumentationTimer timer(projectName.c_str());
 
+			ScriptEngine::Init();
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 

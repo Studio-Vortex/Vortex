@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sparky {
+﻿namespace Sparky {
 
 	public abstract class Component
 	{
@@ -538,10 +536,6 @@ namespace Sparky {
 
 	public class CharacterController : Component
 	{
-		public float SlopeLimitDegrees;
-		public float SlopeOffset;
-		public ulong LayerID;
-		public bool DisableGravity;
 
 		public void Move(Vector3 displacement)
 		{

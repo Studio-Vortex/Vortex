@@ -286,7 +286,7 @@ namespace Sparky {
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
 		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly; // TODO Rework this
+		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly || 1; // TODO Rework this
 
 		if (meshRenderer.Reflective)
 		{

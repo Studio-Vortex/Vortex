@@ -2198,6 +2198,7 @@ namespace Sparky {
 		s_EntityHasComponentFuncs.clear();
 		s_EntityAddComponentFuncs.clear();
 		s_EntityRemoveComponentFuncs.clear();
+
 		RegisterComponent(AllComponents{});
 	}
 
