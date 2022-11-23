@@ -4,6 +4,9 @@
 
 namespace Sparky {
 
+#define SP_MAX_PROJECT_NAME_LENGTH 256
+#define SP_MAX_PROJECT_DIR_LENGTH 256
+
 	LauncherLayer::LauncherLayer()
 		: Layer("LauncherLayer") { }
 
@@ -122,19 +125,19 @@ namespace Sparky {
 		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
 		Gui::Image((void*)m_SparkyLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
 
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.8f, 1.0f));
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.8f, 1.0f));
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
 
 		ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
 		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
 		const char* buttonText = selectedProject == 0 ? "Create Project" : "Open Project";
-		static bool show = false;
-		if (Gui::Button(buttonText, buttonSize) && !m_CreateNewProject)
+		if (!m_CreatingNewProject && Gui::Button(buttonText, buttonSize))
 		{
 			if (selectedProject == 0) // Create a new project
 			{
-				m_CreateNewProject = true;
+				m_CreatingNewProject = true;
+				Gui::OpenPopup("Create New Project");
 			}
 			else
 			{
@@ -142,8 +145,10 @@ namespace Sparky {
 			}
 		}
 
-		if (m_CreateNewProject)
+		if (Gui::IsPopupOpen("Create New Project"))
 			DisplayCreateProjectPopup();
+		else
+			m_CreatingNewProject = false;
 
 		Gui::PopStyleColor(3);
 		Gui::PopStyleVar(3);
@@ -156,7 +161,58 @@ namespace Sparky {
 
 	void LauncherLayer::DisplayCreateProjectPopup()
 	{
-		
+		ImVec2 center = Gui::GetMainViewport()->GetCenter();
+		Gui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		Gui::SetNextWindowSize(ImVec2(700, 0));
+
+		if (Gui::BeginPopupModal("Create New Project"))
+		{
+			static char projectNameBuffer[SP_MAX_PROJECT_NAME_LENGTH]{ 0 };
+			ImGuiIO& io = Gui::GetIO();
+			auto contextRegionAvail = Gui::GetContentRegionAvail();
+			Gui::Columns(2);
+			Gui::Text("Project Name");
+			Gui::Spacing();
+			Gui::Text("Directory");
+			Gui::NextColumn();
+			Gui::PushItemWidth(-1);
+			if (Gui::InputText("##Project Name", projectNameBuffer, SP_MAX_PROJECT_NAME_LENGTH))
+			{
+
+			}
+			Gui::PushItemWidth(-1);
+			static char projectDirectoryBuffer[SP_MAX_PROJECT_NAME_LENGTH]{ 0 };
+			if (Gui::InputText("##Directory", projectDirectoryBuffer, SP_MAX_PROJECT_NAME_LENGTH))
+			{
+
+			}
+
+			Gui::Columns(1);
+
+			Gui::Spacing();
+			Gui::Separator();
+			Gui::Spacing();
+
+			ImVec2 buttonSize = { Gui::GetContentRegionAvail().x / 4.0f, 50.0f };
+
+			if (Gui::Button("Go Back", buttonSize))
+			{
+				Gui::CloseCurrentPopup();
+			}
+
+			bool projectReady = strlen(projectNameBuffer) != 0 && std::filesystem::exists(projectDirectoryBuffer);
+
+			Gui::SameLine();
+			Gui::SetCursorPosX((Gui::GetWindowWidth() * 0.5f) - (buttonSize.x * 0.5f));
+			Gui::BeginDisabled(!projectReady);
+			if (Gui::Button("Create Project", buttonSize))
+			{
+
+			}
+			Gui::EndDisabled();
+
+			Gui::EndPopup();
+		}
 	}
 
 	void LauncherLayer::LaunchEditor()

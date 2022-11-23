@@ -4,6 +4,11 @@
 
 namespace Sparky {
 
+	struct LauncherProperties
+	{
+		std::string EditorPath;
+	};
+
 	class LauncherLayer : public Layer
 	{
 	public:
@@ -22,12 +27,13 @@ namespace Sparky {
 		void LaunchEditor();
 
 	private:
+		LauncherProperties m_Properties;
 		SharedRef<Framebuffer> m_Framebuffer;
 		SharedRef<Texture2D> m_SparkyLogoIcon;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		std::filesystem::path m_ProjectPath = std::filesystem::path();
 
-		bool m_CreateNewProject = false;
+		bool m_CreatingNewProject = false;
 	};
 
 }
