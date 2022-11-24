@@ -135,6 +135,7 @@ project "Sparky"
 		"%{Library.PhysXFoundation}",
 		"%{Library.PhysXPvd}",
 		"opengl32.lib",
+		"Ws2_32.lib",
 		"yaml-cpp",
 	}
 
