@@ -111,6 +111,12 @@ namespace Sparky::Math {
 	}
 
 	template <typename T>
+	static auto Acos(T v)
+	{
+		return glm::acos(v);
+	}
+
+	template <typename T>
 	static auto Sin(T v)
 	{
 		return glm::sin(v);

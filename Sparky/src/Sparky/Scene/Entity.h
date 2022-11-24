@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Core/Base.h"
 #include "Sparky/Scene/Scene.h"
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/Components.h"
@@ -76,17 +77,17 @@ namespace Sparky {
 		void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
 		void RemoveChild(UUID childUUID)
 		{
-			auto& children = Children();
+			auto& children = GetComponent<HierarchyComponent>().Children;
 			auto it = std::find(children.begin(), children.end(), childUUID);
-			SP_CORE_ASSERT(it != children.end());
+			SP_CORE_ASSERT(it != children.end(), "Child UUID was not found");
 			children.erase(it);
 		}
 
-		bool HasParent() { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
+		bool HasParent() { return (bool)m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 
 		bool IsAncesterOf(Entity entity)
 		{
-			const auto& children = Children();
+			const auto& children = GetComponent<HierarchyComponent>().Children;
 
 			if (children.size() == 0)
 				return false;

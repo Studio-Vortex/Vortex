@@ -129,6 +129,9 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_Multiply(ref Transform a, ref Transform b, out Transform result);
+
 		#endregion
 
 		#region Camera
@@ -557,10 +560,16 @@ namespace Sparky {
 		internal extern static double Mathf_GetPI_D();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Sqrt(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Sin(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Cos(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Acos(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Tan(float value);

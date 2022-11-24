@@ -452,6 +452,13 @@ namespace Sparky {
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
 		transform = TransformComponent{ translation, rotation, scale };
 	}
+	
+	static void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
+	{
+		Math::mat4 transform = a->GetTransform() * b->GetTransform();
+		TransformComponent& out = *outTransform;
+		Math::DecomposeTransform(transform, out.Translation, out.Rotation, out.Scale);
+	}
 
 #pragma endregion
 
@@ -1899,6 +1906,11 @@ namespace Sparky {
 		return Math::PI_D;
 	}
 
+	static float Mathf_Sqrt(float in)
+	{
+		return Math::Sqrt(in);
+	}
+
 	static float Mathf_Sin(float in)
 	{
 		return Math::Sin(in);
@@ -1907,6 +1919,11 @@ namespace Sparky {
 	static float Mathf_Cos(float in)
 	{
 		return Math::Cos(in);
+	}
+
+	static float Mathf_Acos(float in)
+	{
+		return Math::Acos(in);
 	}
 
 	static float Mathf_Tan(float in)
@@ -2264,6 +2281,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_LookAt);
+		SP_ADD_INTERNAL_CALL(TransformComponent_Multiply);
 
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
@@ -2401,8 +2419,10 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(Mathf_GetPI);
 		SP_ADD_INTERNAL_CALL(Mathf_GetPI_D);
+		SP_ADD_INTERNAL_CALL(Mathf_Sqrt);
 		SP_ADD_INTERNAL_CALL(Mathf_Sin);
 		SP_ADD_INTERNAL_CALL(Mathf_Cos);
+		SP_ADD_INTERNAL_CALL(Mathf_Acos);
 		SP_ADD_INTERNAL_CALL(Mathf_Tan);
 		SP_ADD_INTERNAL_CALL(Mathf_Max);
 		SP_ADD_INTERNAL_CALL(Mathf_Max);

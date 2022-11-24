@@ -7,6 +7,12 @@
 
 	public class Transform : Component
 	{
+		public static Transform operator *(Transform a, Transform b)
+		{
+			InternalCalls.TransformComponent_Multiply(ref a, ref b, out Transform result);
+			return result;
+		}
+
 		public Vector3 Translation
 		{
 			get
@@ -31,6 +37,30 @@
 			Translation += new Vector3(x, y, z);
 		}
 
+		public Vector3 Rotation
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
+				return rotation;
+			}
+
+			set
+			{
+				InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
+			}
+		}
+
+		public void Rotate(Vector3 rotation)
+		{
+			Rotation += rotation;
+		}
+
+		public void Rotate(float x, float y, float z)
+		{
+			Rotation += new Vector3(x, y, z);
+		}
+
 		public Vector3 Scale
 		{
 			get
@@ -42,33 +72,6 @@
 			set
 			{
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
-			}
-		}
-
-		public Vector3 Forward
-		{
-			get
-			{
-				InternalCalls.TransformComponent_GetForwardDirection(Entity.ID, out Vector3 forward);
-				return forward;
-			}
-		}
-
-		public Vector3 Right
-		{
-			get
-			{
-				InternalCalls.TransformComponent_GetRightDirection(Entity.ID, out Vector3 right);
-				return right;
-			}
-		}
-
-		public Vector3 Up
-		{
-			get
-			{
-				InternalCalls.TransformComponent_GetUpDirection(Entity.ID, out Vector3 up);
-				return up;
 			}
 		}
 
@@ -112,29 +115,9 @@
 			Scale += new Vector3(x, y, z);
 		}
 
-		public Vector3 Rotation
-		{
-			get
-			{
-				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
-				return rotation;
-			}
-
-			set
-			{
-				InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
-			}
-		}
-
-		public void Rotate(Vector3 rotation)
-		{
-			Rotation += rotation;
-		}
-
-		public void Rotate(float x, float y, float z)
-		{
-			Rotation += new Vector3(x, y, z);
-		}
+		public Vector3 Up { get => new Quaternion(Rotation) * Vector3.Up; }
+		public Vector3 Right { get => new Quaternion(Rotation) * Vector3.Right; }
+		public Vector3 Forward { get => new Quaternion(Rotation) * Vector3.Forward; }
 
 		public void LookAt(Vector3 worldPoint)
 		{
