@@ -137,6 +137,9 @@ namespace Sparky {
 		{
 			SP_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
 
+			SharedRef<Project> activeProject = Project::GetActive();
+			const std::filesystem::path projectAssetDirectory = activeProject->GetAssetDirectory();
+
 			out << YAML::BeginMap; // Entity
 			out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
@@ -212,7 +215,7 @@ namespace Sparky {
 				auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 
 				SharedRef<Skybox> skybox = skyboxComponent.Source;
-				out << YAML::Key << "SourcePath" << skybox->GetDirectoryPath();
+				out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetDirectoryPath(), projectAssetDirectory).string();
 
 				out << YAML::EndMap; // SkyboxComponent
 			}
@@ -272,7 +275,7 @@ namespace Sparky {
 				if (meshRendererComponent.Mesh)
 				{
 					SharedRef<Model> model = meshRendererComponent.Mesh;
-					out << YAML::Key << "MeshSource" << YAML::Value << model->GetPath();
+					out << YAML::Key << "MeshSource" << YAML::Value << std::filesystem::relative(model->GetPath(), projectAssetDirectory).string();
 
 					SharedRef<Material> material = model->GetMaterial();
 
@@ -282,11 +285,11 @@ namespace Sparky {
 					SharedRef<Texture2D> specularMap = material->GetSpecularMap();
 					SharedRef<Texture2D> normalMap = material->GetNormalMap();
 					if (diffuseMap)
-						out << YAML::Key << "DiffuseMapPath" << YAML::Value << diffuseMap->GetPath();
+						out << YAML::Key << "DiffuseMapPath" << YAML::Value << std::filesystem::relative(diffuseMap->GetPath(), projectAssetDirectory).string();
 					if (specularMap)
-						out << YAML::Key << "SpecularMapPath" << YAML::Value << specularMap->GetPath();
+						out << YAML::Key << "SpecularMapPath" << YAML::Value << std::filesystem::relative(specularMap->GetPath(), projectAssetDirectory).string();
 					if (normalMap)
-						out << YAML::Key << "NormalMapPath" << YAML::Value << normalMap->GetPath();
+						out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
 
 					out << YAML::Key << "Shininess" << material->GetShininess();
 
@@ -295,19 +298,19 @@ namespace Sparky {
 					SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
 					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
 					if (albedoMap)
-						out << YAML::Key << "AlbedoMapPath" << YAML::Value << albedoMap->GetPath();
+						out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
 					else
 						out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
 					if (metallicMap)
-						out << YAML::Key << "MetallicMapPath" << YAML::Value << metallicMap->GetPath();
+						out << YAML::Key << "MetallicMapPath" << YAML::Value << std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string();
 					else
 						out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
 					if (roughnessMap)
-						out << YAML::Key << "RoughnessMapPath" << YAML::Value << roughnessMap->GetPath();
+						out << YAML::Key << "RoughnessMapPath" << YAML::Value << std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string();
 					else
 						out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
 					if (ambientOcclusionMap)
-						out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << ambientOcclusionMap->GetPath();
+						out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 				}
 				out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 				out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
@@ -324,7 +327,7 @@ namespace Sparky {
 
 				out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
 				if (spriteComponent.Texture)
-					out << YAML::Key << "TexturePath" << YAML::Value << spriteComponent.Texture->GetPath();
+					out << YAML::Key << "TexturePath" << YAML::Value << std::filesystem::relative(spriteComponent.Texture->GetPath(), projectAssetDirectory).string();
 				out << YAML::Key << "TextureScale" << YAML::Value << spriteComponent.Scale;
 
 				out << YAML::EndMap; // SpriteRendererComponent
@@ -377,7 +380,7 @@ namespace Sparky {
 				{
 					const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
 
-					out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourceComponent.Source->GetPath();
+					out << YAML::Key << "AudioSourcePath" << YAML::Value << std::filesystem::relative(audioSourceComponent.Source->GetPath(), projectAssetDirectory).string();
 
 					out << YAML::Key << "SoundSettings" << YAML::Value;
 					out << YAML::BeginMap; // SoundSettings
