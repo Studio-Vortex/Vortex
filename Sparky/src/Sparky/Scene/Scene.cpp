@@ -310,7 +310,7 @@ namespace Sparky {
 			}
 		}
 
-		// If there is a primary camera in the scene we can render from the camera's point of view
+		// If there is a primary camera in the scene we should render from the camera's point of view
 		if (primarySceneCamera != nullptr)
 		{
 			s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
@@ -364,16 +364,7 @@ namespace Sparky {
 
 	void Scene::OnUpdateEntityGui()
 	{
-		if (!IsRunning())
-			return;
-
-		auto view = m_Registry.view<ScriptComponent>();
-
-		for (auto& e : view)
-		{
-			Entity entity = { e, this };
-			ScriptEngine::OnGuiEntity(entity);
-		}
+		
 	}
 
 	void Scene::Step(uint32_t frames)

@@ -82,7 +82,7 @@ namespace Sparky {
 					{
 						// If the name lines up with the search box we can show it
 						if (m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()) && entity.GetParentUUID() == 0)
-							DrawEntityNode(entity);
+							DrawEntityNode(entity, editorCamera);
 					}
 				});
 
@@ -422,7 +422,7 @@ namespace Sparky {
 		}
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, const EditorCamera& editorCamera)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -511,7 +511,7 @@ namespace Sparky {
 			{
 				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
 				if (childEntity)
-					DrawEntityNode(childEntity);
+					DrawEntityNode(childEntity, editorCamera);
 			}
 
 			Gui::TreePop();
@@ -822,10 +822,10 @@ namespace Sparky {
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
 			DrawVec3Controls("Translation", component.Translation);
-			Math::vec3 rotation = Math::Rad2Deg(component.Rotation);
+			Math::vec3 rotation = Math::Rad2Deg(component.GetRotationEuler());
 			DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
 			{
-				component.Rotation = Math::Deg2Rad(rotation);
+				component.SetRotationEuler(Math::Deg2Rad(rotation));
 			});
 			DrawVec3Controls("Scale", component.Scale, 1.0f);
 		}, false);

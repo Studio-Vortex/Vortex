@@ -268,7 +268,7 @@ namespace Sparky {
 							Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 							TransformComponent& transform = selectedEntity.GetTransform();
 							transform.Translation = m_EditorCamera.GetPosition();
-							transform.Rotation = Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.Rotation.z);
+							transform.SetRotationEuler(Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.GetRotationEuler().z));
 						}
 
 						Gui::Separator();
@@ -549,9 +549,13 @@ namespace Sparky {
 			snapValues.fill(snapValue);
 
 			ImGuizmo::Manipulate(
-				Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection),
-				static_cast<ImGuizmo::OPERATION>(m_GizmoType), static_cast<ImGuizmo::MODE>(m_TranslationMode), Math::ValuePtr(transform),
-				nullptr, (controlPressed&& projectProps.GizmoProps.SnapEnabled) ? snapValues.data() : nullptr
+				Math::ValuePtr(cameraView),
+				Math::ValuePtr(cameraProjection),
+				static_cast<ImGuizmo::OPERATION>(m_GizmoType),
+				static_cast<ImGuizmo::MODE>(m_TranslationMode),
+				Math::ValuePtr(transform),
+				nullptr,
+				(controlPressed && projectProps.GizmoProps.SnapEnabled) ? snapValues.data() : nullptr
 			);
 
 			if (projectProps.GizmoProps.DrawGrid)
@@ -567,13 +571,46 @@ namespace Sparky {
 					transform = Math::Inverse(parentTransform) * transform;
 				}
 
-				Math::vec3 translation, rotation, scale;
+				Math::vec3 translation, scale;
+				Math::quaternion rotation;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
-				Math::vec3 deltaRotation = rotation - entityTransform.Rotation;
-				entityTransform.Translation = translation;
-				entityTransform.Rotation += deltaRotation;
-				entityTransform.Scale = scale;
+				// Setting only the component of the transform we are modifying is much
+				// more robust than just setting the entire tranform
+				// all those floating point computations will be slightly off from the original
+				switch (m_GizmoType)
+				{
+					case ImGuizmo::OPERATION::TRANSLATE:
+					{
+						entityTransform.Translation = translation;
+						break;
+					}
+					case ImGuizmo::OPERATION::ROTATE:
+					{
+						// Do this in Euler in an attempt to preserve any full revolutions (> 360)
+						Math::vec3 originalEulerRotation = entityTransform.GetRotationEuler();
+
+						// Map original rotation to range [-180, 180] which is what ImGuizmo gives us
+						originalEulerRotation.x = fmodf(originalEulerRotation.x + Math::PI, Math::TWO_PI) - Math::PI;
+						originalEulerRotation.y = fmodf(originalEulerRotation.y + Math::PI, Math::TWO_PI) - Math::PI;
+						originalEulerRotation.z = fmodf(originalEulerRotation.z + Math::PI, Math::TWO_PI) - Math::PI;
+
+						Math::vec3 deltaRotationEuler = Math::EulerAngles(rotation) - originalEulerRotation;
+
+						// Try to avoid drift due numeric precision
+						if (fabs(deltaRotationEuler.x) < 0.001) deltaRotationEuler.x = 0.0f;
+						if (fabs(deltaRotationEuler.y) < 0.001) deltaRotationEuler.y = 0.0f;
+						if (fabs(deltaRotationEuler.z) < 0.001) deltaRotationEuler.z = 0.0f;
+
+						entityTransform.SetRotationEuler(entityTransform.GetRotationEuler() += deltaRotationEuler);
+						break;
+					}
+					case ImGuizmo::OPERATION::SCALE:
+					{
+						entityTransform.Scale = scale;
+						break;
+					}
+				}
 			}
 		}
 
@@ -800,7 +837,7 @@ namespace Sparky {
 
 					Math::mat4 transform = Math::Translate(tc.Translation)
 						* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
-						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Scale(scale);
 
 					Renderer2D::DrawRect(transform, projectProps.PhysicsProps.Physics2DColliderColor);
@@ -818,7 +855,7 @@ namespace Sparky {
 
 					Math::mat4 transform = Math::Translate(tc.Translation)
 						* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
-						* Math::Rotate(tc.Rotation.z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
 						* Math::Scale(scale);
 
 					Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
@@ -1050,7 +1087,7 @@ namespace Sparky {
 					if (altPressed && selectedEntity)
 					{
 						TransformComponent& transformComponent = selectedEntity.GetTransform();
-						transformComponent.Rotation = Math::vec3(0.0f);
+						transformComponent.SetRotationEuler(Math::vec3(0.0f));
 					}
 
 					OnRotationToolSelected();
@@ -1144,7 +1181,7 @@ namespace Sparky {
 		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 		TransformComponent& cameraTransform = startingCamera.GetTransform();
 		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
-		cameraTransform.Rotation = Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f);
+		cameraTransform.SetRotationEuler(Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f));
 	}
 
 	void EditorLayer::CreateNewProject()

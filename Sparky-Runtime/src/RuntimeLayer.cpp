@@ -2,6 +2,7 @@
 
 #include <Sparky/Scene/Scene.h>
 #include <Sparky/Scene/SceneSerializer.h>
+#include <Sparky/Scripting/ScriptEngine.h>
 #include <Sparky/Scripting/ScriptRegistry.h>
 
 namespace Sparky {
@@ -141,6 +142,7 @@ namespace Sparky {
 			std::string projectName = std::format("{} Project Load Time", filepath.filename().string());
 			InstrumentationTimer timer(projectName.c_str());
 
+			ScriptEngine::Init();
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 

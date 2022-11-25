@@ -63,7 +63,7 @@ namespace Sparky {
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				Math::vec3 translation = transform.Translation;
-				float angle = transform.Rotation.z;
+				float angle = transform.GetRotationEuler().z;
 
 				const auto& bodyPosition = body->GetPosition();
 				const float bodyAngle = body->GetAngle();
@@ -117,7 +117,8 @@ namespace Sparky {
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
 				const auto& position = body->GetPosition();
 				transform.Translation = Math::vec3(position.x, position.y, transform.Translation.z);
-				transform.Rotation.z = body->GetAngle();
+				const auto& rotation = transform.GetRotationEuler();
+				transform.SetRotationEuler({ rotation.x, rotation.y, body->GetAngle() });
 			}
 		}
 	}
@@ -139,7 +140,7 @@ namespace Sparky {
 		bodyDef.linearDamping = rb2d.Drag;
 		bodyDef.angularDamping = rb2d.AngularDrag;
 		bodyDef.gravityScale = rb2d.GravityScale;
-		bodyDef.angle = transform.Rotation.z;
+		bodyDef.angle = transform.GetRotationEuler().z;
 
 		b2Body* body = s_PhysicsScene->CreateBody(&bodyDef);
 

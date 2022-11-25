@@ -445,7 +445,7 @@ namespace Sparky {
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
 	{
 		//4 2.25
-		Math::vec3 rotation = transform.Rotation;
+		Math::vec3 rotation = transform.GetRotationEuler();
 		Math::vec3 forwardDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), { 0.0f, 0.0f, -1.0f });
 		Math::mat4 nearClipTransform = transform.GetTransform() * Math::Translate(forwardDirection) / 2.0f;
 		Math::mat4 farClipTransform = nearClipTransform * Math::Translate(forwardDirection) / 2.0f;

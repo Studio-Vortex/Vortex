@@ -82,7 +82,6 @@ namespace Sparky {
 						Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
 						Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
 						Renderer2D::DrawQuadBillboard(cameraView, particle.Position, size, color);
-						//Renderer2D::DrawRotatedQuad(particle.Position, size, particle.Rotation, color, (int)(entt::entity)entity);
 					}
 				}
 			}

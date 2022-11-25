@@ -115,9 +115,32 @@
 			Scale += new Vector3(x, y, z);
 		}
 
-		public Vector3 Up { get => new Quaternion(Rotation) * Vector3.Up; }
-		public Vector3 Right { get => new Quaternion(Rotation) * Vector3.Right; }
-		public Vector3 Forward { get => new Quaternion(Rotation) * Vector3.Forward; }
+		public Vector3 Up
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetUpDirection(Entity.ID, out Vector3 result);
+				return result;
+			}
+		}
+
+		public Vector3 Right
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetRightDirection(Entity.ID, out Vector3 result);
+				return result;
+			}
+		}
+
+		public Vector3 Forward
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetForwardDirection(Entity.ID, out Vector3 result);
+				return result;
+			}
+		}
 
 		public void LookAt(Vector3 worldPoint)
 		{

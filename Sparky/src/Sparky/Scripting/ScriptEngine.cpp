@@ -24,6 +24,8 @@
 
 namespace Sparky {
 
+	static constexpr const char* APP_ASSEMBLY_PATH = "C:/dev/Sparky_Game_Engine/Sparky/Sparky-Editor/SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
+
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
 		{ "System.Single",  ScriptFieldType::Float   },
@@ -248,6 +250,7 @@ namespace Sparky {
 		ShutdownMono();
 
 		delete s_Data;
+		s_Data = nullptr;
 
 		s_ScriptEngineInitalized = false;
 	}
@@ -317,7 +320,7 @@ namespace Sparky {
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
-		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
 		return true;

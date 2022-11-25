@@ -121,10 +121,10 @@ namespace Sparky {
 		internal extern static void TransformComponent_GetForwardDirection(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRightDirection(ulong entityID, out Vector3 result);
+		internal extern static void TransformComponent_GetUpDirection(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetUpDirection(ulong entityID, out Vector3 result);
+		internal extern static void TransformComponent_GetRightDirection(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_LookAt(ulong entityID, ref Vector3 worldPoint);

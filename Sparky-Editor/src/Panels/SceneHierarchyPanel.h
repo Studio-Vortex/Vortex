@@ -37,7 +37,7 @@ namespace Sparky {
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
-		void DrawEntityNode(Entity entity);
+		void DrawEntityNode(Entity entity, const EditorCamera& editorCamera);
 		void DrawComponents(Entity entity);
 
 	private:

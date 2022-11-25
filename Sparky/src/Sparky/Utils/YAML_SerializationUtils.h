@@ -83,6 +83,32 @@ namespace YAML {
 	};
 
 	template<>
+	struct convert<Sparky::Math::quaternion>
+	{
+		static Node encode(const Sparky::Math::quaternion& rhs)
+		{
+			Node node;
+			node.push_back(rhs.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, Sparky::Math::quaternion& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.w = node[0].as<float>();
+			rhs.x = node[1].as<float>();
+			rhs.y = node[2].as<float>();
+			rhs.z = node[3].as<float>();
+			return true;
+		}
+	};
+
+	template<>
 	struct convert<Sparky::UUID>
 	{
 		static Node encode(const Sparky::UUID& uuid)
@@ -117,6 +143,13 @@ namespace YAML {
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << vector.x << vector.y << vector.z << vector.w << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::quat& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.w << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 

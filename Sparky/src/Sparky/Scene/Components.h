@@ -67,9 +67,29 @@ namespace Sparky {
 	struct TransformComponent
 	{
 		Math::vec3 Translation = Math::vec3(0.0f);
-		Math::vec3 Rotation = Math::vec3(0.0f);
 		Math::vec3 Scale = Math::vec3(1.0f);
+	private:
+		// These are private so that you are forced to set them via
+		// SetRotation() or SetRotationEuler()
+		// This avoids situation where one of them gets set and the other is forgotten.
+		//
+		// Why do we need both a quat and Euler angle representation for rotation?
+		// Because Euler suffers from gimbal lock -> rotations should be stored as quaternions.
+		//
+		// BUT: quaternions are confusing, and humans like to work with Euler angles.
+		// We cannot store just the quaternions and translate to/from Euler because the conversion
+		// Euler -> quat -> Euler is not invariant.
+		//
+		// It's also sometimes useful to be able to store rotations > 360 degrees which
+		// quats do not support.
+		//
+		// Accordingly, we store Euler for "editor" stuff that humans work with, 
+		// and quats for everything else.  The two are maintained in-sync via the SetRotation()
+		// methods.
+		Math::vec3 RotationEuler = Math::vec3(0.0f);
+		Math::quaternion Rotation = Math::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
 
+	public:
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const Math::vec3& translation)
@@ -79,14 +99,35 @@ namespace Sparky {
 
 		inline Math::mat4 GetTransform() const
 		{
-			Math::mat4 rotation = Math::ToMat4(Math::Quaternion(Rotation));
-			Math::mat4 result = Math::Translate(Translation) * rotation * Math::Scale(Scale);
-			return result;
+			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
 		}
 
 		inline void SetTransform(const Math::mat4& transform)
 		{
 			Math::DecomposeTransform(transform, Translation, Rotation, Scale);
+			RotationEuler = Math::EulerAngles(Rotation);
+		}
+
+		inline Math::vec3 GetRotationEuler() const
+		{
+			return RotationEuler;
+		}
+
+		inline void SetRotationEuler(const Math::vec3& euler)
+		{
+			RotationEuler = euler;
+			Rotation = Math::quaternion(RotationEuler);
+		}
+
+		inline Math::quaternion GetRotation() const
+		{
+			return Rotation;
+		}
+
+		inline void SetRotation(const Math::quaternion& quat)
+		{
+			Rotation = quat;
+			RotationEuler = Math::EulerAngles(Rotation);
 		}
 	};
 

@@ -172,7 +172,7 @@ namespace Sparky {
 				out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
 				auto& transform = entity.GetComponent<TransformComponent>();
 				out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-				out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+				out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotationEuler();
 				out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
 
 				out << YAML::EndMap; // TransformComponent
@@ -701,7 +701,7 @@ namespace Sparky {
 					// All Entities have a transform
 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<Math::vec3>();
-					tc.Rotation = transformComponent["Rotation"].as<Math::vec3>();
+					tc.SetRotationEuler(transformComponent["Rotation"].as<Math::vec3>());
 					tc.Scale = transformComponent["Scale"].as<Math::vec3>();
 				}
 

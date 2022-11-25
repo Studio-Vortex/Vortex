@@ -14,10 +14,14 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
+
 		}
 
 		protected override void OnUpdate(float delta)
 		{
+			Debug.Log($"Forward: {transform.Forward}");
+			Debug.Log($"Right:   {transform.Right}");
+			Debug.Log($"Up:      {transform.Up}");
 			Velocity = Vector3.Zero;
 			Rotation = Vector3.Zero;
 
@@ -32,7 +36,7 @@ namespace Sandbox {
 		{
 			float axisLeftTrigger = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
 			if (axisLeftTrigger > Deadzone)
-				Velocity = transform.Forward * MoveSpeed * delta * -axisLeftTrigger;
+				Velocity = transform.Forward * MoveSpeed * delta * axisLeftTrigger;
 
 			float axisRightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (axisRightTrigger > Deadzone)

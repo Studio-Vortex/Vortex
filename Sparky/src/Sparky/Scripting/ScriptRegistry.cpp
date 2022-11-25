@@ -354,7 +354,7 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
+		*outRotation = entity.GetComponent<TransformComponent>().GetRotationEuler();
 
 		// Since we store rotation in radians we must convert to degrees here
 		outRotation->x = Math::Rad2Deg(outRotation->x);
@@ -374,7 +374,7 @@ namespace Sparky {
 		rotation->y = Math::Deg2Rad(rotation->y);
 		rotation->z = Math::Deg2Rad(rotation->z);
 
-		entity.GetComponent<TransformComponent>().Rotation = *rotation;
+		entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
 	}
 
 	static void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
@@ -397,43 +397,40 @@ namespace Sparky {
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
-	static void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outForwardDirection)
+	static void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
-		Math::vec3 forwardDirection(0.0f, 0.0f, -1.0f);
-		*outForwardDirection = Math::Rotate(orientation, forwardDirection);
+		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+
+		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 0.0f, -1.0f));
 	}
 
-	static void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outRightDirection)
+	static void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
-		Math::vec3 rightDirection(1.0f, 0.0f, 0.0f);
-		*outRightDirection = Math::Rotate(orientation, rightDirection);
+		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+
+		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	static void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outUpDirection)
+	static void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-		Math::quaternion orientation = Math::GetOrientation(transform.Rotation.x, transform.Rotation.y, transform.Rotation.z);
-		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
-		*outUpDirection = Math::Rotate(orientation, upDirection);
+		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+
+		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 	static void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
@@ -447,17 +444,19 @@ namespace Sparky {
 		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
 		Math::vec3 translation;
-		Math::vec3 rotation;
+		Math::quaternion rotation;
 		Math::vec3 scale;
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		transform = TransformComponent{ translation, rotation, scale };
+		transform = TransformComponent{ translation, Math::EulerAngles(rotation), scale};
 	}
 	
 	static void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
 	{
 		Math::mat4 transform = a->GetTransform() * b->GetTransform();
 		TransformComponent& out = *outTransform;
-		Math::DecomposeTransform(transform, out.Translation, out.Rotation, out.Scale);
+		Math::quaternion orientation;
+		Math::DecomposeTransform(transform, out.Translation, orientation, out.Scale);
+		outTransform->SetRotation(orientation);
 	}
 
 #pragma endregion
@@ -1046,7 +1045,8 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ *translation, transformComponent.Rotation, transformComponent.Scale }.GetTransform();
+		Math::vec3 rotation = transformComponent.GetRotationEuler();
+		auto entityTransform = TransformComponent{ *translation, rotation, transformComponent.Scale }.GetTransform();
 		auto physxTransform = ToPhysXTransform(entityTransform);
 
 		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
@@ -1084,7 +1084,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ transformComponent.Translation + *translation, transformComponent.Rotation, transformComponent.Scale }.GetTransform();
+		auto entityTransform = TransformComponent{ transformComponent.Translation + *translation, transformComponent.GetRotationEuler(), transformComponent.Scale}.GetTransform();
 		auto physxTransform = ToPhysXTransform(entityTransform);
 
 		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
@@ -1098,7 +1098,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ transformComponent.Translation, transformComponent.Rotation + *rotation, transformComponent.Scale }.GetTransform();
+		auto entityTransform = TransformComponent{ transformComponent.Translation, transformComponent.GetRotationEuler() + *rotation, transformComponent.Scale}.GetTransform();
 		auto physxTransform = ToPhysXTransform(entityTransform);
 
 		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
@@ -2278,8 +2278,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetForwardDirection);
-		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_LookAt);
 		SP_ADD_INTERNAL_CALL(TransformComponent_Multiply);
 
