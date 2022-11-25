@@ -996,7 +996,7 @@ namespace Sparky {
 
 					physicsMaterial.StaticFriction = physicsMaterialComponent["StaticFriction"].as<float>();
 					physicsMaterial.DynamicFriction = physicsMaterialComponent["DynamicFriction"].as<float>();
-					physicsMaterial.Bounciness = physicsMaterialComponent["Bounciness"].as<bool>();
+					physicsMaterial.Bounciness = physicsMaterialComponent["Bounciness"].as<float>();
 				}
 
 				auto boxColliderComponent = entity["BoxColliderComponent"];

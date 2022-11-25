@@ -99,13 +99,13 @@ namespace Sparky {
 
 		inline Math::mat4 GetTransform() const
 		{
-			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
+			return Math::Translate(Translation) * Math::ToMat4(Math::GetOrientation(RotationEuler)) * Math::Scale(Scale);
 		}
 
 		inline void SetTransform(const Math::mat4& transform)
 		{
-			Math::DecomposeTransform(transform, Translation, Rotation, Scale);
-			RotationEuler = Math::EulerAngles(Rotation);
+			Math::DecomposeTransform(transform, Translation, RotationEuler, Scale);
+			//RotationEuler = Math::EulerAngles(Rotation);
 		}
 
 		inline Math::vec3 GetRotationEuler() const

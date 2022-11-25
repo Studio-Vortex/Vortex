@@ -22,6 +22,7 @@ namespace Sparky {
 
 	private:
 		std::filesystem::path m_ProjectPath;
+		std::filesystem::path m_StartupScene;
 		LaunchRuntimeFn m_LaunchRuntimeCallback = nullptr;
 	};
 

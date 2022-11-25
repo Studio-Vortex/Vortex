@@ -234,6 +234,18 @@ namespace Sparky {
 
 			if (Gui::BeginMenu("File"))
 			{
+				if (Gui::MenuItem("New Project"))
+					CreateNewProject();
+				Gui::Separator();
+
+				if (Gui::MenuItem("Open Project"))
+					OpenExistingProject();
+				Gui::Separator();
+
+				if (Gui::MenuItem("Save Project"))
+					SaveProject();
+				Gui::Separator();
+
 				if (Gui::MenuItem("New Scene", "Ctrl+N"))
 					CreateNewScene();
 				Gui::Separator();
@@ -754,6 +766,7 @@ namespace Sparky {
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
 	{
+		Project::SaveActive(path);
 		FileSystem::LaunchApplication("runtime\\Release\\Sparky-Runtime.exe", path.string().c_str());
 	}
 
@@ -827,6 +840,28 @@ namespace Sparky {
 				colliderDistance = -colliderDistance;
 
 			// Render Box Colliders
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
+				for (auto entity : view)
+				{
+					auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
+
+					Math::vec3 scale = tc.Scale * Math::vec3(bc.HalfSize * 2.0f);
+
+					Math::mat4 transform = Math::Translate(tc.Translation)
+						* Math::Translate(Math::vec3(bc.Offset))
+						* Math::Rotate(tc.GetRotationEuler().x, Math::vec3(1.0f, 0.0f, 0.0f))
+						* Math::Rotate(tc.GetRotationEuler().y, Math::vec3(0.0f, 1.0f, 0.0f))
+						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
+						* Math::Scale(scale);
+
+					Math::vec3 t, r, s;
+					Math::DecomposeTransform(transform, t, r, s);
+
+					Renderer::DrawCubeWireframe(m_ActiveScene->GetWorldSpaceTransform({entity, m_ActiveScene.get()}));
+				}
+			}
+
 			{
 				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
 				for (auto entity : view)
@@ -1229,7 +1264,10 @@ namespace Sparky {
 
 	void EditorLayer::SaveProject()
 	{
-		//Project::SaveActive();
+		const auto& projectProps = Project::GetActive()->GetProperties();
+		auto projectFilename = std::format("{}.sproject", projectProps.General.Name);
+		const auto& projectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);
+		Project::SaveActive(projectPath);
 	}
 
 	void EditorLayer::CreateNewScene()
