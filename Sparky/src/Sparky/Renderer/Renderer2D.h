@@ -57,6 +57,8 @@ namespace Sparky {
 		static void DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor = Color::White);
 		static void DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor = Color::White);
 
+		static void DrawAABB(const Math::AABB& aabb, const Math::mat4& transform, const Math::vec4& color);
+
 		static void DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color);
 		static void DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const SharedRef<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID = -1);
 

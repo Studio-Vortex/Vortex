@@ -15,7 +15,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace Sparky::Math {
-	
+
 	typedef glm::vec2 vec2;
 	typedef glm::vec3 vec3;
 	typedef glm::vec4 vec4;
@@ -27,6 +27,18 @@ namespace Sparky::Math {
 	static constexpr float PI = glm::pi<float>();
 	static constexpr float TWO_PI = glm::two_pi<float>();
 	static constexpr double PI_D = glm::pi<double>();
+
+	struct AABB
+	{
+		vec3 Min;
+		vec3 Max;
+
+		AABB()
+			: Min(0.0f), Max(0.0f) { }
+
+		AABB(const vec3& min, const vec3& max)
+			: Min(min), Max(max) { }
+	};
 
 	template <typename T>
 	static auto Deg2Rad(T degrees)

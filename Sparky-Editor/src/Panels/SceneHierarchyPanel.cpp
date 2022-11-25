@@ -1042,7 +1042,7 @@ namespace Sparky {
 			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
 			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
 
-			char buffer[256];
+			char buffer[512];
 			memset(buffer, 0, sizeof(buffer));
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))

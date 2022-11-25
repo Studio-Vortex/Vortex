@@ -125,7 +125,10 @@ namespace Sparky {
 				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 
 				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(scale));
-				UpdateActorFlags(rigidbody, dynamicActor);
+				if (actor->is<physx::PxRigidDynamic>())
+				{
+					UpdateActorFlags(rigidbody, dynamicActor);
+				}
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
 			{

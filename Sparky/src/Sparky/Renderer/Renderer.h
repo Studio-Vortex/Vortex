@@ -36,7 +36,6 @@ namespace Sparky {
 		static void DrawModel(const Math::mat4& transform, const MeshRendererComponent& meshRenderer);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
-		static void DrawCubeWireframe(const TransformComponent& transform);
 		static void DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }

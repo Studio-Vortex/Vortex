@@ -583,8 +583,7 @@ namespace Sparky {
 					transform = Math::Inverse(parentTransform) * transform;
 				}
 
-				Math::vec3 translation, scale;
-				Math::quaternion rotation;
+				Math::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
 				// Setting only the component of the transform we are modifying is much
@@ -607,7 +606,7 @@ namespace Sparky {
 						originalEulerRotation.y = fmodf(originalEulerRotation.y + Math::PI, Math::TWO_PI) - Math::PI;
 						originalEulerRotation.z = fmodf(originalEulerRotation.z + Math::PI, Math::TWO_PI) - Math::PI;
 
-						Math::vec3 deltaRotationEuler = Math::EulerAngles(rotation) - originalEulerRotation;
+						Math::vec3 deltaRotationEuler = rotation - originalEulerRotation;
 
 						// Try to avoid drift due numeric precision
 						if (fabs(deltaRotationEuler.x) < 0.001) deltaRotationEuler.x = 0.0f;
@@ -842,23 +841,19 @@ namespace Sparky {
 			// Render Box Colliders
 			{
 				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-				for (auto entity : view)
+				for (auto e : view)
 				{
-					auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
+					auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
+					Entity entity {e, m_ActiveScene.get()};
 
-					Math::vec3 scale = tc.Scale * Math::vec3(bc.HalfSize * 2.0f);
+					Math::AABB aabb = {
+						- (bc.HalfSize) - bc.Offset,
+						+ (bc.HalfSize) + bc.Offset
+					};
 
-					Math::mat4 transform = Math::Translate(tc.Translation)
-						* Math::Translate(Math::vec3(bc.Offset))
-						* Math::Rotate(tc.GetRotationEuler().x, Math::vec3(1.0f, 0.0f, 0.0f))
-						* Math::Rotate(tc.GetRotationEuler().y, Math::vec3(0.0f, 1.0f, 0.0f))
-						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
-						* Math::Scale(scale);
+					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 
-					Math::vec3 t, r, s;
-					Math::DecomposeTransform(transform, t, r, s);
-
-					Renderer::DrawCubeWireframe(m_ActiveScene->GetWorldSpaceTransform({entity, m_ActiveScene.get()}));
+					Renderer2D::DrawAABB(aabb, transform, projectProps.PhysicsProps.Physics3DColliderColor);
 				}
 			}
 
@@ -901,13 +896,20 @@ namespace Sparky {
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
-			const auto& entityTransform = selectedEntity.GetComponent<TransformComponent>();
+			const auto& entityTransform = selectedEntity.GetTransform();
 
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				Renderer::DrawCubeWireframe(m_ActiveScene->GetWorldSpaceTransform(selectedEntity));
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+
+				Math::AABB aabb = {
+					- Math::vec3(0.5f),
+					+ Math::vec3(0.5f)
+				};
+
+				Renderer2D::DrawAABB(aabb, transform, ColorToVec4(Color::Orange));
 			}
 			else if (selectedEntity.HasComponent<CameraComponent>())
 			{
@@ -1250,6 +1252,7 @@ namespace Sparky {
 			std::string projectName = std::format("{} Project Load Time", path.filename().string());
 			InstrumentationTimer timer(projectName.c_str());
 
+			ScriptEngine::Shutdown();
 			ScriptEngine::Init();
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());

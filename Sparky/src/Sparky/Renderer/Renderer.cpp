@@ -424,24 +424,6 @@ namespace Sparky {
 		RenderCommand::EnableDepthMask();
 	}
 
-	void Renderer::DrawCubeWireframe(const TransformComponent& transform)
-	{
-		SP_PROFILE_FUNCTION();
-
-		Math::mat4 entityTransform = transform.GetTransform();
-		Math::vec3 scale = transform.Scale;
-		Math::vec4 color = ColorToVec4(Color::Orange);
-
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(scale.x * 0.5f, 0.0f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }), color);
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(-scale.x * 0.5f, 0.0f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 0.0f, 1.0f, 0.0f }), color);
-
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, scale.y * 0.5f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), color);
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, -scale.y * 0.5f, 0.0f)) * Math::Rotate(Math::Deg2Rad(90.0f), { 1.0f, 0.0f, 0.0f }), color);
-
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, 0.0f, scale.z * 0.5f)), color);
-		Renderer2D::DrawRect(entityTransform * Math::Translate(Math::vec3(0.0f, 0.0f, -scale.z * 0.5f)), color);
-	}
-
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
 	{
 		//4 2.25

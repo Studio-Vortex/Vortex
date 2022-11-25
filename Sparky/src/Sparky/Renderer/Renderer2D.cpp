@@ -560,6 +560,34 @@ namespace Sparky
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
 
+	void Renderer2D::DrawAABB(const Math::AABB& aabb, const Math::mat4& transform, const Math::vec4& color)
+	{
+		Math::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+		Math::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+
+		Math::vec4 corners[8] =
+		{
+			transform * Math::vec4 { min.x, min.y, max.z, 1.0f },
+			transform * Math::vec4 { min.x, max.y, max.z, 1.0f },
+			transform * Math::vec4 { max.x, max.y, max.z, 1.0f },
+			transform * Math::vec4 { max.x, min.y, max.z, 1.0f },
+
+			transform * Math::vec4 { min.x, min.y, min.z, 1.0f },
+			transform * Math::vec4 { min.x, max.y, min.z, 1.0f },
+			transform * Math::vec4 { max.x, max.y, min.z, 1.0f },
+			transform * Math::vec4 { max.x, min.y, min.z, 1.0f }
+		};
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[(i + 1) % 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[i + 4], color);
+	}
+
 	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color)
 	{
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
@@ -631,7 +659,7 @@ namespace Sparky
 		glm::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
 		glm::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
 
-		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * (s_Data.QuadVertexPositions[0].x) * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
+		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[0].x * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
