@@ -834,61 +834,68 @@ namespace Sparky {
 		
 		if (projectProps.PhysicsProps.ShowColliders)
 		{
-			float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
-			if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
-				colliderDistance = -colliderDistance;
-
-			// Render Box Colliders
+			// Render 3D Colliders
 			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-				for (auto e : view)
+				// Render Box Colliders
 				{
-					auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
-					Entity entity {e, m_ActiveScene.get()};
+					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
+					for (auto e : view)
+					{
+						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
+						Entity entity{ e, m_ActiveScene.get() };
 
-					Math::AABB aabb = {
-						- (bc.HalfSize) - bc.Offset,
-						+ (bc.HalfSize) + bc.Offset
-					};
+						Math::AABB aabb = {
+							-bc.HalfSize - bc.Offset,
+							+bc.HalfSize + bc.Offset
+						};
 
-					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 
-					Renderer2D::DrawAABB(aabb, transform, projectProps.PhysicsProps.Physics3DColliderColor);
+						Renderer2D::DrawAABB(aabb, transform, projectProps.PhysicsProps.Physics3DColliderColor);
+					}
 				}
 			}
 
+			// Render 2D Colliders
 			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-				for (auto entity : view)
+				float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
+				if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
+					colliderDistance = -colliderDistance;
+
 				{
-					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+					for (auto e : view)
+					{
+						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
+						Entity entity{ e, m_ActiveScene.get() };
 
-					Math::vec3 scale = tc.Scale * Math::vec3(bc2d.Size * 2.0f, 1.0f);
+						Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
-					Math::mat4 transform = Math::Translate(tc.Translation)
-						* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
-						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
-						* Math::Scale(scale);
+						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+							* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
+							* Math::Scale(scale);
 
-					Renderer2D::DrawRect(transform, projectProps.PhysicsProps.Physics2DColliderColor);
+						Renderer2D::DrawRect(transform, projectProps.PhysicsProps.Physics2DColliderColor);
+					}
 				}
-			}
 
-			// Render Circle Colliders
-			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-				for (auto entity : view)
+				// Render Circle Colliders
 				{
-					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+					for (auto e : view)
+					{
+						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
+						Entity entity{ e, m_ActiveScene.get() };
 
-					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
+						Math::vec3 scale = glm::vec3(cc2d.Radius * 2.0f);
 
-					Math::mat4 transform = Math::Translate(tc.Translation)
-						* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
-						* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
-						* Math::Scale(scale);
+						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+							* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
+							* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
+							* Math::Scale(scale);
 
-					Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
+						Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
+					}
 				}
 			}
 		}

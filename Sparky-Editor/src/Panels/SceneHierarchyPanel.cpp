@@ -1074,7 +1074,10 @@ namespace Sparky {
 			}
 			
 			if (component.Mesh)
+			{
 				memcpy(buffer, component.Mesh->GetPath().c_str(), sizeof(buffer));
+				buffer[component.Mesh->GetPath().size()] = '\0';
+			}
 
 			Gui::InputText("##Mesh Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
