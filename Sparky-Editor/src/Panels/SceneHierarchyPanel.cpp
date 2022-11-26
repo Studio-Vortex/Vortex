@@ -1658,6 +1658,9 @@ namespace Sparky {
 				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
 					component.Source->SetVolume(props.Volume);
 
+				if (Gui::Checkbox("Play On Start", &props.PlayOnStart))
+					component.Source->SetPlayOnStart(props.PlayOnStart);
+
 				if (Gui::Checkbox("Loop", &props.Loop))
 					component.Source->SetLoop(props.Loop);
 

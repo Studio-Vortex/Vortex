@@ -401,6 +401,7 @@ namespace Sparky {
 					out << YAML::Key << "DopplerFactor" << YAML::Value << soundProperties.DopplerFactor;
 					out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
 
+					out << YAML::Key << "PlayOnStart" << YAML::Value << soundProperties.PlayOnStart;
 					out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
 					out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
 					out << YAML::EndMap; // SoundSettings
@@ -940,6 +941,8 @@ namespace Sparky {
 						if (soundProps["Volume"])
 							soundProperties.Volume = soundProps["Volume"].as<float>();
 
+						if (soundProps["PlayOnStart"])
+							soundProperties.PlayOnStart = soundProps["PlayOnStart"].as<bool>();
 						if (soundProps["Spacialized"])
 							soundProperties.Spacialized = soundProps["Spacialized"].as<bool>();
 						if (soundProps["Loop"])

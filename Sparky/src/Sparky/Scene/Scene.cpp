@@ -195,6 +195,22 @@ namespace Sparky {
 
 		OnPhysicsSimulationStart();
 
+		{
+			auto view = m_Registry.view<AudioSourceComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+				const auto& audioProps = audioSource->GetProperties();
+
+				if (audioProps.PlayOnStart)
+				{
+					audioSource->Play();
+				}
+			}
+		}
+
 		// Scripting
 		{
 			ScriptEngine::OnRuntimeStart(this);

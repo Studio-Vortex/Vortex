@@ -155,7 +155,7 @@ namespace Sparky {
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		Math::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 		my = viewportSize.y - my;
 
 		int mouseX = (int)mx;
@@ -836,7 +836,6 @@ namespace Sparky {
 		{
 			// Render 3D Colliders
 			{
-				// Render Box Colliders
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
 					for (auto e : view)
@@ -879,7 +878,6 @@ namespace Sparky {
 					}
 				}
 
-				// Render Circle Colliders
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
 					for (auto e : view)
@@ -887,11 +885,10 @@ namespace Sparky {
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
 						Entity entity{ e, m_ActiveScene.get() };
 
-						Math::vec3 scale = glm::vec3(cc2d.Radius * 2.0f);
+						Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
 						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
 							* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
-							* Math::Rotate(tc.GetRotationEuler().z, Math::vec3(0.0f, 0.0f, 1.0f))
 							* Math::Scale(scale);
 
 						Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);

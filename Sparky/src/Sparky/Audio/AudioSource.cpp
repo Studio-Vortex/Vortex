@@ -127,6 +127,11 @@ namespace Sparky {
 		AudioEngine::SetLoop(&m_Sound, loop);
 	}
 
+    void AudioSource::SetPlayOnStart(bool playOnStart)
+    {
+		m_Properties.PlayOnStart = playOnStart;
+    }
+
 	float AudioSource::GetAmountComplete()
 	{
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;

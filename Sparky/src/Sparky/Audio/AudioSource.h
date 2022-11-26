@@ -27,6 +27,7 @@ namespace Sparky {
 			float DopplerFactor = 1.0f;
 			float Volume = 1.0f;
 
+			bool PlayOnStart = false;
 			bool Loop = false;
 			bool Spacialized = true;
 		};
@@ -58,6 +59,7 @@ namespace Sparky {
 
 		void SetSpacialized(bool spacialized);
 		void SetLoop(bool loop);
+		void SetPlayOnStart(bool playOnStart);
 
 		inline const std::string& GetPath() const { return m_Path; }
 
