@@ -5,6 +5,7 @@
 
 #include "Sparky/Audio/AudioEngine.h"
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Renderer/Font/Font.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Events/KeyEvent.h"
@@ -47,6 +48,7 @@ namespace Sparky {
 		Renderer::Init();
 		AudioEngine::Init();
 		Random::Init();
+		Font::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -62,6 +64,7 @@ namespace Sparky {
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 		AudioEngine::Shutdown();
+		Font::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

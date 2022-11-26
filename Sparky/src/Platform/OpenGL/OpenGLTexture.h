@@ -18,6 +18,7 @@ namespace Sparky {
 
 		const std::string& GetPath() const override { return m_Path; }
 
+		void SetData(const void* data, uint32_t size) override;
 		void SetData(void* data, uint32_t size) override;
 
 		void Bind(uint32_t slot) const override;

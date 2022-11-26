@@ -73,6 +73,12 @@ namespace Sparky {
 			return GetProjectDirectory() / s_ActiveProject->m_Properties.General.AssetDirectory;
 		}
 
+		inline static std::filesystem::path GetCacheDirectory()
+		{
+			SP_CORE_ASSERT(s_ActiveProject, "No active project!");
+			return GetProjectDirectory() / "Cache";
+		}
+
 		// TODO: move to asset manager
 		inline static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)
 		{

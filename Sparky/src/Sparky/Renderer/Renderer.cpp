@@ -6,6 +6,7 @@
 
 #include "Sparky/Asset/AssetRegistry.h"
 #include "Sparky/Renderer/LightSource.h"
+#include "Sparky/Renderer/Font/Font.h"
 
 namespace Sparky {
 
