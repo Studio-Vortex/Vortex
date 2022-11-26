@@ -4,6 +4,7 @@
 #include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Renderer2D.h"
 
+#include "Sparky/Project/Project.h"
 #include "Sparky/Asset/AssetRegistry.h"
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/Font/Font.h"
@@ -287,7 +288,7 @@ namespace Sparky {
 		SharedRef<Shader> shader;
 		SharedRef<Model> model = meshRenderer.Mesh;
 		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap() || s_Data.RenderWithPBROnly || 1; // TODO Rework this
+		bool pbr = (bool)material->GetAlbedoMap() || Project::GetActive()->GetProperties().RendererProps.EnablePBRRenderer; // TODO Rework this
 
 		if (meshRenderer.Reflective)
 		{

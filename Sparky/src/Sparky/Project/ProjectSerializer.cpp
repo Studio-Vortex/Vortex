@@ -33,6 +33,7 @@ namespace Sparky {
 			out << YAML::Key << "RendererProperties" << YAML::BeginMap; // RendererProperties
 			{
 				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
+				out << YAML::Key << "EnablePBRRenderer" << YAML::Value << props.RendererProps.EnablePBRRenderer;
 			}
 			out << YAML::EndMap; // RendererProperties
 
@@ -108,6 +109,7 @@ namespace Sparky {
 		{
 			auto rendererData = projectData["RendererProperties"];
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
+			props.RendererProps.EnablePBRRenderer = rendererData["EnablePBRRenderer"].as<bool>();
 		}
 
 		{

@@ -20,6 +20,7 @@ namespace Sparky {
 
 		struct RendererProperties {
 			bool DisplaySceneIconsInEditor = true;
+			bool EnablePBRRenderer = true;
 		} RendererProps;
 
 		struct PhysicsProperties

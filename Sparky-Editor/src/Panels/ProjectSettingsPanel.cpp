@@ -151,13 +151,10 @@ namespace Sparky {
 						projectProps.RendererProps.DisplaySceneIconsInEditor = displaySceneIcons;
 					}
 
-					static bool pbrOnly = false;
-					if (Gui::Checkbox("Use PBR Shaders", &pbrOnly))
+					static bool enablePBR = projectProps.RendererProps.EnablePBRRenderer;
+					if (Gui::Checkbox("Enable PBR Renderer", &enablePBR))
 					{
-						if (pbrOnly)
-							Renderer::EnablePBR();
-						else
-							Renderer::DisablePBR();
+						projectProps.RendererProps.EnablePBRRenderer = enablePBR;
 					}
 
 					static bool wireframeMode = false;
