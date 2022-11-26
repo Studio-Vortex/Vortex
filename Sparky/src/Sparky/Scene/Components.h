@@ -135,6 +135,12 @@ namespace Sparky {
 
 #pragma region Rendering Components
 
+	// Forward declarations
+	class Skybox;
+	class LightSource;
+	class Model;
+	class ParticleEmitter;
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;
@@ -146,9 +152,6 @@ namespace Sparky {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	// Forward declaration
-	class Skybox;
-
 	struct SkyboxComponent
 	{
 		SharedRef<Skybox> Source = nullptr;
@@ -156,9 +159,6 @@ namespace Sparky {
 		SkyboxComponent() = default;
 		SkyboxComponent(const SkyboxComponent&) = default;
 	};
-
-	// Forward declaration
-	class LightSource;
 
 	struct LightSourceComponent
 	{
@@ -171,9 +171,6 @@ namespace Sparky {
 		LightSourceComponent(LightType type, SharedRef<LightSource> source)
 			: Type(type), Source(source) { }
 	};
-
-	// Forward declaration
-	class Model;
 
 	struct MeshRendererComponent
 	{
@@ -210,15 +207,29 @@ namespace Sparky {
 		CircleRendererComponent(const CircleRendererComponent&) = default;
 	};
 
-	// Forward declaration
-	class ParticleEmitter;
-
 	struct ParticleEmitterComponent
 	{
 		SharedRef<ParticleEmitter> Emitter = nullptr;
 
 		ParticleEmitterComponent() = default;
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
+	};
+
+	struct TextMeshComponent
+	{
+		std::string TextString = "";
+		size_t TextHash = 0;
+
+		// Font
+		Math::vec4 Color = Math::vec4(1.0f);
+		float LineSpacing = 0.0f;
+		float Kerning = 0.0f;
+
+		// Layout
+		float MaxWidth = 10.0f;
+
+		TextMeshComponent() = default;
+		TextMeshComponent(const TextMeshComponent&) = default;
 	};
 
 #pragma endregion
@@ -346,7 +357,6 @@ namespace Sparky {
 		StaticMeshColliderComponent(const StaticMeshColliderComponent&) = default;
 	};
 
-
 	enum class RigidBody2DType { Static = 0, Dynamic, Kinematic };
 
 	struct RigidBody2DComponent
@@ -408,6 +418,9 @@ namespace Sparky {
 
 #pragma region Script Components
 
+	// Forward declaration
+	class ScriptableEntity;
+
 	struct ScriptComponent
 	{
 		std::string ClassName;
@@ -415,9 +428,6 @@ namespace Sparky {
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
 	};
-
-	// Forward declaration
-	class ScriptableEntity;
 
 	struct NativeScriptComponent
 	{
@@ -447,7 +457,7 @@ namespace Sparky {
 		HierarchyComponent, TransformComponent,
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
-		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
+		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent, TextMeshComponent,
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics

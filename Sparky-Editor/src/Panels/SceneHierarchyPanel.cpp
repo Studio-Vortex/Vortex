@@ -1,6 +1,7 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Sparky/Scripting/ScriptEngine.h"
+#include "Sparky/Core/Buffer.h"
 
 #include <imgui_internal.h>
 
@@ -785,6 +786,8 @@ namespace Sparky {
 				DisplayAddComponentPopup<CircleRendererComponent>(componentName);
 			if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<ParticleEmitterComponent>(componentName);
+			if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<TextMeshComponent>(componentName);
 
 			if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<AudioSourceComponent>(componentName);
@@ -1577,6 +1580,22 @@ namespace Sparky {
 
 			if (Gui::Button("Stop"))
 				particleEmitter->Stop();
+		});
+
+		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
+		{
+			char buffer[1024];
+			memset(buffer, 0, sizeof(buffer));
+			if (Gui::InputTextMultiline("Text", buffer, sizeof(buffer)))
+			{
+				component.TextString = std::string(buffer);
+				component.TextHash = std::hash<std::string>()(component.TextString);
+			}
+
+			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
+			Gui::DragFloat("Line Spacing", &component.LineSpacing);
+			Gui::DragFloat("Kerning", &component.Kerning);
+			Gui::DragFloat("Max Width", &component.MaxWidth);
 		});
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)

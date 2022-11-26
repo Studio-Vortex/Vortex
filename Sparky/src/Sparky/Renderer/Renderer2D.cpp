@@ -44,6 +44,17 @@ namespace Sparky
 		int EntityID;
 	};
 
+	struct TextVertex
+	{
+		Math::vec3 Position;
+		Math::vec4 Color;
+		Math::vec2 TexCoord;
+		float TexIndex;
+
+		// Editor-only
+		int EntityID;
+	};
+
 	struct Renderer2DInternalData
 	{
 		static constexpr inline uint32_t MaxQuads = 20'000;
@@ -77,10 +88,17 @@ namespace Sparky
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
 
+		uint32_t TextIndexCount = 0;
+		TextVertex* TextVertexBufferBase = nullptr;
+		TextVertex* TextVertexBufferPtr = nullptr;
+
 		float LineWidth = 1.5f;
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
+
+		std::array<SharedRef<Texture2D>, MaxTextureSlots> FontTextureSlots;
+		uint32_t FontTextureSlotIndex = 0;
 
 		Math::vec4 QuadVertexPositions[4];
 
@@ -269,9 +287,13 @@ namespace Sparky
 		s_Data.CircleIndexCount = 0;
 		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
 
-		// and lines
+		// Lines
 		s_Data.LineVertexCount = 0;
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+
+		// Text
+		s_Data.TextIndexCount = 0;
+		s_Data.TextVertexBufferPtr = s_Data.TextVertexBufferBase;
 
 		// Reset the texture slot index (0 is the default white texture)
 		s_Data.TextureSlotIndex = 1;
@@ -374,6 +396,25 @@ namespace Sparky
 		}
 
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
+
+#if SP_RENDERER_STATISTICS
+		s_Data.Renderer2DStatistics.QuadCount++;
+#endif // SP_RENDERER_STATISTICS
+	}
+
+	void Renderer2D::AddToTextVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, int entityID)
+	{
+		for (size_t i = 0; i < 4; i++)
+		{
+			s_Data.TextVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i]; // Use quad vertex positions
+			s_Data.TextVertexBufferPtr->Color = color;
+			s_Data.TextVertexBufferPtr->TexCoord = textureCoords[i];
+			s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.TextVertexBufferPtr->EntityID = entityID;
+			s_Data.TextVertexBufferPtr++;
+		}
+
+		s_Data.TextIndexCount += INDICES_PER_QUAD;
 
 #if SP_RENDERER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
@@ -947,6 +988,21 @@ namespace Sparky
 		DrawLine(bottomRight, topRight, color, entityID);
 		DrawLine(topRight, topLeft, color, entityID);
 		DrawLine(topLeft, bottomLeft, color, entityID);
+	}
+
+	void Renderer2D::DrawString(const std::string& text, const Math::vec3& position, float maxWidth, const Math::vec4& color)
+	{
+
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color)
+	{
+
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const Math::mat4& transform, float maxWidth, const Math::vec4& color, float lineHeightOffset, float kerningOffset)
+	{
+
 	}
 
 	float Renderer2D::GetLineWidth()

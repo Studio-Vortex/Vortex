@@ -105,6 +105,10 @@ namespace Sparky {
 		// position is the center, size is the full size of the entity
 		static void DrawRect(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
 
+		static void DrawString(const std::string& text, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f));
+		static void DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f));
+		static void DrawString(const std::string& string, const Math::mat4& transform, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f);
+
 		static float GetLineWidth();
 		static void SetLineWidth(float width);
 
@@ -122,6 +126,7 @@ namespace Sparky {
 
 		static void AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID = -1);
 		static void AddToCircleVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID = -1);
+		static void AddToTextVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, int entityID = -1);
 	};
 
 }

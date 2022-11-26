@@ -350,8 +350,8 @@ namespace Sparky {
 			{
 				out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
 
-				auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-				SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+				const auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+				const SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
 
 				ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
 
@@ -368,6 +368,22 @@ namespace Sparky {
 				out << YAML::Key << "VelocityVariation" << YAML::Value << emitterProperties.VelocityVariation;
 
 				out << YAML::EndMap; // ParticleEmitterComponent
+			}
+
+			if (entity.HasComponent<TextMeshComponent>())
+			{
+				out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
+
+				const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+
+				out << YAML::Key << "Color" << YAML::Value << textMeshComponent.Color;
+				out << YAML::Key << "Kerning" << YAML::Value << textMeshComponent.Kerning;
+				out << YAML::Key << "LineSpacing" << YAML::Value << textMeshComponent.LineSpacing;
+				out << YAML::Key << "MaxWidth" << YAML::Value << textMeshComponent.MaxWidth;
+				out << YAML::Key << "TextHash" << YAML::Value << textMeshComponent.TextHash;
+				out << YAML::Key << "TextString" << YAML::Value << textMeshComponent.TextString;
+
+				out << YAML::EndMap; // TextMeshComponent
 			}
 
 			if (entity.HasComponent<AudioSourceComponent>())
@@ -899,6 +915,19 @@ namespace Sparky {
 					emitterProperties.VelocityVariation = particleEmitterComponent["VelocityVariation"].as<Math::vec3>();
 
 					particleEmitter.Emitter = ParticleEmitter::Create(emitterProperties);
+				}
+
+				auto textMeshComponent = entity["TextMeshComponent"];
+				if (textMeshComponent)
+				{
+					auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
+
+					tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
+					tmc.Kerning = textMeshComponent["Kerning"].as<float>();
+					tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
+					tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
+					tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
+					tmc.TextString = textMeshComponent["TextString"].as<std::string>();
 				}
 
 				auto audioSourceComponent = entity["AudioSourceComponent"];
