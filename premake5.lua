@@ -28,6 +28,8 @@ IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
 IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
 IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
+IncludeDir["msdf_atlas_gen"] = "Sparky/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["msdfgen"] = "Sparky/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "Sparky/vendor/PhysX/include"
 IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
@@ -57,6 +59,10 @@ group "External Dependencies"
 	include "Sparky/vendor/Glad"
 	include "Sparky/vendor/imgui"
 	include "Sparky/vendor/yaml-cpp"
+
+	group "External Dependencies/msdf"
+		include "Sparky/vendor/msdf-atlas-gen"
+	group ""
 group ""
 
 
@@ -112,6 +118,8 @@ project "Sparky"
 		"%{IncludeDir.ImGuiColorTextEdit}",
 		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.msdf_atlas_gen}",
+		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
@@ -127,6 +135,7 @@ project "Sparky"
 		"GLFW",
 		"ImGui",
 		"%{Library.mono}",
+		"msdf-atlas-gen",
 		"%{Library.PhysX}",
 		"%{Library.PhysXCharacterKinematic}",
 		"%{Library.PhysXCommon}",
