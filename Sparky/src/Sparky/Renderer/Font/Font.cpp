@@ -38,7 +38,7 @@ namespace Sparky {
 #define DEFAULT_MITER_LIMIT 1.0
 #define LCG_MULTIPLIER 6364136223846793005ull
 #define LCG_INCREMENT 1442695040888963407ull
-#define THREADS 8
+#define THREADS 1
 
 	namespace Utils {
 
@@ -112,15 +112,15 @@ namespace Sparky {
 		header.Height = bitmap.height;
 		CacheFontAtlas(fontName, fontSize, header, bitmap.pixels);
 
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height);
-		texture->SetData(bitmap.pixels, header.Width * header.Height);
+		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		texture->SetData(bitmap.pixels, header.Width * header.Height * 4);
 		return texture;
 	}
 
 	static SharedRef<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
 	{
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height);
-		texture->SetData(pixels, header.Width * header.Height);
+		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		texture->SetData(pixels, header.Width * header.Height * 4);
 		return texture;
 	}
 
@@ -187,7 +187,7 @@ namespace Sparky {
 		} font;
 
 		bool success = font.load(fontInput.fontFilename);
-		SP_CORE_ASSERT(success);
+		SP_CORE_ASSERT(success, "");
 
 		if (fontInput.fontScale <= 0)
 			fontInput.fontScale = 1;
@@ -226,12 +226,12 @@ namespace Sparky {
 			break;
 		}
 
-		SP_CORE_ASSERT(glyphsLoaded >= 0);
-		SP_CORE_TRACE("Loaded geometry of {0} out of {1} glyphs", glyphsLoaded, (int)charset.size());
+		SP_CORE_ASSERT(glyphsLoaded >= 0, "");
+		SP_CORE_TRACE("Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
 		// List missing glyphs
 		if (glyphsLoaded < (int)charset.size())
 		{
-			SP_CORE_WARN("Missing {0} {1}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
+			SP_CORE_WARN("Missing {} {}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
 		}
 
 		if (fontInput.fontName)
@@ -271,7 +271,7 @@ namespace Sparky {
 			}
 		}
 		atlasPacker.getDimensions(config.width, config.height);
-		SP_CORE_ASSERT(config.width > 0 && config.height > 0);
+		SP_CORE_ASSERT(config.width > 0 && config.height > 0, "");
 		config.emSize = atlasPacker.getScale();
 		config.pxRange = atlasPacker.getPixelRange();
 		if (!fixedScale)
@@ -357,7 +357,7 @@ namespace Sparky {
 		return s_DefaultFont;
 	}
 
-	SharedRef<Font> Font::Create(const std::filesystem::path & filepath)
+	SharedRef<Font> Font::Create(const std::filesystem::path& filepath)
 	{
 		return CreateShared<Font>(filepath);
 	}

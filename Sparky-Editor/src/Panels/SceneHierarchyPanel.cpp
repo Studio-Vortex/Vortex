@@ -5,6 +5,8 @@
 
 #include <imgui_internal.h>
 
+#include <codecvt>
+
 namespace Sparky {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
@@ -658,6 +660,21 @@ namespace Sparky {
 				entity.RemoveComponent<TComponent>();
 		}
 	}
+
+	// warning C4996: 'std::codecvt_utf8<char32_t,1114111,(std::codecvt_mode)0>': warning STL4017: std::wbuffer_convert, std::wstring_convert, and the <codecvt> header
+// (containing std::codecvt_mode, std::codecvt_utf8, std::codecvt_utf16, and std::codecvt_utf8_utf16) are deprecated in C++17. (The std::codecvt class template is NOT deprecated.)
+// The C++ Standard doesn't provide equivalent non-deprecated functionality; consider using MultiByteToWideChar() and WideCharToMultiByte() from <Windows.h> instead.
+// You can define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.
+#pragma warning(disable : 4996)
+
+	// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
+	static std::string To_UTF8(const std::u32string& s)
+	{
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+		return conv.to_bytes(s);
+	}
+
+#pragma warning(default : 4996)
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
@@ -1585,7 +1602,7 @@ namespace Sparky {
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
 			char buffer[1024];
-			memset(buffer, 0, sizeof(buffer));
+			memcpy(buffer, component.TextString.c_str(), component.TextString.size());
 			if (Gui::InputTextMultiline("Text", buffer, sizeof(buffer)))
 			{
 				component.TextString = std::string(buffer);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Sparky/Core/Math.h"
 #include "Sparky/Core/UUID.h"
 #include "Sparky/Scene/SceneCamera.h"
 #include "Sparky/Renderer/Texture.h"
@@ -140,6 +139,7 @@ namespace Sparky {
 	class LightSource;
 	class Model;
 	class ParticleEmitter;
+	class Font;
 
 	struct CameraComponent
 	{
@@ -217,6 +217,7 @@ namespace Sparky {
 
 	struct TextMeshComponent
 	{
+		SharedRef<Font> FontAsset = nullptr;
 		std::string TextString = "";
 		size_t TextHash = 0;
 

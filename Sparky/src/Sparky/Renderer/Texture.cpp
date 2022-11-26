@@ -12,12 +12,12 @@
 
 namespace Sparky {
     
-	SharedRef<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	SharedRef<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, bool rgba32f)
     {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     SP_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(width, height);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(width, height, rgba32f);
 #ifdef SP_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // SP_PLATFORM_WINDOWS

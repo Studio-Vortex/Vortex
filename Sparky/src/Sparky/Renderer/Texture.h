@@ -32,7 +32,8 @@ namespace Sparky {
 	class SPARKY_API Texture2D : public Texture
 	{
 	public:
-		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height);
+		// TODO: rework the last parameter
+		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height, bool rgba32f = false);
 		static SharedRef<Texture2D> Create(const std::string& path, bool flipVertical = true);
 	};
 

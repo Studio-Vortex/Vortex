@@ -9,6 +9,7 @@
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/Skybox.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
+#include "Sparky/Renderer/Font/Font.h"
 
 #include "Sparky/Project/Project.h"
 
@@ -376,6 +377,7 @@ namespace Sparky {
 
 				const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 
+				out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
 				out << YAML::Key << "Color" << YAML::Value << textMeshComponent.Color;
 				out << YAML::Key << "Kerning" << YAML::Value << textMeshComponent.Kerning;
 				out << YAML::Key << "LineSpacing" << YAML::Value << textMeshComponent.LineSpacing;
@@ -922,6 +924,7 @@ namespace Sparky {
 				{
 					auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
+					tmc.FontAsset = Font::Create(Project::GetAssetFileSystemPath(textMeshComponent["FontSourcePath"].as<std::string>()));
 					tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
 					tmc.Kerning = textMeshComponent["Kerning"].as<float>();
 					tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();

@@ -66,6 +66,7 @@ namespace Gui = ImGui;
 #include "Sparky/Renderer/Material.h"
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/Skybox.h"
+#include "Sparky/Renderer/Font/Font.h"
 
 #include "Sparky/Renderer/OrthographicCamera.h"
 /// ---------------------------------------------------

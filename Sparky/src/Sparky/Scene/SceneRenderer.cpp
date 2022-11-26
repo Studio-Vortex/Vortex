@@ -86,6 +86,36 @@ namespace Sparky {
 				}
 			}
 
+			// Render Text
+			{
+				auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
+
+				for (auto& e : view)
+				{
+					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
+					Entity entity{ e, scene };
+
+					/*Renderer2D::DrawString(
+						textMeshComponent.TextString,
+						textMeshComponent.FontAsset,
+						scene->GetWorldSpaceTransformMatrix(entity),
+						textMeshComponent.MaxWidth,
+						textMeshComponent.Color,
+						textMeshComponent.LineSpacing,
+						textMeshComponent.Kerning,
+						(int)(entt::entity)e
+					);*/
+
+					Renderer2D::DrawString(
+						textMeshComponent.TextString,
+						scene->GetWorldSpaceTransform(entity).Translation,
+						textMeshComponent.MaxWidth,
+						textMeshComponent.Color,
+						(int)(entt::entity)e
+					);
+				}
+			}
+
 			// Render Scene Icons
 			if (!sceneCamera && Project::GetActive()->GetProperties().RendererProps.DisplaySceneIconsInEditor)
 			{

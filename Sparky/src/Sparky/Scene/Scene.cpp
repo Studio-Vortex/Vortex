@@ -12,6 +12,7 @@
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Asset/AssetRegistry.h"
 #include "Sparky/Scene/SceneRenderer.h"
+#include "Sparky/Renderer/Font/Font.h"
 
 #include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
@@ -601,6 +602,11 @@ namespace Sparky {
 	template <> void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent& component)
 	{
 		component.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
+	}
+
+	template <> void Scene::OnComponentAdded<TextMeshComponent>(Entity entity, TextMeshComponent& component)
+	{
+		component.FontAsset = Font::GetDefaultFont();
 	}
 	
 	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)

@@ -6,12 +6,12 @@
 
 namespace Sparky {
 	
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, bool rgba32f)
 		: m_Width(width), m_Height(height), m_Slot()
 	{
 		SP_PROFILE_FUNCTION();
 
-		m_InternalFormat = GL_RGBA8;
+		m_InternalFormat = rgba32f ? GL_RGBA32F : GL_RGBA8;
 		m_DataFormat = GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
@@ -20,8 +20,10 @@ namespace Sparky {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, rgba32f ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, rgba32f ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+
+		m_IsLoaded = true;
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flipVertical)

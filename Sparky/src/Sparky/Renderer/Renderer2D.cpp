@@ -5,11 +5,16 @@
 #include "Sparky/Renderer/VertexArray.h"
 #include "Sparky/Renderer/Shader.h"
 
+#include "Sparky/Renderer/Font/MSDFData.h"
+
+#include <codecvt>
+
 namespace Sparky
 {
 	static constexpr const char* QUAD_SHADER_PATH   = "Resources/Shaders/Renderer2D_Quad.glsl";
 	static constexpr const char* CIRCLE_SHADER_PATH = "Resources/Shaders/Renderer2D_Circle.glsl";
 	static constexpr const char* LINE_SHADER_PATH   = "Resources/Shaders/Renderer2D_Line.glsl";
+	static constexpr const char* TEXT_SHADER_PATH = "Resources/Shaders/Renderer2D_Text.glsl";
 
 	struct QuadVertex
 	{
@@ -76,6 +81,10 @@ namespace Sparky
 		SharedRef<VertexBuffer> LineVB;
 		SharedRef<Shader> LineShader;
 
+		SharedRef<VertexArray> TextVA;
+		SharedRef<VertexBuffer> TextVB;
+		SharedRef<Shader> TextShader;
+
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
@@ -126,7 +135,6 @@ namespace Sparky
 		});
 
 		s_Data.QuadVA->AddVertexBuffer(s_Data.QuadVB);
-
 		s_Data.QuadVertexBufferBase = new QuadVertex[Renderer2DInternalData::MaxVertices];
 
 		uint32_t* quadIndices = new uint32_t[Renderer2DInternalData::MaxIndices];
@@ -179,6 +187,15 @@ namespace Sparky
 		s_Data.LineVA->AddVertexBuffer(s_Data.LineVB);
 		s_Data.LineVertexBufferBase = new LineVertex[Renderer2DInternalData::MaxVertices];
 
+		s_Data.TextVB = VertexBuffer::Create(Renderer2DInternalData::MaxVertices * sizeof(TextVertex));
+		s_Data.TextVB->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Color"    },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+			{ ShaderDataType::Float,  "a_TexIndex" },
+			{ ShaderDataType::Int,    "a_EntityID" },
+		});
+
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -198,6 +215,8 @@ namespace Sparky
 
 		s_Data.CircleShader = Shader::Create(CIRCLE_SHADER_PATH);
 		s_Data.LineShader = Shader::Create(LINE_SHADER_PATH);
+		s_Data.TextShader = Shader::Create(TEXT_SHADER_PATH);
+		s_Data.TextShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
 		// Create a quad's set of vertices at the origin in ndc
 		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -255,6 +274,9 @@ namespace Sparky
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
 
+		s_Data.TextShader->Enable();
+		s_Data.TextShader->SetMat4("u_ViewProjection", viewProjection);
+
 		StartBatch();
 	}
 
@@ -272,6 +294,9 @@ namespace Sparky
 		
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		s_Data.TextShader->Enable();
+		s_Data.TextShader->SetMat4("u_ViewProjection", viewProjection);
 
 		StartBatch();
 	}
@@ -297,6 +322,8 @@ namespace Sparky
 
 		// Reset the texture slot index (0 is the default white texture)
 		s_Data.TextureSlotIndex = 1;
+		// Reset font texture slot
+		s_Data.FontTextureSlotIndex = 0;
 	}
 
 	void Renderer2D::NextBatch()
@@ -360,6 +387,24 @@ namespace Sparky
 			RenderCommand::DrawLines(s_Data.LineVA, s_Data.LineVertexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
+
+		/// Text
+		if (s_Data.TextIndexCount)
+		{
+			// Calculate the size of the vertex buffer
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.TextVertexBufferPtr - (uint8_t*)s_Data.TextVertexBufferBase);
+			// Copy data to GPU buffer
+			s_Data.TextVB->SetData(s_Data.TextVertexBufferBase, dataSize);
+
+			// Bind all textures used in the batch
+			for (uint32_t i = 0; i < s_Data.FontTextureSlotIndex; i++)
+				s_Data.FontTextureSlots[i]->Bind(i);
+
+			// Bind a shader and make a draw call
+			s_Data.TextShader->Enable();
+			RenderCommand::DrawIndexed(s_Data.TextVA, s_Data.TextIndexCount);
+			s_Data.Renderer2DStatistics.DrawCalls++;
+		}
 	}
 
 	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID)
@@ -396,25 +441,6 @@ namespace Sparky
 		}
 
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
-
-#if SP_RENDERER_STATISTICS
-		s_Data.Renderer2DStatistics.QuadCount++;
-#endif // SP_RENDERER_STATISTICS
-	}
-
-	void Renderer2D::AddToTextVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, int entityID)
-	{
-		for (size_t i = 0; i < 4; i++)
-		{
-			s_Data.TextVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i]; // Use quad vertex positions
-			s_Data.TextVertexBufferPtr->Color = color;
-			s_Data.TextVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.TextVertexBufferPtr->EntityID = entityID;
-			s_Data.TextVertexBufferPtr++;
-		}
-
-		s_Data.TextIndexCount += INDICES_PER_QUAD;
 
 #if SP_RENDERER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
@@ -637,8 +663,8 @@ namespace Sparky
 		const float textureIndex = 0.0f; // White Texture
 		const Math::vec2 textureScale = Math::vec2(1.0f);
 
-		glm::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
-		glm::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
+		Math::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
+		Math::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * (s_Data.QuadVertexPositions[0].x) * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
 		s_Data.QuadVertexBufferPtr->Color = color;
@@ -697,8 +723,8 @@ namespace Sparky
 
 		const Math::vec2 textureScale = Math::vec2(1.0f);
 
-		glm::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
-		glm::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
+		Math::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
+		Math::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[0].x * size.x + camUpWS * s_Data.QuadVertexPositions[0].y * size.y;
 		s_Data.QuadVertexBufferPtr->Color = color;
@@ -990,19 +1016,204 @@ namespace Sparky
 		DrawLine(topLeft, bottomLeft, color, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& text, const Math::vec3& position, float maxWidth, const Math::vec4& color)
+	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
 	{
-
+		DrawString(string, Font::GetDefaultFont(), position, maxWidth, color, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color)
+	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
 	{
-
+		DrawString(string, font, Math::Identity() * Math::Translate(position), maxWidth, color, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const Math::mat4& transform, float maxWidth, const Math::vec4& color, float lineHeightOffset, float kerningOffset)
+	static bool NextLine(int index, const std::vector<int>& lines)
 	{
+		for (int line : lines)
+		{
+			if (line == index)
+				return true;
+		}
 
+		return false;
+	}
+
+	// warning C4996: 'std::codecvt_utf8<char32_t,1114111,(std::codecvt_mode)0>': warning STL4017: std::wbuffer_convert, std::wstring_convert, and the <codecvt> header
+// (containing std::codecvt_mode, std::codecvt_utf8, std::codecvt_utf16, and std::codecvt_utf8_utf16) are deprecated in C++17. (The std::codecvt class template is NOT deprecated.)
+// The C++ Standard doesn't provide equivalent non-deprecated functionality; consider using MultiByteToWideChar() and WideCharToMultiByte() from <Windows.h> instead.
+// You can define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.
+#pragma warning(disable : 4996)
+
+	// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
+	static std::u32string To_UTF32(const std::string& s)
+	{
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+		return conv.from_bytes(s);
+	}
+
+#pragma warning(default : 4996)
+
+	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color, float lineHeightOffset, float kerningOffset, int entityID)
+	{
+		if (string.empty())
+			return;
+
+		float textureIndex = 0.0f;
+
+		// This is not ideal (WIP)
+		std::u32string utf32string = To_UTF32(string);
+
+		SharedRef<Texture2D> fontAtlas = font->GetFontAtlas();
+		SP_CORE_ASSERT(fontAtlas, "Font Atlas was null pointer!");
+
+		if (!fontAtlas->IsLoaded())
+			return;
+
+		for (uint32_t i = 0; i < s_Data.FontTextureSlotIndex; i++)
+		{
+			if (*s_Data.FontTextureSlots[i].get() == *fontAtlas.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.FontTextureSlotIndex;
+			s_Data.FontTextureSlots[s_Data.FontTextureSlotIndex] = fontAtlas;
+			s_Data.FontTextureSlotIndex++;
+		}
+
+		auto& fontGeometry = font->GetMSDFData()->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+
+		std::vector<int> nextLines;
+		{
+			double x = 0.0;
+			double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+			double y = -fsScale * metrics.ascenderY;
+			int lastSpace = -1;
+			for (int i = 0; i < utf32string.size(); i++)
+			{
+				char32_t character = utf32string[i];
+				if (character == '\n')
+				{
+					x = 0;
+					y -= fsScale * metrics.lineHeight + lineHeightOffset;
+					continue;
+				}
+
+				auto glyph = fontGeometry.getGlyph(character);
+				if (!glyph)
+					glyph = fontGeometry.getGlyph('?');
+				if (!glyph)
+					continue;
+
+				if (character != ' ')
+				{
+					// Calc geo
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+					Math::vec2 quadMin((float)pl, (float)pb);
+					Math::vec2 quadMax((float)pr, (float)pt);
+
+					quadMin *= fsScale;
+					quadMax *= fsScale;
+					quadMin += Math::vec2(x, y);
+					quadMax += Math::vec2(x, y);
+
+					if (quadMax.x > maxWidth && lastSpace != -1)
+					{
+						i = lastSpace;
+						nextLines.emplace_back(lastSpace);
+						lastSpace = -1;
+						x = 0;
+						y -= fsScale * metrics.lineHeight + lineHeightOffset;
+					}
+				}
+				else
+				{
+					lastSpace = i;
+				}
+
+				double advance = glyph->getAdvance();
+				fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+				x += fsScale * advance + kerningOffset;
+			}
+
+			{
+				double x = 0.0;
+				double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+				double y = 0.0;// -fsScale * metrics.ascenderY;
+				for (int i = 0; i < utf32string.size(); i++)
+				{
+					char32_t character = utf32string[i];
+					if (character == '\n' || NextLine(i, nextLines))
+					{
+						x = 0;
+						y -= fsScale * metrics.lineHeight + lineHeightOffset;
+						continue;
+					}
+
+					auto glyph = fontGeometry.getGlyph(character);
+					if (!glyph)
+						glyph = fontGeometry.getGlyph('?');
+					if (!glyph)
+						continue;
+
+					double l, b, r, t;
+					glyph->getQuadAtlasBounds(l, b, r, t);
+
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+					pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+					pl += x, pb += y, pr += x, pt += y;
+
+					double texelWidth = 1. / fontAtlas->GetWidth();
+					double texelHeight = 1. / fontAtlas->GetHeight();
+					l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pb, 0.0f, 1.0f);
+					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->TexCoord = { l, b };
+					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+					s_Data.TextVertexBufferPtr->EntityID = entityID;
+					s_Data.TextVertexBufferPtr++;
+
+					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pt, 0.0f, 1.0f);
+					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->TexCoord = { l, t };
+					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+					s_Data.TextVertexBufferPtr->EntityID = entityID;
+					s_Data.TextVertexBufferPtr++;
+
+					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pt, 0.0f, 1.0f);
+					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->TexCoord = { r, t };
+					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+					s_Data.TextVertexBufferPtr->EntityID = entityID;
+					s_Data.TextVertexBufferPtr++;
+
+					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pb, 0.0f, 1.0f);
+					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->TexCoord = { r, b };
+					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+					s_Data.TextVertexBufferPtr->EntityID = entityID;
+					s_Data.TextVertexBufferPtr++;
+
+					s_Data.TextIndexCount += 6;
+
+					double advance = glyph->getAdvance();
+					fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+					x += fsScale * advance + kerningOffset;
+
+#if SP_RENDERER_STATISTICS
+					s_Data.Renderer2DStatistics.QuadCount++;
+#endif // SP_RENDERER_STATISTICS
+				}
+			}
+		}
 	}
 
 	float Renderer2D::GetLineWidth()
@@ -1043,6 +1254,7 @@ namespace Sparky
 		shaders.push_back(s_Data.QuadShader);
 		shaders.push_back(s_Data.CircleShader);
 		shaders.push_back(s_Data.LineShader);
+		shaders.push_back(s_Data.TextShader);
 		return shaders;
 	}
 
