@@ -19,3 +19,6 @@
 [submodule "Sparky/vendor/Box2D"]
 	path = Sparky/vendor/Box2D
 	url = https://github.com/TheCherno/box2d.git
+[submodule "Sparky/vendor/msdf-atlas-gen"]
+	path = Sparky/vendor/msdf-atlas-gen
+	url = https://github.com/TheCherno/msdf-atlas-gen.git

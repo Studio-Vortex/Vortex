@@ -844,11 +844,13 @@ namespace Sparky {
 						Entity entity{ e, m_ActiveScene.get() };
 
 						Math::AABB aabb = {
-							-bc.HalfSize - bc.Offset,
-							+bc.HalfSize + bc.Offset
+							- Math::vec3(0.5f),
+							+ Math::vec3(0.5f)
 						};
 
-						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+							* Math::Translate(bc.Offset)
+							* Math::Scale(bc.HalfSize * 2.0f);
 
 						Renderer2D::DrawAABB(aabb, transform, projectProps.PhysicsProps.Physics3DColliderColor);
 					}
