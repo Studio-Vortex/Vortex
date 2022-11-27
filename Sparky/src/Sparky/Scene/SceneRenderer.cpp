@@ -73,8 +73,11 @@ namespace Sparky {
 
 					const auto& particles = particleEmitter->GetParticles();
 
-					for (auto& particle : particles)
+					// Render the particles in reverse to blend correctly
+					for (auto it = particles.crbegin(); it != particles.crend(); it++)
 					{
+						const ParticleEmitter::Particle& particle = *it;
+
 						if (!particle.Active)
 							continue;
 
