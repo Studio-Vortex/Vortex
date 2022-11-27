@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Sparky/Core/Base.h"
 #include "Sparky/Project/Project.h"
 

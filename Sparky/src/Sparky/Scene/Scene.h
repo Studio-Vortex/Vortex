@@ -62,8 +62,18 @@ namespace Sparky {
 		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
 		TransformComponent GetWorldSpaceTransform(Entity entity);
 
+		template <typename TComponent>
+		inline void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
+		{
+			if (m_Registry.all_of<TComponent>(src))
+			{
+				auto& srcComponent = m_Registry.get<TComponent>(src);
+				dstRegistry.emplace_or_replace<TComponent>(dst, srcComponent);
+			}
+		}
+
 		template <typename... TComponent>
-		auto GetAllEntitiesWith()
+		inline auto GetAllEntitiesWith()
 		{
 			return m_Registry.view<TComponent...>();
 		}
@@ -83,6 +93,7 @@ namespace Sparky {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		uint32_t m_StepFrames = 0;
+
 		bool m_IsRunning = false;
 		bool m_IsPaused = false;
 		bool m_DebugMode = false; // Editor-only
@@ -91,6 +102,8 @@ namespace Sparky {
 
 	private:
 		friend class Entity;
+		friend class Prefab;
+		friend class PrefabSerializer;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};

@@ -10,6 +10,9 @@ namespace Sparky {
 
 #pragma region Core Components
 
+	// Forward declarations
+	class Prefab;
+
 	struct IDComponent
 	{
 		UUID ID;
@@ -128,6 +131,16 @@ namespace Sparky {
 			Rotation = quat;
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
+	};
+
+	struct PrefabComponent
+	{
+		SharedRef<Prefab> EntityPrefab = nullptr;
+		UUID PrefabUUID = 0;
+		UUID EntityUUID = 0;
+
+		PrefabComponent() = default;
+		PrefabComponent(const PrefabComponent&) = default;
 	};
 
 #pragma endregion

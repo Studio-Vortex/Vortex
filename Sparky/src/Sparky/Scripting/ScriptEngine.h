@@ -187,6 +187,8 @@ namespace Sparky {
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
 
+		static void DuplicateScriptInstance(Entity entity, Entity targetEntity);
+
 		static SharedRef<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
 		static SharedRef<ScriptClass> GetEntityClass(const std::string& name);

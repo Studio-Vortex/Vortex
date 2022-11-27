@@ -9,6 +9,7 @@
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
 #include "Sparky/Scene/ScriptableEntity.h"
+#include "Sparky/Scene/Prefab.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Asset/AssetRegistry.h"
 #include "Sparky/Scene/SceneRenderer.h"
@@ -19,18 +20,14 @@
 
 namespace Sparky {
 
-	template<typename... Component>
-	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
-	{
-		CopyComponent<Component...>(dst, src, enttMap);
-	}
+	namespace Utils {
 
-	template <typename... TComponent>
-	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
-	{
-		([&]()
+		template <typename... TComponent>
+		static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 		{
-			auto view = src.view<TComponent>();
+			([&]()
+				{
+					auto view = src.view<TComponent>();
 
 			for (auto srcEntity : view)
 			{
@@ -43,66 +40,74 @@ namespace Sparky {
 				auto& srcComponent = src.get<TComponent>(srcEntity);
 				dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
 			}
-		}(), ...);
-	}
+				}(), ...);
+		}
 
-	template<typename... TComponent>
-	static void CopyComponentIfExists(Entity dst, Entity src)
-	{
-		([&]()
+		template<typename... Component>
+		static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 		{
-			if (src.HasComponent<TComponent>())
-			{
-				dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+			CopyComponent<Component...>(dst, src, enttMap);
+		}
 
-				// Copy Resources
+		template<typename... TComponent>
+		static void CopyComponentIfExists(Entity dst, Entity src)
+		{
+			([&]()
 				{
-					if (typeid(TComponent).name() == typeid(MeshRendererComponent).name())
+					if (src.HasComponent<TComponent>())
 					{
-						const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
-						const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
-						Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
+						dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+
+						// Copy Resources
+						{
+							if (typeid(TComponent).name() == typeid(MeshRendererComponent).name())
+							{
+								const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
+								const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
+								Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
+							}
+
+							if (typeid(TComponent).name() == typeid(LightSourceComponent).name())
+							{
+								const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
+								const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
+								LightSource::Copy(destinationLightSource, sourceLightSource);
+							}
+
+							if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
+							{
+								const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
+								const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
+								AudioSource::Copy(destinationAudioSource, sourceAudioSource);
+							}
+
+							if (typeid(TComponent).name() == typeid(ParticleEmitterComponent).name())
+							{
+								const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
+								const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
+								ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
+							}
+
+							// If we copy a script component, we should probably copy all of the script field values as well
+							if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
+							{
+								const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
+								auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+
+								for (const auto& [name, field] : sourceScriptFieldMap)
+									destinationScriptFieldMap[name] = field;
+							}
+						}
 					}
+				}(), ...);
+		}
 
-					if (typeid(TComponent).name() == typeid(LightSourceComponent).name())
-					{
-						const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
-						const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
-						LightSource::Copy(destinationLightSource, sourceLightSource);
-					}
+		template<typename... TComponent>
+		static void CopyComponentIfExists(ComponentGroup<TComponent...>, Entity dst, Entity src)
+		{
+			CopyComponentIfExists<TComponent...>(dst, src);
+		}
 
-					if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
-					{
-						const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
-						const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
-						AudioSource::Copy(destinationAudioSource, sourceAudioSource);
-					}
-
-					if (typeid(TComponent).name() == typeid(ParticleEmitterComponent).name())
-					{
-						const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
-						const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
-						ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
-					}
-
-					// If we copy a script component, we should probably copy all of the script field values as well
-					if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
-					{
-						const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
-						auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
-
-						for (const auto& [name, field] : sourceScriptFieldMap)
-							destinationScriptFieldMap[name] = field;
-					}
-				}
-			}
-		}(), ...);
-	}
-
-	template<typename... TComponent>
-	static void CopyComponentIfExists(ComponentGroup<TComponent...>, Entity dst, Entity src)
-	{
-		CopyComponentIfExists<TComponent...>(dst, src);
 	}
 
 	static SceneRenderer s_SceneRenderer;
@@ -129,7 +134,7 @@ namespace Sparky {
 		}
 		
 		// Copy components (except IDComponent and TagComponent)
-		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return destination;
 	}
@@ -476,8 +481,28 @@ namespace Sparky {
 		std::string marker = src.GetMarker();
 		Entity dest = CreateEntity(name, marker);
 
+		// TODO: handle prefabs
+		/*if (src.HasComponent<PrefabComponent>())
+		{
+
+		}*/
+
 		// Copy components (except IDComponent and TagComponent)
-		CopyComponentIfExists(AllComponents{}, dest, src);
+		Utils::CopyComponentIfExists(AllComponents{}, dest, src);
+
+		if (src.HasParent())
+			dest.SetParent(src.GetParentUUID());
+
+		const auto& srcChildren = src.Children();
+		for (auto& childID : srcChildren)
+		{
+			Entity childEntity = TryGetEntityWithUUID(childID);
+			SP_CORE_ASSERT(childEntity, "Child ID was Invalid! --- Should never happen");
+			Entity childDuplicate = DuplicateEntity(childEntity);
+
+			childDuplicate.SetParent(childEntity.GetParentUUID());
+			dest.Children().push_back(childDuplicate.GetUUID());
+		}
 
 		return dest;
 	}
@@ -629,9 +654,11 @@ namespace Sparky {
 	
 	template <> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) { }
 
-	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
-	
 	template <> void Scene::OnComponentAdded<HierarchyComponent>(Entity entity, HierarchyComponent& component) { }
+	
+	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<PrefabComponent>(Entity entity, PrefabComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{

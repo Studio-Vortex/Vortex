@@ -52,7 +52,7 @@ namespace Sparky {
 		return std::string();
 	}
 
-	void FileSystem::OpenFileExplorer(const char* directoryName)
+	void FileSystem::OpenInFileExplorer(const char* directoryName)
 	{
 		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
 	}

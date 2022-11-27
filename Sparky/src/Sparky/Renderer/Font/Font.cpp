@@ -38,7 +38,7 @@ namespace Sparky {
 #define DEFAULT_MITER_LIMIT 1.0
 #define LCG_MULTIPLIER 6364136223846793005ull
 #define LCG_INCREMENT 1442695040888963407ull
-#define THREADS 1
+#define THREADS 8
 
 	namespace Utils {
 
@@ -95,6 +95,8 @@ namespace Sparky {
 
 		stream.write((char*)&header, sizeof(AtlasHeader));
 		stream.write((char*)pixels, header.Width * header.Height * sizeof(float) * 4);
+
+		SP_CORE_INFO("Font Atlas successfully cached: {}", filepath.string());
 	}
 
 	template <typename T, typename S, int N, GeneratorFunction<S, N> GEN_FN>

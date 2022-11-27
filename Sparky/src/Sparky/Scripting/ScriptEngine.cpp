@@ -195,6 +195,7 @@ namespace Sparky {
 			Application::Get().SubmitToMainThread([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
+				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
 
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(250ms);
@@ -319,7 +320,7 @@ namespace Sparky {
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
-		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
 		return true;
@@ -497,6 +498,22 @@ namespace Sparky {
 	{
 		return s_Data->CoreAssemblyImage;
 	}
+
+    void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
+    {
+		if (!entity.HasComponent<ScriptComponent>() || !targetEntity.HasComponent<ScriptComponent>())
+			return;
+
+		const auto& srcScriptComponent = entity.GetComponent<ScriptComponent>();
+		auto& dstSriptComponent = targetEntity.GetComponent<ScriptComponent>();
+
+		if (srcScriptComponent.ClassName != dstSriptComponent.ClassName)
+		{
+			auto entityClasses = ScriptEngine::GetClasses();
+
+			
+		}
+    }
 
 	void ScriptEngine::LoadAssemblyClasses(bool displayClassNames)
 	{

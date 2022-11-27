@@ -168,7 +168,7 @@ namespace Sparky {
 		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource,const Math::mat4& cameraTransform, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraTransform, int entityID)
 	{
 		switch (lightSource.Type)
 		{

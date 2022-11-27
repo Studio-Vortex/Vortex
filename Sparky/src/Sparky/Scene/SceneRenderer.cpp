@@ -95,7 +95,7 @@ namespace Sparky {
 					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 					Entity entity{ e, scene };
 
-					/*Renderer2D::DrawString(
+					Renderer2D::DrawString(
 						textMeshComponent.TextString,
 						textMeshComponent.FontAsset,
 						scene->GetWorldSpaceTransformMatrix(entity),
@@ -103,14 +103,6 @@ namespace Sparky {
 						textMeshComponent.Color,
 						textMeshComponent.LineSpacing,
 						textMeshComponent.Kerning,
-						(int)(entt::entity)e
-					);*/
-
-					Renderer2D::DrawString(
-						textMeshComponent.TextString,
-						scene->GetWorldSpaceTransform(entity).Translation,
-						textMeshComponent.MaxWidth,
-						textMeshComponent.Color,
 						(int)(entt::entity)e
 					);
 				}

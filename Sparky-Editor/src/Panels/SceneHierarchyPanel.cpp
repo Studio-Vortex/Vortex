@@ -430,7 +430,7 @@ namespace Sparky {
 		if (entity.Children().empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool isPrefab = entity;
+		bool isPrefab = entity.HasComponent<PrefabComponent>();
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
 

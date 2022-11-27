@@ -100,7 +100,7 @@ namespace Sparky {
 		SP_CORE_ASSERT(size == m_Width * m_Height * bytesPerPixel, "Data must be entire Texture!");
 #endif // SP_ENABLE_ASSERTS
 
-		glTextureSubImage2D(m_RendererID, NULL, NULL, NULL, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, (const void*)data);
+		glTextureSubImage2D(m_RendererID, NULL, NULL, NULL, m_Width, m_Height, m_DataFormat, GL_FLOAT, (const void*)data);
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)

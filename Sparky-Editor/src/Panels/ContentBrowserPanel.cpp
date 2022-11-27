@@ -272,9 +272,9 @@ public class Untitled : Entity
 				if (isCSharpFile)
 					Gui::Separator();
 
-				if (Gui::MenuItem("Open in File Explorer"))
+				if (Gui::MenuItem("Open in Explorer"))
 				{
-					FileSystem::OpenFileExplorer(m_CurrentDirectory.string().c_str());
+					FileSystem::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();
@@ -489,9 +489,10 @@ public class Untitled : Entity
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
-				UUID uuid = *(UUID*)payload->Data;
-				SP_CORE_INFO("UUID: {}", uuid);
+				Entity& droppedEntity = *(Entity*)payload->Data;
+				SP_CORE_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
 				// Todo Create a new prefab here from the entity's uuid
+				SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
 			}
 			Gui::EndDragDropTarget();
 		}
@@ -500,6 +501,11 @@ public class Untitled : Entity
 		Gui::Separator();
 		Gui::Spacing();
 
+		RenderSlider(thumbnailSize, padding);
+	}
+
+	void ContentBrowserPanel::RenderSlider(float& thumbnailSize, float& padding)
+	{
 		Gui::PushItemWidth(-1);
 		Gui::SliderFloat("##Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
 		Gui::PopItemWidth();

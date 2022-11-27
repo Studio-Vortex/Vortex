@@ -130,6 +130,8 @@ namespace Sparky {
 	private:
 		entt::entity m_EntityID = entt::null;
 		Scene* m_Scene = nullptr;
+
+		friend class Prefab;
 	};
 
 }
