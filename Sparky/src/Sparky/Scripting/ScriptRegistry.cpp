@@ -2005,7 +2005,9 @@ namespace Sparky {
 
 	static void Input_GetMousePosition(Math::vec2* outPosition)
 	{
-		*outPosition = Input::GetMousePosition();
+		Math::vec2 mousePos = Input::GetMousePosition();
+		mousePos.y *= -1.0f; // This makes more sense
+		*outPosition = mousePos;
 	}
 	
 	static bool Input_IsGamepadButtonDown(Gamepad button)
