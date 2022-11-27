@@ -217,12 +217,14 @@ void main()
 	// Gamma correct
 	color = pow(color, vec3(1.0 / 2.2));
 
-	o_Color = vec4(color, 1.0);
+	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureScale).a : 1.0);
+
+	o_Color = vec4(color, alpha);
 	o_EntityID = fragmentIn.EntityID;
 }
 
 // Towbridge-Reitz normal distribuion function
-// Uses Disney's reparameterization of aplha = roughness^2
+// Uses Disney's reparameterization of alpha = roughness^2
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float alpha = roughness * roughness;
