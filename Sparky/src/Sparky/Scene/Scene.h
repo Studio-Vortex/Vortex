@@ -18,10 +18,14 @@ namespace Sparky {
 		~Scene() = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
+		static void CreateDefaultEntities(const SharedRef<Scene>& context);
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool isEntityInstance = false, bool excludeChildren = false);
+
+		void ParentEntity(Entity entity, Entity parent);
+		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();

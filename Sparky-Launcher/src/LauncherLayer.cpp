@@ -1,6 +1,7 @@
 #include "LauncherLayer.h"
 
 #include <Sparky/Utils/PlatformUtils.h>
+#include <Sparky/Scene/SceneSerializer.h>
 
 namespace Sparky {
 
@@ -176,16 +177,11 @@ namespace Sparky {
 			Gui::Text("Directory");
 			Gui::NextColumn();
 			Gui::PushItemWidth(-1);
-			if (Gui::InputText("##Project Name", projectNameBuffer, SP_MAX_PROJECT_NAME_LENGTH))
-			{
+			Gui::InputText("##Project Name", projectNameBuffer, SP_MAX_PROJECT_NAME_LENGTH);
 
-			}
 			Gui::PushItemWidth(-1);
 			static char projectDirectoryBuffer[SP_MAX_PROJECT_NAME_LENGTH]{ 0 };
-			if (Gui::InputText("##Directory", projectDirectoryBuffer, SP_MAX_PROJECT_NAME_LENGTH))
-			{
-
-			}
+			Gui::InputText("##Directory", projectDirectoryBuffer, SP_MAX_PROJECT_NAME_LENGTH);
 
 			Gui::Columns(1);
 
@@ -200,14 +196,46 @@ namespace Sparky {
 				Gui::CloseCurrentPopup();
 			}
 
-			bool projectReady = strlen(projectNameBuffer) != 0 && std::filesystem::exists(projectDirectoryBuffer);
+			bool projectReady = strlen(projectNameBuffer) != 0 && strlen(projectDirectoryBuffer) != 0;
 
 			Gui::SameLine();
 			Gui::SetCursorPosX((Gui::GetWindowWidth() * 0.5f) - (buttonSize.x * 0.5f));
 			Gui::BeginDisabled(!projectReady);
 			if (Gui::Button("Create Project", buttonSize))
 			{
+				if (!std::filesystem::exists(projectDirectoryBuffer))
+					std::filesystem::create_directories(projectDirectoryBuffer);
 
+				SharedRef<Project> project = Project::New();
+				auto& projectProps = project->GetProperties();
+				projectProps.General.Name = std::string(projectNameBuffer);
+				projectProps.General.AssetDirectory = "Assets";
+				projectProps.General.StartScene = "Scenes/Untitled.sparky";
+				projectProps.General.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", projectNameBuffer);
+
+				auto projectFilename = std::format("{}.sproject", projectProps.General.Name);
+				m_ProjectPath = projectDirectoryBuffer / std::filesystem::path(projectFilename);
+				std::filesystem::path projectDirectoryPath = m_ProjectPath.parent_path();
+				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
+				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
+				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
+
+				// premake script
+				//FileSystem::LaunchApplication("Resources/HelperScripts/GeneratePremakeScript.bat", ((projectDirectoryBuffer / projectProps.General.AssetDirectory) / "Scripts").string().c_str());
+
+				// build project dll
+				//FileSystem::LaunchApplication("Resources/HelperScripts/BuildSolution.bat", (projectDirectoryBuffer / projectProps.General.ScriptBinaryPath).string().c_str());
+
+				SharedRef<Scene> startScene = Scene::Create();
+				Scene::CreateDefaultEntities(startScene);
+				SceneSerializer serializer(startScene);
+				serializer.Serialize((projectDirectoryBuffer / std::filesystem::path("Assets/Scenes/Untitled.sparky")).string());
+
+				Project::SaveActive(m_ProjectPath);
+
+				LaunchEditor();
+
+				Gui::CloseCurrentPopup();
 			}
 			Gui::EndDisabled();
 
@@ -217,7 +245,8 @@ namespace Sparky {
 
 	void LauncherLayer::LaunchEditor()
 	{
-		FileSystem::LaunchApplication(Application::Get().GetEditorAppPath().c_str(), m_ProjectPath.string().c_str());
+		std::string editorPath = Application::Get().GetEditorBinaryPath();
+		FileSystem::LaunchApplication(editorPath.c_str(), m_ProjectPath.string().c_str());
 	}
 
 }

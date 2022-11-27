@@ -33,6 +33,7 @@ namespace Sparky {
 		props.EnableGUI = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
+		props.WorkingDirectory = "C:/dev/Sparky Engine";
 		props.CommandLineArgs = args;
 
 		return new SparkyRuntime(props);

@@ -766,7 +766,8 @@ namespace Sparky {
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
 	{
 		Project::SaveActive(path);
-		FileSystem::LaunchApplication(Application::Get().GetRuntimeAppPath().c_str(), path.string().c_str());
+		std::string runtimePath = Application::Get().GetRuntimeBinaryPath();
+		FileSystem::LaunchApplication(runtimePath.c_str(), path.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()
@@ -1208,25 +1209,6 @@ namespace Sparky {
 		return false;
 	}
 
-	void EditorLayer::CreateStartingEntities()
-	{
-		// Starting Entities
-		Entity startingCube = m_ActiveScene->CreateEntity("Cube");
-		startingCube.AddComponent<MeshRendererComponent>();
-
-		Entity startingPointLight = m_ActiveScene->CreateEntity("Point Light");
-		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
-
-		Entity startingCamera = m_ActiveScene->CreateEntity("Camera");
-		startingCamera.AddComponent<AudioListenerComponent>();
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
-		cameraTransform.SetRotationEuler(Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f));
-	}
-
 	void EditorLayer::CreateNewProject()
 	{
 		Project::New();
@@ -1290,7 +1272,7 @@ namespace Sparky {
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
 
-		CreateStartingEntities();
+		Scene::CreateDefaultEntities(m_ActiveScene);
 	}
 
 	void EditorLayer::OpenExistingScene()

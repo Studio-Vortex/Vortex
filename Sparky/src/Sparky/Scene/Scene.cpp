@@ -134,6 +134,25 @@ namespace Sparky {
 		return destination;
 	}
 
+	void Scene::CreateDefaultEntities(const SharedRef<Scene>& context)
+	{
+		// Starting Entities
+		Entity startingCube = context->CreateEntity("Cube");
+		startingCube.AddComponent<MeshRendererComponent>();
+
+		Entity startingPointLight = context->CreateEntity("Point Light");
+		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+
+		Entity startingCamera = context->CreateEntity("Camera");
+		startingCamera.AddComponent<AudioListenerComponent>();
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
+		cameraTransform.SetRotationEuler(Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f));
+	}
+
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
 	{
 		return CreateEntityWithUUID(UUID(), name, marker);
@@ -188,6 +207,48 @@ namespace Sparky {
 		// Remove the entity from our internal map
 		m_EntityMap.erase(it->first);
 	}
+
+    void Scene::ParentEntity(Entity entity, Entity parent)
+    {
+		if (parent.IsDescendantOf(entity))
+		{
+			UnparentEntity(parent);
+
+			Entity newParent = TryGetEntityWithUUID(entity.GetParentUUID());
+			if (newParent)
+			{
+				UnparentEntity(entity);
+				ParentEntity(parent, newParent);
+			}
+		}
+		else
+		{
+			Entity previousParent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+			if (previousParent)
+				UnparentEntity(entity);
+		}
+
+		entity.SetParent(parent.GetUUID());
+		parent.Children().push_back(entity.GetUUID());
+
+		ConvertToLocalSpace(entity);
+    }
+
+    void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
+    {
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		if (!parent)
+			return;
+
+		auto& parentChildren = parent.Children();
+		parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), entity.GetUUID()), parentChildren.end());
+
+		if (convertToWorldSpace)
+			ConvertToWorldSpace(entity);
+
+		entity.SetParent(0);
+    }
 
 	void Scene::OnRuntimeStart()
 	{

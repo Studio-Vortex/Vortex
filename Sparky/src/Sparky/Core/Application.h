@@ -63,8 +63,8 @@ namespace Sparky {
 		void SubmitToMainThread(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
-		const std::string& GetEditorAppPath() const { return "Resources/Bin/Sparky-Editor.exe"; }
-		const std::string& GetRuntimeAppPath() const { return "Resources/Bin/Sparky-Runtime.exe"; }
+		std::string GetEditorBinaryPath() const { return "Sparky-Editor.exe"; }
+		std::string GetRuntimeBinaryPath() const { return "Sparky-Runtime.exe"; }
 
 	private:
 		void Run();

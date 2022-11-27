@@ -37,8 +37,6 @@ namespace Sparky {
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
 
-		void CreateStartingEntities();
-
 		// Project
 
 		void CreateNewProject();

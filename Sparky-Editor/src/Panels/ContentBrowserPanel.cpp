@@ -171,10 +171,21 @@ public class Untitled : Entity
 		Gui::EndDisabled();
 
 		Gui::SameLine();
-		Gui::Text(m_CurrentDirectory.string().c_str());
+		if (std::filesystem::equivalent(m_CurrentDirectory, m_BaseDirectory))
+		{
+			SharedRef<Project> activeProject = Project::GetActive();
+			std::filesystem::path projectAssetDirectoryWithSlashes = activeProject->GetAssetDirectory();
+			size_t lastSlashPos = projectAssetDirectoryWithSlashes.string().find_last_of("/\\") + 1;
+			std::string projectAssetDirectory = projectAssetDirectoryWithSlashes.string().substr(lastSlashPos, projectAssetDirectoryWithSlashes.string().size());
+			Gui::Text(projectAssetDirectory.c_str());
+		}
+		else
+		{
+			Gui::Text(std::filesystem::relative(m_CurrentDirectory, m_BaseDirectory).string().c_str());
+		}
 
 		// Search Bar + Filtering
-		float inputTextSize = Gui::GetWindowWidth() / 2.0f - Gui::CalcTextSize(m_CurrentDirectory.string().c_str()).x;
+		float inputTextSize = Gui::GetWindowWidth() / 3.0f;
 		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
 		Gui::SetNextItemWidth(inputTextSize);
 		bool isSearching = Gui::InputTextWithHint("##AssetSearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
@@ -288,7 +299,8 @@ public class Untitled : Entity
 				Math::vec2 applicationWindowSize = Application::Get().GetWindow().GetSize();
 				ImVec2 confirmWindowSize = { 500, 200 };
 				Gui::SetNextWindowSize(confirmWindowSize, ImGuiCond_Always);
-				Gui::SetNextWindowPos({ (applicationWindowSize.x / 2.0f) - (confirmWindowSize.x / 2.0f), (applicationWindowSize.y / 2.0f) - (confirmWindowSize.y / 2.0f) }, ImGuiCond_Always);
+				ImVec2 center = Gui::GetMainViewport()->GetCenter();
+				Gui::SetNextWindowPos({center.x - (confirmWindowSize.x * 0.5f), center.y - (confirmWindowSize.y * 0.5f)}, ImGuiCond_Always);
 			}
 			
 			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))

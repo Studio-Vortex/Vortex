@@ -95,17 +95,8 @@ namespace Sparky {
 
 					if (payload)
 					{
-						UUID droppedHandle = *((UUID*)payload->Data);
-						Entity e = m_ContextScene->TryGetEntityWithUUID(droppedHandle);
-						Entity previousParent = m_ContextScene->TryGetEntityWithUUID(e.GetParentUUID());
-
-						if (previousParent)
-						{
-							auto& children = previousParent.Children();
-							children.erase(std::remove(children.begin(), children.end(), droppedHandle), children.end());
-						}
-
-						e.SetParent(0);
+						Entity& entity = *(Entity*)payload->Data;
+						m_ContextScene->UnparentEntity(entity);
 					}
 
 					ImGui::EndDragDropTarget();
@@ -475,9 +466,8 @@ namespace Sparky {
 
 		if (Gui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{
-			UUID entityUUID = entity.GetUUID();
 			Gui::Text(entity.GetName().c_str());
-			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &entityUUID, sizeof(UUID));
+			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &entity, sizeof(Entity));
 			Gui::EndDragDropSource();
 		}
 
@@ -487,22 +477,8 @@ namespace Sparky {
 
 			if (payload)
 			{
-				UUID droppedHandle = *((UUID*)payload->Data);
-				Entity e = m_ContextScene->TryGetEntityWithUUID(droppedHandle);
-
-				if (!entity.IsDescendantOf(e))
-				{
-					// Remove from previous parent
-					Entity previousParent = m_ContextScene->TryGetEntityWithUUID(e.GetParentUUID());
-					if (previousParent)
-					{
-						auto& parentChildren = previousParent.Children();
-						parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), droppedHandle), parentChildren.end());
-					}
-
-					e.SetParent(entity.GetUUID());
-					entity.Children().push_back(droppedHandle);
-				}
+				Entity& droppedEntity = *((Entity*)payload->Data);
+				m_ContextScene->ParentEntity(droppedEntity, entity);
 			}
 
 			Gui::EndDragDropTarget();
