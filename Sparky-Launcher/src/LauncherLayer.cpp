@@ -86,7 +86,7 @@ namespace Sparky {
 
 		i = 1;
 
-		for (auto& directoryEntry : std::filesystem::recursive_directory_iterator("."))
+		for (auto& directoryEntry : std::filesystem::recursive_directory_iterator("Projects"))
 		{
 			if (directoryEntry.path().string().find(".sproject") == std::string::npos)
 			{
@@ -217,7 +217,7 @@ namespace Sparky {
 
 	void LauncherLayer::LaunchEditor()
 	{
-		FileSystem::LaunchApplication("build\\Release\\Sparky-Editor.exe", m_ProjectPath.string().c_str());
+		FileSystem::LaunchApplication(Application::Get().GetEditorAppPath().c_str(), m_ProjectPath.string().c_str());
 	}
 
 }

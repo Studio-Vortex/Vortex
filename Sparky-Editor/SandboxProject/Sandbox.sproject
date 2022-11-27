@@ -3,7 +3,7 @@ Project:
     Name: Sandbox
     AssetDirectory: "Assets"
     ScriptBinaryPath: "Scripts/Binaries/Sandbox.dll"
-    StartScene: "Scenes/FPSDemo.sparky"
+    StartScene: "Scenes/TestScene.sparky"
     EnableMonoDebugging: false
   RendererProperties:
     DisplaySceneIconsInEditor: true

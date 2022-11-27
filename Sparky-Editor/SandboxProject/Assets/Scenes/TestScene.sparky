@@ -1,0 +1,67 @@
+Scene: TestScene
+Entities:
+  - Entity: 11319143211367438798
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4, 3, 4]
+      Rotation: [-0.436332315, -0.785398185, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 9959079268116580181
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2, 4, 4]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-2, 4, 4]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 16658707295825405519
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: ..\..\..\Resources\Meshes\Default\Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false

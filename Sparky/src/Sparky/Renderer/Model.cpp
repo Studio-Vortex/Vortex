@@ -6,6 +6,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include "Sparky/Core/Application.h"
+
 #include <tiny_gltf.h>
 
 namespace Sparky {

@@ -276,7 +276,8 @@ namespace Sparky {
 				if (meshRendererComponent.Mesh)
 				{
 					SharedRef<Model> model = meshRendererComponent.Mesh;
-					out << YAML::Key << "MeshSource" << YAML::Value << std::filesystem::relative(model->GetPath(), projectAssetDirectory).string();
+					const auto& meshSourcePath = model->GetPath();
+					out << YAML::Key << "MeshSource" << YAML::Value << (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : std::filesystem::relative(meshSourcePath, projectAssetDirectory).string());
 
 					SharedRef<Material> material = model->GetMaterial();
 

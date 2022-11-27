@@ -210,11 +210,6 @@ namespace Sparky {
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
 
-		FileSystem::LaunchApplication("CopyShaders.bat", "");
-
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(250ms);
-
 		CreateShader(m_Filepath);
 	}
 

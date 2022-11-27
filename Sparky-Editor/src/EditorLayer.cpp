@@ -766,7 +766,7 @@ namespace Sparky {
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
 	{
 		Project::SaveActive(path);
-		FileSystem::LaunchApplication("runtime\\Release\\Sparky-Runtime.exe", path.string().c_str());
+		FileSystem::LaunchApplication(Application::Get().GetRuntimeAppPath().c_str(), path.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()
