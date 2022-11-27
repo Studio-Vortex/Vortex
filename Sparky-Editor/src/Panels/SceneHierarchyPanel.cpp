@@ -430,7 +430,14 @@ namespace Sparky {
 		if (entity.Children().empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool opened = Gui::TreeNodeEx((void*)(uint32_t)entity, flags, tag.c_str());
+		bool isPrefab = entity;
+		if (isPrefab)
+			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
+
+		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)entity, flags, tag.c_str());
+
+		if (isPrefab)
+			Gui::PopStyleColor();
 
 		if (Gui::IsItemClicked())
 		{

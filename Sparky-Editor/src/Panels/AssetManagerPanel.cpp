@@ -65,30 +65,21 @@ namespace Sparky {
 					shader->Reload();
 			}
 
-			if (Gui::BeginTable("Shaders", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+			for (auto& shader : shaders)
 			{
-				Gui::TableSetupColumn("Shader");
-				Gui::TableSetupColumn("Recompile");
-				Gui::TableHeadersRow();
+				Gui::Columns(2);
 
-				uint32_t offset = 85;
-				Gui::TableNextColumn();
-				for (const auto& shaderName : shaderNames)
+				const std::string& shaderName = shader->GetName();
+				Gui::Text(shaderName.c_str());
+				Gui::NextColumn();
+				std::string buttonName = "Reload##" + shaderName;
+
+				if (Gui::Button(buttonName.c_str()))
 				{
-					Gui::SetCursorPosY((float)offset);
-					Gui::Text(shaderName.c_str());
-					offset += 28;
+					shader->Reload();
 				}
 
-				Gui::TableNextColumn();
-				for (auto& shader : shaders)
-				{
-					if (shader->GetName() == "Renderer_PBR")
-						if (Gui::Button("Reload"))
-							shader->Reload();
-				}
-
-				Gui::EndTable();
+				Gui::Columns(1);
 			}
 
 			Gui::End();
