@@ -138,7 +138,7 @@ namespace Sparky {
 	{
 		entity = contextScene->CreateEntity(name);
 		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
-		meshRenderer.Type = static_cast<MeshRendererComponent::MeshType>(defaultMesh);
+		meshRenderer.Type = static_cast<MeshType>(defaultMesh);
 		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), (int)(entt::entity)entity);
 		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 	}
@@ -1058,9 +1058,9 @@ namespace Sparky {
 					if (Gui::Selectable(meshTypes[i], isSelected))
 					{
 						currentMeshType = meshTypes[i];
-						component.Type = static_cast<MeshRendererComponent::MeshType>(i);
+						component.Type = static_cast<MeshType>(i);
 
-						if (component.Type != MeshRendererComponent::MeshType::Custom)
+						if (component.Type != MeshType::Custom)
 							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), (int)(entt::entity)entity);
 						else
 							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), (int)(entt::entity)entity);
@@ -1096,7 +1096,7 @@ namespace Sparky {
 					if (modelFilepath.filename().extension() == ".obj")
 					{
 						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), (int)(entt::entity)entity);
-						component.Type = MeshRendererComponent::MeshType::Custom;
+						component.Type = MeshType::Custom;
 					}
 					else
 						SP_CORE_WARN("Could not load model file, not a '.obj' - {}", modelFilepath.filename().string());

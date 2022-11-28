@@ -255,7 +255,11 @@
 
 	public class MeshRenderer : Component
 	{
-		public MeshType Type;
+		public MeshType Type
+		{
+			get => InternalCalls.MeshRendererComponent_GetMeshType(Entity.ID);
+			set => InternalCalls.MeshRendererComponent_SetMeshType(Entity.ID, value);
+		}
 
 		public Vector2 Scale
 		{
@@ -271,13 +275,11 @@
 			}
 		}
 
-		public Material Material
+		public Material GetMaterial()
 		{
-			get
-			{
-				InternalCalls.MeshRendererComponent_GetMaterial(Entity.ID, out Material material);
-				return material;
-			}
+			InternalCalls.MeshRendererComponent_GetMaterial(Entity.ID, out Material result);
+			result.Entity = Entity;
+			return result;
 		}
 	}
 

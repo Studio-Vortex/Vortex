@@ -70,7 +70,7 @@ namespace Sparky {
 		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
 
-		s_Data.SkyboxMesh = Model::Create(MeshRendererComponent::MeshType::Cube);
+		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
 
 		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
 		s_Data.PointLightIcon = Texture2D::Create(POINT_LIGHT_ICON_PATH);

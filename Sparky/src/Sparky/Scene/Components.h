@@ -185,9 +185,10 @@ namespace Sparky {
 			: Type(type), Source(source) { }
 	};
 
+	enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
+
 	struct MeshRendererComponent
 	{
-		enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
 		MeshType Type = MeshType::Cube;
 		SharedRef<Model> Mesh = nullptr;
 		Math::vec2 Scale = Math::vec2(1.0f);

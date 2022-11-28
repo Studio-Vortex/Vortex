@@ -143,7 +143,7 @@ namespace Sparky {
 		LoadModelFromFile(m_Filepath, transform, entityID);
 	}
 
-	Model::Model(MeshRendererComponent::MeshType meshType)
+	Model::Model(MeshType meshType)
 		: m_MaterialInstance(nullptr)
 	{
 		Mesh mesh = Utils::LoadMeshFromOBJFile(DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], Math::Identity());
@@ -290,7 +290,7 @@ namespace Sparky {
 		return CreateShared<Model>(defaultMesh, transform, entityID);
 	}
 
-	SharedRef<Model> Model::Create(MeshRendererComponent::MeshType meshType)
+	SharedRef<Model> Model::Create(MeshType meshType)
 	{
 		return CreateShared<Model>(meshType);
 	}

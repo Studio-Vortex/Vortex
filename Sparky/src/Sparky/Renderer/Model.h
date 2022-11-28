@@ -79,7 +79,7 @@ namespace Sparky {
 		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
 		Model(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
-		Model(MeshRendererComponent::MeshType meshType);
+		Model(MeshType meshType);
 		~Model() = default;
 
 		void OnUpdate(int entityID = -1, const Math::vec2& scale = Math::vec2(1.0f));
@@ -94,7 +94,7 @@ namespace Sparky {
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
-		static SharedRef<Model> Create(MeshRendererComponent::MeshType meshType);
+		static SharedRef<Model> Create(MeshType meshType);
 
 	private:
 		void LoadModelFromFile(const std::string& filepath, const TransformComponent& transform, int entityID);

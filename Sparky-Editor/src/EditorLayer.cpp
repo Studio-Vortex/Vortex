@@ -117,7 +117,8 @@ namespace Sparky {
 				if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
 				{
 					// TODO: REMOVE HARDCODED PATH
-					OpenScene(std::filesystem::path(std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded)));
+					auto scenePath = std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded);
+					OpenScene(Project::GetProjectDirectory() / scenePath);
 					OnScenePlay();
 					ScriptRegistry::ResetSceneToBeLoaded();
 				}
@@ -501,7 +502,7 @@ namespace Sparky {
 						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
 
 						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform(), (int)(entt::entity)m_HoveredEntity);
-						meshRenderer.Type = MeshRendererComponent::MeshType::Custom;
+						meshRenderer.Type = MeshType::Custom;
 					}
 				}
 				else if (filePath.extension().string() == ".sparky")

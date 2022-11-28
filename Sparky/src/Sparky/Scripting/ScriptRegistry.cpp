@@ -679,6 +679,31 @@ namespace Sparky {
 		Math::vec3 albedo;
 	};
 
+	static MeshType MeshRendererComponent_GetMeshType(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<MeshRendererComponent>().Type;
+	}
+
+	static void MeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		if (meshType != MeshType::Custom)
+		{
+			MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+			meshRenderer.Type = meshType;
+			meshRenderer.Mesh = Model::Create(Model::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], MaterialInstance::Create(), entity.GetTransform(), (int)(entt::entity)entity);
+		}
+	}
+
 	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2408,6 +2433,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
 
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMeshType);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMaterial);

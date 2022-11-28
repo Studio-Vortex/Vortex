@@ -193,6 +193,12 @@ namespace Sparky {
 		#region MeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static MeshType MeshRendererComponent_GetMeshType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -57,37 +57,37 @@ namespace Sparky {
 			return LightSourceComponent::LightType::Directional;
 		}
 
-		static std::string MeshRendererMeshTypeToString(MeshRendererComponent::MeshType meshType)
+		static std::string MeshTypeToString(MeshType meshType)
 		{
 			switch (meshType)
 			{
-				case MeshRendererComponent::MeshType::Cube:     return "Cube";
-				case MeshRendererComponent::MeshType::Sphere:   return "Sphere";
-				case MeshRendererComponent::MeshType::Capsule:  return "Capsule";
-				case MeshRendererComponent::MeshType::Cone:     return "Cone";
-				case MeshRendererComponent::MeshType::Cylinder: return "Cylinder";
-				case MeshRendererComponent::MeshType::Plane:    return "Plane";
-				case MeshRendererComponent::MeshType::Torus:    return "Torus";
-				case MeshRendererComponent::MeshType::Custom:   return "Custom";
+				case MeshType::Cube:     return "Cube";
+				case MeshType::Sphere:   return "Sphere";
+				case MeshType::Capsule:  return "Capsule";
+				case MeshType::Cone:     return "Cone";
+				case MeshType::Cylinder: return "Cylinder";
+				case MeshType::Plane:    return "Plane";
+				case MeshType::Torus:    return "Torus";
+				case MeshType::Custom:   return "Custom";
 			}
 
 			SP_CORE_ASSERT(false, "Unknown Mesh Type!");
 			return {};
 		}
 
-		static MeshRendererComponent::MeshType MeshRendererMeshTypeFromString(const std::string& meshTypeString)
+		static MeshType MeshTypeFromString(const std::string& meshTypeString)
 		{
-			if (meshTypeString == "Cube")     return MeshRendererComponent::MeshType::Cube;
-			if (meshTypeString == "Sphere")   return MeshRendererComponent::MeshType::Sphere;
-			if (meshTypeString == "Capsule")  return MeshRendererComponent::MeshType::Capsule;
-			if (meshTypeString == "Cone")     return MeshRendererComponent::MeshType::Cone;
-			if (meshTypeString == "Cylinder") return MeshRendererComponent::MeshType::Cylinder;
-			if (meshTypeString == "Plane")    return MeshRendererComponent::MeshType::Plane;
-			if (meshTypeString == "Torus")    return MeshRendererComponent::MeshType::Torus;
-			if (meshTypeString == "Custom")   return MeshRendererComponent::MeshType::Custom;
+			if (meshTypeString == "Cube")     return MeshType::Cube;
+			if (meshTypeString == "Sphere")   return MeshType::Sphere;
+			if (meshTypeString == "Capsule")  return MeshType::Capsule;
+			if (meshTypeString == "Cone")     return MeshType::Cone;
+			if (meshTypeString == "Cylinder") return MeshType::Cylinder;
+			if (meshTypeString == "Plane")    return MeshType::Plane;
+			if (meshTypeString == "Torus")    return MeshType::Torus;
+			if (meshTypeString == "Custom")   return MeshType::Custom;
 
 			SP_CORE_ASSERT(false, "Unknown Mesh Type!");
-			return MeshRendererComponent::MeshType::Cube;
+			return MeshType::Cube;
 		}
 
 		static std::string RigidBody2DBodyTypeToString(RigidBody2DType bodyType)
@@ -345,7 +345,7 @@ namespace Sparky {
 
 			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-			out << YAML::Key << "MeshType" << YAML::Value << Utils::MeshRendererMeshTypeToString(meshRendererComponent.Type);
+			out << YAML::Key << "MeshType" << YAML::Value << Utils::MeshTypeToString(meshRendererComponent.Type);
 
 			if (meshRendererComponent.Mesh)
 			{
@@ -834,7 +834,7 @@ namespace Sparky {
 			{
 				auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
 
-				meshRendererComponent.Type = Utils::MeshRendererMeshTypeFromString(meshComponent["MeshType"].as<std::string>());
+				meshRendererComponent.Type = Utils::MeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
 				if (meshComponent["MeshSource"])
 				{
