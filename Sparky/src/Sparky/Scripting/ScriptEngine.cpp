@@ -436,6 +436,11 @@ namespace Sparky {
 		it->second->InvokeOnGui();
 	}
 
+	ScriptClass ScriptEngine::GetCoreEntityClass()
+	{
+		return s_Data->EntityClass;
+	}
+
 	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
 		auto it = s_Data->EntityInstances.find(uuid);

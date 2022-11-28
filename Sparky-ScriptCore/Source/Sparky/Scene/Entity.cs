@@ -95,6 +95,10 @@ namespace Sparky {
 			return new Entity(entityID);
 		}
 
+		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
+
+		public Entity GetChild(uint index) => new Entity(InternalCalls.Entity_GetChild(ID, index));
+
 		public bool AddChild(Entity child)
 		{
 			return InternalCalls.Entity_AddChild(ID, child.ID);

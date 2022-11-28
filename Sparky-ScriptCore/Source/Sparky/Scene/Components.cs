@@ -270,6 +270,15 @@
 				InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
 			}
 		}
+
+		public Material Material
+		{
+			get
+			{
+				InternalCalls.MeshRendererComponent_GetMaterial(Entity.ID, out Material material);
+				return material;
+			}
+		}
 	}
 
 	public class SpriteRenderer: Component

@@ -13,20 +13,36 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			if (Input.IsKeyDown(KeyCode.W))
-			{
-				transform.Translate(Vector3.Forward * deltaTime);
-			}
+			ProcessMovement();
+			EmitParticles();
+		}
 
+		void ProcessMovement()
+		{
+			Vector3 velocity = Vector3.Zero;
+
+			if (Input.IsKeyDown(KeyCode.W))
+				velocity += Vector3.Forward;
+			else if (Input.IsKeyDown(KeyCode.S))
+				velocity += Vector3.Back;
+
+			if (Input.IsKeyDown(KeyCode.A))
+				velocity += Vector3.Left;
+			else if (Input.IsKeyDown(KeyCode.D))
+				velocity += Vector3.Right;
+
+			if (Input.IsKeyDown(KeyCode.LeftShift))
+				velocity *= 5;
+
+			transform.Translate(velocity * Time.DeltaTime);
+		}
+
+		void EmitParticles()
+		{
 			if (Input.IsMouseButtonDown(MouseButton.Left))
-			{
 				particles.Start();
-				particles.Offset = new Vector3(Input.GetMousePosition() / 200.0f, 0);
-			}
 			else
-			{
 				particles.Stop();
-			}
 		}
 	}
 

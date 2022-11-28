@@ -19,6 +19,7 @@
 #include "Sparky/Renderer/Renderer2D.h"
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/ParticleEmitter.h"
+#include "Sparky/Renderer/Model.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Core/Log.h"
@@ -224,6 +225,68 @@ namespace Sparky {
 		SP_CORE_ASSERT(s_EntityRemoveComponentFuncs.find(managedType) != s_EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
 
 		s_EntityRemoveComponentFuncs.at(managedType)(entity);
+	}
+
+	static MonoArray* Entity_GetChildren(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& children = entity.Children();
+
+		MonoClass* coreEntityClass =  ScriptEngine::GetCoreEntityClass().GetMonoClass();
+		SP_CORE_ASSERT(coreEntityClass, "Invalid Entity Class!");
+
+		MonoArray* result = mono_array_new(mono_domain_get(), coreEntityClass, children.size());
+
+		for (uint32_t i = 0; i < children.size(); i++)
+		{
+			uintptr_t length = mono_array_length(result);
+
+			if (i >= length)
+			{
+				SP_CORE_WARN("Index out of bounds in C# array!");
+				return nullptr;
+			}
+
+			MonoClass* arrayClass = mono_object_get_class((MonoObject*)result);
+			MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+			int32_t elementSize = mono_array_element_size(arrayClass);
+			MonoType* elementType = mono_class_get_type(elementClass);
+
+			if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
+			{
+				MonoObject* boxed = mono_object_new(mono_domain_get(), elementClass);
+				mono_array_setref(result, (uintptr_t)i, boxed);
+			}
+			else
+			{
+				char* dst = mono_array_addr_with_size(result, elementSize, i);
+				auto child = contextScene->TryGetEntityWithUUID(children[i]);
+				memcpy(dst, &child, elementSize);
+			}
+		}
+
+		return result;
+	}
+
+	static uint64_t Entity_GetChild(UUID entityUUID, uint32_t index)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& children = entity.Children();
+		if (index < children.size())
+		{
+			SP_CORE_ASSERT(, "Index out of bounds!");
+			return 0;
+		}
+
+		return (uint64_t)children[index];
 	}
 
 	static MonoString* Entity_GetTag(UUID entityUUID)
@@ -611,6 +674,11 @@ namespace Sparky {
 
 #pragma region Mesh Renderer Component
 
+	struct MaterialObject
+	{
+		Math::vec3 albedo;
+	};
+
 	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -629,6 +697,43 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
+	}
+
+	static void MeshRendererComponent_GetMaterial(UUID entityUUID, MaterialObject* outMaterial)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
+		*outMaterial = MaterialObject{ materialInstance->GetAlbedo() };
+	}
+
+#pragma endregion
+
+#pragma region Material
+	
+	static void Material_GetAlbedo(UUID entityUUID, Math::vec3* outAlbedo)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
+		*outAlbedo = materialInstance->GetAlbedo();
+	}
+
+	static void Material_SetAlbedo(UUID entityUUID, Math::vec3* albedo)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
+		materialInstance->SetAlbedo(*albedo);
 	}
 
 #pragma endregion
@@ -2264,6 +2369,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_AddComponent);
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);
 		SP_ADD_INTERNAL_CALL(Entity_RemoveComponent);
+		SP_ADD_INTERNAL_CALL(Entity_GetChildren);
+		SP_ADD_INTERNAL_CALL(Entity_GetChild);
 		SP_ADD_INTERNAL_CALL(Entity_GetTag);
 		SP_ADD_INTERNAL_CALL(Entity_GetMarker);
 		SP_ADD_INTERNAL_CALL(Entity_CreateWithName);
@@ -2303,6 +2410,10 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMaterial);
+
+		SP_ADD_INTERNAL_CALL(Material_GetAlbedo);
+		SP_ADD_INTERNAL_CALL(Material_SetAlbedo);
 
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);

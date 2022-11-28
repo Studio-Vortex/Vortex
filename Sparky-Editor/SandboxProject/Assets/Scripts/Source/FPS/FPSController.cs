@@ -29,6 +29,18 @@ namespace Sandbox
 			m_TimeBetweenShot = TimeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
+
+			Entity container = FindEntityByName("Container");
+
+			Entity[] children = container.Children;
+			/*foreach (Entity child in children)
+			{
+				MeshRenderer meshRenderer = child.GetComponent<MeshRenderer>();
+				float x = RandomDevice.RangedFloat(0, 1);
+				float y = RandomDevice.RangedFloat(0, 1);
+				float z = RandomDevice.RangedFloat(0, 1);
+				meshRenderer.Material.Albedo = new Vector3(x, y, z);
+			}*/
 		}
 
 		protected override void OnUpdate(float delta)

@@ -72,6 +72,12 @@ namespace Sparky {
 		internal extern static void Entity_RemoveComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static Entity[] Entity_GetChildren(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_GetChild(ulong entityID, uint index);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetTag(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -191,6 +197,19 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_GetMaterial(ulong entityID, out Material result);
+
+		#endregion
+		
+		#region Material
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_GetAlbedo(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetAlbedo(ulong entityID, ref Vector3 albedo);
 
 		#endregion
 

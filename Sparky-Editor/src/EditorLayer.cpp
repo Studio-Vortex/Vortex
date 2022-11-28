@@ -1361,6 +1361,8 @@ namespace Sparky {
 		m_ActiveScene->OnRuntimeStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		OnNoGizmoSelected();
 	}
 
 	void EditorLayer::OnScenePause()
@@ -1514,17 +1516,20 @@ namespace Sparky {
 
 	void EditorLayer::OnTranslationToolSelected()
 	{
-		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		if (m_SceneState == SceneState::Edit)
+			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	void EditorLayer::OnRotationToolSelected()
 	{
-		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+		if (m_SceneState == SceneState::Edit)
+			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 	}
 
 	void EditorLayer::OnScaleToolSelected()
 	{
-		m_GizmoType = ImGuizmo::OPERATION::SCALE;
+		if (m_SceneState == SceneState::Edit)
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
 
 }

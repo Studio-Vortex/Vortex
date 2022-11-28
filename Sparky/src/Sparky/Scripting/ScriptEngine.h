@@ -80,6 +80,8 @@ namespace Sparky {
 
 		inline std::map<std::string, ScriptField> GetFields() { return m_Fields; }
 
+		inline MonoClass* GetMonoClass() const { return m_MonoClass; }
+
 	private:
 		std::string m_ClassNamespace;
 		std::string m_ClassName;
@@ -183,6 +185,8 @@ namespace Sparky {
 		static void OnDestroyEntity(Entity entity);
 		static void OnCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
+
+		static ScriptClass GetCoreEntityClass();
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
