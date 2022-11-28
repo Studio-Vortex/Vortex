@@ -381,7 +381,7 @@ namespace Sparky {
 
 		{
 			Entity primaryCameraEntity = GetPrimaryCameraEntity();
-			
+
 			if (primaryCameraEntity)
 			{
 				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
@@ -391,12 +391,12 @@ namespace Sparky {
 				// Set Clear color
 				RenderCommand::SetClearColor(cameraComponent.ClearColor);
 			}
-		}
 
-		// If there is a primary camera in the scene we should render from the camera's point of view
-		if (primarySceneCamera != nullptr)
-		{
-			s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
+			// If there is a primary camera in the scene we should render from the camera's point of view
+			if (primarySceneCamera != nullptr)
+			{
+				s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
+			}
 		}
 
 		// Update Components

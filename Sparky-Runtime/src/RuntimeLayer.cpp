@@ -54,7 +54,8 @@ namespace Sparky {
 
 		if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
 		{
-			OpenScene(std::filesystem::path(std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded)));
+			auto scenePath = std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded);
+			OpenScene(Project::GetProjectDirectory() / scenePath);
 			ScriptRegistry::ResetSceneToBeLoaded();
 		}
 

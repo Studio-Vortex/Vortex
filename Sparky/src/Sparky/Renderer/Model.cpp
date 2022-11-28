@@ -43,7 +43,7 @@ namespace Sparky {
 				
 				float sx = deltaU1, sy = deltaU2;
 				float tx = deltaV1, ty = deltaV2;
-				float handedness = ((tx * sy - ty * sx) < 0.0f) ? 1.0f : -1.0f;
+				float handedness = ((tx * sy - ty * sx) < 0.0f) ? -1.0f : 1.0f;
 				Math::vec4 t4(tangent, handedness);
 				vertices[i0].Tangent = t4;
 				vertices[i1].Tangent = t4;

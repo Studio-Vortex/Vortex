@@ -187,11 +187,11 @@ void main()
 		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
 
 		float NdotV = max(dot(N, V), 0.0);
-		float NdotL = max(dot(N, L), 0.0000001);
+		float NdotL = max(dot(N, L), 0.0);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL;
-		vec3 specular = numerator / denominator;
+		float denominator = 4.0 * NdotV * NdotL + 0.0001;
+		vec3 specular = numerator / denominator; // prevent division by 0
 
 		// kS is equal to Fresnel
 		vec3 kS = F;

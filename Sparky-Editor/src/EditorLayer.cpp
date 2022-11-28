@@ -116,7 +116,6 @@ namespace Sparky {
 			{
 				if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
 				{
-					// TODO: REMOVE HARDCODED PATH
 					auto scenePath = std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded);
 					OpenScene(Project::GetProjectDirectory() / scenePath);
 					OnScenePlay();

@@ -6,13 +6,13 @@ namespace Sandbox
 
 	public class FPSController : Entity
 	{
-		public float MaxRoll_Up = 60f;
-		public float MaxRoll_Down = -60f;
-		public float TimeBetweenShots = 1f;
-		public float BulletSpeed = 50f;
-		public Vector3 WalkSpeed = new Vector3(4f, 0f, 4f);
-		public Vector3 RunSpeed = new Vector3(10f, 0f, 10f);
-		public Vector3 RotationSpeed = new Vector3(100f, 100f, 0f);
+		public float maxLookUp = 60f;
+		public float maxLookDown = -60f;
+		public float timeBetweenShots = 1f;
+		public float gunPower = 50f;
+		public Vector3 walkSpeed = new Vector3(4f, 0f, 4f);
+		public Vector3 runSpeed = new Vector3(10f, 0f, 10f);
+		public Vector3 rotationSpeed = new Vector3(100f, 100f, 0f);
 
 		float m_TimeBetweenShot;
 		Vector3 m_Velocity;
@@ -26,13 +26,13 @@ namespace Sandbox
 		protected override void OnCreate()
 		{
 			Input.ShowMouseCursor = false;
-			m_TimeBetweenShot = TimeBetweenShots;
+			m_TimeBetweenShot = timeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 
-			Entity container = FindEntityByName("Container");
+			/*Entity container = FindEntityByName("Container");
 
-			Entity[] children = container.Children;
+			Entity[] children = container.Children;*/
 			/*foreach (Entity child in children)
 			{
 				MeshRenderer meshRenderer = child.GetComponent<MeshRenderer>();
@@ -55,13 +55,14 @@ namespace Sandbox
 			float rightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
 			if (rightTrigger > 0.0f && m_TimeBetweenShot <= 0.0f)
 			{
+				PlayEffects();
 				FireBullet();
 			}
 
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
+			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? runSpeed : walkSpeed;
 
 			m_Velocity *= speed * delta;
-			m_Rotation *= RotationSpeed * delta;
+			m_Rotation *= rotationSpeed * delta;
 
 			transform.Translation += m_Velocity;
 			transform.Rotation += m_Rotation;
@@ -69,7 +70,7 @@ namespace Sandbox
 
 		void ProcessMovement()
 		{
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
+			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? runSpeed : walkSpeed;
 
 			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
 				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
@@ -100,19 +101,28 @@ namespace Sandbox
 			if (rightAxisY < -ControllerDeadzone || rightAxisY > ControllerDeadzone)
 				m_Rotation.X = rightAxisY;
 
-			if (transform.Rotation.X >= MaxRoll_Up)
+			if (transform.Rotation.X >= maxLookUp)
 			{
-				float roll = Math.Min(MaxRoll_Up, transform.Rotation.X);
+				float roll = Math.Min(maxLookUp, transform.Rotation.X);
 				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
-			if (transform.Rotation.X <= MaxRoll_Down)
+			if (transform.Rotation.X <= maxLookDown)
 			{
-				float roll = Math.Max(MaxRoll_Down, transform.Rotation.X);
+				float roll = Math.Max(maxLookDown, transform.Rotation.X);
 				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 		}
 
-		Entity FireBullet()
+		void PlayEffects()
+		{
+			gunshotSound.Play();
+
+			muzzleBlast.Velocity = transform.Forward + transform.Up;
+			muzzleBlast.Offset = transform.Forward * 2.0f;
+			muzzleBlast.Start();
+		}
+
+		void FireBullet()
 		{
 			Entity bullet = new Entity("Bullet");
 			bullet.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
@@ -123,17 +133,10 @@ namespace Sandbox
 
 			RigidBody rigidbody = bullet.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
-			rigidbody.Velocity = transform.Forward * BulletSpeed;
+			rigidbody.Velocity = transform.Forward * gunPower;
 			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1));
 
-			gunshotSound.Play();
-			muzzleBlast.Velocity = transform.Forward;
-			muzzleBlast.Offset = transform.Forward * 2.0f;
-			muzzleBlast.Start();
-
-			m_TimeBetweenShot = TimeBetweenShots;
-
-			return bullet;
+			m_TimeBetweenShot = timeBetweenShots;
 		}
 	}
 
