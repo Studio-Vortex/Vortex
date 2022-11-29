@@ -24,15 +24,13 @@ namespace Sparky {
 
 			if (std::is_same<TCamera, EditorCamera>())
 			{
-				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
+				EditorCamera& editorCamera = (EditorCamera&)activeCamera;
 				Renderer2D::BeginScene(editorCamera);
-				cameraView = Math::Inverse(TransformComponent{
-					editorCamera.GetPosition(), { editorCamera.GetPitch(), editorCamera.GetYaw(), 0.0f }, { 1, 1, 1 }
-				}.GetTransform());
+				cameraView = editorCamera.GetViewMatrix();
 			}
 			else
 			{
-				Renderer2D::BeginScene(reinterpret_cast<Camera&>(activeCamera), sceneCameraTransform.GetTransform());
+				Renderer2D::BeginScene((Camera&)activeCamera, sceneCameraTransform.GetTransform());
 				sceneCamera = true;
 				cameraView = Math::Inverse(sceneCameraTransform.GetTransform());
 			}
