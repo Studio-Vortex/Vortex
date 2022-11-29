@@ -114,6 +114,8 @@ namespace Sparky {
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
 	{
+		SP_PROFILE_FUNCTION();
+
 		SharedRef<Scene> destination = CreateShared<Scene>();
 
 		destination->m_ViewportWidth = source->m_ViewportWidth;
@@ -165,6 +167,8 @@ namespace Sparky {
 
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name, const std::string& marker)
 	{
+		SP_PROFILE_FUNCTION();
+
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
@@ -184,6 +188,8 @@ namespace Sparky {
 
 	void Scene::DestroyEntity(Entity entity, bool isEntityInstance, bool excludeChildren)
 	{
+		SP_PROFILE_FUNCTION();
+
 		// Call the entitys OnDestroy function if they are a script instance
 		if (isEntityInstance)
 			ScriptEngine::OnDestroyEntity(entity);
@@ -213,8 +219,10 @@ namespace Sparky {
 		m_EntityMap.erase(it->first);
 	}
 
-    void Scene::ParentEntity(Entity entity, Entity parent)
-    {
+	void Scene::ParentEntity(Entity entity, Entity parent)
+	{
+		SP_PROFILE_FUNCTION();
+
 		if (parent.IsDescendantOf(entity))
 		{
 			UnparentEntity(parent);
@@ -238,10 +246,12 @@ namespace Sparky {
 		parent.Children().push_back(entity.GetUUID());
 
 		ConvertToLocalSpace(entity);
-    }
+	}
 
-    void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
-    {
+	void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
+	{
+		SP_PROFILE_FUNCTION();
+
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 		if (!parent)
 			return;
@@ -253,10 +263,12 @@ namespace Sparky {
 			ConvertToWorldSpace(entity);
 
 		entity.SetParent(0);
-    }
+	}
 
 	void Scene::OnRuntimeStart()
 	{
+		SP_PROFILE_FUNCTION();
+
 		m_IsRunning = true;
 		m_DebugMode = false;
 
@@ -294,6 +306,8 @@ namespace Sparky {
 
 	void Scene::OnRuntimeStop()
 	{
+		SP_PROFILE_FUNCTION();
+
 		m_IsRunning = false;
 
 		ScriptEngine::OnRuntimeStop();
@@ -331,18 +345,24 @@ namespace Sparky {
 
 	void Scene::OnPhysicsSimulationStart()
 	{
+		SP_PROFILE_FUNCTION();
+
 		Physics::OnSimulationStart(this);
 		Physics2D::OnSimulationStart(this);
 	}
 
 	void Scene::OnPhysicsSimulationStop()
 	{
+		SP_PROFILE_FUNCTION();
+
 		Physics::OnSimulationStop();
 		Physics2D::OnSimulationStop();
 	}
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
+		SP_PROFILE_FUNCTION();
+
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
 			// Update Scripts
@@ -375,11 +395,11 @@ namespace Sparky {
 				m_StepFrames--;
 		}
 
-		// Render
-		SceneCamera* primarySceneCamera = nullptr;
-		TransformComponent primarySceneCameraTransform;
-
+		// Locate the scene's primary camera
 		{
+			SceneCamera* primarySceneCamera = nullptr;
+			TransformComponent primarySceneCameraTransform;
+
 			Entity primaryCameraEntity = GetPrimaryCameraEntity();
 
 			if (primaryCameraEntity)
@@ -388,11 +408,11 @@ namespace Sparky {
 				primarySceneCamera = &cameraComponent.Camera;
 				primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
 
-				// Set Clear color
+				// Set clear color
 				RenderCommand::SetClearColor(cameraComponent.ClearColor);
 			}
 
-			// If there is a primary camera in the scene we should render from the camera's point of view
+			// Render from primary scene camera's point of view
 			if (primarySceneCamera != nullptr)
 			{
 				s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
@@ -407,6 +427,8 @@ namespace Sparky {
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
 	{
+		SP_PROFILE_FUNCTION();
+
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
 			Physics::OnSimulationUpdate(delta, this);
@@ -427,6 +449,8 @@ namespace Sparky {
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
+		SP_PROFILE_FUNCTION();
+
 		// Render
 		s_SceneRenderer.RenderFromEditorCamera(camera, this);
 
@@ -457,6 +481,8 @@ namespace Sparky {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
+		SP_PROFILE_FUNCTION();
+
 		if (m_ViewportWidth == width && m_ViewportHeight == height)
 			return;
 
@@ -477,6 +503,8 @@ namespace Sparky {
 
 	Entity Scene::DuplicateEntity(Entity src)
 	{
+		SP_PROFILE_FUNCTION();
+
 		std::string name = src.GetName();
 		std::string marker = src.GetMarker();
 		Entity dest = CreateEntity(name, marker);
@@ -538,6 +566,8 @@ namespace Sparky {
 
 	void Scene::ConvertToLocalSpace(Entity entity)
 	{
+		SP_PROFILE_FUNCTION();
+
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
 		if (!parent)
@@ -551,6 +581,8 @@ namespace Sparky {
 
 	void Scene::ConvertToWorldSpace(Entity entity)
 	{
+		SP_PROFILE_FUNCTION();
+
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
 		if (!parent)
@@ -563,6 +595,8 @@ namespace Sparky {
 
 	Math::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity)
 	{
+		SP_PROFILE_FUNCTION();
+
 		Math::mat4 transform(1.0f);
 
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
@@ -575,13 +609,15 @@ namespace Sparky {
 		return transform * entity.GetTransform().GetTransform();
 	}
 
-    TransformComponent Scene::GetWorldSpaceTransform(Entity entity)
-    {
+	TransformComponent Scene::GetWorldSpaceTransform(Entity entity)
+	{
+		SP_PROFILE_FUNCTION();
+
 		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
 		TransformComponent transformComponent;
 		transformComponent.SetTransform(transform);
-        return transformComponent;
-    }
+		return transformComponent;
+	}
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
@@ -600,6 +636,8 @@ namespace Sparky {
 
 	void Scene::OnModelUpdate()
 	{
+		SP_PROFILE_FUNCTION();
+
 		auto view = m_Registry.view<MeshRendererComponent>();
 
 		for (auto& entity : view)
@@ -612,6 +650,8 @@ namespace Sparky {
 
 	void Scene::OnParticleEmitterUpdate(TimeStep delta)
 	{
+		SP_PROFILE_FUNCTION();
+
 		auto view = m_Registry.view<ParticleEmitterComponent>();
 
 		for (auto& e : view)
@@ -631,6 +671,8 @@ namespace Sparky {
 
 	void Scene::OnLightSourceUpdate()
 	{
+		SP_PROFILE_FUNCTION();
+
 		auto view = m_Registry.view<LightSourceComponent>();
 
 		for (auto& e : view)
@@ -665,7 +707,8 @@ namespace Sparky {
 		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
-		RenderCommand::SetClearColor(component.ClearColor);
+		if (component.Primary)
+			RenderCommand::SetClearColor(component.ClearColor);
 	}
 
 	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)

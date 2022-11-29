@@ -87,14 +87,6 @@ namespace Sparky {
 
 #pragma region DebugRenderer
 
-	static void DebugRenderer_SetClearColor(Math::vec3* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		RenderCommand::SetClearColor(*color);
-	}
-
 	static void DebugRenderer_BeginScene()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -110,6 +102,14 @@ namespace Sparky {
 
 		SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
 		Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
+	}
+
+	static void DebugRenderer_SetClearColor(Math::vec3* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		RenderCommand::SetClearColor(*color);
 	}
 
 	static void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
@@ -129,7 +129,7 @@ namespace Sparky {
 			return;
 		}
 
-		Math::mat4 cameraView = primaryCameraEntity.GetTransform().GetTransform();
+		Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
 
 		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 	}
@@ -2379,8 +2379,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Application_GetPosition);
 		SP_ADD_INTERNAL_CALL(Application_IsMaximized);
 
-		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_BeginScene);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
