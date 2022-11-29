@@ -37,9 +37,8 @@ namespace Sparky {
 	inline SharedRef<TAsset> AssetRegistry::LoadAsset(const std::string& assetName, Args&& ... args)
 	{
 		SharedRef<TAsset> asset = TAsset::Create(std::forward<Args>(args)...);
-		const char* assetTypeName = typeid(TAsset).name();
 
-		if (typeid(Texture2D).name() == assetTypeName)
+		if (std::is_same<TAsset, Texture2D>())
 		{
 			auto it = s_Textures.find(assetName);
 			if (it != s_Textures.end())
@@ -51,7 +50,7 @@ namespace Sparky {
 				return it->second;
 			}
 		}
-		else if (typeid(AudioSource).name() == assetTypeName)
+		else if (std::is_same<TAsset, AudioSource>())
 		{
 			auto it = s_AudioSources.find(assetName);
 			if (it != s_AudioSources.end())
@@ -63,7 +62,7 @@ namespace Sparky {
 				return it->second;
 			}
 		}
-		else if (typeid(Material).name() == assetTypeName)
+		else if (std::is_same<TAsset, Material>())
 		{
 			auto it = s_Materials.find(assetName);
 			if (it != s_Materials.end())
@@ -75,7 +74,7 @@ namespace Sparky {
 				return it->second;
 			}
 		}
-		else if (typeid(Model).name() == assetTypeName)
+		else if (std::is_same<TAsset, Model>())
 		{
 			auto it = s_Models.find(assetName);
 			if (it != s_Models.end())

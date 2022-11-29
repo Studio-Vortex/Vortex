@@ -22,12 +22,12 @@ namespace Sparky {
 			bool sceneCamera = false;
 			Math::mat4 cameraView;
 
-			if (typeid(TCamera).name() == typeid(EditorCamera).name())
+			if (std::is_same<TCamera, EditorCamera>())
 			{
 				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
 				Renderer2D::BeginScene(editorCamera);
 				cameraView = Math::Inverse(TransformComponent{
-					editorCamera.GetPosition(), { -editorCamera.GetPitch(), -editorCamera.GetYaw(), 0.0f }, { 1, 1, 1 }
+					editorCamera.GetPosition(), { editorCamera.GetPitch(), editorCamera.GetYaw(), 0.0f }, { 1, 1, 1 }
 				}.GetTransform());
 			}
 			else
@@ -153,7 +153,7 @@ namespace Sparky {
 
 		// Render 3D
 		{
-			if (typeid(TCamera).name() == typeid(EditorCamera).name())
+			if (std::is_same<TCamera, EditorCamera>())
 			{
 				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
 				Renderer::BeginScene(editorCamera);
@@ -171,13 +171,15 @@ namespace Sparky {
 				SceneRenderer::RenderSkybox(view, projection, scene);
 			}
 
-			// Light pass
-			{
-				auto view = scene->GetAllEntitiesWith<LightSourceComponent>();
+			// TODO: Set Scene Light Description
 
-				for (auto& entity : view)
+			// Light pass
+			auto lightSourceView = scene->GetAllEntitiesWith<LightSourceComponent>();
+			{
+
+				for (auto& entity : lightSourceView)
 				{
-					const auto& lightSourceComponent = view.get<LightSourceComponent>(entity);
+					const auto& lightSourceComponent = lightSourceView.get<LightSourceComponent>(entity);
 
 					Renderer::RenderLightSource(lightSourceComponent);
 				}

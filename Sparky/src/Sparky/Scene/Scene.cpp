@@ -60,28 +60,28 @@ namespace Sparky {
 
 						// Copy Resources
 						{
-							if (typeid(TComponent).name() == typeid(MeshRendererComponent).name())
+							if (std::is_same<TComponent, MeshRendererComponent>())
 							{
 								const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
 								const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
 								Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
 							}
 
-							if (typeid(TComponent).name() == typeid(LightSourceComponent).name())
+							if (std::is_same<TComponent, LightSourceComponent>())
 							{
 								const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
 								const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
 								LightSource::Copy(destinationLightSource, sourceLightSource);
 							}
 
-							if (typeid(TComponent).name() == typeid(AudioSourceComponent).name())
+							if (std::is_same<TComponent, AudioSourceComponent>())
 							{
 								const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
 								const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
 								AudioSource::Copy(destinationAudioSource, sourceAudioSource);
 							}
 
-							if (typeid(TComponent).name() == typeid(ParticleEmitterComponent).name())
+							if (std::is_same<TComponent, ParticleEmitterComponent>())
 							{
 								const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
 								const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
@@ -89,7 +89,7 @@ namespace Sparky {
 							}
 
 							// If we copy a script component, we should probably copy all of the script field values as well
-							if (typeid(TComponent).name() == typeid(ScriptComponent).name() && !ScriptEngine::GetContextScene())
+							if (std::is_same<TComponent, ScriptComponent>())
 							{
 								const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
 								auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);

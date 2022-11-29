@@ -163,30 +163,30 @@ namespace Sparky {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
+	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraTransform, int entityID)
+	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID)
 	{
 		switch (lightSource.Type)
 		{
 			case LightSourceComponent::LightType::Directional:
-				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 			case LightSourceComponent::LightType::Point:
-				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 			case LightSourceComponent::LightType::Spot:
-				Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 		}
 	}
 
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraTransform, int entityID)
+	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraTransform, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
