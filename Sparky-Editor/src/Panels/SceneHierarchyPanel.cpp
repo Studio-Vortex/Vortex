@@ -867,9 +867,9 @@ namespace Sparky {
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				float verticalFov = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
-				if (Gui::DragFloat("Vertical FOV", &verticalFov))
-					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(verticalFov));
+				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
+				if (Gui::DragFloat("Field of View", &perspectiveVerticalFOV))
+					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(perspectiveVerticalFOV));
 
 				float nearClip = camera.GetPerspectiveNearClip();
 				if (Gui::DragFloat("Near", &nearClip))

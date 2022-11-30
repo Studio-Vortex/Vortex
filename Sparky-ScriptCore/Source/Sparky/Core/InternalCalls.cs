@@ -149,6 +149,12 @@ namespace Sparky {
 		internal extern static void CameraComponent_SetPrimary(ulong entityID, bool primary);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetPerspectiveVerticalFOV(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetPerspectiveVerticalFOV(ulong entityID, float perspectiveVerticalFOV);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_GetFixedAspectRatio(ulong entityID, out bool outFixedAspectRatio);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

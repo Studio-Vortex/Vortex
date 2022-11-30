@@ -552,6 +552,26 @@ namespace Sparky {
 		entity.GetComponent<CameraComponent>().Primary = primary;
 	}
 	
+	static float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return Math::Rad2Deg(entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOV());
+	}
+
+	static void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(perspectiveVerticalFOV));
+	}
+
 	static void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2452,6 +2472,8 @@ namespace Sparky {
 
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
+		SP_ADD_INTERNAL_CALL(CameraComponent_GetPerspectiveVerticalFOV);
+		SP_ADD_INTERNAL_CALL(CameraComponent_SetPerspectiveVerticalFOV);
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 

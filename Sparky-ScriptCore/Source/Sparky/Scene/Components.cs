@@ -164,6 +164,12 @@
 			}
 		}
 
+		public float FieldOfView
+		{
+			get => InternalCalls.CameraComponent_GetPerspectiveVerticalFOV(Entity.ID);
+			set => InternalCalls.CameraComponent_SetPerspectiveVerticalFOV(Entity.ID, value);
+		}
+
 		public bool FixedAspectRatio
 		{
 			get

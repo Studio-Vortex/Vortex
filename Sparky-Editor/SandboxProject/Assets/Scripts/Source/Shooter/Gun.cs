@@ -8,10 +8,14 @@ namespace Sandbox {
 		public float bulletSpeed = 10.0f;
 
 		float timeToWait = 0f;
+
 		Vector3 eyeLookDirection;
 		Entity eyes;
 		Vector3 playerLookDirection;
 		Entity player;
+
+		Camera camera;
+
 		AudioSource gunshotSound;
 		ParticleEmitter muzzleBlast;
 
@@ -19,16 +23,38 @@ namespace Sandbox {
 		{
 			eyes = FindEntityByName("Eyes");
 			player = FindEntityByName("Player");
+			camera = FindEntityByName("Camera").GetComponent<Camera>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
 		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			eyeLookDirection = eyes.transform.Forward;
-			playerLookDirection = player.transform.Forward;
-			muzzleBlast.Offset = eyeLookDirection + playerLookDirection;
+			UpdateState();
+			ProcessFire();
+			ProcessZoom();
 
+			timeToWait -= Time.DeltaTime;
+		}
+
+		private static void ProcessZoom()
+		{
+			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
+			bool rightMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Right);
+			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
+
+			if (rightMouseButtonPressed || leftTriggerPressed)
+			{
+				
+			}
+			else if (rightMouseButtonReleased)
+			{
+
+			}
+		}
+
+		private void ProcessFire()
+		{
 			bool waitTimeOver = timeToWait <= 0f;
 			bool leftMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Left);
 			bool leftMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Left);
@@ -37,17 +63,18 @@ namespace Sandbox {
 			if ((leftMouseButtonPressed || rightTriggerPressed) && waitTimeOver)
 			{
 				Fire(1);
-				if (Physics.Raycast(player.transform.Translation, playerLookDirection + eyeLookDirection, 50f, out RaycastHit hitInfo))
-				{
-					
-				}
 			}
 			else if (leftMouseButtonReleased)
 			{
 				muzzleBlast.Stop();
 			}
+		}
 
-			timeToWait -= Time.DeltaTime;
+		void UpdateState()
+		{
+			eyeLookDirection = eyes.transform.Forward;
+			playerLookDirection = player.transform.Forward;
+			muzzleBlast.Offset = eyeLookDirection + playerLookDirection;
 		}
 
 		void Fire(uint bullets)
