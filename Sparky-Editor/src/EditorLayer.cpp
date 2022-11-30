@@ -1019,6 +1019,13 @@ namespace Sparky {
 
 				break;
 			}
+			case Key::F9:
+			{
+				if (m_SceneState == SceneState::Play)
+				{
+					Application::Get().GetWindow().ShowMouseCursor(true, true);
+				}
+			}
 
 			case Key::Delete:
 			{
@@ -1200,7 +1207,8 @@ namespace Sparky {
 		{
 			case Mouse::ButtonRight:
 			{
-				Application::Get().GetWindow().ShowMouseCursor(true);
+				if (m_SceneState != SceneState::Play)
+					Application::Get().GetWindow().ShowMouseCursor(true);
 
 				break;
 			}

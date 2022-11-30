@@ -5,6 +5,7 @@
 		public float X, Y, Z, W;
 
 		public static Vector4 Zero => new Vector4(0.0f);
+		public static Vector4 One => new Vector4(1.0f);
 		public static Vector4 Forward => new Vector4(0.0f, 0.0f, -1.0f, 0.0f); // In OpenGL forward is negative on the Z axis
 		public static Vector4 Back => new Vector4(0.0f, 0.0f, 1.0f, 0.0f);
 		public static Vector4 Up => new Vector4(0.0f, 1.0f, 0.0f, 0.0f);

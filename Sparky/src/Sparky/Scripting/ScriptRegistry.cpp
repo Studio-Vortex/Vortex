@@ -467,7 +467,9 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
 
 		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 0.0f, -1.0f));
 	}
@@ -479,7 +481,9 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
 
 		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 1.0f, 0.0f));
 	}
@@ -491,7 +495,9 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		Math::vec3 rotation = entity.GetTransform().GetRotationEuler();
+		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
 
 		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(1.0f, 0.0f, 0.0f));
 	}
