@@ -205,10 +205,13 @@ namespace Sparky {
 		internal extern static void MeshRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetMaterial(ulong entityID, out Material result);
+		internal extern static void MeshRendererComponent_GetMaterialAlbedo(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetMaterialAlbedo(ulong entityID, ref Vector3 albedo);
 
 		#endregion
-		
+
 		#region Material
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -610,6 +613,12 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Rad2Deg(float radians);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_Deg2RadVector3(ref Vector3 value, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_Rad2DegVector3(ref Vector3 value, out Vector3 result);
 
 		#endregion
 

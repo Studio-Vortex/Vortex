@@ -20,7 +20,17 @@
 		public static float Max(float x, float y) => InternalCalls.Mathf_Max(x, y);
 		public static float Min(float x, float y) => InternalCalls.Mathf_Min(x, y);
 		public static float Deg2Rad(float degrees) => InternalCalls.Mathf_Deg2Rad(degrees);
-		public static float Rad2Deg(float degrees) => InternalCalls.Mathf_Rad2Deg(degrees);
+		public static float Rad2Deg(float radians) => InternalCalls.Mathf_Rad2Deg(radians);
+		public static Vector3 Deg2Rad(Vector3 degrees)
+		{
+			InternalCalls.Mathf_Deg2RadVector3(ref degrees, out Vector3 result);
+			return result;
+		}
+		public static Vector3 Rad2Deg(Vector3 radians)
+		{
+			InternalCalls.Mathf_Rad2DegVector3(ref radians, out Vector3 result);
+			return result;
+		}
 	}
 
 }

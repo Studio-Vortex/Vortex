@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Sparky;
+﻿using Sparky;
 
 namespace Sandbox {
 
 	public class RayTracingTest : Entity
 	{
-		private List<Vector3> t0Hits;
-		private List<Vector3> t1Hits;
-
 		protected override void OnCreate()
 		{
-			t0Hits = new List<Vector3>();
-			t1Hits = new List<Vector3>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -21,11 +14,9 @@ namespace Sandbox {
 			float aspectRatio = width / (float)height;
 			float length = 3.0f;
 			float radius = 0.5f;
-			Vector2 quadSize = new Vector2(.05f);
-			Vector4 quadColor = new Vector4(0, 1, 0, 1);
-
-			t0Hits.Clear();
-			t1Hits.Clear();
+			Vector3 sphereOrigin = Vector3.Zero;
+			Vector2 quadSize = new Vector2(0.05f);
+			Vector4 quadColor = Color.Green;
 
 			DebugRenderer.BeginScene();
 
@@ -51,22 +42,24 @@ namespace Sandbox {
 
 					if (discriminant >= 0.0f)
 					{
-						float t0 = (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
-						float t1 = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
+						float[] t = new float[] {
+							(-b - Mathf.Sqrt(discriminant)) / (2.0f * a),
+							(-b + Mathf.Sqrt(discriminant)) / (2.0f * a)
+						};
 
+						for (uint i = 0; i < 2; i++)
 						{
-							Vector3 hitPosition = rayOrigin + rayDirection * length;
-							DebugRenderer.DrawQuadBillboard(hitPosition, quadSize, quadColor);
-						}
-						{
-							Vector3 hitPosition = rayOrigin + rayDirection * length;
-							DebugRenderer.DrawQuadBillboard(hitPosition, quadSize, quadColor);
+							Vector3 hitPosition = rayOrigin + rayDirection * t[i];
+							Vector3 normal = hitPosition - sphereOrigin;
+							normal.Normalize();
+							Vector3 n = normal * 0.5f + 0.5f;
+							DebugRenderer.DrawQuadBillboard(hitPosition, quadSize, new Vector4(n.X, n.Y, n.Z, 1.0f));
 						}
 
 						rayColor = new Vector4(1, 0, 1, 1);
 					}
 
-					DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
+					//DebugRenderer.DrawLine(rayOrigin, rayOrigin + rayDirection * length, rayColor);
 				}
 			}
 

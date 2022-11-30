@@ -277,9 +277,13 @@
 
 		public Material GetMaterial()
 		{
-			InternalCalls.MeshRendererComponent_GetMaterial(Entity.ID, out Material result);
-			result.Entity = Entity;
-			return result;
+			InternalCalls.MeshRendererComponent_GetMaterialAlbedo(Entity.ID, out Vector3 albedo);
+			Material material = new Material
+			{
+				Entity = Entity,
+				Albedo = albedo,
+			};
+			return material;
 		}
 	}
 

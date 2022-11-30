@@ -8,13 +8,13 @@
 		{
 			get
 			{
-				InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 result);
+				InternalCalls.MeshRendererComponent_GetMaterialAlbedo(Entity.ID, out Vector3 result);
 				return result;
 			}
 
 			set
 			{
-				InternalCalls.Material_SetAlbedo(Entity.ID, ref value);
+				InternalCalls.MeshRendererComponent_SetMaterialAlbedo(Entity.ID, ref value);
 			}
 		}
 	}

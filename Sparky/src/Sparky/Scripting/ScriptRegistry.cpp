@@ -677,6 +677,9 @@ namespace Sparky {
 	struct MaterialObject
 	{
 		Math::vec3 albedo;
+
+		MaterialObject(const Math::vec3& albedo)
+			: albedo(albedo) { }
 	};
 
 	static MeshType MeshRendererComponent_GetMeshType(UUID entityUUID)
@@ -724,15 +727,24 @@ namespace Sparky {
 		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
 	}
 
-	static void MeshRendererComponent_GetMaterial(UUID entityUUID, MaterialObject* outMaterial)
+	static void MeshRendererComponent_GetMaterialAlbedo(UUID entityUUID, Math::vec3* outAlbedo)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
-		*outMaterial = MaterialObject{ materialInstance->GetAlbedo() };
+		*outAlbedo = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetAlbedo();
+	}
+
+	static void MeshRendererComponent_SetMaterialAlbedo(UUID entityUUID, Math::vec3* albedo)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedo(*albedo);
 	}
 
 #pragma endregion
@@ -1189,7 +1201,7 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRotation = Math::EulerAngles(FromPhysXTransform(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose()));
+		*outRotation = Math::EulerAngles(FromPhysXQuat(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose().q));
 	}
 
 	static void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
@@ -1199,11 +1211,12 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ transformComponent.Translation, *rotation, transformComponent.Scale }.GetTransform();
-		auto physxTransform = ToPhysXTransform(entityTransform);
+		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		physx::PxTransform physxTransform = actor->getGlobalPose();
+		physxTransform.q = ToPhysXQuat(Math::quaternion(*rotation));
 
-		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+		actor->setGlobalPose(physxTransform);
 	}
 
 	static void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
@@ -1213,11 +1226,12 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ transformComponent.Translation + *translation, transformComponent.GetRotationEuler(), transformComponent.Scale}.GetTransform();
-		auto physxTransform = ToPhysXTransform(entityTransform);
+		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		physx::PxTransform physxTransform = actor->getGlobalPose();
+		physxTransform.p += ToPhysXVector(*translation);
 
-		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+		actor->setGlobalPose(physxTransform);
 	}
 
 	static void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
@@ -1227,11 +1241,14 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const auto& transformComponent = entity.GetTransform();
-		auto entityTransform = TransformComponent{ transformComponent.Translation, transformComponent.GetRotationEuler() + *rotation, transformComponent.Scale}.GetTransform();
-		auto physxTransform = ToPhysXTransform(entityTransform);
+		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		physx::PxTransform physxTransform = actor->getGlobalPose();
+		physxTransform.q *= physx::PxQuat(Math::Deg2Rad(rotation->x), { 1.0f, 0.0f, 0.0f })
+			* physx::PxQuat(Math::Deg2Rad(rotation->y), { 0.0f, 1.0f, 0.0f })
+			* physx::PxQuat(Math::Deg2Rad(rotation->z), { 0.0f, 0.0f, 1.0f });
 
-		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+		actor->setGlobalPose(physxTransform);
 	}
 
 	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
@@ -2081,6 +2098,16 @@ namespace Sparky {
 		return Math::Rad2Deg(radians);
 	}
 
+	static void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult)
+	{
+		*outResult = Math::Deg2Rad(*value);
+	}
+
+	static void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult)
+	{
+		*outResult = Math::Rad2Deg(*value);
+	}
+
 #pragma endregion
 
 #pragma region Vector3
@@ -2437,7 +2464,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMaterial);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMaterialAlbedo);
+		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMaterialAlbedo);
 
 		SP_ADD_INTERNAL_CALL(Material_GetAlbedo);
 		SP_ADD_INTERNAL_CALL(Material_SetAlbedo);
@@ -2568,6 +2596,8 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Mathf_Max);
 		SP_ADD_INTERNAL_CALL(Mathf_Deg2Rad);
 		SP_ADD_INTERNAL_CALL(Mathf_Rad2Deg);
+		SP_ADD_INTERNAL_CALL(Mathf_Deg2RadVector3);
+		SP_ADD_INTERNAL_CALL(Mathf_Rad2DegVector3);
 
 		SP_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
 		SP_ADD_INTERNAL_CALL(Vector3_DotProductVec3);
