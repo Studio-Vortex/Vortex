@@ -283,11 +283,13 @@
 
 		public Material GetMaterial()
 		{
-			InternalCalls.MeshRendererComponent_GetMaterialAlbedo(Entity.ID, out Vector3 albedo);
+			InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 albedo);
 			Material material = new Material
 			{
 				Entity = Entity,
 				Albedo = albedo,
+				Metallic = InternalCalls.Material_GetRoughness(Entity.ID),
+				Roughness = InternalCalls.Material_GetRoughness(Entity.ID)
 			};
 			return material;
 		}

@@ -34,11 +34,6 @@ namespace Sandbox {
 			RotateHorizontal();
 			RotateVertical();
 
-			if (Physics.Raycast(Vector3.Zero, Vector3.Forward, 10f, out RaycastHit hitInfo))
-			{
-				Debug.Log("Something hit!");
-			}
-
 			mousePosLastFrame = mousePosThisFrame;
 		}
 

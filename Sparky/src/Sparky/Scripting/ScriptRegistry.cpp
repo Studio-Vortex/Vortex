@@ -712,14 +712,6 @@ namespace Sparky {
 
 #pragma region Mesh Renderer Component
 
-	struct MaterialObject
-	{
-		Math::vec3 albedo;
-
-		MaterialObject(const Math::vec3& albedo)
-			: albedo(albedo) { }
-	};
-
 	static MeshType MeshRendererComponent_GetMeshType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -765,26 +757,6 @@ namespace Sparky {
 		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
 	}
 
-	static void MeshRendererComponent_GetMaterialAlbedo(UUID entityUUID, Math::vec3* outAlbedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outAlbedo = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetAlbedo();
-	}
-
-	static void MeshRendererComponent_SetMaterialAlbedo(UUID entityUUID, Math::vec3* albedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedo(*albedo);
-	}
-
 #pragma endregion
 
 #pragma region Material
@@ -796,8 +768,7 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
-		*outAlbedo = materialInstance->GetAlbedo();
+		*outAlbedo = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetAlbedo();
 	}
 
 	static void Material_SetAlbedo(UUID entityUUID, Math::vec3* albedo)
@@ -807,8 +778,47 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<MaterialInstance> materialInstance = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial();
-		materialInstance->SetAlbedo(*albedo);
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedo(*albedo);
+	}
+
+	static float Material_GetMetallic(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetMetallic();
+	}
+
+	static void Material_SetMetallic(UUID entityUUID, float metallic)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetMetallic(metallic);
+	}
+
+	static float Material_GetRoughness(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetRoughness();
+	}
+
+	static void Material_SetRoughness(UUID entityUUID, float roughness)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetRoughness(roughness);
 	}
 
 #pragma endregion
@@ -2505,11 +2515,13 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMaterialAlbedo);
-		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMaterialAlbedo);
 
 		SP_ADD_INTERNAL_CALL(Material_GetAlbedo);
 		SP_ADD_INTERNAL_CALL(Material_SetAlbedo);
+		SP_ADD_INTERNAL_CALL(Material_GetMetallic);
+		SP_ADD_INTERNAL_CALL(Material_SetMetallic);
+		SP_ADD_INTERNAL_CALL(Material_GetRoughness);
+		SP_ADD_INTERNAL_CALL(Material_SetRoughness);
 
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);

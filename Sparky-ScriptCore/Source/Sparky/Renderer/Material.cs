@@ -8,14 +8,23 @@
 		{
 			get
 			{
-				InternalCalls.MeshRendererComponent_GetMaterialAlbedo(Entity.ID, out Vector3 result);
+				InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 result);
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.MeshRendererComponent_SetMaterialAlbedo(Entity.ID, ref value);
-			}
+			set => InternalCalls.Material_SetAlbedo(Entity.ID, ref value);
+		}
+
+		public float Metallic
+		{
+			get => InternalCalls.Material_GetMetallic(Entity.ID);
+			set => InternalCalls.Material_SetMetallic(Entity.ID, value);
+		}
+
+		public float Roughness
+		{
+			get => InternalCalls.Material_GetRoughness(Entity.ID);
+			set => InternalCalls.Material_SetRoughness(Entity.ID, value);
 		}
 	}
 

@@ -111,6 +111,18 @@ namespace Sandbox {
 				CreateBullet();
 			}
 
+			if (Physics.Raycast(transform.Translation, transform.Forward, 100f, out RaycastHit hitInfo))
+			{
+				Vector3 normal = hitInfo.Normal;
+				Vector3 position = hitInfo.Position;
+				float distance = hitInfo.Distance;
+				if (hitInfo.Entity != null)
+				{
+					Entity entity = hitInfo.Entity;
+					Debug.Log($"Hit! N: {normal}, P: {position}, D: {distance}, Name: {entity.Tag}");
+				}
+			}
+
 			gunshotSound.Play();
 			muzzleBlast.Start();
 			ammo--;
@@ -125,7 +137,7 @@ namespace Sandbox {
 			bullet.transform.Scale *= 0.5f;
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
-			bullet.AddComponent<BoxCollider>();
+			bullet.AddComponent<SphereCollider>();
 			RigidBody rb = bullet.AddComponent<RigidBody>();
 			rb.BodyType = RigidBodyType.Dynamic;
 			rb.AddForce(transform.Forward * bulletSpeed, ForceMode.Impulse);
