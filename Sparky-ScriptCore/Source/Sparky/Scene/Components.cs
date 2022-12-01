@@ -21,10 +21,7 @@
 				return translation;
 			}
 
-			set
-			{
-				InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
-			}
+			set => InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
 		}
 
 		public void Translate(Vector3 translation)
@@ -45,10 +42,7 @@
 				return rotation;
 			}
 
-			set
-			{
-				InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
-			}
+			set => InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
 		}
 
 		public void Rotate(Vector3 rotation)
@@ -69,10 +63,7 @@
 				return scale;
 			}
 
-			set
-			{
-				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
-			}
+			set => InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 		}
 
 		/// <summary>
@@ -113,6 +104,28 @@
 		public void ApplyScale(float x, float y, float z)
 		{
 			Scale += new Vector3(x, y, z);
+		}
+
+		public struct WorldTransform
+		{
+			public Vector3 Translation;
+			public Vector3 Rotation;
+			public Vector3 Scale;
+		}
+
+		public WorldTransform worldTransform
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Vector3 translation, out Vector3 rotation, out Vector3 scale);
+				WorldTransform worldTransform = new WorldTransform
+				{
+					Translation = translation,
+					Rotation = rotation,
+					Scale = scale
+				};
+				return worldTransform;
+			}
 		}
 
 		public Vector3 Up
@@ -158,10 +171,7 @@
 				return primary;
 			}
 
-			set
-			{
-				InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
-			}
+			set => InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
 		}
 
 		public float FieldOfView
@@ -178,10 +188,7 @@
 				return fixedAspectRatio;
 			}
 
-			set
-			{
-				InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
-			}
+			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
 		}
 	}
 
@@ -197,10 +204,7 @@
 				return ambient;
 			}
 
-			set
-			{
-				InternalCalls.LightSourceComponent_SetAmbient(Entity.ID, ref value);
-			}
+			set => InternalCalls.LightSourceComponent_SetAmbient(Entity.ID, ref value);
 		}
 
 		public Vector3 Diffuse
@@ -211,10 +215,7 @@
 				return diffuse;
 			}
 
-			set
-			{
-				InternalCalls.LightSourceComponent_SetDiffuse(Entity.ID, ref value);
-			}
+			set => InternalCalls.LightSourceComponent_SetDiffuse(Entity.ID, ref value);
 		}
 
 		public Vector3 Specular
@@ -225,10 +226,7 @@
 				return specular;
 			}
 
-			set
-			{
-				InternalCalls.LightSourceComponent_SetSpecular(Entity.ID, ref value);
-			}
+			set => InternalCalls.LightSourceComponent_SetSpecular(Entity.ID, ref value);
 		}
 
 		public Vector3 Color
@@ -239,10 +237,7 @@
 				return color;
 			}
 
-			set
-			{
-				InternalCalls.LightSourceComponent_SetColor(Entity.ID, ref value);
-			}
+			set => InternalCalls.LightSourceComponent_SetColor(Entity.ID, ref value);
 		}
 
 		public Vector3 Direction
@@ -252,10 +247,7 @@
 				InternalCalls.LightSourceComponent_GetDirection(Entity.ID, out Vector3 direction);
 				return direction;
 			}
-			set
-			{
-				InternalCalls.LightSourceComponent_SetDirection(Entity.ID, ref value);
-			}
+			set => InternalCalls.LightSourceComponent_SetDirection(Entity.ID, ref value);
 		}
 	}
 
@@ -275,10 +267,7 @@
 				return scale;
 			}
 
-			set
-			{
-				InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
-			}
+			set => InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
 		}
 
 		public Material GetMaterial()
@@ -305,10 +294,7 @@
 				return color;
 			}
 
-			set
-			{
-				InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
-			}
+			set => InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
 		}
 
 		public string Texture

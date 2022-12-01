@@ -128,13 +128,15 @@ namespace Sandbox
 			bullet.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
 			bullet.transform.Scale = new Vector3(0.5f);
 
-			bullet.AddComponent<MeshRenderer>();
-			bullet.AddComponent<BoxCollider>();
+			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
+			meshRenderer.Type = MeshType.Sphere;
+			Material material = meshRenderer.GetMaterial();
+			material.Albedo = Color.Red.XYZ;
+			bullet.AddComponent<SphereCollider>();
 
 			RigidBody rigidbody = bullet.AddComponent<RigidBody>();
 			rigidbody.BodyType = RigidBodyType.Dynamic;
-			rigidbody.Velocity = transform.Forward * gunPower;
-			rigidbody.AngularVelocity = new Vector3(RandomDevice.RangedFloat(0, 1));
+			rigidbody.AddForce(transform.Forward * gunPower, ForceMode.Impulse);
 
 			m_TimeBetweenShot = timeBetweenShots;
 		}

@@ -4,10 +4,9 @@
 	{
 		public static Entity FindEntityByID(ulong entityID)
 		{
-			ulong result = InternalCalls.Scene_FindEntityByID(entityID);
-
-			if (result != 0)
-				return new Entity(result);
+			bool found = InternalCalls.Scene_FindEntityByID(entityID);
+			if (found)
+				return new Entity(entityID);
 
 			return null;
 		}

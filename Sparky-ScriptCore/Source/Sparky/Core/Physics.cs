@@ -28,7 +28,10 @@
 		public Vector3 Normal { get; private set; }
 		public float Distance { get; private set; }
 
-		public Entity Entity => Scene.FindEntityByID(EntityID);
+		public Entity Entity
+		{
+			get => Scene.FindEntityByID(EntityID);
+		}
 	}
 
 	public static class Physics

@@ -9,18 +9,12 @@ namespace Sparky {
 
 		public string Tag
 		{
-			get
-			{
-				return InternalCalls.Entity_GetTag(ID);
-			}
+			get => InternalCalls.Entity_GetTag(ID);
 		}
 
 		public string Marker
 		{
-			get
-			{
-				return InternalCalls.Entity_GetMarker(ID);
-			}
+			get => InternalCalls.Entity_GetMarker(ID);
 		}
 
 		protected Entity() { ID = 0; }
@@ -99,15 +93,9 @@ namespace Sparky {
 
 		public Entity GetChild(uint index) => new Entity(InternalCalls.Entity_GetChild(ID, index));
 
-		public bool AddChild(Entity child)
-		{
-			return InternalCalls.Entity_AddChild(ID, child.ID);
-		}
+		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
 
-		public bool RemoveChild(Entity child)
-		{
-			return InternalCalls.Entity_RemoveChild(ID, child.ID);
-		}
+		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);
 
 		public T As<T>()
 			where T : Entity, new()
@@ -116,10 +104,7 @@ namespace Sparky {
 			return instance as T;
 		}
 
-		public void Destroy(bool scriptInstance = true)
-		{
-			InternalCalls.Entity_Destroy(ID, scriptInstance);
-		}
+		public void Destroy(bool scriptInstance = true) => InternalCalls.Entity_Destroy(ID, scriptInstance);
 	}
 
 }

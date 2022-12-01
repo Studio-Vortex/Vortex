@@ -146,16 +146,16 @@ namespace Sparky {
 
 #pragma region Scene
 
-	static uint64_t Scene_FindEntityByID(UUID entityUUID)
+	static bool Scene_FindEntityByID(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 
 		if (entity)
-			return entity.GetUUID();
+			return true;
 
-		return 0;
+		return false;
 	}
 
 	static bool Scene_IsPaused()
@@ -470,6 +470,19 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TransformComponent>().Scale = *scale;
+	}
+
+	static void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+		*outTranslation = worldSpaceTransform.Translation;
+		*outRotationEuler = worldSpaceTransform.GetRotationEuler();
+		*outScale = worldSpaceTransform.Scale;
 	}
 
 	static void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -2487,6 +2500,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+		SP_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetForwardDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);

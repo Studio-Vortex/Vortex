@@ -132,11 +132,15 @@ namespace Sandbox {
 		void CreateBullet()
 		{
 			Entity bullet = new Entity("Bullet");
-			bullet.transform.Translation = transform.Translation + transform.Forward;
-			bullet.transform.Translation = 
+			bullet.transform.Translation = transform.worldTransform.Translation + transform.Forward;
+			Debug.Warn(transform.Forward.ToString());
 			bullet.transform.Scale *= 0.5f;
+
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
+			Material material = meshRenderer.GetMaterial();
+			material.Albedo = Color.Red.XYZ;
+
 			bullet.AddComponent<SphereCollider>();
 			RigidBody rb = bullet.AddComponent<RigidBody>();
 			rb.BodyType = RigidBodyType.Dynamic;
