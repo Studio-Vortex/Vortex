@@ -43,6 +43,9 @@ namespace Sparky {
 		#region Scene
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_FindEntityByID(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_IsPaused();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

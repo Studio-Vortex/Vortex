@@ -4,47 +4,78 @@ namespace Sandbox {
 
 	public class ShooterController : Entity
 	{
-		public float moveSpeed = 3_000.0f;
+		public float moveSpeed = 3_000f;
+		public float strafeSpeed = 2_000f;
 		public float maxLookUp = 35f;
 		public float maxLookDown = -45f;
 		public float movementDeadzone = 0.1f;
-		public float verticalRotationSpeed = 10.0f;
-		public float horizontalRotationSpeed = 20.0f;
+		public float verticalRotationSpeed = 10f;
+		public float horizontalRotationSpeed = 20f;
+		public float jumpForce = 1_500f;
 
 		Vector2 mousePosLastFrame;
 		Vector2 mousePosThisFrame;
 
-		RigidBody rb;
+		RigidBody rigidbody;
 		Entity eyes;
 
 		protected override void OnCreate()
 		{
-			rb = GetComponent<RigidBody>();
+			rigidbody = GetComponent<RigidBody>();
 			eyes = FindEntityByName("Eyes");
 			Input.ShowMouseCursor = false;
 		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			MoveHorizontal();
+			MovePlayer();
+			Strafe();
+			Jump();
 			RotateHorizontal();
 			RotateVertical();
+
+			if (Physics.Raycast(Vector3.Zero, Vector3.Forward, 10f, out RaycastHit hitInfo))
+			{
+				Debug.Log("Something hit!");
+			}
 
 			mousePosLastFrame = mousePosThisFrame;
 		}
 
-		void MoveHorizontal()
+		void MovePlayer()
 		{
+			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			Vector3 speed = Vector3.Zero;
 
+			if (Input.IsKeyDown(KeyCode.W) || axisLeftY > movementDeadzone)
+				speed = transform.Forward;
+			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY < -movementDeadzone)
+				speed = -transform.Forward;
+
+			rigidbody.AddForce(speed * moveSpeed * Time.DeltaTime);
+		}
+
+		void Strafe()
+		{
 			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			Vector3 speed = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.A) || Input.IsKeyDown(KeyCode.Left) || axisLeftX < -movementDeadzone)
-				speed = Vector3.Left;
-			else if (Input.IsKeyDown(KeyCode.D) || Input.IsKeyDown(KeyCode.Right) || axisLeftX > movementDeadzone)
-				speed = Vector3.Right;
+			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -movementDeadzone)
+				speed = -transform.Right;
+			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > movementDeadzone)
+				speed = transform.Right;
 
-			rb.AddForce(speed * moveSpeed * Time.DeltaTime);
+			rigidbody.AddForce(speed * strafeSpeed * Time.DeltaTime);
+		}
+
+		void Jump()
+		{
+			bool isGrounded = false;
+			if (transform.Translation.Y == 1.5f)
+				isGrounded = true;
+
+			if (Input.IsKeyDown(KeyCode.Space) && isGrounded)
+				rigidbody.AddForce(Vector3.Up * jumpForce * Time.DeltaTime, ForceMode.Impulse);
 		}
 
 		Vector2 GetMouseDelta()
@@ -57,7 +88,7 @@ namespace Sandbox {
 		void RotateHorizontal()
 		{
 			Vector2 delta = GetMouseDelta();
-			rb.Rotate(0f, -delta.X * horizontalRotationSpeed * Time.DeltaTime, 0f);
+			rigidbody.Rotate(0f, -delta.X * horizontalRotationSpeed * Time.DeltaTime, 0f);
 		}
 
 		void RotateVertical()

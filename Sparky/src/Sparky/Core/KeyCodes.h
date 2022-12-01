@@ -4,6 +4,8 @@
 
 namespace Sparky {
 
+#define SP_MAX_KEYCODES 348
+
 	typedef enum class KeyCode : uint16_t
 	{
 		// From glfw3.h
@@ -135,7 +137,7 @@ namespace Sparky {
 		RightControl                     = 345,
 		RightAlt                         = 346,
 		RightSuper                       = 347,
-		Menu                             = 348
+		Menu                             = 348,
 	} Key;
 
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)

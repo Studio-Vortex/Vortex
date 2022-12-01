@@ -146,6 +146,18 @@ namespace Sparky {
 
 #pragma region Scene
 
+	static uint64_t Scene_FindEntityByID(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+
+		if (entity)
+			return entity.GetUUID();
+
+		return 0;
+	}
+
 	static bool Scene_IsPaused()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -282,7 +294,7 @@ namespace Sparky {
 		const auto& children = entity.Children();
 		if (index < children.size())
 		{
-			SP_CORE_ASSERT(, "Index out of bounds!");
+			SP_CORE_ASSERT(false, "Index out of bounds!");
 			return 0;
 		}
 
@@ -1496,9 +1508,9 @@ namespace Sparky {
 
 		if (result)
 		{
-			Entity& entity = *(Entity*)hitInfo.block.actor->userData;
+			UUID entityUUID = *(UUID*)hitInfo.block.actor->userData;
 
-			outHit->EntityID = entity.GetUUID();
+			outHit->EntityID = entityUUID;
 			outHit->Position = FromPhysXVector(hitInfo.block.position);
 			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
 			outHit->Distance = hitInfo.block.distance;
@@ -2438,6 +2450,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
+		SP_ADD_INTERNAL_CALL(Scene_FindEntityByID);
 		SP_ADD_INTERNAL_CALL(Scene_IsPaused);
 		SP_ADD_INTERNAL_CALL(Scene_Pause);
 		SP_ADD_INTERNAL_CALL(Scene_Resume);

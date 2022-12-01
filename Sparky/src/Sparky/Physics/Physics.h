@@ -44,7 +44,7 @@ namespace Sparky {
 		static void SetPhysicsSceneGravitty(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
 
 	private:
-		static void UpdateActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
+		static void UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 
 	private:
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);

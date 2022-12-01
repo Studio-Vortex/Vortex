@@ -127,7 +127,7 @@ namespace Sparky {
 				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(scale));
 				if (actor->is<physx::PxRigidDynamic>())
 				{
-					UpdateActorFlags(rigidbody, dynamicActor);
+					UpdateDynamicActorFlags(rigidbody, dynamicActor);
 				}
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
@@ -186,12 +186,15 @@ namespace Sparky {
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
 			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
-			UpdateActorFlags(rigidbody, dynamicActor);
+			UpdateDynamicActorFlags(rigidbody, dynamicActor);
 			actor = dynamicActor;
 		}
 
 		SP_CORE_ASSERT(actor, "Failed to create Physics Actor!");
 		rigidbody.RuntimeActor = actor;
+
+		UUID uuid = entity.GetUUID();
+		actor->userData = &uuid;
 
 		if (entity.HasComponent<CharacterControllerComponent>())
 		{
@@ -350,7 +353,7 @@ namespace Sparky {
 		s_Data.PhysicsScene->addActor(*actor);
 	}
 
-	void Physics::UpdateActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
+	void Physics::UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
 	{
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
@@ -389,6 +392,9 @@ namespace Sparky {
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidbody.LockRotationX);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
+
+		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
+		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, true);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 	}

@@ -9,9 +9,13 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			DebugRenderer.BeginScene();
-			DebugRenderer.DrawQuadBillboard(transform.Translation, size, color);
-			DebugRenderer.Flush();
+			// If the player zooms in don't show the reticle
+			if (!Input.IsMouseButtonDown(MouseButton.Right))
+			{
+				DebugRenderer.BeginScene();
+				DebugRenderer.DrawQuadBillboard(transform.Translation, size, color);
+				DebugRenderer.Flush();
+			}
 		}
 	}
 

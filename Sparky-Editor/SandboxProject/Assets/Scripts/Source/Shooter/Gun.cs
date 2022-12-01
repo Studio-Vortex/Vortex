@@ -4,10 +4,19 @@ namespace Sandbox {
 
 	public class Gun : Entity
 	{
-		public float timeBetweenShots = 2f;
-		public float bulletSpeed = 10.0f;
+		public float timeBetweenShots = 1.4f;
+		public float bulletSpeed = 180f;
+		public float normalFOV = 60f;
+		public float zoomedFOV = 40f;
+		public uint bulletsPerShot = 1;
+		public uint ammo = 10;
 
 		float timeToWait = 0f;
+
+		Vector3 startPosition;
+		Vector3 startRotation;
+		Vector3 zoomedPosition;
+		Vector3 zoomedRotation;
 
 		Vector3 eyeLookDirection;
 		Entity eyes;
@@ -17,6 +26,7 @@ namespace Sandbox {
 		Camera camera;
 
 		AudioSource gunshotSound;
+		AudioSource emptyGunSound;
 		ParticleEmitter muzzleBlast;
 
 		protected override void OnCreate()
@@ -24,8 +34,14 @@ namespace Sandbox {
 			eyes = FindEntityByName("Eyes");
 			player = FindEntityByName("Player");
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
+			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
+			startPosition = transform.Translation;
+			startRotation = transform.Rotation;
+			Transform zoomedTransform = FindEntityByName("Zoomed Transform").transform;
+			zoomedPosition = zoomedTransform.Translation;
+			zoomedRotation = zoomedTransform.Rotation;
 		}
 
 		protected override void OnUpdate(float deltaTime)
@@ -37,7 +53,7 @@ namespace Sandbox {
 			timeToWait -= Time.DeltaTime;
 		}
 
-		private static void ProcessZoom()
+		void ProcessZoom()
 		{
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
 			bool rightMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Right);
@@ -45,15 +61,19 @@ namespace Sandbox {
 
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
-				
+				camera.FieldOfView = zoomedFOV;
+				transform.Translation = zoomedPosition;
+				transform.Rotation = zoomedRotation;
 			}
 			else if (rightMouseButtonReleased)
 			{
-
+				camera.FieldOfView = normalFOV;
+				transform.Translation = startPosition;
+				transform.Rotation = startRotation;
 			}
 		}
 
-		private void ProcessFire()
+		void ProcessFire()
 		{
 			bool waitTimeOver = timeToWait <= 0f;
 			bool leftMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Left);
@@ -62,7 +82,14 @@ namespace Sandbox {
 
 			if ((leftMouseButtonPressed || rightTriggerPressed) && waitTimeOver)
 			{
-				Fire(1);
+				if (ammo == 0)
+				{
+					emptyGunSound.Play();
+				}
+				else
+				{
+					Shoot(bulletsPerShot);
+				}
 			}
 			else if (leftMouseButtonReleased)
 			{
@@ -77,7 +104,7 @@ namespace Sandbox {
 			muzzleBlast.Offset = eyeLookDirection + playerLookDirection;
 		}
 
-		void Fire(uint bullets)
+		void Shoot(uint bullets)
 		{
 			for (uint i = 0; i < bullets; i++)
 			{
@@ -86,13 +113,15 @@ namespace Sandbox {
 
 			gunshotSound.Play();
 			muzzleBlast.Start();
+			ammo--;
 			timeToWait = timeBetweenShots;
 		}
 
 		void CreateBullet()
 		{
 			Entity bullet = new Entity("Bullet");
-			bullet.transform.Translation = player.transform.Translation + player.transform.Forward;
+			bullet.transform.Translation = transform.Translation + transform.Forward;
+			bullet.transform.Translation = 
 			bullet.transform.Scale *= 0.5f;
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;

@@ -14,6 +14,7 @@ namespace Sparky {
 	public:
 		static bool IsKeyPressed(KeyCode keycode);
 		static bool IsKeyReleased(KeyCode keycode);
+
 		static bool IsMouseButtonPressed(MouseCode button);
 		static bool IsMouseButtonReleased(MouseCode button);
 
