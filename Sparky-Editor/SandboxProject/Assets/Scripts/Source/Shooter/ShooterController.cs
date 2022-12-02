@@ -4,26 +4,33 @@ namespace Sandbox {
 
 	public class ShooterController : Entity
 	{
-		public float moveSpeed = 3_000f;
-		public float strafeSpeed = 2_000f;
+		public float walkSpeed = 3f;
+		public float runSpeed = 6f;
+		public float strafeSpeed = 2f;
 		public float maxLookUp = 35f;
 		public float maxLookDown = -45f;
 		public float movementDeadzone = 0.1f;
 		public float verticalRotationSpeed = 10f;
 		public float horizontalRotationSpeed = 20f;
-		public float jumpForce = 1_500f;
+		public float jumpForce = 5f;
 
 		Vector2 mousePosLastFrame;
 		Vector2 mousePosThisFrame;
 
 		RigidBody rigidbody;
+		CapsuleCollider capsuleCollider;
+		CharacterController controller;
 		Entity eyes;
 
 		protected override void OnCreate()
 		{
 			rigidbody = GetComponent<RigidBody>();
+			controller = GetComponent<CharacterController>();
+			capsuleCollider = GetComponent<CapsuleCollider>();
 			eyes = FindEntityByName("Eyes");
 			Input.ShowMouseCursor = false;
+			rigidbody.Rotation = Vector3.Zero;
+			eyes.transform.Rotation = Vector3.Zero;
 		}
 
 		protected override void OnUpdate(float deltaTime)
@@ -42,12 +49,14 @@ namespace Sandbox {
 			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			Vector3 speed = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.W) || axisLeftY > movementDeadzone)
+			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -movementDeadzone)
 				speed = transform.Forward;
-			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY < -movementDeadzone)
+			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > movementDeadzone)
 				speed = -transform.Forward;
 
-			rigidbody.AddForce(speed * moveSpeed * Time.DeltaTime);
+			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runSpeed : walkSpeed;
+
+			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
 		void Strafe()
@@ -60,17 +69,15 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > movementDeadzone)
 				speed = transform.Right;
 
-			rigidbody.AddForce(speed * strafeSpeed * Time.DeltaTime);
+			controller.Move(speed * strafeSpeed * Time.DeltaTime);
 		}
 
 		void Jump()
 		{
-			bool isGrounded = false;
-			if (transform.Translation.Y == 1.5f)
-				isGrounded = true;
+			
 
-			if (Input.IsKeyDown(KeyCode.Space) && isGrounded)
-				rigidbody.AddForce(Vector3.Up * jumpForce * Time.DeltaTime, ForceMode.Impulse);
+			if (Input.IsKeyDown(KeyCode.Space) && controller.IsGrounded)
+				controller.Jump(jumpForce);
 		}
 
 		Vector2 GetMouseDelta()

@@ -551,6 +551,7 @@
 
 	public class CharacterController : Component
 	{
+		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
 
 		public void Move(Vector3 displacement)
 		{
@@ -582,7 +583,34 @@
 
 	public class CapsuleCollider : Component
 	{
+		public float Radius
+		{
+			get => InternalCalls.CapsuleColliderComponent_GetRadius(Entity.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetRadius(Entity.ID, value);
+		}
+		
+		public float Height
+		{
+			get => InternalCalls.CapsuleColliderComponent_GetHeight(Entity.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetHeight(Entity.ID, value);
+		}
 
+		public Vector3 Offset
+		{
+			get
+			{
+				InternalCalls.CapsuleColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.CapsuleColliderComponent_SetOffset(Entity.ID, ref value);
+		}
+
+		public bool IsTrigger
+		{
+			get => InternalCalls.CapsuleColliderComponent_GetIsTrigger(Entity.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
 	}
 
 	public class StaticMeshCollider : Component

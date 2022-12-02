@@ -13,7 +13,7 @@ namespace Sandbox {
 			if (!Input.IsMouseButtonDown(MouseButton.Right))
 			{
 				DebugRenderer.BeginScene();
-				DebugRenderer.DrawQuadBillboard(transform.Translation, size, color);
+				DebugRenderer.DrawQuadBillboard(transform.Translation + new Vector3(0.01f, 0.01f, 0), size, color);
 				DebugRenderer.Flush();
 			}
 		}

@@ -1,6 +1,7 @@
 #include "sppch.h"
 #include "Physics.h"
 
+#include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Physics/PhysXAPIHelpers.h"
 
 namespace Sparky {
@@ -139,8 +140,8 @@ namespace Sparky {
 			// Synchronize controller transform
 			if (entity.HasComponent<CharacterControllerComponent>())
 			{
-				const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
-				const physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
+				auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+				physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
 
 				Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());
 
@@ -154,6 +155,9 @@ namespace Sparky {
 					const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
 					position -= boxCollider.Offset;
 				}
+
+				controller->setStepOffset(characterController.StepOffset);
+				controller->setSlopeLimit(Math::Deg2Rad(characterController.SlopeLimitDegrees));
 
 				transform.Translation = position;
 			}

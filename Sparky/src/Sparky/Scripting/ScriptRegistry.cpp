@@ -153,8 +153,12 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 
 		if (entity)
+		{
+			SP_CORE_INFO("Entity with id: '{}' found", entityUUID);
 			return true;
+		}
 
+		SP_CORE_INFO("Entity with id: '{}' was not found", entityUUID);
 		return false;
 	}
 
@@ -1561,14 +1565,16 @@ namespace Sparky {
 		auto gravity = Physics::GetPhysicsSceneGravity();
 
 		if (!characterControllerComponent.DisableGravity)
-			characterControllerComponent.SpeedDown += gravity.y * Time::GetDeltaTime();
+			characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
 
 		Math::vec3 movement = *displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
 
 		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
+		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
 
 		physx::PxControllerState state;
 		controller->getState(state);
+
 		// test if grounded
 		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 			characterControllerComponent.SpeedDown = gravity.y * 0.01f;
@@ -1583,6 +1589,112 @@ namespace Sparky {
 
 		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 		characterController.SpeedDown = -1.0f * jumpForce;
+	}
+
+	static bool CharacterControllerComponent_IsGrounded(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
+
+		physx::PxControllerState state;
+		controller->getState(state);
+
+		// test if grounded
+		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+#pragma endregion
+
+#pragma region CapsuleCollider Component
+
+	static float CapsuleColliderComponent_GetRadius(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<CapsuleColliderComponent>().Radius;
+	}
+	
+	static void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CapsuleColliderComponent>().Radius = radius;
+	}
+	
+	static float CapsuleColliderComponent_GetHeight(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<CapsuleColliderComponent>().Height;
+	}
+	
+	static void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CapsuleColliderComponent>().Height = height;
+	}
+
+	static void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<CapsuleColliderComponent>().Offset;
+	}
+
+	static void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CapsuleColliderComponent>().Offset = *offset;
+	}
+
+	static bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
+	}
+
+	static void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<CapsuleColliderComponent>().IsTrigger = isTrigger;
 	}
 
 #pragma endregion
@@ -2581,7 +2693,17 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 
 		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
-		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump);
+		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
+		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetHeight);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetHeight);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetOffset);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
+		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
 
 		SP_ADD_INTERNAL_CALL(Physics_Raycast);
 

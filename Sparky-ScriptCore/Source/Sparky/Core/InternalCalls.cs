@@ -458,6 +458,37 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void CharacterControllerComponent_Jump(ulong entityID, float jumpForce);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
+
+		#endregion
+
+		#region CapsuleCollider
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CapsuleColliderComponent_GetRadius(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CapsuleColliderComponent_SetRadius(ulong entityID, float radius);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CapsuleColliderComponent_GetHeight(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CapsuleColliderComponent_SetHeight(ulong entityID, float height);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CapsuleColliderComponent_GetOffset(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CapsuleColliderComponent_SetOffset(ulong entityID, ref Vector3 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool CapsuleColliderComponent_GetIsTrigger(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CapsuleColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
 		#endregion
 
 		#region RigidBody2D

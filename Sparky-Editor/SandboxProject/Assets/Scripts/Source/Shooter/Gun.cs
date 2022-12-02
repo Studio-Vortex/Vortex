@@ -18,11 +18,6 @@ namespace Sandbox {
 		Vector3 zoomedPosition;
 		Vector3 zoomedRotation;
 
-		Vector3 eyeLookDirection;
-		Entity eyes;
-		Vector3 playerLookDirection;
-		Entity player;
-
 		Camera camera;
 
 		AudioSource gunshotSound;
@@ -31,8 +26,6 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			eyes = FindEntityByName("Eyes");
-			player = FindEntityByName("Player");
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			gunshotSound = GetComponent<AudioSource>();
@@ -99,9 +92,7 @@ namespace Sandbox {
 
 		void UpdateState()
 		{
-			eyeLookDirection = eyes.transform.Forward;
-			playerLookDirection = player.transform.Forward;
-			muzzleBlast.Offset = eyeLookDirection + playerLookDirection;
+			muzzleBlast.Offset = transform.Translation + transform.Forward;
 		}
 
 		void Shoot(uint bullets)
