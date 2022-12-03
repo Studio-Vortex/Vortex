@@ -7,6 +7,7 @@ namespace Sandbox {
 		public float walkSpeed = 3f;
 		public float runSpeed = 6f;
 		public float strafeSpeed = 2f;
+		public float runStrafeSpeed = 4f;
 		public float maxLookUp = 35f;
 		public float maxLookDown = -45f;
 		public float movementDeadzone = 0.1f;
@@ -69,14 +70,16 @@ namespace Sandbox {
 			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > movementDeadzone)
 				speed = transform.Right;
 
-			controller.Move(speed * strafeSpeed * Time.DeltaTime);
+			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runStrafeSpeed : strafeSpeed;
+
+			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
 		void Jump()
 		{
-			
+			bool isGrounded = Physics.Raycast(transform.Translation + Vector3.Down, Vector3.Down, 0.05f, out RaycastHit hitInfo);
 
-			if (Input.IsKeyDown(KeyCode.Space) && controller.IsGrounded)
+			if (Input.IsKeyDown(KeyCode.Space) && isGrounded)
 				controller.Jump(jumpForce);
 		}
 

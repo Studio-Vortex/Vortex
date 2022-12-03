@@ -541,11 +541,9 @@ namespace Sparky {
 		TransformComponent& transform = entity.GetTransform();
 		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
-		Math::vec3 translation;
-		Math::quaternion rotation;
-		Math::vec3 scale;
+		Math::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		transform = TransformComponent{ translation, Math::EulerAngles(rotation), scale};
+		transform = TransformComponent{ translation, rotation, scale };
 	}
 	
 	static void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
@@ -1535,12 +1533,20 @@ namespace Sparky {
 
 		if (result)
 		{
-			UUID entityUUID = *(UUID*)hitInfo.block.actor->userData;
+			void* userData = hitInfo.block.actor->userData;
+			if (userData)
+			{
+				UUID entityUUID = *(UUID*)userData;
 
-			outHit->EntityID = entityUUID;
-			outHit->Position = FromPhysXVector(hitInfo.block.position);
-			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
-			outHit->Distance = hitInfo.block.distance;
+				outHit->EntityID = entityUUID;
+				outHit->Position = FromPhysXVector(hitInfo.block.position);
+				outHit->Normal = FromPhysXVector(hitInfo.block.normal);
+				outHit->Distance = hitInfo.block.distance;
+			}
+			else
+			{
+				*outHit = RaycastHit();
+			}
 		}
 
 		return result;

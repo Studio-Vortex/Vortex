@@ -43,7 +43,7 @@ namespace Sparky {
 			s_Data.DefaultAllocator.deallocate(shapes);
 		}
 
-		static void ReplaceVectorComponent(Math::vec3& vector, const physx::PxVec3& replacementVector)
+		static void ReplaceNonExistantVectorComponent(Math::vec3& vector, const physx::PxVec3& replacementVector)
 		{
 			if (vector.x == 0.0f)
 				vector.x = replacementVector.x;
@@ -116,7 +116,9 @@ namespace Sparky {
 			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.RuntimeActor)
+			{
 				CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
+			}
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
 			auto [t, r, scale] = GetTransformDecomposition(trx);
@@ -371,7 +373,7 @@ namespace Sparky {
 			Math::vec3 linearVelocity = rigidbody.LinearVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getLinearVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceVectorComponent(linearVelocity, actorVelocity);
+			Utils::ReplaceNonExistantVectorComponent(linearVelocity, actorVelocity);
 
 			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
 		}
@@ -383,7 +385,7 @@ namespace Sparky {
 			Math::vec3 angularVelocity = rigidbody.AngularVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getAngularVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceVectorComponent(angularVelocity, actorVelocity);
+			Utils::ReplaceNonExistantVectorComponent(angularVelocity, actorVelocity);
 
 			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
 		}

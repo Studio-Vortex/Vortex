@@ -1112,105 +1112,108 @@ namespace Sparky {
 
 			if (Gui::TreeNodeEx("Material", treeNodeFlags))
 			{
-				if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
-					material->SetAmbient(ambient);
-
-				if (Gui::TreeNodeEx("Diffuse", treeNodeFlags))
+				if (!Project::GetActive()->GetProperties().RendererProps.EnablePBRRenderer)
 				{
-					Gui::Text("Map");
-					Gui::SameLine();
-					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+					if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
+						material->SetAmbient(ambient);
 
-					if (SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap())
+					if (Gui::TreeNodeEx("Diffuse", treeNodeFlags))
 					{
-						ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
+						Gui::Text("Map");
+						Gui::SameLine();
+						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
 
-						if (Gui::ImageButton((void*)diffuseMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-							material->SetDiffuseMap(nullptr);
-						else if (Gui::IsItemHovered())
+						if (SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap())
 						{
-							Gui::BeginTooltip();
-							Gui::Text(diffuseMap->GetPath().c_str());
-							Gui::EndTooltip();
-						}
-					}
-					else
-						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+							ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
 
-					// Accept a Diffuse map from the content browser
-					if (Gui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(path);
-
-							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							if (Gui::ImageButton((void*)diffuseMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+								material->SetDiffuseMap(nullptr);
+							else if (Gui::IsItemHovered())
 							{
-								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-								if (texture->IsLoaded())
-									material->SetDiffuseMap(texture);
-								else
-									SP_WARN("Could not load texture {}", texturePath.filename().string());
+								Gui::BeginTooltip();
+								Gui::Text(diffuseMap->GetPath().c_str());
+								Gui::EndTooltip();
 							}
-							else
-								SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 						}
-						Gui::EndDragDropTarget();
-					}
+						else
+							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 
-					Gui::TreePop();
-				}
-				
-				if (Gui::TreeNodeEx("Specular", treeNodeFlags))
-				{
-					Gui::Text("Map");
-					Gui::SameLine();
-					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
-
-					if (SharedRef<Texture2D> specularMap = material->GetSpecularMap())
-					{
-						ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
-
-						if (Gui::ImageButton((void*)specularMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-							material->SetSpecularMap(nullptr);
-						else if (Gui::IsItemHovered())
+						// Accept a Diffuse map from the content browser
+						if (Gui::BeginDragDropTarget())
 						{
-							Gui::BeginTooltip();
-							Gui::Text(specularMap->GetPath().c_str());
-							Gui::EndTooltip();
-						}
-					}
-					else
-						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
-
-					// Accept a Specular map from the content browser
-					if (Gui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path texturePath = std::filesystem::path(path);
-
-							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
-								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path texturePath = std::filesystem::path(path);
 
-								if (texture->IsLoaded())
-									material->SetSpecularMap(texture);
+								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+								{
+									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+									if (texture->IsLoaded())
+										material->SetDiffuseMap(texture);
+									else
+										SP_WARN("Could not load texture {}", texturePath.filename().string());
+								}
 								else
-									SP_WARN("Could not load texture {}", texturePath.filename().string());
+									SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 							}
-							else
-								SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							Gui::EndDragDropTarget();
 						}
-						Gui::EndDragDropTarget();
+
+						Gui::TreePop();
 					}
 
-					Gui::TreePop();
+					if (Gui::TreeNodeEx("Specular", treeNodeFlags))
+					{
+						Gui::Text("Map");
+						Gui::SameLine();
+						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+						if (SharedRef<Texture2D> specularMap = material->GetSpecularMap())
+						{
+							ImVec4 tintColor = { ambient.r, ambient.g, ambient.b, 1.0f };
+
+							if (Gui::ImageButton((void*)specularMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+								material->SetSpecularMap(nullptr);
+							else if (Gui::IsItemHovered())
+							{
+								Gui::BeginTooltip();
+								Gui::Text(specularMap->GetPath().c_str());
+								Gui::EndTooltip();
+							}
+						}
+						else
+							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+						// Accept a Specular map from the content browser
+						if (Gui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path texturePath = std::filesystem::path(path);
+
+								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+								{
+									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+									if (texture->IsLoaded())
+										material->SetSpecularMap(texture);
+									else
+										SP_WARN("Could not load texture {}", texturePath.filename().string());
+								}
+								else
+									SP_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							}
+							Gui::EndDragDropTarget();
+						}
+
+						Gui::TreePop();
+					}
 				}
 
 				if (Gui::TreeNodeEx("Normal", treeNodeFlags))

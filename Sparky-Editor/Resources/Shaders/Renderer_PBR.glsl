@@ -31,8 +31,8 @@ uniform mat4 u_ViewProjection;
 
 void main()
 {
-	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
-	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
+	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0f));
+	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0f);
 
 	mat3 model = mat3(u_Model);
 	vertexOut.Normal = model * a_Normal;
@@ -162,11 +162,11 @@ void main()
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use Fdialetric of 0.04
 	// if it's a metal, use the albedo color as Fdialetric (metallic workflow)
-	vec3 Fdialetric = vec3(0.04);
+	vec3 Fdialetric = vec3(0.04f);
 	Fdialetric = mix(Fdialetric, properties.Albedo, properties.Metallic);
 
 	// Reflectance equation
-	vec3 Lo = vec3(0.0);
+	vec3 Lo = vec3(0.0f);
 
 	// Calculate per-light radiance
 	for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
@@ -178,46 +178,46 @@ void main()
 		float attenuation = Attenuate(pointLight.Position, fragmentIn.Position,
 									  pointLight.Constant, pointLight.Linear, pointLight.Quadratic);
 
-		vec3 radiance = pointLight.Color * pointLight.Ambient;
+		vec3 radiance = pointLight.Color * attenuation;
 
-		// Cook-Torrance BRDF
+		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0);
+		float cosTheta = max(dot(H, V), 0.0f);
 		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
 
-		float NdotV = max(dot(N, V), 0.0);
-		float NdotL = max(dot(N, L), 0.0);
+		float NdotV = max(dot(N, V), 0.0f);
+		float NdotL = max(dot(N, L), 0.0f);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL + 0.0001;
-		vec3 specular = numerator / denominator; // prevent division by 0
+		float denominator = 4.0f * NdotV * NdotL + 0.0001f; // prevent division by 0
+		vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
 		vec3 kS = F;
 		// For energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS
-		vec3 kD = vec3(1.0) - kS;
+		vec3 kD = vec3(1.0f) - kS;
 		// Multiply kD by the inverse metalness such that only non-metals 
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
-		kD *= 1.0 - properties.Metallic;
+		kD *= 1.0f - properties.Metallic;
 
 		// Add to outgoing radiance Lo
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
-	vec3 ambient = vec3(0.03) * properties.Albedo * properties.AO;
+	vec3 ambient = vec3(0.03f) * properties.Albedo * properties.AO;
 
 	vec3 color = ambient + Lo;
 
 	// HDR tonemapping
-	color = color / (color + vec3(1.0));
+	color = color / (color + vec3(1.0f));
 
 	// Gamma correct
-	color = pow(color, vec3(1.0 / 2.2));
+	color = pow(color, vec3(1.0f / 2.2f));
 
-	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureScale).a : 1.0);
+	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureScale).a : 1.0f);
 
 	o_Color = vec4(color, alpha);
 	o_EntityID = fragmentIn.EntityID;
@@ -229,37 +229,37 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float alpha = roughness * roughness;
     float alphaSq = alpha * alpha;
-    float NdotH = max(dot(N, H), 0.0);
+    float NdotH = max(dot(N, H), 0.0f);
     float NdotH2 = NdotH * NdotH;
 	
-    float denom = (NdotH2 * (alphaSq - 1.0) + 1.0);
+    float denom = (NdotH2 * (alphaSq - 1.0f) + 1.0f);
     denom = PI * denom * denom;
 	
-    return alphaSq / max(denom, 0.0000001);
+    return alphaSq / denom;
 }
 
 // Single term for separable Schlick-GGX below
 float gaSchlickG1(float cosTheta, float k)
 {
-	return cosTheta / (cosTheta * (1.0 - k) + k);
+	return cosTheta / (cosTheta * (1.0f - k) + k);
 }
 
 // Schlick-GGX approximation of geometric attenuation function using Smith's method
 float gaSchlickGGX(float NdotV, float roughness)
 {
-    float r = roughness + 1.0;
-    float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights
+    float r = roughness + 1.0f;
+    float k = (r * r) / 8.0f; // Epic suggests using this roughness remapping for analytic lights
 
     float num = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float denom = NdotV * (1.0f - k) + k;
 	
     return num / denom;
 }
 
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
+    float NdotV = max(dot(N, V), 0.0f);
+    float NdotL = max(dot(N, L), 0.0f);
     float ggx2 = gaSchlickGGX(NdotV, roughness);
     float ggx1 = gaSchlickGGX(NdotL, roughness);
 	
@@ -269,5 +269,5 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // Schlick's approximation of the Fresnel factor
 vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric, float roughness)
 {
-	return Fdialetric + (max(vec3(1.0 - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+	return Fdialetric + (max(vec3(1.0f - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0);
 }

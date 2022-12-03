@@ -8,10 +8,10 @@ namespace Sandbox {
 		public float bulletSpeed = 180f;
 		public float normalFOV = 60f;
 		public float zoomedFOV = 40f;
-		public uint bulletsPerShot = 1;
 		public uint ammo = 10;
 
 		float timeToWait = 0f;
+		uint reloadAmount;
 
 		Vector3 startPosition;
 		Vector3 startRotation;
@@ -22,12 +22,14 @@ namespace Sandbox {
 
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
+		AudioSource reloadSound;
 		ParticleEmitter muzzleBlast;
 
 		protected override void OnCreate()
 		{
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
+			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
 			startPosition = transform.Translation;
@@ -35,13 +37,14 @@ namespace Sandbox {
 			Transform zoomedTransform = FindEntityByName("Zoomed Transform").transform;
 			zoomedPosition = zoomedTransform.Translation;
 			zoomedRotation = zoomedTransform.Rotation;
+			reloadAmount = ammo;
 		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			UpdateState();
 			ProcessFire();
 			ProcessZoom();
+			ReloadIfNeeded();
 
 			timeToWait -= Time.DeltaTime;
 		}
@@ -81,7 +84,7 @@ namespace Sandbox {
 				}
 				else
 				{
-					Shoot(bulletsPerShot);
+					Shoot();
 				}
 			}
 			else if (leftMouseButtonReleased)
@@ -90,23 +93,16 @@ namespace Sandbox {
 			}
 		}
 
-		void UpdateState()
+		void Shoot()
 		{
-			muzzleBlast.Offset = transform.Translation + transform.Forward;
-		}
-
-		void Shoot(uint bullets)
-		{
-			for (uint i = 0; i < bullets; i++)
-			{
-				CreateBullet();
-			}
-
 			if (Physics.Raycast(transform.Translation, transform.Forward, 100f, out RaycastHit hitInfo))
 			{
 				Vector3 normal = hitInfo.Normal;
 				Vector3 position = hitInfo.Position;
 				float distance = hitInfo.Distance;
+
+				Debug.Log($"UUID: {hitInfo.EntityID}");
+
 				if (hitInfo.Entity != null)
 				{
 					Entity entity = hitInfo.Entity;
@@ -114,8 +110,11 @@ namespace Sandbox {
 				}
 			}
 
+			CreateBullet();
+
 			gunshotSound.Play();
 			muzzleBlast.Start();
+			muzzleBlast.Offset = transform.Translation + transform.Forward;
 			ammo--;
 			timeToWait = timeBetweenShots;
 		}
@@ -123,8 +122,7 @@ namespace Sandbox {
 		void CreateBullet()
 		{
 			Entity bullet = new Entity("Bullet");
-			bullet.transform.Translation = transform.worldTransform.Translation + transform.Forward;
-			Debug.Warn(transform.Forward.ToString());
+			bullet.transform.Translation = transform.worldTransform.Translation;
 			bullet.transform.Scale *= 0.5f;
 
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
@@ -136,6 +134,18 @@ namespace Sandbox {
 			RigidBody rb = bullet.AddComponent<RigidBody>();
 			rb.BodyType = RigidBodyType.Dynamic;
 			rb.AddForce(transform.Forward * bulletSpeed, ForceMode.Impulse);
+		}
+
+		void ReloadIfNeeded()
+		{
+			if (ammo != 0)
+				return;
+
+			if (Input.IsKeyDown(KeyCode.R))
+			{
+				reloadSound.Play();
+				ammo = reloadAmount;
+			}
 		}
 	}
 }
