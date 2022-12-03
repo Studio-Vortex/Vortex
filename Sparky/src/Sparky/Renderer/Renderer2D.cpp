@@ -187,6 +187,8 @@ namespace Sparky
 		s_Data.LineVA->AddVertexBuffer(s_Data.LineVB);
 		s_Data.LineVertexBufferBase = new LineVertex[Renderer2DInternalData::MaxVertices];
 
+		s_Data.TextVA = VertexArray::Create();
+
 		s_Data.TextVB = VertexBuffer::Create(Renderer2DInternalData::MaxVertices * sizeof(TextVertex));
 		s_Data.TextVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
@@ -195,6 +197,10 @@ namespace Sparky
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Int,    "a_EntityID" },
 		});
+
+		s_Data.TextVA->AddVertexBuffer(s_Data.TextVB);
+		s_Data.TextVA->SetIndexBuffer(quadIB);
+		s_Data.TextVertexBufferBase = new TextVertex[Renderer2DInternalData::MaxVertices];
 
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
@@ -216,6 +222,7 @@ namespace Sparky
 		s_Data.CircleShader = Shader::Create(CIRCLE_SHADER_PATH);
 		s_Data.LineShader = Shader::Create(LINE_SHADER_PATH);
 		s_Data.TextShader = Shader::Create(TEXT_SHADER_PATH);
+		s_Data.TextShader->Enable();
 		s_Data.TextShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
 		// Create a quad's set of vertices at the origin in ndc
@@ -239,6 +246,7 @@ namespace Sparky
 		delete[] s_Data.QuadVertexBufferBase;
 		delete[] s_Data.CircleVertexBufferBase;
 		delete[] s_Data.LineVertexBufferBase;
+		delete[] s_Data.TextVertexBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
@@ -255,6 +263,9 @@ namespace Sparky
 
 		s_Data.LineShader->Enable();
 		s_Data.LineShader->SetMat4("u_ViewProjection", viewProjection);
+
+		s_Data.TextShader->Enable();
+		s_Data.TextShader->SetMat4("u_ViewProjection", viewProjection);
 
 		StartBatch();
 	}

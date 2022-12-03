@@ -102,7 +102,12 @@ namespace Sandbox {
 		{
 			if (Physics.Raycast(transform.worldTransform.Translation, transform.Forward, 200f, out RaycastHit hitInfo))
 			{
-				// TODO once we can get the entity from a raycast hit get it here
+				// TODO once we can get the entity from a raycast hit process it here
+				if (hitInfo.Entity != null)
+				{
+					Debug.Log($"{hitInfo.Entity.Tag}");
+				}
+
 				Entity collision = new Entity("Collision");
 				collision.transform.Translation = hitInfo.Position;
 

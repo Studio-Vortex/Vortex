@@ -70,7 +70,12 @@ void main()
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     
 	// Set output color
-	o_Color = mix(bgColor, fgColor, opacity);
+	vec4 outputColor = mix(bgColor, fgColor, opacity);
+	
+	if (outputColor.a == 0.0)
+		discard;
+
+	o_Color = outputColor;
 
 	o_EntityID = f_EntityID;
 }
