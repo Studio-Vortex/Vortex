@@ -8,10 +8,10 @@ namespace Sandbox {
 		public float bulletSpeed = 180f;
 		public float normalFOV = 60f;
 		public float zoomedFOV = 40f;
-		public uint ammo = 10;
+		public uint startingAmmo = 10;
 
-		float timeToWait = 0f;
-		uint reloadAmount;
+		private float timeToWait = 0f;
+		private uint ammo = 0;
 
 		Vector3 startPosition;
 		Vector3 startRotation;
@@ -19,7 +19,6 @@ namespace Sandbox {
 		Vector3 zoomedRotation;
 
 		Camera camera;
-		ShooterController player;
 
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
@@ -29,7 +28,6 @@ namespace Sandbox {
 		protected override void OnCreate()
 		{
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
-			player = FindEntityByName("Player").As<ShooterController>();
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
 			gunshotSound = GetComponent<AudioSource>();
@@ -39,7 +37,7 @@ namespace Sandbox {
 			Transform zoomedTransform = FindEntityByName("Zoomed Transform").transform;
 			zoomedPosition = zoomedTransform.Translation;
 			zoomedRotation = zoomedTransform.Rotation;
-			reloadAmount = ammo;
+			ammo = startingAmmo;
 		}
 
 		protected override void OnUpdate(float deltaTime)
@@ -49,6 +47,11 @@ namespace Sandbox {
 			ReloadIfNeeded();
 
 			timeToWait -= Time.DeltaTime;
+		}
+
+		public void AddAmmo(uint amount)
+		{
+			ammo += amount;
 		}
 
 		void ProcessZoom()
@@ -97,34 +100,32 @@ namespace Sandbox {
 
 		void Shoot()
 		{
-			if (Physics.Raycast(transform.worldTransform.Translation, transform.Forward, 50f, out RaycastHit hitInfo))
+			if (Physics.Raycast(transform.worldTransform.Translation, transform.Forward, 200f, out RaycastHit hitInfo))
 			{
-				Entity entity = new Entity("Collision");
-				entity.transform.Translation = hitInfo.Position;
+				// TODO once we can get the entity from a raycast hit get it here
+				Entity collision = new Entity("Collision");
+				collision.transform.Translation = hitInfo.Position;
 
-				MeshRenderer meshRenderer = entity.AddComponent<MeshRenderer>();
+				MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
 				meshRenderer.Type = MeshType.Sphere;
 				Material material = meshRenderer.GetMaterial();
-				material.Albedo = Color.Green.XYZ;
-				material.Metallic = 0f;
-				material.Roughness = 1f;
-				
-				CreateBullet();
-
-				gunshotSound.Play();
-				muzzleBlast.Start();
-				muzzleBlast.Offset = transform.Translation + transform.Forward;
-				ammo--;
-				timeToWait = timeBetweenShots;
+				material.Albedo = hitInfo.Normal;
 			}
 
+			CreateBullet();
+
+			gunshotSound.Play();
+			muzzleBlast.Start();
+			muzzleBlast.Offset = transform.Translation + transform.Forward;
+			timeToWait = timeBetweenShots;
+			ammo--;
 		}
 
 		void CreateBullet()
 		{
 			Entity bullet = new Entity("Bullet");
 			bullet.transform.Translation = transform.worldTransform.Translation;
-			bullet.transform.Scale *= 0.5f;
+			bullet.transform.Scale *= 0.25f;
 
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
@@ -145,7 +146,7 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.R))
 			{
 				reloadSound.Play();
-				ammo = reloadAmount;
+				ammo = startingAmmo;
 			}
 		}
 	}

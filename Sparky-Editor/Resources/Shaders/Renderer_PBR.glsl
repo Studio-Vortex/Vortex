@@ -178,7 +178,7 @@ void main()
 		float attenuation = Attenuate(pointLight.Position, fragmentIn.Position,
 									  pointLight.Constant, pointLight.Linear, pointLight.Quadratic);
 
-		vec3 radiance = pointLight.Color * attenuation;
+		vec3 radiance = pointLight.Radiance * attenuation;
 
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);

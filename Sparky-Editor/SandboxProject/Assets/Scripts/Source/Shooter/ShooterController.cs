@@ -18,10 +18,13 @@ namespace Sandbox {
 		Vector2 mousePosLastFrame;
 		Vector2 mousePosThisFrame;
 
+		AudioSource[] footstepSounds;
 		RigidBody rigidbody;
 		CapsuleCollider capsuleCollider;
 		CharacterController controller;
 		Entity eyes;
+
+		bool isGrounded = false;
 
 		protected override void OnCreate()
 		{
@@ -32,6 +35,9 @@ namespace Sandbox {
 			Input.ShowMouseCursor = false;
 			rigidbody.Rotation = Vector3.Zero;
 			eyes.transform.Rotation = Vector3.Zero;
+			footstepSounds = new AudioSource[2];
+			footstepSounds[0] = FindEntityByName("Footstep 1").GetComponent<AudioSource>();
+			footstepSounds[1] = FindEntityByName("Footstep 2").GetComponent<AudioSource>();
 		}
 
 		protected override void OnUpdate(float deltaTime)
@@ -51,12 +57,21 @@ namespace Sandbox {
 			Vector3 speed = Vector3.Zero;
 
 			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -movementDeadzone)
+			{
 				speed = transform.Forward;
+				
+				if (isGrounded)
+					footstepSounds[0].Play();
+			}
 			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > movementDeadzone)
+			{
 				speed = -transform.Forward;
+				
+				if (isGrounded)
+					footstepSounds[1].Play();
+			}
 
 			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runSpeed : walkSpeed;
-
 			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
@@ -66,18 +81,27 @@ namespace Sandbox {
 			Vector3 speed = Vector3.Zero;
 
 			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -movementDeadzone)
+			{
 				speed = -transform.Right;
+				
+				if (isGrounded)
+					footstepSounds[0].Play();
+			}
 			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > movementDeadzone)
+			{
 				speed = transform.Right;
+				
+				if (isGrounded)
+					footstepSounds[1].Play();
+			}
 
 			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runStrafeSpeed : strafeSpeed;
-
 			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
 		void Jump()
 		{
-			bool isGrounded = Physics.Raycast(transform.Translation + Vector3.Down, Vector3.Down, 0.05f, out RaycastHit hitInfo);
+			isGrounded = Physics.Raycast(transform.Translation + Vector3.Down * capsuleCollider.Height, Vector3.Down, 0.05f, out RaycastHit hitInfo);
 
 			if (Input.IsKeyDown(KeyCode.Space) && isGrounded)
 				controller.Jump(jumpForce);

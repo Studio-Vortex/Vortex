@@ -444,9 +444,11 @@ namespace Sparky {
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
-			m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 			m_AboutPanel.OnGuiRender();
 		}
+
+		// Always render if open
+		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();

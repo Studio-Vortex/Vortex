@@ -236,7 +236,7 @@ namespace Sparky {
 				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
 
 				pbrShader->Enable();
-				//pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());

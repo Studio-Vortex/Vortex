@@ -14,7 +14,7 @@ namespace Sandbox {
 
 				if (hitInfo.Entity.Tag == "Player")
 				{
-					gun.ammo += amount;
+					gun.AddAmmo(amount);
 					GetComponent<AudioSource>().Play();
 					Destroy(false);
 				}

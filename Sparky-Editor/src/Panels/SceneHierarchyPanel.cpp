@@ -1016,25 +1016,30 @@ namespace Sparky {
 				}
 			}
 
-			Math::vec3 radiance = lightSource->GetRadiance();
-			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
-				lightSource->SetRadiance(radiance);
+			if (Project::GetActive()->GetProperties().RendererProps.EnablePBRRenderer)
+			{
+				Math::vec3 radiance = lightSource->GetRadiance();
+				if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
+					lightSource->SetRadiance(radiance);
+			}
+			else
+			{ // Blinn-Phong settings
+				Math::vec3 ambient = lightSource->GetAmbient();
+				if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
+					lightSource->SetAmbient(ambient);
 
-			Math::vec3 ambient = lightSource->GetAmbient();
-			if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
-				lightSource->SetAmbient(ambient);
+				Math::vec3 diffuse = lightSource->GetDiffuse();
+				if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
+					lightSource->SetDiffuse(diffuse);
 
-			Math::vec3 diffuse = lightSource->GetDiffuse();
-			if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
-				lightSource->SetDiffuse(diffuse);
+				Math::vec3 specular = lightSource->GetSpecular();
+				if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
+					lightSource->SetSpecular(specular);
 
-			Math::vec3 specular = lightSource->GetSpecular();
-			if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
-				lightSource->SetSpecular(specular);
-
-			Math::vec3 color = lightSource->GetColor();
-			if (Gui::ColorEdit3("Color", Math::ValuePtr(color)))
-				lightSource->SetColor(color);
+				Math::vec3 color = lightSource->GetColor();
+				if (Gui::ColorEdit3("Color", Math::ValuePtr(color)))
+					lightSource->SetColor(color);
+			}
 		});
 
 		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");

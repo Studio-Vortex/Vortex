@@ -1532,6 +1532,7 @@ namespace Sparky {
 		if (result)
 		{
 			void* userData = hitInfo.block.actor->userData;
+
 			if (userData)
 			{
 				UUID entityUUID = *(UUID*)userData;
