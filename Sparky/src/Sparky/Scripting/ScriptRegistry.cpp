@@ -151,6 +151,7 @@ namespace Sparky {
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		if (entity)
 		{
@@ -1684,6 +1685,70 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region SphereCollider Component
+
+	static float SphereColliderComponent_GetRadius(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<SphereColliderComponent>().Radius;
+	}
+
+	static void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<SphereColliderComponent>().Radius = radius;
+	}
+
+	static void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<SphereColliderComponent>().Offset;
+	}
+
+	static void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<SphereColliderComponent>().Offset = *offset;
+	}
+	
+	static bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<SphereColliderComponent>().IsTrigger;
+	}
+	
+	static void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<SphereColliderComponent>().IsTrigger = isTrigger;
+	}
+
+#pragma endregion
+
 #pragma region CapsuleCollider Component
 
 	static float CapsuleColliderComponent_GetRadius(UUID entityUUID)
@@ -2771,6 +2836,13 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(BoxColliderComponent_SetOffset);
 		SP_ADD_INTERNAL_CALL(BoxColliderComponent_GetIsTrigger);
 		SP_ADD_INTERNAL_CALL(BoxColliderComponent_SetIsTrigger);
+
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_GetRadius);
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_SetRadius);
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_SetOffset);
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_GetIsTrigger);
+		SP_ADD_INTERNAL_CALL(SphereColliderComponent_SetIsTrigger);
 
 		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
 		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);

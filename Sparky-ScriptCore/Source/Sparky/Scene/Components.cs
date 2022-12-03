@@ -604,7 +604,28 @@
 
 	public class SphereCollider : Component
 	{
+		public float Radius
+		{
+			get => InternalCalls.SphereColliderComponent_GetRadius(Entity.ID);
+			set => InternalCalls.SphereColliderComponent_SetRadius(Entity.ID, value);
+		}
 
+		public Vector3 Offset
+		{
+			get
+			{
+				InternalCalls.SphereColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.SphereColliderComponent_SetOffset(Entity.ID, ref value);
+		}
+
+		public bool IsTrigger
+		{
+			get => InternalCalls.SphereColliderComponent_GetIsTrigger(Entity.ID);
+			set => InternalCalls.SphereColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
 	}
 
 	public class CapsuleCollider : Component

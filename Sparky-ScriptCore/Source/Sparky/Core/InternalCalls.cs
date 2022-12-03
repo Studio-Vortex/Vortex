@@ -463,6 +463,12 @@ namespace Sparky {
 
 		#endregion
 
+		#region PhysicsMaterial
+
+
+
+		#endregion
+
 		#region BoxCollider
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -482,6 +488,28 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void BoxColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		#endregion
+
+		#region SphereCollider
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SphereColliderComponent_GetRadius(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SphereColliderComponent_SetRadius(ulong entityID, float radius);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SphereColliderComponent_GetOffset(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SphereColliderComponent_SetOffset(ulong entityID, ref Vector3 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SphereColliderComponent_GetIsTrigger(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SphereColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
 
 		#endregion
 
