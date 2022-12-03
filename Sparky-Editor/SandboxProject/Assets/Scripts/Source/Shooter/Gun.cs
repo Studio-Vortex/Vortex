@@ -19,6 +19,7 @@ namespace Sandbox {
 		Vector3 zoomedRotation;
 
 		Camera camera;
+		ShooterController player;
 
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
@@ -28,6 +29,7 @@ namespace Sandbox {
 		protected override void OnCreate()
 		{
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
+			player = FindEntityByName("Player").As<ShooterController>();
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
 			gunshotSound = GetComponent<AudioSource>();
@@ -95,28 +97,27 @@ namespace Sandbox {
 
 		void Shoot()
 		{
-			if (Physics.Raycast(transform.Translation, transform.Forward, 100f, out RaycastHit hitInfo))
+			if (Physics.Raycast(transform.worldTransform.Translation, transform.Forward, 50f, out RaycastHit hitInfo))
 			{
-				Vector3 normal = hitInfo.Normal;
-				Vector3 position = hitInfo.Position;
-				float distance = hitInfo.Distance;
+				Entity entity = new Entity("Collision");
+				entity.transform.Translation = hitInfo.Position;
 
-				Debug.Log($"UUID: {hitInfo.EntityID}");
+				MeshRenderer meshRenderer = entity.AddComponent<MeshRenderer>();
+				meshRenderer.Type = MeshType.Sphere;
+				Material material = meshRenderer.GetMaterial();
+				material.Albedo = Color.Green.XYZ;
+				material.Metallic = 0f;
+				material.Roughness = 1f;
+				
+				CreateBullet();
 
-				if (hitInfo.Entity != null)
-				{
-					Entity entity = hitInfo.Entity;
-					Debug.Log($"Hit! N: {normal}, P: {position}, D: {distance}, Name: {entity.Tag}");
-				}
+				gunshotSound.Play();
+				muzzleBlast.Start();
+				muzzleBlast.Offset = transform.Translation + transform.Forward;
+				ammo--;
+				timeToWait = timeBetweenShots;
 			}
 
-			CreateBullet();
-
-			gunshotSound.Play();
-			muzzleBlast.Start();
-			muzzleBlast.Offset = transform.Translation + transform.Forward;
-			ammo--;
-			timeToWait = timeBetweenShots;
 		}
 
 		void CreateBullet()

@@ -154,11 +154,9 @@ namespace Sparky {
 
 		if (entity)
 		{
-			SP_CORE_INFO("Entity with id: '{}' found", entityUUID);
 			return true;
 		}
 
-		SP_CORE_INFO("Entity with id: '{}' was not found", entityUUID);
 		return false;
 	}
 
