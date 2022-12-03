@@ -463,6 +463,28 @@ namespace Sparky {
 
 		#endregion
 
+		#region BoxCollider
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxColliderComponent_GetHalfSize(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxColliderComponent_SetHalfSize(ulong entityID, ref Vector3 halfSize);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxColliderComponent_GetOffset(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxColliderComponent_SetOffset(ulong entityID, ref Vector3 offset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool BoxColliderComponent_GetIsTrigger(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BoxColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		#endregion
+
 		#region CapsuleCollider
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

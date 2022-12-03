@@ -573,7 +573,33 @@
 
 	public class BoxCollider : Component
 	{
+		public Vector3 HalfSize
+		{
+			get
+			{
+				InternalCalls.BoxColliderComponent_GetHalfSize(Entity.ID, out Vector3 result);
+				return result;
+			}
 
+			set => InternalCalls.BoxColliderComponent_SetHalfSize(Entity.ID, ref value);
+		}
+
+		public Vector3 Offset
+		{
+			get
+			{
+				InternalCalls.BoxColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.BoxColliderComponent_SetOffset(Entity.ID, ref value);
+		}
+
+		public bool IsTrigger
+		{
+			get => InternalCalls.BoxColliderComponent_GetIsTrigger(Entity.ID);
+			set => InternalCalls.BoxColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
 	}
 
 	public class SphereCollider : Component

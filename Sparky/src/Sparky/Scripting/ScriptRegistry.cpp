@@ -1620,6 +1620,70 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region BoxCollider Component
+
+	static void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outHalfSize = entity.GetComponent<BoxColliderComponent>().HalfSize;
+	}
+	
+	static void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<BoxColliderComponent>().HalfSize = *halfSize;
+	}
+
+	static void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outOffset = entity.GetComponent<BoxColliderComponent>().Offset;
+	}
+
+	static void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<BoxColliderComponent>().Offset = *offset;
+	}
+
+	static bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<BoxColliderComponent>().IsTrigger;
+	}
+
+	static void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<BoxColliderComponent>().IsTrigger = isTrigger;
+	}
+
+#pragma endregion
+
 #pragma region CapsuleCollider Component
 
 	static float CapsuleColliderComponent_GetRadius(UUID entityUUID)
@@ -2700,6 +2764,13 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
 		SP_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_GetHalfSize);
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_SetHalfSize);
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_GetOffset);
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_SetOffset);
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_GetIsTrigger);
+		SP_ADD_INTERNAL_CALL(BoxColliderComponent_SetIsTrigger);
 
 		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
 		SP_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);
