@@ -920,6 +920,15 @@ namespace Sparky {
 
 				Renderer2D::DrawAABB(aabb, transform, ColorToVec4(Color::Orange));
 			}
+			else if (selectedEntity.HasComponent<TextMeshComponent>())
+			{
+				const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+				Math::mat4 transform = worldSpaceTransform.GetTransform();
+
+				Renderer2D::DrawRect(transform, ColorToVec4(Color::Orange));
+			}
 			else if (selectedEntity.HasComponent<CameraComponent>())
 			{
 				const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;

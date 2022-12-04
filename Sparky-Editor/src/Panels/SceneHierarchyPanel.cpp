@@ -346,6 +346,19 @@ namespace Sparky {
 		}
 		Gui::Separator();
 
+		if (Gui::BeginMenu("UI"))
+		{
+			if (Gui::MenuItem("Text"))
+			{
+				m_SelectedEntity = m_ContextScene->CreateEntity("Text");
+				m_SelectedEntity.AddComponent<TextMeshComponent>();
+				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+			}
+
+			Gui::EndMenu();
+		}
+		Gui::Separator();
+
 		if (Gui::BeginMenu("Effects"))
 		{
 			if (Gui::MenuItem("Particles"))

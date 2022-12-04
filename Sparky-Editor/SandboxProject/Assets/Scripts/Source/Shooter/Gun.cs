@@ -20,6 +20,7 @@ namespace Sandbox {
 
 		Camera camera;
 
+		TextMesh ammoText;
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
 		AudioSource reloadSound;
@@ -30,11 +31,13 @@ namespace Sandbox {
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
+			ammoText = FindEntityByName("Ammo Text").GetComponent<TextMesh>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
 			startPosition = transform.Translation;
 			startRotation = transform.Rotation;
 			Transform zoomedTransform = FindEntityByName("Zoomed Transform").transform;
+
 			zoomedPosition = zoomedTransform.Translation;
 			zoomedRotation = zoomedTransform.Rotation;
 			ammo = startingAmmo;
@@ -45,6 +48,8 @@ namespace Sandbox {
 			ProcessFire();
 			ProcessZoom();
 			ReloadIfNeeded();
+
+			ammoText.Text = ammo.ToString();
 
 			timeToWait -= Time.DeltaTime;
 		}

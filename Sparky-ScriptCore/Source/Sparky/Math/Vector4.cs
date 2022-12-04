@@ -34,6 +34,14 @@
 			W = w;
 		}
 
+		public Vector4(float xyz, float w)
+		{
+			X = xyz;
+			Y = xyz;
+			Z = xyz;
+			W = w;
+		}
+
 		public Vector2 XY
 		{
 			get => new Vector2(X, Y);

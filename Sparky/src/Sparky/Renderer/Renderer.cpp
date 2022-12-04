@@ -428,14 +428,21 @@ namespace Sparky {
 
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
 	{
-		//4 2.25
 		Math::vec3 rotation = transform.GetRotationEuler();
 		Math::vec3 forwardDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), { 0.0f, 0.0f, -1.0f });
-		Math::mat4 nearClipTransform = transform.GetTransform() * Math::Translate(forwardDirection) / 2.0f;
-		Math::mat4 farClipTransform = nearClipTransform * Math::Translate(forwardDirection) / 2.0f;
-		Math::vec2 viewportSize = sceneCamera.GetViewportSize();
-		Renderer2D::DrawRect(farClipTransform, color);
-		Renderer2D::DrawRect(nearClipTransform, color);
+
+		Math::vec3 corners[4] = {
+			transform.Translation + forwardDirection + (Math::vec3(transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
+			transform.Translation + forwardDirection + (Math::vec3(-transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
+			transform.Translation + forwardDirection + (Math::vec3(transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
+			transform.Translation + forwardDirection + (Math::vec3(-transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
+		};
+
+		Renderer2D::DrawLine(transform.Translation, corners[0], color);
+		Renderer2D::DrawLine(transform.Translation, corners[1], color);
+		Renderer2D::DrawLine(transform.Translation, corners[2], color);
+		Renderer2D::DrawLine(transform.Translation, corners[3], color);
+		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate(forwardDirection), color);
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
