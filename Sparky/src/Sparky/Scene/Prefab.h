@@ -20,7 +20,7 @@ namespace Sparky {
 		static SharedRef<Prefab> Create(Entity entity);
 
 	private:
-		Entity CreatePrefabFromEntity(Entity entity, bool serialize = true);
+		Entity CreatePrefabFromEntity(Entity entity);
 
 	private:
 		std::filesystem::path m_Filepath;

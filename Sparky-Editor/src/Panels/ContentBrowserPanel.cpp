@@ -492,7 +492,8 @@ public class Untitled : Entity
 				Entity& droppedEntity = *(Entity*)payload->Data;
 				SP_CORE_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
 				// Todo Create a new prefab here from the entity's uuid
-				SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
+				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
+				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);
 			}
 			Gui::EndDragDropTarget();
 		}

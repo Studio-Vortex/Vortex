@@ -1972,15 +1972,15 @@ namespace Sparky {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		b2BodyType type;
-		switch (bodyType)
-		{
-			case Sparky::RigidBody2DType::Static:    type = b2_staticBody;    break;
-			case Sparky::RigidBody2DType::Dynamic:   type = b2_dynamicBody;   break;
-			case Sparky::RigidBody2DType::Kinematic: type = b2_kinematicBody; break;
-		}
+		RigidBody2DComponent& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-		((b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody)->SetType(type);
+		if (bodyType != rb2d.Type)
+		{
+			Physics2D::DestroyPhysicsBody(entity);
+			rb2d.Type = bodyType;
+			rb2d.RuntimeBody = nullptr;
+			Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rb2d);
+		}
 	}
 
 	static void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)

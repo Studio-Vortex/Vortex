@@ -25,7 +25,7 @@ namespace Sparky {
 
 	}
 
-	Entity Prefab::CreatePrefabFromEntity(Entity entity, bool serialize)
+	Entity Prefab::CreatePrefabFromEntity(Entity entity)
 	{
 		Entity newEntity = m_Scene->CreateEntity();
 
