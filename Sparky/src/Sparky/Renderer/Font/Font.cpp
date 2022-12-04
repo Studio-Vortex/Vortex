@@ -8,6 +8,8 @@
 
 namespace Sparky {
 
+	static constexpr const char* DEFAULT_FONT_PATH = "Resources/Fonts/opensans/OpenSans-Regular.ttf";
+
 	using namespace msdf_atlas;
 
 	struct FontInput
@@ -346,7 +348,7 @@ namespace Sparky {
 
 	void Font::Init()
 	{
-		s_DefaultFont = Font::Create("Resources/Fonts/opensans/OpenSans-Regular.ttf");
+		s_DefaultFont = Font::Create(DEFAULT_FONT_PATH);
 	}
 
 	void Font::Shutdown()

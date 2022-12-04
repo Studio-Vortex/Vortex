@@ -202,6 +202,40 @@ namespace Sparky {
 
 		#endregion
 
+		#region TextMesh
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static string TextMeshComponent_GetTextString(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetTextString(ulong entityID, string text);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_GetColor(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetColor(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float TextMeshComponent_GetLineSpacing(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetLineSpacing(ulong entityID, float lineSpacing);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float TextMeshComponent_GetKerning(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetKerning(ulong entityID, float kerning);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float TextMeshComponent_GetMaxWidth(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetMaxWidth(ulong entityID, float maxWidth);
+
+		#endregion
+
 		#region MeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

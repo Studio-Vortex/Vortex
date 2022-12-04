@@ -313,27 +313,27 @@ namespace Sparky {
 
 			switch (lightComponent.Type)
 			{
-			case LightSourceComponent::LightType::Directional:
-			{
-				out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
-				break;
-			}
-			case LightSourceComponent::LightType::Point:
-			{
-				out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
-				out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
-				break;
-			}
-			case LightSourceComponent::LightType::Spot:
-			{
-				out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
-				out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
-				out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
-				out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
-				out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
+				case LightSourceComponent::LightType::Directional:
+				{
+					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+					break;
+				}
+				case LightSourceComponent::LightType::Point:
+				{
+					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
+					break;
+				}
+				case LightSourceComponent::LightType::Spot:
+				{
+					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
+					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
+					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
+					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
+					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
 
-				break;
-			}
+					break;
+				}
 			}
 
 			out << YAML::EndMap; // LightSourceComponent
@@ -452,7 +452,8 @@ namespace Sparky {
 
 			const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 
-			out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
+			// TODO come back to this
+			//out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
 			out << YAML::Key << "Color" << YAML::Value << textMeshComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textMeshComponent.Kerning;
 			out << YAML::Key << "LineSpacing" << YAML::Value << textMeshComponent.LineSpacing;
@@ -940,7 +941,7 @@ namespace Sparky {
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
-				tmc.FontAsset = Font::Create(Project::GetAssetFileSystemPath(textMeshComponent["FontSourcePath"].as<std::string>()));
+				//tmc.FontAsset = Font::Create(Project::GetAssetFileSystemPath(textMeshComponent["FontSourcePath"].as<std::string>()));
 				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
 				tmc.Kerning = textMeshComponent["Kerning"].as<float>();
 				tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();

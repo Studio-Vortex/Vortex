@@ -251,6 +251,44 @@
 		}
 	}
 
+	public class TextMesh : Component
+	{
+		public string Text
+		{
+			get => InternalCalls.TextMeshComponent_GetTextString(Entity.ID);
+			set => InternalCalls.TextMeshComponent_SetTextString(Entity.ID, value);
+		}
+
+		public Vector4 Color
+		{
+			get
+			{
+				InternalCalls.TextMeshComponent_GetColor(Entity.ID, out Vector4 color);
+				return color;
+			}
+
+			set => InternalCalls.TextMeshComponent_SetColor(Entity.ID, ref value);
+		}
+
+		public float LineSpacing
+		{
+			get => InternalCalls.TextMeshComponent_GetLineSpacing(Entity.ID);
+			set => InternalCalls.TextMeshComponent_SetLineSpacing(Entity.ID, value);
+		}
+
+		public float Kerning
+		{
+			get => InternalCalls.TextMeshComponent_GetKerning(Entity.ID);
+			set => InternalCalls.TextMeshComponent_SetKerning(Entity.ID, value);
+		}
+
+		public float MaxWidth
+		{
+			get => InternalCalls.TextMeshComponent_GetMaxWidth(Entity.ID);
+			set => InternalCalls.TextMeshComponent_SetMaxWidth(Entity.ID, value);
+		}
+	}
+
 	public class MeshRenderer : Component
 	{
 		public MeshType Type

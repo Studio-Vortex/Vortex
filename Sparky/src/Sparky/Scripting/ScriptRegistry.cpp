@@ -724,6 +724,113 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region TextMesh Component
+
+	static MonoString* TextMeshComponent_GetTextString(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return mono_string_new(mono_domain_get(), entity.GetComponent<TextMeshComponent>().TextString.c_str());
+	}
+
+	static void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		char* textCStr = mono_string_to_utf8(textString);
+
+		entity.GetComponent<TextMeshComponent>().TextString = std::string(textCStr);
+		mono_free(textCStr);
+	}
+
+	static void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outColor = entity.GetComponent<TextMeshComponent>().Color;
+	}
+
+	static void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TextMeshComponent>().Color = *color;
+	}
+
+	static float TextMeshComponent_GetLineSpacing(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<TextMeshComponent>().LineSpacing;
+	}
+
+	static void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TextMeshComponent>().LineSpacing = lineSpacing;
+	}
+
+	static float TextMeshComponent_GetKerning(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<TextMeshComponent>().Kerning;
+	}
+
+	static void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TextMeshComponent>().Kerning = kerning;
+	}
+
+	static float TextMeshComponent_GetMaxWidth(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<TextMeshComponent>().MaxWidth;
+	}
+
+	static void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
+	}
+
+#pragma endregion
+
 #pragma region Mesh Renderer Component
 
 	static MeshType MeshRendererComponent_GetMeshType(UUID entityUUID)
@@ -2770,6 +2877,17 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetColor);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
+
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetTextString);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetTextString);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetColor);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetLineSpacing);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetLineSpacing);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetKerning);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetKerning);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetMaxWidth);
+		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
 
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_GetMeshType);
 		SP_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
