@@ -1604,7 +1604,35 @@ namespace Sparky {
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
-			char buffer[1024];
+			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
+			Gui::Text(fontFilepath.c_str());
+			Gui::InputText("##FontSource", (char*)fontFilepath.c_str(), fontFilepath.size(), ImGuiInputTextFlags_ReadOnly);
+
+			// Accept a Font from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path fontPath = std::filesystem::path(path);
+
+					// Make sure we are recieving an actual font otherwise we will have trouble opening it
+					if (fontPath.filename().extension() == ".ttf" || fontPath.filename().extension() == ".TTF")
+					{
+						SharedRef<Font> font = Font::Create(fontPath.string());
+
+						if (font->GetFontAtlas()->IsLoaded())
+							component.FontAsset = font;
+						else
+							SP_CORE_WARN("Could not load font {}", fontPath.filename().string());
+					}
+					else
+						SP_CORE_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			char buffer[2048] = { 0 };
 			memcpy(buffer, component.TextString.c_str(), component.TextString.size());
 			if (Gui::InputTextMultiline("Text", buffer, sizeof(buffer)))
 			{

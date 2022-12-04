@@ -1090,6 +1090,9 @@ namespace Sparky
 
 		if (textureIndex == 0.0f)
 		{
+			if (s_Data.FontTextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
+				NextBatch();
+
 			textureIndex = (float)s_Data.FontTextureSlotIndex;
 			s_Data.FontTextureSlots[s_Data.FontTextureSlotIndex] = fontAtlas;
 			s_Data.FontTextureSlotIndex++;
@@ -1181,8 +1184,8 @@ namespace Sparky
 					pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
 					pl += x, pb += y, pr += x, pt += y;
 
-					double texelWidth = 1. / fontAtlas->GetWidth();
-					double texelHeight = 1. / fontAtlas->GetHeight();
+					double texelWidth = 1.0 / fontAtlas->GetWidth();
+					double texelHeight = 1.0 / fontAtlas->GetHeight();
 					l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pb, 0.0f, 1.0f);
@@ -1216,7 +1219,7 @@ namespace Sparky
 					s_Data.TextIndexCount += 6;
 
 					double advance = glyph->getAdvance();
-					fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+					fontGeometry.getAdvance(advance, character, utf32string[(size_t)i + 1]);
 					x += fsScale * advance + kerningOffset;
 
 #if SP_RENDERER_STATISTICS
