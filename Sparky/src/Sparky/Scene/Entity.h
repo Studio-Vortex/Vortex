@@ -26,6 +26,7 @@ namespace Sparky {
 			SP_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already has this Component!");
 			TComponent& component = m_Scene->m_Registry.emplace<TComponent>(m_EntityID, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<TComponent>(*this, component);
+
 			return component;
 		}
 
@@ -34,6 +35,7 @@ namespace Sparky {
 		{
 			TComponent& component = m_Scene->m_Registry.emplace_or_replace<TComponent>(m_EntityID, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<TComponent>(*this, component);
+
 			return component;
 		}
 

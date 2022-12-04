@@ -545,6 +545,19 @@ namespace Sparky {
 		transform = TransformComponent{ translation, rotation, scale };
 	}
 	
+	static void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+		SP_CORE_ASSERT(child, "Invalid Child UUID!");
+
+		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+		SP_CORE_ASSERT(parent, "Invalid Parent UUID!");
+
+		contextScene->ParentEntity(child, parent);
+	}
+
 	static void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
 	{
 		Math::mat4 transform = a->GetTransform() * b->GetTransform();
@@ -2858,6 +2871,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		SP_ADD_INTERNAL_CALL(TransformComponent_LookAt);
+		SP_ADD_INTERNAL_CALL(TransformComponent_SetParent);
 		SP_ADD_INTERNAL_CALL(TransformComponent_Multiply);
 
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);

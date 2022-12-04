@@ -7,12 +7,6 @@
 
 	public class Transform : Component
 	{
-		public static Transform operator *(Transform a, Transform b)
-		{
-			InternalCalls.TransformComponent_Multiply(ref a, ref b, out Transform result);
-			return result;
-		}
-
 		public Vector3 Translation
 		{
 			get
@@ -158,6 +152,17 @@
 		public void LookAt(Vector3 worldPoint)
 		{
 			InternalCalls.TransformComponent_LookAt(Entity.ID, ref worldPoint);
+		}
+
+		public void SetParent(Entity parent)
+		{
+			InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
+		}
+
+		public static Transform operator *(Transform a, Transform b)
+		{
+			InternalCalls.TransformComponent_Multiply(ref a, ref b, out Transform result);
+			return result;
 		}
 	}
 
