@@ -119,6 +119,12 @@ namespace Sparky {
 			bool success = loader.LoadASCIIFromFile(&model, &error, &warning, filepath);
 			SP_CORE_ASSERT(success, "{}: {}", warning, error);
 
+			std::vector<ModelVertexInfo> vertices;
+			std::vector<uint32_t> indices;
+			std::vector<SharedRef<Texture2D>> textures;
+
+			
+
 			return Mesh();
 		}
 

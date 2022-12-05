@@ -18,7 +18,6 @@ out DATA
 {
 	vec3       Position;
 	vec3       Normal;
-	vec3       Tangent;
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
@@ -35,18 +34,19 @@ void main()
 	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0f);
 
 	mat3 model = mat3(u_Model);
-	vertexOut.Normal = model * a_Normal;
-	vertexOut.Tangent = model * a_Tangent.xyz;
+	vertexOut.Normal = normalize(model * a_Normal);
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 
 	vertexOut.EntityID = a_EntityID;
 
+	vec3 tangent = model * a_Tangent.xyz;
+
 	// Calculate the Tangent Bitangent Normal Matrix
 	vec3 N = normalize(vertexOut.Normal);
-	vec3 T = normalize(vertexOut.Tangent.xyz);
+	vec3 T = normalize(tangent);
 	T = (T - dot(T, N) * N);
-	vec3 B = -normalize(cross(vertexOut.Normal, vertexOut.Tangent.xyz) * a_Tangent.w);
+	vec3 B = -normalize(cross(vertexOut.Normal, tangent) * a_Tangent.w);
 	vertexOut.TBN = mat3(T, B, N);
 }
 
@@ -61,7 +61,6 @@ in DATA
 {
 	vec3       Position;
 	vec3       Normal;
-	vec3       Tangent;
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
