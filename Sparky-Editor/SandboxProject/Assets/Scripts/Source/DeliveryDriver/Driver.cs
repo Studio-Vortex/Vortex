@@ -14,10 +14,12 @@ namespace Sandbox {
 		Vector4 hasPackageColor = new Vector4(0.2f, 0.8f, 0.2f, 1.0f);
 		Vector4 noPackageColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 		SpriteRenderer spriteRenderer;
+		TextMesh packagesLeftText;
 
 		protected override void OnCreate()
 		{
 			spriteRenderer = GetComponent<SpriteRenderer>();
+			packagesLeftText = FindEntityByName("Text").GetComponent<TextMesh>();
 		}
 
 		protected override void OnUpdate(float delta)
@@ -65,6 +67,8 @@ namespace Sandbox {
 			{
 				hasPackage = false;
 				spriteRenderer.Color = noPackageColor;
+				int packagesLeft = Convert.ToInt32(packagesLeftText.Text);
+				packagesLeftText.Text = (--packagesLeft).ToString();
 			}
 			else if (other.Marker == "Boost")
 			{

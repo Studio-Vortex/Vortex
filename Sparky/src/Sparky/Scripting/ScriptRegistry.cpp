@@ -161,6 +161,24 @@ namespace Sparky {
 		return false;
 	}
 
+	static uint64_t Scene_Instantiate(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		if (!entity)
+		{
+			SP_CORE_WARN("Scene.Instantiate called with Invalid Entity UUID!");
+			return 0;
+		}
+
+		Entity clonedEntity = contextScene->DuplicateEntity(entity);
+		UUID uuid = clonedEntity.GetUUID();
+		return uuid;
+	}
+
 	static bool Scene_IsPaused()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2840,6 +2858,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
 		SP_ADD_INTERNAL_CALL(Scene_FindEntityByID);
+		SP_ADD_INTERNAL_CALL(Scene_Instantiate);
 		SP_ADD_INTERNAL_CALL(Scene_IsPaused);
 		SP_ADD_INTERNAL_CALL(Scene_Pause);
 		SP_ADD_INTERNAL_CALL(Scene_Resume);

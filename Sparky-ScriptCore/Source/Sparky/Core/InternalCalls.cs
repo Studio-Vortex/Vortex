@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Sparky {
 
@@ -44,6 +45,9 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_FindEntityByID(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_Instantiate(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_IsPaused();

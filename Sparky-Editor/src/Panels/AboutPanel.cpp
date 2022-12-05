@@ -18,7 +18,9 @@ namespace Sparky {
 			Gui::PopFont();
 
 			Gui::Separator();
-			Gui::Text("Sparky is an early-stage game engine for Windows");
+			Gui::Text("Sparky is an early-stage game engine for Windows.");
+			Gui::Text("For more info, visit: https://github.com/Jshuk-7/Sparky");
+			Gui::Text("This software contains source code powered by NVIDIA Corporation.");
 			Gui::Separator();
 
 			Gui::PushFont(boldFont);

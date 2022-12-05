@@ -11,6 +11,13 @@
 			return null;
 		}
 
+		// Clones the entity and returns it
+		public static Entity Instantiate(Entity entity)
+		{
+			ulong clonedEntityID = InternalCalls.Scene_Instantiate(entity.ID);
+			return new Entity(clonedEntityID);
+		}
+
 		public static bool IsPaused()
 		{
 			return InternalCalls.Scene_IsPaused();

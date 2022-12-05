@@ -155,7 +155,7 @@ namespace Sparky {
 	{
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
-
+			
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
 
@@ -170,7 +170,11 @@ namespace Sparky {
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
 		bool AssemblyReloadPending = false;
 
+#ifdef SP_DEBUG
 		bool DebuggingEnabled = true;
+#else
+		bool DebuggingEnabled = false;
+#endif
 
 		SharedRef<AudioSource> AppAssemblyReloadSound;
 
@@ -504,8 +508,8 @@ namespace Sparky {
 		return s_Data->CoreAssemblyImage;
 	}
 
-    void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
-    {
+	void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
+	{
 		if (!entity.HasComponent<ScriptComponent>() || !targetEntity.HasComponent<ScriptComponent>())
 			return;
 
@@ -518,7 +522,7 @@ namespace Sparky {
 
 			
 		}
-    }
+	}
 
 	void ScriptEngine::LoadAssemblyClasses(bool displayClassNames)
 	{

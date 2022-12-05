@@ -57,7 +57,12 @@ namespace Sparky {
 		else
 		{
 			// TODO: Prompt user to select Project Name and Directory
-			CreateNewProject(); // Start the editor off with a fresh project
+			//CreateNewProject();
+
+			if (!OpenExistingProject())
+			{
+				Application::Get().Quit();
+			}
 		}
 
 		m_EditorCamera = EditorCamera(Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
@@ -238,7 +243,7 @@ namespace Sparky {
 					CreateNewProject();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Open Project"))
+				if (Gui::MenuItem("Open Project...", "Ctrl+O"))
 					OpenExistingProject();
 				Gui::Separator();
 
@@ -250,7 +255,7 @@ namespace Sparky {
 					CreateNewScene();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Open Scene...", "Ctrl+O"))
+				if (Gui::MenuItem("Open Scene..."))
 					OpenExistingScene();
 				Gui::Separator();
 
@@ -981,7 +986,7 @@ namespace Sparky {
 			case Key::O:
 			{
 				if (controlPressed && m_SceneState == SceneState::Edit)
-					OpenExistingScene();
+					OpenExistingProject();
 
 				break;
 			}
@@ -1233,12 +1238,15 @@ namespace Sparky {
 		Project::New();
 	}
 
-	void EditorLayer::OpenExistingProject()
+	bool EditorLayer::OpenExistingProject()
 	{
 		std::string filepath = FileSystem::OpenFileDialog("Sparky Project (*.sproject)\0*.sproject\0");
 
-		if (!filepath.empty())
-			OpenProject(filepath);
+		if (filepath.empty())
+			return false;
+
+		OpenProject(filepath);
+		return true;
 	}
 
 	void EditorLayer::OpenProject(const std::filesystem::path& path)

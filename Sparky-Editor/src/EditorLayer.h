@@ -40,7 +40,7 @@ namespace Sparky {
 		// Project
 
 		void CreateNewProject();
-		void OpenExistingProject();
+		bool OpenExistingProject();
 		void OpenProject(const std::filesystem::path& path);
 		void SaveProject();
 
