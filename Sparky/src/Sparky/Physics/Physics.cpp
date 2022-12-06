@@ -13,12 +13,13 @@ namespace Sparky {
 		physx::PxFoundation* Foundation = nullptr;
 		physx::PxPhysics* PhysicsFactory = nullptr;
 		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
+		physx::PxCooking* CookingFactory = nullptr;
 		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
-		physx::PxTolerancesScale ToleranceScale;
+		physx::PxTolerancesScale TolerancesScale;
 	};
 
-	static PhysicsEngineInternalData s_Data;
+	static PhysicsEngineInternalData* s_Data = nullptr;
 
 	namespace Utils {
 
@@ -31,7 +32,7 @@ namespace Sparky {
 			// contact callback;
 			const physx::PxU32 numShapes = actor->getNbShapes();
 
-			physx::PxShape** shapes = (physx::PxShape**)s_Data.DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);
+			physx::PxShape** shapes = (physx::PxShape**)s_Data->DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);
 			actor->getShapes(shapes, numShapes);
 
 			for (physx::PxU32 i = 0; i < numShapes; i++)
@@ -40,7 +41,7 @@ namespace Sparky {
 				shape->setSimulationFilterData(filterData);
 			}
 
-			s_Data.DefaultAllocator.deallocate(shapes);
+			s_Data->DefaultAllocator.deallocate(shapes);
 		}
 
 		static void ReplaceNonExistantVectorComponent(Math::vec3& vector, const physx::PxVec3& replacementVector)
@@ -57,35 +58,47 @@ namespace Sparky {
 
 	static void InitPhysicsScene(const Math::vec3& gravity)
 	{
+		s_Data = new PhysicsEngineInternalData();
+
 		// Create the scene with the description
-		s_Data.Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Data.DefaultAllocator, s_Data.ErrorCallback);
-		SP_CORE_ASSERT(s_Data.Foundation, "Failed to create Physics Scene Foundation!");
+		s_Data->Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Data->DefaultAllocator, s_Data->ErrorCallback);
+		SP_CORE_ASSERT(s_Data->Foundation, "Failed to create Physics Scene Foundation!");
 
-		s_Data.ToleranceScale.length = 1.0; // Typical length of an object
-		s_Data.ToleranceScale.speed = 100.0f; // Typical speed of an object, gravity * speed is a reasonable choice
-		s_Data.PhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data.Foundation, s_Data.ToleranceScale, true, nullptr);
+		s_Data->TolerancesScale = physx::PxTolerancesScale();
+		s_Data->TolerancesScale.length = 1.0; // Typical length of an object
+		s_Data->TolerancesScale.speed = 100.0f; // Typical speed of an object, gravity * speed is a reasonable choice
+		s_Data->PhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data->Foundation, s_Data->TolerancesScale, true, nullptr);
 
-		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data.ToleranceScale);
+		bool extentionsLoaded = PxInitExtensions(*s_Data->PhysicsFactory, nullptr);
+		SP_CORE_ASSERT(extentionsLoaded, "Failed to initialize PhysX Extensions");
+
+		s_Data->Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
+
+		physx::PxCookingParams cookingParameters = physx::PxCookingParams(s_Data->TolerancesScale);
+		cookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
+
+		s_Data->CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Data->Foundation, cookingParameters);
+		SP_CORE_ASSERT(s_Data->CookingFactory, "Failed to Initialize PhysX Cooking!");
+
+		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
-		s_Data.Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 
 		sceneDescription.gravity = ToPhysXVector(gravity);
 		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
 		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
 
-		sceneDescription.cpuDispatcher = s_Data.Dispatcher;
+		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
 
-		s_Data.PhysicsScene = s_Data.PhysicsFactory->createScene(sceneDescription);
-		s_Data.ControllerManager = PxCreateControllerManager(*s_Data.PhysicsScene);
+		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
+		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
 	}
 
 	physx::PxScene* Physics::GetPhysicsScene()
 	{
-		return s_Data.PhysicsScene;
+		return s_Data->PhysicsScene;
 	}
 
 	void Physics::OnSimulationStart(Scene* contextScene)
@@ -103,8 +116,8 @@ namespace Sparky {
 
 	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
-		s_Data.PhysicsScene->simulate(s_FixedTimeStep);
-		s_Data.PhysicsScene->fetchResults(true);
+		s_Data->PhysicsScene->simulate(s_FixedTimeStep);
+		s_Data->PhysicsScene->fetchResults(true);
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
@@ -168,14 +181,17 @@ namespace Sparky {
 
 	void Physics::OnSimulationStop()
 	{
-		bool simulationStarted = (bool)(s_Data.Foundation && s_Data.PhysicsFactory && s_Data.PhysicsScene);
-
-		if (simulationStarted)
+		if (s_Data)
 		{
-			s_Data.ControllerManager->release();
-			s_Data.PhysicsScene->release();
-			s_Data.PhysicsFactory->release();
-			s_Data.Foundation->release();
+			s_Data->ControllerManager->release();
+			s_Data->PhysicsScene->release();
+			s_Data->CookingFactory->release();
+			s_Data->Dispatcher->release();
+			PxCloseExtensions();
+			s_Data->PhysicsFactory->release();
+			s_Data->Foundation->release();
+
+			delete s_Data;
 		}
 	}
 
@@ -187,11 +203,11 @@ namespace Sparky {
 
 		if (rigidbody.Type == RigidBodyType::Static)
 		{
-			actor = s_Data.PhysicsFactory->createRigidStatic(ToPhysXTransform(entityTransform));
+			actor = s_Data->PhysicsFactory->createRigidStatic(ToPhysXTransform(entityTransform));
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = s_Data.PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
+			physx::PxRigidDynamic* dynamicActor = s_Data->PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
 			UpdateDynamicActorFlags(rigidbody, dynamicActor);
 			actor = dynamicActor;
 		}
@@ -216,12 +232,12 @@ namespace Sparky {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 				}
 				else
 				{
 					// Create a default material
-					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 				}
 
 				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
@@ -238,7 +254,7 @@ namespace Sparky {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = s_Data.ControllerManager->createController(desc);
+				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
 			}
 			else if (entity.HasComponent<BoxColliderComponent>())
 			{
@@ -249,12 +265,12 @@ namespace Sparky {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 				}
 				else
 				{
 					// Create a default material
-					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 				}
 
 				physx::PxBoxControllerDesc desc;
@@ -269,7 +285,7 @@ namespace Sparky {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = s_Data.ControllerManager->createController(desc);
+				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
 			}
 		}
 		else
@@ -286,12 +302,12 @@ namespace Sparky {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 				}
 				else
 				{
 					// Create a default material
-					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
@@ -311,12 +327,12 @@ namespace Sparky {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 				}
 				else
 				{
 					// Create a default material
-					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
@@ -335,12 +351,12 @@ namespace Sparky {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data.PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
 				}
 				else
 				{
 					// Create a default material
-					material = s_Data.PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
+					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
@@ -358,7 +374,7 @@ namespace Sparky {
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
-		s_Data.PhysicsScene->addActor(*actor);
+		s_Data->PhysicsScene->addActor(*actor);
 	}
 
 	void Physics::UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
@@ -422,7 +438,7 @@ namespace Sparky {
 
 		if (actor != nullptr)
 		{
-			s_Data.PhysicsScene->removeActor(*actor);
+			s_Data->PhysicsScene->removeActor(*actor);
 		}
 	}
 

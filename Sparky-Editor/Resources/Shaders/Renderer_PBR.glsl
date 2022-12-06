@@ -34,13 +34,12 @@ void main()
 	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0f);
 
 	mat3 model = mat3(u_Model);
-	vertexOut.Normal = normalize(model * a_Normal);
+	vertexOut.Normal = model * a_Normal;
+	vec3 tangent = model * a_Tangent.xyz;
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 
 	vertexOut.EntityID = a_EntityID;
-
-	vec3 tangent = model * a_Tangent.xyz;
 
 	// Calculate the Tangent Bitangent Normal Matrix
 	vec3 N = normalize(vertexOut.Normal);
@@ -150,7 +149,7 @@ void main()
 	properties.TBN = fragmentIn.TBN;
 
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(2.2)) : u_Material.Albedo);
-	properties.Normal = ((u_Material.HasNormalMap) ? normalize(properties.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0)) : fragmentIn.Normal);
+	properties.Normal = ((u_Material.HasNormalMap) ? normalize(properties.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureScale).r : 1.0);

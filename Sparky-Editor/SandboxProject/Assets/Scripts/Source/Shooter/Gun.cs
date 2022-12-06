@@ -113,13 +113,14 @@ namespace Sandbox {
 					Debug.Log($"{hitInfo.Entity.Tag}");
 				}
 
-				Entity collision = new Entity("Collision");
+				/// Debug
+				/*Entity collision = new Entity("Collision");
 				collision.transform.Translation = hitInfo.Position;
 
 				MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
 				meshRenderer.Type = MeshType.Sphere;
 				Material material = meshRenderer.GetMaterial();
-				material.Albedo = hitInfo.Normal;
+				material.Albedo = hitInfo.Normal;*/
 			}
 
 			CreateBullet();

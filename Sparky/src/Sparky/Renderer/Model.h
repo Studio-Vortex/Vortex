@@ -89,6 +89,8 @@ namespace Sparky {
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
 		const std::vector<SharedRef<Texture2D>>& GetTextures() const { return m_Textures; }
 
+		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
+
 		uint32_t GetQuadCount() const;
 
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
@@ -102,7 +104,6 @@ namespace Sparky {
 	private:
 		std::string m_Filepath;
 		SharedRef<MaterialInstance> m_MaterialInstance;
-		std::vector<ModelVertex> m_OriginalVertices;
 		std::vector<ModelVertex> m_Vertices;
 		std::vector<SharedRef<Texture2D>> m_Textures;
 

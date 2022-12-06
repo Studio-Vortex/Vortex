@@ -217,13 +217,13 @@ namespace Sparky {
 		else if (path.filename().extension() == ".gltf")
 			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
 
-		m_OriginalVertices.resize(mesh.Vertices.size());
+		m_Vertices.resize(mesh.Vertices.size());
 
 		// Store the original mesh vertices
 		uint32_t i = 0;
 		for (const auto& vertex : mesh.Vertices)
 		{
-			ModelVertex& v = m_OriginalVertices[i++];
+			ModelVertex& v = m_Vertices[i++];
 			v.Position = vertex.Position;
 			v.Normal = vertex.Normal;
 			v.Tangent = vertex.Tangent;
@@ -236,8 +236,8 @@ namespace Sparky {
 
 		uint32_t indexCount = mesh.Indices.size();
 
-		uint32_t dataSize = m_OriginalVertices.size() * sizeof(ModelVertex);
-		m_Vbo = VertexBuffer::Create(m_OriginalVertices.data(), dataSize);
+		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
+		m_Vbo = VertexBuffer::Create(m_Vertices.data(), dataSize);
 		m_Vbo->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal"   },
@@ -251,8 +251,6 @@ namespace Sparky {
 
 		m_Ibo = IndexBuffer::Create(mesh.Indices.data(), indexCount);
 		m_Vao->SetIndexBuffer(m_Ibo);
-
-		m_Vertices = m_OriginalVertices;
 	}
 
 	void Model::OnUpdate(int entityID, const Math::vec2& scale)
