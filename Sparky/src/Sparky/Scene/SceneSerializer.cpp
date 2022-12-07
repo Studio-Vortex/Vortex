@@ -670,7 +670,7 @@ namespace Sparky {
 
 					switch (field.Type)
 					{
-						WRITE_SCRIPT_FIELD(Float, float)
+							WRITE_SCRIPT_FIELD(Float, float)
 							WRITE_SCRIPT_FIELD(Double, double)
 							WRITE_SCRIPT_FIELD(Bool, bool)
 							WRITE_SCRIPT_FIELD(Char, int8_t)
@@ -1164,7 +1164,7 @@ namespace Sparky {
 
 							switch (type)
 							{
-								READ_SCRIPT_FIELD(Float, float)
+									READ_SCRIPT_FIELD(Float, float)
 									READ_SCRIPT_FIELD(Double, double)
 									READ_SCRIPT_FIELD(Bool, bool)
 									READ_SCRIPT_FIELD(Char, int8_t)

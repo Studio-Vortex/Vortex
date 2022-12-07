@@ -82,6 +82,14 @@ namespace Sparky {
 			ma_sound_start(sound);
 	}
 
+	void AudioEngine::PlayOneShot(ma_engine* engine, const char* filepath)
+	{
+		if (engine && strlen(filepath) != 0)
+		{
+			ma_engine_play_sound(engine, filepath, nullptr);
+		}
+	}
+
     void AudioEngine::PauseSound(ma_sound* sound)
     {
 		ma_sound_stop(sound);

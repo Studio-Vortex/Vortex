@@ -635,14 +635,16 @@ namespace Sparky {
 				if (Gui::MenuItem("Copy Component"))
 				{
 					// TODO: Copy Component
-					copyCallback(component);
+					if (copyCallback)
+						copyCallback(component);
 
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();
 				if (Gui::MenuItem("Paste Component"))
 				{
-					pasteCallback(component);
+					if (pasteCallback)
+						pasteCallback(component);
 
 					Gui::CloseCurrentPopup();
 				}
@@ -1744,6 +1746,9 @@ namespace Sparky {
 
 				if (Gui::Checkbox("Play On Start", &props.PlayOnStart))
 					component.Source->SetPlayOnStart(props.PlayOnStart);
+
+				if (Gui::Checkbox("Play One Shot", &props.PlayOneShot))
+					component.Source->SetPlayOneShot(props.PlayOneShot);
 
 				if (Gui::Checkbox("Loop", &props.Loop))
 					component.Source->SetLoop(props.Loop);

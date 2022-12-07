@@ -28,6 +28,7 @@ namespace Sparky {
 			float Volume = 1.0f;
 
 			bool PlayOnStart = false;
+			bool PlayOneShot = false;
 			bool Loop = false;
 			bool Spacialized = true;
 		};
@@ -60,6 +61,7 @@ namespace Sparky {
 		void SetSpacialized(bool spacialized);
 		void SetLoop(bool loop);
 		void SetPlayOnStart(bool playOnStart);
+		void SetPlayOneShot(bool playOneShot);
 
 		inline const std::string& GetPath() const { return m_Path; }
 

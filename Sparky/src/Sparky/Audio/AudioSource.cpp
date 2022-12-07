@@ -28,11 +28,16 @@ namespace Sparky {
 			m_Initialized = true;
 		}
 
-		if (IsPlaying())
-			return;
-
-		AudioEngine::StartEngine(&m_Engine);
-		AudioEngine::PlayFromSound(&m_Sound);
+		if (m_Properties.PlayOneShot)
+		{
+			AudioEngine::StartEngine(&m_Engine);
+			AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
+		}
+		else
+		{
+			AudioEngine::StartEngine(&m_Engine);
+			AudioEngine::PlayFromSound(&m_Sound);
+		}
 	}
 
 	void AudioSource::Pause()
@@ -131,6 +136,11 @@ namespace Sparky {
     {
 		m_Properties.PlayOnStart = playOnStart;
     }
+
+	void AudioSource::SetPlayOneShot(bool playOneShot)
+	{
+		m_Properties.PlayOneShot = playOneShot;
+	}
 
 	float AudioSource::GetAmountComplete()
 	{

@@ -10,10 +10,12 @@ namespace Sandbox {
 		public float runStrafeSpeed = 4f;
 		public float maxLookUp = 35f;
 		public float maxLookDown = -45f;
-		public float movementDeadzone = 0.1f;
-		public float verticalRotationSpeed = 10f;
-		public float horizontalRotationSpeed = 20f;
-		public float jumpForce = 5f;
+		public float controllerDeadzone = 0.15f;
+		public float mouseVerticalRotationSpeed = 10f;
+		public float mouseHorizontalRotationSpeed = 20f;
+		public float controllerVerticalRotationSpeed = 100f;
+		public float controllerHorizontalRotationSpeed = 200f;
+		public float jumpForce = 6f;
 
 		Vector2 mousePosLastFrame;
 		Vector2 mousePosThisFrame;
@@ -56,14 +58,14 @@ namespace Sandbox {
 			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			Vector3 speed = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -movementDeadzone)
+			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -controllerDeadzone)
 			{
 				speed = transform.Forward;
 				
 				if (isGrounded)
 					footstepSounds[0].Play();
 			}
-			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > movementDeadzone)
+			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > controllerDeadzone)
 			{
 				speed = -transform.Forward;
 				
@@ -71,7 +73,10 @@ namespace Sandbox {
 					footstepSounds[1].Play();
 			}
 
-			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runSpeed : walkSpeed;
+			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
+			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+
+			float modifier = (leftShiftPressed || leftStickPressed) ? runSpeed : walkSpeed;
 			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
@@ -80,14 +85,14 @@ namespace Sandbox {
 			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
 			Vector3 speed = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -movementDeadzone)
+			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -controllerDeadzone)
 			{
 				speed = -transform.Right;
 				
 				if (isGrounded)
 					footstepSounds[0].Play();
 			}
-			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > movementDeadzone)
+			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > controllerDeadzone)
 			{
 				speed = transform.Right;
 				
@@ -95,15 +100,21 @@ namespace Sandbox {
 					footstepSounds[1].Play();
 			}
 
-			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? runStrafeSpeed : strafeSpeed;
+			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
+			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+
+			float modifier = (leftShiftPressed || leftStickPressed) ? runStrafeSpeed : strafeSpeed;
 			controller.Move(speed * modifier * Time.DeltaTime);
 		}
 
 		void Jump()
 		{
+			bool spacePressed = Input.IsKeyDown(KeyCode.Space);
+			bool aButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonA);
+
 			isGrounded = Physics.Raycast(transform.Translation + Vector3.Down * capsuleCollider.Height, Vector3.Down, 0.05f, out RaycastHit hitInfo);
 
-			if (Input.IsKeyDown(KeyCode.Space) && isGrounded)
+			if ((spacePressed || aButtonPressed) && isGrounded)
 				controller.Jump(jumpForce);
 		}
 
@@ -116,18 +127,38 @@ namespace Sandbox {
 
 		void RotateHorizontal()
 		{
-			Vector2 delta = GetMouseDelta();
-			rigidbody.Rotate(0f, -delta.X * horizontalRotationSpeed * Time.DeltaTime, 0f);
+			Vector2 mouseDelta = GetMouseDelta();
+			rigidbody.Rotate(0f, -mouseDelta.X * mouseHorizontalRotationSpeed * Time.DeltaTime, 0f);
+
+			float rightAxisX = Input.GetGamepadAxis(Gamepad.AxisRightX);
+			if (rightAxisX < -controllerDeadzone || rightAxisX > controllerDeadzone)
+			{
+				rigidbody.Rotate(0f, -rightAxisX * controllerHorizontalRotationSpeed * Time.DeltaTime, 0f);
+			}
 		}
 
 		void RotateVertical()
 		{
-			Vector2 delta = GetMouseDelta();
-			Transform eyeTransform = eyes.transform;
-			float deltaRoll = delta.Y * verticalRotationSpeed * Time.DeltaTime;
-			eyeTransform.Rotate(deltaRoll, 0f, 0f);
-			float clampedRoll = Mathf.Clamp(eyeTransform.Rotation.X, maxLookDown, maxLookUp);
-			eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
+			{
+				Vector2 mouseDelta = GetMouseDelta();
+				Transform eyeTransform = eyes.transform;
+				float deltaRoll = mouseDelta.Y * mouseVerticalRotationSpeed * Time.DeltaTime;
+				eyeTransform.Rotate(deltaRoll, 0f, 0f);
+				float clampedRoll = Mathf.Clamp(eyeTransform.Rotation.X, maxLookDown, maxLookUp);
+				eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
+			}
+
+			{
+				float rightAxisY = Input.GetGamepadAxis(Gamepad.AxisRightY);
+				if (rightAxisY < -controllerDeadzone || rightAxisY > controllerDeadzone)
+				{
+					Transform eyeTransform = eyes.transform;
+					float deltaRoll = -rightAxisY * controllerVerticalRotationSpeed * Time.DeltaTime;
+					eyeTransform.Rotate(deltaRoll, 0f, 0f);
+					float clampedRoll = Mathf.Clamp(eyeTransform.Rotation.X, maxLookDown, maxLookUp);
+					eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
+				}
+			}
 		}
 	}
 

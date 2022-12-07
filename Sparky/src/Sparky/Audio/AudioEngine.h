@@ -22,6 +22,7 @@ namespace Sparky {
 		static void DestroySound(ma_sound* sound);
 
 		static void PlayFromSound(ma_sound* sound);
+		static void PlayOneShot(ma_engine* engine, const char* filepath);
 		static void PauseSound(ma_sound* sound);
 		static void RestartSound(ma_sound* sound);
 		static void StopSound(ma_sound* sound);

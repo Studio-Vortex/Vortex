@@ -52,7 +52,8 @@ namespace Sandbox {
 		{
 			ProcessFire();
 			ProcessZoom();
-			ReloadIfNeeded();
+			if (ammo == 0)
+				Reload();
 
 			ammoText.Text = ammo.ToString();
 
@@ -67,7 +68,6 @@ namespace Sandbox {
 		void ProcessZoom()
 		{
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
-			bool rightMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Right);
 			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
 
 			if (rightMouseButtonPressed || leftTriggerPressed)
@@ -77,7 +77,7 @@ namespace Sandbox {
 				transform.Rotation = zoomedRotation;
 				isZoomed = true;
 			}
-			else if (rightMouseButtonReleased)
+			else
 			{
 				camera.FieldOfView = normalFOV;
 				transform.Translation = startPosition;
@@ -88,10 +88,11 @@ namespace Sandbox {
 
 		void ProcessFire()
 		{
-			bool waitTimeOver = timeToWait <= 0f;
 			bool leftMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Left);
 			bool leftMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Left);
 			bool rightTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > 0f;
+			bool rightTriggerReleased = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) == -1;
+			bool waitTimeOver = timeToWait <= 0f;
 
 			if ((leftMouseButtonPressed || rightTriggerPressed) && waitTimeOver)
 			{
@@ -104,7 +105,7 @@ namespace Sandbox {
 					Shoot();
 				}
 			}
-			else if (leftMouseButtonReleased)
+			else if (leftMouseButtonReleased && rightTriggerReleased)
 			{
 				muzzleBlast.Stop();
 			}
@@ -122,16 +123,16 @@ namespace Sandbox {
 				}
 
 				/// Debug
-				Entity collision = new Entity("Collision");
+				/*Entity collision = new Entity("Collision");
 				collision.transform.Translation = hitInfo.Position;
 
 				MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
 				meshRenderer.Type = MeshType.Sphere;
 				Material material = meshRenderer.GetMaterial();
-				material.Albedo = hitInfo.Normal;
+				material.Albedo = hitInfo.Normal;*/
 			}
 
-			//CreateBullet();
+			CreateBullet();
 
 			gunshotSound.Play();
 			muzzleBlast.Start();
@@ -157,12 +158,12 @@ namespace Sandbox {
 			rb.AddForce(transform.Forward * bulletSpeed, ForceMode.Impulse);
 		}
 
-		void ReloadIfNeeded()
+		void Reload()
 		{
-			if (ammo != 0)
-				return;
+			bool rKeyPressed = Input.IsKeyDown(KeyCode.R);
+			bool yButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonY);
 
-			if (Input.IsKeyDown(KeyCode.R))
+			if (rKeyPressed || yButtonPressed)
 			{
 				reloadSound.Play();
 				ammo = startingAmmo;
