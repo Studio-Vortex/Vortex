@@ -47,6 +47,7 @@ namespace Sparky {
 	private:
 		SharedRef<Scene> m_ContextScene;
 		Entity m_SelectedEntity;
+		TransformComponent m_TransformToCopy;
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
 		ImGuiTextFilter m_EntityClassNameInputTextFilter;

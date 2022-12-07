@@ -15,23 +15,28 @@ namespace Sparky {
 		const auto& appProps = Application::Get().GetProperties();
 		const auto& commandLineArgs = appProps.CommandLineArgs;
 
+		FramebufferProperties framebufferProps{};
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
+		framebufferProps.Width = appProps.WindowWidth;
+		framebufferProps.Height = appProps.WindowHeight;
+
+		m_Framebuffer = Framebuffer::Create(framebufferProps);
+
+		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
+
+		m_RuntimeScene = Scene::Create();
+		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
 		if (commandLineArgs.Count > 1)
 		{
-			FramebufferProperties framebufferProps{};
-			framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
-			framebufferProps.Width = appProps.WindowWidth;
-			framebufferProps.Height = appProps.WindowHeight;
-
-			m_Framebuffer = Framebuffer::Create(framebufferProps);
-
-			m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
-
-			m_RuntimeScene = Scene::Create();
-			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
 			const auto& projectFilepath = commandLineArgs[1];
 
 			OpenProject(std::filesystem::path(projectFilepath));
+		}
+		else
+		{
+			// Temp
+			OpenProject("Projects/SandboxProject/Sandbox.sproject");
 		}
 	}
 

@@ -17,10 +17,19 @@ namespace Sparky {
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
-		const char* projectFilepath = args[1];
-		std::string path(projectFilepath);
-		std::string projectName = path.substr(0, path.find('.'));
-		std::string applicationName = projectName.substr(projectName.find_last_of('\\') + 1, projectName.length());
+		std::string applicationName;
+		
+		if (args.Count > 1)
+		{
+			const char* projectFilepath = args[1];
+			std::string path(projectFilepath);
+			std::string projectName = path.substr(0, path.find('.'));
+			applicationName = projectName.substr(projectName.find_last_of('\\') + 1, projectName.length());
+		}
+		else
+		{
+			applicationName = "Application";
+		}
 
 		ApplicationProperties props;
 		props.Name = applicationName;

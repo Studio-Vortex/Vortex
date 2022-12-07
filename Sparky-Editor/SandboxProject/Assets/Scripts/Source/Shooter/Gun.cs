@@ -12,6 +12,7 @@ namespace Sandbox {
 
 		private float timeToWait = 0f;
 		private uint ammo = 0;
+		private bool isZoomed = false;
 
 		Vector3 startPosition;
 		Vector3 startRotation;
@@ -20,6 +21,8 @@ namespace Sandbox {
 
 		Camera camera;
 
+		Entity player;
+		Entity eyes;
 		TextMesh ammoText;
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
@@ -29,6 +32,8 @@ namespace Sandbox {
 		protected override void OnCreate()
 		{
 			camera = FindEntityByName("Camera").GetComponent<Camera>();
+			player = FindEntityByName("Player");
+			eyes = FindEntityByName("Eyes");
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
 			ammoText = FindEntityByName("Ammo Text").GetComponent<TextMesh>();
@@ -70,12 +75,14 @@ namespace Sandbox {
 				camera.FieldOfView = zoomedFOV;
 				transform.Translation = zoomedPosition;
 				transform.Rotation = zoomedRotation;
+				isZoomed = true;
 			}
 			else if (rightMouseButtonReleased)
 			{
 				camera.FieldOfView = normalFOV;
 				transform.Translation = startPosition;
 				transform.Rotation = startRotation;
+				isZoomed = false;
 			}
 		}
 
@@ -105,7 +112,8 @@ namespace Sandbox {
 
 		void Shoot()
 		{
-			if (Physics.Raycast(transform.worldTransform.Translation, transform.Forward, 200f, out RaycastHit hitInfo))
+			Vector3 origin = isZoomed ? transform.worldTransform.Translation : player.transform.Translation + player.transform.Forward;
+			if (Physics.Raycast(origin, eyes.transform.Forward, 200f, out RaycastHit hitInfo))
 			{
 				// TODO once we can get the entity from a raycast hit process it here
 				if (hitInfo.Entity != null)
@@ -114,16 +122,16 @@ namespace Sandbox {
 				}
 
 				/// Debug
-				/*Entity collision = new Entity("Collision");
+				Entity collision = new Entity("Collision");
 				collision.transform.Translation = hitInfo.Position;
 
 				MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
 				meshRenderer.Type = MeshType.Sphere;
 				Material material = meshRenderer.GetMaterial();
-				material.Albedo = hitInfo.Normal;*/
+				material.Albedo = hitInfo.Normal;
 			}
 
-			CreateBullet();
+			//CreateBullet();
 
 			gunshotSound.Play();
 			muzzleBlast.Start();
