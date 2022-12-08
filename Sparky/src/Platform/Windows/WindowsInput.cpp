@@ -55,7 +55,11 @@ namespace Sparky {
 
 	Math::vec2 Input::GetMouseScrollOffset()
 	{
-		return s_MouseScrollOffset;
+		Math::vec2 value = s_MouseScrollOffset;
+
+		// Reset the scroll offset
+		s_MouseScrollOffset = Math::vec2(0.0f);
+		return value;
 	}
 
 	void Input::SetMouseScrollOffset(const Math::vec2& offset)
