@@ -1,4 +1,6 @@
-﻿namespace Sparky {
+﻿using System.Runtime.InteropServices.WindowsRuntime;
+
+namespace Sparky {
 
 	public static class Input
 	{
@@ -22,6 +24,12 @@
 		{
 			InternalCalls.Input_GetMousePosition(out Vector2 position);
 			return position;
+		}
+
+		public static Vector2 GetMouseScrollDelta()
+		{
+			InternalCalls.Input_GetMouseScrollOffset(out Vector2 result);
+			return result;
 		}
 
 		public static bool IsGamepadButtonDown(Gamepad button) => InternalCalls.Input_IsGamepadButtonDown(button);

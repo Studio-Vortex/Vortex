@@ -8,7 +8,7 @@ namespace Sandbox {
 		public float bulletSpeed = 180f;
 		public float normalFOV = 60f;
 		public float zoomedFOV = 40f;
-		public uint startingAmmo = 10;
+		public uint startingAmmo = 25;
 
 		private float timeToWait = 0f;
 		private uint ammo = 0;
@@ -52,10 +52,10 @@ namespace Sandbox {
 		{
 			ProcessFire();
 			ProcessZoom();
-			if (ammo == 0)
+			if (ammo != startingAmmo)
 				Reload();
 
-			ammoText.Text = ammo.ToString();
+			ammoText.Text = $"{ammo}/{startingAmmo}";
 
 			timeToWait -= Time.DeltaTime;
 		}
@@ -136,7 +136,9 @@ namespace Sandbox {
 
 			gunshotSound.Play();
 			muzzleBlast.Start();
-			muzzleBlast.Offset = transform.Translation + transform.Forward;
+			var forward = transform.Forward * 2.0f;
+			muzzleBlast.Offset = forward;
+			muzzleBlast.Velocity = forward;
 			timeToWait = timeBetweenShots;
 			ammo--;
 		}

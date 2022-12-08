@@ -280,6 +280,10 @@ namespace Sparky {
 			for (auto& e : view)
 			{
 				Entity entity{ e, this };
+
+				if (!entity.IsActive())
+					continue;
+
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 				const auto& audioProps = audioSource->GetProperties();
 
@@ -299,6 +303,10 @@ namespace Sparky {
 			for (auto e : view)
 			{
 				Entity entity{ e, this };
+
+				if (!entity.IsActive())
+					continue;
+
 				ScriptEngine::OnCreateEntity(entity);
 			}
 		}
@@ -370,7 +378,15 @@ namespace Sparky {
 				// C# Entity OnUpdate
 				auto view = m_Registry.view<ScriptComponent>();
 				for (auto entityID : view)
-					ScriptEngine::OnUpdateEntity(Entity{ entityID, this }, delta);
+				{
+					Entity entity{ entityID, this };
+
+					// If the entity is not active do not run function
+					if (!entity.IsActive())
+						continue;
+
+					ScriptEngine::OnUpdateEntity(entity, delta);
+				}
 
 				// C++ Entity OnUpdate
 				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)

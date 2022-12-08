@@ -105,6 +105,11 @@ namespace Sparky {
 		}
 
 		public void Destroy(bool scriptInstance = true) => InternalCalls.Entity_Destroy(ID, scriptInstance);
+
+		public void SetActive(bool active)
+		{
+			InternalCalls.Entity_SetActive(ID, active);
+		}
 	}
 
 }

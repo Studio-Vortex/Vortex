@@ -29,6 +29,15 @@ namespace Sparky {
 						projectName = std::string(buffer);
 					}
 
+					std::filesystem::path& assetDirectory = m_Properties.General.AssetDirectory;
+					Gui::InputText("Asset Directory", (char*)assetDirectory.string().c_str(), assetDirectory.string().size(), ImGuiInputTextFlags_ReadOnly);
+
+					std::filesystem::path& scriptBinPath = m_Properties.General.ScriptBinaryPath;
+					Gui::InputText("Script Binary Path", (char*)scriptBinPath.string().c_str(), scriptBinPath.string().size(), ImGuiInputTextFlags_ReadOnly);
+
+					std::filesystem::path& startScene = m_Properties.General.StartScene;
+					Gui::InputText("Start Scene", (char*)startScene.string().c_str(), startScene.string().size(), ImGuiInputTextFlags_ReadOnly);
+
 					Gui::EndTabItem();
 				}
 

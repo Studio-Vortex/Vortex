@@ -105,7 +105,14 @@ namespace Sparky {
 		m_RuntimeScene->OnUpdateEntityGui();
 	}
 
-	void RuntimeLayer::OnEvent(Event& e) { }
+	void RuntimeLayer::OnEvent(Event& e)
+	{
+		if (e.GetEventType() == EventType::MouseScrolled)
+		{
+			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)e;
+			Input::SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
+		}
+	}
 
 	void RuntimeLayer::OnRuntimeScenePaused()
 	{

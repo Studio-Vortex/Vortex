@@ -12,7 +12,7 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static void GenerateGeometryTangents(std::vector<ModelVertexInfo>& vertices, const std::vector<uint32_t>& indices)
+		static void GenerateGeometryTangents(std::vector<ModelVertexInfo>& vertices, const std::vector<uint32_t>& indices, const Math::mat4& transform)
 		{
 			uint32_t indexCount = indices.size();
 			for (uint32_t i = 0; i < indexCount; i += 3)
@@ -104,7 +104,7 @@ namespace Sparky {
 				}
 			}
 
-			GenerateGeometryTangents(vertices, indices);
+			GenerateGeometryTangents(vertices, indices, transform);
 
 			return { vertices, indices };
 		}

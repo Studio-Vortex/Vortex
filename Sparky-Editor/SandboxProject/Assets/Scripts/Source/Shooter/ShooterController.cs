@@ -50,6 +50,16 @@ namespace Sandbox {
 			RotateHorizontal();
 			RotateVertical();
 
+			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+			{
+				Application.Quit();
+			}
+
+			if (Input.IsKeyDown(KeyCode.F1) || Input.IsGamepadButtonDown(Gamepad.ButtonGuide))
+			{
+				SceneManager.LoadScene("FPSDemoRevamped");
+			}
+
 			mousePosLastFrame = mousePosThisFrame;
 		}
 

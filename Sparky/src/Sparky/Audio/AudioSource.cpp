@@ -159,6 +159,8 @@ namespace Sparky {
 		dstAudioSource->SetPitch(props.Pitch);
 		dstAudioSource->SetPosition(props.Position);
 		dstAudioSource->SetSpacialized(props.Spacialized);
+		dstAudioSource->SetPlayOnStart(props.PlayOnStart);
+		dstAudioSource->SetPlayOneShot(props.PlayOneShot);
 		dstAudioSource->SetVelocity(props.Veloctiy);
 		dstAudioSource->SetVolume(props.Volume);
 	}

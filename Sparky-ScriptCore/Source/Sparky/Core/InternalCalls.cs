@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Sparky {
 
@@ -107,6 +106,9 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Entity_Destroy(ulong entityID, bool isScriptInstance = true);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_SetActive(ulong entityID, bool isActive);
 
 		#endregion
 
@@ -798,6 +800,9 @@ namespace Sparky {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Input_GetMousePosition(out Vector2 position);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Input_GetMouseScrollOffset(out Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsGamepadButtonDown(Gamepad gamepadButton);

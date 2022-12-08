@@ -154,13 +154,13 @@ namespace Sparky {
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		m_Scene->m_Registry.each([&](auto entityID)
-			{
-				Entity entity = { entityID, m_Scene.get() };
-		if (!entity)
-			return;
+		{
+			Entity entity = { entityID, m_Scene.get() };
+			if (!entity)
+				return;
 
-		SerializeEntity(out, entity);
-			});
+			SerializeEntity(out, entity);
+		});
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -217,6 +217,8 @@ namespace Sparky {
 
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
+
+		out << YAML::Key << "Active" << YAML::Value << entity.IsActive();
 
 		if (entity.HasComponent<HierarchyComponent>())
 		{
@@ -706,6 +708,10 @@ namespace Sparky {
 		{
 			uint64_t uuid = entity["Entity"].as<uint64_t>();
 
+			bool isActive = true;
+			if (entity["Active"])
+				isActive = entity["Active"].as<bool>();
+
 			std::string name;
 			std::string marker;
 
@@ -720,6 +726,7 @@ namespace Sparky {
 			}
 
 			Entity deserializedEntity = scene->CreateEntityWithUUID(uuid, name, marker);
+			deserializedEntity.SetActive(isActive);
 
 			uint64_t parentHandle = entity["Parent"] ? entity["Parent"].as<uint64_t>() : 0;
 			deserializedEntity.SetParent(static_cast<UUID>(parentHandle));

@@ -727,6 +727,12 @@ namespace Sparky {
 				m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 			}
 
+			bool active = tagComponent.IsActive;
+			if (Gui::Checkbox("Active", &active))
+				tagComponent.IsActive = active;
+
+			Gui::SameLine();
+
 			auto& markers = tagComponent.Markers;
 			if (auto currentMarkerIt = std::find(markers.begin(), markers.end(), tagComponent.Marker);
 				currentMarkerIt != markers.end()

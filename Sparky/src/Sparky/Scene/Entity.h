@@ -71,6 +71,9 @@ namespace Sparky {
 		void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
 		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
+		bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
+		void SetActive(bool active) { GetComponent<TagComponent>().IsActive = active; }
+
 		UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
 		void SetParent(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 

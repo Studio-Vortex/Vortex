@@ -42,8 +42,12 @@ namespace Sparky {
 				for (const auto entity : view)
 				{
 					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+					Entity entity{ entity, scene };
 
-					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), spriteRendererComponent, (int)(entt::entity)entity);
+					if (!entity.IsActive())
+						continue;
+
+					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(entity), spriteRendererComponent, (int)(entt::entity)entity);
 				}
 			}
 
@@ -54,8 +58,12 @@ namespace Sparky {
 				for (const auto entity : group)
 				{
 					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(entity);
+					Entity entity{ entity, scene };
 
-					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
+					if (!entity.IsActive())
+						continue;
+
+					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(entity), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
 				}
 			}
 
@@ -66,6 +74,10 @@ namespace Sparky {
 				for (const auto& entity : view)
 				{
 					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(entity);
+					Entity entity{ entity, scene };
+
+					if (!entity.IsActive())
+						continue;
 
 					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
 
@@ -96,6 +108,9 @@ namespace Sparky {
 					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 					Entity entity{ e, scene };
 
+					if (!entity.IsActive())
+						continue;
+
 					Renderer2D::DrawString(
 						textMeshComponent.TextString,
 						textMeshComponent.FontAsset,
@@ -115,33 +130,45 @@ namespace Sparky {
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
 
-					for (const auto entity : view)
+					for (const auto e : view)
 					{
-						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
+						Entity entity{ e, scene };
 
-						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
+						if (!entity.IsActive())
+							continue;
+
+						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
 					}
 				}
 
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
 
-					for (const auto entity : view)
+					for (const auto e : view)
 					{
-						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(entity);
+						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
+						Entity entity{ e, scene };
 
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), lightSourceComponent, cameraView, (int)(entt::entity)entity);
+						if (!entity.IsActive())
+							continue;
+
+						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView, (int)(entt::entity)e);
 					}
 				}
 
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
 
-					for (const auto entity : view)
+					for (const auto e : view)
 					{
-						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(entity);
+						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
+						Entity entity{ e, scene };
 
-						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(Entity{ entity, scene }), cameraView, (int)(entt::entity)entity);
+						if (!entity.IsActive())
+							continue;
+
+						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
 					}
 				}
 			}
@@ -175,10 +202,14 @@ namespace Sparky {
 			auto lightSourceView = scene->GetAllEntitiesWith<LightSourceComponent>();
 			{
 
-				for (auto& entity : lightSourceView)
+				for (auto& e : lightSourceView)
 				{
-					const auto& lightSourceComponent = lightSourceView.get<LightSourceComponent>(entity);
+					Entity entity{ e, scene };
 
+					if (!entity.IsActive())
+						continue;
+
+					LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 					Renderer::RenderLightSource(lightSourceComponent);
 				}
 			}
@@ -187,12 +218,15 @@ namespace Sparky {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
-				for (const auto entity : view)
+				for (const auto e : view)
 				{
-					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(entity);
+					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(e);
+					Entity entity{ e, scene };
 
-					if (meshRendererComponent.Mesh)
-						Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(Entity{ entity, scene }), meshRendererComponent);
+					if (!entity.IsActive())
+						continue;
+
+					Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(entity), meshRendererComponent);
 				}
 			}
 
@@ -214,16 +248,18 @@ namespace Sparky {
 	{
 		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
 
-		if (!skyboxView.empty())
+		for (auto& e : skyboxView)
 		{
-			for (auto& entity : skyboxView)
-			{
-				auto& skyboxComponent = skyboxView.get<SkyboxComponent>(entity);
-				Renderer::DrawSkybox(view, projection, skyboxComponent.Source);
+			Entity entity{ e, scene };
 
-				// Only render one skybox per scene
-				break;
-			}
+			if (!entity.IsActive())
+				continue;
+
+			SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			Renderer::DrawSkybox(view, projection, skyboxComponent.Source);
+
+			// Only render one skybox per scene
+			break;
 		}
 	}
 

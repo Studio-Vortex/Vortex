@@ -21,6 +21,9 @@ namespace Sparky {
 		static bool IsGamepadButtonPressed(Gamepad button);
 		static bool IsGamepadButtonReleased(Gamepad button);
 
+		static Math::vec2 GetMouseScrollOffset();
+		static void SetMouseScrollOffset(const Math::vec2& offset);
+
 		static float GetGamepadAxis(Gamepad axis);
 
 		static Math::vec2 GetMousePosition();

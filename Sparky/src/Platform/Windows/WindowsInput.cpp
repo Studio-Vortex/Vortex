@@ -7,6 +7,8 @@
 
 namespace Sparky {
 
+	static Math::vec2 s_MouseScrollOffset(0.0f);
+
 	bool Input::IsKeyPressed(KeyCode keycode)
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
@@ -50,6 +52,16 @@ namespace Sparky {
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 			return state.buttons[static_cast<int32_t>(gamepad)] == false;
     }
+
+	Math::vec2 Input::GetMouseScrollOffset()
+	{
+		return s_MouseScrollOffset;
+	}
+
+	void Input::SetMouseScrollOffset(const Math::vec2& offset)
+	{
+		s_MouseScrollOffset = offset;
+	}
 
 	float Input::GetGamepadAxis(Gamepad axis)
 	{

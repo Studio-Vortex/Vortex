@@ -419,6 +419,16 @@ namespace Sparky {
 		contextScene->DestroyEntity(entity, isScriptInstance);
 	}
 
+	static void Entity_SetActive(UUID entityUUID, bool isActive)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.SetActive(isActive);
+	}
+
 #pragma endregion
 
 #pragma region Transform Component
@@ -2611,6 +2621,11 @@ namespace Sparky {
 		mousePos.y *= -1.0f; // This makes more sense
 		*outPosition = mousePos;
 	}
+
+	static void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset)
+	{
+		*outMouseScrollOffset = Input::GetMouseScrollOffset();
+	}
 	
 	static bool Input_IsGamepadButtonDown(Gamepad button)
 	{
@@ -2878,6 +2893,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Entity_RemoveChild);
 		SP_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		SP_ADD_INTERNAL_CALL(Entity_Destroy);
+		SP_ADD_INTERNAL_CALL(Entity_SetActive);
 
 		SP_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);
 		SP_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
@@ -3098,6 +3114,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Input_IsMouseButtonDown);
 		SP_ADD_INTERNAL_CALL(Input_IsMouseButtonUp);
 		SP_ADD_INTERNAL_CALL(Input_GetMousePosition);
+		SP_ADD_INTERNAL_CALL(Input_GetMouseScrollOffset);
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		SP_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);
 		SP_ADD_INTERNAL_CALL(Input_GetGamepadAxis);

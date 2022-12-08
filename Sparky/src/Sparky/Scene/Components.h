@@ -29,6 +29,7 @@ namespace Sparky {
 
 		std::string Tag = "";
 		std::string Marker = Markers[0];
+		bool IsActive = true;
 
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
