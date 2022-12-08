@@ -57,7 +57,7 @@ namespace Sandbox {
 
 			if (Input.IsKeyDown(KeyCode.F1) || Input.IsGamepadButtonDown(Gamepad.ButtonGuide))
 			{
-				SceneManager.LoadScene("FPSDemoRevamped");
+				SceneManager.LoadScene("Shooter - Level01");
 			}
 
 			mousePosLastFrame = mousePosThisFrame;

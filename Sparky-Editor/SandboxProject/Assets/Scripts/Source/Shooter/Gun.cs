@@ -16,13 +16,16 @@ namespace Sandbox {
 
 		Vector3 startPosition;
 		Vector3 startRotation;
-		Vector3 zoomedPosition;
-		Vector3 zoomedRotation;
+		Vector3 rifleZoomedPos;
+		Vector3 rifleZoomedRot;
+		Vector3 pistolZoomedPos;
+		Vector3 pistolZoomedRot;
 
 		Camera camera;
 
 		Entity player;
 		Entity eyes;
+		Entity ammoTextEntity;
 		TextMesh ammoText;
 		AudioSource gunshotSound;
 		AudioSource emptyGunSound;
@@ -36,15 +39,19 @@ namespace Sandbox {
 			eyes = FindEntityByName("Eyes");
 			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
 			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
-			ammoText = FindEntityByName("Ammo Text").GetComponent<TextMesh>();
+			ammoTextEntity = FindEntityByName("Ammo Text");
+			ammoText = ammoTextEntity.GetComponent<TextMesh>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
 			startPosition = transform.Translation;
 			startRotation = transform.Rotation;
-			Transform zoomedTransform = FindEntityByName("Zoomed Transform").transform;
+			Transform rifleZoomedTransform = FindEntityByName("Rifle Zoomed Transform").transform;
+			Transform pistolZoomedTransform = FindEntityByName("Pistol Zoomed Transform").transform;
 
-			zoomedPosition = zoomedTransform.Translation;
-			zoomedRotation = zoomedTransform.Rotation;
+			rifleZoomedPos = rifleZoomedTransform.Translation;
+			rifleZoomedRot = rifleZoomedTransform.Rotation;
+			pistolZoomedPos = pistolZoomedTransform.Translation;
+			pistolZoomedRot = pistolZoomedTransform.Rotation;
 			ammo = startingAmmo;
 		}
 
@@ -73,8 +80,18 @@ namespace Sandbox {
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
 				camera.FieldOfView = zoomedFOV;
-				transform.Translation = zoomedPosition;
-				transform.Rotation = zoomedRotation;
+
+				if (Tag == "Rifle")
+				{
+					transform.Translation = rifleZoomedPos;
+					transform.Rotation = rifleZoomedRot;
+				}
+				else if (Tag == "Pistol")
+				{
+					transform.Translation = pistolZoomedPos;
+					transform.Rotation = pistolZoomedRot;
+				}
+
 				isZoomed = true;
 			}
 			else

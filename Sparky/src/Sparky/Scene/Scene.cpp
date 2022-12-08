@@ -304,9 +304,6 @@ namespace Sparky {
 			{
 				Entity entity{ e, this };
 
-				if (!entity.IsActive())
-					continue;
-
 				ScriptEngine::OnCreateEntity(entity);
 			}
 		}
