@@ -45,11 +45,13 @@ namespace Sandbox {
 		protected override void OnUpdate(float deltaTime)
 		{
 			MovePlayer();
-			Strafe();
-			Jump();
-			RotateHorizontal();
-			RotateVertical();
+			RotatePlayer();
 
+			QuitOrReloadIfNeeded();
+		}
+
+		private static void QuitOrReloadIfNeeded()
+		{
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 			{
 				Application.Quit();
@@ -59,85 +61,15 @@ namespace Sandbox {
 			{
 				SceneManager.LoadScene("Shooter - Level01");
 			}
-
-			mousePosLastFrame = mousePosThisFrame;
 		}
 
-		void MovePlayer()
-		{
-			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
-			Vector3 speed = Vector3.Zero;
-
-			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -controllerDeadzone)
-			{
-				speed = transform.Forward;
-				
-				if (isGrounded)
-					footstepSounds[0].Play();
-			}
-			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > controllerDeadzone)
-			{
-				speed = -transform.Forward;
-				
-				if (isGrounded)
-					footstepSounds[1].Play();
-			}
-
-			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
-			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
-
-			float modifier = (leftShiftPressed || leftStickPressed) ? runSpeed : walkSpeed;
-			controller.Move(speed * modifier * Time.DeltaTime);
-		}
-
-		void Strafe()
-		{
-			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
-			Vector3 speed = Vector3.Zero;
-
-			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -controllerDeadzone)
-			{
-				speed = -transform.Right;
-				
-				if (isGrounded)
-					footstepSounds[0].Play();
-			}
-			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > controllerDeadzone)
-			{
-				speed = transform.Right;
-				
-				if (isGrounded)
-					footstepSounds[1].Play();
-			}
-
-			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
-			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
-
-			float modifier = (leftShiftPressed || leftStickPressed) ? runStrafeSpeed : strafeSpeed;
-			controller.Move(speed * modifier * Time.DeltaTime);
-		}
-
-		void Jump()
-		{
-			bool spacePressed = Input.IsKeyDown(KeyCode.Space);
-			bool aButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonA);
-
-			isGrounded = Physics.Raycast(transform.Translation + Vector3.Down * capsuleCollider.Height, Vector3.Down, 0.05f, out RaycastHit hitInfo);
-
-			if ((spacePressed || aButtonPressed) && isGrounded)
-				controller.Jump(jumpForce);
-		}
-
-		Vector2 GetMouseDelta()
+		private void RotatePlayer()
 		{
 			mousePosThisFrame = Input.GetMousePosition();
+			Vector2 mouseDelta = mousePosThisFrame - mousePosLastFrame;
+			mousePosLastFrame = mousePosThisFrame;
 
-			return mousePosThisFrame - mousePosLastFrame;
-		}
-
-		void RotateHorizontal()
-		{
-			Vector2 mouseDelta = GetMouseDelta();
+			// Horizontal
 			rigidbody.Rotate(0f, -mouseDelta.X * mouseHorizontalRotationSpeed * Time.DeltaTime, 0f);
 
 			float rightAxisX = Input.GetGamepadAxis(Gamepad.AxisRightX);
@@ -145,12 +77,9 @@ namespace Sandbox {
 			{
 				rigidbody.Rotate(0f, -rightAxisX * controllerHorizontalRotationSpeed * Time.DeltaTime, 0f);
 			}
-		}
 
-		void RotateVertical()
-		{
+			// Vertical
 			{
-				Vector2 mouseDelta = GetMouseDelta();
 				Transform eyeTransform = eyes.transform;
 				float deltaRoll = mouseDelta.Y * mouseVerticalRotationSpeed * Time.DeltaTime;
 				eyeTransform.Rotate(deltaRoll, 0f, 0f);
@@ -169,6 +98,87 @@ namespace Sandbox {
 					eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
 				}
 			}
+		}
+
+		private void MovePlayer()
+		{
+			MoveForwardBackward();
+			Strafe();
+			Jump();
+		}
+
+		bool FootstepSoundPlaying()
+		{
+			return footstepSounds[0].IsPlaying || footstepSounds[1].IsPlaying;
+		}
+
+		void MoveForwardBackward()
+		{
+			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			Vector3 speed = Vector3.Zero;
+
+			int randomInt = RandomDevice.RangedInt(0, 1);
+
+			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -controllerDeadzone)
+			{
+				speed += transform.Forward;
+				
+				if (isGrounded && !FootstepSoundPlaying())
+					footstepSounds[randomInt].Play();
+			}
+			else if (Input.IsKeyDown(KeyCode.S) || axisLeftY > controllerDeadzone)
+			{
+				speed += -transform.Forward;
+				
+				if (isGrounded && !FootstepSoundPlaying())
+					footstepSounds[randomInt].Play();
+			}
+
+			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
+			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+
+			float modifier = (leftShiftPressed || leftStickPressed) ? runSpeed : walkSpeed;
+			controller.Move(speed * modifier * Time.DeltaTime);
+		}
+
+		void Strafe()
+		{
+			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			Vector3 speed = Vector3.Zero;
+
+			int randomInt = RandomDevice.RangedInt(0, 1);
+
+			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -controllerDeadzone)
+			{
+				speed += -transform.Right;
+				
+				if (isGrounded && !FootstepSoundPlaying())
+					footstepSounds[randomInt].Play();
+			}
+			else if (Input.IsKeyDown(KeyCode.D) || axisLeftX > controllerDeadzone)
+			{
+				speed += transform.Right;
+				
+				if (isGrounded && !FootstepSoundPlaying())
+					footstepSounds[randomInt].Play();
+			}
+
+			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
+			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+
+			float modifier = (leftShiftPressed || leftStickPressed) ? runStrafeSpeed : strafeSpeed;
+			controller.Move(speed * modifier * Time.DeltaTime);
+		}
+
+		void Jump()
+		{
+			bool spacePressed = Input.IsKeyDown(KeyCode.Space);
+			bool aButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonA);
+
+			isGrounded = Physics.Raycast(transform.Translation + Vector3.Down * capsuleCollider.Height, Vector3.Down, 0.05f, out RaycastHit hitInfo);
+
+			if ((spacePressed || aButtonPressed) && isGrounded)
+				controller.Jump(jumpForce);
 		}
 	}
 

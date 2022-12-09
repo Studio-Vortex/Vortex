@@ -6,10 +6,23 @@ namespace Sandbox {
 	{
 		public Vector4 color;
 		public Vector2 size;
+		WeaponManager weaponManager;
+
+		protected override void OnCreate()
+		{
+			weaponManager = FindEntityByName("Weapon Manager").As<WeaponManager>();
+		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			// If the player zooms in don't show the reticle
+			DrawReticle();
+		}
+
+		private void DrawReticle()
+		{
+			if (weaponManager.GetCurrentWeapon() == WeaponType.None)
+				return;
+
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
 			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
 

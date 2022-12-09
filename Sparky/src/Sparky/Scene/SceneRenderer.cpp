@@ -39,15 +39,15 @@ namespace Sparky {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
 
-				for (const auto entity : view)
+				for (const auto e : view)
 				{
-					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(entity);
-					Entity entity{ entity, scene };
+					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
+					Entity entity{ e, scene };
 
 					if (!entity.IsActive())
 						continue;
 
-					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(entity), spriteRendererComponent, (int)(entt::entity)entity);
+					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(entity), spriteRendererComponent, (int)(entt::entity)e);
 				}
 			}
 
@@ -55,15 +55,15 @@ namespace Sparky {
 			{
 				auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
 
-				for (const auto entity : group)
+				for (const auto e : group)
 				{
-					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(entity);
-					Entity entity{ entity, scene };
+					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
+					Entity entity{ e, scene };
 
 					if (!entity.IsActive())
 						continue;
 
-					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(entity), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)entity);
+					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(entity), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)e);
 				}
 			}
 
@@ -71,10 +71,10 @@ namespace Sparky {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
 
-				for (const auto& entity : view)
+				for (const auto& e : view)
 				{
-					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(entity);
-					Entity entity{ entity, scene };
+					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
+					Entity entity{ e, scene };
 
 					if (!entity.IsActive())
 						continue;

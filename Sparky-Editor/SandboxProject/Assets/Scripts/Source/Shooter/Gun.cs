@@ -9,17 +9,18 @@ namespace Sandbox {
 		public float normalFOV = 60f;
 		public float zoomedFOV = 40f;
 		public uint startingAmmo = 25;
+		public uint weaponType;
 
-		private float timeToWait = 0f;
-		private uint ammo = 0;
-		private bool isZoomed = false;
+		float timeToWait = 0f;
+		uint ammo = 0;
+		bool isZoomed = false;
+
+		static BulletPool bulletPool;
 
 		Vector3 startPosition;
 		Vector3 startRotation;
-		Vector3 rifleZoomedPos;
-		Vector3 rifleZoomedRot;
-		Vector3 pistolZoomedPos;
-		Vector3 pistolZoomedRot;
+		Vector3 zoomedPosition;
+		Vector3 zoomedRotation;
 
 		Camera camera;
 
@@ -43,27 +44,32 @@ namespace Sandbox {
 			ammoText = ammoTextEntity.GetComponent<TextMesh>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
+
+			WeaponType weapon = (WeaponType)weaponType;
+			Transform zoomedTransform = new Transform();
+
+			switch (weapon)
+			{
+				case WeaponType.Pistol: zoomedTransform = FindEntityByName("Pistol Zoomed Transform").transform; break;
+				case WeaponType.Rifle:  zoomedTransform = FindEntityByName("Rifle Zoomed Transform").transform;  break;
+			}
+
 			startPosition = transform.Translation;
 			startRotation = transform.Rotation;
-			Transform rifleZoomedTransform = FindEntityByName("Rifle Zoomed Transform").transform;
-			Transform pistolZoomedTransform = FindEntityByName("Pistol Zoomed Transform").transform;
-
-			rifleZoomedPos = rifleZoomedTransform.Translation;
-			rifleZoomedRot = rifleZoomedTransform.Rotation;
-			pistolZoomedPos = pistolZoomedTransform.Translation;
-			pistolZoomedRot = pistolZoomedTransform.Rotation;
+			zoomedPosition = zoomedTransform.Translation;
+			zoomedRotation = zoomedTransform.Rotation;
 			ammo = startingAmmo;
+
+			bulletPool = new BulletPool();
 		}
 
 		protected override void OnUpdate(float deltaTime)
 		{
 			ProcessFire();
 			ProcessZoom();
-			if (ammo != startingAmmo)
-				Reload();
+			ReloadIfNeeded();
 
 			ammoText.Text = $"{ammo}/{startingAmmo}";
-
 			timeToWait -= Time.DeltaTime;
 		}
 
@@ -80,18 +86,8 @@ namespace Sandbox {
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
 				camera.FieldOfView = zoomedFOV;
-
-				if (Tag == "Rifle")
-				{
-					transform.Translation = rifleZoomedPos;
-					transform.Rotation = rifleZoomedRot;
-				}
-				else if (Tag == "Pistol")
-				{
-					transform.Translation = pistolZoomedPos;
-					transform.Rotation = pistolZoomedRot;
-				}
-
+				transform.Translation = zoomedPosition;
+				transform.Rotation = zoomedRotation;
 				isZoomed = true;
 			}
 			else
@@ -139,30 +135,34 @@ namespace Sandbox {
 					Debug.Log($"{hitInfo.Entity.Tag}");
 				}
 
-				/// Debug
-				/*Entity collision = new Entity("Collision");
-				collision.transform.Translation = hitInfo.Position;
-
-				MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
-				meshRenderer.Type = MeshType.Sphere;
-				Material material = meshRenderer.GetMaterial();
-				material.Albedo = hitInfo.Normal;*/
+				//DrawDebugCollision(hitInfo);
 			}
 
-			CreateBullet();
-
-			gunshotSound.Play();
-			muzzleBlast.Start();
-			var forward = transform.Forward * 2.0f;
-			muzzleBlast.Offset = forward;
-			muzzleBlast.Velocity = forward;
-			timeToWait = timeBetweenShots;
-			ammo--;
+			UpdateOrCreateBullet();
+			PlayEffects();
+			UpdateState();
 		}
 
-		void CreateBullet()
+		void UpdateOrCreateBullet()
 		{
-			Entity bullet = new Entity("Bullet");
+			if (bulletPool.IsFilled)
+			{
+				Entity bullet = bulletPool.Next();
+				bullet.RemoveComponent<RigidBody>();
+				bullet.transform.Translation = transform.worldTransform.Translation;
+				RigidBody rb = bullet.AddComponent<RigidBody>();
+				rb.BodyType = RigidBodyType.Dynamic;
+				rb.AddForce(transform.Forward * bulletSpeed, ForceMode.Impulse);
+			}
+			else
+			{
+				Entity bullet = new Entity("Bullet");
+				CreateBullet(bullet);
+			}
+		}
+
+		private void CreateBullet(Entity bullet)
+		{
 			bullet.transform.Translation = transform.worldTransform.Translation;
 			bullet.transform.Scale *= 0.25f;
 
@@ -175,10 +175,40 @@ namespace Sandbox {
 			RigidBody rb = bullet.AddComponent<RigidBody>();
 			rb.BodyType = RigidBodyType.Dynamic;
 			rb.AddForce(transform.Forward * bulletSpeed, ForceMode.Impulse);
+			bulletPool.AddBullet(bullet);
 		}
 
-		void Reload()
+		private void PlayEffects()
 		{
+			gunshotSound.Play();
+			muzzleBlast.Start();
+		}
+
+		void UpdateState()
+		{
+			Vector3 forward = transform.Forward * 2.0f;
+			muzzleBlast.Offset = forward;
+			muzzleBlast.Velocity = forward;
+			timeToWait = timeBetweenShots;
+			ammo--;
+		}
+
+		void DrawDebugCollision(RaycastHit hitInfo)
+		{
+			Entity collision = new Entity("Collision");
+			collision.transform.Translation = hitInfo.Position;
+
+			MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
+			meshRenderer.Type = MeshType.Sphere;
+			Material material = meshRenderer.GetMaterial();
+			material.Albedo = hitInfo.Normal;
+		}
+
+		void ReloadIfNeeded()
+		{
+			if (ammo == startingAmmo)
+				return;
+
 			bool rKeyPressed = Input.IsKeyDown(KeyCode.R);
 			bool yButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonY);
 

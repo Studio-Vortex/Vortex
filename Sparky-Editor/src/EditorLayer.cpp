@@ -1047,6 +1047,8 @@ namespace Sparky {
 				{
 					Application::Get().GetWindow().ShowMouseCursor(true, true);
 				}
+
+				break;
 			}
 
 			case Key::Delete:

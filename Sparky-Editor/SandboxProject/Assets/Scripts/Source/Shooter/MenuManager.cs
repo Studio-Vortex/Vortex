@@ -19,6 +19,12 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float delta)
 		{
+			OnStartGame();
+			UpdateAnimation();
+		}
+
+		private void OnStartGame()
+		{
 			bool enterKeyPressed = Input.IsKeyDown(KeyCode.Enter);
 			bool startButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonStart);
 
@@ -28,11 +34,14 @@ namespace Sandbox {
 				time = 0.0f;
 				clickedSound.Play();
 			}
+		}
 
+		void UpdateAnimation()
+		{
 			if (started && time <= animationTime)
 			{
-				time += delta;
-				camera.transform.Translate(Vector3.Forward * 2.0f * delta);
+				time += Time.DeltaTime;
+				camera.transform.Translate(Vector3.Forward * 2.0f * Time.DeltaTime);
 				if (time > animationTime)
 				{
 					SceneManager.LoadScene("Shooter - Level01");

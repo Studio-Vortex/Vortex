@@ -2,35 +2,119 @@
 
 namespace Sandbox {
 
+	public enum WeaponType : uint
+	{
+		None = 0,
+		Pistol,
+		Rifle,
+		MAX = 3
+	}
+
 	public class WeaponManager : Entity
 	{
+		public uint startingWeapon;
+
+		int currentWeapon;
+
+		Entity ammoText;
 		Entity rifle;
 		Entity pistol;
 
-		AudioSource weaponEquipedSound;
+		AudioSource weaponSwitchedSound;
 
 		protected override void OnCreate()
 		{
+			ammoText = FindEntityByName("Ammo Text");
 			rifle = FindEntityByName("Rifle");
 			pistol = FindEntityByName("Pistol");
-			weaponEquipedSound = GetComponent<AudioSource>();
+			weaponSwitchedSound = GetComponent<AudioSource>();
+
+			currentWeapon = (int)startingWeapon;
+			SetWeaponActive((WeaponType)currentWeapon);
 		}
 
 		protected override void OnUpdate(float delta)
 		{
+			SwitchWeaponOnScroll();
+			SwitchWeaponGamepad();
+		}
+
+		public WeaponType GetCurrentWeapon()
+		{
+			return (WeaponType)currentWeapon;
+		}
+
+		void SwitchWeaponOnScroll()
+		{
 			Vector2 scrollDelta = Input.GetMouseScrollDelta();
 
-			if (scrollDelta.Y > 0 || Input.IsGamepadButtonDown(Gamepad.Up))
+			if (scrollDelta.Y > 0)
 			{
-				pistol.SetActive(true);
-				rifle.SetActive(false);
-				weaponEquipedSound.Play();
+				if (currentWeapon + 1 < (int)WeaponType.MAX)
+					SwitchWeapon((WeaponType)(++currentWeapon));
 			}
-			else if (scrollDelta.Y < 0 || Input.IsGamepadButtonDown(Gamepad.Down))
+			else if (scrollDelta.Y < 0)
 			{
-				rifle.SetActive(true);
-				pistol.SetActive(false);
-				weaponEquipedSound.Play();
+				if (currentWeapon - 1 > -1)
+					SwitchWeapon((WeaponType)(--currentWeapon));
+			}
+		}
+
+		void SwitchWeaponGamepad()
+		{
+			if (Input.IsGamepadButtonDown(Gamepad.Up))
+			{
+				SwitchWeapon(WeaponType.None);
+				currentWeapon = (int)WeaponType.None;
+			}
+			if (Input.IsGamepadButtonDown(Gamepad.Left))
+			{
+				SwitchWeapon(WeaponType.Pistol);
+				currentWeapon = (int)WeaponType.Pistol;
+			}
+			if (Input.IsGamepadButtonDown(Gamepad.Right))
+			{
+				SwitchWeapon(WeaponType.Rifle);
+				currentWeapon = (int)WeaponType.Rifle;
+			}
+		}
+
+		void SwitchWeapon(WeaponType weaponType)
+		{
+			SetWeaponActive(weaponType);
+			weaponSwitchedSound.Play();
+		}
+
+		void HideWeapons()
+		{
+			pistol.SetActive(false);
+			rifle.SetActive(false);
+		}
+
+		void SetWeaponActive(WeaponType weaponType)
+		{
+			switch (weaponType)
+			{
+				case WeaponType.None:
+				{
+					HideWeapons();
+					ammoText.SetActive(false);
+					break;
+				}
+				case WeaponType.Pistol:
+				{
+					HideWeapons();
+					ammoText.SetActive(true);
+					pistol.SetActive(true);
+					break;
+				}
+				case WeaponType.Rifle:
+				{
+					HideWeapons();
+					ammoText.SetActive(true);
+					rifle.SetActive(true);
+					break;
+				}
 			}
 		}
 	}

@@ -8,7 +8,7 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float delta)
 		{
-			transform.Translate(0, speed * delta, 0);
+			transform.Translate(transform.Up * speed * delta);
 		}
 	}
 
