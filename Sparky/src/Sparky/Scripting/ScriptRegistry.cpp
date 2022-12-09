@@ -570,7 +570,9 @@ namespace Sparky {
 		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
 		Math::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		transform = TransformComponent{ translation, rotation, scale };
+		transform.Translation = translation;
+		transform.SetRotationEuler(rotation);
+		transform.Scale = scale;
 	}
 	
 	static void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)

@@ -5,8 +5,8 @@ namespace Sandbox {
 
 	public class LookAtTest : Entity
 	{
-		public Entity player;
-		public Vector3 StartPos;
+		Vector3 StartPos;
+		Entity player;
 
 		protected override void OnCreate()
 		{
