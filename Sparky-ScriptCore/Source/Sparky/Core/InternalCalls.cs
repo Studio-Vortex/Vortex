@@ -431,6 +431,9 @@ namespace Sparky {
 		internal extern static void RigidBodyComponent_Rotate(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

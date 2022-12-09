@@ -590,6 +590,8 @@
 		{
 			InternalCalls.RigidBodyComponent_AddTorque(Entity.ID, ref torque, forceMode);
 		}
+
+		public void LookAt(Vector3 worldPoint) => InternalCalls.RigidBodyComponent_LookAt(Entity.ID, ref worldPoint);
 	}
 
 	public class CharacterController : Component

@@ -1463,6 +1463,28 @@ namespace Sparky {
 		actor->setGlobalPose(physxTransform);
 	}
 
+	static void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		physx::PxTransform physxTransform = actor->getGlobalPose();
+
+		Math::mat4 transform = FromPhysXTransform(physxTransform);
+
+		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+		Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
+		Math::vec3 translation, rotation, scale;
+		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
+		physxTransform.q = ToPhysXQuat(Math::quaternion(rotation));
+
+		actor->setGlobalPose(ToPhysXTransform(transform));
+	}
+
 	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2976,6 +2998,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetRotation);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_Translate);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_Rotate);
+		SP_ADD_INTERNAL_CALL(RigidBodyComponent_LookAt);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
 		SP_ADD_INTERNAL_CALL(RigidBodyComponent_GetMass);

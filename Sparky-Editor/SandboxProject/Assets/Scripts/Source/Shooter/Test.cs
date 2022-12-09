@@ -1,17 +1,17 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.AI {
 
-	public class LookAtTest : Entity
+	public class Test : Entity
 	{
 		Entity player;
 
-		protected override void OnCreate()
+		void OnCreate()
 		{
 			player = FindEntityByName("Player");
 		}
 
-		protected override void OnUpdate(float delta)
+		void OnUpdate(float delta)
 		{
 			transform.LookAt(player.transform.Translation);
 		}
