@@ -1,6 +1,8 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.Weapons {
+
+	using Shooter.Collections;
 
 	public class Gun : Entity
 	{

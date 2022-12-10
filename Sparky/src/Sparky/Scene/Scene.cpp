@@ -138,6 +138,8 @@ namespace Sparky {
 		// Copy components (except IDComponent and TagComponent)
 		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
+		destination->SortEntities();
+
 		return destination;
 	}
 
@@ -204,7 +206,7 @@ namespace Sparky {
 		{
 			for (size_t i = 0; i < entity.Children().size(); i++)
 			{
-				const auto& childID = entity.Children()[i];
+				auto childID = entity.Children()[i];
 				Entity child = TryGetEntityWithUUID(childID);
 				DestroyEntity(child, isEntityInstance, excludeChildren);
 			}
@@ -217,6 +219,8 @@ namespace Sparky {
 
 		// Remove the entity from our internal map
 		m_EntityMap.erase(it->first);
+
+		SortEntities();
 	}
 
 	void Scene::ParentEntity(Entity entity, Entity parent)
@@ -518,34 +522,46 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		std::string name = src.GetName();
-		std::string marker = src.GetMarker();
-		Entity dest = CreateEntity(name, marker);
+		auto ParentNewEntityFunc = [&src, scene = this](Entity newEntity)
+		{
+			if (auto parent = src.GetParent(); parent)
+			{
+				newEntity.SetParent(parent.GetUUID());
+				parent.AddChild(newEntity.GetUUID());
+			}
+		};
 
 		// TODO: handle prefabs
 		/*if (src.HasComponent<PrefabComponent>())
 		{
-
+			auto prefabID = src.GetComponent<PrefabComponent>().PrefabUUID;
 		}*/
 
+		std::string name = src.GetName();
+		std::string marker = src.GetMarker();
+		Entity newEntity = CreateEntity(name, marker);
+
 		// Copy components (except IDComponent and TagComponent)
-		Utils::CopyComponentIfExists(AllComponents{}, dest, src);
+		Utils::CopyComponentIfExists(AllComponents{}, newEntity, src);
 
-		if (src.HasParent())
-			dest.SetParent(src.GetParentUUID());
+		auto childIDs = src.Children();
 
-		const auto& srcChildren = src.Children();
-		for (auto& childID : srcChildren)
+		for (auto childID : childIDs)
 		{
-			Entity childEntity = TryGetEntityWithUUID(childID);
-			SP_CORE_ASSERT(childEntity, "Child ID was Invalid! --- Should never happen");
-			Entity childDuplicate = DuplicateEntity(childEntity);
+			Entity childDuplicate = DuplicateEntity(TryGetEntityWithUUID(childID));
 
-			childDuplicate.SetParent(childEntity.GetParentUUID());
-			dest.Children().push_back(childDuplicate.GetUUID());
+			// at this point childDuplicate is a child of src, we need to remove it from src
+			UnparentEntity(childDuplicate);
+
+			childDuplicate.SetParent(newEntity.GetUUID());
+			newEntity.AddChild(childDuplicate.GetUUID());
 		}
 
-		return dest;
+		ParentNewEntityFunc(newEntity);
+
+		// TODO Duplicate script instance
+
+		return newEntity;
 	}
 
 	Entity Scene::TryGetEntityWithUUID(UUID uuid)
@@ -645,6 +661,16 @@ namespace Sparky {
 		}
 
 		return Entity{};
+	}
+
+	void Scene::SortEntities()
+	{
+		m_Registry.sort<IDComponent>([&](const auto lhs, const auto rhs)
+		{
+			auto lhsEntity = m_EntityMap.find(lhs.ID);
+			auto rhsEntity = m_EntityMap.find(rhs.ID);
+			return static_cast<uint32_t>(lhsEntity->second) < static_cast<uint32_t>(rhsEntity->second);
+		});
 	}
 
 	void Scene::OnModelUpdate()

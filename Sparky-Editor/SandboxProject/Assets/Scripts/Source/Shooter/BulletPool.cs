@@ -1,6 +1,6 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.Collections {
 
 	public class BulletPool
 	{

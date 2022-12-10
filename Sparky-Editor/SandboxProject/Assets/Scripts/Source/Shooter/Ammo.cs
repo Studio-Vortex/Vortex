@@ -1,6 +1,6 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.Weapons {
 
 	public class Ammo : Entity
 	{

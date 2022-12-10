@@ -57,6 +57,8 @@ namespace Sparky {
 
 		Entity GetPrimaryCameraEntity();
 
+		void SortEntities();
+
 		void ConvertToLocalSpace(Entity entity);
 		void ConvertToWorldSpace(Entity entity);
 		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);

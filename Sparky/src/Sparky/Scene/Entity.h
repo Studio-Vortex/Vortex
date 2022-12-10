@@ -74,6 +74,8 @@ namespace Sparky {
 		bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
 		void SetActive(bool active) { GetComponent<TagComponent>().IsActive = active; }
 
+		Entity GetParent() const { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
+
 		UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
 		void SetParent(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 

@@ -86,6 +86,13 @@ namespace Sparky {
 			Z /= length;
 		}
 
+		public static float Distance(Vector3 lhs, Vector3 rhs)
+		{
+			return (float)Math.Sqrt(Math.Pow(rhs.X - lhs.X, 2) +
+									Math.Pow(rhs.Y - lhs.Y, 2) +
+									Math.Pow(rhs.Z - lhs.Z, 2));
+		}
+
 		public static Vector3 Lerp(Vector3 p1, Vector3 p2, float maxDistanceDelta)
 		{
 			if (maxDistanceDelta < 0.0f)

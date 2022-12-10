@@ -1,6 +1,7 @@
 ﻿using Sparky;
+using System;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.Weapons {
 
 	public enum WeaponType : uint
 	{
@@ -36,12 +37,32 @@ namespace Sandbox {
 		protected override void OnUpdate(float delta)
 		{
 			SwitchWeaponOnScroll();
+			SwitchWeaponOnKeyPress();
 			SwitchWeaponGamepad();
 		}
 
 		public WeaponType GetCurrentWeapon()
 		{
 			return (WeaponType)currentWeapon;
+		}
+
+		void SwitchWeaponOnKeyPress()
+		{
+			if (Input.IsKeyDown(KeyCode.D1))
+			{
+				SwitchWeapon(WeaponType.None);
+				currentWeapon = 0;
+			}
+			if (Input.IsKeyDown(KeyCode.D2))
+			{
+				SwitchWeapon(WeaponType.Pistol);
+				currentWeapon = 1;
+			}
+			if (Input.IsKeyDown(KeyCode.D3))
+			{
+				SwitchWeapon(WeaponType.Rifle);
+				currentWeapon = 2;
+			}
 		}
 
 		void SwitchWeaponOnScroll()

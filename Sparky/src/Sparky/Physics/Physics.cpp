@@ -2,6 +2,8 @@
 #include "Physics.h"
 
 #include "Sparky/Utils/PlatformUtils.h"
+#include "Sparky/Physics/PhysXTypes.h"
+#include "Sparky/Physics/PhysicsActor.h"
 #include "Sparky/Physics/PhysXAPIHelpers.h"
 
 namespace Sparky {
@@ -23,28 +25,7 @@ namespace Sparky {
 
 	namespace Utils {
 
-		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
-		{
-			physx::PxFilterData filterData;
-			filterData.word0 = filterGroup; // word0 = own ID
-			filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
-
-			// contact callback;
-			const physx::PxU32 numShapes = actor->getNbShapes();
-
-			physx::PxShape** shapes = (physx::PxShape**)s_Data->DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);
-			actor->getShapes(shapes, numShapes);
-
-			for (physx::PxU32 i = 0; i < numShapes; i++)
-			{
-				physx::PxShape* shape = shapes[i];
-				shape->setSimulationFilterData(filterData);
-			}
-
-			s_Data->DefaultAllocator.deallocate(shapes);
-		}
-
-		static void ReplaceNonExistantVectorComponent(Math::vec3& vector, const physx::PxVec3& replacementVector)
+		static void ReplaceNonExistantVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
 		{
 			if (vector.x == 0.0f)
 				vector.x = replacementVector.x;
@@ -99,6 +80,16 @@ namespace Sparky {
 	physx::PxScene* Physics::GetPhysicsScene()
 	{
 		return s_Data->PhysicsScene;
+	}
+
+	physx::PxPhysics* Physics::GetPhysicsFactory()
+	{
+		return s_Data->PhysicsFactory;
+	}
+
+	physx::PxControllerManager* Physics::GetControllerManager()
+	{
+		return s_Data->ControllerManager;
 	}
 
 	void Physics::OnSimulationStart(Scene* contextScene)
@@ -197,184 +188,28 @@ namespace Sparky {
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
 	{
-		physx::PxRigidActor* actor = nullptr;
+		PhysicsActor(entity, transform, rigidbody);
+	}
 
-		Math::mat4 entityTransform = transform.GetTransform();
+	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
+	{
+		physx::PxFilterData filterData;
+		filterData.word0 = filterGroup; // word0 = own ID
+		filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
 
-		if (rigidbody.Type == RigidBodyType::Static)
+		// contact callback;
+		const physx::PxU32 numShapes = actor->getNbShapes();
+
+		physx::PxShape** shapes = (physx::PxShape**)s_Data->DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);
+		actor->getShapes(shapes, numShapes);
+
+		for (physx::PxU32 i = 0; i < numShapes; i++)
 		{
-			actor = s_Data->PhysicsFactory->createRigidStatic(ToPhysXTransform(entityTransform));
-		}
-		else if (rigidbody.Type == RigidBodyType::Dynamic)
-		{
-			physx::PxRigidDynamic* dynamicActor = s_Data->PhysicsFactory->createRigidDynamic(ToPhysXTransform(entityTransform));
-			UpdateDynamicActorFlags(rigidbody, dynamicActor);
-			actor = dynamicActor;
-		}
-
-		SP_CORE_ASSERT(actor, "Failed to create Physics Actor!");
-		rigidbody.RuntimeActor = actor;
-
-		UUID uuid = entity.GetUUID();
-		actor->userData = &uuid;
-
-		if (entity.HasComponent<CharacterControllerComponent>())
-		{
-			const TransformComponent& transform = entity.GetTransform();
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-
-			if (entity.HasComponent<CapsuleColliderComponent>())
-			{
-				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-				
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
-				}
-				else
-				{
-					// Create a default material
-					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
-				}
-
-				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
-
-				physx::PxCapsuleControllerDesc desc;
-				desc.position = ToPhysxExtendedVector(transform.Translation + capsuleCollider.Offset);
-				desc.height = capsuleCollider.Height * transform.Scale.y;
-				desc.radius = capsuleCollider.Radius * radiusScale;
-				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
-				desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
-				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
-				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = 0.01f; // TODO: get from component
-				desc.material = material;
-				desc.upDirection = { 0.0f, 1.0f, 0.0f };
-
-				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
-			}
-			else if (entity.HasComponent<BoxColliderComponent>())
-			{
-				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
-				}
-				else
-				{
-					// Create a default material
-					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
-				}
-
-				physx::PxBoxControllerDesc desc;
-				desc.position = ToPhysxExtendedVector(transform.Translation + boxCollider.Offset);
-				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
-				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
-				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
-				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
-				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
-				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = 0.01f; // TODO: get from component
-				desc.material = material;
-				desc.upDirection = { 0.0f, 1.0f, 0.0f };
-
-				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
-			}
-		}
-		else
-		{
-			if (entity.HasComponent<BoxColliderComponent>())
-			{
-				const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
-				Math::vec3 scale = transform.Scale;
-
-				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-				physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x * scale.x, boxCollider.HalfSize.y * scale.y, boxCollider.HalfSize.z * scale.z);
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
-				}
-				else
-				{
-					// Create a default material
-					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
-				}
-
-				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
-				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !boxCollider.IsTrigger);
-				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, boxCollider.IsTrigger);
-				shape->setLocalPose(ToPhysXTransform(Math::Translate(boxCollider.Offset)));
-			}
-
-			if (entity.HasComponent<SphereColliderComponent>())
-			{
-				auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-
-				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-				physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius);
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
-				}
-				else
-				{
-					// Create a default material
-					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
-				}
-
-				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
-				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !sphereCollider.IsTrigger);
-				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
-			}
-
-			if (entity.HasComponent<CapsuleColliderComponent>())
-			{
-				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-
-				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-				physx::PxCapsuleGeometry capsuleGeometry = physx::PxCapsuleGeometry(capsuleCollider.Radius, capsuleCollider.Height / 2.0F);
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = s_Data->PhysicsFactory->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
-				}
-				else
-				{
-					// Create a default material
-					material = s_Data->PhysicsFactory->createMaterial(1.0f, 1.0f, 1.0f);
-				}
-
-				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
-				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !capsuleCollider.IsTrigger);
-				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
-
-				// Make sure that the capsule is facing up (+Y)
-				shape->setLocalPose(physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1))));
-			}
+			physx::PxShape* shape = shapes[i];
+			shape->setSimulationFilterData(filterData);
 		}
 
-		// Set Filters
-		if (rigidbody.Type == RigidBodyType::Static)
-			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
-		else if (rigidbody.Type == RigidBodyType::Dynamic)
-			Utils::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
-
-		s_Data->PhysicsScene->addActor(*actor);
+		s_Data->DefaultAllocator.deallocate(shapes);
 	}
 
 	void Physics::UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
@@ -391,7 +226,7 @@ namespace Sparky {
 			Math::vec3 linearVelocity = rigidbody.LinearVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getLinearVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceNonExistantVectorComponent(linearVelocity, actorVelocity);
+			Utils::ReplaceNonExistantVectorAxis(linearVelocity, actorVelocity);
 
 			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
 		}
@@ -403,7 +238,7 @@ namespace Sparky {
 			Math::vec3 angularVelocity = rigidbody.AngularVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getAngularVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceNonExistantVectorComponent(angularVelocity, actorVelocity);
+			Utils::ReplaceNonExistantVectorAxis(angularVelocity, actorVelocity);
 
 			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
 		}
@@ -438,6 +273,9 @@ namespace Sparky {
 
 		if (actor != nullptr)
 		{
+			// Remove body from internal map
+
+
 			s_Data->PhysicsScene->removeActor(*actor);
 		}
 	}

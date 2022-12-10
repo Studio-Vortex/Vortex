@@ -12,8 +12,10 @@
 #include "Sparky/Audio/AudioSource.h"
 
 #include "Sparky/Physics/Physics.h"
-#include "Sparky/Physics/PhysXAPIHelpers.h"
 #include "Sparky/Physics/Physics2D.h"
+#include "Sparky/Physics/PhysXTypes.h"
+#include "Sparky/Physics/PhysicsActor.h"
+#include "Sparky/Physics/PhysXAPIHelpers.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
 #include "Sparky/Renderer/Renderer2D.h"
@@ -1706,19 +1708,18 @@ namespace Sparky {
 		{
 			void* userData = hitInfo.block.actor->userData;
 
-			if (userData)
-			{
-				UUID entityUUID = *(UUID*)userData;
-
-				outHit->EntityID = entityUUID;
-				outHit->Position = FromPhysXVector(hitInfo.block.position);
-				outHit->Normal = FromPhysXVector(hitInfo.block.normal);
-				outHit->Distance = hitInfo.block.distance;
-			}
-			else
+			if (!userData)
 			{
 				*outHit = RaycastHit();
+				return false;
 			}
+
+			/*PhysicsActor physicsActor = *(PhysicsActor*)userData;
+
+			outHit->EntityID = physicsActor.GetEntity().GetUUID();*/
+			outHit->Position = FromPhysXVector(hitInfo.block.position);
+			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
+			outHit->Distance = hitInfo.block.distance;
 		}
 
 		return result;

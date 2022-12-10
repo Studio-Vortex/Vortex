@@ -1,6 +1,6 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter {
 
 	public class ShooterController : Entity
 	{

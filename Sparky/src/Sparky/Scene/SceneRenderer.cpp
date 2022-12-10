@@ -196,12 +196,9 @@ namespace Sparky {
 				SceneRenderer::RenderSkybox(view, projection, scene);
 			}
 
-			// TODO: Set Scene Light Description
-
 			// Light pass
 			auto lightSourceView = scene->GetAllEntitiesWith<LightSourceComponent>();
 			{
-
 				for (auto& e : lightSourceView)
 				{
 					Entity entity{ e, scene };

@@ -1,4 +1,6 @@
-﻿namespace Sparky {
+﻿using System;
+
+namespace Sparky {
 
 	public static class Mathf
 	{

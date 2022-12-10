@@ -1,6 +1,6 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter.Menu {
 
 	public class MenuManager : Entity
 	{

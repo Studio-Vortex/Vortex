@@ -1,6 +1,8 @@
 ﻿using Sparky;
 
-namespace Sandbox {
+namespace Sandbox.Shooter {
+
+	using Shooter.Weapons;
 
 	public class UI_Reticle : Entity
 	{
