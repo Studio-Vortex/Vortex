@@ -29,7 +29,6 @@ namespace Sandbox.Shooter.Collections {
 			if (size == MAX_BULLETS)
 			{
 				IsFilled = true;
-				Debug.Info("BULLET POOL FILLED");
 			}
 		}
 

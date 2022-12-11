@@ -156,7 +156,7 @@ namespace Sparky {
 
 			b2FixtureDef fixtureDef;
 
-			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
+			UniqueRef<PhysicsBody2DData> physicsBodyData = CreateUnique<PhysicsBody2DData>();
 			physicsBodyData->EntityUUID = entity.GetUUID();
 			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
 
@@ -186,7 +186,7 @@ namespace Sparky {
 
 			b2FixtureDef fixtureDef;
 
-			UniqueRef<PhysicsBodyData> physicsBodyData = CreateUnique<PhysicsBodyData>();
+			UniqueRef<PhysicsBody2DData> physicsBodyData = CreateUnique<PhysicsBody2DData>();
 			physicsBodyData->EntityUUID = entity.GetUUID();
 			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(physicsBodyData.get());
 

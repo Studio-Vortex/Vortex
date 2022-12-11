@@ -26,21 +26,21 @@ namespace Sparky {
 		static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 		{
 			([&]()
-				{
-					auto view = src.view<TComponent>();
-
-			for (auto srcEntity : view)
 			{
-				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+				auto view = src.view<TComponent>();
 
-				// Copy the entity's marker
-				auto& srcTagComponent = src.get<TagComponent>(srcEntity);
-				dst.emplace_or_replace<TagComponent>(dstEntity, srcTagComponent);
+				for (auto srcEntity : view)
+				{
+					entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-				auto& srcComponent = src.get<TComponent>(srcEntity);
-				dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
-			}
-				}(), ...);
+					// Copy the entity's marker
+					auto& srcTagComponent = src.get<TagComponent>(srcEntity);
+					dst.emplace_or_replace<TagComponent>(dstEntity, srcTagComponent);
+
+					auto& srcComponent = src.get<TComponent>(srcEntity);
+					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
+				}
+			}(), ...);
 		}
 
 		template<typename... Component>

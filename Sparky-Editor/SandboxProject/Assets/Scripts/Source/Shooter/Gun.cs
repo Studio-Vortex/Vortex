@@ -70,7 +70,11 @@ namespace Sandbox.Shooter.Weapons {
 			ProcessFire();
 			ProcessZoom();
 			ReloadIfNeeded();
+			UpdateAmmoTextAndTimeBetweenShots();
+		}
 
+		void UpdateAmmoTextAndTimeBetweenShots()
+		{
 			ammoText.Text = $"{ammo}/{startingAmmo}";
 			timeToWait -= Time.DeltaTime;
 		}

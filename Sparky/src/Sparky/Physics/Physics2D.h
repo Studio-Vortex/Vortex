@@ -11,7 +11,7 @@ class b2Fixture;
 
 namespace Sparky {
 
-	struct PhysicsBodyData
+	struct PhysicsBody2DData
 	{
 		UUID EntityUUID;
 	};
@@ -44,7 +44,7 @@ namespace Sparky {
 		inline static int32_t s_PhysicsWorld2DVeloctityIterations = 6;
 		inline static int32_t s_PhysicsWorld2DPositionIterations = 2;
 
-		inline static std::unordered_map<b2Fixture*, UniqueRef<PhysicsBodyData>> s_PhysicsBodyDataMap;
+		inline static std::unordered_map<b2Fixture*, UniqueRef<PhysicsBody2DData>> s_PhysicsBodyDataMap;
 	};
 
 }

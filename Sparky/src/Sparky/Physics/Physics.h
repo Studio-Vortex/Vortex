@@ -18,6 +18,11 @@ namespace physx {
 
 namespace Sparky {
 
+	struct PhysicsBodyData
+	{
+		UUID EntityUUID;
+	};
+
 	struct RaycastHit
 	{
 		uint64_t EntityID;

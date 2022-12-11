@@ -77,7 +77,8 @@ namespace Sandbox.DarkRoom {
 					footstepSounds[rand1].Play();
 			}
 
-			controller.Move(displacement * moveSpeed * Time.DeltaTime);
+			float modifier = Input.IsKeyDown(KeyCode.LeftShift) ? moveSpeed * 2 : moveSpeed;
+			controller.Move(displacement * modifier * Time.DeltaTime);
 		}
 
 		void RotatePlayer()

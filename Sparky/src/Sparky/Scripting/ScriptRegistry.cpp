@@ -14,7 +14,6 @@
 #include "Sparky/Physics/Physics.h"
 #include "Sparky/Physics/Physics2D.h"
 #include "Sparky/Physics/PhysXTypes.h"
-#include "Sparky/Physics/PhysicsActor.h"
 #include "Sparky/Physics/PhysXAPIHelpers.h"
 
 #include "Sparky/Renderer/RenderCommand.h"
@@ -1506,10 +1505,13 @@ namespace Sparky {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-		// Destroy the physics body and create a new one if the type is different
-		if (bodyType != rigidbody.Type)
+		if (bodyType != rigidbody.Type) // recreate the body if the new type is different than the old one
 		{
-			Physics::DestroyPhysicsBody(entity);
+			if (rigidbody.RuntimeActor)
+			{
+				Physics::DestroyPhysicsBody(entity);
+			}
+
 			rigidbody.Type = bodyType;
 			rigidbody.RuntimeActor = nullptr;
 			Physics::CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
@@ -1714,9 +1716,9 @@ namespace Sparky {
 				return false;
 			}
 
-			/*PhysicsActor physicsActor = *(PhysicsActor*)userData;
+			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
 
-			outHit->EntityID = physicsActor.GetEntity().GetUUID();*/
+			outHit->EntityID = physicsBodyData->EntityUUID;
 			outHit->Position = FromPhysXVector(hitInfo.block.position);
 			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
 			outHit->Distance = hitInfo.block.distance;
@@ -2184,7 +2186,7 @@ namespace Sparky {
 			{
 				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
 				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
-				UUID entityUUID = reinterpret_cast<PhysicsBodyData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
+				UUID entityUUID = reinterpret_cast<PhysicsBody2DData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
 				Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 				Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
 
@@ -2220,7 +2222,7 @@ namespace Sparky {
 
 		if (outResult->Hit)
 		{
-			return reinterpret_cast<PhysicsBodyData*>(raycastCallback.fixture->GetUserData().pointer)->EntityUUID;
+			return reinterpret_cast<PhysicsBody2DData*>(raycastCallback.fixture->GetUserData().pointer)->EntityUUID;
 		}
 		else
 		{

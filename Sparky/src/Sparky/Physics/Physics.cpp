@@ -3,7 +3,6 @@
 
 #include "Sparky/Utils/PlatformUtils.h"
 #include "Sparky/Physics/PhysXTypes.h"
-#include "Sparky/Physics/PhysicsActor.h"
 #include "Sparky/Physics/PhysXAPIHelpers.h"
 
 namespace Sparky {
@@ -188,7 +187,185 @@ namespace Sparky {
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
 	{
-		PhysicsActor(entity, transform, rigidbody);
+		physx::PxRigidActor* actor = nullptr;
+
+		Math::mat4 entityTransform = transform.GetTransform();
+
+		if (rigidbody.Type == RigidBodyType::Static)
+		{
+			actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(entityTransform));
+		}
+		else if (rigidbody.Type == RigidBodyType::Dynamic)
+		{
+			physx::PxRigidDynamic* dynamicActor = Physics::GetPhysicsFactory()->createRigidDynamic(ToPhysXTransform(entityTransform));
+			Physics::UpdateDynamicActorFlags(rigidbody, dynamicActor);
+			actor = dynamicActor;
+		}
+
+		SP_CORE_ASSERT(actor, "Failed to create Physics Actor!");
+		rigidbody.RuntimeActor = actor;
+
+		PhysicsBodyData* physicsBodyData = new PhysicsBodyData();
+		physicsBodyData->EntityUUID = entity.GetUUID();
+		actor->userData = physicsBodyData;
+
+		if (entity.HasComponent<CharacterControllerComponent>())
+		{
+			const TransformComponent& transform = entity.GetTransform();
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
+
+				physx::PxCapsuleControllerDesc desc;
+				desc.position = ToPhysxExtendedVector(transform.Translation + capsuleCollider.Offset);
+				desc.height = capsuleCollider.Height * transform.Scale.y;
+				desc.radius = capsuleCollider.Radius * radiusScale;
+				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
+				desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
+				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.stepOffset = characterController.StepOffset;
+				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.material = material;
+				desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+				characterController.RuntimeController = Physics::GetControllerManager()->createController(desc);
+			}
+			else if (entity.HasComponent<BoxColliderComponent>())
+			{
+				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				physx::PxBoxControllerDesc desc;
+				desc.position = ToPhysxExtendedVector(transform.Translation + boxCollider.Offset);
+				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
+				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
+				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
+				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
+				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.stepOffset = characterController.StepOffset;
+				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.material = material;
+				desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+				characterController.RuntimeController = Physics::GetControllerManager()->createController(desc);
+			}
+		}
+		else
+		{
+			if (entity.HasComponent<BoxColliderComponent>())
+			{
+				const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				Math::vec3 scale = transform.Scale;
+
+				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
+				physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x * scale.x, boxCollider.HalfSize.y * scale.y, boxCollider.HalfSize.z * scale.z);
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
+				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !boxCollider.IsTrigger);
+				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, boxCollider.IsTrigger);
+				shape->setLocalPose(ToPhysXTransform(Math::Translate(boxCollider.Offset)));
+			}
+
+			if (entity.HasComponent<SphereColliderComponent>())
+			{
+				auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
+				physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius);
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
+				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !sphereCollider.IsTrigger);
+				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
+			}
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
+				physx::PxCapsuleGeometry capsuleGeometry = physx::PxCapsuleGeometry(capsuleCollider.Radius, capsuleCollider.Height / 2.0F);
+				physx::PxMaterial* material = nullptr;
+
+				if (entity.HasComponent<PhysicsMaterialComponent>())
+				{
+					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+				}
+				else
+				{
+					// Create a default material
+					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+				}
+
+				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
+				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !capsuleCollider.IsTrigger);
+				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
+
+				// Make sure that the capsule is facing up (+Y)
+				shape->setLocalPose(physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1))));
+			}
+		}
+
+		// Set Filters
+		if (rigidbody.Type == RigidBodyType::Static)
+			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
+		else if (rigidbody.Type == RigidBodyType::Dynamic)
+			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+
+		s_Data->PhysicsScene->addActor(*actor);
 	}
 
 	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
@@ -265,19 +442,23 @@ namespace Sparky {
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 		physx::PxActor* actor = static_cast<physx::PxActor*>(rigidbody.RuntimeActor);
 
+		if (actor == nullptr)
+		{
+			SP_CORE_WARN("Trying to delete Physics Actor that doesn't exist!");
+			return;
+		}
+
 		if (entity.HasComponent<CharacterControllerComponent>())
 		{
 			physx::PxController* controller = static_cast<physx::PxController*>(entity.GetComponent<CharacterControllerComponent>().RuntimeController);
 			controller->release();
 		}
 
-		if (actor != nullptr)
-		{
-			// Remove body from internal map
+		// Destroy the physics body data
+		PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
+		delete physicsBodyData;
 
-
-			s_Data->PhysicsScene->removeActor(*actor);
-		}
+		s_Data->PhysicsScene->removeActor(*actor);
 	}
 
 }
