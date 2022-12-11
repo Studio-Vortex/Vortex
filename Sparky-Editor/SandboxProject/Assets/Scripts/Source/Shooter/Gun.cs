@@ -141,7 +141,8 @@ namespace Sandbox.Shooter.Weapons {
 				{
 					case "Enemy":
 					{
-						hitInfo.Entity.As<Enemy>().OnEnemyHit(damageAmount);
+						Enemy enemy = hitInfo.Entity.As<Enemy>();
+						enemy.OnEnemyHit(damageAmount);
 						break;
 					}
 				}

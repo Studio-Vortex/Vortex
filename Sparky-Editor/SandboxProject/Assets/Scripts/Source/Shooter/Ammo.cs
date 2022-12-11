@@ -10,9 +10,9 @@ namespace Sandbox.Shooter.Weapons {
 		{
 			if (Physics.Raycast(transform.Translation + transform.Up, transform.Up, 5f, out RaycastHit hitInfo))
 			{
-				Gun gun = FindEntityByName("Gun").As<Gun>();
+				Gun gun = FindEntityByName("Pistol").As<Gun>();
 
-				if (hitInfo.Entity.Tag == "Player")
+				if (hitInfo.Entity.HasComponent<RigidBody>())
 				{
 					gun.AddAmmo(amount);
 					GetComponent<AudioSource>().Play();

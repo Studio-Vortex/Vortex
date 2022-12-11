@@ -85,7 +85,8 @@ namespace Sparky {
 						attributes.normals[3 * index.normal_index + 2]
 					};
 
-					vertexNormal = Math::Normalize(Math::mat3(transform) * vertexNormal);
+					// TODO figure out if this is absolutely neccessary
+					//vertexNormal = Math::Normalize(Math::mat3(transform) * vertexNormal);
 
 					Math::vec2 vertexTexCoord = {
 						attributes.texcoords[2 * index.texcoord_index + 0],

@@ -46,11 +46,10 @@ namespace Sandbox.Shooter {
 		{
 			MovePlayer();
 			RotatePlayer();
-
-			QuitOrReloadIfNeeded();
+			QuitOrReloadLevelIfNeeded();
 		}
 
-		private static void QuitOrReloadIfNeeded()
+		private static void QuitOrReloadLevelIfNeeded()
 		{
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 			{
