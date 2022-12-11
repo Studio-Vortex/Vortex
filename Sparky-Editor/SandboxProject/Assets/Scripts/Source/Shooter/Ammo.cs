@@ -16,7 +16,7 @@ namespace Sandbox.Shooter.Weapons {
 				{
 					gun.AddAmmo(amount);
 					GetComponent<AudioSource>().Play();
-					Destroy(false);
+					Destroy();
 				}
 			}
 		}

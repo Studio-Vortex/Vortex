@@ -188,13 +188,18 @@ namespace Sparky {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity, bool isEntityInstance, bool excludeChildren)
+	void Scene::DestroyEntity(Entity entity, bool excludeChildren)
 	{
 		SP_PROFILE_FUNCTION();
 
 		// Call the entitys OnDestroy function if they are a script instance
-		if (isEntityInstance)
-			ScriptEngine::OnDestroyEntity(entity);
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			const std::string& className = entity.GetComponent<ScriptComponent>().ClassName;
+
+			if (ScriptEngine::EntityClassExists(className))
+				ScriptEngine::OnDestroyEntity(entity);
+		}
 
 		if (entity.HasComponent<RigidBodyComponent>())
 			Physics::DestroyPhysicsBody(entity);
@@ -208,7 +213,7 @@ namespace Sparky {
 			{
 				auto childID = entity.Children()[i];
 				Entity child = TryGetEntityWithUUID(childID);
-				DestroyEntity(child, isEntityInstance, excludeChildren);
+				DestroyEntity(child, excludeChildren);
 			}
 		}
 

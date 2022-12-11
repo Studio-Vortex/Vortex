@@ -8,6 +8,7 @@ namespace Sandbox.Shooter.AI {
 	{
 		public float moveSpeed;
 		public float minDistanceToPlayer;
+		public float health;
 
 		Entity player;
 		WeaponManager weaponManager;
@@ -15,16 +16,27 @@ namespace Sandbox.Shooter.AI {
 		protected override void OnCreate()
 		{
 			player = FindEntityByName("Player");
-			weaponManager = FindEntityByName("Weapon Manager").As<WeaponManager>();
 		}
 
 		protected override void OnUpdate(float delta)
 		{
+			weaponManager = FindEntityByName("Weapon Manager").As<WeaponManager>();
+
 			if (weaponManager.GetCurrentWeapon() == WeaponType.None)
 				return;
 
 			FacePlayer();
 			FollowPlayer();
+		}
+
+		public void OnEnemyHit(float damage)
+		{
+			health -= damage;
+
+			if (health <= 0f)
+			{
+				Destroy();
+			}
 		}
 
 		private void FollowPlayer()

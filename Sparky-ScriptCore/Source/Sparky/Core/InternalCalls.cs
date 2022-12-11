@@ -105,7 +105,7 @@ namespace Sparky {
 		internal extern static object Entity_GetScriptInstance(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_Destroy(ulong entityID, bool isScriptInstance = true);
+		internal extern static ulong Entity_Destroy(ulong entityID, bool excludeChildren);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_SetActive(ulong entityID, bool isActive);

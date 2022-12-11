@@ -410,14 +410,14 @@ namespace Sparky {
 		return ScriptEngine::GetManagedInstance(entityUUID);
 	}
 
-	static void Entity_Destroy(UUID entityUUID, bool isScriptInstance = true)
+	static void Entity_Destroy(UUID entityUUID, bool excludeChildren)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		contextScene->DestroyEntity(entity, isScriptInstance);
+		contextScene->DestroyEntity(entity, excludeChildren);
 	}
 
 	static void Entity_SetActive(UUID entityUUID, bool isActive)

@@ -45,7 +45,7 @@ namespace Sandbox {
 			{
 				if (entity != null)
 				{
-					entity.Destroy(false);
+					entity.Destroy();
 				}
 			}
 

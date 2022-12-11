@@ -61,7 +61,7 @@ namespace Sandbox {
 			{
 				hasPackage = true;
 				spriteRenderer.Color = hasPackageColor;
-				other.Destroy(false);
+				other.Destroy();
 			}
 			else if (other.Marker == "Customer" && hasPackage)
 			{
@@ -73,7 +73,7 @@ namespace Sandbox {
 			else if (other.Marker == "Boost")
 			{
 				moveSpeed = boostSpeed;
-				other.Destroy(false);
+				other.Destroy();
 			}
 			else if (other.Marker == "UnTagged")
 			{

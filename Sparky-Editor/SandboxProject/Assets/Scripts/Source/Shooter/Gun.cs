@@ -3,6 +3,7 @@
 namespace Sandbox.Shooter.Weapons {
 
 	using Shooter.Collections;
+	using Shooter.AI;
 
 	public class Gun : Entity
 	{
@@ -11,6 +12,7 @@ namespace Sandbox.Shooter.Weapons {
 		public float normalFOV = 60f;
 		public float zoomedFOV = 40f;
 		public uint startingAmmo = 25;
+		public float damageAmount;
 		public uint weaponType;
 
 		float timeToWait = 0f;
@@ -135,18 +137,19 @@ namespace Sandbox.Shooter.Weapons {
 			Vector3 origin = isZoomed ? transform.worldTransform.Translation : player.transform.Translation + player.transform.Forward;
 			if (Physics.Raycast(origin, eyes.transform.Forward, 200f, out RaycastHit hitInfo))
 			{
-				// TODO once we can get the entity from a raycast hit process it here
-				if (hitInfo.Entity != null)
+				switch (hitInfo.Entity.Marker)
 				{
-					Debug.Log($"{hitInfo.Entity.Tag}");
+					case "Enemy":
+					{
+						hitInfo.Entity.As<Enemy>().OnEnemyHit(damageAmount);
+						break;
+					}
 				}
-
-				//DrawDebugCollision(hitInfo);
 			}
 
 			UpdateOrCreateBullet();
 			PlayEffects();
-			UpdateState();
+			UpdateWeaponState();
 		}
 
 		void UpdateOrCreateBullet()
@@ -190,24 +193,13 @@ namespace Sandbox.Shooter.Weapons {
 			muzzleBlast.Start();
 		}
 
-		void UpdateState()
+		void UpdateWeaponState()
 		{
 			Vector3 forward = transform.Forward * 2.0f;
 			muzzleBlast.Offset = forward;
 			muzzleBlast.Velocity = forward;
 			timeToWait = timeBetweenShots;
 			ammo--;
-		}
-
-		void DrawDebugCollision(RaycastHit hitInfo)
-		{
-			Entity collision = new Entity("Collision");
-			collision.transform.Translation = hitInfo.Position;
-
-			MeshRenderer meshRenderer = collision.AddComponent<MeshRenderer>();
-			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetMaterial();
-			material.Albedo = hitInfo.Normal;
 		}
 
 		void ReloadIfNeeded()

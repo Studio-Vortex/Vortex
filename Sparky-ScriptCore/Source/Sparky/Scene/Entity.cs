@@ -104,7 +104,7 @@ namespace Sparky {
 			return instance as T;
 		}
 
-		public void Destroy(bool scriptInstance = true) => InternalCalls.Entity_Destroy(ID, scriptInstance);
+		public void Destroy(bool excludeChildren = false) => InternalCalls.Entity_Destroy(ID, excludeChildren);
 
 		public void SetActive(bool active)
 		{
