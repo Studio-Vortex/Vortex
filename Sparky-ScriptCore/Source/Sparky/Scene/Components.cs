@@ -154,10 +154,8 @@
 			InternalCalls.TransformComponent_LookAt(Entity.ID, ref worldPoint);
 		}
 
-		public void SetParent(Entity parent)
-		{
-			InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
-		}
+		public void SetParent(Entity parent) => InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
+		public void Unparent() => InternalCalls.TransformComponent_Unparent(Entity.ID);
 
 		public static Transform operator *(Transform a, Transform b)
 		{

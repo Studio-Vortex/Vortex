@@ -151,6 +151,9 @@ namespace Sparky {
 		internal extern static void TransformComponent_SetParent(ulong childID, ulong parentID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_Unparent(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_Multiply(ref Transform a, ref Transform b, out Transform result);
 
 		#endregion

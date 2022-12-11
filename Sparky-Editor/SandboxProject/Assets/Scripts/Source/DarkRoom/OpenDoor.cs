@@ -19,33 +19,29 @@ namespace Sandbox.DarkRoom {
 
 		protected override void OnUpdate(float delta)
 		{
+			helpText.SetActive(false);
+
 			float distanceToPlayer = Vector3.Distance(transform.Translation, player.transform.Translation);
 			if (distanceToPlayer <= 3f)
 			{
 				if (Input.IsKeyDown(KeyCode.E))
 				{
-					Open();
+					m_ShouldOpen = true;
 					GetComponent<AudioSource>().Play();
 					FindEntityByName("Flashbang Sound").GetComponent<AudioSource>().Play();
 				}
 
 				helpText.SetActive(true);
 			}
-			else
-			{
-				helpText.SetActive(false);
-			}
 
 			if (m_ShouldOpen)
-				RotateDoor();
+			{
+				RotateOpen();
+				return;
+			}
 		}
 
-		public void Open()
-		{
-			m_ShouldOpen = true;
-		}
-
-		void RotateDoor()
+		void RotateOpen()
 		{
 			if (transform.Rotation.Y < stopAngle)
 			{
