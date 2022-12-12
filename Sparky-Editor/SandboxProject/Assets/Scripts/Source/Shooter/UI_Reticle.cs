@@ -20,7 +20,7 @@ namespace Sandbox.Shooter {
 			DrawReticle();
 		}
 
-		private void DrawReticle()
+		void DrawReticle()
 		{
 			if (weaponManager.GetCurrentWeapon() == WeaponType.None)
 				return;

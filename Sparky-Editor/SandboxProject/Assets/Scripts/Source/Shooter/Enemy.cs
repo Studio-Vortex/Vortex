@@ -3,7 +3,6 @@
 namespace Sandbox.Shooter.AI {
 
 	using Shooter.Weapons;
-	using System.Diagnostics.Contracts;
 
 	public class Enemy : Entity
 	{
@@ -63,7 +62,7 @@ namespace Sandbox.Shooter.AI {
 			return Vector3.Distance(transform.Translation, player.transform.Translation);
 		}
 
-		private void MoveTowardsPlayer()
+		void MoveTowardsPlayer()
 		{
 			if (GetDistanceToPlayer() > minDistanceToPlayer)
 			{

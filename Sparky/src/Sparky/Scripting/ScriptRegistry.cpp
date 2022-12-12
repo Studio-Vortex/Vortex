@@ -2893,7 +2893,7 @@ namespace Sparky {
 
 	void ScriptRegistry::ResetSceneToBeLoaded()
 	{
-		s_SceneToBeLoaded = std::string();
+		s_SceneToBeLoaded.clear();
 	}
 
 	void ScriptRegistry::RegisterMethods()

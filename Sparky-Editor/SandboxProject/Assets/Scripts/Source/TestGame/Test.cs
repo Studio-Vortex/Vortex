@@ -17,7 +17,7 @@ namespace Sandbox.TestGame {
 			}
 			if (Input.IsKeyDown(KeyCode.R))
 			{
-				transform.SetParent(null);
+				Scene.Instantiate(this).transform.Translation = new Vector3(-2, 3, -3);
 			}
 		}
 	}

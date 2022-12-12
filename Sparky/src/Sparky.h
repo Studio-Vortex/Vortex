@@ -19,6 +19,9 @@ namespace Math = Sparky::Math;
 namespace Gui = ImGui;
 /// ---------------------------------------------------
 
+/// AI
+#include "Sparky/AI/AStarPathFinder.h"
+
 /// Audio
 #include "Sparky/Audio/AudioSource.h"
 #include "Sparky/Audio/AudioListener.h"
@@ -38,7 +41,7 @@ namespace Gui = ImGui;
 #include "Sparky/Scene/Components.h"
 /// ---------------------------------------------------
 
-/// Input & Events
+/// Events + Input
 #include "Sparky/Events/ApplicationEvent.h"
 #include "Sparky/Events/KeyEvent.h"
 #include "Sparky/Events/MouseEvent.h"
@@ -46,7 +49,6 @@ namespace Gui = ImGui;
 #include "Sparky/Core/Input.h"
 #include "Sparky/Core/KeyCodes.h"
 #include "Sparky/Core/MouseCodes.h"
-#include "Sparky/Renderer/OrthographicCameraController.h"
 /// ---------------------------------------------------
 
 /// Graphics
@@ -68,6 +70,4 @@ namespace Gui = ImGui;
 #include "Sparky/Renderer/LightSource.h"
 #include "Sparky/Renderer/Skybox.h"
 #include "Sparky/Renderer/Font/Font.h"
-
-#include "Sparky/Renderer/OrthographicCamera.h"
 /// ---------------------------------------------------

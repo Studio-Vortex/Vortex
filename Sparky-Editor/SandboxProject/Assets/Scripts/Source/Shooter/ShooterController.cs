@@ -49,7 +49,7 @@ namespace Sandbox.Shooter {
 			QuitOrReloadLevelIfNeeded();
 		}
 
-		private static void QuitOrReloadLevelIfNeeded()
+		static void QuitOrReloadLevelIfNeeded()
 		{
 			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
 			{
@@ -62,7 +62,7 @@ namespace Sandbox.Shooter {
 			}
 		}
 
-		private void RotatePlayer()
+		void RotatePlayer()
 		{
 			mousePosThisFrame = Input.GetMousePosition();
 			Vector2 mouseDelta = mousePosThisFrame - mousePosLastFrame;
@@ -99,7 +99,7 @@ namespace Sandbox.Shooter {
 			}
 		}
 
-		private void MovePlayer()
+		void MovePlayer()
 		{
 			MoveForwardBackward();
 			Strafe();

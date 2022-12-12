@@ -4,10 +4,10 @@ namespace Sandbox.Shooter.Menu {
 
 	public class MenuManager : Entity
 	{
+		public float animationTime;
+
 		Entity camera;
 		AudioSource clickedSound;
-
-		public float animationTime;
 		float time;
 		bool started = false;
 
@@ -19,11 +19,11 @@ namespace Sandbox.Shooter.Menu {
 
 		protected override void OnUpdate(float delta)
 		{
-			OnStartGame();
+			OnGameStart();
 			UpdateAnimation();
 		}
 
-		private void OnStartGame()
+		void OnGameStart()
 		{
 			bool enterKeyPressed = Input.IsKeyDown(KeyCode.Enter);
 			bool startButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonStart);

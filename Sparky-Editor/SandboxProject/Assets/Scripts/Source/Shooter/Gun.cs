@@ -126,7 +126,7 @@ namespace Sandbox.Shooter.Weapons {
 					Shoot();
 				}
 			}
-			else if (leftMouseButtonReleased && rightTriggerReleased)
+			else if (leftMouseButtonReleased || rightTriggerReleased)
 			{
 				muzzleBlast.Stop();
 			}
@@ -171,7 +171,7 @@ namespace Sandbox.Shooter.Weapons {
 			}
 		}
 
-		private void CreateBullet(Entity bullet)
+		void CreateBullet(Entity bullet)
 		{
 			bullet.transform.Translation = transform.worldTransform.Translation;
 			bullet.transform.Scale *= 0.25f;
@@ -188,7 +188,7 @@ namespace Sandbox.Shooter.Weapons {
 			bulletPool.AddBullet(bullet);
 		}
 
-		private void PlayEffects()
+		void PlayEffects()
 		{
 			gunshotSound.Play();
 			muzzleBlast.Start();

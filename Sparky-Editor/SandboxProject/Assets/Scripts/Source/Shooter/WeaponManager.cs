@@ -1,5 +1,4 @@
 ﻿using Sparky;
-using System;
 
 namespace Sandbox.Shooter.Weapons {
 
