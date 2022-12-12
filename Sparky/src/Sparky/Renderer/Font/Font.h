@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sparky/Core/Base.h"
 #include "Sparky/Renderer/Texture.h"
 #include "Sparky/Scene/Components.h"
 
@@ -8,7 +9,7 @@ namespace Sparky {
 	// Forward declaration
 	struct MSDFData;
 
-	class Font
+	class SPARKY_API Font
 	{
 	public:
 		Font(const std::filesystem::path& filepath);

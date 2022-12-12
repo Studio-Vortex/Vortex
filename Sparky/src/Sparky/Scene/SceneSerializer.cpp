@@ -212,7 +212,7 @@ namespace Sparky {
 	{
 		SP_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		const SharedRef<Project> activeProject = Project::GetActive();
 		const std::filesystem::path projectAssetDirectory = activeProject->GetAssetDirectory();
 
 		out << YAML::BeginMap; // Entity
@@ -222,7 +222,7 @@ namespace Sparky {
 
 		if (entity.HasComponent<HierarchyComponent>())
 		{
-			auto& hierarchyComponent = entity.GetComponent<HierarchyComponent>();
+			const auto& hierarchyComponent = entity.GetComponent<HierarchyComponent>();
 			out << YAML::Key << "Parent" << YAML::Value << hierarchyComponent.ParentUUID;
 
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
@@ -239,8 +239,10 @@ namespace Sparky {
 
 		if (entity.HasComponent<TagComponent>())
 		{
-			auto& tagComponent = entity.GetComponent<TagComponent>();
 			out << YAML::Key << "TagComponent" << YAML::Value << YAML::BeginMap; // TagComponent
+
+			const auto& tagComponent = entity.GetComponent<TagComponent>();
+
 			out << YAML::Key << "Tag" << YAML::Value << tagComponent.Tag;
 			out << YAML::Key << "Marker" << YAML::Value << tagComponent.Marker;
 
@@ -250,7 +252,9 @@ namespace Sparky {
 		if (entity.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
-			auto& transform = entity.GetComponent<TransformComponent>();
+
+			const auto& transform = entity.GetComponent<TransformComponent>();
+
 			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
 			out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotationEuler();
 			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
@@ -260,11 +264,10 @@ namespace Sparky {
 
 		if (entity.HasComponent<CameraComponent>())
 		{
-			out << YAML::Key << "CameraComponent";
-			out << YAML::BeginMap; // CameraComponent
+			out << YAML::Key << "CameraComponent" << YAML::BeginMap; // CameraComponent
 
-			auto& cameraComponent = entity.GetComponent<CameraComponent>();
-			auto& camera = cameraComponent.Camera;
+			const auto& cameraComponent = entity.GetComponent<CameraComponent>();
+			const auto& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
@@ -289,7 +292,7 @@ namespace Sparky {
 			out << YAML::Key << "SkyboxComponent";
 			out << YAML::BeginMap; // SkyboxComponent
 
-			auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 
 			SharedRef<Skybox> skybox = skyboxComponent.Source;
 			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetDirectoryPath(), projectAssetDirectory).string();
@@ -302,7 +305,7 @@ namespace Sparky {
 			out << YAML::Key << "LightSourceComponent";
 			out << YAML::BeginMap; // LightSourceComponent
 
-			auto& lightComponent = entity.GetComponent<LightSourceComponent>();
+			const auto& lightComponent = entity.GetComponent<LightSourceComponent>();
 
 			out << YAML::Key << "LightType" << YAML::Value << Utils::LightTypeToString(lightComponent.Type);
 
@@ -345,7 +348,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
 
-			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 			out << YAML::Key << "MeshType" << YAML::Value << Utils::MeshTypeToString(meshRendererComponent.Type);
 
@@ -401,7 +404,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
 
-			auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
+			const auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
 
 			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
 			if (spriteComponent.Texture)
@@ -415,7 +418,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
 
-			auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
+			const auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
 
 			out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
 			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
@@ -431,7 +434,7 @@ namespace Sparky {
 			const auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
 			const SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
 
-			ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
+			const ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
 
 			out << YAML::Key << "ColorBegin" << YAML::Value << emitterProperties.ColorBegin;
 			out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
@@ -470,7 +473,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
 
-			auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+			const auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
 
 			if (audioSourceComponent.Source)
 			{
@@ -571,7 +574,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "SphereColliderComponent" << YAML::BeginMap; // SphereColliderComponent
 
-			auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
+			const auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
 			out << YAML::Key << "Radius" << YAML::Value << sphereColliderComponent.Radius;
 			out << YAML::Key << "Offset" << YAML::Value << sphereColliderComponent.Offset;
 			out << YAML::Key << "IsTrigger" << YAML::Value << sphereColliderComponent.IsTrigger;
@@ -583,7 +586,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "CapsuleColliderComponent" << YAML::BeginMap; // CapsuleColliderComponent
 
-			auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
 			out << YAML::Key << "Radius" << YAML::Value << capsuleColliderComponent.Radius;
 			out << YAML::Key << "Height" << YAML::Value << capsuleColliderComponent.Height;
 			out << YAML::Key << "Offset" << YAML::Value << capsuleColliderComponent.Offset;
@@ -596,7 +599,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
 
-			auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
+			const auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type);
 			out << YAML::Key << "Velocity" << YAML::Value << rb2dComponent.Velocity;
 			out << YAML::Key << "Drag" << YAML::Value << rb2dComponent.Drag;
@@ -611,7 +614,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
 
-			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
+			const auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
 			out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
 			out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
@@ -627,7 +630,7 @@ namespace Sparky {
 		{
 			out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
 
-			auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
+			const auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
 			out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
 			out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
@@ -638,13 +641,22 @@ namespace Sparky {
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
 
+		if (entity.HasComponent<NavMeshAgentComponent>())
+		{
+			out << YAML::Key << "NavMeshAgentComponent" << YAML::BeginMap; // NavMeshAgentComponent
+
+			const auto& navMeshComponent = entity.GetComponent<NavMeshAgentComponent>();
+
+			out << YAML::EndMap; // NavMeshAgentComponent
+		}
+
 		// TODO: This may need reworking, specifically the random empty() check
 		// if the script class name is empty don't even try to serialize, just move on
 		if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
 		{
 			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 
-			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+			const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
 			out << YAML::Key << "ClassName" << YAML::Value << scriptComponent.ClassName;
 
 			// Fields

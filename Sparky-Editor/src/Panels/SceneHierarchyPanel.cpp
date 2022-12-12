@@ -846,6 +846,9 @@ namespace Sparky {
 			if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<CircleCollider2DComponent>(componentName);
 
+			if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<NavMeshAgentComponent>(componentName);
+
 			if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<ScriptComponent>(componentName, true);
 
@@ -2047,6 +2050,11 @@ namespace Sparky {
 			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
 			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+		});
+
+		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", entity, [](auto& component)
+		{
+			
 		});
 
 		DrawComponent<ScriptComponent>("Script", entity, [&](auto& component)

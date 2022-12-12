@@ -432,6 +432,18 @@ namespace Sparky {
 
 #pragma endregion
 
+#pragma region AI Components
+
+	struct NavMeshAgentComponent
+	{
+		uint64_t Unknown = 0;
+
+		NavMeshAgentComponent() = default;
+		NavMeshAgentComponent(const NavMeshAgentComponent&) = default;
+	};
+
+#pragma endregion
+
 #pragma region Script Components
 
 	// Forward declaration
@@ -480,6 +492,8 @@ namespace Sparky {
 		RigidBodyComponent, CharacterControllerComponent, PhysicsMaterialComponent, BoxColliderComponent,
 		SphereColliderComponent, CapsuleColliderComponent, StaticMeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		// AI
+		NavMeshAgentComponent,
 		// Script
 		ScriptComponent, NativeScriptComponent>;
 

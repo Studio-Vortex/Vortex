@@ -813,6 +813,8 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component) { }
 
+	template <> void Scene::OnComponentAdded<NavMeshAgentComponent>(Entity entity, NavMeshAgentComponent& component) { }
+
 	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
