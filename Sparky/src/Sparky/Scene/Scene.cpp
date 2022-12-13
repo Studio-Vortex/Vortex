@@ -283,6 +283,7 @@ namespace Sparky {
 
 		OnPhysicsSimulationStart();
 
+		// Audio Source - PlayOnStart
 		{
 			auto view = m_Registry.view<AudioSourceComponent>();
 
@@ -303,7 +304,7 @@ namespace Sparky {
 			}
 		}
 
-		// Scripting
+		// Create Script Instance
 		{
 			ScriptEngine::OnRuntimeStart(this);
 
@@ -312,7 +313,6 @@ namespace Sparky {
 			for (auto e : view)
 			{
 				Entity entity{ e, this };
-
 				ScriptEngine::OnCreateEntity(entity);
 			}
 		}
@@ -342,8 +342,10 @@ namespace Sparky {
 				Entity entity{ e, this };
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
-				if (audioSource->IsPlaying())
-					audioSource->Stop();
+				if (!audioSource->IsPlaying())
+					continue;
+
+				audioSource->Stop();
 			}
 		}
 
@@ -356,8 +358,10 @@ namespace Sparky {
 				Entity entity{ e, this };
 				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
 
-				if (particleEmitter->IsActive())
-					particleEmitter->Stop();
+				if (!particleEmitter->IsActive())
+					continue;
+
+				particleEmitter->Stop();
 			}
 		}
 
@@ -556,6 +560,7 @@ namespace Sparky {
 		// Copy components (except IDComponent and TagComponent)
 		Utils::CopyComponentIfExists(AllComponents{}, newEntity, src);
 
+		// We need to make a copy here because we modify it below
 		auto childIDs = src.Children();
 
 		for (auto childID : childIDs)
@@ -582,7 +587,7 @@ namespace Sparky {
 
 		for (auto entity : view)
 		{
-			auto& idComponent = m_Registry.get<IDComponent>(entity);
+			const auto& idComponent = m_Registry.get<IDComponent>(entity);
 			if (idComponent.ID == uuid)
 				return Entity(entity, this);
 		}
@@ -597,7 +602,6 @@ namespace Sparky {
 		for (auto& entity : view)
 		{
 			const auto& tag = view.get<TagComponent>(entity).Tag;
-
 			if (strcmp(name.data(), tag.c_str()) == 0)
 				return Entity{ entity, this };
 		}
@@ -693,7 +697,7 @@ namespace Sparky {
 
 		for (auto& entity : view)
 		{
-			auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
+			const auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
 
 			meshRendererComponent.Mesh->OnUpdate((int)entity, meshRendererComponent.Scale);
 		}
@@ -732,8 +736,9 @@ namespace Sparky {
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 			
-			Math::vec3 position = GetWorldSpaceTransform(entity).Translation;
-			lightSource->SetPosition(position);
+			// Light sources get placed at entity's world position
+			Math::vec3 worldPosition = GetWorldSpaceTransform(entity).Translation;
+			lightSource->SetPosition(worldPosition);
 		}
 	}
 
@@ -774,7 +779,14 @@ namespace Sparky {
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
 	{
-		component.Mesh = Model::Create(Model::Default::Cube, entity.GetTransform(), (int)(entt::entity)entity);
+		Model::Default defaultModel;
+
+		if (component.Type == MeshType::Custom)
+			defaultModel = Model::Default::Cube;
+		else
+			defaultModel = (Model::Default)component.Type;
+
+		component.Mesh = Model::Create(defaultModel, entity.GetTransform(), (int)(entt::entity)entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
