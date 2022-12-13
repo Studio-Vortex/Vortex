@@ -6,12 +6,15 @@
 #include "Sparky/Core/MouseCodes.h"
 #include "Sparky/Core/Gamepad.h"
 #include "Sparky/Core/Math.h"
+#include "Sparky/Events/Event.h"
 
 namespace Sparky {
 
 	class SPARKY_API Input
 	{
 	public:
+		static void Update(const Event& event);
+
 		static bool IsKeyPressed(KeyCode keycode);
 		static bool IsKeyReleased(KeyCode keycode);
 

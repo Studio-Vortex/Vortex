@@ -12,6 +12,9 @@ namespace Sparky {
 		{
 			Gui::Begin("Performance", &s_ShowPanel);
 
+			uint32_t activeID = Application::Get().GetGuiLayer()->GetActiveLayerID();
+			Gui::Text("Active Panel ID: %u", activeID);
+
 			Gui::PushFont(boldFont);
 			Gui::Text("Scene");
 			Gui::PopFont();

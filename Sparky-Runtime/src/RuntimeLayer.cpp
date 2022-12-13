@@ -16,7 +16,7 @@ namespace Sparky {
 		const auto& commandLineArgs = appProps.CommandLineArgs;
 
 		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		framebufferProps.Width = appProps.WindowWidth;
 		framebufferProps.Height = appProps.WindowHeight;
 
@@ -57,6 +57,9 @@ namespace Sparky {
 		m_Framebuffer->Bind();
 		RenderCommand::Clear();
 
+		// Clear entityID attachment to -1
+		m_Framebuffer->ClearAttachment(1, -1);
+
 		if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
 		{
 			auto scenePath = std::format("Assets/Scenes/{}.sparky", sceneToBeLoaded);
@@ -73,6 +76,20 @@ namespace Sparky {
 			OnRuntimeSceneResumed();
 
 		m_RuntimeScene->OnUpdateRuntime(delta);
+
+		auto [mx, my] = ImGui::GetMousePos();
+		my = m_ViewportSize.y - my;
+
+		int mouseX = (int)mx;
+		int mouseY = (int)my;
+
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
+		{
+			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.get() };
+		}
+
+		ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 
 		m_Framebuffer->Unbind();
 	}
@@ -107,11 +124,7 @@ namespace Sparky {
 
 	void RuntimeLayer::OnEvent(Event& e)
 	{
-		if (e.GetEventType() == EventType::MouseScrolled)
-		{
-			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)e;
-			Input::SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
-		}
+		Input::Update(e);
 	}
 
 	void RuntimeLayer::OnRuntimeScenePaused()
@@ -156,6 +169,7 @@ namespace Sparky {
 			InstrumentationTimer timer(projectName.c_str());
 
 			ScriptEngine::Init();
+
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 

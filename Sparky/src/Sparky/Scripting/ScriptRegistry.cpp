@@ -46,6 +46,8 @@ namespace Sparky {
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityRemoveComponentFuncs;
 
+	static Entity s_HoveredEntity = Entity{};
+
 	static std::string s_SceneToBeLoaded = "";
 
 	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -202,6 +204,14 @@ namespace Sparky {
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		contextScene->SetPaused(false);
+	}
+
+	static uint64_t Scene_GetHoveredEntity()
+	{
+		if (!s_HoveredEntity)
+			return 0;
+
+		return s_HoveredEntity.GetUUID();
 	}
 
 #pragma endregion
@@ -2885,6 +2895,11 @@ namespace Sparky {
 		RegisterComponent(AllComponents{});
 	}
 
+	void ScriptRegistry::SetHoveredEntity(Entity entity)
+	{
+		s_HoveredEntity = entity;
+	}
+
 	const char* ScriptRegistry::GetSceneToBeLoaded()
 	{
 		const char* sceneName = s_SceneToBeLoaded.c_str();
@@ -2914,6 +2929,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(Scene_IsPaused);
 		SP_ADD_INTERNAL_CALL(Scene_Pause);
 		SP_ADD_INTERNAL_CALL(Scene_Resume);
+		SP_ADD_INTERNAL_CALL(Scene_GetHoveredEntity);
 
 		SP_ADD_INTERNAL_CALL(SceneManager_LoadScene);
 

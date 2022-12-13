@@ -57,6 +57,9 @@ namespace Sparky {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Scene_Resume();
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_GetHoveredEntity();
+
 		#endregion
 
 		#region SceneManager

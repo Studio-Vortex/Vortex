@@ -2,6 +2,7 @@
 #include "Sparky/Core/Input.h"
 
 #include "Sparky/Core/Application.h"
+#include "Sparky/Events/MouseEvent.h"
 
 #include <GLFW/glfw3.h>
 
@@ -9,7 +10,16 @@ namespace Sparky {
 
 	static Math::vec2 s_MouseScrollOffset(0.0f);
 
-	bool Input::IsKeyPressed(KeyCode keycode)
+    void Input::Update(const Event& event)
+    {
+		if (event.GetEventType() == EventType::MouseScrolled)
+		{
+			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)event;
+			SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
+		}
+    }
+
+    bool Input::IsKeyPressed(KeyCode keycode)
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		auto state = glfwGetKey(window, static_cast<int32_t>(keycode));

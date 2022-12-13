@@ -8,6 +8,7 @@
 #define IMGUI_IMPL_API
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include <ImGuizmo.h>
 
 // Temporary
@@ -115,6 +116,12 @@ namespace Sparky {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backupContext);
 		}
+	}
+
+	uint32_t GuiLayer::GetActiveLayerID() const
+	{
+		ImGuiContext& g = *GImGui;
+		return g.ActiveId;
 	}
 
 	void GuiLayer::SetDarkThemeColors()

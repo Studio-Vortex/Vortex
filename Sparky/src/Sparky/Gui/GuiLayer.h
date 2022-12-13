@@ -23,6 +23,8 @@ namespace Sparky {
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 
+		uint32_t GetActiveLayerID() const;
+
 		void SetDarkThemeColors();
 		void SetLightGrayThemeColors();
 

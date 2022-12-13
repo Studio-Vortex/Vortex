@@ -28,6 +28,7 @@ namespace Sparky {
 		SharedRef<Framebuffer> m_Framebuffer;
 		SharedRef<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
+		Entity m_HoveredEntity;
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 	};

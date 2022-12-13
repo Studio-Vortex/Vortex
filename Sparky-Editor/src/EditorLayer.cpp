@@ -172,6 +172,8 @@ namespace Sparky {
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
 		}
 
+		ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+
 		OnOverlayRender();
 
 		m_Framebuffer->Unbind();
@@ -959,11 +961,7 @@ namespace Sparky {
 	{
 		m_EditorCamera.OnEvent(e);
 
-		if (e.GetEventType() == EventType::MouseScrolled)
-		{
-			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)e;
-			Input::SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
-		}
+		Input::Update(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
@@ -1275,8 +1273,8 @@ namespace Sparky {
 			std::string projectName = std::format("{} Project Load Time", path.filename().string());
 			InstrumentationTimer timer(projectName.c_str());
 
-			ScriptEngine::Shutdown();
 			ScriptEngine::Init();
+
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 

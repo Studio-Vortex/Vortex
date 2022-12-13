@@ -32,6 +32,16 @@
 		{
 			InternalCalls.Scene_Resume();
 		}
+
+		public static Entity GetHoveredEntity()
+		{
+			ulong entityID = InternalCalls.Scene_GetHoveredEntity();
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
 	}
 
 }

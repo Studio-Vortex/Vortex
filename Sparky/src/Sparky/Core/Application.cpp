@@ -47,8 +47,8 @@ namespace Sparky {
 
 		Renderer::Init();
 		AudioEngine::Init();
-		Random::Init();
 		Font::Init();
+		Random::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -61,10 +61,10 @@ namespace Sparky {
 	{
 		SP_PROFILE_FUNCTION();
 
-		ScriptEngine::Shutdown();
-		Renderer::Shutdown();
-		AudioEngine::Shutdown();
 		Font::Shutdown();
+		ScriptEngine::Shutdown();
+		AudioEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
