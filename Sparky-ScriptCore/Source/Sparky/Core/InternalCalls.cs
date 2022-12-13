@@ -36,6 +36,9 @@ namespace Sparky {
 		internal extern static void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawBoundingBox(ref Vector3 worldPosition, ref Vector3 size, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_Flush();
 
 		#endregion

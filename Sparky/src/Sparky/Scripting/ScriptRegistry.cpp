@@ -137,6 +137,17 @@ namespace Sparky {
 		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 	}
 
+	static void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
+	{
+		Math::AABB aabb{
+			- Math::vec3(0.5f),
+			+ Math::vec3(0.5f),
+		};
+
+		Math::mat4 transform = Math::Identity() * Math::Translate(*worldPosition) * Math::Scale(*size);
+		Renderer2D::DrawAABB(aabb, transform, *color);
+	}
+
 	static void DebugRenderer_Flush()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -281,20 +292,12 @@ namespace Sparky {
 		const auto& children = entity.Children();
 
 		MonoClass* coreEntityClass =  ScriptEngine::GetCoreEntityClass().GetMonoClass();
-		SP_CORE_ASSERT(coreEntityClass, "Invalid Entity Class!");
+		SP_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
 
 		MonoArray* result = mono_array_new(mono_domain_get(), coreEntityClass, children.size());
 
 		for (uint32_t i = 0; i < children.size(); i++)
 		{
-			uintptr_t length = mono_array_length(result);
-
-			if (i >= length)
-			{
-				SP_CORE_WARN("Index out of bounds in C# array!");
-				return nullptr;
-			}
-
 			MonoClass* arrayClass = mono_object_get_class((MonoObject*)result);
 			MonoClass* elementClass = mono_class_get_element_class(arrayClass);
 			int32_t elementSize = mono_array_element_size(arrayClass);
@@ -324,13 +327,17 @@ namespace Sparky {
 		SP_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		const auto& children = entity.Children();
-		if (index < children.size())
+		if (index > children.size() - 1)
 		{
 			SP_CORE_ASSERT(false, "Index out of bounds!");
 			return 0;
 		}
 
-		return (uint64_t)children[index];
+		uint64_t childUUID = children[index];
+		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+		SP_CORE_ASSERT(child, "Child UUID was Invalid!");
+
+		return child.GetUUID();
 	}
 
 	static MonoString* Entity_GetTag(UUID entityUUID)
@@ -385,15 +392,16 @@ namespace Sparky {
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+		SP_CORE_ASSERT(parent, "Parent UUID was Invalid!");
 		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+		SP_CORE_ASSERT(child, "Child UUID was Invalid!");
 
 		if (parent && child)
 		{
-			parent.AddChild(child.GetUUID());
+			contextScene->ParentEntity(child, parent);
 			return true;
 		}
 
-		SP_CORE_WARN("Parent or Child UUID was Invalid!");
 		return false;
 	}
 
@@ -406,7 +414,7 @@ namespace Sparky {
 
 		if (parent && child)
 		{
-			parent.RemoveChild(child.GetUUID());
+			contextScene->UnparentEntity(child);
 			return true;
 		}
 
@@ -1737,8 +1745,23 @@ namespace Sparky {
 			}
 
 			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
+			UUID entityUUID = physicsBodyData->EntityUUID;
 
-			outHit->EntityID = physicsBodyData->EntityUUID;
+			// Call Hit Entity's OnCollision Method
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			SP_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity hitEntity = contextScene->TryGetEntityWithUUID(entityUUID);
+			SP_CORE_ASSERT(hitEntity, "Entity UUID was Invalid!");
+
+			if (hitEntity.HasComponent<ScriptComponent>())
+			{
+				if (ScriptEngine::EntityClassExists(hitEntity.GetComponent<ScriptComponent>().ClassName))
+				{
+					ScriptEngine::OnRaycastCollisionEntity(hitEntity);
+				}
+			}
+
+			outHit->EntityID = entityUUID;
 			outHit->Position = FromPhysXVector(hitInfo.block.position);
 			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
 			outHit->Distance = hitInfo.block.distance;
@@ -2211,7 +2234,7 @@ namespace Sparky {
 				Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
 
 				if (ScriptEngine::GetEntityScriptInstance(entityUUID) != nullptr)
-					ScriptEngine::OnCollisionEntity(entity); // Call the Entity's OnCollision Function
+					ScriptEngine::OnRaycastCollisionEntity(entity); // Call the Entity's OnCollision Function
 			}
 			else
 			{
@@ -2922,6 +2945,7 @@ namespace Sparky {
 		SP_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
+		SP_ADD_INTERNAL_CALL(DebugRenderer_DrawBoundingBox);
 		SP_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
 		SP_ADD_INTERNAL_CALL(Scene_FindEntityByID);

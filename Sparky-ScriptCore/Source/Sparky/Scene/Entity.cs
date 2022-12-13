@@ -34,7 +34,7 @@ namespace Sparky {
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
 		protected virtual void OnDestroy() { }
-		protected virtual void OnCollision() { }
+		protected virtual void OnRaycastCollision() { }
 		protected virtual void OnGui() { }
 
 		public bool HasComponent<T>()
@@ -52,6 +52,19 @@ namespace Sparky {
 
 			T component = new T() { Entity = this };
 			return component;
+		}
+
+		public bool TryGetComponent<T>(out T component)
+			where T : Component, new()
+		{
+			if (!HasComponent<T>())
+			{
+				component = null;
+				return false;
+			}
+
+			component = new T() { Entity = this };
+			return true;
 		}
 
 		public T AddComponent<T>()
@@ -91,7 +104,15 @@ namespace Sparky {
 
 		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
-		public Entity GetChild(uint index) => new Entity(InternalCalls.Entity_GetChild(ID, index));
+		public Entity GetChild(uint index)
+		{
+			ulong entityID = InternalCalls.Entity_GetChild(ID, index);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
 
 		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
 

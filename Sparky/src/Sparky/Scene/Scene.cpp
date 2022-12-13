@@ -324,6 +324,13 @@ namespace Sparky {
 
 		m_IsRunning = false;
 
+		m_Registry.each([scene = this](auto& entityID)
+		{
+			Entity entity{ entityID, scene };
+			if (entity.HasComponent<ScriptComponent>())
+				ScriptEngine::OnDestroyEntity(entity);
+		});
+
 		ScriptEngine::OnRuntimeStop();
 
 		// Stop all active audio sources in the scene

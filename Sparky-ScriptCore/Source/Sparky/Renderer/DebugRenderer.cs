@@ -22,6 +22,11 @@
 			InternalCalls.DebugRenderer_DrawQuadBillboard(ref translation, ref size, ref color);
 		}
 
+		public static void DrawBoundingBox(Vector3 translation, Vector3 size, Vector4 color)
+		{
+			InternalCalls.DebugRenderer_DrawBoundingBox(ref translation, ref size, ref color);
+		}
+
 		public static void Flush()
 		{
 			InternalCalls.DebugRenderer_Flush();

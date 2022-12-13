@@ -14,12 +14,16 @@ namespace Sandbox {
 		{
 			if (Input.IsKeyDown(KeyCode.W))
 				cont.Move(Vector3.Forward * delta);
-			if (Input.IsKeyDown(KeyCode.S))
+			else if (Input.IsKeyDown(KeyCode.S))
 				cont.Move(Vector3.Back * delta);
+
 			if (Input.IsKeyDown(KeyCode.A))
 				cont.Move(Vector3.Left * delta);
-			if (Input.IsKeyDown(KeyCode.D))
+			else if (Input.IsKeyDown(KeyCode.D))
 				cont.Move(Vector3.Right * delta);
+
+			if (cont.IsGrounded && Input.IsKeyDown(KeyCode.Space))
+				cont.Jump(5f);
 		}
 	}
 

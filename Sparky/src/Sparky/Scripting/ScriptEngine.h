@@ -102,7 +102,7 @@ namespace Sparky {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
-		void InvokeOnCollision();
+		void InvokeOnRaycastCollision();
 		void InvokeOnGui();
 
 		inline SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
@@ -183,7 +183,7 @@ namespace Sparky {
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
-		static void OnCollisionEntity(Entity entity);
+		static void OnRaycastCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
 
 		static ScriptClass GetCoreEntityClass();

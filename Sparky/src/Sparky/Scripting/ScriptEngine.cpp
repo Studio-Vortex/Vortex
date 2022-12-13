@@ -420,14 +420,14 @@ namespace Sparky {
 		s_Data->EntityInstances.erase(it);
 	}
 
-	void ScriptEngine::OnCollisionEntity(Entity entity)
+	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
 	{
 		UUID uuid = entity.GetUUID();
 		auto it = s_Data->EntityInstances.find(uuid);
 
 		SP_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
-		it->second->InvokeOnCollision();
+		it->second->InvokeOnRaycastCollision();
 	}
 
 	void ScriptEngine::OnGuiEntity(Entity entity)
@@ -618,11 +618,11 @@ namespace Sparky {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
+		m_Constructor     = s_Data->EntityClass.GetMethod(".ctor", 1);
 		m_OnCreateFunc    = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc    = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc   = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionFunc = m_ScriptClass->GetMethod("OnCollision", 0);
+		m_OnCollisionFunc = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
 		m_OnGuiFunc       = m_ScriptClass->GetMethod("OnGui", 0);
 
 		// Call Entity constructor
@@ -654,7 +654,7 @@ namespace Sparky {
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
-	void ScriptInstance::InvokeOnCollision()
+	void ScriptInstance::InvokeOnRaycastCollision()
 	{
 		if (m_OnCollisionFunc)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionFunc);
