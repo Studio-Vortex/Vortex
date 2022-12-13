@@ -122,10 +122,7 @@ namespace Sparky {
 		m_RuntimeScene->OnUpdateEntityGui();
 	}
 
-	void RuntimeLayer::OnEvent(Event& e)
-	{
-		Input::Update(e);
-	}
+	void RuntimeLayer::OnEvent(Event& e) { }
 
 	void RuntimeLayer::OnRuntimeScenePaused()
 	{

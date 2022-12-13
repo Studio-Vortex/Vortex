@@ -1,6 +1,4 @@
 ﻿using Sparky;
-using System;
-using System.Threading;
 
 namespace Sandbox {
 
@@ -10,9 +8,14 @@ namespace Sandbox {
 		public float rotationThrust = 1f;
 		public static int level = 1;
 
-		private RigidBody2D rigidbody;
-		private AudioSource audioSource;
-		private ParticleEmitter particleEmitter;
+		RigidBody2D rigidbody;
+		AudioSource audioSource;
+		ParticleEmitter particleEmitter;
+
+		public float time = 0f;
+		public float timeToWait = 3f;
+		public bool loadingNextLevel = false;
+		public bool reloadingLevel = false;
 
 		protected override void OnCreate()
 		{
@@ -32,6 +35,51 @@ namespace Sandbox {
 			}
 
 			ProcessHit();
+
+			// Major hack because the engine doesn't have a Timer
+			// we need to track time by our self
+			if (loadingNextLevel)
+			{
+				time -= delta; // decrement timer
+
+				if (time <= 0f) // check if timer is done
+				{
+					loadingNextLevel = false;
+
+					// Load next level
+					if (level == 1)
+					{
+						SceneManager.LoadScene("Boost_02");
+						level++;
+					}
+					else if (level == 2)
+					{
+						SceneManager.LoadScene("Boost_03");
+						level++;
+					}
+					else
+					{
+						SceneManager.LoadScene("Boost_01");
+						level = 1;
+					}
+				}
+			}
+			else if (reloadingLevel)
+			{
+				time -= delta;
+
+				if (time <= 0f)
+				{
+					reloadingLevel = false;
+
+					if (level == 1)
+						SceneManager.LoadScene("Boost_01");
+					else if (level == 2)
+						SceneManager.LoadScene("Boost_02");
+					else
+						SceneManager.LoadScene("Boost_03");
+				}
+			}
 		}
 
 		void ProcessThrust()
@@ -97,32 +145,17 @@ namespace Sandbox {
 			}
 		}
 
-		private static void LoadNextLevel(Entity entity)
+		void LoadNextLevel(Entity entity)
 		{
 			// TODO: Load next level here
 			AudioSource audioSource = entity.GetComponent<AudioSource>();
 			if (!audioSource.IsPlaying)
 				audioSource.Play();
 
-			// Wait for x seconds
-			Thread.Sleep(3000);
+			if (!loadingNextLevel)
+				time = timeToWait;
 
-			// Load next level
-			if (level == 1)
-			{
-				SceneManager.LoadScene("Boost_02");
-				level++;
-			}
-			else if (level == 2)
-			{
-				SceneManager.LoadScene("Boost_03");
-				level++;
-			}
-			else
-			{
-				SceneManager.LoadScene("Boost_01");
-				level = 1;
-			}
+			loadingNextLevel = true;
 		}
 
 		void ReloadLevel()
@@ -133,14 +166,10 @@ namespace Sandbox {
 			if (!audioSource.IsPlaying)
 				audioSource.Play();
 
-			Thread.Sleep(3000);
+			if (!reloadingLevel)
+				time = timeToWait;
 
-			if (level == 1)
-				SceneManager.LoadScene("Boost_01");
-			else if (level == 2)
-				SceneManager.LoadScene("Boost_02");
-			else
-				SceneManager.LoadScene("Boost_03");
+			reloadingLevel = true;
 		}
 	}
 

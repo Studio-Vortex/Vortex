@@ -3,6 +3,7 @@
 
 #include "Sparky/Renderer/Renderer.h"
 
+#include "Sparky/Core/Input.h"
 #include "Sparky/Audio/AudioEngine.h"
 #include "Sparky/Scripting/ScriptEngine.h"
 #include "Sparky/Renderer/Font/Font.h"
@@ -103,6 +104,9 @@ namespace Sparky {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(Application::OnWindowResizeEvent));
+
+		// Update Input State
+		Input::Update(e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
