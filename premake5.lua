@@ -1,6 +1,6 @@
-workspace "Sparky"
+workspace "Vortex"
 	architecture "x64"
-	startproject "Sparky-Editor"
+	startproject "Vortex-Editor"
 
 	configurations
 	{
@@ -17,29 +17,29 @@ workspace "Sparky"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["Box2D"] = "Sparky/vendor/Box2D/include"
-IncludeDir["entt"] = "Sparky/vendor/entt/include"
-IncludeDir["filewatch"] = "Sparky/vendor/filewatch"
-IncludeDir["GLFW"] = "Sparky/vendor/GLFW/include"
-IncludeDir["Glad"] = "Sparky/vendor/Glad/include"
-IncludeDir["glm"] = "Sparky/vendor/glm"
-IncludeDir["ImGui"] = "Sparky/vendor/imgui"
-IncludeDir["ImGuizmo"] = "Sparky/vendor/ImGuizmo"
-IncludeDir["ImGuiColorTextEdit"] = "Sparky/vendor/ImGuiColorTextEdit"
-IncludeDir["miniaudio"] = "Sparky/vendor/miniaudio"
-IncludeDir["mono"] = "%{wks.location}/Sparky/vendor/mono/include"
-IncludeDir["msdf_atlas_gen"] = "Sparky/vendor/msdf-atlas-gen/msdf-atlas-gen"
-IncludeDir["msdfgen"] = "Sparky/vendor/msdf-atlas-gen/msdfgen"
-IncludeDir["PhysX"] = "Sparky/vendor/PhysX/include"
-IncludeDir["spdlog"] = "Sparky/vendor/spdlog/include"
-IncludeDir["stb_image"] = "Sparky/vendor/stb_image"
-IncludeDir["tinygltf"] = "Sparky/vendor/tinygltf"
-IncludeDir["tinyobjloader"] = "Sparky/vendor/tinyobjloader"
-IncludeDir["yaml_cpp"] = "Sparky/vendor/yaml-cpp/include"
+IncludeDir["Box2D"] = "Vortex/vendor/Box2D/include"
+IncludeDir["entt"] = "Vortex/vendor/entt/include"
+IncludeDir["filewatch"] = "Vortex/vendor/filewatch"
+IncludeDir["GLFW"] = "Vortex/vendor/GLFW/include"
+IncludeDir["Glad"] = "Vortex/vendor/Glad/include"
+IncludeDir["glm"] = "Vortex/vendor/glm"
+IncludeDir["ImGui"] = "Vortex/vendor/imgui"
+IncludeDir["ImGuizmo"] = "Vortex/vendor/ImGuizmo"
+IncludeDir["ImGuiColorTextEdit"] = "Vortex/vendor/ImGuiColorTextEdit"
+IncludeDir["miniaudio"] = "Vortex/vendor/miniaudio"
+IncludeDir["mono"] = "%{wks.location}/Vortex/vendor/mono/include"
+IncludeDir["msdf_atlas_gen"] = "Vortex/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["msdfgen"] = "Vortex/vendor/msdf-atlas-gen/msdfgen"
+IncludeDir["PhysX"] = "Vortex/vendor/PhysX/include"
+IncludeDir["spdlog"] = "Vortex/vendor/spdlog/include"
+IncludeDir["stb_image"] = "Vortex/vendor/stb_image"
+IncludeDir["tinygltf"] = "Vortex/vendor/tinygltf"
+IncludeDir["tinyobjloader"] = "Vortex/vendor/tinyobjloader"
+IncludeDir["yaml_cpp"] = "Vortex/vendor/yaml-cpp/include"
 
 LibraryDir = {}
-LibraryDir["Mono"] = "%{wks.location}/Sparky/vendor/mono/lib/%{cfg.buildcfg}"
-LibraryDir["PhysX"] = "%{wks.location}/Sparky/vendor/PhysX/lib/%{cfg.buildcfg}"
+LibraryDir["Mono"] = "%{wks.location}/Vortex/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["PhysX"] = "%{wks.location}/Vortex/vendor/PhysX/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["mono"] = "%{LibraryDir.Mono}/mono-2.0-sgen.lib" -- dll binary must be included in build
@@ -54,21 +54,21 @@ Library["PhysXFoundation"] = "%{LibraryDir.PhysX}/PhysXFoundation_static_64.lib"
 Library["PhysXPvd"] = "%{LibraryDir.PhysX}/PhysXPvdSDK_static_64.lib"
 
 group "External Dependencies"
-	include "Sparky/vendor/Box2D"
-	include "Sparky/vendor/GLFW"
-	include "Sparky/vendor/Glad"
-	include "Sparky/vendor/imgui"
-	include "Sparky/vendor/yaml-cpp"
+	include "Vortex/vendor/Box2D"
+	include "Vortex/vendor/GLFW"
+	include "Vortex/vendor/Glad"
+	include "Vortex/vendor/imgui"
+	include "Vortex/vendor/yaml-cpp"
 
 	group "External Dependencies/msdf"
-		include "Sparky/vendor/msdf-atlas-gen"
+		include "Vortex/vendor/msdf-atlas-gen"
 	group ""
 group ""
 
 
 group "Core"
-project "Sparky"
-	location "Sparky"
+project "Vortex"
+	location "Vortex"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
@@ -77,8 +77,8 @@ project "Sparky"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "sppch.h"
-	pchsource "Sparky/src/sppch.cpp"
+	pchheader "vxpch.h"
+	pchsource "Vortex/src/vxpch.cpp"
 
 	files
 	{
@@ -101,7 +101,8 @@ project "Sparky"
 
 	defines
 	{
-		"PX_PHYSX_STATIC_LIB", "_CRT_SECURE_NO_WARNINGS",
+		"PX_PHYSX_STATIC_LIB",
+		"_CRT_SECURE_NO_WARNINGS",
 	}
 
 	includedirs
@@ -148,10 +149,10 @@ project "Sparky"
 		"yaml-cpp",
 	}
 
-	filter "files:Sparky/vendor/ImGuizmo/**.cpp"
+	filter "files:Vortex/vendor/ImGuizmo/**.cpp"
 	flags { "NoPCH" }
 
-	filter "files:Sparky/vendor/ImGuiColorTextEdit/**.cpp"
+	filter "files:Vortex/vendor/ImGuiColorTextEdit/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
@@ -159,17 +160,17 @@ project "Sparky"
 
 		defines
 		{
-			"SP_BUILD_DLL",
+			"VX_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
 		}
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines "VX_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
+		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -178,7 +179,7 @@ project "Sparky"
 		}
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
+		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -187,14 +188,14 @@ project "Sparky"
 		}
 
 
-project "Sparky-ScriptCore"
-	location "Sparky-ScriptCore"
+project "Vortex-ScriptCore"
+	location "Vortex-ScriptCore"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetdir ("Sparky-Editor/Resources/Scripts")
-	objdir ("Sparky-Editor/Resources/Scripts/Intermediates")
+	targetdir ("Vortex-Editor/Resources/Scripts")
+	objdir ("Vortex-Editor/Resources/Scripts/Intermediates")
 
 	files
 	{
@@ -217,8 +218,8 @@ group ""
 
 
 group "Tools"
-project "Sparky-Editor"
-	location "Sparky-Editor"
+project "Vortex-Editor"
+	location "Vortex-Editor"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
@@ -235,7 +236,7 @@ project "Sparky-Editor"
 
 	includedirs
 	{
-		"Sparky/src",
+		"Vortex/src",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.glm}",
@@ -257,19 +258,19 @@ project "Sparky-Editor"
 
 	links
 	{
-		"Sparky",
+		"Vortex",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines "VX_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
+		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -278,7 +279,7 @@ project "Sparky-Editor"
 		}
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
+		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -286,8 +287,8 @@ project "Sparky-Editor"
 			"NDEBUG" -- PhysX Requires This
 		}
 
-project "Sparky-Launcher"
-	location "Sparky-Launcher"
+project "Vortex-Launcher"
+	location "Vortex-Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
@@ -304,7 +305,7 @@ project "Sparky-Launcher"
 
 	includedirs
 	{
-		"Sparky/src",
+		"Vortex/src",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -322,19 +323,19 @@ project "Sparky-Launcher"
 
 	links
 	{
-		"Sparky",
+		"Vortex",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines "VX_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
+		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -343,7 +344,7 @@ project "Sparky-Launcher"
 		}
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
+		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -354,8 +355,8 @@ group ""
 
 
 group "Runtime"
-project "Sparky-Runtime"
-	location "Sparky-Runtime"
+project "Vortex-Runtime"
+	location "Vortex-Runtime"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
@@ -372,7 +373,7 @@ project "Sparky-Runtime"
 
 	includedirs
 	{
-		"Sparky/src",
+		"Vortex/src",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -392,19 +393,19 @@ project "Sparky-Runtime"
 
 	links
 	{
-		"Sparky",
+		"Vortex",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines "VX_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
+		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -413,7 +414,7 @@ project "Sparky-Runtime"
 		}
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
+		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -442,7 +443,7 @@ project "Testbed"
 
 	includedirs
 	{
-		"Sparky/src",
+		"Vortex/src",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -460,19 +461,19 @@ project "Testbed"
 
 	links
 	{
-		"Sparky",
+		"Vortex",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "SP_DEBUG"
+		defines "VX_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "SP_RELEASE"
+		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -481,7 +482,7 @@ project "Testbed"
 		}
 
 	filter "configurations:Dist"
-		defines "SP_DIST"
+		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
 		defines
@@ -494,7 +495,7 @@ group ""
 workspace "Sandbox"
 	architecture "x64"
 	startproject "Sandbox"
-	location "Sparky-Editor/SandboxProject/Assets/Scripts"
+	location "Vortex-Editor/SandboxProject/Assets/Scripts"
 
 	configurations
 	{
@@ -511,13 +512,13 @@ workspace "Sandbox"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 project "Sandbox"
-	location "Sparky-Editor/SandboxProject/Assets/Scripts"
+	location "Vortex-Editor/SandboxProject/Assets/Scripts"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetdir ("Sparky-Editor/SandboxProject/Assets/Scripts/Binaries")
-	objdir ("Sparky-Editor/SandboxProject/Assets/Scripts/Intermediates")
+	targetdir ("Vortex-Editor/SandboxProject/Assets/Scripts/Binaries")
+	objdir ("Vortex-Editor/SandboxProject/Assets/Scripts/Intermediates")
 
 	files
 	{
@@ -527,7 +528,7 @@ project "Sandbox"
 
 	links
 	{
-		"Sparky-ScriptCore",
+		"Vortex-ScriptCore",
 	}
 
 	filter "configurations:Debug"

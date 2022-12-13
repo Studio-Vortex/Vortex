@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Sparky.h>
-#include <Sparky/Renderer/OrthographicCameraController.h>
+#include <Vortex.h>
+#include <Vortex/Renderer/OrthographicCameraController.h>
 
-class Sandbox2D : public Sparky::Layer
+class Sandbox2D : public Vortex::Layer
 {
 public:
 	Sandbox2D();
@@ -12,14 +12,14 @@ public:
 	void OnAttach() override;
 	void OnDetach() override;
 
-	void OnUpdate(Sparky::TimeStep ts) override;
+	void OnUpdate(Vortex::TimeStep ts) override;
 	void OnGuiRender() override;
-	void OnEvent(Sparky::Event &e) override;
+	void OnEvent(Vortex::Event &e) override;
 
 private:
-	Sparky::OrthographicCameraController m_CameraController;
+	Vortex::OrthographicCameraController m_CameraController;
 
-	Sparky::SharedRef<Sparky::Texture2D> m_GridTexture;
+	Vortex::SharedRef<Vortex::Texture2D> m_GridTexture;
 
 	float m_RotatedQuadRotation = 0.0f;
 	float m_RotatedQuadRotationSpeed = 25.0f;

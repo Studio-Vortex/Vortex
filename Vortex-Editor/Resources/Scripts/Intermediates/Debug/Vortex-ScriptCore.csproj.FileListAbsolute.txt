@@ -1,0 +1,6 @@
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Intermediates\Debug\Vortex-ScriptCore.csproj.AssemblyReference.cache
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Intermediates\Debug\Vortex-ScriptCore.csproj.CoreCompileInputs.cache
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Intermediates\Debug\Vortex-ScriptCore.dll
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Intermediates\Debug\Vortex-ScriptCore.pdb
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Vortex-ScriptCore.dll
+C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\Resources\Scripts\Vortex-ScriptCore.pdb

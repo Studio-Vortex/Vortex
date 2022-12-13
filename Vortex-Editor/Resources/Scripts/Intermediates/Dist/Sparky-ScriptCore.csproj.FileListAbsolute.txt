@@ -1,0 +1,4 @@
+C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Dist\Sparky-ScriptCore.csproj.AssemblyReference.cache
+C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Dist\Sparky-ScriptCore.csproj.CoreCompileInputs.cache
+C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Intermediates\Dist\Sparky-ScriptCore.dll
+C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\Resources\Scripts\Sparky-ScriptCore.dll

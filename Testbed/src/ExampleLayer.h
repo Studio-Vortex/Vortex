@@ -1,32 +1,32 @@
 #pragma once
 
-#include <Sparky.h>
-#include <Sparky/Renderer/OrthographicCameraController.h>
+#include <Vortex.h>
+#include <Vortex/Renderer/OrthographicCameraController.h>
 
-class ExampleLayer : public Sparky::Layer
+class ExampleLayer : public Vortex::Layer
 {
 public:
 	ExampleLayer();
 	~ExampleLayer() override = default;
 
-	void OnUpdate(Sparky::TimeStep delta) override;
+	void OnUpdate(Vortex::TimeStep delta) override;
 
 	void OnGuiRender() override;
 
-	void OnEvent(Sparky::Event& event) override;
+	void OnEvent(Vortex::Event& event) override;
 
 private:
-	Sparky::ShaderLibrary m_ShaderLibrary;
+	Vortex::ShaderLibrary m_ShaderLibrary;
 
-	Sparky::SharedRef<Sparky::VertexArray> m_TriangleVA;
-	Sparky::SharedRef<Sparky::Shader> m_TriangleShader;
+	Vortex::SharedRef<Vortex::VertexArray> m_TriangleVA;
+	Vortex::SharedRef<Vortex::Shader> m_TriangleShader;
 
-	Sparky::SharedRef<Sparky::VertexArray> m_SquareVA;
-	Sparky::SharedRef<Sparky::Shader> m_FlatColorShader;
+	Vortex::SharedRef<Vortex::VertexArray> m_SquareVA;
+	Vortex::SharedRef<Vortex::Shader> m_FlatColorShader;
 
-	Sparky::SharedRef<Sparky::Texture2D> m_Texture, m_LinuxLogo;
+	Vortex::SharedRef<Vortex::Texture2D> m_Texture, m_LinuxLogo;
 
-	Sparky::OrthographicCameraController m_CameraController;
+	Vortex::OrthographicCameraController m_CameraController;
 
 	Math::vec3 m_SquareColor{ 0.2f, 0.3f, 0.8f };
 };

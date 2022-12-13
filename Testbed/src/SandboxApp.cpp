@@ -1,13 +1,13 @@
-#include <Sparky.h>
-#include <Sparky/Core/EntryPoint.h>
+#include <Vortex.h>
+#include <Vortex/Core/EntryPoint.h>
 
 #include "ExampleLayer.h"
 #include "Sandbox2D.h"
 
-class Sandbox : public Sparky::Application
+class Sandbox : public Vortex::Application
 {
 public:
-	Sandbox(const Sparky::ApplicationProperties& properties)
+	Sandbox(const Vortex::ApplicationProperties& properties)
 		: Application(properties)
 	{
 		//PushLayer(new ExampleLayer());
@@ -15,7 +15,7 @@ public:
 	}
 };
 
-Sparky::Application* Sparky::CreateApplication(ApplicationCommandLineArgs args)
+Vortex::Application* Vortex::CreateApplication(ApplicationCommandLineArgs args)
 {
 	ApplicationProperties props;
 	props.Name = "Sandbox";
@@ -24,7 +24,7 @@ Sparky::Application* Sparky::CreateApplication(ApplicationCommandLineArgs args)
 	props.VSync = true;
 	props.EnableGUI = true;
 
-	props.WorkingDirectory = "../Sparky-Editor";
+	props.WorkingDirectory = "../Vortex-Editor";
 	props.CommandLineArgs = args;
 
 	return new Sandbox(props);
