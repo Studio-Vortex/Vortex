@@ -1,24 +1,24 @@
-[submodule "Sparky/vendor/spdlog"]
-	path = Sparky/vendor/spdlog
+[submodule "Vortex/vendor/spdlog"]
+	path = Vortex/vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "Sparky/vendor/GLFW"]
-	path = Sparky/vendor/GLFW
+[submodule "Vortex/vendor/GLFW"]
+	path = Vortex/vendor/GLFW
 	url = https://github.com/TheCherno/glfw.git
-[submodule "Sparky/vendor/imgui"]
-	path = Sparky/vendor/imgui
+[submodule "Vortex/vendor/imgui"]
+	path = Vortex/vendor/imgui
 	url = https://github.com/TheCherno/imgui.git
-[submodule "Sparky/vendor/glm"]
-	path = Sparky/vendor/glm
+[submodule "Vortex/vendor/glm"]
+	path = Vortex/vendor/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Sparky/vendor/yaml-cpp"]
-	path = Sparky/vendor/yaml-cpp
+[submodule "Vortex/vendor/yaml-cpp"]
+	path = Vortex/vendor/yaml-cpp
 	url = https://github.com/TheCherno/yaml-cpp.git
-[submodule "Sparky/vendor/ImGuizmo"]
-	path = Sparky/vendor/ImGuizmo
+[submodule "Vortex/vendor/ImGuizmo"]
+	path = Vortex/vendor/ImGuizmo
 	url = https://github.com/TheCherno/ImGuizmo.git
-[submodule "Sparky/vendor/Box2D"]
-	path = Sparky/vendor/Box2D
+[submodule "Vortex/vendor/Box2D"]
+	path = Vortex/vendor/Box2D
 	url = https://github.com/TheCherno/box2d.git
-[submodule "Sparky/vendor/msdf-atlas-gen"]
-	path = Sparky/vendor/msdf-atlas-gen
+[submodule "Vortex/vendor/msdf-atlas-gen"]
+	path = Vortex/vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git

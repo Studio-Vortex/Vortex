@@ -3,13 +3,13 @@
 /.vs
 /bin
 /bin-int
-Sparky-Editor/assets/textures/game
-Sparky-Editor/Resources/Scripts/Intermediates
-Sparky-Editor/SandboxProject/.vs
-Sparky-Editor/SandboxProject/Assets/Scripts/Binaries
-Sparky-Editor/SandboxProject/Assets/Scripts/Intermediates
-Sparky-Editor/Resources/Logs
-Sparky-Runtime/Resources/Logs
+Vortex-Editor/assets/textures/game
+Vortex-Editor/Resources/Scripts/Intermediates
+Vortex-Editor/SandboxProject/.vs
+Vortex-Editor/SandboxProject/Assets/Scripts/Binaries
+Vortex-Editor/SandboxProject/Assets/Scripts/Intermediates
+Vortex-Editor/Resources/Logs
+Vortex-Runtime/Resources/Logs
 
 // Files
 
