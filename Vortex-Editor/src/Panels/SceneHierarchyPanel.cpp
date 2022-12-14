@@ -471,6 +471,13 @@ namespace Vortex {
 			}
 			Gui::Separator();
 
+			if (Gui::MenuItem("Unparent Entity"))
+			{
+				m_ContextScene->UnparentEntity(entity);
+				Gui::CloseCurrentPopup();
+			}
+			Gui::Separator();
+
 			if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
 			{
 				m_ContextScene->DuplicateEntity(entity);
@@ -493,9 +500,7 @@ namespace Vortex {
 
 		if (Gui::BeginDragDropTarget())
 		{
-			const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
-
-			if (payload)
+			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect))
 			{
 				Entity& droppedEntity = *((Entity*)payload->Data);
 				m_ContextScene->ParentEntity(droppedEntity, entity);
