@@ -120,7 +120,7 @@ namespace Vortex {
 		static RenderStatistics GetStats();
 		static void ResetStats();
 
-		static std::vector<SharedRef<Shader>> GetLoadedShaders();
+		static SharedRef<ShaderLibrary> GetShaderLibrary();
 
 	private:
 		static void StartBatch();
