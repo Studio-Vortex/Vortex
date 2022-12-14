@@ -111,6 +111,25 @@ struct PointLight
 	float Quadratic;
 };
 
+struct SpotLight
+{
+	vec3 Radiance;
+	vec3 Ambient;
+	vec3 Diffuse;
+	vec3 Specular;
+
+	vec3 Color;
+	vec3 Position;
+	vec3 Direction;
+
+	float Constant;
+	float Linear;
+	float Quadratic;
+
+	float CutOff;
+	float OuterCutOff;
+};
+
 struct FragmentProperties
 {
 	vec3 Albedo;
@@ -126,6 +145,7 @@ struct SceneProperties
 {
 	int ActiveDirectionalLights;
 	int ActivePointLights;
+	int ActiveSpotLights;
 
 	vec3 CameraPosition;
 	float Exposure;
@@ -134,14 +154,17 @@ struct SceneProperties
 
 #define MAX_DIRECTIONAL_LIGHTS 1
 #define MAX_POINT_LIGHTS 25
+#define MAX_SPOT_LIGHTS 25
 
 uniform sampler2D        u_Texture;
 uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
+uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
 
 const float PI = 3.14159265359;
+const float EPSILON = 0.0001f;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
@@ -200,7 +223,7 @@ void main()
 		float NdotL = max(dot(N, L), 0.0f);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0f * NdotV * NdotL + 0.0001f; // prevent division by 0
+		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
 		vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
@@ -238,7 +261,7 @@ void main()
 		float NdotL = max(dot(N, L), 0.0f);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0f * NdotV * NdotL + 0.0001f; // prevent division by 0
+		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
 		vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
@@ -253,6 +276,42 @@ void main()
 
 		// Add to outgoing radiance Lo
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+	}
+
+	for (int i = 0; i < u_SceneProperties.ActiveSpotLights; i++)
+	{
+		SpotLight spotLight = u_SpotLights[i];
+
+		vec3 L = normalize(spotLight.Position - fragmentIn.Position);
+		vec3 H = normalize(V + L);
+		float attenuation = Attenuate(spotLight.Position, fragmentIn.Position,
+									  spotLight.Constant, spotLight.Linear, spotLight.Quadratic);
+
+		vec3 radiance = spotLight.Radiance * attenuation;
+
+		// Cook-Torrance Bi-Directional Reflectance Distribution Function
+		float NDF = DistributionGGX(N, H, properties.Roughness);
+		float G = GeometrySmith(N, V, L, properties.Roughness);
+		float cosTheta = max(dot(H, V), 0.0f);
+		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
+
+		float NdotV = max(dot(N, V), 0.0f);
+		float NdotL = max(dot(N, L), 0.0f);
+
+		vec3 numerator = NDF * G * F;
+		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
+		vec3 specular = numerator / denominator;
+
+		// Spot Light
+		float theta = dot(L, normalize(-spotLight.Direction));
+		float epsilon = spotLight.CutOff - spotLight.OuterCutOff;
+		float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0f, 1.0f);
+
+		vec3 kS = F * intensity;
+		vec3 kD = vec3(1.0f) - kS;
+		kD *= 1.0f - properties.Roughness * intensity;
+
+		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
 	vec3 ambient = vec3(0.03f) * properties.Albedo * properties.AO;

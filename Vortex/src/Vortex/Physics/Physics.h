@@ -34,12 +34,15 @@ namespace Vortex {
 	class Physics
 	{
 	public:
+		static void Init();
+		static void Shutdown();
+
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
 		static void DestroyPhysicsBody(Entity entity);
 
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
-		static void OnSimulationStop();
+		static void OnSimulationStop(Scene* contextScene);
 
 		static physx::PxScene* GetPhysicsScene();
 		static physx::PxPhysics* GetPhysicsFactory();

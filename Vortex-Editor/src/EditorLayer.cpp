@@ -1543,6 +1543,57 @@ namespace Vortex {
 		m_ActiveScene->SetPaused(false);
 	}
 
+	void EditorLayer::OnSceneStop()
+	{
+		VX_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
+
+		if (m_SceneState == SceneState::Play)
+			m_ActiveScene->OnRuntimeStop();
+		else if (m_SceneState == SceneState::Simulate)
+			m_ActiveScene->OnPhysicsSimulationStop();
+
+		m_SceneState = SceneState::Edit;
+
+		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
+			m_SceneViewportMaximized = false;
+
+		m_ActiveScene = m_EditorScene;
+
+		m_HoveredEntity = Entity{};
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		// Reset the mouse cursor in case a script turned it off
+		Application::Get().GetWindow().ShowMouseCursor(true);
+	}
+
+	void EditorLayer::RestartScene()
+	{
+		//RestartAudioSources();
+
+		OnScenePlay();
+	}
+
+	void EditorLayer::OnSceneSimulate()
+	{
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+
+		m_SceneState = SceneState::Simulate;
+
+		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
+			m_SceneViewportMaximized = true;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnPhysicsSimulationStart();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::RestartSceneSimulation()
+	{
+		OnSceneSimulate();
+	}
+
 	void EditorLayer::PauseAudioSources()
 	{
 		if (m_SceneState == SceneState::Play)
@@ -1602,57 +1653,6 @@ namespace Vortex {
 			if (audioSource->IsPlaying())
 				audioSource->Restart();
 		}
-	}
-
-	void EditorLayer::OnSceneStop()
-	{
-		VX_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
-
-		if (m_SceneState == SceneState::Play)
-			m_ActiveScene->OnRuntimeStop();
-		else if (m_SceneState == SceneState::Simulate)
-			m_ActiveScene->OnPhysicsSimulationStop();
-
-		m_SceneState = SceneState::Edit;
-
-		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
-			m_SceneViewportMaximized = false;
-
-		m_ActiveScene = m_EditorScene;
-
-		m_HoveredEntity = Entity{};
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
-		// Reset the mouse cursor in case a script turned it off
-		Application::Get().GetWindow().ShowMouseCursor(true);
-	}
-
-	void EditorLayer::RestartScene()
-	{
-		RestartAudioSources();
-
-		OnScenePlay();
-	}
-
-	void EditorLayer::OnSceneSimulate()
-	{
-		if (m_SceneState == SceneState::Play)
-			OnSceneStop();
-
-		m_SceneState = SceneState::Simulate;
-
-		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
-			m_SceneViewportMaximized = true;
-
-		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnPhysicsSimulationStart();
-
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-	}
-
-	void EditorLayer::RestartSceneSimulation()
-	{
-		OnSceneSimulate();
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

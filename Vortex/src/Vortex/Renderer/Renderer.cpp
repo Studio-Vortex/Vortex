@@ -111,10 +111,7 @@ namespace Vortex {
 		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
 	}
 
-	void Renderer::EndScene()
-	{
-		
-	}
+	void Renderer::EndScene() { }
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
@@ -281,6 +278,21 @@ namespace Vortex {
 				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
 				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
 				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
+
+				pbrShader->Enable();
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Color", i).c_str(), lightSource->GetColor());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				pbrShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
+				pbrShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+
+				pbrShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
+				pbrShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
+				pbrShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
 
 				i++;
 

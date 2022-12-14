@@ -36,7 +36,7 @@ namespace Vortex {
 
 	}
 
-	static void InitPhysicsScene(const Math::vec3& gravity)
+	void Physics::Init()
 	{
 		s_Data = new PhysicsEngineInternalData();
 
@@ -65,7 +65,7 @@ namespace Vortex {
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
-		sceneDescription.gravity = ToPhysXVector(gravity);
+		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
 		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
 		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
 
@@ -74,6 +74,19 @@ namespace Vortex {
 
 		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
 		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
+	}
+
+	void Physics::Shutdown()
+	{
+		s_Data->ControllerManager->release();
+		s_Data->PhysicsScene->release();
+		s_Data->CookingFactory->release();
+		s_Data->Dispatcher->release();
+		PxCloseExtensions();
+		s_Data->PhysicsFactory->release();
+		s_Data->Foundation->release();
+
+		delete s_Data;
 	}
 
 	physx::PxScene* Physics::GetPhysicsScene()
@@ -93,11 +106,9 @@ namespace Vortex {
 
 	void Physics::OnSimulationStart(Scene* contextScene)
 	{
-		InitPhysicsScene(s_PhysicsSceneGravity);
-
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
-		for (auto& e : view)
+		for (const auto& e : view)
 		{
 			Entity entity{ e, contextScene };
 			CreatePhysicsBody(entity, entity.GetTransform(), entity.GetComponent<RigidBodyComponent>());
@@ -169,19 +180,14 @@ namespace Vortex {
 		}
 	}
 
-	void Physics::OnSimulationStop()
+	void Physics::OnSimulationStop(Scene* contextScene)
 	{
-		if (s_Data)
-		{
-			s_Data->ControllerManager->release();
-			s_Data->PhysicsScene->release();
-			s_Data->CookingFactory->release();
-			s_Data->Dispatcher->release();
-			PxCloseExtensions();
-			s_Data->PhysicsFactory->release();
-			s_Data->Foundation->release();
+		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
-			delete s_Data;
+		for (const auto& e : view)
+		{
+			Entity entity{ e, contextScene };
+			DestroyPhysicsBody(entity);
 		}
 	}
 

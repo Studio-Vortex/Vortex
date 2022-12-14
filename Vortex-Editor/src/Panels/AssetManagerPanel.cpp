@@ -16,7 +16,7 @@ namespace Vortex {
 
 				auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
 
-				for (it = shaders2D->begin(); it != shaders2D->end(); it)
+				for (it = shaders2D->begin(); it != shaders2D->end(); it++)
 					s_Loaded2DShaders.push_back(it->second);
 			}
 
@@ -26,7 +26,7 @@ namespace Vortex {
 
 				auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
 
-				for (it = shaders3D->begin(); it != shaders3D->end(); it)
+				for (it = shaders3D->begin(); it != shaders3D->end(); it++)
 					s_Loaded3DShaders.push_back(it->second);
 			}
 

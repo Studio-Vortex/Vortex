@@ -7,6 +7,7 @@
 #include "Vortex/Audio/AudioEngine.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Physics/Physics.h"
 
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Events/KeyEvent.h"
@@ -47,6 +48,7 @@ namespace Vortex {
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
 
 		Renderer::Init();
+		Physics::Init();
 		AudioEngine::Init();
 		Font::Init();
 		Random::Init();
@@ -65,6 +67,7 @@ namespace Vortex {
 		Font::Shutdown();
 		ScriptEngine::Shutdown();
 		AudioEngine::Shutdown();
+		Physics::Shutdown();
 		Renderer::Shutdown();
 	}
 

@@ -382,7 +382,7 @@ namespace Vortex {
 	{
 		SP_PROFILE_FUNCTION();
 
-		Physics::OnSimulationStop();
+		Physics::OnSimulationStop(this);
 		Physics2D::OnSimulationStop();
 	}
 
