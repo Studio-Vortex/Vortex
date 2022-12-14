@@ -149,9 +149,9 @@ namespace Vortex {
 		Entity startingCube = context->CreateEntity("Cube");
 		startingCube.AddComponent<MeshRendererComponent>();
 
-		Entity startingPointLight = context->CreateEntity("Point Light");
-		startingPointLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
-		startingPointLight.GetTransform().Translation = Math::vec3(-2.0f, 4.0f, 4.0f);
+		Entity startingSkyLight = context->CreateEntity("Sky Light");
+		startingSkyLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Directional;
+		startingSkyLight.GetTransform().Translation = Math::vec3(0.0f, 4.0f, 0.0f);
 
 		Entity startingCamera = context->CreateEntity("Camera");
 		startingCamera.AddComponent<AudioListenerComponent>();
@@ -445,7 +445,6 @@ namespace Vortex {
 				RenderCommand::SetClearColor(cameraComponent.ClearColor);
 			}
 
-			// Render from primary scene camera's point of view
 			if (primarySceneCamera != nullptr)
 			{
 				s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);

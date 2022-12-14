@@ -211,6 +211,14 @@ namespace Vortex {
 				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
 				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
 
+				pbrShader->Enable();
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+
 				i++;
 
 				break;
@@ -307,11 +315,9 @@ namespace Vortex {
 			shader = pbr ? s_Data.ShaderLibrary->Get("PBR") : s_Data.ShaderLibrary->Get("BasicLighting");
 			shader->Enable();
 
-			if (!pbr)
-				shader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
+			shader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
 			shader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
-			if (!pbr)
-				shader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
+			shader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
 
 			if (!pbr)
 				shader->SetFloat3("u_Material.Ambient", material->GetAmbient());

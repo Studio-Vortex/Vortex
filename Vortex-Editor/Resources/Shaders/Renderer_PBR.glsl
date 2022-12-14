@@ -77,7 +77,7 @@ struct Material
 	float Roughness;
 	sampler2D RoughnessMap;
 	sampler2D AOMap;
-	
+
 	bool HasAlbedoMap;
 	bool HasNormalMap;
 	bool HasMetallicMap;
@@ -148,7 +148,7 @@ void main()
 	FragmentProperties properties;
 	properties.TBN = fragmentIn.TBN;
 
-	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(2.2)) : u_Material.Albedo);
+	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureScale).rgb, vec3(u_SceneProperties.Gamma)) : u_Material.Albedo);
 	properties.Normal = ((u_Material.HasNormalMap) ? normalize(properties.TBN * (texture(u_Material.NormalMap, textureScale).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureScale).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureScale).r : u_Material.Roughness);
@@ -213,7 +213,7 @@ void main()
 	color = color / (color + vec3(1.0f));
 
 	// Gamma correct
-	color = pow(color, vec3(1.0f / 2.2f));
+	color = pow(color, vec3(1.0f / u_SceneProperties.Gamma));
 
 	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureScale).a : 1.0f);
 
@@ -222,7 +222,7 @@ void main()
 }
 
 // Towbridge-Reitz normal distribuion function
-// Uses Disney's reparameterization of alpha = roughness^2
+// Uses Epic/Disney's reparameterization of alpha = roughness^2
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float alpha = roughness * roughness;
@@ -232,8 +232,9 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 	
     float denom = (NdotH2 * (alphaSq - 1.0f) + 1.0f);
     denom = PI * denom * denom;
+	float ggxDistribution = alphaSq / denom;
 	
-    return alphaSq / denom;
+    return ggxDistribution;
 }
 
 // Single term for separable Schlick-GGX below
