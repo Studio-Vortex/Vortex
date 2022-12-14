@@ -27,24 +27,26 @@ namespace Vortex {
 
 		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
-		const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		Math::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		inline const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		inline Math::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
 		Math::vec3 GetUpDirection() const;
 		Math::vec3 GetRightDirection() const;
 		Math::vec3 GetForwardDirection() const;
-		const Math::vec3& GetPosition() const { return m_Position; }
+		inline const Math::vec3& GetPosition() const { return m_Position; }
 
-		float GetPitch() const { return m_Pitch; }
-		float GetYaw() const { return m_Yaw; }
+		inline float GetPitch() const { return m_Pitch; }
+		inline float GetYaw() const { return m_Yaw; }
 
 		void ResetCameraPositionToWorldOrigin();
 		void MoveToPosition(const Math::vec3& translation);
 
-		static void LockToForwardOnly(bool lockRotation) { s_LockForward = lockRotation; }
-		static void LockToDownOnly(bool lockRotation) { s_LockDown = lockRotation; }
-		static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }
-		static void SetMoveSpeed(const Math::vec3 moveSpeed) { s_MoveSpeed = moveSpeed; }
+		inline static bool IsIn2DView() { return s_LockForward; }
+		inline static bool IsInTopDownView() { return s_LockDown; }
+		inline static void LockTo2DView(bool lockRotation) { s_LockForward = lockRotation; }
+		inline static void LockToTopDownView(bool lockRotation) { s_LockDown = lockRotation; }
+		inline static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }
+		inline static void SetMoveSpeed(const Math::vec3 moveSpeed) { s_MoveSpeed = moveSpeed; }
 
 	private:
 		void UpdateProjection();

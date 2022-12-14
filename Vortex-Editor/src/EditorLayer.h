@@ -31,7 +31,10 @@ namespace Vortex {
 		void OnEvent(Event& e) override;
 
 	private:
-		void UI_Toolbar();
+		void UI_GizmosModeToolbar();
+		void UI_GizmosToolbar();
+		void UI_CentralToolbar();
+		void UI_SceneSettingsToolbar();
 		void OnOverlayRender();
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
@@ -116,12 +119,19 @@ namespace Vortex {
 		SharedRef<Texture2D> m_StopIcon = nullptr;
 		SharedRef<Texture2D> m_SimulateIcon = nullptr;
 		SharedRef<Texture2D> m_StepIcon = nullptr;
+
 		SharedRef<Texture2D> m_LocalModeIcon = nullptr;
 		SharedRef<Texture2D> m_WorldModeIcon = nullptr;
+
 		SharedRef<Texture2D> m_SelectToolIcon = nullptr;
 		SharedRef<Texture2D> m_TranslateToolIcon = nullptr;
 		SharedRef<Texture2D> m_RotateToolIcon = nullptr;
 		SharedRef<Texture2D> m_ScaleToolIcon = nullptr;
+
+		SharedRef<Texture2D> m_TopDownViewIcon = nullptr;
+		SharedRef<Texture2D> m_2DViewIcon = nullptr;
+		SharedRef<Texture2D> m_DisplayPhysicsCollidersIcon = nullptr;
+		SharedRef<Texture2D> m_DisplaySceneIconsIcon = nullptr;
 
 		uint32_t m_TranslationMode = 0; // Local mode
 

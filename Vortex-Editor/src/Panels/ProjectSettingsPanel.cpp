@@ -299,11 +299,11 @@ namespace Vortex {
 
 					static bool lockFacingForward = false;
 					if (Gui::Checkbox("Lock Camera Rotation To Forward", &lockFacingForward))
-						EditorCamera::LockToForwardOnly(lockFacingForward);
+						EditorCamera::LockTo2DView(lockFacingForward);
 
 					static bool lockFacingDown = false;
 					if (Gui::Checkbox("Lock Camera Rotation To Down", &lockFacingDown))
-						EditorCamera::LockToDownOnly(lockFacingDown);
+						EditorCamera::LockToTopDownView(lockFacingDown);
 
 					Gui::Spacing();
 

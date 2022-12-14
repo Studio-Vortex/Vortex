@@ -1,6 +1,6 @@
 # Vortex Game Engine [![License](https://img.shields.io/github/license/JShuk-7/Vortex.svg)](https://github.com/JShuk-7/Vortex/blob/master/LICENSE)
 
-![Vortex Logo](Vortex-Editor/Resources/Images/VortexLogo.jpg)
+![Vortex Logo](Vortex-Editor/Resources/Images/VortexLogo.png)
 
 Vortex is an early-stage interactive application and rendering engine for Windows. Vortex is primarily a 2D engine with potential support for 3D comming in the near future. With that being said, you can still create a 3D looking scene with the features of the engine.
 

@@ -43,6 +43,11 @@ namespace Vortex {
 		m_RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
 		m_ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
 
+		m_TopDownViewIcon = Texture2D::Create("Resources/Icons/Scene/TopDownCameraIcon.png");
+		m_2DViewIcon = Texture2D::Create("Resources/Icons/Scene/2DViewIcon.png");
+		m_DisplayPhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
+		m_DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
+
 		m_EditorScene = Scene::Create();
 		m_ActiveScene = m_EditorScene;
 
@@ -537,7 +542,10 @@ namespace Vortex {
 			Gui::EndPopup();
 		}
 
-		UI_Toolbar();
+		UI_GizmosModeToolbar();
+		UI_GizmosToolbar();
+		UI_CentralToolbar();
+		UI_SceneSettingsToolbar();
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -640,112 +648,183 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::UI_Toolbar()
+	void EditorLayer::UI_GizmosModeToolbar()
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
-		auto& colors = Gui::GetStyle().Colors;
-		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ buttonActive.x, buttonActive.y, buttonActive.z, 0.5f });
-		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f });
-
-		auto DisplayTooltipFunc = [](const char* message) -> void
-		{
-			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
-			Gui::BeginTooltip();
-			Gui::Text(message);
-			Gui::EndTooltip();
-			Gui::PopStyleVar();
-		};
+		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
 		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
 
-		float size = Gui::GetTextLineHeightWithSpacing() * 1.25f;
-		Gui::SetCursorPos({ size, 10.0f });
-		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
+		const float buttonSize = 18.0f + 5.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 2.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		Gui::SetNextWindowBgAlpha(0.0f);
+		Gui::Begin("##viewport_gizmos_mode", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+		// Filling the background for the desired 26px height
+		const float desiredHeight = 26.0f + 5.0f;
+		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		Gui::BeginVertical("##viewport_gizmos_modeV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+		Gui::BeginHorizontal("##viewport_gizmos_modeH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+
+		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::LOCAL);
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("Local Mode");
+		UI::SetTooltip("Local Mode");
 
-		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("World Mode");
+		UI::SetTooltip("World Mode");
 
-		Gui::SetCursorPos({ size * 5, 10.0f });
-		if (Gui::ImageButton((void*)m_SelectToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
+		Gui::Spring();
+		Gui::EndHorizontal();
+		Gui::Spring();
+		Gui::EndVertical();
+
+		Gui::End();
+	}
+
+	void EditorLayer::UI_GizmosToolbar()
+	{
+		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+
+		const float buttonSize = 18.0f + 5.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 4.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		Gui::SetNextWindowBgAlpha(0.0f);
+		Gui::Begin("##viewport_gizmos_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+		// Filling the background for the desired 26px height
+		const float desiredHeight = 26.0f + 5.0f;
+		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		Gui::BeginVertical("##viewport_gizmos_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+		Gui::BeginHorizontal("##viewport_gizmos_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+
+		if (Gui::ImageButton((void*)m_SelectToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
+			OnNoGizmoSelected();
+		UI::SetTooltip("Select Tool");
+
+		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
 			OnTranslationToolSelected();
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("Select Tool");
+		UI::SetTooltip("Translate Tool");
 
-		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
-			OnTranslationToolSelected();
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("Translate Tool");
-
-		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
 			OnRotationToolSelected();
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("Rotate Tool");
+		UI::SetTooltip("Rotate Tool");
 
-		Gui::SameLine();
-		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(size, size), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
 			OnScaleToolSelected();
-		else if (Gui::IsItemHovered())
-			DisplayTooltipFunc("Scale Tool");
+		UI::SetTooltip("Scale Tool");
+
+		Gui::Spring();
+		Gui::EndHorizontal();
+		Gui::Spring();
+		Gui::EndVertical();
+
+		Gui::End();
+	}
+
+	void EditorLayer::UI_CentralToolbar()
+	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
+		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		const float buttonSize = 18.0f + 5.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 3.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		float toolbarX = (m_ViewportBounds[0].x + m_ViewportBounds[1].x) / 2.0f;
+		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		Gui::SetNextWindowBgAlpha(0.0f);
+		Gui::Begin("##viewport_central_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+		// Filling the background for the desired 26px height
+		const float desiredHeight = 26.0f + 5.0f;
+		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		Gui::BeginVertical("##viewport_central_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+		Gui::BeginHorizontal("##viewport_central_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
 
 		bool hasPlayButton = m_SceneState != SceneState::Simulate;
 		bool hasSimulateButton = m_SceneState != SceneState::Play;
 		bool hasPauseButton = m_SceneState != SceneState::Edit;
 		bool scenePaused = m_ActiveScene->IsPaused();
 
-		Gui::SetCursorPos({ Gui::GetWindowWidth() * 0.5f - size * 0.5f, 10.0f });
-
 		if (hasPlayButton)
 		{
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				if (hasSimulateButton)
 					OnScenePlay();
 				else
 					OnSceneStop();
 			}
-			else if (Gui::IsItemHovered())
-			{
-				DisplayTooltipFunc((hasSimulateButton) ? "Play" : "Stop");
-			}
 
-			Gui::SameLine();
+			UI::SetTooltip((hasSimulateButton) ? "Play" : "Stop");
 		}
 
 		if (hasSimulateButton)
 		{
 			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				if (hasPlayButton)
 					OnSceneSimulate();
 				else
 					OnSceneStop();
 			}
-			else if (Gui::IsItemHovered())
-				DisplayTooltipFunc(hasPlayButton ? "Simulate Physics" : "Stop");
 
-			Gui::SameLine();
+			UI::SetTooltip(hasPlayButton ? "Simulate Physics" : "Stop");
 		}
 
 		if (hasPauseButton)
 		{
 			SharedRef<Texture2D> icon = m_PauseIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
+			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				bool paused = !scenePaused;
 
@@ -754,22 +833,87 @@ namespace Vortex {
 				else
 					OnSceneResume();
 			}
-			else if (Gui::IsItemHovered())
-				DisplayTooltipFunc("Pause Scene");
+
+			UI::SetTooltip("Pause Scene");
 
 			if (scenePaused)
 			{
-				Gui::SameLine();
-
 				SharedRef<Texture2D> icon = m_StepIcon;
-				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1)))
+				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
-				else if (Gui::IsItemHovered())
-					DisplayTooltipFunc("Next Frame");
+
+				UI::SetTooltip("Next Frame");
 			}
 		}
 
-		Gui::PopStyleColor(3);
+		Gui::Spring();
+		Gui::EndHorizontal();
+		Gui::Spring();
+		Gui::EndVertical();
+
+		Gui::End();
+	}
+
+	void EditorLayer::UI_SceneSettingsToolbar()
+	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
+
+		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+
+		const float buttonSize = 18.0f + 5.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 4.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		Gui::SetNextWindowBgAlpha(0.0f);
+		Gui::Begin("##scene_settings_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
+		// Filling the background for the desired 26px height
+		const float desiredHeight = 26.0f + 5.0f;
+		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		Gui::BeginVertical("##scene_settings_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+
+		if (Gui::ImageButton((void*)m_DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
+			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
+		UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
+
+		if (Gui::ImageButton((void*)m_DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
+		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Scene Icons" : "Show Scene Icons");
+
+		bool isIn2DView = m_EditorCamera.IsIn2DView();
+		if (Gui::ImageButton((void*)m_2DViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
+			m_EditorCamera.LockTo2DView(!isIn2DView);
+		UI::SetTooltip("2D View");
+
+		bool isInTopDownView = m_EditorCamera.IsInTopDownView();
+		if (Gui::ImageButton((void*)m_TopDownViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isInTopDownView ? tintColor : normalColor))
+			m_EditorCamera.LockToTopDownView(!isInTopDownView);
+		UI::SetTooltip("Top Down View");
+
+		Gui::Spring();
+		Gui::EndHorizontal();
+		Gui::Spring();
+		Gui::EndVertical();
+
+		Gui::End();
 	}
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)

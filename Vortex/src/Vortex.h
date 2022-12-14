@@ -14,6 +14,7 @@ namespace Math = Vortex::Math;
 
 /// Gui
 #include "Vortex/Gui/GuiLayer.h"
+#include "Vortex/UI/UI.h"
 #include <imgui.h>
 // Re Exporting ImGui as Gui in Client
 namespace Gui = ImGui;
