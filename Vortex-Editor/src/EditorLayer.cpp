@@ -9,6 +9,8 @@
 #include <Vortex/Utils/PlatformUtils.h>
 #include <Vortex/Scene/Components.h>
 
+#include "EditorResources.h"
+
 #include <ImGuizmo.h>
 
 namespace Vortex {
@@ -30,23 +32,7 @@ namespace Vortex {
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
-		m_PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
-		m_PauseIcon = Texture2D::Create("Resources/Icons/PauseButton.png");
-		m_StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
-		m_SimulateIcon = Texture2D::Create("Resources/Icons/SimulateButton.png");
-		m_StepIcon = Texture2D::Create("Resources/Icons/StepButton.png");
-
-		m_LocalModeIcon = Texture2D::Create("Resources/Icons/Scene/LocalMode.png");
-		m_WorldModeIcon = Texture2D::Create("Resources/Icons/Scene/WorldMode.png");
-		m_SelectToolIcon = Texture2D::Create("Resources/Icons/Scene/SelectTool.png");
-		m_TranslateToolIcon = Texture2D::Create("Resources/Icons/Scene/TranslateTool.png");
-		m_RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
-		m_ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
-
-		m_TopDownViewIcon = Texture2D::Create("Resources/Icons/Scene/TopDownCameraIcon.png");
-		m_2DViewIcon = Texture2D::Create("Resources/Icons/Scene/2DViewIcon.png");
-		m_DisplayPhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
-		m_DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
+		EditorResources::Init();
 
 		m_EditorScene = Scene::Create();
 		m_ActiveScene = m_EditorScene;
@@ -681,11 +667,11 @@ namespace Vortex {
 		Gui::BeginHorizontal("##viewport_gizmos_modeH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)m_LocalModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::LocalModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::LOCAL);
 		UI::SetTooltip("Local Mode");
 
-		if (Gui::ImageButton((void*)m_WorldModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::WorldModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
 		UI::SetTooltip("World Mode");
 
@@ -730,19 +716,19 @@ namespace Vortex {
 		Gui::BeginHorizontal("##viewport_gizmos_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)m_SelectToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::SelectToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
 			OnNoGizmoSelected();
 		UI::SetTooltip("Select Tool");
 
-		if (Gui::ImageButton((void*)m_TranslateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::TranslateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
 			OnTranslationToolSelected();
 		UI::SetTooltip("Translate Tool");
 
-		if (Gui::ImageButton((void*)m_RotateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::RotateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
 			OnRotationToolSelected();
 		UI::SetTooltip("Rotate Tool");
 
-		if (Gui::ImageButton((void*)m_ScaleToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::ScaleToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
 			OnScaleToolSelected();
 		UI::SetTooltip("Scale Tool");
 
@@ -795,7 +781,7 @@ namespace Vortex {
 
 		if (hasPlayButton)
 		{
-			SharedRef<Texture2D> icon = (hasSimulateButton) ? m_PlayIcon : m_StopIcon;
+			SharedRef<Texture2D> icon = (hasSimulateButton) ? EditorResources::PlayIcon : EditorResources::StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				if (hasSimulateButton)
@@ -809,7 +795,7 @@ namespace Vortex {
 
 		if (hasSimulateButton)
 		{
-			SharedRef<Texture2D> icon = (hasPlayButton) ? m_SimulateIcon : m_StopIcon;
+			SharedRef<Texture2D> icon = (hasPlayButton) ? EditorResources::SimulateIcon : EditorResources::StopIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				if (hasPlayButton)
@@ -823,7 +809,7 @@ namespace Vortex {
 
 		if (hasPauseButton)
 		{
-			SharedRef<Texture2D> icon = m_PauseIcon;
+			SharedRef<Texture2D> icon = EditorResources::PauseIcon;
 			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 			{
 				bool paused = !scenePaused;
@@ -838,7 +824,7 @@ namespace Vortex {
 
 			if (scenePaused)
 			{
-				SharedRef<Texture2D> icon = m_StepIcon;
+				SharedRef<Texture2D> icon = EditorResources::StepIcon;
 				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
 
@@ -890,21 +876,21 @@ namespace Vortex {
 		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)m_DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
 			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
 		UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
 
-		if (Gui::ImageButton((void*)m_DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+		if (Gui::ImageButton((void*)EditorResources::DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
 			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
 		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Scene Icons" : "Show Scene Icons");
 
 		bool isIn2DView = m_EditorCamera.IsIn2DView();
-		if (Gui::ImageButton((void*)m_2DViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::TwoDViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
 			m_EditorCamera.LockTo2DView(!isIn2DView);
 		UI::SetTooltip("2D View");
 
 		bool isInTopDownView = m_EditorCamera.IsInTopDownView();
-		if (Gui::ImageButton((void*)m_TopDownViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isInTopDownView ? tintColor : normalColor))
+		if (Gui::ImageButton((void*)EditorResources::TopDownViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isInTopDownView ? tintColor : normalColor))
 			m_EditorCamera.LockToTopDownView(!isInTopDownView);
 		UI::SetTooltip("Top Down View");
 

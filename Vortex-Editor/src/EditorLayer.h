@@ -111,27 +111,6 @@ namespace Vortex {
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportMaximized = false;
-		
-		// Editor resources
-
-		SharedRef<Texture2D> m_PlayIcon = nullptr;
-		SharedRef<Texture2D> m_PauseIcon = nullptr;
-		SharedRef<Texture2D> m_StopIcon = nullptr;
-		SharedRef<Texture2D> m_SimulateIcon = nullptr;
-		SharedRef<Texture2D> m_StepIcon = nullptr;
-
-		SharedRef<Texture2D> m_LocalModeIcon = nullptr;
-		SharedRef<Texture2D> m_WorldModeIcon = nullptr;
-
-		SharedRef<Texture2D> m_SelectToolIcon = nullptr;
-		SharedRef<Texture2D> m_TranslateToolIcon = nullptr;
-		SharedRef<Texture2D> m_RotateToolIcon = nullptr;
-		SharedRef<Texture2D> m_ScaleToolIcon = nullptr;
-
-		SharedRef<Texture2D> m_TopDownViewIcon = nullptr;
-		SharedRef<Texture2D> m_2DViewIcon = nullptr;
-		SharedRef<Texture2D> m_DisplayPhysicsCollidersIcon = nullptr;
-		SharedRef<Texture2D> m_DisplaySceneIconsIcon = nullptr;
 
 		uint32_t m_TranslationMode = 0; // Local mode
 

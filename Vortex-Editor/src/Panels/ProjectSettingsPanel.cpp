@@ -298,11 +298,11 @@ namespace Vortex {
 					Gui::DragFloat("Camera FOV", &m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
 					static bool lockFacingForward = false;
-					if (Gui::Checkbox("Lock Camera Rotation To Forward", &lockFacingForward))
+					if (Gui::Checkbox("Lock Camera To 2D View", &lockFacingForward))
 						EditorCamera::LockTo2DView(lockFacingForward);
 
 					static bool lockFacingDown = false;
-					if (Gui::Checkbox("Lock Camera Rotation To Down", &lockFacingDown))
+					if (Gui::Checkbox("Lock Camera To Top Down View", &lockFacingDown))
 						EditorCamera::LockToTopDownView(lockFacingDown);
 
 					Gui::Spacing();
