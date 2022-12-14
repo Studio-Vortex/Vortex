@@ -85,6 +85,17 @@ struct Material
 	bool HasAOMap;
 };
 
+struct DirectionalLight
+{
+	vec3 Radiance;
+	vec3 Ambient;
+	vec3 Diffuse;
+	vec3 Specular;
+
+	vec3 Color;
+	vec3 Direction;
+};
+
 struct PointLight
 {
 	vec3 Radiance;
@@ -113,6 +124,7 @@ struct FragmentProperties
 
 struct SceneProperties
 {
+	int ActiveDirectionalLights;
 	int ActivePointLights;
 
 	vec3 CameraPosition;
@@ -120,10 +132,12 @@ struct SceneProperties
 	float Gamma;
 };
 
+#define MAX_DIRECTIONAL_LIGHTS 1
 #define MAX_POINT_LIGHTS 25
 
 uniform sampler2D        u_Texture;
 uniform Material         u_Material;
+uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
 
@@ -167,6 +181,42 @@ void main()
 	vec3 Lo = vec3(0.0f);
 
 	// Calculate per-light radiance
+	for (int i = 0; i < u_SceneProperties.ActiveDirectionalLights; i++)
+	{
+		DirectionalLight dirLight = u_DirectionalLights[i];
+
+		vec3 L = -dirLight.Direction;
+		vec3 H = normalize(V + L);
+
+		vec3 radiance = dirLight.Radiance;
+
+		// Cook-Torrance Bi-directional Reflectance Distribution Function
+		float NDF = DistributionGGX(N, H, properties.Roughness);
+		float G = GeometrySmith(N, V, L, properties.Roughness);
+		float cosTheta = max(dot(H, V), 0.0f);
+		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
+
+		float NdotV = max(dot(N, V), 0.0f);
+		float NdotL = max(dot(N, L), 0.0f);
+
+		vec3 numerator = NDF * G * F;
+		float denominator = 4.0f * NdotV * NdotL + 0.0001f; // prevent division by 0
+		vec3 specular = numerator / denominator;
+
+		// kS is equal to Fresnel
+		vec3 kS = F;
+		// For energy conservation, the diffuse and specular light can't
+		// be above 1.0 (unless the surface emits light); to preserve this
+		// relationship the diffuse component (kD) should equal 1.0 - kS
+		vec3 kD = vec3(1.0f) - kS;
+		// Multiply kD by the inverse metalness such that only non-metals 
+		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
+		kD *= 1.0f - properties.Metallic;
+
+		// Add to outgoing radiance Lo
+		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+	}
+
 	for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
 	{
 		PointLight pointLight = u_PointLights[i];

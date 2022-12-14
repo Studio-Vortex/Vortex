@@ -18,9 +18,9 @@ namespace Vortex {
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
+	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
 	static constexpr const char* POINT_LIGHT_ICON_PATH = "Resources/Icons/Scene/PointLight.png";
 	static constexpr const char* SPOT_LIGHT_ICON_PATH = "Resources/Icons/Scene/SpotLight.png";
-	static constexpr const char* LIGHT_SOURCE_ICON_PATH = "Resources/Icons/Scene/LightSourceIcon.png";
 	static constexpr const char* AUDIO_SOURCE_ICON_PATH = "Resources/Icons/Scene/AudioSourceIcon.png";
 
 	struct RendererInternalData
@@ -31,7 +31,7 @@ namespace Vortex {
 
 		float RefractiveIndex = 1.52f; // Glass
 
-		static constexpr inline uint32_t MaxDirectionalLights = 25;
+		static constexpr inline uint32_t MaxDirectionalLights = 1;
 		static constexpr inline uint32_t MaxPointLights = 25;
 		static constexpr inline uint32_t MaxSpotLights = 25;
 
@@ -51,7 +51,7 @@ namespace Vortex {
 		SharedRef<Texture2D> CameraIcon = nullptr;
 		SharedRef<Texture2D> PointLightIcon = nullptr;
 		SharedRef<Texture2D> SpotLightIcon = nullptr;
-		SharedRef<Texture2D> LightSourceIcon = nullptr;
+		SharedRef<Texture2D> DirLightIcon = nullptr;
 		SharedRef<Texture2D> AudioSourceIcon = nullptr;
 	};
 
@@ -75,7 +75,7 @@ namespace Vortex {
 		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
 		s_Data.PointLightIcon = Texture2D::Create(POINT_LIGHT_ICON_PATH);
 		s_Data.SpotLightIcon = Texture2D::Create(SPOT_LIGHT_ICON_PATH);
-		s_Data.LightSourceIcon = Texture2D::Create(LIGHT_SOURCE_ICON_PATH);
+		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
 #if SP_RENDERER_STATISTICS
@@ -173,7 +173,7 @@ namespace Vortex {
 		switch (lightSource.Type)
 		{
 			case LightSourceComponent::LightType::Directional:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.LightSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.DirLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 			case LightSourceComponent::LightType::Point:
 				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
@@ -227,7 +227,7 @@ namespace Vortex {
 			{
 				uint32_t& i = s_Data.ActivePointLights;
 
-				if (i + 1 > s_Data.MaxPointLights)
+				if (i + 1 > RendererInternalData::MaxPointLights)
 					break;
 
 				basicLightingShader->Enable();

@@ -150,7 +150,9 @@ namespace Vortex {
 		startingCube.AddComponent<MeshRendererComponent>();
 
 		Entity startingSkyLight = context->CreateEntity("Sky Light");
-		startingSkyLight.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Directional;
+		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
+		lightSource.Type = LightSourceComponent::LightType::Directional;
+		lightSource.Source->SetDirection({ 0, -1.0f, -0.5f });
 		startingSkyLight.GetTransform().Translation = Math::vec3(0.0f, 4.0f, 0.0f);
 
 		Entity startingCamera = context->CreateEntity("Camera");
