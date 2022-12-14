@@ -24,7 +24,7 @@ namespace Vortex {
 
 		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
-		m_VortexLogoIcon = Texture2D::Create("Resources/Images/SparkyLogo.jpg");
+		m_VortexLogoIcon = Texture2D::Create("Resources/Images/VortexLogo.png");
 	}
 
 	void LauncherLayer::OnDetach() { }

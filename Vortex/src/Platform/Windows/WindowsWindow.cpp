@@ -14,7 +14,7 @@
 
 namespace Vortex {
 
-	static constexpr const char* WINDOW_ICON_PATH = "Resources/Images/SparkyLogo.jpg";
+	static constexpr const char* WINDOW_ICON_PATH = "Resources/Images/VortexLogo.png";
 
 	static uint8_t s_GLFWWindowCount = 0;
 
