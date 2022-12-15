@@ -71,7 +71,6 @@ namespace Vortex {
 		void PauseAudioSources();
 		void ResumeAudioSources();
 		void StopAudioSources();
-		void RestartAudioSources();
 
 		// Gizmos
 

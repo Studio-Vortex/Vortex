@@ -38,7 +38,7 @@ namespace Sandbox.Shooter {
 		{
 			foreach (Entity entity in children)
 			{
-				if (entity.TryGetComponent<MeshRenderer>(out MeshRenderer meshRenderer))
+				if (entity.TryGetComponent(out MeshRenderer meshRenderer))
 				{
 					Material material = meshRenderer.GetMaterial();
 					material.Albedo = Color.White.XYZ;

@@ -1,6 +1,6 @@
 ﻿using Vortex;
 
-namespace Sandbox {
+namespace Sandbox.ObstacleCourse {
 
 	public class Mover : Entity
 	{

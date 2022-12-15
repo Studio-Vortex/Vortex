@@ -1568,8 +1568,6 @@ namespace Vortex {
 
 	void EditorLayer::RestartScene()
 	{
-		//RestartAudioSources();
-
 		OnScenePlay();
 	}
 
@@ -1638,20 +1636,6 @@ namespace Vortex {
 
 			if (audioSource->IsPlaying())
 				audioSource->Stop();
-		}
-	}
-
-	void EditorLayer::RestartAudioSources()
-	{
-		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		for (auto& e : view)
-		{
-			Entity entity{ e, m_ActiveScene.get() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-			if (audioSource->IsPlaying())
-				audioSource->Restart();
 		}
 	}
 

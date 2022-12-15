@@ -59,27 +59,10 @@ namespace Vortex {
 
 		s_Data->CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Data->Foundation, cookingParameters);
 		VX_CORE_ASSERT(s_Data->CookingFactory, "Failed to Initialize PhysX Cooking!");
-
-		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
-		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
-		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
-		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
-
-		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
-		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
-
-		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
-		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
 	}
 
 	void Physics::Shutdown()
 	{
-		s_Data->ControllerManager->release();
-		s_Data->PhysicsScene->release();
 		s_Data->CookingFactory->release();
 		s_Data->Dispatcher->release();
 		PxCloseExtensions();
@@ -106,6 +89,21 @@ namespace Vortex {
 
 	void Physics::OnSimulationStart(Scene* contextScene)
 	{
+		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+
+		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
+		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
+		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
+
+		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
+		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
+
+		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
+		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
+
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
 		for (const auto& e : view)
@@ -189,6 +187,9 @@ namespace Vortex {
 			Entity entity{ e, contextScene };
 			DestroyPhysicsBody(entity);
 		}
+
+		s_Data->ControllerManager->release();
+		s_Data->PhysicsScene->release();
 	}
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
