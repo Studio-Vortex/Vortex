@@ -539,7 +539,7 @@ namespace Vortex {
 	{
 		SP_PROFILE_FUNCTION();
 
-		auto ParentNewEntityFunc = [&src, scene = this](Entity newEntity)
+		auto ParentNewEntityFunc = [&src](Entity newEntity)
 		{
 			if (auto parent = src.GetParent(); parent)
 			{

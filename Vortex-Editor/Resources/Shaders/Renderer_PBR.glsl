@@ -208,7 +208,7 @@ void main()
 	{
 		DirectionalLight dirLight = u_DirectionalLights[i];
 
-		vec3 L = -dirLight.Direction;
+		vec3 L = normalize(-dirLight.Direction);
 		vec3 H = normalize(V + L);
 
 		vec3 radiance = dirLight.Radiance;

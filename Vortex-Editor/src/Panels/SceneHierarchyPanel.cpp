@@ -471,6 +471,17 @@ namespace Vortex {
 			}
 			Gui::Separator();
 
+			if (Gui::MenuItem("Add Empty Child"))
+			{
+				Entity childEntity = m_ContextScene->CreateEntity("Empty Entity");
+				m_ContextScene->ParentEntity(childEntity, entity);
+				// Set child to origin of parent
+				childEntity.GetTransform().Translation = Math::vec3(0.0f);
+				SetSelectedEntity(childEntity);
+				Gui::CloseCurrentPopup();
+			}
+			Gui::Separator();
+
 			if (Gui::MenuItem("Unparent Entity"))
 			{
 				m_ContextScene->UnparentEntity(entity);
@@ -515,7 +526,9 @@ namespace Vortex {
 			{
 				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
 				if (childEntity)
+				{
 					DrawEntityNode(childEntity, editorCamera);
+				}
 			}
 
 			Gui::TreePop();
