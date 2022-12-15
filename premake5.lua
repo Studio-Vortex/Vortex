@@ -17,6 +17,7 @@ workspace "Vortex"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
+IncludeDir["Assimp"] = "Vortex/vendor/assimp/include"
 IncludeDir["Box2D"] = "Vortex/vendor/Box2D/include"
 IncludeDir["entt"] = "Vortex/vendor/entt/include"
 IncludeDir["filewatch"] = "Vortex/vendor/filewatch"
@@ -42,9 +43,9 @@ LibraryDir["Mono"] = "%{wks.location}/Vortex/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["PhysX"] = "%{wks.location}/Vortex/vendor/PhysX/lib/%{cfg.buildcfg}"
 
 Library = {}
+Library["Assimp_Debug"] = "%{wks.location}/Vortex/vendor/assimp/bin/Debug/assimp-vc142-mtd.lib"
+Library["Assimp_Release"] = "%{wks.location}/Vortex/vendor/assimp/bin/Release/assimp-vc142-mt.lib"
 Library["mono"] = "%{LibraryDir.Mono}/mono-2.0-sgen.lib" -- dll binary must be included in build
---Library["mono"] = "%{LibraryDir.Mono}/libmono-static-sgen.lib"
-
 Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX_static_64.lib"
 Library["PhysXCharacterKinematic"] = "%{LibraryDir.PhysX}/PhysXCharacterKinematic_static_64.lib"
 Library["PhysXCommon"] = "%{LibraryDir.PhysX}/PhysXCommon_static_64.lib"
@@ -52,6 +53,10 @@ Library["PhysXCooking"] = "%{LibraryDir.PhysX}/PhysXCooking_static_64.lib"
 Library["PhysXExtensions"] = "%{LibraryDir.PhysX}/PhysXExtensions_static_64.lib"
 Library["PhysXFoundation"] = "%{LibraryDir.PhysX}/PhysXFoundation_static_64.lib"
 Library["PhysXPvd"] = "%{LibraryDir.PhysX}/PhysXPvdSDK_static_64.lib"
+
+Binaries = {}
+Binaries["Assimp_Debug"] = "%{wks.location}/Vortex/vendor/assimp/bin/Debug/assimp-vc142-mtd.dll"
+Binaries["Assimp_Release"] = "%{wks.location}/Vortex/vendor/assimp/bin/Release/assimp-vc142-mt.dll"
 
 group "External Dependencies"
 	include "Vortex/vendor/Box2D"
@@ -108,6 +113,8 @@ project "Vortex"
 	includedirs
 	{
 		"%{prj.name}/src",
+
+		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.Box2D}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.filewatch}",
@@ -237,6 +244,7 @@ project "Vortex-Editor"
 	includedirs
 	{
 		"Vortex/src",
+
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.glm}",
@@ -269,6 +277,16 @@ project "Vortex-Editor"
 		runtime "Debug"
 		symbols "on"
 
+		links
+		{
+			"%{Library.Assimp_Debug}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Release"
 		defines "VX_RELEASE"
 		runtime "Release"
@@ -278,6 +296,16 @@ project "Vortex-Editor"
 			"NDEBUG" -- PhysX Requires This
 		}
 
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Dist"
 		defines "VX_DIST"
 		runtime "Release"
@@ -285,6 +313,16 @@ project "Vortex-Editor"
 		defines
 		{
 			"NDEBUG" -- PhysX Requires This
+		}
+
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
 		}
 
 project "Vortex-Launcher"
@@ -374,6 +412,7 @@ project "Vortex-Runtime"
 	includedirs
 	{
 		"Vortex/src",
+
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -404,22 +443,54 @@ project "Vortex-Runtime"
 		runtime "Debug"
 		symbols "on"
 
+		links
+		{
+			"%{Library.Assimp_Debug}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Release"
 		defines "VX_RELEASE"
 		runtime "Release"
 		optimize "on"
+
 		defines
 		{
 			"NDEBUG" -- PhysX Requires This
+		}
+
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
 		}
 
 	filter "configurations:Dist"
 		defines "VX_DIST"
 		runtime "Release"
 		optimize "on"
+
 		defines
 		{
 			"NDEBUG" -- PhysX Requires This
+		}
+
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
 		}
 group ""
 

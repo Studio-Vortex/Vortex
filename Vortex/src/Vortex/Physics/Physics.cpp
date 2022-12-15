@@ -189,7 +189,9 @@ namespace Vortex {
 		}
 
 		s_Data->ControllerManager->release();
+		s_Data->ControllerManager = nullptr;
 		s_Data->PhysicsScene->release();
+		s_Data->PhysicsScene = nullptr;
 	}
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)

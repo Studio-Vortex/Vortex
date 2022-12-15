@@ -314,7 +314,7 @@ namespace Vortex {
 	{
 		float SpeedDown = 0.0f;
 		float SlopeLimitDegrees = 45.0f;
-		float StepOffset = 0.0f;
+		float StepOffset = 1.0f;
 		uint32_t LayerID = 0;
 		bool DisableGravity = false;
 

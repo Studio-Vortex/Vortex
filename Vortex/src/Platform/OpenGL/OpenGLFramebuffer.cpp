@@ -160,6 +160,9 @@ namespace Vortex {
 					case FramebufferTextureFormat::RGBA8:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA8, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
+					case FramebufferTextureFormat::RGBA16F:
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA16F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
+						break;
 					case FramebufferTextureFormat::RED_INTEGER:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_R32I, GL_RED_INTEGER, m_Properties.Width, m_Properties.Height, i);
 						break;

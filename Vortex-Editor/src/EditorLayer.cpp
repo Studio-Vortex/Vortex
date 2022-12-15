@@ -451,7 +451,7 @@ namespace Vortex {
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();
 
-		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 5.0f, 5.0f });
 		Gui::Begin("Scene", &scenePanelOpen, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -629,7 +629,6 @@ namespace Vortex {
 		}
 
 		Gui::End();
-		Gui::PopStyleVar();
 
 		Gui::End();
 	}
@@ -1507,6 +1506,8 @@ namespace Vortex {
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
 		else
 			SaveSceneAs();
+
+		m_ActiveScene->SortEntities();
 	}
 
 	void EditorLayer::SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path)

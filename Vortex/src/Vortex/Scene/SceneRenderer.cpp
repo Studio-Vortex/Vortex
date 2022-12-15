@@ -138,7 +138,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
+						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView);
 					}
 				}
 
@@ -153,7 +153,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView, (int)(entt::entity)e);
+						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView);
 					}
 				}
 
@@ -168,7 +168,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
+						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView);
 					}
 				}
 			}

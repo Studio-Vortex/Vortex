@@ -1,5 +1,4 @@
 ﻿using Vortex;
-using System;
 
 namespace Sandbox {
 
@@ -8,19 +7,16 @@ namespace Sandbox {
 		public float Speed;
 		public float CameraDistance;
 		public float FlashlightDistance;
-		public bool IsGrounded;
-		public bool IsMoving;
 		public float JumpForce;
 
-		private Entity m_CameraEntity;
-		private Entity m_Flashlight;
-		private RigidBody2D m_Rigidbody;
-		private AudioSource m_AudioSource;
-		private const float FRICTION = 2.0f;
+		Entity m_CameraEntity;
+		Entity m_Flashlight;
+		CharacterController m_Controller;
+		AudioSource m_AudioSource;
 
 		protected override void OnCreate()
 		{
-			m_Rigidbody = GetComponent<RigidBody2D>();
+			m_Controller = GetComponent<CharacterController>();
 			m_AudioSource = GetComponent<AudioSource>();
 			m_CameraEntity = FindEntityByName("Camera");
 			m_Flashlight = FindEntityByName("Flash Light");
@@ -28,7 +24,6 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float delta)
 		{
-			IsGrounded = Grounded();
 			SetEntityPositions();
 
 			ProcessInput(delta);
@@ -42,22 +37,16 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.A))
 			{
 				velocity = Vector2.Left * speed;
-				IsMoving = true;
 			}
 			else if (Input.IsKeyDown(KeyCode.D))
 			{
 				velocity = Vector2.Right * speed;
-				IsMoving = true;
 			}
-			else
-				IsMoving = false;
 
-			if (!IsMoving)
-				velocity *= FRICTION;
 
-			if (Input.IsKeyDown(KeyCode.Space) && IsGrounded)
+			if (Input.IsKeyDown(KeyCode.Space) && m_Controller.IsGrounded)
 			{
-				m_Rigidbody.ApplyForce(Vector2.Up * JumpForce, true);
+				m_Controller.Jump(JumpForce);
 				if (!m_AudioSource.IsPlaying)
 					m_AudioSource.Play();
 			}
@@ -65,15 +54,7 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.Escape))
 				Application.Quit();
 
-			m_Rigidbody.ApplyLinearImpulse(velocity, true);
-		}
-
-		bool Grounded()
-		{
-			Vector2 groundPoint = transform.Translation.XY;
-			groundPoint.Y -= 0.55f;
-			Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit);
-			return hit.Hit;
+			m_Controller.Move(new Vector3(velocity, 0f));
 		}
 
 		void SetEntityPositions()
