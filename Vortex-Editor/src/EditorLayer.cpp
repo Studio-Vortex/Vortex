@@ -857,7 +857,7 @@ namespace Vortex {
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
-		const float numberOfButtons = 4.0f;
+		const float numberOfButtons = 6.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
@@ -875,6 +875,14 @@ namespace Vortex {
 		Gui::Spring();
 		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
+
+		if (Gui::ImageButton((void*)EditorResources::MaximizeOnPlayIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MaximizeOnPlay ? tintColor : normalColor))
+			projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
+		UI::SetTooltip("Maximize On Play");
+
+		if (Gui::ImageButton((void*)EditorResources::ShowGridIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+			projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
+		UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
 
 		if (Gui::ImageButton((void*)EditorResources::DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
 			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;

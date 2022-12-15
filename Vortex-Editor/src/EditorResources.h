@@ -23,6 +23,8 @@ namespace Vortex {
 		inline static SharedRef<Texture2D> RotateToolIcon = nullptr;
 		inline static SharedRef<Texture2D> ScaleToolIcon = nullptr;
 
+		inline static SharedRef<Texture2D> ShowGridIcon = nullptr;
+		inline static SharedRef<Texture2D> MaximizeOnPlayIcon = nullptr;
 		inline static SharedRef<Texture2D> TopDownViewIcon = nullptr;
 		inline static SharedRef<Texture2D> TwoDViewIcon = nullptr;
 		inline static SharedRef<Texture2D> DisplayPhysicsCollidersIcon = nullptr;
