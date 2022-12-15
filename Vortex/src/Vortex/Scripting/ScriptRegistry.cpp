@@ -48,6 +48,9 @@ namespace Vortex {
 
 	static Entity s_HoveredEntity = Entity{};
 
+	static float s_SceneStartTime = 0.0f;
+
+	static std::string s_ActiveSceneName = "";
 	static std::string s_SceneToBeLoaded = "";
 
 	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -237,6 +240,14 @@ namespace Vortex {
 		char* sceneNameCStr = mono_string_to_utf8(sceneName);
 		s_SceneToBeLoaded = std::string(sceneNameCStr);
 		mono_free(sceneNameCStr);
+	}
+
+	static MonoString* SceneManager_GetActiveScene()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return mono_string_new(mono_domain_get(), s_ActiveSceneName.c_str());
 	}
 
 #pragma endregion
@@ -2653,7 +2664,7 @@ namespace Vortex {
 
 	static float Time_GetElapsed()
 	{
-		return Time::GetTime();
+		return Time::GetTime() - s_SceneStartTime;
 	}
 
 	static float Time_GetDeltaTime()
@@ -2923,6 +2934,16 @@ namespace Vortex {
 		s_HoveredEntity = entity;
 	}
 
+	void ScriptRegistry::SetSceneStartTime(float startTime)
+	{
+		s_SceneStartTime = startTime;
+	}
+
+	void ScriptRegistry::SetActiveSceneName(const std::string& sceneName)
+	{
+		s_ActiveSceneName = sceneName;
+	}
+
 	const char* ScriptRegistry::GetSceneToBeLoaded()
 	{
 		const char* sceneName = s_SceneToBeLoaded.c_str();
@@ -2956,6 +2977,7 @@ namespace Vortex {
 		SP_ADD_INTERNAL_CALL(Scene_GetHoveredEntity);
 
 		SP_ADD_INTERNAL_CALL(SceneManager_LoadScene);
+		SP_ADD_INTERNAL_CALL(SceneManager_GetActiveScene);
 
 		SP_ADD_INTERNAL_CALL(Entity_AddComponent);
 		SP_ADD_INTERNAL_CALL(Entity_HasComponent);

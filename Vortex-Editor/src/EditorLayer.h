@@ -7,7 +7,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
-#include "Panels/MaterialViewerPanel.h"
+#include "Panels/MaterialEditorPanel.h"
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/AssetManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
@@ -121,7 +121,7 @@ namespace Vortex {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
 		ScriptRegistryPanel m_ScriptRegistryPanel;
-		MaterialViewerPanel m_MaterialViewerPanel;
+		MaterialEditorPanel m_MaterialEditorPanel;
 		BuildSettingsPanel m_BuildSettingsPanel;
 		AssetManagerPanel m_AssetManagerPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;

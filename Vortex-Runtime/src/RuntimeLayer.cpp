@@ -1,6 +1,7 @@
 #include "RuntimeLayer.h"
 
 #include <Vortex/Scene/Scene.h>
+#include <Vortex/Utils/PlatformUtils.h>
 #include <Vortex/Scene/SceneSerializer.h>
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
@@ -199,6 +200,10 @@ namespace Vortex {
 			if (serializer.Deserialize(filepath.string()))
 			{
 				m_RuntimeScene->OnRuntimeStart();
+				std::string filename = filepath.filename().string();
+				std::string sceneName = filename.substr(0, filename.find('.'));
+				ScriptRegistry::SetActiveSceneName(sceneName);
+				ScriptRegistry::SetSceneStartTime(Time::GetTime());
 				return true;
 			}
 		}

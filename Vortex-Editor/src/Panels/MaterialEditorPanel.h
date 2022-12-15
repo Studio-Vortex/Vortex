@@ -4,10 +4,10 @@
 
 namespace Vortex {
 
-	class MaterialViewerPanel
+	class MaterialEditorPanel
 	{
 	public:
-		MaterialViewerPanel() = default;
+		MaterialEditorPanel() = default;
 
 		void OnGuiRender(Entity selectedEntity, bool showDefault = false);
 		bool& IsOpen() { return s_ShowPanel; }

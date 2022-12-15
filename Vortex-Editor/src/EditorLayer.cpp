@@ -401,7 +401,7 @@ namespace Vortex {
 				Gui::Separator();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				Gui::Separator();
-				Gui::MenuItem("Material Viewer", nullptr, &m_MaterialViewerPanel.IsOpen());
+				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
 				Gui::Separator();
@@ -437,7 +437,7 @@ namespace Vortex {
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialViewerPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
+			m_MaterialEditorPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
 			m_BuildSettingsPanel.OnGuiRender();
 			m_AssetManagerPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
@@ -1459,9 +1459,11 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
+		std::string sceneFilename = path.filename().string();
+
 		if (path.extension().string() != ".vortex")
 		{
-			VX_WARN("Could not load {} - not a scene file", path.filename().string());
+			VX_WARN("Could not load {} - not a scene file", sceneFilename);
 			return;
 		}
 
@@ -1472,8 +1474,8 @@ namespace Vortex {
 		// Default clear color
 		RenderCommand::SetClearColor(Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)));
 
-		std::string name = std::format("{} Scene Load Time", path.filename().string());
-		InstrumentationTimer timer(name.c_str());
+		std::string timerName = std::format("{} Scene Load Time", sceneFilename);
+		InstrumentationTimer timer(timerName.c_str());
 
 		if (serializer.Deserialize(path.string()))
 		{
@@ -1482,6 +1484,8 @@ namespace Vortex {
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
+			std::string sceneName = sceneFilename.substr(0, sceneFilename.find('.'));
+			ScriptRegistry::SetActiveSceneName(sceneName);
 		}
 	}
 
@@ -1530,6 +1534,7 @@ namespace Vortex {
 		m_ActiveScene->OnRuntimeStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
 		OnNoGizmoSelected();
 	}
