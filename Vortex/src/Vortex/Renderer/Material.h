@@ -8,13 +8,7 @@ namespace Vortex {
 
 	struct VORTEX_API MaterialProperties
 	{
-		SharedRef<Shader> Shader;
-
-		Math::vec3 Ambient = Math::vec3(1.0f);
-		SharedRef<Texture2D> DiffuseMap = nullptr;
-		SharedRef<Texture2D> SpecularMap = nullptr;
 		SharedRef<Texture2D> NormalMap = nullptr;
-		float Shininess = 32.0f;
 
 		Math::vec3 Albedo = Math::vec3(1.0f);
 		SharedRef<Texture2D> AlbedoMap = nullptr;
@@ -37,22 +31,8 @@ namespace Vortex {
 		void Bind() const;
 		void Unbind() const;
 
-		const SharedRef<Shader>& GetShader() const;
-
-		const Math::vec3& GetAmbient() const;
-		void SetAmbient(const Math::vec3& ambient);
-
-		const SharedRef<Texture2D>& GetDiffuseMap() const;
-		void SetDiffuseMap(const SharedRef<Texture2D>& diffuseMap);
-
-		const SharedRef<Texture2D>& GetSpecularMap() const;
-		void SetSpecularMap(const SharedRef<Texture2D>& specularMap);
-
 		const SharedRef<Texture2D>& GetNormalMap() const;
 		void SetNormalMap(const SharedRef<Texture2D>& normalMap);
-
-		float GetShininess() const;
-		void SetShininess(float shininess);
 
 		const Math::vec3& GetAlbedo() const;
 		void SetAlbedo(const Math::vec3& albedo);

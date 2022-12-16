@@ -1,298 +1,346 @@
 #include "vxpch.h"
 #include "Model.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/Renderer.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
-#include <tiny_gltf.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/LogStream.hpp>
 
 namespace Vortex {
 
-	namespace Utils {
+	static const uint32_t s_MeshImportFlags = 
+		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
+		aiProcess_Triangulate |             // Make sure we're triangles
+		aiProcess_SortByPType |             // Split meshes by primitive type
+		aiProcess_GenNormals |              // Make sure we have legit normals
+		aiProcess_GenUVCoords |             // Convert UVs if required 
+		aiProcess_OptimizeMeshes |          // Batch draws where possible
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
+		aiProcess_ValidateDataStructure;    // Validation
 
-		static void GenerateGeometryTangents(std::vector<ModelVertexInfo>& vertices, const std::vector<uint32_t>& indices, const Math::mat4& transform)
+	struct LogStream : public Assimp::LogStream
+	{
+		static void Initialize()
 		{
-			uint32_t indexCount = indices.size();
-			for (uint32_t i = 0; i < indexCount; i += 3)
+			if (Assimp::DefaultLogger::isNullLogger())
 			{
-				uint32_t i0 = indices[(size_t)i + 0];
-				uint32_t i1 = indices[(size_t)i + 1];
-				uint32_t i2 = indices[(size_t)i + 2];
-
-				Math::vec3 edge1 = vertices[i1].Position - vertices[i0].Position;
-				Math::vec3 edge2 = vertices[i2].Position - vertices[i0].Position;
-
-				float deltaU1 = vertices[i1].TextureCoord.x - vertices[i0].TextureCoord.x;
-				float deltaV1 = vertices[i1].TextureCoord.y - vertices[i0].TextureCoord.y;
-
-				float deltaU2 = vertices[i2].TextureCoord.x - vertices[i0].TextureCoord.x;
-				float deltaV2 = vertices[i2].TextureCoord.y - vertices[i0].TextureCoord.y;
-
-				float dividend = (deltaU1 * deltaV2 - deltaU2 * deltaV1);
-				float fc = 1.0f / dividend;
-
-				Math::vec3 tangent(
-					(fc * (deltaV2 * edge1.x - deltaV1 * edge2.x)),
-					(fc * (deltaV2 * edge1.y - deltaV1 * edge2.y)),
-					(fc * (deltaV2 * edge1.z - deltaV1 * edge2.z))
-				);
-
-				tangent = Math::Normalize(tangent);
-				
-				float sx = deltaU1, sy = deltaU2;
-				float tx = deltaV1, ty = deltaV2;
-				float handedness = ((tx * sy - ty * sx) < 0.0f) ? -1.0f : 1.0f;
-				Math::vec4 t4(tangent, handedness);
-				vertices[i0].Tangent = t4;
-				vertices[i1].Tangent = t4;
-				vertices[i2].Tangent = t4;
+				Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
+				Assimp::DefaultLogger::get()->attachStream(new LogStream, Assimp::Logger::Err | Assimp::Logger::Warn);
 			}
 		}
 
-		static Mesh LoadMeshFromOBJFile(const std::string& filepath, const Math::mat4& transform)
+		virtual void write(const char* message) override
 		{
-			tinyobj::attrib_t attributes;
-			std::vector<tinyobj::shape_t> shapes;
-			std::vector<tinyobj::material_t> materials;
-			std::string warning;
-			std::string error;
+			VX_CORE_ERROR("Assimp error: {0}", message);
+		}
+	};
 
-			bool success = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, filepath.c_str());
-			VX_CORE_ASSERT(success, "{}: {}", warning, error);
+	Mesh::Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials)
+		: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
+	{
+		CreateAndUploadMesh();
+		m_Materials.insert(m_Materials.end(), MaterialInstance::Create());
+	}
 
-			std::vector<ModelVertexInfo> vertices;
-			std::vector<uint32_t> indices;
-			std::vector<SharedRef<Texture2D>> textures;
+	void Mesh::SetMaterial(const SharedRef<MaterialInstance>& material)
+	{
+		m_Materials.clear();
+		m_Materials[0] = material;
+	}
 
-			std::unordered_map<ModelVertexInfo, uint32_t> uniqueVertices{};
+	void Mesh::CreateAndUploadMesh(bool skybox)
+	{
+		m_VertexArray = VertexArray::Create();
 
-			for (const auto& shape : shapes)
+		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
+		m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), dataSize);
+
+		if (skybox)
+			m_VertexBuffer->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
+		else
+		{
+			m_VertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position"  },
+				{ ShaderDataType::Float3, "a_Normal"    },
+				{ ShaderDataType::Float3, "a_Tangent"   },
+				{ ShaderDataType::Float3, "a_BiTangent" },
+				{ ShaderDataType::Float2, "a_TexCoord"  },
+				{ ShaderDataType::Float2, "a_TexScale"  },
+				{ ShaderDataType::Int,    "a_EntityID"  },
+			});
+		}
+
+		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+
+		if (!m_Indices.empty())
+		{
+			m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+			m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+		}
+	}
+
+	void Mesh::Render(const SharedRef<Shader>& shader)
+	{
+		shader->Enable();
+
+		for (auto& material : m_Materials)
+		{
+			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
 			{
-				for (const auto& index : shape.mesh.indices)
-				{
-					Math::vec4 vertexPosition = {
-						attributes.vertices[3 * index.vertex_index + 0],
-						attributes.vertices[3 * index.vertex_index + 1],
-						attributes.vertices[3 * index.vertex_index + 2],
-						1.0f
-					};
+				normalMap->Bind(0);
+				shader->SetInt("u_Material.NormalMap", 0);
+				shader->SetBool("u_Material.HasNormalMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasNormalMap", false);
 
-					Math::vec3 vertexNormal = {
-						attributes.normals[3 * index.normal_index + 0],
-						attributes.normals[3 * index.normal_index + 1],
-						attributes.normals[3 * index.normal_index + 2]
-					};
+			if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
+			{
+				albedoMap->Bind(1);
+				shader->SetInt("u_Material.AlbedoMap", 1);
+				shader->SetBool("u_Material.HasAlbedoMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasAlbedoMap", false);
 
-					// TODO figure out if this is absolutely neccessary
-					//vertexNormal = Math::Normalize(Math::mat3(transform) * vertexNormal);
+			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
+			{
+				metallicMap->Bind(2);
+				shader->SetInt("u_Material.MetallicMap", 2);
+				shader->SetBool("u_Material.HasMetallicMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasMetallicMap", false);
 
-					Math::vec2 vertexTexCoord = {
-						attributes.texcoords[2 * index.texcoord_index + 0],
-						attributes.texcoords[2 * index.texcoord_index + 1]
-					};
+			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
+			{
+				roughnessMap->Bind(3);
+				shader->SetInt("u_Material.RoughnessMap", 3);
+				shader->SetBool("u_Material.HasRoughnessMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasRoughnessMap", false);
 
-					ModelVertexInfo vertex = { Math::vec3(vertexPosition), vertexNormal, Math::vec4(), vertexTexCoord};
+			if (SharedRef<Texture2D> aoMap = material->GetAmbientOcclusionMap())
+			{
+				aoMap->Bind(4);
+				shader->SetInt("u_Material.AOMap", 4);
+				shader->SetBool("u_Material.HasAOMap", true);
+			}
+			else
+				shader->SetBool("u_Material.HasAOMap", false);
+		}
 
-					if (uniqueVertices.count(vertex) == 0)
-					{
-						uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-						vertices.push_back(vertex);
-					}
+		Renderer::DrawIndexed(shader, m_VertexArray);
+	}
 
-					indices.push_back(uniqueVertices[vertex]);
-				}
+	void Model::ProcessNode(aiNode* node, const aiScene* scene)
+	{
+		// process all node meshes
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			m_Meshes.push_back(ProcessMesh(mesh, scene, m_EntityID));
+		}
+
+		// do the same for children nodes
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+		{
+			ProcessNode(node->mChildren[i], scene);
+		}
+	}
+
+	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const int entityID)
+	{
+		std::vector<ModelVertex> vertices;
+		std::vector<uint32_t> indices;
+		std::vector<SharedRef<MaterialInstance>> materials;
+
+		// process vertices
+		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+		{
+			ModelVertex vertex;
+
+			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
+			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
+
+			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+			vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+			vertex.Tangent = Math::vec3(0.0f);
+			vertex.BiTangent = Math::vec3(0.0f);
+			if (mesh->HasTangentsAndBitangents())
+			{
+				vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+				vertex.BiTangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
 			}
 
-			GenerateGeometryTangents(vertices, indices, transform);
+			vertex.TexScale = Math::vec2(1.0f);
 
-			return { vertices, indices };
+			vertex.TexCoord = Math::vec2(0.0f);
+			// does it contain texture coords?
+			if (mesh->mTextureCoords[0])
+			{
+				vertex.TexCoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+			}
+
+			vertex.EntityID = entityID;
+			vertices.push_back(vertex);
 		}
 
-		static Mesh LoadMeshFromGLTFFile(const std::string& filepath, const Math::mat4& transform)
+		// process indices
+		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
 		{
-			tinygltf::Model model;
-			tinygltf::TinyGLTF loader;
-			std::string warning;
-			std::string error;
-
-			bool success = loader.LoadASCIIFromFile(&model, &error, &warning, filepath);
-			VX_CORE_ASSERT(success, "{}: {}", warning, error);
-
-			std::vector<ModelVertexInfo> vertices;
-			std::vector<uint32_t> indices;
-			std::vector<SharedRef<Texture2D>> textures;
-
-			
-
-			return Mesh();
+			aiFace face = mesh->mFaces[i];
+			for (uint32_t j = 0; j < face.mNumIndices; j++)
+			{
+				indices.push_back(face.mIndices[j]);
+			}
 		}
 
+		// process materials
+		if (mesh->mMaterialIndex >= 0)
+		{
+
+		}
+
+		return { vertices, indices, materials };
 	}
 
 	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
-		: m_Filepath(filepath), m_MaterialInstance(MaterialInstance::Create())
+		: m_Filepath(filepath)
 	{
-		LoadModelFromFile(filepath, transform, entityID);
-	}
+		LogStream::Initialize();
 
-	Model::Model(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID)
-		: m_Filepath(filepath), m_MaterialInstance(materialInstance)
-	{
-		LoadModelFromFile(filepath, transform, entityID);
+		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		if (!scene || !scene->HasMeshes())
+		{
+			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			return;
+		}
+
+		m_Scene = scene;
+		m_EntityID = entityID;
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+
+		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
 
 	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
-		: m_MaterialInstance(MaterialInstance::Create())
 	{
+		LogStream::Initialize();
+
 		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
-		LoadModelFromFile(m_Filepath, transform, entityID);
+
+		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		if (!scene || !scene->HasMeshes())
+		{
+			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			return;
+		}
+
+		m_Scene = scene;
+		m_EntityID = entityID;
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+
+		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
 
 	Model::Model(MeshType meshType)
-		: m_MaterialInstance(nullptr)
 	{
-		Mesh mesh = Utils::LoadMeshFromOBJFile(DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], Math::Identity());
+		m_Filepath = "Resources/Meshes/Cube.fbx";
+		
+		LogStream::Initialize();
 
-		m_Vao = VertexArray::Create();
+		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
 
-		float vertices[] =
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		if (!scene || !scene->HasMeshes())
 		{
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-
-			-0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f, -0.5f,
-
-			-0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
-		};
-
-		uint32_t dataSize = 36 * sizeof(Math::vec3);
-		m_Vbo = VertexBuffer::Create(vertices, dataSize);
-		m_Vbo->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
-		m_Vao->AddVertexBuffer(m_Vbo);
-	}
-
-	void Model::LoadModelFromFile(const std::string& filepath, const TransformComponent& transform, int entityID)
-	{
-		std::filesystem::path path = std::filesystem::path(filepath);
-		Mesh mesh;
-
-		if (path.filename().extension() == ".obj")
-			mesh = Utils::LoadMeshFromOBJFile(m_Filepath, transform.GetTransform());
-		else if (path.filename().extension() == ".gltf")
-			mesh = Utils::LoadMeshFromGLTFFile(m_Filepath, transform.GetTransform());
-
-		m_Vertices.resize(mesh.Vertices.size());
-
-		// Store the original mesh vertices
-		uint32_t i = 0;
-		for (const auto& vertex : mesh.Vertices)
-		{
-			ModelVertex& v = m_Vertices[i++];
-			v.Position = vertex.Position;
-			v.Normal = vertex.Normal;
-			v.Tangent = vertex.Tangent;
-			v.TextureCoord = vertex.TextureCoord;
-			v.TexScale = Math::vec2(1.0f);
-			v.EntityID = (int)(entt::entity)entityID;
+			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			return;
 		}
 
-		m_Vao = VertexArray::Create();
+		m_Scene = scene;
 
-		uint32_t indexCount = mesh.Indices.size();
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
-		m_Vbo = VertexBuffer::Create(m_Vertices.data(), dataSize);
-		m_Vbo->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal"   },
-			{ ShaderDataType::Float4, "a_Tangent"  },
-			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float2, "a_TexScale" },
-			{ ShaderDataType::Int,    "a_EntityID" },
-		});
-
-		m_Vao->AddVertexBuffer(m_Vbo);
-
-		m_Ibo = IndexBuffer::Create(mesh.Indices.data(), indexCount);
-		m_Vao->SetIndexBuffer(m_Ibo);
+		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
 
-	void Model::OnUpdate(int entityID, const Math::vec2& scale)
+	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
 	{
-		bool entityIDChanged = m_EntityID != entityID;
-		bool scaleChanged = m_TextureScale != scale;
+		if (m_EntityID == entityID && m_TextureScale == textureScale)
+			return;
 
-		if (scaleChanged || entityIDChanged)
+		m_EntityID = entityID;
+		m_TextureScale = textureScale;
+
+		for (auto& mesh : m_Meshes)
 		{
-			for (auto& vertex : m_Vertices)
+			std::vector<ModelVertex>& vertices = mesh.GetVertices();
+			
+			size_t dataSize = vertices.size();
+			for (uint32_t i = 0; i < dataSize; i++)
 			{
-				vertex.TexScale = scale;
-				vertex.EntityID = entityID;
+				ModelVertex& vertex = vertices[i];
+				vertex.TexScale = m_TextureScale;
+				vertex.EntityID = m_EntityID;
 			}
 
-			m_EntityID = entityID;
-			m_TextureScale = scale;
-
-			uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
-			m_Vbo->SetData(m_Vertices.data(), dataSize);
+			SharedRef<VertexBuffer> vertexBuffer = mesh.GetVertexBuffer();
+			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(ModelVertex));
 		}
 	}
 
-	uint32_t Model::GetQuadCount() const
+	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
-		return m_Ibo->GetCount() / 3;
+		m_MeshShader->Enable();
+
+		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
+		m_MeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+
+		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
+
+		m_MeshShader->SetFloat3("u_Material.Albedo", Math::vec3(1.0f));
+		m_MeshShader->SetFloat("u_Material.Metallic", 0.5f);
+		m_MeshShader->SetFloat("u_Material.Roughness", 0.5f);
+
+		for (auto& mesh : m_Meshes)
+			mesh.Render(m_MeshShader);
 	}
 
-	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
+	void Model::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
-		return CreateShared<Model>(filepath, transform, entityID);
-	}
-
-	SharedRef<Model> Model::Create(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID)
-	{
-		return CreateShared<Model>(filepath, transform, entityID);
+		for (auto& mesh : m_Meshes)
+			mesh.SetMaterial(material);
 	}
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
 	{
 		return CreateShared<Model>(defaultMesh, transform, entityID);
+	}
+
+	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
+	{
+		return CreateShared<Model>(filepath, transform, entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)

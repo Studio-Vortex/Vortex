@@ -245,6 +245,7 @@ project "Vortex-Editor"
 	{
 		"Vortex/src",
 
+		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.glm}",
@@ -344,6 +345,8 @@ project "Vortex-Launcher"
 	includedirs
 	{
 		"Vortex/src",
+
+		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -413,6 +416,7 @@ project "Vortex-Runtime"
 	{
 		"Vortex/src",
 
+		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
@@ -515,6 +519,8 @@ project "Testbed"
 	includedirs
 	{
 		"Vortex/src",
+
+		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",

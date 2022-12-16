@@ -492,7 +492,7 @@ namespace Vortex {
 					else
 						VX_CORE_WARN("Could not load texture - {}", texturePath.filename().string());
 				}
-				else if (filePath.extension().string() == ".obj")
+				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf")
 				{
 					std::filesystem::path modelPath = filePath;
 
@@ -502,6 +502,7 @@ namespace Vortex {
 
 						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform(), (int)(entt::entity)m_HoveredEntity);
 						meshRenderer.Type = MeshType::Custom;
+						// TODO set material
 					}
 				}
 				else if (filePath.extension().string() == ".vortex")

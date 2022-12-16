@@ -1,50 +1,67 @@
 #pragma once
 
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Scene/SceneCamera.h"
-#include "Vortex/Renderer/EditorCamera.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Material.h"
-#include "Vortex/Renderer/Texture.h"
-#include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/Shader.h"
+#include "Vortex/Renderer/Buffer.h"
+#include "Vortex/Core/Math.h"
 
+struct aiMesh;
+struct aiNode;
+struct aiScene;
+
+namespace Assimp {
+
+	class Importer;
+
+}
+
+#include <vector>
 #include <string>
 
 namespace Vortex {
-
-	class Entity;
 
 	struct ModelVertex
 	{
 		Math::vec3 Position;
 		Math::vec3 Normal;
-		Math::vec4 Tangent;
-		Math::vec2 TextureCoord;
+		Math::vec3 Tangent;
+		Math::vec3 BiTangent;
+		Math::vec2 TexCoord;
 		Math::vec2 TexScale;
 
 		// Editor-only
 		int EntityID;
 	};
 
-	struct ModelVertexInfo
+	class Mesh
 	{
-		Math::vec3 Position;
-		Math::vec3 Normal;
-		Math::vec4 Tangent;
-		Math::vec2 TextureCoord;
+	public:
+		Mesh() = default;
+		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials);
+		~Mesh() = default;
 
-		inline bool operator==(const ModelVertexInfo& other) const
-		{
-			return Position == other.Position && Normal == other.Normal && Tangent == other.Tangent && TextureCoord == other.TextureCoord;
-		}
-	};
+		void Render(const SharedRef<Shader>& shader);
 
-	struct Mesh
-	{
-		std::vector<ModelVertexInfo> Vertices;
-		std::vector<uint32_t> Indices;
-		std::vector<SharedRef<Texture2D>> Textures;
+		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
+		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
+		const std::vector<SharedRef<MaterialInstance>>& GetMaterials() const { return m_Materials; }
+		void SetMaterial(const SharedRef<MaterialInstance>& material);
+		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
+		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
+
+	private:
+		void CreateAndUploadMesh(bool skybox = false);
+
+	private:
+		std::vector<ModelVertex> m_Vertices;
+		std::vector<uint32_t> m_Indices;
+		std::vector<SharedRef<MaterialInstance>> m_Materials;
+
+		SharedRef<VertexArray> m_VertexArray;
+		SharedRef<VertexBuffer> m_VertexBuffer;
+		SharedRef<IndexBuffer> m_IndexBuffer;
 	};
 
 	class Model
@@ -52,13 +69,13 @@ namespace Vortex {
 	public:
 		// TODO: move to asset system when we have one
 		inline static std::vector<std::string> DefaultMeshSourcePaths = {
-			"Resources/Meshes/Default/Cube.obj",
-			"Resources/Meshes/Default/Sphere.obj",
-			"Resources/Meshes/Default/Capsule.obj",
-			"Resources/Meshes/Default/Cone.obj",
-			"Resources/Meshes/Default/Cylinder.obj",
-			"Resources/Meshes/Default/Plane.obj",
-			"Resources/Meshes/Default/Torus.obj",
+			"Resources/Meshes/Cube.fbx",
+			"Resources/Meshes/Sphere.fbx",
+			"Resources/Meshes/Capsule.fbx",
+			"Resources/Meshes/Cone.fbx",
+			"Resources/Meshes/Cylinder.fbx",
+			"Resources/Meshes/Plane.fbx",
+			"Resources/Meshes/Torus.fbx",
 		};
 
 		// Same with this
@@ -66,7 +83,7 @@ namespace Vortex {
 		{
 			auto it = std::find(DefaultMeshSourcePaths.begin(), DefaultMeshSourcePaths.end(), path);
 			bool isDefaultMesh = it != DefaultMeshSourcePaths.end();
-			return it != DefaultMeshSourcePaths.end();
+			return isDefaultMesh;
 		}
 
 		enum class Default
@@ -74,59 +91,36 @@ namespace Vortex {
 			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
 		};
 
-	public:
 		Model() = default;
-		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
-		Model(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
+		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
 		Model(MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(int entityID = -1, const Math::vec2& scale = Math::vec2(1.0f));
+		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
+		void Render(const Math::mat4& worldSpaceTransform);
 
-		inline const std::string& GetPath() const { return m_Filepath; }
-		const SharedRef<MaterialInstance>& GetMaterial() const { return m_MaterialInstance; }
-		const SharedRef<VertexArray>& GetVertexArray() const { return m_Vao; }
-		const std::vector<SharedRef<Texture2D>>& GetTextures() const { return m_Textures; }
+		const std::string& GetPath() const { return m_Filepath; }
 
-		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
+		const SharedRef<VertexArray>& GetVertexArray() const { return m_Meshes[0].GetVertexArray(); }
+		const SharedRef<MaterialInstance>& GetMaterial() const { return m_Meshes[0].GetMaterials()[0]; }
+		void SetMaterial(const SharedRef<MaterialInstance>& material);
 
-		uint32_t GetQuadCount() const;
-
-		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
-		static SharedRef<Model> Create(const std::string& filepath, const SharedRef<MaterialInstance>& materialInstance, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
+		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(MeshType meshType);
 
 	private:
-		void LoadModelFromFile(const std::string& filepath, const TransformComponent& transform, int entityID);
+		void ProcessNode(aiNode* node, const aiScene* scene);
+		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const int entityID);
 
 	private:
 		std::string m_Filepath;
-		SharedRef<MaterialInstance> m_MaterialInstance;
-		std::vector<ModelVertex> m_Vertices;
-		std::vector<SharedRef<Texture2D>> m_Textures;
-
 		int m_EntityID = -1;
 		Math::vec2 m_TextureScale = Math::vec2(1.0f);
-
-		SharedRef<VertexArray> m_Vao = nullptr;
-		SharedRef<VertexBuffer> m_Vbo = nullptr;
-		SharedRef<IndexBuffer> m_Ibo = nullptr;
-	};
-
-}
-
-namespace std {
-
-	template<> struct hash<Vortex::ModelVertexInfo>
-	{
-		size_t operator()(const Vortex::ModelVertexInfo& vertex) const
-		{
-			return ((hash<Vortex::Math::vec3>()(vertex.Position) ^
-				(hash<Vortex::Math::vec3>()(vertex.Normal) << 1)) >> 1) ^
-				(hash<Vortex::Math::vec2>()(vertex.TextureCoord) << 1);
-		}
+		std::vector<Mesh> m_Meshes;
+		const aiScene* m_Scene;
+		SharedRef<Shader> m_MeshShader = nullptr;
 	};
 
 }

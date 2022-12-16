@@ -6,6 +6,7 @@
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetRegistry.h"
+//#include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Font/Font.h"
 
@@ -35,9 +36,7 @@ namespace Vortex {
 		static constexpr inline uint32_t MaxPointLights = 25;
 		static constexpr inline uint32_t MaxSpotLights = 25;
 
-		uint32_t ActiveDirectionalLights = 0;
-		uint32_t ActivePointLights = 0;
-		uint32_t ActiveSpotLights = 0;
+		SceneLightDescription SceneLightDesc;
 
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
@@ -145,12 +144,22 @@ namespace Vortex {
 		refractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
 		refractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
 
-		s_Data.ActiveDirectionalLights = 0;
-		s_Data.ActivePointLights = 0;
-		s_Data.ActiveSpotLights = 0;
+		s_Data.SceneLightDesc.ActiveDirLights = 0;
+		s_Data.SceneLightDesc.ActivePointLights = 0;
+		s_Data.SceneLightDesc.ActiveSpotLights = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
+	{
+		SP_PROFILE_FUNCTION();
+
+		shader->Enable();
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+		s_Data.RendererStatistics.DrawCalls++;
+	}
+
+	void Renderer::DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
 	{
 		SP_PROFILE_FUNCTION();
 
@@ -196,7 +205,7 @@ namespace Vortex {
 		{
 			case LightSourceComponent::LightType::Directional:
 			{
-				uint32_t& i = s_Data.ActiveDirectionalLights;
+				uint32_t& i = s_Data.SceneLightDesc.ActiveDirLights;
 
 				if (i + 1 > RendererInternalData::MaxDirectionalLights)
 					break;
@@ -222,7 +231,7 @@ namespace Vortex {
 			}
 			case LightSourceComponent::LightType::Point:
 			{
-				uint32_t& i = s_Data.ActivePointLights;
+				uint32_t& i = s_Data.SceneLightDesc.ActivePointLights;
 
 				if (i + 1 > RendererInternalData::MaxPointLights)
 					break;
@@ -258,7 +267,7 @@ namespace Vortex {
 			}
 			case LightSourceComponent::LightType::Spot:
 			{
-				uint32_t& i = s_Data.ActiveSpotLights;
+				uint32_t& i = s_Data.SceneLightDesc.ActiveSpotLights;
 
 				if (i + 1 > RendererInternalData::MaxSpotLights)
 					break;
@@ -301,131 +310,6 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::DrawModel(const Math::mat4& transform, const MeshRendererComponent& meshRenderer)
-	{
-		SP_PROFILE_FUNCTION();
-
-		SharedRef<Shader> shader;
-		SharedRef<Model> model = meshRenderer.Mesh;
-		SharedRef<MaterialInstance> material = model->GetMaterial();
-		bool pbr = (bool)material->GetAlbedoMap() || Project::GetActive()->GetProperties().RendererProps.EnablePBRRenderer; // TODO Rework this
-
-		if (meshRenderer.Reflective)
-		{
-			shader = s_Data.ShaderLibrary->Get("Reflective");
-			shader->Enable();
-			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
-		}
-		else if (meshRenderer.Refractive)
-		{
-			shader = s_Data.ShaderLibrary->Get("Refractive");
-			shader->Enable();
-			shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
-		}
-		else
-		{
-			shader = pbr ? s_Data.ShaderLibrary->Get("PBR") : s_Data.ShaderLibrary->Get("BasicLighting");
-			shader->Enable();
-
-			shader->SetInt("u_SceneProperties.ActiveDirectionalLights", s_Data.ActiveDirectionalLights);
-			shader->SetInt("u_SceneProperties.ActivePointLights", s_Data.ActivePointLights);
-			shader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.ActiveSpotLights);
-
-			if (!pbr)
-				shader->SetFloat3("u_Material.Ambient", material->GetAmbient());
-
-			if (SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap(); diffuseMap && !pbr)
-			{
-				uint32_t diffuseMapTextureSlot = 1;
-				diffuseMap->Bind(diffuseMapTextureSlot);
-				shader->SetInt("u_Material.DiffuseMap", diffuseMapTextureSlot);
-				shader->SetBool("u_Material.HasDiffuseMap", true);
-			}
-			else if (!pbr)
-				shader->SetBool("u_Material.HasDiffuseMap", false);
-
-			if (SharedRef<Texture2D> specularMap = material->GetSpecularMap(); specularMap && !pbr)
-			{
-				uint32_t specularMapTextureSlot = 2;
-				specularMap->Bind(specularMapTextureSlot);
-				shader->SetInt("u_Material.SpecularMap", specularMapTextureSlot);
-				shader->SetBool("u_Material.HasSpecularMap", true);
-			}
-			else if (!pbr)
-				shader->SetBool("u_Material.HasSpecularMap", false);
-
-			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
-			{
-				uint32_t normalMapTextureSlot = 3;
-				normalMap->Bind(normalMapTextureSlot);
-				shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
-				shader->SetBool("u_Material.HasNormalMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasNormalMap", false);
-
-			if (!pbr)
-				shader->SetFloat("u_Material.Shininess", material->GetShininess());
-
-			if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
-			{
-				uint32_t albedoMapTextureSlot = 4;
-				albedoMap->Bind(albedoMapTextureSlot);
-				shader->SetInt("u_Material.AlbedoMap", albedoMapTextureSlot);
-				shader->SetBool("u_Material.HasAlbedoMap", true);
-			}
-			else if (pbr)
-			{
-				shader->SetBool("u_Material.HasAlbedoMap", false);
-				shader->SetFloat3("u_Material.Albedo", material->GetAlbedo());
-			}
-
-			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
-			{
-				uint32_t metallicMapTextureSlot = 5;
-				metallicMap->Bind(metallicMapTextureSlot);
-				shader->SetInt("u_Material.MetallicMap", metallicMapTextureSlot);
-				shader->SetBool("u_Material.HasMetallicMap", true);
-			}
-			else if (pbr)
-			{
-				shader->SetBool("u_Material.HasMetallicMap", false);
-				shader->SetFloat("u_Material.Metallic", material->GetMetallic());
-			}
-
-			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
-			{
-				uint32_t roughnessMapTextureSlot = 6;
-				roughnessMap->Bind(roughnessMapTextureSlot);
-				shader->SetInt("u_Material.RoughnessMap", roughnessMapTextureSlot);
-				shader->SetBool("u_Material.HasRoughnessMap", true);
-			}
-			else if (pbr)
-			{
-				shader->SetBool("u_Material.HasRoughnessMap", false);
-				shader->SetFloat("u_Material.Roughness", material->GetRoughness());
-			}
-
-			if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
-			{
-				uint32_t ambientOcclusionMapTextureSlot = 7;
-				ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
-				shader->SetInt("u_Material.AOMap", ambientOcclusionMapTextureSlot);
-				shader->SetBool("u_Material.HasAOMap", true);
-			}
-			else if (pbr)
-				shader->SetBool("u_Material.HasAOMap", false);
-		}
-
-		shader->SetMat4("u_Model", transform);
-
-		Submit(shader, model->GetVertexArray());
-
-#if SP_RENDERER_STATISTICS
-		s_Data.RendererStatistics.QuadCount += model->GetQuadCount();
-#endif // SP_RENDERER_STATISTICS
-	}
-
 	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox)
 	{
 		RenderCommand::DisableDepthMask();
@@ -461,6 +345,11 @@ namespace Vortex {
 		Renderer2D::DrawLine(transform.Translation, corners[2], color);
 		Renderer2D::DrawLine(transform.Translation, corners[3], color);
 		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate(forwardDirection), color);
+	}
+
+	SceneLightDescription Renderer::GetSceneLightDescription()
+	{
+		return s_Data.SceneLightDesc;
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

@@ -360,19 +360,9 @@ namespace Vortex {
 
 				SharedRef<Material> material = model->GetMaterial();
 
-				out << YAML::Key << "Ambient" << YAML::Value << material->GetAmbient();
-
-				SharedRef<Texture2D> diffuseMap = material->GetDiffuseMap();
-				SharedRef<Texture2D> specularMap = material->GetSpecularMap();
 				SharedRef<Texture2D> normalMap = material->GetNormalMap();
-				if (diffuseMap)
-					out << YAML::Key << "DiffuseMapPath" << YAML::Value << std::filesystem::relative(diffuseMap->GetPath(), projectAssetDirectory).string();
-				if (specularMap)
-					out << YAML::Key << "SpecularMapPath" << YAML::Value << std::filesystem::relative(specularMap->GetPath(), projectAssetDirectory).string();
 				if (normalMap)
 					out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
-
-				out << YAML::Key << "Shininess" << material->GetShininess();
 
 				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
 				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
@@ -874,17 +864,9 @@ namespace Vortex {
 					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
 				}
 
-				SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
-				if (meshComponent["Ambient"])
-					material->SetAmbient(meshComponent["Ambient"].as<Math::vec3>());
-				if (meshComponent["DiffuseMapPath"])
-					material->SetDiffuseMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["DiffuseMapPath"].as<std::string>()).string()));
-				if (meshComponent["SpecularMapPath"])
-					material->SetSpecularMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["SpecularMapPath"].as<std::string>()).string()));
+				SharedRef<MaterialInstance> material = meshRendererComponent.Mesh->GetMaterial();
 				if (meshComponent["NormalMapPath"])
 					material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
-				if (meshComponent["Shininess"])
-					material->SetShininess(meshComponent["Shininess"].as<float>());
 
 				if (meshComponent["AlbedoMapPath"])
 					material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AlbedoMapPath"].as<std::string>()).string()));

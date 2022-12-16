@@ -29,6 +29,8 @@ namespace Vortex {
 		SharedRef<Texture2D> m_DirectoryIcon = nullptr;
 		SharedRef<Texture2D> m_AudioFileIcon = nullptr;
 		SharedRef<Texture2D> m_OBJIcon = nullptr;
+		SharedRef<Texture2D> m_FBXIcon = nullptr;
+		SharedRef<Texture2D> m_FontIcon = nullptr;
 		SharedRef<Texture2D> m_CodeFileIcon = nullptr;
 		SharedRef<Texture2D> m_SceneIcon = nullptr;
 		SharedRef<Texture2D> m_FileIcon = nullptr;

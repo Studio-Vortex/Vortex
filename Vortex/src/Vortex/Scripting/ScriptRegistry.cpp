@@ -937,7 +937,7 @@ namespace Vortex {
 		{
 			MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
 			meshRenderer.Type = meshType;
-			meshRenderer.Mesh = Model::Create(Model::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], MaterialInstance::Create(), entity.GetTransform(), (int)(entt::entity)entity);
+			meshRenderer.Mesh = Model::Create(Model::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), (int)(entt::entity)entity);
 		}
 	}
 

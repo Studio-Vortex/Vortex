@@ -5,7 +5,6 @@
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/Shader.h"
-#include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/Skybox.h"
 
 #include "Vortex/Scene/Components.h"
@@ -13,6 +12,13 @@
 #include <vector>
 
 namespace Vortex {
+
+	struct SceneLightDescription
+	{
+		uint32_t ActiveDirLights;
+		uint32_t ActivePointLights;
+		uint32_t ActiveSpotLights;
+	};
 
 	class VORTEX_API Renderer
 	{
@@ -27,16 +33,18 @@ namespace Vortex {
 		static void EndScene();
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
+		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
 		static void RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
 		static void RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID = -1);
 		static void RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
 
 		static void RenderLightSource(const LightSourceComponent& lightSourceComponent);
-		static void DrawModel(const Math::mat4& transform, const MeshRendererComponent& meshRenderer);
 		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox);
 
 		static void DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
+
+		static SceneLightDescription GetSceneLightDescription();
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }

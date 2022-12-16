@@ -9,10 +9,11 @@
 
 layout (location = 0) in vec3  a_Position; // Vertex position
 layout (location = 1) in vec3  a_Normal;   // Vertex normal
-layout (location = 2) in vec4  a_Tangent;  // Vertex tangent
-layout (location = 3) in vec2  a_TexCoord; // Vertex texture coordinate
-layout (location = 4) in vec2  a_TexScale; // Texture scale
-layout (location = 5) in int   a_EntityID; // Vertex Entity ID
+layout (location = 2) in vec3  a_Tangent;  // Vertex tangent
+layout (location = 3) in vec3  a_BiTangent;  // Vertex bitangent
+layout (location = 4) in vec2  a_TexCoord; // Vertex texture coordinate
+layout (location = 5) in vec2  a_TexScale; // Texture scale
+layout (location = 6) in int   a_EntityID; // Vertex Entity ID
 
 out DATA
 {
@@ -33,20 +34,12 @@ void main()
 	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0f));
 	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0f);
 
-	mat3 model = mat3(u_Model);
-	vertexOut.Normal = model * a_Normal;
-	vec3 tangent = model * a_Tangent.xyz;
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
-
 	vertexOut.EntityID = a_EntityID;
 
-	// Calculate the Tangent Bitangent Normal Matrix
-	vec3 N = normalize(vertexOut.Normal);
-	vec3 T = normalize(tangent);
-	T = (T - dot(T, N) * N);
-	vec3 B = -normalize(cross(vertexOut.Normal, tangent) * a_Tangent.w);
-	vertexOut.TBN = mat3(T, B, N);
+	mat3 model = mat3(u_Model);
+	vertexOut.TBN = mat3(model * a_Tangent, model * a_BiTangent, model * a_Normal);
 }
 
 

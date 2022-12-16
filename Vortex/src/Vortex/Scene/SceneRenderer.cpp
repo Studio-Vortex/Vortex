@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "SceneRenderer.h"
 
+#include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
@@ -223,7 +224,10 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(entity), meshRendererComponent);
+					// TODO: Very Temporary
+					meshRendererComponent.Mesh->Render(scene->GetWorldSpaceTransformMatrix(entity));
+
+					//Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(entity), meshRendererComponent);
 				}
 			}
 
