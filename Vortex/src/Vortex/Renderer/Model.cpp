@@ -92,8 +92,8 @@ namespace Vortex {
 		{
 			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
 			{
-				normalMap->Bind(0);
-				shader->SetInt("u_Material.NormalMap", 0);
+				normalMap->Bind(1);
+				shader->SetInt("u_Material.NormalMap", 1);
 				shader->SetBool("u_Material.HasNormalMap", true);
 			}
 			else
@@ -101,8 +101,8 @@ namespace Vortex {
 
 			if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
 			{
-				albedoMap->Bind(1);
-				shader->SetInt("u_Material.AlbedoMap", 1);
+				albedoMap->Bind(2);
+				shader->SetInt("u_Material.AlbedoMap", 2);
 				shader->SetBool("u_Material.HasAlbedoMap", true);
 			}
 			else
@@ -110,8 +110,8 @@ namespace Vortex {
 
 			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
 			{
-				metallicMap->Bind(2);
-				shader->SetInt("u_Material.MetallicMap", 2);
+				metallicMap->Bind(3);
+				shader->SetInt("u_Material.MetallicMap", 3);
 				shader->SetBool("u_Material.HasMetallicMap", true);
 			}
 			else
@@ -119,8 +119,8 @@ namespace Vortex {
 
 			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
 			{
-				roughnessMap->Bind(3);
-				shader->SetInt("u_Material.RoughnessMap", 3);
+				roughnessMap->Bind(4);
+				shader->SetInt("u_Material.RoughnessMap", 4);
 				shader->SetBool("u_Material.HasRoughnessMap", true);
 			}
 			else
@@ -128,8 +128,8 @@ namespace Vortex {
 
 			if (SharedRef<Texture2D> aoMap = material->GetAmbientOcclusionMap())
 			{
-				aoMap->Bind(4);
-				shader->SetInt("u_Material.AOMap", 4);
+				aoMap->Bind(5);
+				shader->SetInt("u_Material.AOMap", 5);
 				shader->SetBool("u_Material.HasAOMap", true);
 			}
 			else
@@ -278,7 +278,7 @@ namespace Vortex {
 
 		m_Scene = scene;
 
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("Skybox");
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}

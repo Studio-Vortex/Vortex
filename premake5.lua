@@ -375,6 +375,16 @@ project "Vortex-Launcher"
 		runtime "Debug"
 		symbols "on"
 
+		links
+		{
+			"%{Library.Assimp_Debug}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Release"
 		defines "VX_RELEASE"
 		runtime "Release"
@@ -384,6 +394,16 @@ project "Vortex-Launcher"
 			"NDEBUG" -- PhysX Requires This
 		}
 
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Dist"
 		defines "VX_DIST"
 		runtime "Release"
@@ -391,6 +411,16 @@ project "Vortex-Launcher"
 		defines
 		{
 			"NDEBUG" -- PhysX Requires This
+		}
+
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
 		}
 group ""
 
@@ -549,6 +579,16 @@ project "Testbed"
 		runtime "Debug"
 		symbols "on"
 
+		links
+		{
+			"%{Library.Assimp_Debug}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Release"
 		defines "VX_RELEASE"
 		runtime "Release"
@@ -558,6 +598,16 @@ project "Testbed"
 			"NDEBUG" -- PhysX Requires This
 		}
 
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Dist"
 		defines "VX_DIST"
 		runtime "Release"
@@ -565,6 +615,16 @@ project "Testbed"
 		defines
 		{
 			"NDEBUG" -- PhysX Requires This
+		}
+
+		links
+		{
+			"%{Library.Assimp_Release}",
+		}
+
+		postbuildcommands 
+		{
+			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
 		}
 group ""
 

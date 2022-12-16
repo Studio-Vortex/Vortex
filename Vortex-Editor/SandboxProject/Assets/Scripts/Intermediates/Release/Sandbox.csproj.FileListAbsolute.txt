@@ -9,7 +9,6 @@ C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Int
 C:\dev\Sparky_Game_Engine\Sparky\Sparky-Editor\SandboxProject\Assets\Scripts\Binaries\Sparky-ScriptCore.dll
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Binaries\Sandbox.dll
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Binaries\Sandbox.pdb
-C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Binaries\Vortex-ScriptCore.dll
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Binaries\Vortex-ScriptCore.pdb
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Intermediates\Release\Sandbox.csproj.AssemblyReference.cache
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Intermediates\Release\Sandbox.csproj.CoreCompileInputs.cache

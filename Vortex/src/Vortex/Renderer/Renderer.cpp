@@ -6,13 +6,12 @@
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetRegistry.h"
-//#include "Vortex/Renderer/Model.h"
+
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Font/Font.h"
 
 namespace Vortex {
 
-	static constexpr const char* BASIC_LIGHTING_SHADER_PATH = "Resources/Shaders/Renderer_BasicLighting.glsl";
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
@@ -63,7 +62,6 @@ namespace Vortex {
 		RenderCommand::Init();
 
 		s_Data.ShaderLibrary = ShaderLibrary::Create();
-		s_Data.ShaderLibrary->Load("BasicLighting", BASIC_LIGHTING_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
@@ -117,12 +115,6 @@ namespace Vortex {
 		SP_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = projection * view;
-
-		SharedRef<Shader> basicLightingShader = s_Data.ShaderLibrary->Get("BasicLighting");
-		basicLightingShader->Enable();
-		basicLightingShader->SetMat4("u_ViewProjection", viewProjection);
-		basicLightingShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
-		basicLightingShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
@@ -198,7 +190,6 @@ namespace Vortex {
 	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
 	{
 		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-		SharedRef<Shader> basicLightingShader = s_Data.ShaderLibrary->Get("BasicLighting");
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 
 		switch (lightSourceComponent.Type)
@@ -209,13 +200,6 @@ namespace Vortex {
 
 				if (i + 1 > RendererInternalData::MaxDirectionalLights)
 					break;
-
-				basicLightingShader->Enable();
-				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Color", i).c_str(), lightSource->GetColor());
-				basicLightingShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
 
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
@@ -236,19 +220,6 @@ namespace Vortex {
 				if (i + 1 > RendererInternalData::MaxPointLights)
 					break;
 
-				basicLightingShader->Enable();
-				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
-				basicLightingShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
-
-				Math::vec2 attenuation = lightSource->GetAttenuation();
-
-				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
-				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
-				basicLightingShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
-
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
@@ -257,6 +228,7 @@ namespace Vortex {
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Color", i).c_str(), lightSource->GetColor());
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
 
+				Math::vec2 attenuation = lightSource->GetAttenuation();
 				pbrShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
 				pbrShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
 				pbrShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
@@ -272,22 +244,6 @@ namespace Vortex {
 				if (i + 1 > RendererInternalData::MaxSpotLights)
 					break;
 
-				basicLightingShader->Enable();
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Diffuse", i).c_str(), lightSource->GetDiffuse());
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Specular", i).c_str(), lightSource->GetSpecular());
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Color", i).c_str(), lightSource->GetColor());
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
-				basicLightingShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
-				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
-
-				Math::vec2 attenuation = lightSource->GetAttenuation();
-
-				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
-				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
-				basicLightingShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
-
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
 				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Ambient", i).c_str(), lightSource->GetAmbient());
@@ -299,6 +255,7 @@ namespace Vortex {
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
 
+				Math::vec2 attenuation = lightSource->GetAttenuation();
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);

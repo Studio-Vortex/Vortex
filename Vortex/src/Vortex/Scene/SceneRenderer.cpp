@@ -224,10 +224,7 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					// TODO: Very Temporary
 					meshRendererComponent.Mesh->Render(scene->GetWorldSpaceTransformMatrix(entity));
-
-					//Renderer::DrawModel(scene->GetWorldSpaceTransformMatrix(entity), meshRendererComponent);
 				}
 			}
 
