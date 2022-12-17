@@ -3,6 +3,7 @@
 
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
+#include "Vortex/Project/Project.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -20,7 +21,7 @@ namespace Vortex {
 		aiProcess_GenUVCoords |             // Convert UVs if required 
 		aiProcess_OptimizeMeshes |          // Batch draws where possible
 		aiProcess_JoinIdenticalVertices |
-		aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
+		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
 	struct LogStream : public Assimp::LogStream
@@ -50,7 +51,7 @@ namespace Vortex {
 	void Mesh::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
 		m_Materials.clear();
-		m_Materials[0] = material;
+		m_Materials.push_back(material);
 	}
 
 	void Mesh::CreateAndUploadMesh(bool skybox)
@@ -84,57 +85,54 @@ namespace Vortex {
 		}
 	}
 
-	void Mesh::Render(const SharedRef<Shader>& shader)
+	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
 	{
 		shader->Enable();
 
-		for (auto& material : m_Materials)
+		if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
 		{
-			if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
-			{
-				normalMap->Bind(1);
-				shader->SetInt("u_Material.NormalMap", 1);
-				shader->SetBool("u_Material.HasNormalMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasNormalMap", false);
-
-			if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
-			{
-				albedoMap->Bind(2);
-				shader->SetInt("u_Material.AlbedoMap", 2);
-				shader->SetBool("u_Material.HasAlbedoMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasAlbedoMap", false);
-
-			if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
-			{
-				metallicMap->Bind(3);
-				shader->SetInt("u_Material.MetallicMap", 3);
-				shader->SetBool("u_Material.HasMetallicMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasMetallicMap", false);
-
-			if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
-			{
-				roughnessMap->Bind(4);
-				shader->SetInt("u_Material.RoughnessMap", 4);
-				shader->SetBool("u_Material.HasRoughnessMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasRoughnessMap", false);
-
-			if (SharedRef<Texture2D> aoMap = material->GetAmbientOcclusionMap())
-			{
-				aoMap->Bind(5);
-				shader->SetInt("u_Material.AOMap", 5);
-				shader->SetBool("u_Material.HasAOMap", true);
-			}
-			else
-				shader->SetBool("u_Material.HasAOMap", false);
+			normalMap->Bind(1);
+			shader->SetInt("u_Material.NormalMap", 1);
+			shader->SetBool("u_Material.HasNormalMap", true);
 		}
+		else
+			shader->SetBool("u_Material.HasNormalMap", false);
+
+		if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
+		{
+			albedoMap->Bind(2);
+			shader->SetInt("u_Material.AlbedoMap", 2);
+			shader->SetBool("u_Material.HasAlbedoMap", true);
+		}
+		else
+			shader->SetBool("u_Material.HasAlbedoMap", false);
+
+		if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
+		{
+			metallicMap->Bind(3);
+			shader->SetInt("u_Material.MetallicMap", 3);
+			shader->SetBool("u_Material.HasMetallicMap", true);
+		}
+		else
+			shader->SetBool("u_Material.HasMetallicMap", false);
+
+		if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
+		{
+			roughnessMap->Bind(4);
+			shader->SetInt("u_Material.RoughnessMap", 4);
+			shader->SetBool("u_Material.HasRoughnessMap", true);
+		}
+		else
+			shader->SetBool("u_Material.HasRoughnessMap", false);
+
+		if (SharedRef<Texture2D> aoMap = material->GetAmbientOcclusionMap())
+		{
+			aoMap->Bind(5);
+			shader->SetInt("u_Material.AOMap", 5);
+			shader->SetBool("u_Material.HasAOMap", true);
+		}
+		else
+			shader->SetBool("u_Material.HasAOMap", false);
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
@@ -169,7 +167,7 @@ namespace Vortex {
 			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
 			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
 
-			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+			vertex.Position = Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z } * 0.5f;
 			vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 
 			vertex.Tangent = Math::vec3(0.0f);
@@ -206,10 +204,74 @@ namespace Vortex {
 		// process materials
 		if (mesh->mMaterialIndex >= 0)
 		{
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			std::vector<SharedRef<Texture2D>> albedoMaps = LoadMaterialTextures(material, aiTextureType_BASE_COLOR);
+			std::vector<SharedRef<Texture2D>> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS);
+			std::vector<SharedRef<Texture2D>> metallicMaps = LoadMaterialTextures(material, aiTextureType_METALNESS);
+			std::vector<SharedRef<Texture2D>> roughnessMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS);
+			std::vector<SharedRef<Texture2D>> aoMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION);
 
+			size_t maxTextures = std::max({ albedoMaps.size(), normalMaps.size(), metallicMaps.size(), roughnessMaps.size(), aoMaps.size() });
+
+			for (uint32_t i = 0; i < maxTextures; i++)
+			{
+				SharedRef<MaterialInstance> materialInstance = MaterialInstance::Create();
+
+				if (albedoMaps.size() - 1 > i)
+				{
+					SharedRef<Texture2D> albedoMap = albedoMaps.at(i);
+					materialInstance->SetAlbedoMap(albedoMap);
+				}
+				if (normalMaps.size() - 1 > i)
+				{
+					SharedRef<Texture2D> normalMap = normalMaps.at(i);
+					materialInstance->SetNormalMap(normalMap);
+				}
+				if (metallicMaps.size() - 1 > i)
+				{
+					SharedRef<Texture2D> metallicMap = metallicMaps.at(i);
+					materialInstance->SetMetallicMap(metallicMap);
+				}
+				if (roughnessMaps.size() - 1 > i)
+				{
+					SharedRef<Texture2D> roughnessMap = roughnessMaps.at(i);
+					materialInstance->SetRoughnessMap(roughnessMap);
+				}
+				if (aoMaps.size() - 1 > i)
+				{
+					SharedRef<Texture2D> ambientOcclusionMap = aoMaps.at(i);
+					materialInstance->SetAmbientOcclusionMap(ambientOcclusionMap);
+				}
+
+				materials.push_back(materialInstance);
+			}
 		}
 
 		return { vertices, indices, materials };
+	}
+
+	std::vector<SharedRef<Texture2D>> Model::LoadMaterialTextures(aiMaterial* material, uint32_t textureType)
+	{
+		aiTextureType type = static_cast<aiTextureType>(textureType);
+		std::vector<SharedRef<Texture2D>> textures;
+
+		for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
+		{
+			aiString str;
+			material->GetTexture(type, i, &str);
+
+			const char* cStr = str.C_Str();
+			if (!std::filesystem::exists(Project::GetAssetDirectory() / cStr))
+			{
+				VX_CORE_WARN("Skipping texture, not found {}");
+				continue;
+			}
+
+			SharedRef<Texture2D> texture = Texture2D::Create(cStr);
+			textures.push_back(texture);
+		}
+
+		return textures;
 	}
 
 	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
@@ -231,6 +293,7 @@ namespace Vortex {
 		m_Scene = scene;
 		m_EntityID = entityID;
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_Material = MaterialInstance::Create();
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
@@ -255,6 +318,7 @@ namespace Vortex {
 		m_Scene = scene;
 		m_EntityID = entityID;
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_Material = MaterialInstance::Create();
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
@@ -279,6 +343,7 @@ namespace Vortex {
 		m_Scene = scene;
 
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("Skybox");
+		m_Material = MaterialInstance::Create();
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
@@ -310,6 +375,9 @@ namespace Vortex {
 
 	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
+		if (!m_MeshShader)
+			m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
@@ -319,18 +387,23 @@ namespace Vortex {
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
-		m_MeshShader->SetFloat3("u_Material.Albedo", Math::vec3(1.0f));
-		m_MeshShader->SetFloat("u_Material.Metallic", 0.5f);
-		m_MeshShader->SetFloat("u_Material.Roughness", 0.5f);
+		if (!m_Material)
+			m_Material = Material::Create(MaterialProperties());
+
+		m_MeshShader->SetFloat3("u_Material.Albedo", m_Material->GetAlbedo());
+		m_MeshShader->SetFloat("u_Material.Metallic", m_Material->GetMetallic());
+		m_MeshShader->SetFloat("u_Material.Roughness", m_Material->GetRoughness());
 
 		for (auto& mesh : m_Meshes)
-			mesh.Render(m_MeshShader);
+			mesh.Render(m_MeshShader, m_Material);
 	}
 
 	void Model::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
 		for (auto& mesh : m_Meshes)
 			mesh.SetMaterial(material);
+
+		m_Material = material;
 	}
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID)

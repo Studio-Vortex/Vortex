@@ -806,37 +806,37 @@ namespace Vortex {
 
 				switch (lightComponent.Type)
 				{
-				case LightSourceComponent::LightType::Directional:
-				{
-					if (lightSourceComponent["Direction"])
-						lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
+					case LightSourceComponent::LightType::Directional:
+					{
+						if (lightSourceComponent["Direction"])
+							lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
 
-					break;
-				}
-				case LightSourceComponent::LightType::Point:
-				{
-					if (lightSourceComponent["Position"])
-						lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
-					if (lightSourceComponent["Attenuation"])
-						lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
+						break;
+					}
+					case LightSourceComponent::LightType::Point:
+					{
+						if (lightSourceComponent["Position"])
+							lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
+						if (lightSourceComponent["Attenuation"])
+							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 
-					break;
-				}
-				case LightSourceComponent::LightType::Spot:
-				{
-					if (lightSourceComponent["Position"])
-						lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
-					if (lightSourceComponent["Direction"])
-						lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
-					if (lightSourceComponent["Attenuation"])
-						lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
-					if (lightSourceComponent["CutOff"])
-						lightComponent.Source->SetCutOff(lightSourceComponent["CutOff"].as<float>());
-					if (lightSourceComponent["OuterCutOff"])
-						lightComponent.Source->SetOuterCutOff(lightSourceComponent["OuterCutOff"].as<float>());
+						break;
+					}
+					case LightSourceComponent::LightType::Spot:
+					{
+						if (lightSourceComponent["Position"])
+							lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
+						if (lightSourceComponent["Direction"])
+							lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
+						if (lightSourceComponent["Attenuation"])
+							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
+						if (lightSourceComponent["CutOff"])
+							lightComponent.Source->SetCutOff(lightSourceComponent["CutOff"].as<float>());
+						if (lightSourceComponent["OuterCutOff"])
+							lightComponent.Source->SetOuterCutOff(lightSourceComponent["OuterCutOff"].as<float>());
 
-					break;
-				}
+						break;
+					}
 				}
 			}
 
@@ -850,7 +850,7 @@ namespace Vortex {
 				if (meshComponent["MeshSource"])
 				{
 					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
-					std::string assetPath = modelPath;
+					std::string assetPath = "";
 
 					if (Model::IsDefaultMesh(modelPath))
 					{
@@ -864,7 +864,7 @@ namespace Vortex {
 					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
 				}
 
-				SharedRef<MaterialInstance> material = meshRendererComponent.Mesh->GetMaterial();
+				SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial() ? meshRendererComponent.Mesh->GetMaterial() : Material::Create(MaterialProperties());
 				if (meshComponent["NormalMapPath"])
 					material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
 

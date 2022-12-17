@@ -1157,12 +1157,11 @@ namespace Vortex {
 					const wchar_t* path = (const wchar_t*)payload->Data;
 					std::filesystem::path modelFilepath = std::filesystem::path(path);
 
-					// Make sure we are recieving an actual obj file otherwise we will have trouble opening it
-					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf")
+					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
+					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae")
 					{
 						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), (int)(entt::entity)entity);
 						component.Type = MeshType::Custom;
-						component.Mesh->SetMaterial(MaterialInstance::Create());
 					}
 					else
 						VX_CORE_WARN("Could not load model file - {}", modelFilepath.filename().string());

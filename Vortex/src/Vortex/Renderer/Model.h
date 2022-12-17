@@ -10,6 +10,7 @@
 struct aiMesh;
 struct aiNode;
 struct aiScene;
+struct aiMaterial;
 
 namespace Assimp {
 
@@ -42,7 +43,7 @@ namespace Vortex {
 		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials);
 		~Mesh() = default;
 
-		void Render(const SharedRef<Shader>& shader);
+		void Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
@@ -103,8 +104,11 @@ namespace Vortex {
 		const std::string& GetPath() const { return m_Filepath; }
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Meshes[0].GetVertexArray(); }
-		const SharedRef<MaterialInstance>& GetMaterial() const { return m_Meshes[0].GetMaterials()[0]; }
+		const SharedRef<Material>& GetMaterial() const { return m_Material; }
 		void SetMaterial(const SharedRef<MaterialInstance>& material);
+
+		const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
+		std::vector<Mesh>& GetMeshes() { return m_Meshes; }
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
@@ -113,6 +117,7 @@ namespace Vortex {
 	private:
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const int entityID);
+		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
 	private:
 		std::string m_Filepath;
@@ -121,6 +126,7 @@ namespace Vortex {
 		std::vector<Mesh> m_Meshes;
 		const aiScene* m_Scene;
 		SharedRef<Shader> m_MeshShader = nullptr;
+		SharedRef<Material> m_Material = nullptr;
 	};
 
 }
