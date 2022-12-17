@@ -705,84 +705,24 @@ namespace Vortex {
 
 #pragma region Light Source Component
 
-	static void LightSourceComponent_GetAmbient(UUID entityUUID, Math::vec3* outAmbient)
+	static void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outAmbient = entity.GetComponent<LightSourceComponent>().Source->GetAmbient();
+		*outRadiance = entity.GetComponent<LightSourceComponent>().Source->GetRadiance();
 	}
 
-	static void LightSourceComponent_SetAmbient(UUID entityUUID, Math::vec3* ambient)
+	static void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetAmbient(*ambient);
-	}
-
-	static void LightSourceComponent_GetDiffuse(UUID entityUUID, Math::vec3* outDiffuse)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outDiffuse = entity.GetComponent<LightSourceComponent>().Source->GetDiffuse();
-	}
-
-	static void LightSourceComponent_SetDiffuse(UUID entityUUID, Math::vec3* diffuse)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<LightSourceComponent>().Source->SetDiffuse(*diffuse);
-	}
-
-	static void LightSourceComponent_GetSpecular(UUID entityUUID, Math::vec3* outSpecular)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outSpecular = entity.GetComponent<LightSourceComponent>().Source->GetSpecular();
-	}
-
-	static void LightSourceComponent_SetSpecular(UUID entityUUID, Math::vec3* specular)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<LightSourceComponent>().Source->SetSpecular(*specular);
-	}
-
-	static void LightSourceComponent_GetColor(UUID entityUUID, Math::vec3* outColor)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outColor = entity.GetComponent<LightSourceComponent>().Source->GetColor();
-	}
-
-	static void LightSourceComponent_SetColor(UUID entityUUID, Math::vec3* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<LightSourceComponent>().Source->SetColor(*color);
+		entity.GetComponent<LightSourceComponent>().Source->SetRadiance(*radiance);
 	}
 
 	static void LightSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -1023,6 +963,26 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetRoughness(roughness);
+	}
+
+	static void Material_GetEmission(UUID entityUUID, Math::vec3* outEmission)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		*outEmission = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetEmission();
+	}
+
+	static void Material_SetEmission(UUID entityUUID, Math::vec3* emission)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(*emission);
 	}
 
 #pragma endregion
@@ -3016,14 +2976,8 @@ namespace Vortex {
 		SP_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		SP_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetAmbient);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetAmbient);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDiffuse);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDiffuse);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetSpecular);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetSpecular);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetColor);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetColor);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetRadiance);
+		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetRadiance);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
 
@@ -3049,6 +3003,8 @@ namespace Vortex {
 		SP_ADD_INTERNAL_CALL(Material_SetMetallic);
 		SP_ADD_INTERNAL_CALL(Material_GetRoughness);
 		SP_ADD_INTERNAL_CALL(Material_SetRoughness);
+		SP_ADD_INTERNAL_CALL(Material_GetEmission);
+		SP_ADD_INTERNAL_CALL(Material_SetEmission);
 
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		SP_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);

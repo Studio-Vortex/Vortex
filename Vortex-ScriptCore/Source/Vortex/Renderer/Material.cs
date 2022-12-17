@@ -26,6 +26,17 @@
 			get => InternalCalls.Material_GetRoughness(Entity.ID);
 			set => InternalCalls.Material_SetRoughness(Entity.ID, value);
 		}
+
+		public Vector3 Emission
+		{
+			get
+			{
+				InternalCalls.Material_GetEmission(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.Material_SetEmission(Entity.ID, ref value);
+		}
 	}
 
 }

@@ -1075,30 +1075,9 @@ namespace Vortex {
 				}
 			}
 
-			if (Project::GetActive()->GetProperties().RendererProps.EnablePBRRenderer)
-			{
-				Math::vec3 radiance = lightSource->GetRadiance();
-				if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
-					lightSource->SetRadiance(radiance);
-			}
-			else
-			{ // Blinn-Phong settings
-				Math::vec3 ambient = lightSource->GetAmbient();
-				if (Gui::ColorEdit3("Ambient", Math::ValuePtr(ambient)))
-					lightSource->SetAmbient(ambient);
-
-				Math::vec3 diffuse = lightSource->GetDiffuse();
-				if (Gui::DragFloat3("Diffuse", Math::ValuePtr(diffuse), 0.01f, 0.01f, 1.0f, "%.2f"))
-					lightSource->SetDiffuse(diffuse);
-
-				Math::vec3 specular = lightSource->GetSpecular();
-				if (Gui::DragFloat3("Specular", Math::ValuePtr(specular), 0.01f, 0.01f, 1.0f, "%.2f"))
-					lightSource->SetSpecular(specular);
-
-				Math::vec3 color = lightSource->GetColor();
-				if (Gui::ColorEdit3("Color", Math::ValuePtr(color)))
-					lightSource->SetColor(color);
-			}
+			Math::vec3 radiance = lightSource->GetRadiance();
+			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
+				lightSource->SetRadiance(radiance);
 		});
 
 		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
@@ -1389,6 +1368,62 @@ namespace Vortex {
 							float roughness = material->GetRoughness();
 							if (Gui::DragFloat("##Roughness", &roughness, 0.01f, 0.01f, 1.0f, "%.2f"))
 								material->SetRoughness(roughness);
+						}
+
+						Gui::TreePop();
+					}
+
+					if (Gui::TreeNodeEx("Emission", treeNodeFlags))
+					{
+						Gui::Text("Map");
+						Gui::SameLine();
+						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+						if (SharedRef<Texture2D> emissionMap = material->GetEmissionMap())
+						{
+							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+
+							if (Gui::ImageButton((void*)emissionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+								material->SetEmissionMap(nullptr);
+							else if (Gui::IsItemHovered())
+							{
+								Gui::BeginTooltip();
+								Gui::Text(emissionMap->GetPath().c_str());
+								Gui::EndTooltip();
+							}
+						}
+						else
+							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+						// Accept a Albedo map from the content browser
+						if (Gui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path texturePath = std::filesystem::path(path);
+
+								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+								{
+									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+									if (texture->IsLoaded())
+										material->SetEmissionMap(texture);
+									else
+										VX_WARN("Could not load texture {}", texturePath.filename().string());
+								}
+								else
+									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							}
+							Gui::EndDragDropTarget();
+						}
+
+						if (!material->GetEmissionMap())
+						{
+							Math::vec3 emission = material->GetEmission();
+							if (Gui::ColorEdit3("##Emission", Math::ValuePtr(emission)))
+								material->SetEmission(emission);
 						}
 
 						Gui::TreePop();

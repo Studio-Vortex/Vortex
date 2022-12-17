@@ -19,6 +19,9 @@ namespace Vortex {
 		float Roughness = 0.5f;
 		SharedRef<Texture2D> RoughnessMap = nullptr;
 
+		Math::vec3 Emission = Math::vec3(0.0f);
+		SharedRef<Texture2D> EmissionMap = nullptr;
+
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
 	};
 
@@ -27,6 +30,7 @@ namespace Vortex {
 	public:
 		Material() = default;
 		Material(const MaterialProperties& props);
+		Material(const SharedRef<Shader>& shader, const MaterialProperties& props);
 
 		void Bind() const;
 		void Unbind() const;
@@ -52,15 +56,23 @@ namespace Vortex {
 		const SharedRef<Texture2D>& GetRoughnessMap() const;
 		void SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap);
 
+		Math::vec3 GetEmission() const;
+		void SetEmission(const Math::vec3& emission);
+
+		const SharedRef<Texture2D>& GetEmissionMap() const;
+		void SetEmissionMap(const SharedRef<Texture2D>& emissionMap);
+
 		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
 		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);
 
 		static void Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial);
 
 		static SharedRef<Material> Create(const MaterialProperties& props);
+		static SharedRef<Material> Create(const SharedRef<Shader>& shader, const MaterialProperties& props);
 
 	protected:
 		MaterialProperties m_Properties;
+		SharedRef<Shader> m_Shader = nullptr;
 	};
 
 	class VORTEX_API MaterialInstance : public Material

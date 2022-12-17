@@ -311,10 +311,6 @@ namespace Vortex {
 
 			SharedRef<LightSource> lightSource = lightComponent.Source;
 			out << YAML::Key << "Radiance" << YAML::Value << lightSource->GetRadiance();
-			out << YAML::Key << "Ambient" << YAML::Value << lightSource->GetAmbient();
-			out << YAML::Key << "Diffuse" << YAML::Value << lightSource->GetDiffuse();
-			out << YAML::Key << "Specular" << YAML::Value << lightSource->GetSpecular();
-			out << YAML::Key << "Color" << YAML::Value << lightSource->GetColor();
 
 			switch (lightComponent.Type)
 			{
@@ -367,6 +363,7 @@ namespace Vortex {
 				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
 				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
 				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+				SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
 				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
 				if (albedoMap)
 					out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
@@ -380,6 +377,10 @@ namespace Vortex {
 					out << YAML::Key << "RoughnessMapPath" << YAML::Value << std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string();
 				else
 					out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
+				if (emissionMap)
+					out << YAML::Key << "EmissionMapPath" << YAML::Value << std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string();
+				else
+					out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 			}
@@ -795,14 +796,6 @@ namespace Vortex {
 				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
 				if (lightSourceComponent["Radiance"])
 					lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
-				if (lightSourceComponent["Ambient"])
-					lightComponent.Source->SetAmbient(lightSourceComponent["Ambient"].as<Math::vec3>());
-				if (lightSourceComponent["Diffuse"])
-					lightComponent.Source->SetDiffuse(lightSourceComponent["Diffuse"].as<Math::vec3>());
-				if (lightSourceComponent["Specular"])
-					lightComponent.Source->SetSpecular(lightSourceComponent["Specular"].as<Math::vec3>());
-				if (lightSourceComponent["Color"])
-					lightComponent.Source->SetColor(lightSourceComponent["Color"].as<Math::vec3>());
 
 				switch (lightComponent.Type)
 				{
@@ -880,6 +873,12 @@ namespace Vortex {
 					material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["RoughnessMapPath"].as<std::string>()).string()));
 				if (meshComponent["Roughness"])
 					material->SetRoughness(meshComponent["Roughness"].as<float>());
+
+				if (meshComponent["EmissionMapPath"])
+					material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["EmissionMapPath"].as<std::string>()).string()));
+				if (meshComponent["Emission"])
+					material->SetEmission(meshComponent["Emission"].as<Math::vec3>());
+
 				if (meshComponent["AmbientOcclusionMapPath"])
 					material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
 

@@ -192,28 +192,10 @@ namespace Vortex {
 		#region LightSource
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_GetAmbient(ulong entityID, out Vector3 outAmbient);
+		internal extern static void LightSourceComponent_GetRadiance(ulong entityID, out Vector3 outRadiance);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetAmbient(ulong entityID, ref Vector3 ambient);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_GetDiffuse(ulong entityID, out Vector3 outDiffuse);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetDiffuse(ulong entityID, ref Vector3 diffuse);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_GetSpecular(ulong entityID, out Vector3 outSpecular);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetSpecular(ulong entityID, ref Vector3 specular);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_GetColor(ulong entityID, out Vector3 outColor);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetColor(ulong entityID, ref Vector3 color);
+		internal extern static void LightSourceComponent_SetRadiance(ulong entityID, ref Vector3 radiance);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_GetDirection(ulong entityID, out Vector3 outDirection);
@@ -292,6 +274,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetRoughness(ulong entityID, float roughness);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_GetEmission(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetEmission(ulong entityID, ref Vector3 emission);
 
 		#endregion
 

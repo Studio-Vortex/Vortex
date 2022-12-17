@@ -136,51 +136,7 @@ namespace Vortex {
 	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
 	{
 		shader->Enable();
-
-		if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
-		{
-			normalMap->Bind(1);
-			shader->SetInt("u_Material.NormalMap", 1);
-			shader->SetBool("u_Material.HasNormalMap", true);
-		}
-		else
-			shader->SetBool("u_Material.HasNormalMap", false);
-
-		if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
-		{
-			albedoMap->Bind(2);
-			shader->SetInt("u_Material.AlbedoMap", 2);
-			shader->SetBool("u_Material.HasAlbedoMap", true);
-		}
-		else
-			shader->SetBool("u_Material.HasAlbedoMap", false);
-
-		if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
-		{
-			metallicMap->Bind(3);
-			shader->SetInt("u_Material.MetallicMap", 3);
-			shader->SetBool("u_Material.HasMetallicMap", true);
-		}
-		else
-			shader->SetBool("u_Material.HasMetallicMap", false);
-
-		if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
-		{
-			roughnessMap->Bind(4);
-			shader->SetInt("u_Material.RoughnessMap", 4);
-			shader->SetBool("u_Material.HasRoughnessMap", true);
-		}
-		else
-			shader->SetBool("u_Material.HasRoughnessMap", false);
-
-		if (SharedRef<Texture2D> aoMap = material->GetAmbientOcclusionMap())
-		{
-			aoMap->Bind(5);
-			shader->SetInt("u_Material.AOMap", 5);
-			shader->SetBool("u_Material.HasAOMap", true);
-		}
-		else
-			shader->SetBool("u_Material.HasAOMap", false);
+		material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
@@ -341,7 +297,7 @@ namespace Vortex {
 		m_Scene = scene;
 		m_EntityID = entityID;
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = MaterialInstance::Create();
+		m_Material = Material::Create(m_MeshShader, MaterialProperties());
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
@@ -366,7 +322,7 @@ namespace Vortex {
 		m_Scene = scene;
 		m_EntityID = entityID;
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = MaterialInstance::Create();
+		m_Material = Material::Create(m_MeshShader, MaterialProperties());
 
 		ProcessNode(m_Scene->mRootNode, m_Scene);
 	}
@@ -403,9 +359,6 @@ namespace Vortex {
 
 	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
-		if (!m_MeshShader)
-			m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
@@ -414,13 +367,6 @@ namespace Vortex {
 		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-
-		if (!m_Material)
-			m_Material = Material::Create(MaterialProperties());
-
-		m_MeshShader->SetFloat3("u_Material.Albedo", m_Material->GetAlbedo());
-		m_MeshShader->SetFloat("u_Material.Metallic", m_Material->GetMetallic());
-		m_MeshShader->SetFloat("u_Material.Roughness", m_Material->GetRoughness());
 
 		for (auto& mesh : m_Meshes)
 			mesh.Render(m_MeshShader, m_Material);

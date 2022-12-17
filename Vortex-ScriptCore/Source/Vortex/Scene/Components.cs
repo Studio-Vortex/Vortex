@@ -199,48 +199,15 @@
 	{
 		public LightType Type;
 
-		public Vector3 Ambient
+		public Vector3 Radiance
 		{
 			get
 			{
-				InternalCalls.LightSourceComponent_GetAmbient(Entity.ID, out Vector3 ambient);
-				return ambient;
+				InternalCalls.LightSourceComponent_GetRadiance(Entity.ID, out Vector3 result);
+				return result;
 			}
 
-			set => InternalCalls.LightSourceComponent_SetAmbient(Entity.ID, ref value);
-		}
-
-		public Vector3 Diffuse
-		{
-			get
-			{
-				InternalCalls.LightSourceComponent_GetDiffuse(Entity.ID, out Vector3 diffuse);
-				return diffuse;
-			}
-
-			set => InternalCalls.LightSourceComponent_SetDiffuse(Entity.ID, ref value);
-		}
-
-		public Vector3 Specular
-		{
-			get
-			{
-				InternalCalls.LightSourceComponent_GetSpecular(Entity.ID, out Vector3 specular);
-				return specular;
-			}
-
-			set => InternalCalls.LightSourceComponent_SetSpecular(Entity.ID, ref value);
-		}
-
-		public Vector3 Color
-		{
-			get
-			{
-				InternalCalls.LightSourceComponent_GetColor(Entity.ID, out Vector3 color);
-				return color;
-			}
-
-			set => InternalCalls.LightSourceComponent_SetColor(Entity.ID, ref value);
+			set => InternalCalls.LightSourceComponent_SetRadiance(Entity.ID, ref value);
 		}
 
 		public Vector3 Direction

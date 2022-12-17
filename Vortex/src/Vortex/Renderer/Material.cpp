@@ -6,9 +6,82 @@ namespace Vortex {
 	Material::Material(const MaterialProperties& props)
 		: m_Properties(props) { }
 
+	Material::Material(const SharedRef<Shader>& shader, const MaterialProperties& props)
+		: m_Shader(shader), m_Properties(props) { }
+
 	void Material::Bind() const
 	{
-		
+		if (SharedRef<Texture2D> normalMap = GetNormalMap())
+		{
+			uint32_t normalMapTextureSlot = 1;
+			normalMap->Bind(normalMapTextureSlot);
+			m_Shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasNormalMap", true);
+		}
+		else
+			m_Shader->SetBool("u_Material.HasNormalMap", false);
+
+		if (SharedRef<Texture2D> albedoMap = GetAlbedoMap())
+		{
+			uint32_t albedoMapTextureSlot = 2;
+			albedoMap->Bind(albedoMapTextureSlot);
+			m_Shader->SetInt("u_Material.AlbedoMap", albedoMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasAlbedoMap", true);
+		}
+		else
+		{
+			m_Shader->SetFloat3("u_Material.Albedo", GetAlbedo());
+			m_Shader->SetBool("u_Material.HasAlbedoMap", false);
+		}
+
+		if (SharedRef<Texture2D> metallicMap = GetMetallicMap())
+		{
+			uint32_t metallicMapTextureSlot = 3;
+			metallicMap->Bind(metallicMapTextureSlot);
+			m_Shader->SetInt("u_Material.MetallicMap", metallicMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasMetallicMap", true);
+		}
+		else
+		{
+			m_Shader->SetFloat("u_Material.Metallic", GetMetallic());
+			m_Shader->SetBool("u_Material.HasMetallicMap", false);
+		}
+
+		if (SharedRef<Texture2D> roughnessMap = GetRoughnessMap())
+		{
+			uint32_t roughnessMapTextureSlot = 4;
+			roughnessMap->Bind(roughnessMapTextureSlot);
+			m_Shader->SetInt("u_Material.RoughnessMap", roughnessMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasRoughnessMap", true);
+		}
+		else
+		{
+			m_Shader->SetFloat("u_Material.Roughness", GetRoughness());
+			m_Shader->SetBool("u_Material.HasRoughnessMap", false);
+		}
+
+		if (SharedRef<Texture2D> emissionMap = GetEmissionMap())
+		{
+			uint32_t emissionMapTextureSlot = 5;
+			emissionMap->Bind(emissionMapTextureSlot);
+			m_Shader->SetInt("u_Material.EmissionMap", emissionMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasEmissionMap", true);
+		}
+		else
+		{
+			m_Shader->SetFloat3("u_Material.Emission", GetEmission());
+			m_Shader->SetBool("u_Material.HasEmissionMap", false);
+		}
+
+		if (SharedRef<Texture2D> aoMap = GetAmbientOcclusionMap())
+		{
+			uint32_t aoMapTextureSlot = 6;
+			aoMap->Bind(aoMapTextureSlot);
+			m_Shader->SetInt("u_Material.AOMap", aoMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasAOMap", true);
+		}
+		else
+			m_Shader->SetBool("u_Material.HasAOMap", false);
 	}
 
 	void Material::Unbind() const
@@ -86,6 +159,26 @@ namespace Vortex {
 		m_Properties.RoughnessMap = roughnessMap;
 	}
 
+    Math::vec3 Material::GetEmission() const
+    {
+        return m_Properties.Emission;
+    }
+
+    void Material::SetEmission(const Math::vec3& emission)
+    {
+		m_Properties.Emission = emission;
+    }
+
+    const SharedRef<Texture2D>& Material::GetEmissionMap() const
+    {
+		return m_Properties.EmissionMap;
+    }
+
+    void Material::SetEmissionMap(const SharedRef<Texture2D>& emissionMap)
+    {
+		m_Properties.EmissionMap = emissionMap;
+    }
+
 	const SharedRef<Texture2D>& Material::GetAmbientOcclusionMap() const
 	{
 		return m_Properties.AmbientOcclusionMap;
@@ -105,12 +198,19 @@ namespace Vortex {
 		dstMaterial->SetMetallic(srcMaterial->GetMetallic());
 		dstMaterial->SetRoughnessMap(srcMaterial->GetRoughnessMap());
 		dstMaterial->SetRoughness(srcMaterial->GetRoughness());
+		dstMaterial->SetEmission(srcMaterial->GetEmission());
+		dstMaterial->SetEmissionMap(srcMaterial->GetEmissionMap());
 		dstMaterial->SetAmbientOcclusionMap(srcMaterial->GetAmbientOcclusionMap());
 	}
 
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
 		return CreateShared<Material>(props);
+	}
+
+	SharedRef<Material> Material::Create(const SharedRef<Shader>& shader, const MaterialProperties& props)
+	{
+		return CreateShared<Material>(shader, props);
 	}
 
 	MaterialInstance::MaterialInstance()
