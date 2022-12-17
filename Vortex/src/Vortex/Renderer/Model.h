@@ -41,6 +41,7 @@ namespace Vortex {
 	public:
 		Mesh() = default;
 		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials);
+		Mesh(bool skybox = true);
 		~Mesh() = default;
 
 		void Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
@@ -53,7 +54,7 @@ namespace Vortex {
 		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
 
 	private:
-		void CreateAndUploadMesh(bool skybox = false);
+		void CreateAndUploadMesh();
 
 	private:
 		std::vector<ModelVertex> m_Vertices;

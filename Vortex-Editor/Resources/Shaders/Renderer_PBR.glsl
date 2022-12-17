@@ -39,7 +39,8 @@ void main()
 	vertexOut.EntityID = a_EntityID;
 
 	mat3 model = mat3(u_Model);
-	vertexOut.TBN = mat3(model * a_Tangent, model * a_BiTangent, model * a_Normal);
+	vertexOut.Normal = model * a_Normal;
+	vertexOut.TBN = mat3(model * a_Tangent, model * a_BiTangent, vertexOut.Normal);
 }
 
 
@@ -318,6 +319,9 @@ void main()
 	color = pow(color, vec3(1.0f / u_SceneProperties.Gamma));
 
 	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureScale).a : 1.0f);
+
+	if (alpha == 0.0f)
+		discard;
 
 	o_Color = vec4(color, alpha);
 	o_EntityID = fragmentIn.EntityID;

@@ -48,41 +48,89 @@ namespace Vortex {
 		m_Materials.insert(m_Materials.end(), MaterialInstance::Create());
 	}
 
+	Mesh::Mesh(bool skybox)
+	{
+		m_VertexArray = VertexArray::Create();
+
+		float vertices[] =
+		{
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+
+			-0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
+
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f, -0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+
+			-0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f, -0.5f,
+			 0.5f, -0.5f,  0.5f,
+			 0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f,  0.5f,
+			-0.5f, -0.5f, -0.5f,
+
+			-0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f, -0.5f,
+			 0.5f,  0.5f,  0.5f,
+			 0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f,  0.5f,
+			-0.5f,  0.5f, -0.5f,
+		};
+
+		uint32_t dataSize = 36 * sizeof(Math::vec3);
+		m_VertexBuffer = VertexBuffer::Create(vertices, dataSize);
+		m_VertexBuffer->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
+
+		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+	}
+
 	void Mesh::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
 		m_Materials.clear();
 		m_Materials.push_back(material);
 	}
 
-	void Mesh::CreateAndUploadMesh(bool skybox)
+	void Mesh::CreateAndUploadMesh()
 	{
 		m_VertexArray = VertexArray::Create();
 
 		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
 		m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), dataSize);
 
-		if (skybox)
-			m_VertexBuffer->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
-		else
-		{
-			m_VertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position"  },
-				{ ShaderDataType::Float3, "a_Normal"    },
-				{ ShaderDataType::Float3, "a_Tangent"   },
-				{ ShaderDataType::Float3, "a_BiTangent" },
-				{ ShaderDataType::Float2, "a_TexCoord"  },
-				{ ShaderDataType::Float2, "a_TexScale"  },
-				{ ShaderDataType::Int,    "a_EntityID"  },
-			});
-		}
+		m_VertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position"  },
+			{ ShaderDataType::Float3, "a_Normal"    },
+			{ ShaderDataType::Float3, "a_Tangent"   },
+			{ ShaderDataType::Float3, "a_BiTangent" },
+			{ ShaderDataType::Float2, "a_TexCoord"  },
+			{ ShaderDataType::Float2, "a_TexScale"  },
+			{ ShaderDataType::Int,    "a_EntityID"  },
+		});
 
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
-		if (!m_Indices.empty())
-		{
-			m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
-			m_VertexArray->SetIndexBuffer(m_IndexBuffer);
-		}
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 	}
 
 	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
@@ -325,27 +373,7 @@ namespace Vortex {
 
 	Model::Model(MeshType meshType)
 	{
-		m_Filepath = "Resources/Meshes/Cube.fbx";
-		
-		LogStream::Initialize();
-
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
-		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("Skybox");
-		m_Material = MaterialInstance::Create();
-
-		ProcessNode(m_Scene->mRootNode, m_Scene);
+		m_Meshes.push_back(Mesh(true));
 	}
 
 	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
