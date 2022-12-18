@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	enum class FramebufferTextureFormat
+	enum class VORTEX_API FramebufferTextureFormat
 	{
 		None = 0,
 
@@ -20,7 +20,7 @@ namespace Vortex {
 		Depth = DEPTH24STENCIL8,
 	};
 
-	struct FramebufferTextureProperties
+	struct VORTEX_API FramebufferTextureProperties
 	{
 		FramebufferTextureProperties() = default;
 		FramebufferTextureProperties(FramebufferTextureFormat format)
@@ -30,7 +30,7 @@ namespace Vortex {
 		// TODO: filtering/wrap
 	};
 
-	struct FramebufferAttachmentProperties
+	struct VORTEX_API FramebufferAttachmentProperties
 	{
 		FramebufferAttachmentProperties() = default;
 		FramebufferAttachmentProperties(std::initializer_list<FramebufferTextureProperties> attachments)
@@ -39,7 +39,7 @@ namespace Vortex {
 		std::vector<FramebufferTextureProperties> Attachments;
 	};
 
-	struct FramebufferProperties
+	struct VORTEX_API FramebufferProperties
 	{
 		uint32_t Width;
 		uint32_t Height;
@@ -49,7 +49,7 @@ namespace Vortex {
 		bool SwapChainTarget = false;
 	};
 
-	class Framebuffer
+	class VORTEX_API Framebuffer
 	{
 	public:
 		virtual ~Framebuffer() = default;
@@ -67,6 +67,20 @@ namespace Vortex {
 		virtual const FramebufferProperties& GetProperties() const = 0;
 
 		static SharedRef<Framebuffer> Create(const FramebufferProperties& props);
+	};
+
+	class VORTEX_API HDRFramebuffer
+	{
+	public:
+		virtual ~HDRFramebuffer() = default;
+
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		virtual void SetCubemapFramebufferTexture(uint32_t index) const = 0;
+		virtual void ClearColorAndDepthAttachments() const = 0;
+
+		static SharedRef<HDRFramebuffer> Create(const FramebufferProperties& props);
 	};
 
 }

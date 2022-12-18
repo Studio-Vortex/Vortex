@@ -28,12 +28,12 @@ namespace Vortex {
 		return nullptr;
     }
 
-    SharedRef<Skybox> Skybox::Create(const std::string& directoryPath)
+    SharedRef<Skybox> Skybox::Create(const std::string& filepath)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLSkybox>(directoryPath);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLSkybox>(filepath);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

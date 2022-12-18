@@ -964,7 +964,7 @@ namespace Vortex {
 			
 			char buffer[256];
 
-			std::string skyboxPath = skybox->GetDirectoryPath();
+			std::string skyboxPath = skybox->GetFilepath();
 
 			if (!skyboxPath.empty())
 				memcpy(buffer, skyboxPath.c_str(), sizeof(buffer));
@@ -979,13 +979,13 @@ namespace Vortex {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path skyboxDirectoryPath = std::filesystem::path(path);
+					std::filesystem::path skyboxPath = std::filesystem::path(path);
 
-					// Make sure we are recieving an actual directory otherwise we will have trouble loading it
-					if (std::filesystem::is_directory(skyboxDirectoryPath))
-						skybox->SetDirectoryPath(skyboxDirectoryPath.string());
+					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
+					if (std::filesystem::is_directory(skyboxPath) || std::filesystem::path(skyboxPath).filename().extension() == ".hdr")
+						skybox->SetFilepath(skyboxPath.string());
 					else
-						VX_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxDirectoryPath.filename().string());
+						VX_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxPath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}

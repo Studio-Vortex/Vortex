@@ -247,4 +247,47 @@ namespace Vortex {
 			Utils::VortexFBTextureFormatToGL(props.TextureFormat), GL_INT, &clearValue);
 	}
 
+	OpenGLHDRFramebuffer::OpenGLHDRFramebuffer(const FramebufferProperties& props)
+	{
+		glGenFramebuffers(1, &m_CaptureFramebufferRendererID);
+		glGenRenderbuffers(1, &m_CaptureRenderbufferRendererID);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
+
+		glGenTextures(1, &m_EnvironmentCubemapRendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+
+	void OpenGLHDRFramebuffer::Bind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
+	}
+
+	void OpenGLHDRFramebuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void OpenGLHDRFramebuffer::SetCubemapFramebufferTexture(uint32_t index) const
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_EnvironmentCubemapRendererID, 0);
+	}
+
+	void OpenGLHDRFramebuffer::ClearColorAndDepthAttachments() const
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 }

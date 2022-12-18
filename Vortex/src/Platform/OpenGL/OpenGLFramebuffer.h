@@ -27,6 +27,7 @@ namespace Vortex {
 		const FramebufferProperties& GetProperties() const override { return m_Properties; }
 
 		void Invalidate();
+
 	private:
 		uint32_t m_RendererID = 0;
 		FramebufferProperties m_Properties;
@@ -36,6 +37,24 @@ namespace Vortex {
 
 		std::vector<uint32_t> m_ColorAttachments;
 		uint32_t m_DepthAttachment = 0;
+	};
+
+	class OpenGLHDRFramebuffer : public HDRFramebuffer
+	{
+	public:
+		OpenGLHDRFramebuffer(const FramebufferProperties& props);
+		~OpenGLHDRFramebuffer() = default;
+
+		void Bind() const override;
+		void Unbind() const override;
+
+		void SetCubemapFramebufferTexture(uint32_t index) const override;
+		void ClearColorAndDepthAttachments() const override;
+
+	private:
+		uint32_t m_EnvironmentCubemapRendererID = 0;
+		uint32_t m_CaptureFramebufferRendererID = 0;
+		uint32_t m_CaptureRenderbufferRendererID = 0;
 	};
 
 }

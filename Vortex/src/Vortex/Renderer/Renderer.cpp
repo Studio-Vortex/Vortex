@@ -2,17 +2,18 @@
 #include "Renderer.h"
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Renderer/Renderer2D.h"
-
 #include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetRegistry.h"
 
+#include "Vortex/Renderer/Renderer2D.h"
+#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/Model.h"
 
 namespace Vortex {
 
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
+	static constexpr const char* EQUIRECT_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
@@ -32,7 +33,7 @@ namespace Vortex {
 		float RefractiveIndex = 1.52f; // Glass
 
 		static constexpr inline uint32_t MaxDirectionalLights = 1;
-		static constexpr inline uint32_t MaxPointLights = 50;
+		static constexpr inline uint32_t MaxPointLights = 100;
 		static constexpr inline uint32_t MaxSpotLights = 50;
 
 		SceneLightDescription SceneLightDesc;
@@ -51,6 +52,8 @@ namespace Vortex {
 		SharedRef<Texture2D> SpotLightIcon = nullptr;
 		SharedRef<Texture2D> DirLightIcon = nullptr;
 		SharedRef<Texture2D> AudioSourceIcon = nullptr;
+
+		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -63,6 +66,7 @@ namespace Vortex {
 
 		s_Data.ShaderLibrary = ShaderLibrary::Create();
 		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("EquirectToCubemap", EQUIRECT_TO_CUBEMAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
@@ -74,6 +78,8 @@ namespace Vortex {
 		s_Data.SpotLightIcon = Texture2D::Create(SPOT_LIGHT_ICON_PATH);
 		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
+
+		s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -257,6 +263,66 @@ namespace Vortex {
 
 	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox)
 	{
+		if (!skybox->IsHDREquirectangularMap())
+		{
+			RenderCommand::DisableDepthMask();
+
+			SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
+			skyboxShader->Enable();
+			skyboxShader->SetInt("u_EnvironmentMap", 0);
+			skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
+			skyboxShader->SetMat4("u_Projection", projection);
+
+			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+
+			skyboxMeshVA->Bind();
+			skybox->Bind();
+			RenderCommand::DrawTriangles(skyboxMeshVA, 36);
+			RenderCommand::EnableDepthMask();
+
+			return;
+		}
+
+		// TODO fix this hack!
+		if (skybox->PathChanged())
+		{
+			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
+			Math::mat4 captureViews[] =
+			{
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)),
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(-1.0f, 0.0f, 0.0f),  Math::vec3(0.0f, -1.0f,  0.0f)),
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  1.0f,  0.0f), Math::vec3(0.0f,  0.0f,  1.0f)),
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f, -1.0f,  0.0f), Math::vec3(0.0f,  0.0f, -1.0f)),
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f,  1.0f), Math::vec3(0.0f, -1.0f,  0.0f)),
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f))
+			};
+
+			// convert HDR equirectangular environment map to cubemap equivalent
+			SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectToCubemap");
+
+			equirectToCubemapShader->Enable();
+			equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
+			equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
+			skybox->Bind();
+
+			SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 }); // don't forget to configure the viewport to the capture dimensions.
+			s_Data.HDRFramebuffer->Bind();
+			for (unsigned int i = 0; i < 6; ++i)
+			{
+				equirectToCubemapShader->SetMat4("u_View", captureViews[i]);
+				s_Data.HDRFramebuffer->SetCubemapFramebufferTexture(i);
+				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+				// Render a unit cube
+				cubeMeshVA->Bind();
+				RenderCommand::DrawTriangles(cubeMeshVA, 36);
+			}
+			s_Data.HDRFramebuffer->Unbind();
+
+			skybox->SetPathChanged(false);
+		}
+
 		RenderCommand::DisableDepthMask();
 
 		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");

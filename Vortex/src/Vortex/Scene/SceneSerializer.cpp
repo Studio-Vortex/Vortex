@@ -295,7 +295,7 @@ namespace Vortex {
 			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 
 			SharedRef<Skybox> skybox = skyboxComponent.Source;
-			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetDirectoryPath(), projectAssetDirectory).string();
+			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string();
 
 			out << YAML::EndMap; // SkyboxComponent
 		}
@@ -382,7 +382,7 @@ namespace Vortex {
 				if (parallaxOcclusionMap)
 				{
 					out << YAML::Key << "ParallaxOcclusionMapPath" << YAML::Value << std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string();
-					out << YAML::Key << "ParllaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
+					out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
 				}
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();

@@ -6,6 +6,15 @@
 
 namespace Vortex {
 
+	enum class TextureFormat
+	{
+		Default,
+		PNG,
+		JPG,
+		TGA,
+		HDR,
+	};
+
 	class VORTEX_API Texture
 	{
 	public:
