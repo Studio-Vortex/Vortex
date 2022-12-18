@@ -73,21 +73,29 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
 		}
 
-		if (SharedRef<Texture2D> aoMap = GetAmbientOcclusionMap())
+		if (SharedRef<Texture2D> parallaxOcclusionMap = GetParallaxOcclusionMap())
 		{
-			uint32_t aoMapTextureSlot = 6;
-			aoMap->Bind(aoMapTextureSlot);
-			m_Shader->SetInt("u_Material.AOMap", aoMapTextureSlot);
+			uint32_t parallaxOcclusionMapTextureSlot = 6;
+			parallaxOcclusionMap->Bind(parallaxOcclusionMapTextureSlot);
+			m_Shader->SetInt("u_Material.POMap", parallaxOcclusionMapTextureSlot);
+			m_Shader->SetBool("u_Material.HasPOMap", true);
+			m_Shader->SetFloat("u_Material.ParallaxHeightScale", GetParallaxHeightScale());
+		}
+		else
+			m_Shader->SetBool("u_Material.HasPOMap", false);
+
+		if (SharedRef<Texture2D> ambientOcclusionMap = GetAmbientOcclusionMap())
+		{
+			uint32_t ambientOcclusionMapTextureSlot = 7;
+			ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
+			m_Shader->SetInt("u_Material.AOMap", ambientOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasAOMap", true);
 		}
 		else
 			m_Shader->SetBool("u_Material.HasAOMap", false);
 	}
 
-	void Material::Unbind() const
-	{
-		
-	}
+	void Material::Unbind() const { }
 
 	const SharedRef<Texture2D>& Material::GetNormalMap() const
 	{
@@ -159,25 +167,45 @@ namespace Vortex {
 		m_Properties.RoughnessMap = roughnessMap;
 	}
 
-    Math::vec3 Material::GetEmission() const
-    {
-        return m_Properties.Emission;
-    }
+	Math::vec3 Material::GetEmission() const
+	{
+		return m_Properties.Emission;
+	}
 
-    void Material::SetEmission(const Math::vec3& emission)
-    {
+	void Material::SetEmission(const Math::vec3& emission)
+	{
 		m_Properties.Emission = emission;
-    }
+	}
 
-    const SharedRef<Texture2D>& Material::GetEmissionMap() const
-    {
+	const SharedRef<Texture2D>& Material::GetEmissionMap() const
+	{
 		return m_Properties.EmissionMap;
-    }
+	}
 
-    void Material::SetEmissionMap(const SharedRef<Texture2D>& emissionMap)
-    {
+	void Material::SetEmissionMap(const SharedRef<Texture2D>& emissionMap)
+	{
 		m_Properties.EmissionMap = emissionMap;
-    }
+	}
+
+	float Material::GetParallaxHeightScale() const
+	{
+		return m_Properties.ParallaxHeightScale;
+	}
+
+	void Material::SetParallaxHeightScale(float heightScale)
+	{
+		m_Properties.ParallaxHeightScale = heightScale;
+	}
+
+	const SharedRef<Texture2D>& Material::GetParallaxOcclusionMap() const
+	{
+		return m_Properties.ParallaxOcclusionMap;
+	}
+
+	void Material::SetParallaxOcclusionMap(const SharedRef<Texture2D>& parallaxOcclusionMap)
+	{
+		m_Properties.ParallaxOcclusionMap = parallaxOcclusionMap;
+	}
 
 	const SharedRef<Texture2D>& Material::GetAmbientOcclusionMap() const
 	{
@@ -200,6 +228,8 @@ namespace Vortex {
 		dstMaterial->SetRoughness(srcMaterial->GetRoughness());
 		dstMaterial->SetEmission(srcMaterial->GetEmission());
 		dstMaterial->SetEmissionMap(srcMaterial->GetEmissionMap());
+		dstMaterial->SetParallaxHeightScale(srcMaterial->GetParallaxHeightScale());
+		dstMaterial->SetParallaxOcclusionMap(srcMaterial->GetParallaxOcclusionMap());
 		dstMaterial->SetAmbientOcclusionMap(srcMaterial->GetAmbientOcclusionMap());
 	}
 
@@ -219,10 +249,7 @@ namespace Vortex {
 	}
 
 	MaterialInstance::MaterialInstance(const SharedRef<Material>& material)
-		: m_BaseMaterial(material)
-	{
-
-	}
+		: m_BaseMaterial(material) { }
 
 	SharedRef<MaterialInstance> MaterialInstance::Create()
 	{

@@ -6,9 +6,6 @@ namespace Vortex {
 	{
 		Math::vec3 Radiance = Math::vec3(1.0f);
 
-		Math::vec3 Position = Math::vec3(0.0f);
-		Math::vec3 Direction = Math::vec3(0.0f);
-
 		// (Linear, Quadratic)
 		Math::vec2 Attenuation = Math::vec2(0.045f, 0.0075f);
 
@@ -23,12 +20,6 @@ namespace Vortex {
 
 		const Math::vec3& GetRadiance() const;
 		void SetRadiance(const Math::vec3& radiance);
-
-		const Math::vec3& GetPosition() const;
-		void SetPosition(const Math::vec3& position);
-
-		const Math::vec3& GetDirection() const;
-		void SetDirection(const Math::vec3& direction);
 
 		const Math::vec2& GetAttenuation() const;
 		void SetAttenuation(const Math::vec2& attenuation);

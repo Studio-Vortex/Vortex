@@ -1028,9 +1028,6 @@ namespace Vortex {
 			{
 				case LightSourceComponent::LightType::Directional:
 				{
-					Math::vec3 direction = lightSource->GetDirection();
-					if (Gui::DragFloat3("Direction", Math::ValuePtr(direction), 0.01f, 0.0f, 0.0f, "%.2f"))
-						lightSource->SetDirection(direction);
 					break;
 				}
 				case LightSourceComponent::LightType::Point:
@@ -1049,10 +1046,6 @@ namespace Vortex {
 				}
 				case LightSourceComponent::LightType::Spot:
 				{
-					Math::vec3 direction = lightSource->GetDirection();
-					if (Gui::DragFloat3("Direction", Math::ValuePtr(direction), 0.01f, 0.0f, 0.0f, "%.2f"))
-						lightSource->SetDirection(direction);
-
 					Math::vec2 attenuation = lightSource->GetAttenuation();
 
 					float range = attenuation.x * -4.0f;
@@ -1137,7 +1130,7 @@ namespace Vortex {
 					std::filesystem::path modelFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae")
+					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
 					{
 						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), (int)(entt::entity)entity);
 						component.Type = MeshType::Custom;
@@ -1425,6 +1418,59 @@ namespace Vortex {
 							if (Gui::ColorEdit3("##Emission", Math::ValuePtr(emission)))
 								material->SetEmission(emission);
 						}
+
+						Gui::TreePop();
+					}
+
+					if (Gui::TreeNodeEx("Parallax Occlusion", treeNodeFlags))
+					{
+						Gui::Text("Map");
+						Gui::SameLine();
+						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+						if (SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap())
+						{
+							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+
+							if (Gui::ImageButton((void*)parallaxOcclusionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+								material->SetParallaxOcclusionMap(nullptr);
+							else if (Gui::IsItemHovered())
+							{
+								Gui::BeginTooltip();
+								Gui::Text(parallaxOcclusionMap->GetPath().c_str());
+								Gui::EndTooltip();
+							}
+						}
+						else
+							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+						// Accept a Albedo map from the content browser
+						if (Gui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path texturePath = std::filesystem::path(path);
+
+								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+								{
+									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+									if (texture->IsLoaded())
+										material->SetParallaxOcclusionMap(texture);
+									else
+										VX_WARN("Could not load texture {}", texturePath.filename().string());
+								}
+								else
+									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							}
+							Gui::EndDragDropTarget();
+						}
+
+						float parallaxHeightScale = material->GetParallaxHeightScale();
+						if (Gui::DragFloat("Height Scale", &parallaxHeightScale, 0.01f, 0.01f, 1.0f, "%.2f"))
+							material->SetParallaxHeightScale(parallaxHeightScale);
 
 						Gui::TreePop();
 					}

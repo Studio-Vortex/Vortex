@@ -725,26 +725,6 @@ namespace Vortex {
 		entity.GetComponent<LightSourceComponent>().Source->SetRadiance(*radiance);
 	}
 
-	static void LightSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outDirection = entity.GetComponent<LightSourceComponent>().Source->GetDirection();
-	}
-
-	static void LightSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<LightSourceComponent>().Source->SetDirection(*direction);
-	}
-
 #pragma endregion
 
 #pragma region TextMesh Component
@@ -2978,8 +2958,6 @@ namespace Vortex {
 
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetRadiance);
 		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetRadiance);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_GetDirection);
-		SP_ADD_INTERNAL_CALL(LightSourceComponent_SetDirection);
 
 		SP_ADD_INTERNAL_CALL(TextMeshComponent_GetTextString);
 		SP_ADD_INTERNAL_CALL(TextMeshComponent_SetTextString);

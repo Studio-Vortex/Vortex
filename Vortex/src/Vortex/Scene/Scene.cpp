@@ -152,7 +152,7 @@ namespace Vortex {
 		Entity startingSkyLight = context->CreateEntity("Sky Light");
 		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
 		lightSource.Type = LightSourceComponent::LightType::Directional;
-		lightSource.Source->SetDirection({ 0, -1.0f, -0.5f });
+		startingSkyLight.GetTransform().SetRotationEuler({ 0.25f, -1.0f, -0.5f });
 		startingSkyLight.GetTransform().Translation = Math::vec3(0.0f, 4.0f, 0.0f);
 
 		Entity startingCamera = context->CreateEntity("Camera");
@@ -456,7 +456,6 @@ namespace Vortex {
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
-		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
@@ -478,7 +477,6 @@ namespace Vortex {
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
-		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
@@ -500,7 +498,6 @@ namespace Vortex {
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
-		OnLightSourceUpdate();
 	}
 
 	void Scene::OnUpdateEntityGui()
@@ -722,24 +719,6 @@ namespace Vortex {
 
 			if (particleEmitter->IsActive())
 				particleEmitter->EmitParticle();
-		}
-	}
-
-	void Scene::OnLightSourceUpdate()
-	{
-		SP_PROFILE_FUNCTION();
-
-		auto view = m_Registry.view<LightSourceComponent>();
-
-		for (auto& e : view)
-		{
-			Entity entity{ e, this };
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			
-			// Light sources get placed at entity's world position
-			Math::vec3 worldPosition = GetWorldSpaceTransform(entity).Translation;
-			lightSource->SetPosition(worldPosition);
 		}
 	}
 

@@ -208,7 +208,7 @@ namespace Vortex {
 						continue;
 
 					LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-					Renderer::RenderLightSource(lightSourceComponent);
+					Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
 				}
 			}
 

@@ -88,7 +88,6 @@ namespace Vortex {
 
 		void OnModelUpdate();
 		void OnParticleEmitterUpdate(TimeStep delta);
-		void OnLightSourceUpdate();
 
 	private:
 		entt::registry m_Registry;

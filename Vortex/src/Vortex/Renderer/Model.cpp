@@ -359,6 +359,9 @@ namespace Vortex {
 
 	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
+		if (!m_MeshShader)
+			m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();

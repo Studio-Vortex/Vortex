@@ -22,6 +22,9 @@ namespace Vortex {
 		Math::vec3 Emission = Math::vec3(0.0f);
 		SharedRef<Texture2D> EmissionMap = nullptr;
 
+		float ParallaxHeightScale = 0.5f;
+		SharedRef<Texture2D> ParallaxOcclusionMap = nullptr;
+
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
 	};
 
@@ -61,6 +64,12 @@ namespace Vortex {
 
 		const SharedRef<Texture2D>& GetEmissionMap() const;
 		void SetEmissionMap(const SharedRef<Texture2D>& emissionMap);
+
+		float GetParallaxHeightScale() const;
+		void SetParallaxHeightScale(float heightScale);
+
+		const SharedRef<Texture2D>& GetParallaxOcclusionMap() const;
+		void SetParallaxOcclusionMap(const SharedRef<Texture2D>& parallaxOcclusionMap);
 
 		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
 		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);

@@ -32,8 +32,8 @@ namespace Vortex {
 		float RefractiveIndex = 1.52f; // Glass
 
 		static constexpr inline uint32_t MaxDirectionalLights = 1;
-		static constexpr inline uint32_t MaxPointLights = 25;
-		static constexpr inline uint32_t MaxSpotLights = 25;
+		static constexpr inline uint32_t MaxPointLights = 50;
+		static constexpr inline uint32_t MaxSpotLights = 50;
 
 		SceneLightDescription SceneLightDesc;
 
@@ -187,7 +187,7 @@ namespace Vortex {
 		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
-	void Renderer::RenderLightSource(const LightSourceComponent& lightSourceComponent)
+	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
 	{
 		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
@@ -203,7 +203,7 @@ namespace Vortex {
 
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), Math::Normalize(transform.GetRotationEuler()));
 
 				i++;
 
@@ -218,7 +218,7 @@ namespace Vortex {
 
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), lightSource->GetPosition());
+				pbrShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), transform.Translation);
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
 				pbrShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
@@ -238,8 +238,8 @@ namespace Vortex {
 
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), lightSource->GetPosition());
-				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), lightSource->GetDirection());
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), transform.Translation);
+				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), Math::Normalize(transform.GetRotationEuler()));
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
 				pbrShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
 

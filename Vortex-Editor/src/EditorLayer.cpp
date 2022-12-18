@@ -487,12 +487,30 @@ namespace Vortex {
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
 
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
-							m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedoMap(texture);
+						{
+							SharedRef<Model> model = m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh;
+							std::string filename = texturePath.filename().string();
+
+							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+								model->GetMaterial()->SetAlbedoMap(texture);
+							if (filename.find("normal") != std::string::npos)
+								model->GetMaterial()->SetNormalMap(texture);
+							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+								model->GetMaterial()->SetMetallicMap(texture);
+							if (filename.find("roughness") != std::string::npos)
+								model->GetMaterial()->SetRoughnessMap(texture);
+							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+								model->GetMaterial()->SetEmissionMap(texture);
+							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+								model->GetMaterial()->SetParallaxOcclusionMap(texture);
+							if (filename.find("ao") != std::string::npos)
+								model->GetMaterial()->SetAmbientOcclusionMap(texture);
+						}
 					}
 					else
 						VX_CORE_WARN("Could not load texture - {}", texturePath.filename().string());
 				}
-				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf" || filePath.extension().string() == ".dae")
+				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf" || filePath.extension().string() == ".dae" || filePath.extension().string() == ".glb")
 				{
 					std::filesystem::path modelPath = filePath;
 

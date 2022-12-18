@@ -316,19 +316,15 @@ namespace Vortex {
 			{
 				case LightSourceComponent::LightType::Directional:
 				{
-					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
 					break;
 				}
 				case LightSourceComponent::LightType::Point:
 				{
-					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
 					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					break;
 				}
 				case LightSourceComponent::LightType::Spot:
 				{
-					out << YAML::Key << "Position" << YAML::Value << lightSource->GetPosition();
-					out << YAML::Key << "Direction" << YAML::Value << lightSource->GetDirection();
 					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
 					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
@@ -364,7 +360,9 @@ namespace Vortex {
 				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
 				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
 				SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
+				SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
 				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+
 				if (albedoMap)
 					out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
 				else
@@ -381,6 +379,11 @@ namespace Vortex {
 					out << YAML::Key << "EmissionMapPath" << YAML::Value << std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string();
 				else
 					out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
+				if (parallaxOcclusionMap)
+				{
+					out << YAML::Key << "ParallaxOcclusionMapPath" << YAML::Value << std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string();
+					out << YAML::Key << "ParllaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
+				}
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 			}
@@ -801,15 +804,10 @@ namespace Vortex {
 				{
 					case LightSourceComponent::LightType::Directional:
 					{
-						if (lightSourceComponent["Direction"])
-							lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
-
 						break;
 					}
 					case LightSourceComponent::LightType::Point:
 					{
-						if (lightSourceComponent["Position"])
-							lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
 						if (lightSourceComponent["Attenuation"])
 							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 
@@ -817,10 +815,6 @@ namespace Vortex {
 					}
 					case LightSourceComponent::LightType::Spot:
 					{
-						if (lightSourceComponent["Position"])
-							lightComponent.Source->SetPosition(lightSourceComponent["Position"].as<Math::vec3>());
-						if (lightSourceComponent["Direction"])
-							lightComponent.Source->SetDirection(lightSourceComponent["Direction"].as<Math::vec3>());
 						if (lightSourceComponent["Attenuation"])
 							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 						if (lightSourceComponent["CutOff"])
@@ -873,12 +867,14 @@ namespace Vortex {
 					material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["RoughnessMapPath"].as<std::string>()).string()));
 				if (meshComponent["Roughness"])
 					material->SetRoughness(meshComponent["Roughness"].as<float>());
-
 				if (meshComponent["EmissionMapPath"])
 					material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["EmissionMapPath"].as<std::string>()).string()));
 				if (meshComponent["Emission"])
 					material->SetEmission(meshComponent["Emission"].as<Math::vec3>());
-
+				if (meshComponent["ParallaxOcclusionMapPath"])
+					material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["ParallaxOcclusionMapPath"].as<std::string>()).string()));
+				if (meshComponent["ParallaxHeightScale"])
+					material->SetParallaxHeightScale(meshComponent["ParallaxHeightScale"].as<float>());
 				if (meshComponent["AmbientOcclusionMapPath"])
 					material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
 
