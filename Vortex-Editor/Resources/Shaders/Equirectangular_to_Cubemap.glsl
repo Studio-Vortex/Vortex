@@ -9,12 +9,13 @@ layout (location = 0) in vec3 a_Position;
 
 out vec3 f_LocalPosition;
 
-uniform mat4 u_ViewProjection;
+uniform mat4 u_Projection;
+uniform mat4 u_View;
 
 void main()
 {
     f_LocalPosition = a_Position;
-    gl_Position = a_ViewProjection * vec4(a_LocalPosition, 1.0);
+    gl_Position = u_Projection * u_View * vec4(a_Position, 1.0);
 }
 
 
@@ -31,7 +32,7 @@ const vec2 inverseAtan = vec2(0.1591, 0.3183);
 
 vec2 SampleSphericalMap(vec3 p)
 {
-    vec2 uv = vec2(atan(p.z, p.x), asin(v.y));
+    vec2 uv = vec2(atan(p.z, p.x), asin(p.y));
     uv *= inverseAtan;
     uv += 0.5;
     return uv;

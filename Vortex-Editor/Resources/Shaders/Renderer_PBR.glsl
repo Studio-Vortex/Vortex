@@ -1,10 +1,14 @@
 //-------------------------
 // - Vortex Game Engine Physically Based Rendering Shader -
 // - Includes
-//     Texturing,
+//     Albedo Mapping,
 //     Normal Mapping,
-//     Parallax Mapping,
-//     Emissive Materials,
+//     Metallic Mapping,
+//     Roughness Mapping,
+//     Parallax Occlusion Mapping,
+//     Emission,
+//     Ambient Occlusion Mapping,
+//     Image Based Lighting
 //     HDR ToneMapping,
 //     Gamma Correction
 //-------------------------
@@ -43,8 +47,8 @@ uniform mat4 u_ViewProjection;
 
 void main()
 {
-	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0f));
-	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0f);
+	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
+	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
 
 	mat3 model = mat3(u_Model);
 	vertexOut.Normal = normalize(model * a_Normal);
@@ -150,13 +154,15 @@ struct SceneProperties
 	int ActivePointLights;
 	int ActiveSpotLights;
 
+	samplerCube IrradianceMap;
+
 	vec3 CameraPosition;
 	float Exposure;
 	float Gamma;
 };
 
 #define MAX_DIRECTIONAL_LIGHTS 1
-#define MAX_POINT_LIGHTS 50
+#define MAX_POINT_LIGHTS 100
 #define MAX_SPOT_LIGHTS 50
 
 uniform sampler2D        u_Texture;
@@ -166,8 +172,8 @@ uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
 
-const float PI = 3.14159265359f;
-const float EPSILON = 0.0001f;
+const float PI = 3.14159265359;
+const float EPSILON = 0.0001;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
@@ -180,8 +186,8 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 	const float minLayers = 8.0;
 	const float maxLayers = 32.0;
 	float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
-	float layerDepth = 1.0f / numLayers;
-	float currentLayerDepth = 0.0f;
+	float layerDepth = 1.0 / numLayers;
+	float currentLayerDepth = 0.0;
 
 	vec2 p = viewDir.xy * u_Material.ParallaxHeightScale;
 	vec2 deltaTexCoords = p / numLayers;
@@ -219,11 +225,11 @@ void main()
 
 	FragmentProperties properties;
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureCoords).rgb, vec3(u_SceneProperties.Gamma)) : u_Material.Albedo);
-	properties.Normal = ((u_Material.HasNormalMap) ? normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureCoords).rgb * 2.0f - 1.0f)) : normalize(fragmentIn.Normal));
+	properties.Normal = ((u_Material.HasNormalMap) ? normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureCoords).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureCoords).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureCoords).r : u_Material.Roughness);
 	properties.Emission = ((u_Material.HasEmissionMap) ? texture(u_Material.EmissionMap, textureCoords).rgb : u_Material.Emission);
-	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureCoords).r : 1.0f);
+	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureCoords).r : 1.0);
 
 	vec3 N = properties.Normal;
 	vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
@@ -231,11 +237,11 @@ void main()
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use Fdialetric of 0.04
 	// if it's a metal, use the albedo color as Fdialetric (metallic workflow)
-	vec3 Fdialetric = vec3(0.04f);
+	vec3 Fdialetric = vec3(0.04);
 	Fdialetric = mix(Fdialetric, properties.Albedo, properties.Metallic);
 
 	// Reflectance equation
-	vec3 Lo = vec3(0.0f);
+	vec3 Lo = vec3(0.0);
 
 	// Calculate per-light radiance
 	for (int i = 0; i < u_SceneProperties.ActiveDirectionalLights; i++)
@@ -250,14 +256,14 @@ void main()
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0f);
+		float cosTheta = max(dot(H, V), 0.0);
 		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
 
-		float NdotV = max(dot(N, V), 0.0f);
-		float NdotL = max(dot(N, L), 0.0f);
+		float NdotV = max(dot(N, V), 0.0);
+		float NdotL = max(dot(N, L), 0.0);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
+		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
 		vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
@@ -265,10 +271,10 @@ void main()
 		// For energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS
-		vec3 kD = vec3(1.0f) - kS;
+		vec3 kD = vec3(1.0) - kS;
 		// Multiply kD by the inverse metalness such that only non-metals 
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
-		kD *= 1.0f - properties.Metallic;
+		kD *= 1.0 - properties.Metallic;
 
 		// Add to outgoing radiance Lo
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
@@ -288,14 +294,14 @@ void main()
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0f);
+		float cosTheta = max(dot(H, V), 0.0);
 		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
 
-		float NdotV = max(dot(N, V), 0.0f);
-		float NdotL = max(dot(N, L), 0.0f);
+		float NdotV = max(dot(N, V), 0.0);
+		float NdotL = max(dot(N, L), 0.0);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
+		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
 		vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
@@ -303,10 +309,10 @@ void main()
 		// For energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS
-		vec3 kD = vec3(1.0f) - kS;
+		vec3 kD = vec3(1.0) - kS;
 		// Multiply kD by the inverse metalness such that only non-metals 
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
-		kD *= 1.0f - properties.Metallic;
+		kD *= 1.0 - properties.Metallic;
 
 		// Add to outgoing radiance Lo
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
@@ -333,38 +339,42 @@ void main()
 		float NdotL = max(dot(N, L), 0.0f);
 
 		vec3 numerator = NDF * G * F;
-		float denominator = 4.0f * NdotV * NdotL + EPSILON; // prevent division by 0
+		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
 		vec3 specular = numerator / denominator;
 
 		// Spot Light
 		float theta = dot(L, normalize(-spotLight.Direction));
 		float epsilon = spotLight.CutOff - spotLight.OuterCutOff;
-		float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0f, 1.0f);
+		float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0, 1.0);
 
 		vec3 kS = F * intensity;
-		vec3 kD = vec3(1.0f) - kS;
-		kD *= 1.0f - properties.Roughness * intensity;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - properties.Roughness * intensity;
 
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
-	vec3 ambient = vec3(0.03f) * properties.Albedo * properties.AO;
+	vec3 kS = FresnelSchlick(max(dot(N, V), 0.0), Fdialetric, properties.Roughness);
+	vec3 kD = 1.0 - kS;
+	vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
+	vec3 diffuse = irradiance * properties.Albedo;
+	vec3 ambient = (kD * diffuse) * properties.AO;
 
 	vec3 color = ambient + Lo;
 
 	// HDR tonemapping
-	color = color / (color + vec3(1.0f));
+	color = color / (color + vec3(1.0));
 
 	// Gamma correct
-	color = pow(color, vec3(1.0f / u_SceneProperties.Gamma));
+	color = pow(color, vec3(1.0 / u_SceneProperties.Gamma));
 
-	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureCoords).a : 1.0f);
+	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureCoords).a : 1.0);
 
 	// Discard the fragment if it has an alpha of zero
-	if (alpha == 0.0f)
+	if (alpha == 0.0)
 		discard;
 
-	o_Color = vec4(color, alpha) + vec4(properties.Emission, 0.0f);
+	o_Color = vec4(color, alpha) + vec4(properties.Emission, 0.0);
 	o_EntityID = fragmentIn.EntityID;
 }
 
@@ -374,10 +384,10 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float alpha = roughness * roughness;
     float alphaSq = alpha * alpha;
-    float NdotH = max(dot(N, H), 0.0f);
+    float NdotH = max(dot(N, H), 0.0);
     float NdotH2 = NdotH * NdotH;
 	
-    float denom = (NdotH2 * (alphaSq - 1.0f) + 1.0f);
+    float denom = (NdotH2 * (alphaSq - 1.0) + 1.0);
     denom = PI * denom * denom;
 	float ggxDistribution = alphaSq / denom;
 	
@@ -387,25 +397,25 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 // Single term for separable Schlick-GGX below
 float gaSchlickG1(float cosTheta, float k)
 {
-	return cosTheta / (cosTheta * (1.0f - k) + k);
+	return cosTheta / (cosTheta * (1.0 - k) + k);
 }
 
 // Schlick-GGX approximation of geometric attenuation function using Smith's method
 float gaSchlickGGX(float NdotV, float roughness)
 {
-    float r = roughness + 1.0f;
-    float k = (r * r) / 8.0f; // Epic suggests using this roughness remapping for analytic lights
+    float r = roughness + 1.0;
+    float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights
 
     float num = NdotV;
-    float denom = NdotV * (1.0f - k) + k;
+    float denom = NdotV * (1.0 - k) + k;
 	
     return num / denom;
 }
 
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
-    float NdotV = max(dot(N, V), 0.0f);
-    float NdotL = max(dot(N, L), 0.0f);
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
     float ggx2 = gaSchlickGGX(NdotV, roughness);
     float ggx1 = gaSchlickGGX(NdotL, roughness);
 	
@@ -415,5 +425,5 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // Schlick's approximation of the Fresnel factor
 vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric, float roughness)
 {
-	return Fdialetric + (max(vec3(1.0f - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0);
+	return Fdialetric + (max(vec3(1.0 - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }

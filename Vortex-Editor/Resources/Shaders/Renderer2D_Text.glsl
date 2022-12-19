@@ -17,6 +17,7 @@ out vec2       f_TexCoord;
 out flat float f_TexIndex;
 out flat int   f_EntityID;
 
+uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
 
 void main()
@@ -49,6 +50,15 @@ float median(float r, float g, float b)
     return max(min(r, g), min(max(r, g), b));
 }
 
+/* For 2D
+float ScreenPxRange()
+{
+	float pixRange = 2.0f;
+	float geoSize = 72.0f;
+	return geoSize / 32.0f * pixRange;
+}
+*/
+
 float ScreenPxRange()
 {
 	float pxRange = 2.0;
@@ -76,6 +86,5 @@ void main()
 		discard;
 
 	o_Color = outputColor;
-
 	o_EntityID = f_EntityID;
 }
