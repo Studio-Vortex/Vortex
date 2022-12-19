@@ -290,6 +290,7 @@ namespace Vortex {
 
 	void OpenGLHDRFramebuffer::BindEnvironmentCubemap() const
 	{
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
 	}
 

@@ -276,6 +276,8 @@ namespace Vortex {
 			SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
 			skyboxShader->Enable();
 			skyboxShader->SetInt("u_EnvironmentMap", 0);
+			skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+			skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 			skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 			skyboxShader->SetMat4("u_Projection", projection);
 
@@ -290,7 +292,7 @@ namespace Vortex {
 		}
 
 		// TODO fix this hack!
-		if (skybox->PathChanged() && skybox->IsLoaded())
+		if (skybox->PathChanged())
 		{
 			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
 			Math::mat4 captureViews[] =
@@ -331,10 +333,10 @@ namespace Vortex {
 			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
 
 			SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 			irradianceConvolutionShader->Enable();
 			irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
 			irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
 			RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
 			s_Data.HDRFramebuffer->Bind();
@@ -351,11 +353,12 @@ namespace Vortex {
 			s_Data.HDRFramebuffer->Unbind();
 
 			s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
+
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 			SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
 			iblPrefilterShader->Enable();
 			iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
 			iblPrefilterShader->SetMat4("u_Projection", captureProjection);
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
 			uint32_t maxMipLevels = 5;
 			s_Data.HDRFramebuffer->Bind();
@@ -402,6 +405,8 @@ namespace Vortex {
 		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
 		skyboxShader->Enable();
 		skyboxShader->SetInt("u_EnvironmentMap", 0);
+		skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+		skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 		skyboxShader->SetMat4("u_Projection", projection);
 
