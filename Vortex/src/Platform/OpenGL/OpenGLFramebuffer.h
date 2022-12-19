@@ -48,10 +48,18 @@ namespace Vortex {
 		void Bind() const override;
 		void Unbind() const override;
 
-		void SetCubemapFramebufferTexture(uint32_t index) const override;
+		void BindEnvironmentCubemap() const override;
+		void BindIrradianceCubemap() const override;
+
+		void CreateIrradianceCubemap() override;
+
+		void SetEnvironmentCubemapFramebufferTexture(uint32_t index) const override;
+		void SetIrradianceCubemapFramebufferTexture(uint32_t index) const override;
 		void ClearColorAndDepthAttachments() const override;
+		void RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const override;
 
 	private:
+		uint32_t m_IrradianceCubemapRendererID = 0;
 		uint32_t m_EnvironmentCubemapRendererID = 0;
 		uint32_t m_CaptureFramebufferRendererID = 0;
 		uint32_t m_CaptureRenderbufferRendererID = 0;

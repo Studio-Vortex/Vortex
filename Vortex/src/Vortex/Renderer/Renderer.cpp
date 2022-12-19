@@ -13,7 +13,8 @@
 namespace Vortex {
 
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
-	static constexpr const char* EQUIRECT_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
+	static constexpr const char* EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
+	static constexpr const char* IRRADIANCE_CONVOLUTION_SHADER_PATH = "Resources/Shaders/Irradiance_Convolution.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
@@ -66,7 +67,8 @@ namespace Vortex {
 
 		s_Data.ShaderLibrary = ShaderLibrary::Create();
 		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("EquirectToCubemap", EQUIRECT_TO_CUBEMAP_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("EquirectangularToCubemap", EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("IrradianceConvolution", IRRADIANCE_CONVOLUTION_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
@@ -284,7 +286,7 @@ namespace Vortex {
 		}
 
 		// TODO fix this hack!
-		if (skybox->PathChanged())
+		if (skybox->PathChanged() && skybox->IsLoaded())
 		{
 			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
 			Math::mat4 captureViews[] =
@@ -298,20 +300,48 @@ namespace Vortex {
 			};
 
 			// convert HDR equirectangular environment map to cubemap equivalent
-			SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectToCubemap");
-
+			SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
 			equirectToCubemapShader->Enable();
 			equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
 			equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
 			skybox->Bind();
 
 			SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
-			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 }); // don't forget to configure the viewport to the capture dimensions.
+
+			// don't forget to configure the viewport to the capture dimensions.
+			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
 			s_Data.HDRFramebuffer->Bind();
-			for (unsigned int i = 0; i < 6; ++i)
+			for (uint32_t i = 0; i < 6; i++)
 			{
 				equirectToCubemapShader->SetMat4("u_View", captureViews[i]);
-				s_Data.HDRFramebuffer->SetCubemapFramebufferTexture(i);
+				s_Data.HDRFramebuffer->SetEnvironmentCubemapFramebufferTexture(i);
+				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+				// Render a unit cube
+				cubeMeshVA->Bind();
+				RenderCommand::DrawTriangles(cubeMeshVA, 36);
+			}
+			s_Data.HDRFramebuffer->Unbind();
+
+			SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+			pbrShader->Enable();
+			pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
+			s_Data.HDRFramebuffer->CreateIrradianceCubemap();
+
+			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
+
+			SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
+			irradianceConvolutionShader->Enable();
+			irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
+			irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
+
+			RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
+			s_Data.HDRFramebuffer->Bind();
+			for (uint32_t i = 0; i < 6; i++)
+			{
+				irradianceConvolutionShader->SetMat4("u_View", captureViews[i]);
+				s_Data.HDRFramebuffer->SetIrradianceCubemapFramebufferTexture(i);
 				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
 
 				// Render a unit cube

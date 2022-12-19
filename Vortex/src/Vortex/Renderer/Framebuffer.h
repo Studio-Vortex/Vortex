@@ -77,8 +77,15 @@ namespace Vortex {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void SetCubemapFramebufferTexture(uint32_t index) const = 0;
+		virtual void BindEnvironmentCubemap() const = 0;
+		virtual void BindIrradianceCubemap() const = 0;
+
+		virtual void CreateIrradianceCubemap() = 0;
+
+		virtual void SetEnvironmentCubemapFramebufferTexture(uint32_t index) const = 0;
+		virtual void SetIrradianceCubemapFramebufferTexture(uint32_t index) const = 0;
 		virtual void ClearColorAndDepthAttachments() const = 0;
+		virtual void RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const = 0;
 
 		static SharedRef<HDRFramebuffer> Create(const FramebufferProperties& props);
 	};

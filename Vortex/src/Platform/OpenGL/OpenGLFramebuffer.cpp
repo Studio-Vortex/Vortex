@@ -249,25 +249,31 @@ namespace Vortex {
 
 	OpenGLHDRFramebuffer::OpenGLHDRFramebuffer(const FramebufferProperties& props)
 	{
-		glGenFramebuffers(1, &m_CaptureFramebufferRendererID);
-		glGenRenderbuffers(1, &m_CaptureRenderbufferRendererID);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
-
-		glGenTextures(1, &m_EnvironmentCubemapRendererID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
-		for (uint32_t i = 0; i < 6; i++)
+		// Create Framebuffer
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+			glGenFramebuffers(1, &m_CaptureFramebufferRendererID);
+			glGenRenderbuffers(1, &m_CaptureRenderbufferRendererID);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
+			glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
 		}
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Create Environment Cubemap
+		{
+			glGenTextures(1, &m_EnvironmentCubemapRendererID);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
+			for (uint32_t i = 0; i < 6; i++)
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+			}
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
 	}
 
 	void OpenGLHDRFramebuffer::Bind() const
@@ -280,14 +286,54 @@ namespace Vortex {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLHDRFramebuffer::SetCubemapFramebufferTexture(uint32_t index) const
+	void OpenGLHDRFramebuffer::BindEnvironmentCubemap() const
+	{
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
+	}
+
+	void OpenGLHDRFramebuffer::BindIrradianceCubemap() const
+	{
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
+	}
+
+	void OpenGLHDRFramebuffer::CreateIrradianceCubemap()
+	{
+		glGenTextures(1, &m_IrradianceCubemapRendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+
+	void OpenGLHDRFramebuffer::SetEnvironmentCubemapFramebufferTexture(uint32_t index) const
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_EnvironmentCubemapRendererID, 0);
+	}
+
+	void OpenGLHDRFramebuffer::SetIrradianceCubemapFramebufferTexture(uint32_t index) const
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_IrradianceCubemapRendererID, 0);
 	}
 
 	void OpenGLHDRFramebuffer::ClearColorAndDepthAttachments() const
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void OpenGLHDRFramebuffer::RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const
+	{
+		// Rescale Capture Framebuffer to the new resolution
+			// we can store the map at a low resolution (32x32) and let
+			// opengl's linear filtering do most of the work
+		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 	}
 
 }
