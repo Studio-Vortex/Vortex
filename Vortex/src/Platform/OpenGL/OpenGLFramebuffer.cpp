@@ -274,7 +274,7 @@ namespace Vortex {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			glGenerateTextureMipmap(m_EnvironmentCubemapRendererID);
 		}
 	}
 
@@ -295,12 +295,26 @@ namespace Vortex {
 
 	void OpenGLHDRFramebuffer::BindIrradianceCubemap() const
 	{
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
+	}
+
+	void OpenGLHDRFramebuffer::BindPrefilterCubemap() const
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
+	}
+
+	void OpenGLHDRFramebuffer::BindBRDFLutTexture() const
+	{
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_BRDFLutTextureRendererID);
 	}
 
 	void OpenGLHDRFramebuffer::CreateIrradianceCubemap()
 	{
 		glGenTextures(1, &m_IrradianceCubemapRendererID);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -317,6 +331,7 @@ namespace Vortex {
 	{
 		// If there are a large number of smooth materials you may want to increase the resolution here
 		glGenTextures(1, &m_PrefilteredEnvironmentCubemapRendererID);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -328,14 +343,14 @@ namespace Vortex {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		glGenerateTextureMipmap(m_PrefilteredEnvironmentCubemapRendererID);
 	}
 
 	void OpenGLHDRFramebuffer::CreateBRDFLutTexture()
 	{
 		glGenTextures(1, &m_BRDFLutTextureRendererID);
-
 		// Pre allocate enough memory for the LUT texture
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_BRDFLutTextureRendererID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -50,6 +50,8 @@ namespace Vortex {
 
 		void BindEnvironmentCubemap() const override;
 		void BindIrradianceCubemap() const override;
+		void BindPrefilterCubemap() const override;
+		void BindBRDFLutTexture() const override;
 
 		void CreateIrradianceCubemap() override;
 		void CreatePrefilteredEnvironmentCubemap() override;

@@ -133,9 +133,6 @@ namespace Vortex {
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
-		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
-		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
-		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 
 		SharedRef<Shader> reflectiveShader = s_Data.ShaderLibrary->Get("Reflective");
@@ -414,6 +411,15 @@ namespace Vortex {
 		skybox->Bind();
 		RenderCommand::DrawTriangles(skyboxMeshVA, 36);
 		RenderCommand::EnableDepthMask();
+
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
+		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
+		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
+
+		s_Data.HDRFramebuffer->BindIrradianceCubemap();
+		s_Data.HDRFramebuffer->BindPrefilterCubemap();
+		s_Data.HDRFramebuffer->BindBRDFLutTexture();
 	}
 
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)

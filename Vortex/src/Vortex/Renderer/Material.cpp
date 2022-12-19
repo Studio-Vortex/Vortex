@@ -13,7 +13,7 @@ namespace Vortex {
 	{
 		if (SharedRef<Texture2D> normalMap = GetNormalMap())
 		{
-			uint32_t normalMapTextureSlot = 1;
+			uint32_t normalMapTextureSlot = 4;
 			normalMap->Bind(normalMapTextureSlot);
 			m_Shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasNormalMap", true);
@@ -23,7 +23,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> albedoMap = GetAlbedoMap())
 		{
-			uint32_t albedoMapTextureSlot = 2;
+			uint32_t albedoMapTextureSlot = 5;
 			albedoMap->Bind(albedoMapTextureSlot);
 			m_Shader->SetInt("u_Material.AlbedoMap", albedoMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasAlbedoMap", true);
@@ -36,7 +36,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> metallicMap = GetMetallicMap())
 		{
-			uint32_t metallicMapTextureSlot = 3;
+			uint32_t metallicMapTextureSlot = 6;
 			metallicMap->Bind(metallicMapTextureSlot);
 			m_Shader->SetInt("u_Material.MetallicMap", metallicMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasMetallicMap", true);
@@ -49,7 +49,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> roughnessMap = GetRoughnessMap())
 		{
-			uint32_t roughnessMapTextureSlot = 4;
+			uint32_t roughnessMapTextureSlot = 7;
 			roughnessMap->Bind(roughnessMapTextureSlot);
 			m_Shader->SetInt("u_Material.RoughnessMap", roughnessMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasRoughnessMap", true);
@@ -62,7 +62,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> emissionMap = GetEmissionMap())
 		{
-			uint32_t emissionMapTextureSlot = 5;
+			uint32_t emissionMapTextureSlot = 8;
 			emissionMap->Bind(emissionMapTextureSlot);
 			m_Shader->SetInt("u_Material.EmissionMap", emissionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasEmissionMap", true);
@@ -75,7 +75,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> parallaxOcclusionMap = GetParallaxOcclusionMap())
 		{
-			uint32_t parallaxOcclusionMapTextureSlot = 6;
+			uint32_t parallaxOcclusionMapTextureSlot = 9;
 			parallaxOcclusionMap->Bind(parallaxOcclusionMapTextureSlot);
 			m_Shader->SetInt("u_Material.POMap", parallaxOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasPOMap", true);
@@ -86,7 +86,7 @@ namespace Vortex {
 
 		if (SharedRef<Texture2D> ambientOcclusionMap = GetAmbientOcclusionMap())
 		{
-			uint32_t ambientOcclusionMapTextureSlot = 7;
+			uint32_t ambientOcclusionMapTextureSlot = 10;
 			ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
 			m_Shader->SetInt("u_Material.AOMap", ambientOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasAOMap", true);

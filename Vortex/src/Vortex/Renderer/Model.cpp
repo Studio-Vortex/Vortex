@@ -372,7 +372,9 @@ namespace Vortex {
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
 		for (auto& mesh : m_Meshes)
+		{
 			mesh.Render(m_MeshShader, m_Material);
+		}
 	}
 
 	void Model::SetMaterial(const SharedRef<MaterialInstance>& material)
