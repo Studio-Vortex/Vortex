@@ -15,6 +15,8 @@ namespace Vortex {
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
 	static constexpr const char* EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
 	static constexpr const char* IRRADIANCE_CONVOLUTION_SHADER_PATH = "Resources/Shaders/Irradiance_Convolution.glsl";
+	static constexpr const char* IBL_PREFILTER_SHADER_PATH = "Resources/Shaders/IBL_Prefilter.glsl";
+	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/BRDF_LUT.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
 	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
@@ -69,6 +71,8 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("EquirectangularToCubemap", EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("IrradianceConvolution", IRRADIANCE_CONVOLUTION_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("IBL_Prefilter", IBL_PREFILTER_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
@@ -129,6 +133,9 @@ namespace Vortex {
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
+		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
+		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 
 		SharedRef<Shader> reflectiveShader = s_Data.ShaderLibrary->Get("Reflective");
@@ -263,7 +270,7 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SharedRef<Skybox>& skybox)
+	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, SharedRef<Skybox>& skybox)
 	{
 		if (!skybox->IsHDREquirectangularMap())
 		{
@@ -323,11 +330,7 @@ namespace Vortex {
 			}
 			s_Data.HDRFramebuffer->Unbind();
 
-			SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
-			pbrShader->Enable();
-			pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
 			s_Data.HDRFramebuffer->CreateIrradianceCubemap();
-
 			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
 
 			SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
@@ -348,6 +351,50 @@ namespace Vortex {
 				cubeMeshVA->Bind();
 				RenderCommand::DrawTriangles(cubeMeshVA, 36);
 			}
+			s_Data.HDRFramebuffer->Unbind();
+
+			s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
+			SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
+			iblPrefilterShader->Enable();
+			iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
+			iblPrefilterShader->SetMat4("u_Projection", captureProjection);
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
+
+			uint32_t maxMipLevels = 5;
+			s_Data.HDRFramebuffer->Bind();
+			for (uint32_t mip = 0; mip < maxMipLevels; mip++)
+			{
+				// Resize framebuffer according to mip-level size
+				uint32_t mipWidth = 128 * std::pow(0.5, mip);
+				uint32_t mipHeight = 128 * std::pow(0.5, mip);
+				s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
+				RenderCommand::SetViewport(Viewport{ 0, 0, mipWidth, mipHeight });
+
+				float roughness = (float)mip / (float)(maxMipLevels - 1);
+				iblPrefilterShader->SetFloat("u_Roughness", roughness);
+				for (uint32_t i = 0; i < 6; i++)
+				{
+					iblPrefilterShader->SetMat4("u_View", captureViews[i]);
+					s_Data.HDRFramebuffer->SetPrefilterCubemapFramebufferTexture(i);
+					s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+					// Render a unit cube
+					cubeMeshVA->Bind();
+					RenderCommand::DrawTriangles(cubeMeshVA, 36);
+				}
+			}
+			s_Data.HDRFramebuffer->Unbind();
+
+			s_Data.HDRFramebuffer->CreateBRDFLutTexture();
+			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(512, 512);
+			s_Data.HDRFramebuffer->SetBRDFLutFramebufferTexture();
+
+			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
+			SharedRef<Shader> brdfLutShader = s_Data.ShaderLibrary->Get("BRDF_LUT");
+			brdfLutShader->Enable();
+			s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+			Renderer2D::DrawUnitQuadAtOrigin();
+
 			s_Data.HDRFramebuffer->Unbind();
 
 			skybox->SetPathChanged(false);

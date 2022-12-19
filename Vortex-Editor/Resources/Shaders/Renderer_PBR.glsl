@@ -155,6 +155,8 @@ struct SceneProperties
 	int ActiveSpotLights;
 
 	samplerCube IrradianceMap;
+	samplerCube PrefilterMap;
+	sampler2D BRDFLut;
 
 	vec3 CameraPosition;
 	float Exposure;
@@ -179,7 +181,8 @@ float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
 float gaSchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric, float rougness);
+vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric);
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 Fdialetric, float rougness);
 
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 {
@@ -233,6 +236,7 @@ void main()
 
 	vec3 N = properties.Normal;
 	vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
+	vec3 R = reflect(-V, N);
 
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use Fdialetric of 0.04
@@ -257,7 +261,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
+		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
 
 		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
@@ -295,7 +299,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
+		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
 
 		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
@@ -333,7 +337,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0f);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric, properties.Roughness);
+		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
 
 		float NdotV = max(dot(N, V), 0.0f);
 		float NdotL = max(dot(N, L), 0.0f);
@@ -354,11 +358,24 @@ void main()
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
-	vec3 kS = FresnelSchlick(max(dot(N, V), 0.0), Fdialetric, properties.Roughness);
+	// Ambient lighting (we now use Image Based Lighting as the ambient term)
+	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), Fdialetric, properties.Roughness);
+
+	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
+	kD *= 1.0 - properties.Metallic;
+
 	vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
 	vec3 diffuse = irradiance * properties.Albedo;
-	vec3 ambient = (kD * diffuse) * properties.AO;
+
+	// sample both the pre-filter map and the BRDF lut and combine them together
+	// as per the Split-Sum approximation to get the IBL specular part.
+	const float MAX_REFLECTION_LOD = 4.0;
+	vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(max(dot(N, V), 0.0), properties.Roughness)).rg;
+	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+	vec3 ambient = (kD * diffuse + specular) * properties.AO;
 
 	vec3 color = ambient + Lo;
 
@@ -423,7 +440,13 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 }
 
 // Schlick's approximation of the Fresnel factor
-vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric, float roughness)
+vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric)
+{
+	return Fdialetric + (1.0 - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+// Schlick's approximation of the Fresnel factor with roughness remapping
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 Fdialetric, float roughness)
 {
 	return Fdialetric + (max(vec3(1.0 - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }

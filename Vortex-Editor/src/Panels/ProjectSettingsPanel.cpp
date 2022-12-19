@@ -59,7 +59,7 @@ namespace Vortex {
 
 					if (Gui::BeginCombo("Cull Mode", currentCullMode))
 					{
-						uint32_t arraySize = SP_ARRAYCOUNT(cullModes);
+						uint32_t arraySize = VX_ARRAYCOUNT(cullModes);
 
 						for (uint32_t i = 0; i < arraySize; i++)
 						{
@@ -113,7 +113,7 @@ namespace Vortex {
 
 					if (Gui::BeginCombo("Refractive Index", currentRefractiveIndex))
 					{
-						uint32_t arraySize = SP_ARRAYCOUNT(refractiveIndices);
+						uint32_t arraySize = VX_ARRAYCOUNT(refractiveIndices);
 
 						for (uint32_t i = 0; i < arraySize; i++)
 						{
@@ -226,7 +226,7 @@ namespace Vortex {
 
 					if (Gui::BeginCombo("Editor Theme", currentTheme))
 					{
-						uint32_t arraySize = SP_ARRAYCOUNT(themes);
+						uint32_t arraySize = VX_ARRAYCOUNT(themes);
 
 						for (uint32_t i = 0; i < arraySize; i++)
 						{

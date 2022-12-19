@@ -42,7 +42,7 @@
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
-#define SP_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
+#define VX_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
 
 #define SP_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 

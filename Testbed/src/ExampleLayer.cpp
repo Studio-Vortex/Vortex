@@ -24,7 +24,7 @@ ExampleLayer::ExampleLayer()
 	m_TriangleVA->AddVertexBuffer(pTriangleVB);
 
 	uint32_t indices[3] = { 0, 1, 2 };
-	Vortex::SharedRef<Vortex::IndexBuffer> pTriangleIB = Vortex::IndexBuffer::Create(indices, SP_ARRAYCOUNT(indices));
+	Vortex::SharedRef<Vortex::IndexBuffer> pTriangleIB = Vortex::IndexBuffer::Create(indices, VX_ARRAYCOUNT(indices));
 	m_TriangleVA->SetIndexBuffer(pTriangleIB);
 
 	m_SquareVA = Vortex::VertexArray::Create();
@@ -47,7 +47,7 @@ ExampleLayer::ExampleLayer()
 	m_SquareVA->AddVertexBuffer(pSquareVB);
 
 	uint32_t squareIndices[6] = { 0, 1, 2, 0, 2, 3 };
-	Vortex::SharedRef<Vortex::IndexBuffer> pSquareIB = Vortex::IndexBuffer::Create(squareIndices, SP_ARRAYCOUNT(squareIndices));
+	Vortex::SharedRef<Vortex::IndexBuffer> pSquareIB = Vortex::IndexBuffer::Create(squareIndices, VX_ARRAYCOUNT(squareIndices));
 	m_SquareVA->SetIndexBuffer(pSquareIB);
 
 	m_TriangleShader = m_ShaderLibrary.Load("assets/shaders/VertexPosColor.glsl");

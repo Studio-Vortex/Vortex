@@ -903,7 +903,7 @@ namespace Vortex {
 
 			if (Gui::BeginCombo("Projection", currentProjectionType))
 			{
-				uint32_t arraySize = SP_ARRAYCOUNT(projectionTypes);
+				uint32_t arraySize = VX_ARRAYCOUNT(projectionTypes);
 
 				for (uint32_t i = 0; i < arraySize; i++)
 				{
@@ -1001,7 +1001,7 @@ namespace Vortex {
 
 			if (Gui::BeginCombo("Light Type", currentLightType))
 			{
-				uint32_t arraySize = SP_ARRAYCOUNT(lightTypes);
+				uint32_t arraySize = VX_ARRAYCOUNT(lightTypes);
 
 				for (uint32_t i = 0; i < arraySize; i++)
 				{
@@ -1085,7 +1085,7 @@ namespace Vortex {
 
 			if (Gui::BeginCombo("Mesh Type", currentMeshType))
 			{
-				uint32_t arraySize = SP_ARRAYCOUNT(meshTypes);
+				uint32_t arraySize = VX_ARRAYCOUNT(meshTypes);
 
 				for (uint32_t i = 0; i < arraySize; i++)
 				{
@@ -1881,7 +1881,7 @@ namespace Vortex {
 
 			if (Gui::BeginCombo("Body Type", currentBodyType))
 			{
-				uint32_t arraySize = SP_ARRAYCOUNT(bodyTypes);
+				uint32_t arraySize = VX_ARRAYCOUNT(bodyTypes);
 
 				for (uint32_t i = 0; i < arraySize; i++)
 				{
@@ -1996,7 +1996,7 @@ namespace Vortex {
 
 			if (Gui::BeginCombo("Body Type", currentBodyType))
 			{
-				uint32_t arraySize = SP_ARRAYCOUNT(bodyTypes);
+				uint32_t arraySize = VX_ARRAYCOUNT(bodyTypes);
 
 				for (uint32_t i = 0; i < arraySize; i++)
 				{

@@ -71,17 +71,21 @@ namespace Vortex
 
 		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
 
-		SharedRef<VertexArray> QuadVA;
-		SharedRef<VertexBuffer> QuadVB;
+		SharedRef<VertexArray> UnitQuadVA = nullptr;
+		SharedRef<VertexBuffer> UnitQuadVB = nullptr;
+		SharedRef<IndexBuffer> UnitQuadIB = nullptr;
 
-		SharedRef<VertexArray> CircleVA;
-		SharedRef<VertexBuffer> CircleVB;
+		SharedRef<VertexArray> QuadVA = nullptr;
+		SharedRef<VertexBuffer> QuadVB = nullptr;
 
-		SharedRef<VertexArray> LineVA;
-		SharedRef<VertexBuffer> LineVB;
+		SharedRef<VertexArray> CircleVA = nullptr;
+		SharedRef<VertexBuffer> CircleVB = nullptr;
 
-		SharedRef<VertexArray> TextVA;
-		SharedRef<VertexBuffer> TextVB;
+		SharedRef<VertexArray> LineVA = nullptr;
+		SharedRef<VertexBuffer> LineVB = nullptr;
+
+		SharedRef<VertexArray> TextVA = nullptr;
+		SharedRef<VertexBuffer> TextVB = nullptr;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
@@ -118,6 +122,22 @@ namespace Vortex
 	void Renderer2D::Init(RendererAPI::TriangleCullMode cullMode)
 	{
 		SP_PROFILE_FUNCTION();
+
+		float vertices[] = {
+			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f
+		};
+
+		/// Unit Quad
+		s_Data.UnitQuadVA = VertexArray::Create();
+		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(vertices));
+		s_Data.UnitQuadVB->SetLayout({ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float2, "a_TexCoord" } });
+		s_Data.UnitQuadVA->AddVertexBuffer(s_Data.UnitQuadVB);
+		uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+		s_Data.UnitQuadIB = IndexBuffer::Create(indices, VX_ARRAYCOUNT(indices));
+		s_Data.UnitQuadVA->SetIndexBuffer(s_Data.UnitQuadIB);
 
 		/// Quads
 		s_Data.QuadVA = VertexArray::Create();
@@ -469,7 +489,12 @@ namespace Vortex
 #endif // SP_RENDERER_STATISTICS
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec3& color)
+    void Renderer2D::DrawUnitQuadAtOrigin()
+    {
+		RenderCommand::DrawIndexed(s_Data.UnitQuadVA);
+    }
+
+    void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec3& color)
 	{
 		DrawQuad(transform, { color.r, color.g, color.b, 1.0f });
 	}

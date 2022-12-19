@@ -34,7 +34,7 @@ const float GAMMA = 2.2;
 
 void main()
 {
-	vec3 envColor = texture(u_EnvironmentMap, f_TexCoord).rgb;
+	vec3 envColor = textureLod(u_EnvironmentMap, f_TexCoord, 0.0).rgb;
 
 	// HDR Tonemap and Gamma Correction
 	envColor = envColor / (envColor + vec3(1.0));
