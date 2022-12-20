@@ -82,6 +82,7 @@ namespace Vortex {
 		virtual void BindPrefilterCubemap() const = 0;
 		virtual void BindBRDFLutTexture() const = 0;
 
+		virtual void CreateEnvironmentCubemap() = 0;
 		virtual void CreateIrradianceCubemap() = 0;
 		virtual void CreatePrefilteredEnvironmentCubemap() = 0;
 		virtual void CreateBRDFLutTexture() = 0;
@@ -90,7 +91,7 @@ namespace Vortex {
 
 		virtual void SetEnvironmentCubemapFramebufferTexture(uint32_t index) const = 0;
 		virtual void SetIrradianceCubemapFramebufferTexture(uint32_t index) const = 0;
-		virtual void SetPrefilterCubemapFramebufferTexture(uint32_t index) const = 0;
+		virtual void SetPrefilterCubemapFramebufferTexture(uint32_t index, uint32_t mipLevel) const = 0;
 		virtual void SetBRDFLutFramebufferTexture() const = 0;
 		virtual void ClearColorAndDepthAttachments() const = 0;
 		virtual void RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const = 0;

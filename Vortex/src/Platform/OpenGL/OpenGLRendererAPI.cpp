@@ -89,7 +89,7 @@ namespace Vortex {
 	void OpenGLRendererAPI::DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
-		glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, nullptr);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, indexCount);
 	}
 
 	void OpenGLRendererAPI::EnableDepthMask() const

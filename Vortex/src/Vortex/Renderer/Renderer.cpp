@@ -85,8 +85,6 @@ namespace Vortex {
 		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
-		s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
-
 #if SP_RENDERER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
@@ -294,6 +292,8 @@ namespace Vortex {
 		// TODO fix this hack!
 		if (skybox->PathChanged())
 		{
+			s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
+
 			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
 			Math::mat4 captureViews[] =
 			{
@@ -305,6 +305,8 @@ namespace Vortex {
 			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f))
 			};
 
+			s_Data.HDRFramebuffer->CreateEnvironmentCubemap();
+
 			// convert HDR equirectangular environment map to cubemap equivalent
 			SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
 			equirectToCubemapShader->Enable();
@@ -315,7 +317,7 @@ namespace Vortex {
 			SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
 			// don't forget to configure the viewport to the capture dimensions.
-			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
+			RenderCommand::SetViewport(Viewport{ 0, 0, 4096, 4096 });
 			s_Data.HDRFramebuffer->Bind();
 			for (uint32_t i = 0; i < 6; i++)
 			{
@@ -365,8 +367,8 @@ namespace Vortex {
 			for (uint32_t mip = 0; mip < maxMipLevels; mip++)
 			{
 				// Resize framebuffer according to mip-level size
-				uint32_t mipWidth = 128 * std::pow(0.5, mip);
-				uint32_t mipHeight = 128 * std::pow(0.5, mip);
+				uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
+				uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
 				s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
 				RenderCommand::SetViewport(Viewport{ 0, 0, mipWidth, mipHeight });
 
@@ -375,7 +377,7 @@ namespace Vortex {
 				for (uint32_t i = 0; i < 6; i++)
 				{
 					iblPrefilterShader->SetMat4("u_View", captureViews[i]);
-					s_Data.HDRFramebuffer->SetPrefilterCubemapFramebufferTexture(i);
+					s_Data.HDRFramebuffer->SetPrefilterCubemapFramebufferTexture(i, mip);
 					s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
 
 					// Render a unit cube
@@ -386,10 +388,10 @@ namespace Vortex {
 			s_Data.HDRFramebuffer->Unbind();
 
 			s_Data.HDRFramebuffer->CreateBRDFLutTexture();
-			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(512, 512);
+			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(4096, 4096);
 			s_Data.HDRFramebuffer->SetBRDFLutFramebufferTexture();
 
-			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
+			RenderCommand::SetViewport(Viewport{ 0, 0, 4096, 4096 });
 			SharedRef<Shader> brdfLutShader = s_Data.ShaderLibrary->Get("BRDF_LUT");
 			brdfLutShader->Enable();
 			s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();

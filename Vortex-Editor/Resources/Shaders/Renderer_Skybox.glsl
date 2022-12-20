@@ -29,17 +29,17 @@ layout (location = 1) out int o_EntityID;
 in vec3 f_TexCoord;
 
 uniform samplerCube u_EnvironmentMap;
-
-const float GAMMA = 2.2;
+uniform float u_Gamma;
+uniform float u_Exposure;
 
 void main()
 {
 	vec3 envColor = textureLod(u_EnvironmentMap, f_TexCoord, 0.0).rgb;
 
-	// HDR Tonemap and Gamma Correction
-	envColor = envColor / (envColor + vec3(1.0));
-	envColor = pow(envColor, vec3(1.0 / GAMMA));
+	// Exposure Tonemap and Gamma Correction
+	vec3 mapped = vec3(1.0) - exp(-envColor * u_Exposure);
+	mapped = pow(mapped, vec3(1.0 / u_Gamma));
 
-	o_Color = vec4(envColor, 1.0);
+	o_Color = vec4(mapped, 1.0);
 	o_EntityID = -1;
 }

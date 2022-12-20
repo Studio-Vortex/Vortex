@@ -43,7 +43,7 @@ namespace Vortex {
 	{
 	public:
 		OpenGLHDRFramebuffer(const FramebufferProperties& props);
-		~OpenGLHDRFramebuffer() = default;
+		~OpenGLHDRFramebuffer() override;
 
 		void Bind() const override;
 		void Unbind() const override;
@@ -53,6 +53,7 @@ namespace Vortex {
 		void BindPrefilterCubemap() const override;
 		void BindBRDFLutTexture() const override;
 
+		void CreateEnvironmentCubemap() override;
 		void CreateIrradianceCubemap() override;
 		void CreatePrefilteredEnvironmentCubemap() override;
 		void CreateBRDFLutTexture() override;
@@ -61,7 +62,7 @@ namespace Vortex {
 
 		void SetEnvironmentCubemapFramebufferTexture(uint32_t index) const override;
 		void SetIrradianceCubemapFramebufferTexture(uint32_t index) const override;
-		void SetPrefilterCubemapFramebufferTexture(uint32_t index) const override;
+		void SetPrefilterCubemapFramebufferTexture(uint32_t index, uint32_t mipLevel) const override;
 		void SetBRDFLutFramebufferTexture() const override;
 		void ClearColorAndDepthAttachments() const override;
 		void RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const override;

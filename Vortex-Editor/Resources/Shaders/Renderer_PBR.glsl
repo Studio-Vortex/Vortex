@@ -177,12 +177,15 @@ uniform SceneProperties  u_SceneProperties;
 const float PI = 3.14159265359;
 const float EPSILON = 0.0001;
 
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);
+
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
 float gaSchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric);
-vec3 FresnelSchlickRoughness(float cosTheta, vec3 Fdialetric, float rougness);
+vec3 FresnelSchlick(float cosTheta, vec3 F0);
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float rougness);
 
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 {
@@ -239,10 +242,10 @@ void main()
 	vec3 R = reflect(-V, N);
 
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
-	// if dia-electric (like plastic) use Fdialetric of 0.04
-	// if it's a metal, use the albedo color as Fdialetric (metallic workflow)
-	vec3 Fdialetric = vec3(0.04);
-	Fdialetric = mix(Fdialetric, properties.Albedo, properties.Metallic);
+	// if dia-electric (like plastic) use F0 of 0.04
+	// if it's a metal, use the albedo color as F0 (metallic workflow)
+	vec3 F0 = Fdielectric;
+	F0 = mix(F0, properties.Albedo, properties.Metallic);
 
 	// Reflectance equation
 	vec3 Lo = vec3(0.0);
@@ -261,7 +264,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
+		vec3 F = FresnelSchlick(cosTheta, F0);
 
 		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
@@ -299,7 +302,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
+		vec3 F = FresnelSchlick(cosTheta, F0);
 
 		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
@@ -337,7 +340,7 @@ void main()
 		float NDF = DistributionGGX(N, H, properties.Roughness);
 		float G = GeometrySmith(N, V, L, properties.Roughness);
 		float cosTheta = max(dot(H, V), 0.0f);
-		vec3 F = FresnelSchlick(cosTheta, Fdialetric);
+		vec3 F = FresnelSchlick(cosTheta, F0);
 
 		float NdotV = max(dot(N, V), 0.0f);
 		float NdotL = max(dot(N, L), 0.0f);
@@ -359,7 +362,7 @@ void main()
 	}
 
 	// Ambient lighting (we now use Image Based Lighting as the ambient term)
-	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), Fdialetric, properties.Roughness);
+	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, properties.Roughness);
 
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
@@ -379,11 +382,11 @@ void main()
 
 	vec3 color = ambient + Lo;
 
-	// HDR tonemapping
-	color = color / (color + vec3(1.0));
+	// Exposure tonemapping
+	vec3 mapped = vec3(1.0) - exp(-color * u_SceneProperties.Exposure);
 
 	// Gamma correct
-	color = pow(color, vec3(1.0 / u_SceneProperties.Gamma));
+	mapped = pow(mapped, vec3(1.0 / u_SceneProperties.Gamma));
 
 	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureCoords).a : 1.0);
 
@@ -391,7 +394,7 @@ void main()
 	if (alpha == 0.0)
 		discard;
 
-	o_Color = vec4(color, alpha) + vec4(properties.Emission, 0.0);
+	o_Color = vec4(mapped, alpha) + vec4(properties.Emission, 0.0);
 	o_EntityID = fragmentIn.EntityID;
 }
 
@@ -440,13 +443,13 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 }
 
 // Schlick's approximation of the Fresnel factor
-vec3 FresnelSchlick(float cosTheta, vec3 Fdialetric)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
-	return Fdialetric + (1.0 - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+	return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 // Schlick's approximation of the Fresnel factor with roughness remapping
-vec3 FresnelSchlickRoughness(float cosTheta, vec3 Fdialetric, float roughness)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
-	return Fdialetric + (max(vec3(1.0 - roughness), Fdialetric) - Fdialetric) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }

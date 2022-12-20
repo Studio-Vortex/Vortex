@@ -249,33 +249,36 @@ namespace Vortex {
 
 	OpenGLHDRFramebuffer::OpenGLHDRFramebuffer(const FramebufferProperties& props)
 	{
-		// Create Framebuffer
-		{
-			glGenFramebuffers(1, &m_CaptureFramebufferRendererID);
-			glGenRenderbuffers(1, &m_CaptureRenderbufferRendererID);
+		glGenFramebuffers(1, &m_CaptureFramebufferRendererID);
+		glGenRenderbuffers(1, &m_CaptureRenderbufferRendererID);
 
-			glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
-			glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
-		}
+		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 4096, 4096);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
 
-		// Create Environment Cubemap
-		{
-			glGenTextures(1, &m_EnvironmentCubemapRendererID);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
-			for (uint32_t i = 0; i < 6; i++)
-			{
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-			}
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		VX_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer failed to complete!");
+	}
 
-			glGenerateTextureMipmap(m_EnvironmentCubemapRendererID);
-		}
+	OpenGLHDRFramebuffer::~OpenGLHDRFramebuffer()
+	{
+		if (m_CaptureFramebufferRendererID)
+			glDeleteFramebuffers(1, &m_CaptureFramebufferRendererID);
+
+		if (m_CaptureRenderbufferRendererID)
+			glDeleteRenderbuffers(1, &m_CaptureRenderbufferRendererID);
+
+		if (m_EnvironmentCubemapRendererID)
+			glDeleteTextures(1, &m_EnvironmentCubemapRendererID);
+
+		if (m_IrradianceCubemapRendererID)
+			glDeleteTextures(1, &m_IrradianceCubemapRendererID);
+
+		if (m_PrefilteredEnvironmentCubemapRendererID)
+			glDeleteTextures(1, &m_PrefilteredEnvironmentCubemapRendererID);
+
+		if (m_BRDFLutTextureRendererID)
+			glDeleteTextures(1, &m_BRDFLutTextureRendererID);
 	}
 
 	void OpenGLHDRFramebuffer::Bind() const
@@ -312,10 +315,26 @@ namespace Vortex {
 		glBindTexture(GL_TEXTURE_2D, m_BRDFLutTextureRendererID);
 	}
 
+	void OpenGLHDRFramebuffer::CreateEnvironmentCubemap()
+	{
+		glGenTextures(1, &m_EnvironmentCubemapRendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 4096, 4096, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glGenerateTextureMipmap(m_EnvironmentCubemapRendererID);
+	}
+
 	void OpenGLHDRFramebuffer::CreateIrradianceCubemap()
 	{
 		glGenTextures(1, &m_IrradianceCubemapRendererID);
-		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -332,7 +351,6 @@ namespace Vortex {
 	{
 		// If there are a large number of smooth materials you may want to increase the resolution here
 		glGenTextures(1, &m_PrefilteredEnvironmentCubemapRendererID);
-		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -351,9 +369,8 @@ namespace Vortex {
 	{
 		glGenTextures(1, &m_BRDFLutTextureRendererID);
 		// Pre allocate enough memory for the LUT texture
-		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_BRDFLutTextureRendererID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 4096, 4096, 0, GL_RG, GL_FLOAT, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -376,9 +393,9 @@ namespace Vortex {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_IrradianceCubemapRendererID, 0);
 	}
 
-	void OpenGLHDRFramebuffer::SetPrefilterCubemapFramebufferTexture(uint32_t index) const
+	void OpenGLHDRFramebuffer::SetPrefilterCubemapFramebufferTexture(uint32_t index, uint32_t mipLevel) const
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_PrefilteredEnvironmentCubemapRendererID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, m_PrefilteredEnvironmentCubemapRendererID, mipLevel);
 	}
 
 	void OpenGLHDRFramebuffer::SetBRDFLutFramebufferTexture() const

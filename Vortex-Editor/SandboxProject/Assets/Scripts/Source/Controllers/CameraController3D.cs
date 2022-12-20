@@ -1,5 +1,4 @@
-﻿using System;
-using Vortex;
+﻿using Vortex;
 
 namespace Sandbox {
 
@@ -78,12 +77,12 @@ namespace Sandbox {
 
 			if (transform.Rotation.X >= MaxRoll_Up)
 			{
-				float roll = Math.Min(MaxRoll_Up, transform.Rotation.X);
+				float roll = Mathf.Min(MaxRoll_Up, transform.Rotation.X);
 				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 			if (transform.Rotation.X <= MaxRoll_Down)
 			{
-				float roll = Math.Max(MaxRoll_Down, transform.Rotation.X);
+				float roll = Mathf.Max(MaxRoll_Down, transform.Rotation.X);
 				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 			}
 		}

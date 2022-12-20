@@ -124,20 +124,20 @@ namespace Vortex
 		SP_PROFILE_FUNCTION();
 
 		float vertices[] = {
-			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
 		};
 
 		/// Unit Quad
 		s_Data.UnitQuadVA = VertexArray::Create();
-		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(vertices));
-		s_Data.UnitQuadVB->SetLayout({ { ShaderDataType::Float3, "a_Position"}, { ShaderDataType::Float2, "a_TexCoord" } });
+		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * 20);
+		s_Data.UnitQuadVB->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoord" }
+		});
 		s_Data.UnitQuadVA->AddVertexBuffer(s_Data.UnitQuadVB);
-		uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
-		s_Data.UnitQuadIB = IndexBuffer::Create(indices, VX_ARRAYCOUNT(indices));
-		s_Data.UnitQuadVA->SetIndexBuffer(s_Data.UnitQuadIB);
 
 		/// Quads
 		s_Data.QuadVA = VertexArray::Create();
@@ -491,7 +491,7 @@ namespace Vortex
 
     void Renderer2D::DrawUnitQuadAtOrigin()
     {
-		RenderCommand::DrawIndexed(s_Data.UnitQuadVA);
+		RenderCommand::DrawTriangleStrip(s_Data.UnitQuadVA, 4);
     }
 
     void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec3& color)
