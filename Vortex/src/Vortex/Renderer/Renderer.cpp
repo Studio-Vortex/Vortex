@@ -4,9 +4,9 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetRegistry.h"
+#include "Vortex/Core/Application.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Model.h"
 
@@ -18,8 +18,7 @@ namespace Vortex {
 	static constexpr const char* IBL_PREFILTER_SHADER_PATH = "Resources/Shaders/IBL_Prefilter.glsl";
 	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/BRDF_LUT.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
-	static constexpr const char* REFLECTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Reflection.glsl";
-	static constexpr const char* REFRACTIVE_SHADER_PATH = "Resources/Shaders/Renderer_Refraction.glsl";
+	static constexpr const char* SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_ShadowMap.glsl";
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
 	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
@@ -33,18 +32,23 @@ namespace Vortex {
 
 		SharedRef<Model> SkyboxMesh = nullptr;
 
-		float RefractiveIndex = 1.52f; // Glass
-
 		static constexpr inline uint32_t MaxDirectionalLights = 1;
 		static constexpr inline uint32_t MaxPointLights = 100;
 		static constexpr inline uint32_t MaxSpotLights = 50;
 
+		static constexpr inline uint32_t ShadowWidth = 1024;
+		static constexpr inline uint32_t ShadowHeight = 1024;
+
 		SceneLightDescription SceneLightDesc;
+
+		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
+		SharedRef<DepthMapFramebuffer> DepthMapFramebuffer = nullptr;
 
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
 
-		bool RenderWithPBROnly = false;
+		std::vector<SharedRef<Model>> ShadowedModels;
+		std::vector<Math::mat4> ModelWorldSpaceTransforms;
 
 		RenderStatistics RendererStatistics;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
@@ -55,8 +59,6 @@ namespace Vortex {
 		SharedRef<Texture2D> SpotLightIcon = nullptr;
 		SharedRef<Texture2D> DirLightIcon = nullptr;
 		SharedRef<Texture2D> AudioSourceIcon = nullptr;
-
-		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -74,8 +76,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("IBL_Prefilter", IBL_PREFILTER_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Reflective", REFLECTIVE_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Refractive", REFRACTIVE_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("ShadowMap", SHADOW_MAP_SHADER_PATH);
 
 		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
 
@@ -84,6 +85,11 @@ namespace Vortex {
 		s_Data.SpotLightIcon = Texture2D::Create(SPOT_LIGHT_ICON_PATH);
 		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
+
+		FramebufferProperties depthFramebufferProps;
+		depthFramebufferProps.Width = s_Data.ShadowWidth;
+		depthFramebufferProps.Height = s_Data.ShadowHeight;
+		s_Data.DepthMapFramebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
 
 #if SP_RENDERER_STATISTICS
 		ResetStats();
@@ -133,22 +139,12 @@ namespace Vortex {
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 
-		SharedRef<Shader> reflectiveShader = s_Data.ShaderLibrary->Get("Reflective");
-		reflectiveShader->Enable();
-		reflectiveShader->SetMat4("u_ViewProjection", viewProjection);
-		reflectiveShader->SetInt("u_Skybox", 0);
-		reflectiveShader->SetFloat3("u_CameraPosition", cameraPosition);
-
-		SharedRef<Shader> refractiveShader = s_Data.ShaderLibrary->Get("Refractive");
-		refractiveShader->Enable();
-		refractiveShader->SetMat4("u_ViewProjection", viewProjection);
-		refractiveShader->SetInt("u_Skybox", 0);
-		refractiveShader->SetFloat3("u_CameraPosition", cameraPosition);
-		refractiveShader->SetFloat("u_RefractiveIndex", s_Data.RefractiveIndex);
-
 		s_Data.SceneLightDesc.ActiveDirLights = 0;
 		s_Data.SceneLightDesc.ActivePointLights = 0;
 		s_Data.SceneLightDesc.ActiveSpotLights = 0;
+
+		s_Data.ShadowedModels.clear();
+		s_Data.ModelWorldSpaceTransforms.clear();
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -159,6 +155,12 @@ namespace Vortex {
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 		s_Data.RendererStatistics.DrawCalls++;
+	}
+
+	void Renderer::SubmitToShadowMap(const SharedRef<Model>& model, const Math::mat4& worldSpaceTransform)
+	{
+		s_Data.ShadowedModels.push_back(model);
+		s_Data.ModelWorldSpaceTransforms.push_back(worldSpaceTransform);
 	}
 
 	void Renderer::DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -214,6 +216,32 @@ namespace Vortex {
 				pbrShader->Enable();
 				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
 				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), Math::Normalize(transform.GetRotationEuler()));
+
+				Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 1000.0f);
+				Math::mat4 lightView = Math::LookAt(transform.Translation, Math::vec3(0.0f), Math::vec3(0.0f, 1.0f, 0.0f));
+				Math::mat4 lightProjection = orthogonalProjection * lightView;
+				pbrShader->SetMat4("u_LightProjection", lightProjection);
+
+				Application::Get().SubmitToMainThread([&]() {
+					Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 1000.0f);
+					Math::mat4 lightView = Math::LookAt(transform.Translation, Math::vec3(0.0f), Math::vec3(0.0f, 1.0f, 0.0f));
+					Math::mat4 lightProjection = orthogonalProjection * lightView;
+					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("ShadowMap");
+					shadowMapShader->Enable();
+					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
+
+					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.ShadowWidth, s_Data.ShadowHeight });
+					s_Data.DepthMapFramebuffer->Bind();
+					s_Data.DepthMapFramebuffer->ClearDepthAttachment();
+
+					uint32_t j = 0;
+					for (auto& model : s_Data.ShadowedModels)
+					{
+						model->RenderForShadowMap(s_Data.ModelWorldSpaceTransforms[j++]);
+					}
+
+					s_Data.DepthMapFramebuffer->Unbind();
+				});
 
 				i++;
 
@@ -453,6 +481,17 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
+	const SharedRef<DepthMapFramebuffer>& Renderer::GetDepthMapFramebuffer()
+	{
+		return s_Data.DepthMapFramebuffer;
+	}
+
+	void Renderer::BindDepthMap()
+	{
+		s_Data.DepthMapFramebuffer->BindDepthTexture();
+		s_Data.ShaderLibrary->Get("PBR")->SetInt("u_SceneProperties.ShadowMap", 14);
+	}
+
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
 	{
 		return s_Data.CullMode;
@@ -473,16 +512,6 @@ namespace Vortex {
 		memset(&s_Data.RendererStatistics, 0, sizeof(s_Data.RendererStatistics));
 	}
 
-	float Renderer::GetRefractiveIndex()
-	{
-		return s_Data.RefractiveIndex;
-	}
-
-	void Renderer::SetRefractiveIndex(float index)
-	{
-		s_Data.RefractiveIndex = index;
-	}
-
 	float Renderer::GetSceneExposure()
 	{
 		return s_Data.SceneExposure;
@@ -501,16 +530,6 @@ namespace Vortex {
 	void Renderer::SetSceneGamma(float gamma)
 	{
 		s_Data.SceneGamma = gamma;
-	}
-
-	void Renderer::EnablePBR()
-	{
-		s_Data.RenderWithPBROnly = true;
-	}
-
-	void Renderer::DisablePBR()
-	{
-		s_Data.RenderWithPBROnly = false;
 	}
 
 	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()

@@ -45,6 +45,7 @@ namespace Vortex {
 		~Mesh() = default;
 
 		void Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
+		void RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
@@ -52,6 +53,9 @@ namespace Vortex {
 		void SetMaterial(const SharedRef<MaterialInstance>& material);
 		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
 		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
+
+		const SharedRef<VertexArray>& GetShadowMapVertexArray() const { return m_ShadowMapVertexArray; }
+		const SharedRef<VertexBuffer>& GetShadowMapVertexBuffer() const { return m_ShadowMapVertexBuffer; }
 
 	private:
 		void CreateAndUploadMesh();
@@ -61,9 +65,13 @@ namespace Vortex {
 		std::vector<uint32_t> m_Indices;
 		std::vector<SharedRef<MaterialInstance>> m_Materials;
 
-		SharedRef<VertexArray> m_VertexArray;
-		SharedRef<VertexBuffer> m_VertexBuffer;
-		SharedRef<IndexBuffer> m_IndexBuffer;
+		SharedRef<VertexArray> m_VertexArray = nullptr;
+		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
+		SharedRef<IndexBuffer> m_IndexBuffer = nullptr;
+
+		SharedRef<VertexArray> m_ShadowMapVertexArray = nullptr;
+		SharedRef<VertexBuffer> m_ShadowMapVertexBuffer = nullptr;
+		SharedRef<IndexBuffer> m_ShadowMapIndexBuffer = nullptr;
 	};
 
 	class Model
@@ -101,6 +109,7 @@ namespace Vortex {
 
 		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
 		void Render(const Math::mat4& worldSpaceTransform);
+		void RenderForShadowMap(const Math::mat4& worldSpaceTransform);
 
 		const std::string& GetPath() const { return m_Filepath; }
 

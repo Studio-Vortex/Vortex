@@ -197,6 +197,22 @@ namespace Vortex {
 				SceneRenderer::RenderSkybox(view, projection, scene);
 			}
 
+			// Shadow Pass
+			{
+				auto view = scene->GetAllEntitiesWith<MeshRendererComponent>();
+
+				for (const auto e : view)
+				{
+					Entity entity{ e, scene };
+
+					if (!entity.IsActive())
+						continue;
+
+					SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+					Renderer::SubmitToShadowMap(model, scene->GetWorldSpaceTransformMatrix(entity));
+				}
+			}
+
 			// Light pass
 			auto lightSourceView = scene->GetAllEntitiesWith<LightSourceComponent>();
 			{
@@ -224,6 +240,7 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
+					Renderer::BindDepthMap();
 					meshRendererComponent.Mesh->Render(scene->GetWorldSpaceTransformMatrix(entity));
 				}
 			}

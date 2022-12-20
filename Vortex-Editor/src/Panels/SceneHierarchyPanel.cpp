@@ -191,6 +191,7 @@ namespace Vortex {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 			}
 
@@ -200,6 +201,7 @@ namespace Vortex {
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
 				m_SelectedEntity.AddComponent<CircleRendererComponent>();
 			}
 
@@ -1525,9 +1527,6 @@ namespace Vortex {
 					}
 
 					Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f, 0.0f, 0.0f, "%.2f");
-
-					Gui::Checkbox("Reflective", &component.Reflective);
-					Gui::Checkbox("Refractive", &component.Refractive);
 
 					Gui::TreePop();
 				}

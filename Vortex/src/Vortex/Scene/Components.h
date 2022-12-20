@@ -193,8 +193,6 @@ namespace Vortex {
 		MeshType Type = MeshType::Cube;
 		SharedRef<Model> Mesh = nullptr;
 		Math::vec2 Scale = Math::vec2(1.0f);
-		bool Reflective = false;
-		bool Refractive = false;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;

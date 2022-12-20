@@ -388,8 +388,6 @@ namespace Vortex {
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 			}
 			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
-			out << YAML::Key << "Reflective" << YAML::Value << meshRendererComponent.Reflective;
-			out << YAML::Key << "Refractive" << YAML::Value << meshRendererComponent.Refractive;
 
 			out << YAML::EndMap; // MeshRendererComponent
 		}
@@ -880,11 +878,6 @@ namespace Vortex {
 
 				if (meshComponent["TextureScale"])
 					meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();
-
-				if (meshComponent["Reflective"])
-					meshRendererComponent.Reflective = meshComponent["Reflective"].as<bool>();
-				if (meshComponent["Refractive"])
-					meshRendererComponent.Refractive = meshComponent["Refractive"].as<bool>();
 			}
 
 			auto spriteComponent = entity["SpriteRendererComponent"];

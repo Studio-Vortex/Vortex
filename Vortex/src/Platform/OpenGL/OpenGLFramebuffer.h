@@ -24,7 +24,7 @@ namespace Vortex {
 			return m_ColorAttachments[index];
 		}
 
-		const FramebufferProperties& GetProperties() const override { return m_Properties; }
+		inline const FramebufferProperties& GetProperties() const override { return m_Properties; }
 
 		void Invalidate();
 
@@ -74,6 +74,26 @@ namespace Vortex {
 		uint32_t m_EnvironmentCubemapRendererID = 0;
 		uint32_t m_CaptureFramebufferRendererID = 0;
 		uint32_t m_CaptureRenderbufferRendererID = 0;
+	};
+
+	class OpenGLDepthMapFramebuffer : public DepthMapFramebuffer
+	{
+	public:
+		OpenGLDepthMapFramebuffer(const FramebufferProperties& props);
+		~OpenGLDepthMapFramebuffer() override;
+
+		void Bind() const override;
+		void Unbind() const override;
+
+		void BindDepthTexture() const override;
+
+		void ClearDepthAttachment() const override;
+
+		inline uint32_t GetDepthTextureRendererID() const override { return m_DepthTextureRendererID; }
+
+	private:
+		uint32_t m_DepthMapFramebufferRendererID = 0;
+		uint32_t m_DepthTextureRendererID = 0;
 	};
 
 }

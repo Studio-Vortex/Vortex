@@ -453,6 +453,8 @@ namespace Vortex {
 			}
 		}
 
+		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
+
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -474,6 +476,8 @@ namespace Vortex {
 		// Render
 		s_SceneRenderer.RenderFromEditorCamera(camera, this);
 
+		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
+
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -494,6 +498,8 @@ namespace Vortex {
 			// Set Clear color
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 		}
+
+		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
 
 		// Update Components
 		OnModelUpdate();

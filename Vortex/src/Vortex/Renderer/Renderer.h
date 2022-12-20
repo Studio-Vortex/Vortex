@@ -2,8 +2,9 @@
 
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/EditorCamera.h"
-#include "Vortex/Renderer/Camera.h"
+#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/RenderCommand.h"
+#include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
 
@@ -33,6 +34,7 @@ namespace Vortex {
 		static void EndScene();
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
+		static void SubmitToShadowMap(const SharedRef<Model>& model, const Math::mat4& worldSpaceTransform);
 		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
 		static void RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
@@ -46,6 +48,9 @@ namespace Vortex {
 
 		static SceneLightDescription GetSceneLightDescription();
 
+		static const SharedRef<DepthMapFramebuffer>& GetDepthMapFramebuffer();
+		static void BindDepthMap();
+
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }
 
@@ -58,17 +63,11 @@ namespace Vortex {
 		static RenderStatistics GetStats();
 		static void ResetStats();
 
-		static float GetRefractiveIndex();
-		static void SetRefractiveIndex(float index);
-
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
 
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
-
-		static void EnablePBR();
-		static void DisablePBR();
 
 		static SharedRef<ShaderLibrary> GetShaderLibrary();
 

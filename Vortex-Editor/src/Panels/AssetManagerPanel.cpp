@@ -54,6 +54,13 @@ namespace Vortex {
 
 			Gui::Begin("Asset Manager", &s_ShowPanel);
 
+			Gui::Text("Shadow Map");
+			auto shadowMapID = Renderer::GetDepthMapFramebuffer()->GetDepthTextureRendererID();
+			if (shadowMapID != 0)
+			{
+				Gui::Image(reinterpret_cast<void*>(shadowMapID), { 128, 128 }, { 0, 1 }, { 1, 0 });
+			}
+
 			Gui::PushFont(boldFont);
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
 			Gui::PopFont();

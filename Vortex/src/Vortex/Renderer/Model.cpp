@@ -131,6 +131,29 @@ namespace Vortex {
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
 		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+
+		{
+			std::vector<Math::vec3> positions;
+
+			for (auto& vertex : m_Vertices)
+			{
+				positions.push_back(vertex.Position);
+			}
+
+			m_ShadowMapVertexArray = VertexArray::Create();
+
+			uint32_t dataSize = positions.size() * sizeof(Math::vec3);
+			m_ShadowMapVertexBuffer = VertexBuffer::Create(positions.data(), dataSize);
+
+			m_ShadowMapVertexBuffer->SetLayout({
+				{ ShaderDataType::Float3, "a_Position"  }
+			});
+
+			m_ShadowMapVertexArray->AddVertexBuffer(m_ShadowMapVertexBuffer);
+
+			m_ShadowMapIndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+			m_ShadowMapVertexArray->SetIndexBuffer(m_ShadowMapIndexBuffer);
+		}
 	}
 
 	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
@@ -139,6 +162,11 @@ namespace Vortex {
 		material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
+	}
+
+	void Mesh::RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	{
+		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
 
 	void Model::ProcessNode(aiNode* node, const aiScene* scene)
@@ -359,8 +387,7 @@ namespace Vortex {
 
 	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
-		if (!m_MeshShader)
-			m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
 		m_MeshShader->Enable();
 
@@ -374,6 +401,20 @@ namespace Vortex {
 		for (auto& mesh : m_Meshes)
 		{
 			mesh.Render(m_MeshShader, m_Material);
+		}
+	}
+
+	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform)
+	{
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+
+		m_MeshShader->Enable();
+
+		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
+
+		for (auto& mesh : m_Meshes)
+		{
+			mesh.RenderForShadowMap(m_MeshShader, m_Material);
 		}
 	}
 

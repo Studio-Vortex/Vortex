@@ -41,7 +41,22 @@ namespace Vortex {
 		}
 
 		VX_CORE_ASSERT(false, "Unknown Renderer API!");
-		return nullptr;
 	}
+
+    SharedRef<DepthMapFramebuffer> DepthMapFramebuffer::Create(const FramebufferProperties& props)
+    {
+		switch (Renderer::GetGraphicsAPI())
+		{
+			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLDepthMapFramebuffer>(props);
+#ifdef VX_PLATFORM_WINDOWS
+			case RendererAPI::API::Direct3D: return nullptr;
+#endif // VX_PLATFORM_WINDOWS
+			case RendererAPI::API::Vulkan:   return nullptr;
+		}
+
+		VX_CORE_ASSERT(false, "Unknown Renderer API!");
+		return nullptr;
+    }
 
 }
