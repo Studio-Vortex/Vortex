@@ -146,7 +146,7 @@ namespace Vortex {
 			m_ShadowMapVertexBuffer = VertexBuffer::Create(positions.data(), dataSize);
 
 			m_ShadowMapVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position"  }
+				{ ShaderDataType::Float3, "a_Position" }
 			});
 
 			m_ShadowMapVertexArray->AddVertexBuffer(m_ShadowMapVertexBuffer);
@@ -398,6 +398,7 @@ namespace Vortex {
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
+		Renderer::BindDepthMap();
 		for (auto& mesh : m_Meshes)
 		{
 			mesh.Render(m_MeshShader, m_Material);
@@ -410,7 +411,7 @@ namespace Vortex {
 
 		m_MeshShader->Enable();
 
-		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
+		//m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
 		for (auto& mesh : m_Meshes)
 		{

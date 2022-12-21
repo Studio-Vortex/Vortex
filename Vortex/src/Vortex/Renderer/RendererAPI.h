@@ -76,6 +76,8 @@ namespace Vortex {
 		virtual void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
 		virtual void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
 
+		virtual void EnableDepthTest() const = 0;
+
 		virtual void EnableDepthMask() const = 0;
 		virtual void DisableDepthMask() const = 0;
 

@@ -22,6 +22,8 @@ namespace Vortex {
 		void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const override;
 		void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const override;
 
+		void EnableDepthTest() const override;
+
 		void EnableDepthMask() const override;
 		void DisableDepthMask() const override;
 

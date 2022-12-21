@@ -46,12 +46,23 @@ namespace Vortex {
 		m_Properties.OuterCutoff = outerCutoff;
 	}
 
+    bool LightSource::ShouldCastShadows() const
+    {
+        return m_Properties.CastShadows;
+    }
+
+    void LightSource::SetCastShadows(bool castShadows)
+    {
+		m_Properties.CastShadows = castShadows;
+    }
+
 	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
 	{
 		dstLightSource->SetRadiance(srcLightSource->GetRadiance());
 		dstLightSource->SetAttenuation(srcLightSource->GetAttenuation());
 		dstLightSource->SetCutOff(srcLightSource->GetCutOff());
 		dstLightSource->SetOuterCutOff(srcLightSource->GetOuterCutOff());
+		dstLightSource->SetCastShadows(srcLightSource->ShouldCastShadows());
 	}
 
 	SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)

@@ -9,7 +9,7 @@
 #include "Panels/ScriptRegistryPanel.h"
 #include "Panels/MaterialEditorPanel.h"
 #include "Panels/BuildSettingsPanel.h"
-#include "Panels/AssetManagerPanel.h"
+#include "Panels/SceneRendererPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 #include "Panels/ConsolePanel.h"
@@ -123,7 +123,7 @@ namespace Vortex {
 		ScriptRegistryPanel m_ScriptRegistryPanel;
 		MaterialEditorPanel m_MaterialEditorPanel;
 		BuildSettingsPanel m_BuildSettingsPanel;
-		AssetManagerPanel m_AssetManagerPanel;
+		SceneRendererPanel m_SceneRendererPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
 		ConsolePanel m_ConsolePanel;

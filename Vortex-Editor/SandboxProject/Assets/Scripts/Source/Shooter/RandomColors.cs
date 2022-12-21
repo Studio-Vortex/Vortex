@@ -24,6 +24,8 @@ namespace Sandbox.Shooter {
 				Material material = meshRenderer.GetMaterial();
 				float[] colors = new float[3] { RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1) };
 				material.Albedo = new Vector3(colors[0], colors[1], colors[2]);
+				material.Metallic = 0;
+				material.Roughness = 0;
 
 				children.Add(child);
 			}
@@ -42,6 +44,8 @@ namespace Sandbox.Shooter {
 				{
 					Material material = meshRenderer.GetMaterial();
 					material.Albedo = Color.White.XYZ;
+					material.Metallic = 0.5f;
+					material.Roughness = 0.5f;
 				}
 			}
 		}

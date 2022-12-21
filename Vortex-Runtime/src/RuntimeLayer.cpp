@@ -45,6 +45,8 @@ namespace Vortex {
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{
+		Renderer::RenderToDepthMap(m_RuntimeScene.get());
+
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 		// Resize

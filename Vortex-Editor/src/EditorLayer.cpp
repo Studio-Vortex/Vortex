@@ -65,6 +65,8 @@ namespace Vortex {
 	{
 		SP_PROFILE_FUNCTION();
 
+		Renderer::RenderToDepthMap(m_ActiveScene.get());
+
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -95,8 +97,6 @@ namespace Vortex {
 		{
 			case SceneState::Edit:
 			{
-				// If the scene viewport is hovered or the mouse was moved moved since the last frame update the editor camera
-				// this allows the user to manipulate the editor camera while they are holding the right mouse button even if the cursor is outside the scene viewport
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					m_EditorCamera.OnUpdate(delta);
 
@@ -393,8 +393,6 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Window"))
 			{
-				Gui::MenuItem("Asset Manager", nullptr, &m_AssetManagerPanel.IsOpen());
-				Gui::Separator();
 				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
@@ -408,6 +406,8 @@ namespace Vortex {
 				Gui::MenuItem("Scene", nullptr, &scenePanelOpen);
 				Gui::Separator();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 				Gui::Separator();
@@ -439,7 +439,7 @@ namespace Vortex {
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
 			m_BuildSettingsPanel.OnGuiRender();
-			m_AssetManagerPanel.OnGuiRender();
+			m_SceneRendererPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender();
 			m_AboutPanel.OnGuiRender();

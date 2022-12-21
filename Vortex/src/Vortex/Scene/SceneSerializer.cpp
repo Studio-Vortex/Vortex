@@ -333,6 +333,8 @@ namespace Vortex {
 				}
 			}
 
+			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->ShouldCastShadows();
+
 			out << YAML::EndMap; // LightSourceComponent
 		}
 
@@ -823,6 +825,9 @@ namespace Vortex {
 						break;
 					}
 				}
+
+				if (lightSourceComponent["CastShadows"])
+					lightComponent.Source->SetCastShadows(lightSourceComponent["CastShadows"].as<bool>());
 			}
 
 			auto meshComponent = entity["MeshRendererComponent"];

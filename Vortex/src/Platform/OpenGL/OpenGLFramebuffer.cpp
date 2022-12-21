@@ -425,19 +425,26 @@ namespace Vortex {
 		// Create Depth Texture
 		glGenTextures(1, &m_DepthTextureRendererID);
 		glBindTexture(GL_TEXTURE_2D, m_DepthTextureRendererID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, props.Width, props.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, props.Width, props.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 		// Attach depth texture to framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFramebufferRendererID);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTextureRendererID, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			VX_CORE_CRITICAL("Framebuffer failed to complete!");
+		}
 	}
 
 	OpenGLDepthMapFramebuffer::~OpenGLDepthMapFramebuffer()
@@ -451,18 +458,23 @@ namespace Vortex {
 
 	void OpenGLDepthMapFramebuffer::Bind() const
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFramebufferRendererID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_DepthMapFramebufferRendererID);
 	}
 
 	void OpenGLDepthMapFramebuffer::Unbind() const
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLDepthMapFramebuffer::BindDepthTexture() const
+	void OpenGLDepthMapFramebuffer::BindDepthTexture(uint32_t slot) const
 	{
-		glActiveTexture(GL_TEXTURE14);
+		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, m_DepthTextureRendererID);
+	}
+
+	void OpenGLDepthMapFramebuffer::ClearDepth(float value) const
+	{
+		glClearDepth(static_cast<double>(value));
 	}
 
 	void OpenGLDepthMapFramebuffer::ClearDepthAttachment() const

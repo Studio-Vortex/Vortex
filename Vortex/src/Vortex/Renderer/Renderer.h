@@ -7,10 +7,13 @@
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Scene/Components.h"
 
 #include <vector>
+
+#include <entt/entt.hpp>
 
 namespace Vortex {
 
@@ -34,7 +37,6 @@ namespace Vortex {
 		static void EndScene();
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
-		static void SubmitToShadowMap(const SharedRef<Model>& model, const Math::mat4& worldSpaceTransform);
 		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
 		static void RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
@@ -48,6 +50,8 @@ namespace Vortex {
 
 		static SceneLightDescription GetSceneLightDescription();
 
+		static void CreateSkyLightShadowMap();
+		static void RenderToDepthMap(Scene* contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetDepthMapFramebuffer();
 		static void BindDepthMap();
 

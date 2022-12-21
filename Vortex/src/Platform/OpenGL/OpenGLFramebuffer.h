@@ -85,8 +85,9 @@ namespace Vortex {
 		void Bind() const override;
 		void Unbind() const override;
 
-		void BindDepthTexture() const override;
+		void BindDepthTexture(uint32_t slot) const override;
 
+		void ClearDepth(float value) const override;
 		void ClearDepthAttachment() const override;
 
 		inline uint32_t GetDepthTextureRendererID() const override { return m_DepthTextureRendererID; }

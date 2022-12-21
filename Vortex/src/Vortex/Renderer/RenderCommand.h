@@ -54,6 +54,11 @@ namespace Vortex {
 			s_RendererAPI->DrawTriangleStrip(vertexArray, indexCount);
 		}
 
+		inline static void EnableDepthTest()
+		{
+			s_RendererAPI->EnableDepthTest();
+		}
+
 		inline static void EnableDepthMask()
 		{
 			s_RendererAPI->EnableDepthMask();

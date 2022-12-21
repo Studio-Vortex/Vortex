@@ -195,7 +195,7 @@ namespace Vortex {
 		SP_PROFILE_FUNCTION();
 
 		// Call the entitys OnDestroy function if they are a script instance
-		if (entity.HasComponent<ScriptComponent>())
+		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
 		{
 			const std::string& className = entity.GetComponent<ScriptComponent>().ClassName;
 
@@ -761,6 +761,19 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
 	{
 		component.Source = LightSource::Create(LightSourceProperties());
+
+		switch (component.Type)
+		{
+			case LightSourceComponent::LightType::Directional:
+				Renderer::CreateSkyLightShadowMap();
+				break;
+			case LightSourceComponent::LightType::Point:
+
+				break;
+			case LightSourceComponent::LightType::Spot:
+
+				break;
+		}
 	}
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)

@@ -1073,6 +1073,10 @@ namespace Vortex {
 			Math::vec3 radiance = lightSource->GetRadiance();
 			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
 				lightSource->SetRadiance(radiance);
+
+			bool shouldCastShadows = lightSource->ShouldCastShadows();
+			if (Gui::Checkbox("Cast Shadows", &shouldCastShadows))
+				lightSource->SetCastShadows(shouldCastShadows);
 		});
 
 		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");

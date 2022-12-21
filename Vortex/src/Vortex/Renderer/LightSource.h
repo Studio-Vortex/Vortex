@@ -11,6 +11,8 @@ namespace Vortex {
 
 		float Cutoff = 12.5f;
 		float OuterCutoff = 17.5f;
+
+		bool CastShadows = true;
 	};
 
 	class LightSource
@@ -29,6 +31,9 @@ namespace Vortex {
 
 		float GetOuterCutOff() const;
 		void SetOuterCutOff(float outerCutoff);
+
+		bool ShouldCastShadows() const;
+		void SetCastShadows(bool castShadows);
 
 		static void Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource);
 

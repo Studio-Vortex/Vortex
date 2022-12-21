@@ -4,10 +4,10 @@
 
 namespace Vortex {
 
-	class AssetManagerPanel
+	class SceneRendererPanel
 	{
 	public:
-		AssetManagerPanel() = default;
+		SceneRendererPanel() = default;
 
 		void OnGuiRender(bool showDefault = false);
 		bool& IsOpen() { return s_ShowPanel; }

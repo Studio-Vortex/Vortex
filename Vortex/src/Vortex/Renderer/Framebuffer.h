@@ -107,8 +107,9 @@ namespace Vortex {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void BindDepthTexture() const = 0;
+		virtual void BindDepthTexture(uint32_t slot) const = 0;
 
+		virtual void ClearDepth(float value) const = 0;
 		virtual void ClearDepthAttachment() const = 0;
 
 		virtual uint32_t GetDepthTextureRendererID() const = 0;

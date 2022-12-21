@@ -92,6 +92,11 @@ namespace Vortex {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, indexCount);
 	}
 
+    void OpenGLRendererAPI::EnableDepthTest() const
+    {
+		glEnable(GL_DEPTH_TEST);
+    }
+
 	void OpenGLRendererAPI::EnableDepthMask() const
 	{
 		glDepthFunc(GL_LESS);
