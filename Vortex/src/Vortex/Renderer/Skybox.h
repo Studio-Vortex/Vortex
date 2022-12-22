@@ -17,7 +17,6 @@ namespace Vortex {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual bool IsHDREquirectangularMap() const = 0;
 		virtual bool IsLoaded() const = 0;
 
 		virtual bool PathChanged() const = 0;

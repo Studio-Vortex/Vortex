@@ -254,8 +254,7 @@ namespace Vortex {
 			if (!entity.IsActive())
 				continue;
 
-			SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			Renderer::DrawSkybox(view, projection, skyboxComponent.Source);
+			Renderer::DrawSkybox(view, projection, entity.GetComponent<SkyboxComponent>());
 
 			// Only render one skybox per scene
 			break;

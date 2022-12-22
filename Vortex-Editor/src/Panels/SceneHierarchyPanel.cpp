@@ -973,6 +973,8 @@ namespace Vortex {
 			else
 				memset(buffer, 0, sizeof(buffer));
 
+			Gui::Text("Source");
+			Gui::SameLine();
 			Gui::InputText("##Skybox Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
 			// Accept a Skybox Directory from the content browser
@@ -992,8 +994,7 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::SameLine();
-			Gui::Text("Source");
+			Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f");
 		});
 
 		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)

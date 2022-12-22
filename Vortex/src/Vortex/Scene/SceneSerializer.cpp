@@ -296,6 +296,7 @@ namespace Vortex {
 
 			SharedRef<Skybox> skybox = skyboxComponent.Source;
 			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string();
+			out << YAML::Key << "Rotation" << skyboxComponent.Rotation;
 
 			out << YAML::EndMap; // SkyboxComponent
 		}
@@ -787,6 +788,9 @@ namespace Vortex {
 
 				auto path = Project::GetAssetFileSystemPath(skyboxComponent["SourcePath"].as<std::string>()).string();
 				skybox.Source = Skybox::Create(path);
+
+				if (skyboxComponent["Rotation"])
+					skybox.Rotation = skyboxComponent["Rotation"].as<float>();
 			}
 
 			auto lightSourceComponent = entity["LightSourceComponent"];

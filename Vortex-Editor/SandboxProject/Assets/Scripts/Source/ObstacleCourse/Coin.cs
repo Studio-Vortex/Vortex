@@ -16,6 +16,11 @@ namespace Sandbox.ObstacleCourse {
 			ScoreText scoreText = FindEntityByName("Score Text").As<ScoreText>();
 			scoreText.IncrementScore();
 			Destroy();
+
+			if (FindEntityByName("Pickup Sound").TryGetComponent(out AudioSource pickupSound))
+			{
+				pickupSound.Play();
+			}
 		}
 	}
 

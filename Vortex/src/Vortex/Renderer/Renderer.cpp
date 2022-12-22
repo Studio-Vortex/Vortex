@@ -20,7 +20,6 @@ namespace Vortex {
 	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/BRDF_LUT.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_ShadowMap.glsl";
-	static constexpr const char* DEBUG_QUAD_SHADER_PATH = "Resources/Shaders/DebugQuad.glsl";
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
 	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
@@ -38,8 +37,8 @@ namespace Vortex {
 		static constexpr inline uint32_t MaxPointLights = 100;
 		static constexpr inline uint32_t MaxSpotLights = 50;
 
-		static constexpr inline uint32_t ShadowWidth = 4096;
-		static constexpr inline uint32_t ShadowHeight = 4096;
+		static constexpr inline uint32_t MaxShadowWidth = 4096;
+		static constexpr inline uint32_t MaxShadowHeight = 4096;
 		
 		SceneLightDescription SceneLightDesc;
 
@@ -76,7 +75,6 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("ShadowMap", SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("DebugQuad", DEBUG_QUAD_SHADER_PATH);
 
 		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
 
@@ -258,29 +256,9 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, SharedRef<Skybox>& skybox)
+	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SkyboxComponent& skyboxComponent)
 	{
-		if (!skybox->IsHDREquirectangularMap())
-		{
-			RenderCommand::DisableDepthMask();
-
-			SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
-			skyboxShader->Enable();
-			skyboxShader->SetInt("u_EnvironmentMap", 0);
-			skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
-			skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-			skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
-			skyboxShader->SetMat4("u_Projection", projection);
-
-			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
-
-			skyboxMeshVA->Bind();
-			skybox->Bind();
-			RenderCommand::DrawTriangles(skyboxMeshVA, 36);
-			RenderCommand::EnableDepthMask();
-
-			return;
-		}
+		SharedRef<Skybox> skybox = skyboxComponent.Source;
 
 		// TODO fix this hack!
 		if (skybox->PathChanged())
@@ -324,6 +302,7 @@ namespace Vortex {
 			}
 			s_Data.HDRFramebuffer->Unbind();
 
+			// Create Irradiance Map
 			s_Data.HDRFramebuffer->CreateIrradianceCubemap();
 			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
 
@@ -347,6 +326,7 @@ namespace Vortex {
 			}
 			s_Data.HDRFramebuffer->Unbind();
 
+			// Create Prefiltered Envrionment Map
 			s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
 
 			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
@@ -380,6 +360,7 @@ namespace Vortex {
 			}
 			s_Data.HDRFramebuffer->Unbind();
 
+			// Create BRDF Look-Up Texture
 			s_Data.HDRFramebuffer->CreateBRDFLutTexture();
 			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(4096, 4096);
 			s_Data.HDRFramebuffer->SetBRDFLutFramebufferTexture();
@@ -395,6 +376,7 @@ namespace Vortex {
 			skybox->SetPathChanged(false);
 		}
 
+		// Render Environment Map
 		RenderCommand::DisableDepthMask();
 
 		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
@@ -402,7 +384,7 @@ namespace Vortex {
 		skyboxShader->SetInt("u_EnvironmentMap", 0);
 		skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
 		skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
+		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view))* Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f }));
 		skyboxShader->SetMat4("u_Projection", projection);
 
 		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
@@ -449,8 +431,8 @@ namespace Vortex {
 	void Renderer::CreateSkyLightShadowMap()
 	{
 		FramebufferProperties depthFramebufferProps;
-		depthFramebufferProps.Width = s_Data.ShadowWidth;
-		depthFramebufferProps.Height = s_Data.ShadowHeight;
+		depthFramebufferProps.Width = s_Data.MaxShadowWidth;
+		depthFramebufferProps.Height = s_Data.MaxShadowHeight;
 		s_Data.DepthMapFramebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
 	}
 
@@ -463,6 +445,7 @@ namespace Vortex {
 		{
 			Entity lightSourceEntity{ lightSource, contextScene };
 			LightSourceComponent& lightSourceComponent = lightSourceEntity.GetComponent<LightSourceComponent>();
+			
 			switch (lightSourceComponent.Type)
 			{
 				case LightSourceComponent::LightType::Directional:
@@ -476,8 +459,8 @@ namespace Vortex {
 					Math::mat4 lightProjection = orthogonalProjection * lightView;
 					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("ShadowMap");
 
-					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.ShadowWidth, s_Data.ShadowHeight });
 					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
+					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.MaxShadowWidth, s_Data.MaxShadowHeight });
 					s_Data.DepthMapFramebuffer->Bind();
 					shadowMapShader->Enable();
 					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
@@ -501,18 +484,21 @@ namespace Vortex {
 					}
 
 					s_Data.DepthMapFramebuffer->Unbind();
-
 					RenderCommand::SetCullMode(s_Data.CullMode);
 
 					break;
 				}
 				case LightSourceComponent::LightType::Point:
 				{
+					if (!lightSourceComponent.Source->ShouldCastShadows())
+						continue;
 
 					break;
 				}
 				case LightSourceComponent::LightType::Spot:
 				{
+					if (!lightSourceComponent.Source->ShouldCastShadows())
+						continue;
 
 					break;
 				}

@@ -355,10 +355,6 @@ namespace Vortex {
 	{
 		s_Data->ContextScene = nullptr;
 
-		// TODO: REMOVE THIS
-		if (s_Data->EntityInstances.size() > INT_MAX)
-			return;
-
 		if (!s_Data->EntityInstances.empty())
 			s_Data->EntityInstances.clear();
 	}

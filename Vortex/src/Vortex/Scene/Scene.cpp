@@ -152,7 +152,7 @@ namespace Vortex {
 		Entity startingSkyLight = context->CreateEntity("Sky Light");
 		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
 		lightSource.Type = LightSourceComponent::LightType::Directional;
-		startingSkyLight.GetTransform().SetRotationEuler({ 0.25f, -1.0f, -0.5f });
+		startingSkyLight.GetTransform().SetRotationEuler({ Math::Deg2Rad(0.25f), Math::Deg2Rad(-1.0f), Math::Deg2Rad(-0.5f) });
 		startingSkyLight.GetTransform().Translation = Math::vec3(0.0f, 4.0f, 0.0f);
 
 		Entity startingCamera = context->CreateEntity("Camera");

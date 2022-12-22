@@ -409,10 +409,6 @@ namespace Vortex {
 	{
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
 
-		m_MeshShader->Enable();
-
-		//m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-
 		for (auto& mesh : m_Meshes)
 		{
 			mesh.RenderForShadowMap(m_MeshShader, m_Material);
