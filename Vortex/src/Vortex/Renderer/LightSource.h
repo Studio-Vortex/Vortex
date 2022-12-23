@@ -14,7 +14,7 @@ namespace Vortex {
 		float OuterCutoff = 17.5f;
 
 		// Shadow Settings
-		float ShadowBias = 0.0f;
+		float ShadowBias = 5.0f;
 		bool CastShadows = true;
 	};
 

@@ -149,7 +149,7 @@ namespace Vortex {
 
 	}
 
-	static bool s_ScriptEngineInitalized = false;
+	bool s_ScriptEngineInitialized = false;
 
 	struct ScriptEngineData
 	{
@@ -199,10 +199,10 @@ namespace Vortex {
 			Application::Get().SubmitToMainThread([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
-				FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
+				//FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
 
 				using namespace std::chrono_literals;
-				std::this_thread::sleep_for(250ms);
+				std::this_thread::sleep_for(150ms);
 
 				ScriptEngine::ReloadAssembly();
 				s_Data->AppAssemblyReloadSound->Play();
@@ -243,20 +243,19 @@ namespace Vortex {
 
 		s_Data->EntityClass = ScriptClass("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
-		s_ScriptEngineInitalized = true;
+		s_ScriptEngineInitialized = true;
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-		if (!s_ScriptEngineInitalized)
+		if (!s_ScriptEngineInitialized)
 			return;
 
 		ShutdownMono();
+		s_ScriptEngineInitialized = false;
 
 		delete s_Data;
 		s_Data = nullptr;
-
-		s_ScriptEngineInitalized = false;
 	}
 
 	void ScriptEngine::InitMono()
