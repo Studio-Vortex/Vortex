@@ -7,7 +7,7 @@
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Core/Math.h"
 
-struct aiAnimatedMesh;
+struct aiMesh;
 struct aiNode;
 struct aiScene;
 struct aiMaterial;
@@ -115,7 +115,7 @@ namespace Vortex {
 
 	private:
 		void ProcessNode(aiNode* node, const aiScene* scene, const AnimatedModelImportOptions& importOptions);
-		AnimatedMesh ProcessAnimatedMesh(aiAnimatedMesh* AnimatedMesh, const aiScene* scene, const AnimatedModelImportOptions& importOptions, const int entityID);
+		AnimatedMesh ProcessAnimatedMesh(aiMesh* AnimatedMesh, const aiScene* scene, const AnimatedModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
 	private:

@@ -1,7 +1,6 @@
 #include "vxpch.h"
 #include "Model.h"
 
-#include "Vortex/Animation/AnimatedModel.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Project/Project.h"

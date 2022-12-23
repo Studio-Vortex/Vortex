@@ -19,7 +19,7 @@ namespace Vortex {
 		aiProcess_SortByPType |             // Split AnimatedMeshes by primitive type
 		aiProcess_GenNormals |              // Make sure we have legit normals
 		aiProcess_GenUVCoords |             // Convert UVs if required 
-		aiProcess_OptimizeAnimatedMeshes |          // Batch draws where possible
+		aiProcess_OptimizeMeshes |          // Batch draws where possible
 		aiProcess_JoinIdenticalVertices |
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
@@ -179,7 +179,7 @@ namespace Vortex {
 		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFile(m_Filepath, s_AnimatedMeshImportFlags);
-		if (!scene || !scene->HasAnimatedMeshes())
+		if (!scene || !scene->HasMeshes())
 		{
 			VX_CORE_ERROR("Failed to load AnimatedMesh from: {}", m_Filepath.c_str());
 			return;
@@ -196,9 +196,9 @@ namespace Vortex {
 	void AnimatedModel::ProcessNode(aiNode* node, const aiScene* scene, const AnimatedModelImportOptions& importOptions)
 	{
 		// process all node AnimatedMeshes
-		for (uint32_t i = 0; i < node->mNumAnimatedMeshes; i++)
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
-			aiAnimatedMesh* AnimatedMesh = scene->mAnimatedMeshes[node->mAnimatedMeshes[i]];
+			aiMesh* AnimatedMesh = scene->mMeshes[node->mMeshes[i]];
 			m_AnimatedMeshes.push_back(ProcessAnimatedMesh(AnimatedMesh, scene, importOptions, m_EntityID));
 		}
 
@@ -209,7 +209,7 @@ namespace Vortex {
 		}
 	}
 
-	AnimatedMesh AnimatedModel::ProcessAnimatedMesh(aiAnimatedMesh* AnimatedMesh, const aiScene* scene, const AnimatedModelImportOptions& importOptions, const int entityID)
+	AnimatedMesh AnimatedModel::ProcessAnimatedMesh(aiMesh* AnimatedMesh, const aiScene* scene, const AnimatedModelImportOptions& importOptions, const int entityID)
 	{
 		std::vector<AnimatedModelVertex> vertices;
 		std::vector<uint32_t> indices;
