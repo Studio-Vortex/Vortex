@@ -230,8 +230,8 @@ namespace Vortex {
 	#define SP_PROFILE_SCOPE(name) SP_PROFILE_SCOPE_LINE(name, __LINE__)
 	#define SP_PROFILE_FUNCTION() SP_PROFILE_SCOPE(SP_FUNC_SIG)
 #else
-	#define SP_PROFILE_BEGIN_SESSION(name, filepath)
-	#define SP_PROFILE_END_SESSION()
-	#define SP_PROFILE_SCOPE(name)
+	#define VX_PROFILE_BEGIN_SESSION(name, filepath)
+	#define VX_PROFILE_END_SESSION()
+	#define VX_PROFILE_SCOPE(name)
 	#define VX_PROFILE_FUNCTION()
 #endif

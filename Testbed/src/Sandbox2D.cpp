@@ -29,13 +29,13 @@ void Sandbox2D::OnUpdate(Vortex::TimeStep delta)
 	Vortex::Renderer2D::ResetStats();
 
 	{
-		SP_PROFILE_SCOPE("Renderer Prep");
+		VX_PROFILE_SCOPE("Renderer Prep");
 		Vortex::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f });
 		Vortex::RenderCommand::Clear();
 	}
 
 	{
-		SP_PROFILE_SCOPE("Renderer Draw");
+		VX_PROFILE_SCOPE("Renderer Draw");
 		Vortex::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		Vortex::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(1.0f), m_SquareColor);

@@ -55,7 +55,7 @@ namespace Vortex {
 
 		if (s_GLFWWindowCount == 0)
 		{
-			SP_PROFILE_SCOPE("glfwInit");
+			VX_PROFILE_SCOPE("glfwInit");
 
 			int success = glfwInit();
 			VX_CORE_ASSERT(success, "Could not initialize GLFW!");
@@ -63,7 +63,7 @@ namespace Vortex {
 		}
 
 		{
-			SP_PROFILE_SCOPE("glfwCreateWindow");
+			VX_PROFILE_SCOPE("glfwCreateWindow");
 
 #ifdef VX_DEBUG
 			if (Renderer::GetGraphicsAPI() == RendererAPI::API::OpenGL)

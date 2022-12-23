@@ -136,7 +136,7 @@ namespace Vortex {
 
 		while (m_Running)
 		{
-			SP_PROFILE_SCOPE("Application Loop");
+			VX_PROFILE_SCOPE("Application Loop");
 
 			float time = Time::GetTime();
 			TimeStep delta = time - m_LastFrameTime;
@@ -147,7 +147,7 @@ namespace Vortex {
 
 			if (!m_ApplicationMinimized)
 			{
-				SP_PROFILE_SCOPE("LayerStack OnUpdate");
+				VX_PROFILE_SCOPE("LayerStack OnUpdate");
 
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(delta);
@@ -157,7 +157,7 @@ namespace Vortex {
 			{
 				m_GuiLayer->BeginFrame();
 				{
-					SP_PROFILE_SCOPE("LayerStack OnGuiRender");
+					VX_PROFILE_SCOPE("LayerStack OnGuiRender");
 
 					for (Layer* layer : m_LayerStack)
 						layer->OnGuiRender();

@@ -35,10 +35,10 @@
 #endif // VX_DEBUG
 
 #ifdef VX_ENABLE_ASSERTS
-	#define SP_ASSERT(x, ...) { if(!(x)) { VX_ERROR("Assertion Failed: {}", __VA_ARGS__); VX_DEBUGBREAK(); } }
+	#define VX_ASSERT(x, ...) { if(!(x)) { VX_ERROR("Assertion Failed: {}", __VA_ARGS__); VX_DEBUGBREAK(); } }
 	#define VX_CORE_ASSERT(x, ...) { if(!(x)) { VX_CORE_ERROR("Assertion Failed: {}", __VA_ARGS__); VX_DEBUGBREAK(); } }
 #else
-	#define SP_ASSERT(x, ...)
+	#define VX_ASSERT(x, ...)
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
