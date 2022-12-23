@@ -463,6 +463,8 @@ namespace Vortex {
 		m_SceneViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
 
+		static bool meshImportPopupOpen = false;
+
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
@@ -516,11 +518,9 @@ namespace Vortex {
 
 					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
 					{
-						MeshRendererComponent& meshRenderer = m_HoveredEntity.GetComponent<MeshRendererComponent>();
-
-						meshRenderer.Mesh = Model::Create(modelPath.string(), m_HoveredEntity.GetTransform(), (int)(entt::entity)m_HoveredEntity);
-						meshRenderer.Type = MeshType::Custom;
-
+						meshImportPopupOpen = true;
+						m_ModelFilepath = modelPath.string();
+						m_ModelEntityToEdit = m_HoveredEntity;
 						// TODO set material
 					}
 				}
@@ -530,6 +530,72 @@ namespace Vortex {
 
 			Gui::EndDragDropTarget();
 		}
+
+		if (meshImportPopupOpen)
+		{
+			Gui::OpenPopup("Mesh Import Options");
+			meshImportPopupOpen = false;
+		}
+
+		if (Gui::IsPopupOpen("Mesh Import Options"))
+		{
+			ImVec2 meshImportWindowSize = { 500, 300 };
+			Gui::SetNextWindowSize(meshImportWindowSize, ImGuiCond_Always);
+			ImVec2 center = Gui::GetMainViewport()->GetCenter();
+			Gui::SetNextWindowPos({ center.x - (meshImportWindowSize.x * 0.5f), center.y - (meshImportWindowSize.y * 0.5f) }, ImGuiCond_Appearing);
+		}
+
+		if (Gui::BeginPopupModal("Mesh Import Options", nullptr, ImGuiWindowFlags_NoResize))
+		{
+			Gui::Separator();
+			Gui::Spacing();
+
+			ImVec2 button_size(Gui::GetFontSize() * 12.0f, 0.0f);
+
+			Gui::Text("A mesh asset must be generated from this mesh file. (i.e. .fbx)");
+			Gui::Text("Import options can be selected below");
+
+			Gui::Spacing();
+			Gui::Separator();
+
+			UI::DrawVec3Controls("Translation", m_ModelImportOptions.MeshTransformation.Translation);
+			Math::vec3 rotation = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
+			UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
+			{
+				m_ModelImportOptions.MeshTransformation.SetRotationEuler(rotation);
+			});
+			UI::DrawVec3Controls("Scale", m_ModelImportOptions.MeshTransformation.Scale);
+
+			for (uint32_t i = 0; i < 18; i++)
+				Gui::Spacing();
+
+			if (Gui::Button("Import", button_size))
+			{
+				MeshRendererComponent& meshRenderer = m_ModelEntityToEdit.GetComponent<MeshRendererComponent>();
+
+				meshRenderer.Mesh = Model::Create(m_ModelFilepath, m_ModelEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_ModelEntityToEdit);
+				meshRenderer.Type = MeshType::Custom;
+
+				m_ModelFilepath = "";
+				m_ModelImportOptions = ModelImportOptions();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::SameLine();
+
+			if (Gui::Button("Cancel", button_size))
+			{
+				m_ModelFilepath = "";
+				m_ModelImportOptions = ModelImportOptions();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::Spacing();
+			Gui::EndPopup();
+		}
+
 
 		if (m_ShowSceneCreateEntityMenu)
 		{

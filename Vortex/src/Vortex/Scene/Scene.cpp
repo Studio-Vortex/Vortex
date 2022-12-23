@@ -765,7 +765,7 @@ namespace Vortex {
 		switch (component.Type)
 		{
 			case LightSourceComponent::LightType::Directional:
-				Renderer::CreateSkyLightShadowMap();
+				Renderer::CreateSkyLightShadowMapFramebuffer();
 				break;
 			case LightSourceComponent::LightType::Point:
 
@@ -779,13 +779,19 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
 	{
 		Model::Default defaultModel;
+		ModelImportOptions importOptions = ModelImportOptions();
 
 		if (component.Type == MeshType::Custom)
 			defaultModel = Model::Default::Cube;
+		else if (component.Type == MeshType::Capsule)
+		{
+			ModelImportOptions importOptions = ModelImportOptions();
+			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+		}
 		else
 			defaultModel = (Model::Default)component.Type;
 
-		component.Mesh = Model::Create(defaultModel, entity.GetTransform(), (int)(entt::entity)entity);
+		component.Mesh = Model::Create(defaultModel, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

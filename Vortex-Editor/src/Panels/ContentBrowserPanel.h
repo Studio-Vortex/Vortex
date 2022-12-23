@@ -26,15 +26,6 @@ namespace Vortex {
 		std::filesystem::path m_CurrentDirectory;
 		std::filesystem::path m_PathToBeRenamed;
 
-		SharedRef<Texture2D> m_DirectoryIcon = nullptr;
-		SharedRef<Texture2D> m_AudioFileIcon = nullptr;
-		SharedRef<Texture2D> m_OBJIcon = nullptr;
-		SharedRef<Texture2D> m_FBXIcon = nullptr;
-		SharedRef<Texture2D> m_FontIcon = nullptr;
-		SharedRef<Texture2D> m_CodeFileIcon = nullptr;
-		SharedRef<Texture2D> m_SceneIcon = nullptr;
-		SharedRef<Texture2D> m_FileIcon = nullptr;
-
 		std::unordered_map<std::string, SharedRef<Texture2D>> m_TextureMap;
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};

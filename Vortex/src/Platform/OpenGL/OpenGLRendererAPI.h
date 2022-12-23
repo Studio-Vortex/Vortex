@@ -30,6 +30,10 @@ namespace Vortex {
 		void SetLineWidth(float thickness) const override;
 
 		void SetCullMode(TriangleCullMode cullMode) const override;
+
+		void SetStencilOperation(StencilOperation failOperation, StencilOperation zFailOperation, StencilOperation passOperation) const override;
+		void SetStencilFunc(StencilOperation func, int ref, int mask) const override;
+		void SetStencilMask(int mask) const override;
 	};
 
 }

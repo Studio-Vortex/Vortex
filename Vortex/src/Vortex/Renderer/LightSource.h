@@ -9,9 +9,12 @@ namespace Vortex {
 		// (Linear, Quadratic)
 		Math::vec2 Attenuation = Math::vec2(0.045f, 0.0075f);
 
+		// Spotlight
 		float Cutoff = 12.5f;
 		float OuterCutoff = 17.5f;
 
+		// Shadow Settings
+		float ShadowBias = 0.0f;
 		bool CastShadows = true;
 	};
 
@@ -31,6 +34,9 @@ namespace Vortex {
 
 		float GetOuterCutOff() const;
 		void SetOuterCutOff(float outerCutoff);
+
+		float GetShadowBias() const;
+		void SetShadowBias(float bias);
 
 		bool ShouldCastShadows() const;
 		void SetCastShadows(bool castShadows);

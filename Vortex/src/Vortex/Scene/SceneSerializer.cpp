@@ -297,6 +297,7 @@ namespace Vortex {
 			SharedRef<Skybox> skybox = skyboxComponent.Source;
 			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string();
 			out << YAML::Key << "Rotation" << skyboxComponent.Rotation;
+			out << YAML::Key << "Multiplier" << skyboxComponent.Multiplier;
 
 			out << YAML::EndMap; // SkyboxComponent
 		}
@@ -334,6 +335,7 @@ namespace Vortex {
 				}
 			}
 
+			out << YAML::Key << "ShadowBias" << YAML::Value << lightSource->GetShadowBias();
 			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->ShouldCastShadows();
 
 			out << YAML::EndMap; // LightSourceComponent
@@ -352,6 +354,17 @@ namespace Vortex {
 				SharedRef<Model> model = meshRendererComponent.Mesh;
 				const auto& meshSourcePath = model->GetPath();
 				out << YAML::Key << "MeshSource" << YAML::Value << (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : std::filesystem::relative(meshSourcePath, projectAssetDirectory).string());
+
+				if (ModelImportOptions importOptions = model->GetImportOptions(); importOptions != ModelImportOptions{})
+				{
+					out << YAML::Key << "ModelImportOptions" << YAML::Value << YAML::BeginMap; // ModelImportOptions
+
+					out << YAML::Key << "Translation" << YAML::Value << importOptions.MeshTransformation.Translation;
+					out << YAML::Key << "Rotation" << YAML::Value << importOptions.MeshTransformation.GetRotationEuler();
+					out << YAML::Key << "Scale" << YAML::Value << importOptions.MeshTransformation.Scale;
+
+					out << YAML::EndMap; // ModelImportOptions
+				}
 
 				SharedRef<Material> material = model->GetMaterial();
 
@@ -791,6 +804,9 @@ namespace Vortex {
 
 				if (skyboxComponent["Rotation"])
 					skybox.Rotation = skyboxComponent["Rotation"].as<float>();
+
+				if (skyboxComponent["Multiplier"])
+					skybox.Multiplier = skyboxComponent["Multiplier"].as<float>();
 			}
 
 			auto lightSourceComponent = entity["LightSourceComponent"];
@@ -830,6 +846,9 @@ namespace Vortex {
 					}
 				}
 
+				if (lightSourceComponent["ShadowBias"])
+					lightComponent.Source->SetShadowBias(lightSourceComponent["ShadowBias"].as<float>());
+
 				if (lightSourceComponent["CastShadows"])
 					lightComponent.Source->SetCastShadows(lightSourceComponent["CastShadows"].as<bool>());
 			}
@@ -841,10 +860,13 @@ namespace Vortex {
 
 				meshRendererComponent.Type = Utils::MeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
+
 				if (meshComponent["MeshSource"])
 				{
 					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
 					std::string assetPath = "";
+
+					ModelImportOptions importOptions = ModelImportOptions();
 
 					if (Model::IsDefaultMesh(modelPath))
 					{
@@ -855,7 +877,16 @@ namespace Vortex {
 						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
 					}
 
-					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), (int)(entt::entity)deserializedEntity);
+
+					if (meshComponent["ModelImportOptions"])
+					{
+						auto modelImportOptions = meshComponent["ModelImportOptions"];
+						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
+						importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
+						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+					}
+
+					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
 				}
 
 				SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial() ? meshRendererComponent.Mesh->GetMaterial() : Material::Create(MaterialProperties());

@@ -74,6 +74,21 @@ namespace Vortex {
 			s_RendererAPI->SetLineWidth(thickness);
 		}
 
+		inline static void SetStencilOperation(RendererAPI::StencilOperation failOp, RendererAPI::StencilOperation zFailOp, RendererAPI::StencilOperation passOp)
+		{
+			s_RendererAPI->SetStencilOperation(failOp, zFailOp, passOp);
+		}
+
+		inline static void SetStencilFunc(RendererAPI::StencilOperation func, int ref, int mask)
+		{
+			s_RendererAPI->SetStencilFunc(func, ref, mask);
+		}
+
+		inline static void SetStencilMask(int mask)
+		{
+			s_RendererAPI->SetStencilMask(mask);
+		}
+
 		inline static void SetCullMode(RendererAPI::TriangleCullMode cullMode)
 		{
 			s_RendererAPI->SetCullMode(cullMode);

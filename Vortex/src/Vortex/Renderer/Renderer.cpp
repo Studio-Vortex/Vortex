@@ -6,7 +6,6 @@
 #include "Vortex/Asset/AssetRegistry.h"
 #include "Vortex/Core/Application.h"
 
-#include "Vortex/Scene/Entity.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Model.h"
@@ -20,6 +19,7 @@ namespace Vortex {
 	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/BRDF_LUT.glsl";
 	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
 	static constexpr const char* SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_ShadowMap.glsl";
+	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
 	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
@@ -75,6 +75,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("ShadowMap", SHADOW_MAP_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
 		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
 
@@ -205,6 +206,7 @@ namespace Vortex {
 				Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
 				Math::mat4 lightProjection = orthogonalProjection * lightView;
 				pbrShader->SetMat4("u_LightProjection", lightProjection);
+				pbrShader->SetFloat("u_SkylightShadowSettings.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
 
 				i++;
 
@@ -381,11 +383,12 @@ namespace Vortex {
 
 		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
 		skyboxShader->Enable();
+		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view))* Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f }));
+		skyboxShader->SetMat4("u_Projection", projection);
 		skyboxShader->SetInt("u_EnvironmentMap", 0);
 		skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
 		skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view))* Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f }));
-		skyboxShader->SetMat4("u_Projection", projection);
+		skyboxShader->SetFloat("u_Multiplier", Math::Max(skyboxComponent.Multiplier, 0.0f));
 
 		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
@@ -428,7 +431,7 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
-	void Renderer::CreateSkyLightShadowMap()
+	void Renderer::CreateSkyLightShadowMapFramebuffer()
 	{
 		FramebufferProperties depthFramebufferProps;
 		depthFramebufferProps.Width = s_Data.MaxShadowWidth;
@@ -514,7 +517,7 @@ namespace Vortex {
 	void Renderer::BindDepthMap()
 	{
 		s_Data.DepthMapFramebuffer->BindDepthTexture(4);
-		s_Data.ShaderLibrary->Get("PBR")->SetInt("u_SceneProperties.ShadowMap", 4);
+		s_Data.ShaderLibrary->Get("PBR")->SetInt("u_SkylightShadowSettings.ShadowMap", 4);
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

@@ -170,6 +170,7 @@ namespace Vortex {
 	{
 		SharedRef<Skybox> Source = nullptr;
 		float Rotation = 0.0f;
+		float Multiplier = 1.0f;
 
 		SkyboxComponent() = default;
 		SkyboxComponent(const SkyboxComponent&) = default;

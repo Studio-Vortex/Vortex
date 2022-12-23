@@ -9,6 +9,7 @@ namespace Vortex {
 	public:
 		static void Init();
 
+		// Scene
 		inline static SharedRef<Texture2D> PlayIcon = nullptr;
 		inline static SharedRef<Texture2D> PauseIcon = nullptr;
 		inline static SharedRef<Texture2D> StopIcon = nullptr;
@@ -29,6 +30,16 @@ namespace Vortex {
 		inline static SharedRef<Texture2D> TwoDViewIcon = nullptr;
 		inline static SharedRef<Texture2D> DisplayPhysicsCollidersIcon = nullptr;
 		inline static SharedRef<Texture2D> DisplaySceneIconsIcon = nullptr;
+
+		// Content Browser
+		inline static SharedRef<Texture2D> DirectoryIcon = nullptr;
+		inline static SharedRef<Texture2D> AudioFileIcon = nullptr;
+		inline static SharedRef<Texture2D> OBJIcon = nullptr;
+		inline static SharedRef<Texture2D> FBXIcon = nullptr;
+		inline static SharedRef<Texture2D> FontIcon = nullptr;
+		inline static SharedRef<Texture2D> CodeFileIcon = nullptr;
+		inline static SharedRef<Texture2D> SceneIcon = nullptr;
+		inline static SharedRef<Texture2D> FileIcon = nullptr;
 	};
 
 }

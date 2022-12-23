@@ -169,27 +169,90 @@ namespace Vortex {
 		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
 
-	void Model::ProcessNode(aiNode* node, const aiScene* scene)
+	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+		: m_ImportOptions(importOptions), m_Filepath(filepath)
+	{
+		LogStream::Initialize();
+
+		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		if (!scene || !scene->HasMeshes())
+		{
+			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			return;
+		}
+
+		m_Scene = scene;
+		m_EntityID = entityID;
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_Material = Material::Create(m_MeshShader, MaterialProperties());
+
+		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
+	}
+
+	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+		: m_ImportOptions(importOptions)
+	{
+		LogStream::Initialize();
+
+		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
+
+		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		if (!scene || !scene->HasMeshes())
+		{
+			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			return;
+		}
+
+		m_Scene = scene;
+		m_EntityID = entityID;
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_Material = Material::Create(m_MeshShader, MaterialProperties());
+
+		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
+	}
+
+	Model::Model(MeshType meshType)
+	{
+		m_Meshes.push_back(Mesh(true));
+	}
+
+	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Meshes.push_back(ProcessMesh(mesh, scene, m_EntityID));
+			m_Meshes.push_back(ProcessMesh(mesh, scene, importOptions, m_EntityID));
 		}
 
 		// do the same for children nodes
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], scene);
+			ProcessNode(node->mChildren[i], scene, importOptions);
 		}
 	}
 
-	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const int entityID)
+	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
 	{
 		std::vector<ModelVertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<SharedRef<MaterialInstance>> materials;
+
+		const TransformComponent& importTransform = importOptions.MeshTransformation;
+		Math::vec3 rotation = importTransform.GetRotationEuler();
+		Math::mat4 transform = Math::Translate(importTransform.Translation) *
+			Math::Rotate(Math::Deg2Rad(rotation.x), { 1.0f, 0.0f, 0.0f }) *
+			Math::Rotate(Math::Deg2Rad(rotation.y), { 0.0f, 1.0f, 0.0f }) *
+			Math::Rotate(Math::Deg2Rad(rotation.z), { 0.0f, 0.0f, 1.0f }) *
+			Math::Scale(importTransform.Scale);
 
 		// process vertices
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -199,7 +262,7 @@ namespace Vortex {
 			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
 			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
 
-			vertex.Position = Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z } * 0.5f;
+			vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z }, 1.0f)) * 0.5f;
 			vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 
 			vertex.Tangent = Math::vec3(0.0f);
@@ -306,60 +369,6 @@ namespace Vortex {
 		return textures;
 	}
 
-	Model::Model(const std::string& filepath, const TransformComponent& transform, int entityID)
-		: m_Filepath(filepath)
-	{
-		LogStream::Initialize();
-
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
-		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
-
-		ProcessNode(m_Scene->mRootNode, m_Scene);
-	}
-
-	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
-	{
-		LogStream::Initialize();
-
-		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
-
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
-		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
-
-		ProcessNode(m_Scene->mRootNode, m_Scene);
-	}
-
-	Model::Model(MeshType meshType)
-	{
-		m_Meshes.push_back(Mesh(true));
-	}
-
 	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
 	{
 		if (m_EntityID == entityID && m_TextureScale == textureScale)
@@ -423,14 +432,14 @@ namespace Vortex {
 		m_Material = material;
 	}
 
-	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID)
+	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(defaultMesh, transform, entityID);
+		return CreateShared<Model>(defaultMesh, transform, importOptions, entityID);
 	}
 
-	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, int entityID)
+	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(filepath, transform, entityID);
+		return CreateShared<Model>(filepath, transform, importOptions, entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)

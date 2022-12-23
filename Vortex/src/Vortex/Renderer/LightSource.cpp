@@ -46,6 +46,16 @@ namespace Vortex {
 		m_Properties.OuterCutoff = outerCutoff;
 	}
 
+	float LightSource::GetShadowBias() const
+	{
+		return m_Properties.ShadowBias;
+	}
+
+	void LightSource::SetShadowBias(float bias)
+	{
+		m_Properties.ShadowBias = bias;
+	}
+
     bool LightSource::ShouldCastShadows() const
     {
         return m_Properties.CastShadows;

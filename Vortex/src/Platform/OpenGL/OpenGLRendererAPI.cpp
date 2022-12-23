@@ -5,24 +5,40 @@
 
 namespace Vortex {
 
-	static void OpenGLMessageCallback(
-		unsigned source,
-		unsigned type,
-		unsigned id,
-		unsigned severity,
-		int length,
-		const char* message,
-		const void* userParam
-	) {
-		switch (severity)
+	namespace Utils {
+
+		static GLenum ToGLStencilOperation(RendererAPI::StencilOperation stencilOperation)
 		{
-			case GL_DEBUG_SEVERITY_HIGH:         VX_CORE_CRITICAL(message); return;
-			case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR(message); return;
-			case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN(message); return;
-			case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE(message); return;
+			switch (stencilOperation)
+			{
+				case Vortex::RendererAPI::StencilOperation::None:     return GL_NONE;     break;
+				case Vortex::RendererAPI::StencilOperation::Keep:     return GL_KEEP;     break;
+				case Vortex::RendererAPI::StencilOperation::Always:   return GL_ALWAYS;   break;
+				case Vortex::RendererAPI::StencilOperation::NotEqual: return GL_NOTEQUAL; break;
+				case Vortex::RendererAPI::StencilOperation::Replace:  return GL_REPLACE;  break;
+			}
 		}
 
-		VX_CORE_ASSERT(false, "Unknown severity level!");
+		static void OpenGLMessageCallback(
+			unsigned source,
+			unsigned type,
+			unsigned id,
+			unsigned severity,
+			int length,
+			const char* message,
+			const void* userParam
+		) {
+			switch (severity)
+			{
+				case GL_DEBUG_SEVERITY_HIGH:         VX_CORE_CRITICAL(message); return;
+				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR(message); return;
+				case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN(message); return;
+				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE(message); return;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown severity level!");
+		}
+
 	}
 
     void OpenGLRendererAPI::Init() const
@@ -41,6 +57,7 @@ namespace Vortex {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_STENCIL_TEST);
 		//glEnable(GL_LINE_SMOOTH);
     }
 
@@ -64,7 +81,7 @@ namespace Vortex {
 
 	void OpenGLRendererAPI::Clear() const
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	void OpenGLRendererAPI::DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const
@@ -114,7 +131,22 @@ namespace Vortex {
 		glLineWidth(thickness);
     }
 
-	void OpenGLRendererAPI::SetCullMode(TriangleCullMode cullMode) const
+    void OpenGLRendererAPI::SetStencilOperation(StencilOperation failOperation, StencilOperation zFailOperation, StencilOperation passOperation) const
+    {
+		glStencilOp(Utils::ToGLStencilOperation(failOperation), Utils::ToGLStencilOperation(zFailOperation), Utils::ToGLStencilOperation(passOperation));
+    }
+
+	void OpenGLRendererAPI::SetStencilFunc(StencilOperation func, int ref, int mask) const
+	{
+		glStencilFunc(Utils::ToGLStencilOperation(func), ref, mask);
+	}
+
+    void OpenGLRendererAPI::SetStencilMask(int mask) const
+    {
+		glStencilMask(mask);
+    }
+
+    void OpenGLRendererAPI::SetCullMode(TriangleCullMode cullMode) const
 	{
 		GLenum mode{};
 

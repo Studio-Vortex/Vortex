@@ -1,23 +1,14 @@
 #include "ContentBrowserPanel.h"
 
-#include "Vortex/Utils/PlatformUtils.h"
+#include "../EditorResources.h"
+#include <Vortex/Utils/PlatformUtils.h>
 
 #include <imgui_internal.h>
 
 namespace Vortex {
 
 	ContentBrowserPanel::ContentBrowserPanel()
-		: m_BaseDirectory(Project::GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
-	{
-		m_DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
-		m_AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");
-		m_OBJIcon = Texture2D::Create("Resources/Icons/ContentBrowser/OBJIcon.png");
-		m_FBXIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FBXIcon.png");
-		m_FontIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FontIcon.png");
-		m_CodeFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/CodeFileIcon.png");
-		m_SceneIcon = Texture2D::Create("Resources/Icons/ContentBrowser/SceneIcon.png");
-		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
-	}
+		: m_BaseDirectory(Project::GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory) { }
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
@@ -226,24 +217,24 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedRef<Texture2D> icon = m_FileIcon;
+			SharedRef<Texture2D> icon = EditorResources::FileIcon;
 
 			// File icons
 
 			if (directoryEntry.is_directory())
-				icon = m_DirectoryIcon;
+				icon = EditorResources::DirectoryIcon;
 			else if (currentPath.extension().string() == ".vortex")
-				icon = m_SceneIcon;
+				icon = EditorResources::SceneIcon;
 			else if (currentPath.extension().string() == ".cs")
-				icon = m_CodeFileIcon;
+				icon = EditorResources::CodeFileIcon;
 			else if (currentPath.extension().string() == ".obj")
-				icon = m_OBJIcon;
+				icon = EditorResources::OBJIcon;
 			else if (currentPath.extension().string() == ".fbx")
-				icon = m_FBXIcon;
+				icon = EditorResources::FBXIcon;
 			else if (currentPath.extension().string() == ".ttf" || currentPath.extension().string() == ".TTF")
-				icon = m_FontIcon;
+				icon = EditorResources::FontIcon;
 			else if (currentPath.extension().string() == ".wav" || currentPath.extension().string() == ".mp3")
-				icon = m_AudioFileIcon;
+				icon = EditorResources::AudioFileIcon;
 			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg" || currentPath.extension().string() == ".tga")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
@@ -302,14 +293,13 @@ public class Untitled : Entity
 
 			if (Gui::IsPopupOpen("Confirm"))
 			{
-				Math::vec2 applicationWindowSize = Application::Get().GetWindow().GetSize();
 				ImVec2 confirmWindowSize = { 500, 200 };
 				Gui::SetNextWindowSize(confirmWindowSize, ImGuiCond_Always);
 				ImVec2 center = Gui::GetMainViewport()->GetCenter();
-				Gui::SetNextWindowPos({center.x - (confirmWindowSize.x * 0.5f), center.y - (confirmWindowSize.y * 0.5f)}, ImGuiCond_Always);
+				Gui::SetNextWindowPos({center.x - (confirmWindowSize.x * 0.5f), center.y - (confirmWindowSize.y * 0.5f)}, ImGuiCond_Appearing);
 			}
 			
-			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize))
 			{
 				Gui::Separator();
 				Gui::Spacing();

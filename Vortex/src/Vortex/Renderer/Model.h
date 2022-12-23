@@ -23,6 +23,21 @@ namespace Assimp {
 
 namespace Vortex {
 
+	struct ModelImportOptions
+	{
+		TransformComponent MeshTransformation;
+
+		ModelImportOptions() = default;
+		ModelImportOptions(const ModelImportOptions&) = default;
+
+		inline bool operator==(const ModelImportOptions& other) const
+		{
+			return MeshTransformation.Translation == other.MeshTransformation.Translation &&
+				MeshTransformation.GetRotationEuler() == other.MeshTransformation.GetRotationEuler() &&
+				MeshTransformation.Scale == other.MeshTransformation.Scale;
+		}
+	};
+
 	struct ModelVertex
 	{
 		Math::vec3 Position;
@@ -77,6 +92,11 @@ namespace Vortex {
 	class Model
 	{
 	public:
+		enum class Default
+		{
+			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
+		};
+
 		// TODO: move to asset system when we have one
 		inline static std::vector<std::string> DefaultMeshSourcePaths = {
 			"Resources/Meshes/Cube.fbx",
@@ -96,14 +116,9 @@ namespace Vortex {
 			return isDefaultMesh;
 		}
 
-		enum class Default
-		{
-			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
-		};
-
 		Model() = default;
-		Model(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
-		Model(const std::string& filepath, const TransformComponent& transform, int entityID);
+		Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
+		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(MeshType meshType);
 		~Model() = default;
 
@@ -120,16 +135,19 @@ namespace Vortex {
 		const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
 		std::vector<Mesh>& GetMeshes() { return m_Meshes; }
 
-		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, int entityID);
-		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, int entityID);
+		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
+
+		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
+		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(MeshType meshType);
 
 	private:
-		void ProcessNode(aiNode* node, const aiScene* scene);
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const int entityID);
+		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions);
+		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
 	private:
+		ModelImportOptions m_ImportOptions;
 		std::string m_Filepath;
 		int m_EntityID = -1;
 		Math::vec2 m_TextureScale = Math::vec2(1.0f);

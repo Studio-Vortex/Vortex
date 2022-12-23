@@ -97,6 +97,7 @@ namespace Vortex {
 		std::filesystem::path m_EditorScenePath;
 
 		Entity m_HoveredEntity;
+		Entity m_ModelEntityToEdit;
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
@@ -114,6 +115,9 @@ namespace Vortex {
 		uint32_t m_TranslationMode = 0; // Local mode
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
+
+		std::string m_ModelFilepath = "";
+		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 
 		// Panels
 

@@ -7,6 +7,7 @@
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Scene/Components.h"
@@ -50,7 +51,7 @@ namespace Vortex {
 
 		static SceneLightDescription GetSceneLightDescription();
 
-		static void CreateSkyLightShadowMap();
+		static void CreateSkyLightShadowMapFramebuffer();
 		static void RenderToDepthMap(Scene* contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetDepthMapFramebuffer();
 		static void BindDepthMap();

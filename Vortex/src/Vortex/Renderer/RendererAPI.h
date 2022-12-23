@@ -51,6 +51,11 @@ namespace Vortex {
 			None = 0, Front, Back, FrontAndBack
 		};
 
+		enum class StencilOperation
+		{
+			None = 0, Keep, Always, NotEqual, Replace
+		};
+
 		struct VORTEX_API RendererInfo
 		{
 			const char* API;
@@ -84,6 +89,10 @@ namespace Vortex {
 		virtual void SetLineWidth(float thickness) const = 0;
 
 		virtual void SetCullMode(TriangleCullMode cullMode) const = 0;
+
+		virtual void SetStencilOperation(StencilOperation failOperation, StencilOperation zFailOperation, StencilOperation passOperation) const = 0;
+		virtual void SetStencilFunc(StencilOperation func, int ref, int mask) const = 0;
+		virtual void SetStencilMask(int mask) const = 0;
 
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }

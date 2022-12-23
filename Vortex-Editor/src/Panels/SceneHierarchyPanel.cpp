@@ -139,7 +139,12 @@ namespace Vortex {
 		entity = contextScene->CreateEntity(name);
 		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
 		meshRenderer.Type = static_cast<MeshType>(defaultMesh);
-		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), (int)(entt::entity)entity);
+
+		ModelImportOptions importOptions = ModelImportOptions();
+		if (defaultMesh == Model::Default::Capsule)
+			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+		
+		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 	}
 
@@ -546,88 +551,6 @@ namespace Vortex {
 		}
 	}
 
-	static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, std::function<void()> uiCallback = nullptr)
-	{
-		ImGuiIO& io = Gui::GetIO();
-		const auto& boldFont = io.Fonts->Fonts[0];
-
-		Gui::PushID(label.c_str());
-
-		Gui::Columns(2);
-		Gui::SetColumnWidth(0, columnWidth);
-		Gui::Text(label.c_str());
-		Gui::NextColumn();
-
-		Gui::PushMultiItemsWidths(3, Gui::CalcItemWidth());
-		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("X", buttonSize))
-		{
-			values.x = resetValue;
-
-			if (uiCallback != nullptr)
-				uiCallback();
-		}
-		Gui::PopFont();
-		Gui::PopStyleColor(3);
-
-		Gui::SameLine();
-		if (Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
-			uiCallback();
-		Gui::PopItemWidth();
-		Gui::SameLine();
-
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("Y", buttonSize))
-		{
-			values.y = resetValue;
-
-			if (uiCallback != nullptr)
-				uiCallback();
-		}
-		Gui::PopFont();
-		Gui::PopStyleColor(3);
-
-		Gui::SameLine();
-		if (Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
-			uiCallback();
-		Gui::PopItemWidth();
-		Gui::SameLine();
-
-		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-		Gui::PushFont(boldFont);
-		if (Gui::Button("Z", buttonSize))
-		{
-			values.z = resetValue;
-
-			if (uiCallback != nullptr)
-				uiCallback();
-		}
-		Gui::PopFont();
-		Gui::PopStyleColor(3);
-
-		Gui::SameLine();
-		if (Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
-			uiCallback();
-		Gui::PopItemWidth();
-
-		Gui::PopStyleVar();
-		Gui::Columns(1);
-		Gui::PopID();
-	}
-
 	template <typename TComponent, typename UIFunction>
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback, std::function<void(const TComponent&)> copyCallback = nullptr, std::function<void(TComponent&)> pasteCallback = nullptr, bool removeable = true)
 	{
@@ -877,13 +800,13 @@ namespace Vortex {
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
-			DrawVec3Controls("Translation", component.Translation);
+			UI::DrawVec3Controls("Translation", component.Translation);
 			Math::vec3 rotation = Math::Rad2Deg(component.GetRotationEuler());
-			DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
+			UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
 			{
 				component.SetRotationEuler(Math::Deg2Rad(rotation));
 			});
-			DrawVec3Controls("Scale", component.Scale, 1.0f);
+			UI::DrawVec3Controls("Scale", component.Scale, 1.0f);
 		},
 		[=](const auto& component)
 		{
@@ -994,6 +917,7 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
+			Gui::DragFloat("Multiplier", &component.Multiplier, 0.25f, 0.0f, 0.0f, "%.2f");
 			Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f");
 		});
 
@@ -1075,9 +999,21 @@ namespace Vortex {
 			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
 				lightSource->SetRadiance(radiance);
 
-			bool shouldCastShadows = lightSource->ShouldCastShadows();
-			if (Gui::Checkbox("Cast Shadows", &shouldCastShadows))
-				lightSource->SetCastShadows(shouldCastShadows);
+			if (Gui::TreeNodeEx("Shadows", treeNodeFlags))
+			{
+				bool shouldCastShadows = lightSource->ShouldCastShadows();
+				if (Gui::Checkbox("Cast Shadows", &shouldCastShadows))
+					lightSource->SetCastShadows(shouldCastShadows);
+
+				if (shouldCastShadows)
+				{
+					float shadowBias = lightSource->GetShadowBias();
+					if (Gui::DragFloat("Shadow Bias", &shadowBias, 1.0f, 0.0f, 1000.0f, "%.2f"))
+						lightSource->SetShadowBias(shadowBias);
+				}
+
+				Gui::TreePop();
+			}
 		});
 
 		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
@@ -1102,10 +1038,16 @@ namespace Vortex {
 						currentMeshType = meshTypes[i];
 						component.Type = static_cast<MeshType>(i);
 
-						if (component.Type != MeshType::Custom)
-							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), (int)(entt::entity)entity);
+						if (component.Type == MeshType::Capsule)
+						{
+							ModelImportOptions importOptions = ModelImportOptions();
+							importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+						}
+						else if (component.Type != MeshType::Custom)
+							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 						else
-							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), (int)(entt::entity)entity);
+							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 					}
 
 					if (isSelected)
@@ -1139,7 +1081,7 @@ namespace Vortex {
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), (int)(entt::entity)entity);
+						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 						component.Type = MeshType::Custom;
 					}
 					else
@@ -1767,17 +1709,17 @@ namespace Vortex {
 					Gui::Spacing();
 					Gui::Unindent();
 
-					DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+					UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 					{
 						component.Source->SetPosition(props.Position);
 					});
 
-					DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+					UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 					{
 						component.Source->SetDirection(props.Direction);
 					});
 
-					DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
+					UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
 					{
 						component.Source->SetVelocity(props.Veloctiy);
 					});
@@ -1833,17 +1775,17 @@ namespace Vortex {
 		{
 			AudioListener::ListenerProperties& props = component.Listener->GetProperties();
 
-			DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+			UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 			{
 				component.Listener->SetPosition(props.Position);
 			});
 
-			DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+			UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 			{
 				component.Listener->SetDirection(props.Direction);
 			});
 
-			DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
+			UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
 			{
 				component.Listener->SetVelocity(props.Veloctiy);
 			});
