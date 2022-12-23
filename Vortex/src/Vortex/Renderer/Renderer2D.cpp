@@ -121,7 +121,7 @@ namespace Vortex
 
 	void Renderer2D::Init(RendererAPI::TriangleCullMode cullMode)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		float vertices[] = {
 			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
@@ -253,14 +253,14 @@ namespace Vortex
 		SetLineWidth(s_Data.LineWidth);
 		SetCullMode(cullMode);
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
 	}
 
 	void Renderer2D::Shutdown()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		delete[] s_Data.QuadVertexBufferBase;
 		delete[] s_Data.CircleVertexBufferBase;
@@ -270,7 +270,7 @@ namespace Vortex
 
 	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
 
@@ -295,7 +295,7 @@ namespace Vortex
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = camera.GetViewProjection();
 
@@ -320,7 +320,7 @@ namespace Vortex
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
 
@@ -376,7 +376,7 @@ namespace Vortex
 
 	void Renderer2D::EndScene()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		// Render vertices as a batch
 		Flush();
@@ -464,7 +464,7 @@ namespace Vortex
 
 		s_Data.QuadIndexCount += INDICES_PER_QUAD;
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -484,7 +484,7 @@ namespace Vortex
 
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -501,7 +501,7 @@ namespace Vortex
 
 	void Renderer2D::DrawQuad(const Math::mat4& transform, const Math::vec4& color, int entityID)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -526,7 +526,7 @@ namespace Vortex
 
 	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor, int entityID)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -628,7 +628,7 @@ namespace Vortex
 
 	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -817,7 +817,7 @@ namespace Vortex
 
 	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const Math::vec4& color, int entityID)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -842,7 +842,7 @@ namespace Vortex
 
 	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -947,7 +947,7 @@ namespace Vortex
 
 	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -1011,7 +1011,7 @@ namespace Vortex
 
 	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		// TODO: Implement for Circles
 		//if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
@@ -1032,7 +1032,7 @@ namespace Vortex
 
 		s_Data.LineVertexCount += 2;
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 		s_Data.Renderer2DStatistics.LineCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -1258,7 +1258,7 @@ namespace Vortex
 					fontGeometry.getAdvance(advance, character, utf32string[(size_t)i + 1]);
 					x += fsScale * advance + kerningOffset;
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 					s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 				}

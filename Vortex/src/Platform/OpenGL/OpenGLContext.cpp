@@ -16,7 +16,7 @@ namespace Vortex {
 
 	void OpenGLContext::Init()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glfwMakeContextCurrent(m_WindowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -47,7 +47,7 @@ namespace Vortex {
 
 	void OpenGLContext::SwapFrameBuffers()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glfwSwapBuffers(m_WindowHandle);
 	}

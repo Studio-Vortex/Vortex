@@ -11,7 +11,7 @@ namespace Vortex {
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -20,7 +20,7 @@ namespace Vortex {
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(const void* vertices, uint32_t size)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -29,7 +29,7 @@ namespace Vortex {
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -38,7 +38,7 @@ namespace Vortex {
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteBuffers(1, &m_RendererID);
@@ -46,14 +46,14 @@ namespace Vortex {
 
 	void OpenGLVertexBuffer::Bind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	}
 
 	void OpenGLVertexBuffer::Unbind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, NULL);
 	}
@@ -69,7 +69,7 @@ namespace Vortex {
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -79,7 +79,7 @@ namespace Vortex {
     OpenGLIndexBuffer::OpenGLIndexBuffer(uint16_t* indices, uint32_t count)
 		: m_Count(count)
     {
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -88,7 +88,7 @@ namespace Vortex {
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteBuffers(1, &m_RendererID);
@@ -96,14 +96,14 @@ namespace Vortex {
 
 	void OpenGLIndexBuffer::Bind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 	}
 
 	void OpenGLIndexBuffer::Unbind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 	}

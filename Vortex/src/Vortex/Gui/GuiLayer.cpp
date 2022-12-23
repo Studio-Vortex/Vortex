@@ -24,7 +24,7 @@ namespace Vortex {
 
 	void GuiLayer::OnAttach()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -69,7 +69,7 @@ namespace Vortex {
 
 	void GuiLayer::OnDetach()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -88,7 +88,7 @@ namespace Vortex {
 
 	void GuiLayer::BeginFrame()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -98,7 +98,7 @@ namespace Vortex {
 
 	void GuiLayer::EndFrame()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();

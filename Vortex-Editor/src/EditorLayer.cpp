@@ -20,7 +20,7 @@ namespace Vortex {
 
 	void EditorLayer::OnAttach()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		const auto& appProps = Application::Get().GetProperties();
 
@@ -63,7 +63,7 @@ namespace Vortex {
 
 	void EditorLayer::OnUpdate(TimeStep delta)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Renderer::RenderToDepthMap(m_ActiveScene.get());
 
@@ -172,7 +172,7 @@ namespace Vortex {
 
 	void EditorLayer::OnGuiRender()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
@@ -550,7 +550,7 @@ namespace Vortex {
 			Gui::Separator();
 			Gui::Spacing();
 
-			ImVec2 button_size(Gui::GetFontSize() * 12.0f, 0.0f);
+			ImVec2 button_size(Gui::GetFontSize() * 13.25f, 0.0f);
 
 			Gui::Text("A mesh asset must be generated from this mesh file. (i.e. .fbx)");
 			Gui::Text("Import options can be selected below");
@@ -566,7 +566,19 @@ namespace Vortex {
 			});
 			UI::DrawVec3Controls("Scale", m_ModelImportOptions.MeshTransformation.Scale);
 
-			for (uint32_t i = 0; i < 18; i++)
+			for (uint32_t i = 0; i < 9; i++)
+				Gui::Spacing();
+			
+			char buffer[256] = { 0 };
+			std::string assetDir = Project::GetAssetDirectory().string();
+			size_t assetDirPos = m_ModelFilepath.find(assetDir);
+			std::string filepath = m_ModelFilepath.substr(assetDirPos + assetDir.size() + 1);
+			memcpy(buffer, filepath.c_str(), filepath.size());
+			Gui::Text("Filepath");
+			Gui::SameLine();
+			Gui::InputText("##ModelFilepathInput", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+
+			for (uint32_t i = 0; i < 9; i++)
 				Gui::Spacing();
 
 			if (Gui::Button("Import", button_size))
@@ -1185,9 +1197,9 @@ namespace Vortex {
 		m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(SP_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(SP_BIND_CALLBACK(EditorLayer::OnMouseButtonReleasedEvent));
+		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonReleasedEvent));
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
@@ -1501,7 +1513,7 @@ namespace Vortex {
 
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(Project::GetActive());
 			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel.SetContext(SP_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+			m_BuildSettingsPanel.SetContext(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 
 			TagComponent::ResetAddedMarkers();
 		}

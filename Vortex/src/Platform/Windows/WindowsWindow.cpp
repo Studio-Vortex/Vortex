@@ -25,21 +25,21 @@ namespace Vortex {
 
 	WindowsWindow::WindowsWindow(const WindowProperties& props)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Init(props);
 	}
 
 	WindowsWindow::~WindowsWindow()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Shutdown();
 	}
 
 	void WindowsWindow::Init(const WindowProperties& props)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_Properties.Title = props.Title;
 		m_Properties.Size = props.Size;
@@ -223,7 +223,7 @@ namespace Vortex {
 
 	void WindowsWindow::OnUpdate()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glfwPollEvents();
 		m_Context->SwapFrameBuffers();
@@ -260,7 +260,7 @@ namespace Vortex {
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);
 		m_Properties.VSync = enabled;
 	}
@@ -304,7 +304,7 @@ namespace Vortex {
 
 	void WindowsWindow::Shutdown()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glfwDestroyWindow(m_Window);
 		s_GLFWWindowCount--;

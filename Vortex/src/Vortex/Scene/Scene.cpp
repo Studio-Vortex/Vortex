@@ -114,7 +114,7 @@ namespace Vortex {
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SharedRef<Scene> destination = CreateShared<Scene>();
 
@@ -171,7 +171,7 @@ namespace Vortex {
 
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name, const std::string& marker)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(uuid);
@@ -192,7 +192,7 @@ namespace Vortex {
 
 	void Scene::DestroyEntity(Entity entity, bool excludeChildren)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		// Call the entitys OnDestroy function if they are a script instance
 		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
@@ -232,7 +232,7 @@ namespace Vortex {
 
 	void Scene::ParentEntity(Entity entity, Entity parent)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (parent.IsDescendantOf(entity))
 		{
@@ -261,7 +261,7 @@ namespace Vortex {
 
 	void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 		if (!parent)
@@ -278,7 +278,7 @@ namespace Vortex {
 
 	void Scene::OnRuntimeStart()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_IsRunning = true;
 		m_DebugMode = false;
@@ -322,7 +322,7 @@ namespace Vortex {
 
 	void Scene::OnRuntimeStop()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_IsRunning = false;
 
@@ -372,7 +372,7 @@ namespace Vortex {
 
 	void Scene::OnPhysicsSimulationStart()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Physics::OnSimulationStart(this);
 		Physics2D::OnSimulationStart(this);
@@ -380,7 +380,7 @@ namespace Vortex {
 
 	void Scene::OnPhysicsSimulationStop()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Physics::OnSimulationStop(this);
 		Physics2D::OnSimulationStop();
@@ -388,7 +388,7 @@ namespace Vortex {
 
 	void Scene::OnUpdateRuntime(TimeStep delta)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
@@ -462,7 +462,7 @@ namespace Vortex {
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
@@ -485,7 +485,7 @@ namespace Vortex {
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		// Render
 		s_SceneRenderer.RenderFromEditorCamera(camera, this);
@@ -518,7 +518,7 @@ namespace Vortex {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_ViewportWidth == width && m_ViewportHeight == height)
 			return;
@@ -540,7 +540,7 @@ namespace Vortex {
 
 	Entity Scene::DuplicateEntity(Entity src)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		auto ParentNewEntityFunc = [&src](Entity newEntity)
 		{
@@ -615,7 +615,7 @@ namespace Vortex {
 
 	void Scene::ConvertToLocalSpace(Entity entity)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
@@ -630,7 +630,7 @@ namespace Vortex {
 
 	void Scene::ConvertToWorldSpace(Entity entity)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
@@ -644,7 +644,7 @@ namespace Vortex {
 
 	Math::mat4 Scene::GetWorldSpaceTransformMatrix(Entity entity)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 transform(1.0f);
 
@@ -660,7 +660,7 @@ namespace Vortex {
 
 	TransformComponent Scene::GetWorldSpaceTransform(Entity entity)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
 		TransformComponent transformComponent;
@@ -695,7 +695,7 @@ namespace Vortex {
 
 	void Scene::OnModelUpdate()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		auto view = m_Registry.view<MeshRendererComponent>();
 
@@ -709,7 +709,7 @@ namespace Vortex {
 
 	void Scene::OnParticleEmitterUpdate(TimeStep delta)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		auto view = m_Registry.view<ParticleEmitterComponent>();
 

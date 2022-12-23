@@ -63,7 +63,7 @@ namespace Vortex {
 
 	void Renderer::Init()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		RenderCommand::Init();
 
@@ -85,16 +85,16 @@ namespace Vortex {
 		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
 		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
-#if SP_RENDERER_STATISTICS
+#if VX_RENDERER_STATISTICS
 		ResetStats();
-#endif // SP_RENDERER_STATISTICS
+#endif // VX_RENDERER_STATISTICS
 
 		Renderer2D::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Renderer2D::Shutdown();
 	}
@@ -106,14 +106,14 @@ namespace Vortex {
 
 	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjection(), transform.Translation);
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
 	}
@@ -122,7 +122,7 @@ namespace Vortex {
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = projection * view;
 
@@ -140,7 +140,7 @@ namespace Vortex {
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		shader->Enable();
 		vertexArray->Bind();
@@ -150,7 +150,7 @@ namespace Vortex {
 
 	void Renderer::DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		shader->Enable();
 		vertexArray->Bind();
@@ -263,7 +263,7 @@ namespace Vortex {
 		SharedRef<Skybox> skybox = skyboxComponent.Source;
 
 		// TODO fix this hack!
-		if (skybox->PathChanged())
+		if (skybox->PathChanged() || s_Data.HDRFramebuffer == nullptr)
 		{
 			s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
 

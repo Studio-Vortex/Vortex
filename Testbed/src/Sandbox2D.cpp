@@ -7,7 +7,7 @@ Sandbox2D::Sandbox2D() :
 
 void Sandbox2D::OnAttach()
 {
-	SP_PROFILE_FUNCTION();
+	VX_PROFILE_FUNCTION();
 
 	m_GridTexture = Vortex::Texture2D::Create("assets/textures/Checkerboard.png");
 }
@@ -16,7 +16,7 @@ void Sandbox2D::OnDetach() { }
 
 void Sandbox2D::OnUpdate(Vortex::TimeStep delta)
 {
-	SP_PROFILE_FUNCTION();
+	VX_PROFILE_FUNCTION();
 
 	// Update
 	m_CameraController.OnUpdate(delta);
@@ -59,7 +59,7 @@ void Sandbox2D::OnUpdate(Vortex::TimeStep delta)
 
 void Sandbox2D::OnGuiRender()
 {
-	SP_PROFILE_FUNCTION();
+	VX_PROFILE_FUNCTION();
 
 	static bool show = true;
 	Gui::Begin("Settings", &show);

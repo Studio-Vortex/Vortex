@@ -233,5 +233,5 @@ namespace Vortex {
 	#define SP_PROFILE_BEGIN_SESSION(name, filepath)
 	#define SP_PROFILE_END_SESSION()
 	#define SP_PROFILE_SCOPE(name)
-	#define SP_PROFILE_FUNCTION()
+	#define VX_PROFILE_FUNCTION()
 #endif

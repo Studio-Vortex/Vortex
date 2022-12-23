@@ -11,14 +11,14 @@ namespace Vortex {
 	OpenGLSkybox::OpenGLSkybox(const std::string& filepath)
 		: m_Filepath(filepath)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		LoadSkybox(filepath);
 	}
 
 	OpenGLSkybox::~OpenGLSkybox()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteTextures(1, &m_RendererID);
@@ -33,7 +33,7 @@ namespace Vortex {
 
 	void OpenGLSkybox::Bind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
@@ -41,7 +41,7 @@ namespace Vortex {
 
 	void OpenGLSkybox::Unbind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}

@@ -23,7 +23,7 @@
 #ifdef VX_DEBUG
 	#if defined(VX_PLATFORM_WINDOWS)
 		#define VX_DEBUGBREAK() __debugbreak()
-	#elif defined(SP_PLATFORM_LINUX)
+	#elif defined(VX_PLATFORM_LINUX)
 		#include <signal.h>
 		#define VX_DEBUGBREAK() raise(SIGTRAP)
 	#else
@@ -44,7 +44,7 @@
 
 #define VX_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
 
-#define SP_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+#define VX_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #define BIT(x) (1 << x)
 

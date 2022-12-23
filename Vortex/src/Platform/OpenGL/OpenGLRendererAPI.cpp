@@ -43,7 +43,7 @@ namespace Vortex {
 
     void OpenGLRendererAPI::Init() const
     {
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 #ifdef VX_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);

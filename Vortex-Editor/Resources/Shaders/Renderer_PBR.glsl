@@ -8,8 +8,9 @@
 //     Parallax Occlusion Mapping,
 //     Emission,
 //     Ambient Occlusion Mapping,
-//     Image Based Lighting
-//     HDR ToneMapping,
+//     Image Based Lighting,
+//     HDR & Exposure ToneMapping,
+//     Directional Light Shadow Mapping and PCF
 //     Gamma Correction
 //-------------------------
 
@@ -39,11 +40,15 @@ out DATA
 	vec2       TexScale;
 	flat int   EntityID;
 
+	vec4       FragPosLight;
+
 	mat3       TBN;
 } vertexOut;
 
 uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
+uniform mat4 u_LightProjection;
+uniform mat4 u_SpotLightProjection;
 
 void main()
 {
@@ -55,6 +60,8 @@ void main()
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 	vertexOut.EntityID = a_EntityID;
+
+	vertexOut.FragPosLight = u_LightProjection * vec4(vertexOut.Position, 1.0);
 
 	// Calculate TBN matrix
 	vec3 T = normalize(model * a_Tangent);
@@ -77,6 +84,8 @@ in DATA
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
+
+	vec4       FragPosLight;
 
 	mat3       TBN;
 } fragmentIn;
@@ -108,14 +117,12 @@ struct Material
 struct DirectionalLight
 {
 	vec3 Radiance;
-
 	vec3 Direction;
 };
 
 struct PointLight
 {
 	vec3 Radiance;
-
 	vec3 Position;
 
 	float Constant;
@@ -126,7 +133,6 @@ struct PointLight
 struct SpotLight
 {
 	vec3 Radiance;
-
 	vec3 Position;
 	vec3 Direction;
 
@@ -167,18 +173,23 @@ struct SceneProperties
 #define MAX_POINT_LIGHTS 100
 #define MAX_SPOT_LIGHTS 50
 
-uniform sampler2D        u_Texture;
+struct SkylightShadowSettings
+{
+	sampler2D ShadowMap;
+	float ShadowBias;
+};
+
 uniform Material         u_Material;
 uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties  u_SceneProperties;
-
-const float PI = 3.14159265359;
-const float EPSILON = 0.0001;
+uniform SkylightShadowSettings u_SkylightShadowSettings;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
+const float PI = 3.14159265359;
+const float EPSILON = 0.0001;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
@@ -186,43 +197,9 @@ float gaSchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float rougness);
-
-vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
-{
-	const float minLayers = 8.0;
-	const float maxLayers = 32.0;
-	float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
-	float layerDepth = 1.0 / numLayers;
-	float currentLayerDepth = 0.0;
-
-	vec2 p = viewDir.xy * u_Material.ParallaxHeightScale;
-	vec2 deltaTexCoords = p / numLayers;
-
-	vec2 currentTexCoords = texCoords;
-	float currentDepthValue = texture(u_Material.POMap, currentTexCoords).r;
-
-	while (currentLayerDepth < currentDepthValue)
-	{
-		currentTexCoords -= deltaTexCoords;
-		currentDepthValue = texture(u_Material.POMap, currentTexCoords).r;
-		currentLayerDepth += layerDepth;
-	}
-
-    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
-    float afterDepth  = currentDepthValue - currentLayerDepth;
-    float beforeDepth = texture(u_Material.POMap, prevTexCoords).r - currentLayerDepth + layerDepth;
- 
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
-
-	return currentTexCoords;
-}
-
-float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic)
-{
-	float distance = length(lightPosition - fragPosition);
-	return 1.0 / (constant + linear * distance + quadratic * (distance * distance));
-}
+float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic);
+vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir);
+float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias);
 
 void main()
 {
@@ -283,8 +260,10 @@ void main()
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
 		kD *= 1.0 - properties.Metallic;
 
+		float shadow = ShadowCalculation(fragmentIn.FragPosLight, dot(N, L), u_SkylightShadowSettings.ShadowMap, u_SkylightShadowSettings.ShadowBias);
+
 		// Add to outgoing radiance Lo
-		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		Lo += (1.0 - shadow) * (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
 	for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
@@ -361,7 +340,7 @@ void main()
 		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
-	// Ambient lighting (we now use Image Based Lighting as the ambient term)
+	// Ambient lighting
 	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, properties.Roughness);
 
 	vec3 kS = F;
@@ -378,8 +357,7 @@ void main()
 	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(max(dot(N, V), 0.0), properties.Roughness)).rg;
 	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-	vec3 ambient = (kD * diffuse + specular) * properties.AO;
-
+	vec3 ambient = (kD * diffuse + specular) * (properties.AO * 5);
 	vec3 color = ambient + Lo;
 
 	// Exposure tonemapping
@@ -452,4 +430,81 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
 	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic)
+{
+	float distance = length(lightPosition - fragPosition);
+	return 1.0 / (constant + linear * distance + quadratic * (distance * distance));
+}
+
+vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
+{
+	const float minLayers = 8.0;
+	const float maxLayers = 32.0;
+	float numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), viewDir), 0.0));  
+	float layerDepth = 1.0 / numLayers;
+	float currentLayerDepth = 0.0;
+
+	vec2 p = viewDir.xy * u_Material.ParallaxHeightScale;
+	vec2 deltaTexCoords = p / numLayers;
+
+	vec2 currentTexCoords = texCoords;
+	float currentDepthValue = texture(u_Material.POMap, currentTexCoords).r;
+
+	while (currentLayerDepth < currentDepthValue)
+	{
+		currentTexCoords -= deltaTexCoords;
+		currentDepthValue = texture(u_Material.POMap, currentTexCoords).r;
+		currentLayerDepth += layerDepth;
+	}
+
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    float afterDepth  = currentDepthValue - currentLayerDepth;
+    float beforeDepth = texture(u_Material.POMap, prevTexCoords).r - currentLayerDepth + layerDepth;
+ 
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+	return currentTexCoords;
+}
+
+float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias)
+{
+	// perspective division
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+	// transform to 0 -> 1 range
+	projCoords = projCoords * 0.5 + 0.5;
+
+	// get closest depth value from light's perspective (using [0, 1] range fragPosLightSpace as coords)
+	float closestDepth = texture(shadowMap, projCoords.xy).r;
+
+	// get the current depth of the fragment from the light's perspective
+	float currentDepth = projCoords.z;
+
+	float bias = shadowBias;
+	float shadow = 0.0;
+
+	// Percentage Closer Filtering
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+	float sampleCount = 18.0;
+
+	for (float x = -1.0; x <= 1.0; x += 0.5)
+	{
+		for (float y = -1.0; y <= 1.0; y += 0.5)
+		{
+			float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+
+	// take the average of all the samples
+	shadow /= sampleCount;
+
+	if (projCoords.z > 1.0)
+		shadow = 0.0;
+
+	return shadow;
 }

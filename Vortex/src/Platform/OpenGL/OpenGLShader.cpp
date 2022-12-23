@@ -21,7 +21,7 @@ namespace Vortex {
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 		: m_Filepath(filepath)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		CreateShader(m_Filepath);
 	}
@@ -29,7 +29,7 @@ namespace Vortex {
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
 		: m_Name(name)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSrc;
@@ -40,7 +40,7 @@ namespace Vortex {
 
 	OpenGLShader::~OpenGLShader()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
@@ -63,7 +63,7 @@ namespace Vortex {
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		std::string result;
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -94,7 +94,7 @@ namespace Vortex {
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 
@@ -120,7 +120,7 @@ namespace Vortex {
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string> shaderSources)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
 		VX_CORE_ASSERT(shaderSources.size() <= 2, "Shader Limit Reached!");
@@ -193,14 +193,14 @@ namespace Vortex {
 
 	void OpenGLShader::Enable() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Disable() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glUseProgram(NULL);
 	}
@@ -215,17 +215,38 @@ namespace Vortex {
 
 	void OpenGLShader::SetBool(const std::string& name, bool value) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, value);
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, value);
 	}
+
+    void OpenGLShader::SetInt2(const std::string& name, const Math::ivec2& vector) const
+    {
+		VX_PROFILE_FUNCTION();
+
+		SetUniform(name, vector);
+    }
+
+    void OpenGLShader::SetInt3(const std::string& name, const Math::ivec3& vector) const
+    {
+		VX_PROFILE_FUNCTION();
+
+		SetUniform(name, vector);
+    }
+
+    void OpenGLShader::SetInt4(const std::string& name, const Math::ivec4& vector) const
+    {
+		VX_PROFILE_FUNCTION();
+
+		SetUniform(name, vector);
+    }
 
 	void OpenGLShader::SetIntArray(const std::string& name, int* data, uint32_t count) const
 	{
@@ -234,42 +255,42 @@ namespace Vortex {
 
 	void OpenGLShader::SetFloat(const std::string& name, float value) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, value);
 	}
 
 	void OpenGLShader::SetMat3(const std::string& name, const Math::mat3& matrix) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, matrix);
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const Math::mat4& matrix) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, matrix);
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const Math::vec2& vector) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, vector);
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const Math::vec3& vector) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, vector);
 	}
 
 	void OpenGLShader::SetFloat4(const std::string& name, const Math::vec4& vector) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		SetUniform(name, vector);
 	}
@@ -277,6 +298,21 @@ namespace Vortex {
 	void OpenGLShader::SetUniform(const std::string& uniformName, int v) const
 	{
 		glProgramUniform1i(m_RendererID, GetUniformLocation(uniformName), v);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& uniformName, const Math::ivec2& vector) const
+	{
+		glProgramUniform2i(m_RendererID, GetUniformLocation(uniformName), vector.x, vector.y);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& uniformName, const Math::ivec3& vector) const
+	{
+		glProgramUniform3i(m_RendererID, GetUniformLocation(uniformName), vector.x, vector.y, vector.z);
+	}
+
+	void OpenGLShader::SetUniform(const std::string& uniformName, const Math::ivec4& vector) const
+	{
+		glProgramUniform4i(m_RendererID, GetUniformLocation(uniformName), vector.x, vector.y, vector.z, vector.w);
 	}
 
 	void OpenGLShader::SetUniform(const std::string& uniformName, int* data, uint32_t count) const

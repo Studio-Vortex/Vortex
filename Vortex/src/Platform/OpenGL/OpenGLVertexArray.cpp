@@ -28,14 +28,14 @@ namespace Vortex {
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glCreateVertexArrays(1, &m_RendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteVertexArrays(1, &m_RendererID);
@@ -43,21 +43,21 @@ namespace Vortex {
 
 	void OpenGLVertexArray::Bind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindVertexArray(NULL);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const SharedRef<VertexBuffer>& vertexBuffer)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		VX_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
@@ -131,7 +131,7 @@ namespace Vortex {
 
 	void OpenGLVertexArray::SetIndexBuffer(const SharedRef<IndexBuffer>& indexBuffer)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();

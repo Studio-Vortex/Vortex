@@ -9,7 +9,7 @@ namespace Vortex {
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, bool rgba32f)
 		: m_Width(width), m_Height(height), m_Slot()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_InternalFormat = rgba32f ? GL_RGBA32F : GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -29,7 +29,7 @@ namespace Vortex {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flipVertical)
 		: m_Path(path), m_Slot()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (flipVertical)
 			stbi_set_flip_vertically_on_load(true);
@@ -85,7 +85,7 @@ namespace Vortex {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (m_RendererID)
 			glDeleteTextures(1, &m_RendererID);
@@ -93,7 +93,7 @@ namespace Vortex {
 
 	void OpenGLTexture2D::SetData(const void* data, uint32_t size)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 #ifdef VX_ENABLE_ASSERTS
 		uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
@@ -105,7 +105,7 @@ namespace Vortex {
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 #ifdef VX_ENABLE_ASSERTS
 		uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
@@ -117,7 +117,7 @@ namespace Vortex {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_Slot = slot;
 		glBindTextureUnit(slot, m_RendererID);
@@ -125,7 +125,7 @@ namespace Vortex {
 
     void OpenGLTexture2D::Unbind() const
     {
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		glBindTextureUnit(m_Slot, 0);
     }

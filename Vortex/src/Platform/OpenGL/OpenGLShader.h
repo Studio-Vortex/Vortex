@@ -24,6 +24,9 @@ namespace Vortex {
 
 		void SetBool(const std::string& name, bool value) const override;
 		void SetInt(const std::string& name, int value) const override;
+		void SetInt2(const std::string& name, const Math::ivec2& vector) const override;
+		void SetInt3(const std::string& name, const Math::ivec3& vector) const override;
+		void SetInt4(const std::string& name, const Math::ivec4& vector) const override;
 		void SetIntArray(const std::string& name, int* data, uint32_t count) const override;
 		void SetFloat(const std::string& name, float value) const override;
 		void SetMat3(const std::string& name, const Math::mat3& matrix) const override;
@@ -37,6 +40,9 @@ namespace Vortex {
 		void Reload() override;
 
 		void SetUniform(const std::string& uniformName, int v) const;
+		void SetUniform(const std::string& uniformName, const Math::ivec2& vector) const;
+		void SetUniform(const std::string& uniformName, const Math::ivec3& vector) const;
+		void SetUniform(const std::string& uniformName, const Math::ivec4& vector) const;
 		void SetUniform(const std::string& uniformName, int* data, uint32_t count) const;
 		void SetUniform(const std::string& uniformName, unsigned int v) const;
 		void SetUniform(const std::string& uniformName, float v) const;

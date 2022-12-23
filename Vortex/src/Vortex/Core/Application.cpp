@@ -21,7 +21,7 @@ namespace Vortex {
 	Application::Application(const ApplicationProperties& props)
 		: m_Properties(props)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		VX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
@@ -42,7 +42,7 @@ namespace Vortex {
 		if (!m_Properties.MaximizeWindow)
 			m_Window->CenterWindow();
 
-		m_Window->SetEventCallback(SP_BIND_CALLBACK(Application::OnEvent));
+		m_Window->SetEventCallback(VX_BIND_CALLBACK(Application::OnEvent));
 
 		// Init engine sub-systems
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
@@ -62,7 +62,7 @@ namespace Vortex {
 
 	Application::~Application()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
 		ScriptEngine::Shutdown();
@@ -73,7 +73,7 @@ namespace Vortex {
 
 	void Application::PushLayer(Layer* layer)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		layer->OnAttach();
 		m_LayerStack.PushLayer(layer);
@@ -81,7 +81,7 @@ namespace Vortex {
 
 	void Application::PushOverlay(Layer* overlay)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		overlay->OnAttach();
 		m_LayerStack.PushOverlay(overlay);
@@ -102,11 +102,11 @@ namespace Vortex {
 
 	void Application::OnEvent(Event& e)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(SP_BIND_CALLBACK(Application::OnWindowCloseEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(Application::OnWindowResizeEvent));
+		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(Application::OnWindowCloseEvent));
+		dispatcher.Dispatch<WindowResizeEvent>(VX_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
 		// Update Input State
 		Input::Update(e);
@@ -132,7 +132,7 @@ namespace Vortex {
 
 	void Application::Run()
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		while (m_Running)
 		{
@@ -178,7 +178,7 @@ namespace Vortex {
 
 	bool Application::OnWindowResizeEvent(WindowResizeEvent& e)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{

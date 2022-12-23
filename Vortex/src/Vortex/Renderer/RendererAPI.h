@@ -10,7 +10,7 @@ namespace Vortex {
 #ifdef VX_DEBUG
 	#define SP_RENDERER_STATISTICS 1;
 #elif VX_RELEASE
-	#define SP_RENDERER_STATISTICS 1; // Temporary
+	#define VX_RENDERER_STATISTICS 1; // Temporary
 #endif // VX_DEBUG
 
 	static constexpr uint32_t VERTICES_PER_CUBE = 24;

@@ -12,7 +12,7 @@ namespace Vortex {
 
 	void OrthographicCameraController::OnUpdate(TimeStep ts)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		if (Input::IsKeyPressed(Key::A))
 		{
@@ -64,11 +64,11 @@ namespace Vortex {
 
 	void OrthographicCameraController::OnEvent(Event& e)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(SP_BIND_CALLBACK(OrthographicCameraController::OnMouseScrolledEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(SP_BIND_CALLBACK(OrthographicCameraController::OnWindowResizeEvent));
+		dispatcher.Dispatch<MouseScrolledEvent>(VX_BIND_CALLBACK(OrthographicCameraController::OnMouseScrolledEvent));
+		dispatcher.Dispatch<WindowResizeEvent>(VX_BIND_CALLBACK(OrthographicCameraController::OnWindowResizeEvent));
 	}
 
 	void OrthographicCameraController::OnResize(const Math::vec2& size)
@@ -85,7 +85,7 @@ namespace Vortex {
 
 	bool OrthographicCameraController::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		m_ZoomLevel -= e.GetYOffset() * m_ZoomModifer; // nerf the zoom level
 		m_ZoomLevel = std::min(m_ZoomLevel, m_MaxZoomOutLevel);
@@ -97,7 +97,7 @@ namespace Vortex {
 
 	bool OrthographicCameraController::OnWindowResizeEvent(WindowResizeEvent& e)
 	{
-		SP_PROFILE_FUNCTION();
+		VX_PROFILE_FUNCTION();
 
 		OnResize({ (float)e.GetWidth(), (float)e.GetHeight() });
 

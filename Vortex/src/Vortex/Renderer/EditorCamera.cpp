@@ -151,7 +151,7 @@ namespace Vortex {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(SP_BIND_CALLBACK(EditorCamera::OnMouseScrolledEvent));
+		dispatcher.Dispatch<MouseScrolledEvent>(VX_BIND_CALLBACK(EditorCamera::OnMouseScrolledEvent));
 	}
 
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& e)
