@@ -324,7 +324,8 @@ namespace Vortex {
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
-		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>(APP_ASSEMBLY_PATH, OnAppAssemblyFileSystemEvent);
+		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>((Project::GetAssetDirectory() / projectProps.General.ScriptBinaryPath).string(), OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
 		return true;
