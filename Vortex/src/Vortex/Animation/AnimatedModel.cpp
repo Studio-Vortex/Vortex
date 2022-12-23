@@ -1,7 +1,6 @@
 #include "vxpch.h"
-#include "Model.h"
+#include "AnimatedModel.h"
 
-#include "Vortex/Animation/AnimatedModel.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Project/Project.h"
@@ -14,13 +13,13 @@
 
 namespace Vortex {
 
-	static const uint32_t s_MeshImportFlags = 
+	static const uint32_t s_AnimatedMeshImportFlags =
 		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
 		aiProcess_Triangulate |             // Make sure we're triangles
-		aiProcess_SortByPType |             // Split meshes by primitive type
+		aiProcess_SortByPType |             // Split AnimatedMeshes by primitive type
 		aiProcess_GenNormals |              // Make sure we have legit normals
 		aiProcess_GenUVCoords |             // Convert UVs if required 
-		aiProcess_OptimizeMeshes |          // Batch draws where possible
+		aiProcess_OptimizeAnimatedMeshes |          // Batch draws where possible
 		aiProcess_JoinIdenticalVertices |
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
@@ -42,14 +41,14 @@ namespace Vortex {
 		}
 	};
 
-	Mesh::Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials)
+	AnimatedMesh::AnimatedMesh(const std::vector<AnimatedModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials)
 		: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
 	{
-		CreateAndUploadMesh();
+		CreateAndUploadAnimatedMesh();
 		m_Materials.insert(m_Materials.end(), MaterialInstance::Create());
 	}
 
-	Mesh::Mesh(bool skybox)
+	AnimatedMesh::AnimatedMesh(bool skybox)
 	{
 		m_VertexArray = VertexArray::Create();
 
@@ -105,17 +104,17 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void Mesh::SetMaterial(const SharedRef<MaterialInstance>& material)
+	void AnimatedMesh::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
 		m_Materials.clear();
 		m_Materials.push_back(material);
 	}
 
-	void Mesh::CreateAndUploadMesh()
+	void AnimatedMesh::CreateAndUploadAnimatedMesh()
 	{
 		m_VertexArray = VertexArray::Create();
 
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
+		uint32_t dataSize = m_Vertices.size() * sizeof(AnimatedModelVertex);
 		m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), dataSize);
 
 		m_VertexBuffer->SetLayout({
@@ -157,7 +156,7 @@ namespace Vortex {
 		}
 	}
 
-	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	void AnimatedMesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
 	{
 		shader->Enable();
 		material->Bind();
@@ -165,73 +164,42 @@ namespace Vortex {
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
 
-	void Mesh::RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	void AnimatedMesh::RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
 	{
 		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
 
-	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+	AnimatedModel::AnimatedModel(const std::string& filepath, const TransformComponent& transform, const AnimatedModelImportOptions& importOptions, int entityID)
 		: m_ImportOptions(importOptions), m_Filepath(filepath)
 	{
 		LogStream::Initialize();
 
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+		VX_CORE_INFO("Loading AnimatedMesh: {}", m_Filepath.c_str());
 
 		Assimp::Importer importer;
 
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
+		const aiScene* scene = importer.ReadFile(m_Filepath, s_AnimatedMeshImportFlags);
+		if (!scene || !scene->HasAnimatedMeshes())
 		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			VX_CORE_ERROR("Failed to load AnimatedMesh from: {}", m_Filepath.c_str());
 			return;
 		}
 
 		m_Scene = scene;
 		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
+		m_AnimatedMeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_Material = Material::Create(m_AnimatedMeshShader, MaterialProperties());
 
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
 	}
 
-	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions)
+	void AnimatedModel::ProcessNode(aiNode* node, const aiScene* scene, const AnimatedModelImportOptions& importOptions)
 	{
-		LogStream::Initialize();
-
-		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
-
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
+		// process all node AnimatedMeshes
+		for (uint32_t i = 0; i < node->mNumAnimatedMeshes; i++)
 		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
-
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
-	}
-
-	Model::Model(MeshType meshType)
-	{
-		m_Meshes.push_back(Mesh(true));
-	}
-
-	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions)
-	{
-		// process all node meshes
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
-		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Meshes.push_back(ProcessMesh(mesh, scene, importOptions, m_EntityID));
+			aiAnimatedMesh* AnimatedMesh = scene->mAnimatedMeshes[node->mAnimatedMeshes[i]];
+			m_AnimatedMeshes.push_back(ProcessAnimatedMesh(AnimatedMesh, scene, importOptions, m_EntityID));
 		}
 
 		// do the same for children nodes
@@ -241,13 +209,13 @@ namespace Vortex {
 		}
 	}
 
-	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
+	AnimatedMesh AnimatedModel::ProcessAnimatedMesh(aiAnimatedMesh* AnimatedMesh, const aiScene* scene, const AnimatedModelImportOptions& importOptions, const int entityID)
 	{
-		std::vector<ModelVertex> vertices;
+		std::vector<AnimatedModelVertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<SharedRef<MaterialInstance>> materials;
 
-		const TransformComponent& importTransform = importOptions.MeshTransformation;
+		const TransformComponent& importTransform = importOptions.AnimatedMeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
 		Math::mat4 transform = Math::Translate(importTransform.Translation) *
 			Math::Rotate(Math::Deg2Rad(rotation.x), { 1.0f, 0.0f, 0.0f }) *
@@ -256,31 +224,31 @@ namespace Vortex {
 			Math::Scale(importTransform.Scale);
 
 		// process vertices
-		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+		for (uint32_t i = 0; i < AnimatedMesh->mNumVertices; i++)
 		{
-			ModelVertex vertex;
+			AnimatedModelVertex vertex;
 
-			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
-			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
+			VX_CORE_ASSERT(AnimatedMesh->HasPositions(), "AnimatedMeshes require positions!");
+			VX_CORE_ASSERT(AnimatedMesh->HasNormals(), "AnimatedMeshes require normals!");
 
-			vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z }, 1.0f)) * 0.5f;
-			vertex.Normal = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }, 1.0f));
+			vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ AnimatedMesh->mVertices[i].x, AnimatedMesh->mVertices[i].y, AnimatedMesh->mVertices[i].z }, 1.0f)) * 0.5f;
+			vertex.Normal = Math::vec3(transform * Math::vec4(Math::vec3{ AnimatedMesh->mNormals[i].x, AnimatedMesh->mNormals[i].y, AnimatedMesh->mNormals[i].z }, 1.0f));
 
 			vertex.Tangent = Math::vec3(0.0f);
 			vertex.BiTangent = Math::vec3(0.0f);
-			if (mesh->HasTangentsAndBitangents())
+			if (AnimatedMesh->HasTangentsAndBitangents())
 			{
-				vertex.Tangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z}, 1.0f));
-				vertex.BiTangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z }, 1.0f));
+				vertex.Tangent = Math::vec3(transform * Math::vec4(Math::vec3{ AnimatedMesh->mTangents[i].x, AnimatedMesh->mTangents[i].y, AnimatedMesh->mTangents[i].z }, 1.0f));
+				vertex.BiTangent = Math::vec3(transform * Math::vec4(Math::vec3{ AnimatedMesh->mBitangents[i].x, AnimatedMesh->mBitangents[i].y, AnimatedMesh->mBitangents[i].z }, 1.0f));
 			}
 
 			vertex.TexScale = Math::vec2(1.0f);
 
 			vertex.TexCoord = Math::vec2(0.0f);
 			// does it contain texture coords?
-			if (mesh->mTextureCoords[0])
+			if (AnimatedMesh->mTextureCoords[0])
 			{
-				vertex.TexCoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				vertex.TexCoord = { AnimatedMesh->mTextureCoords[0][i].x, AnimatedMesh->mTextureCoords[0][i].y };
 			}
 
 			vertex.EntityID = entityID;
@@ -288,9 +256,9 @@ namespace Vortex {
 		}
 
 		// process indices
-		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
+		for (uint32_t i = 0; i < AnimatedMesh->mNumFaces; i++)
 		{
-			aiFace face = mesh->mFaces[i];
+			aiFace face = AnimatedMesh->mFaces[i];
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
 			{
 				indices.push_back(face.mIndices[j]);
@@ -298,9 +266,9 @@ namespace Vortex {
 		}
 
 		// process materials
-		if (mesh->mMaterialIndex >= 0)
+		if (AnimatedMesh->mMaterialIndex >= 0)
 		{
-			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			aiMaterial* material = scene->mMaterials[AnimatedMesh->mMaterialIndex];
 			std::vector<SharedRef<Texture2D>> albedoMaps = LoadMaterialTextures(material, aiTextureType_BASE_COLOR);
 			std::vector<SharedRef<Texture2D>> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS);
 			std::vector<SharedRef<Texture2D>> metallicMaps = LoadMaterialTextures(material, aiTextureType_METALNESS);
@@ -346,7 +314,7 @@ namespace Vortex {
 		return { vertices, indices, materials };
 	}
 
-	std::vector<SharedRef<Texture2D>> Model::LoadMaterialTextures(aiMaterial* material, uint32_t textureType)
+	std::vector<SharedRef<Texture2D>> AnimatedModel::LoadMaterialTextures(aiMaterial* material, uint32_t textureType)
 	{
 		aiTextureType type = static_cast<aiTextureType>(textureType);
 		std::vector<SharedRef<Texture2D>> textures;
@@ -370,7 +338,7 @@ namespace Vortex {
 		return textures;
 	}
 
-	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
+	void AnimatedModel::OnUpdate(int entityID, const Math::vec2& textureScale)
 	{
 		if (m_EntityID == entityID && m_TextureScale == textureScale)
 			return;
@@ -378,74 +346,64 @@ namespace Vortex {
 		m_EntityID = entityID;
 		m_TextureScale = textureScale;
 
-		for (auto& mesh : m_Meshes)
+		for (auto& AnimatedMesh : m_AnimatedMeshes)
 		{
-			std::vector<ModelVertex>& vertices = mesh.GetVertices();
-			
+			std::vector<AnimatedModelVertex>& vertices = AnimatedMesh.GetVertices();
+
 			size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
-				ModelVertex& vertex = vertices[i];
+				AnimatedModelVertex& vertex = vertices[i];
 				vertex.TexScale = m_TextureScale;
 				vertex.EntityID = m_EntityID;
 			}
 
-			SharedRef<VertexBuffer> vertexBuffer = mesh.GetVertexBuffer();
-			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(ModelVertex));
+			SharedRef<VertexBuffer> vertexBuffer = AnimatedMesh.GetVertexBuffer();
+			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(AnimatedModelVertex));
 		}
 	}
 
-	void Model::Render(const Math::mat4& worldSpaceTransform)
+	void AnimatedModel::Render(const Math::mat4& worldSpaceTransform)
 	{
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		m_AnimatedMeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
-		m_MeshShader->Enable();
+		m_AnimatedMeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-		m_MeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+		m_AnimatedMeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
+		m_AnimatedMeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+		m_AnimatedMeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
-		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
+		m_AnimatedMeshShader->SetMat4("u_AnimatedModel", worldSpaceTransform);
 
 		Renderer::BindDepthMap();
-		for (auto& mesh : m_Meshes)
+		for (auto& AnimatedMesh : m_AnimatedMeshes)
 		{
-			mesh.Render(m_MeshShader, m_Material);
+			AnimatedMesh.Render(m_AnimatedMeshShader, m_Material);
 		}
 	}
 
-	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform)
+	void AnimatedModel::RenderForShadowMap(const Math::mat4& worldSpaceTransform)
 	{
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+		m_AnimatedMeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
 
-		for (auto& mesh : m_Meshes)
+		for (auto& AnimatedMesh : m_AnimatedMeshes)
 		{
-			mesh.RenderForShadowMap(m_MeshShader, m_Material);
+			AnimatedMesh.RenderForShadowMap(m_AnimatedMeshShader, m_Material);
 		}
 	}
 
-	void Model::SetMaterial(const SharedRef<MaterialInstance>& material)
+	void AnimatedModel::SetMaterial(const SharedRef<MaterialInstance>& material)
 	{
-		for (auto& mesh : m_Meshes)
-			mesh.SetMaterial(material);
+		for (auto& AnimatedMesh : m_AnimatedMeshes)
+			AnimatedMesh.SetMaterial(material);
 
 		m_Material = material;
 	}
 
-	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+	SharedRef<AnimatedModel> AnimatedModel::Create(const std::string& filepath, const TransformComponent& transform, const AnimatedModelImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(defaultMesh, transform, importOptions, entityID);
-	}
-
-	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
-	{
-		return CreateShared<Model>(filepath, transform, importOptions, entityID);
-	}
-
-	SharedRef<Model> Model::Create(MeshType meshType)
-	{
-		return CreateShared<Model>(meshType);
+		return CreateShared<AnimatedModel>(filepath, transform, importOptions, entityID);
 	}
 
 }

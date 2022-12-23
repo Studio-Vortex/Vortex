@@ -2,7 +2,7 @@
 #include "Framebuffer.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Vortex/Platform/OpenGL/OpenGLFramebuffer.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

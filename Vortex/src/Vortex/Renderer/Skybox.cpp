@@ -2,7 +2,7 @@
 #include "Skybox.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLSkybox.h"
+#include "Vortex/Platform/OpenGL/OpenGLSkybox.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

@@ -2,7 +2,7 @@
 #include "GraphicsContext.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLContext.h"
+#include "Vortex/Platform/OpenGL/OpenGLContext.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

@@ -2,7 +2,7 @@
 #include "Vortex/Core/Window.h"
 
 #ifdef VX_PLATFORM_WINDOWS
-	#include "Platform/Windows/WindowsWindow.h"
+	#include "Vortex/Platform/Windows/WindowsWindow.h"
 #endif // VX_PLATFORM_WINDOWS
 
 namespace Vortex

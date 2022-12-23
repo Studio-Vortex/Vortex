@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "RenderCommand.h"
 
-#include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Vortex/Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace Vortex {
 

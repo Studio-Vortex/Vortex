@@ -8,7 +8,7 @@
 #include "Vortex/Core/Input.h"
 #include "Vortex/Renderer/Renderer.h"
 
-#include "Platform/OpenGL/OpenGLContext.h"
+#include "Vortex/Platform/OpenGL/OpenGLContext.h"
 
 #include <stb_image.h>
 

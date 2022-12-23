@@ -2,7 +2,7 @@
 #include "VertexArray.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Vortex/Platform/OpenGL/OpenGLVertexArray.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

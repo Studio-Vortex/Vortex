@@ -52,7 +52,11 @@ namespace Gui = ImGui;
 #include "Vortex/Core/MouseCodes.h"
 /// ---------------------------------------------------
 
-/// Graphics
+/// Animation
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/Animation.h"
+
+/// Rendering
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/RenderCommand.h"

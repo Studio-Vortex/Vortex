@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Vortex/Platform/OpenGL/OpenGLTexture.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

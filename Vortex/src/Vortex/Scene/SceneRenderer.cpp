@@ -225,6 +225,7 @@ namespace Vortex {
 						continue;
 
 					Renderer::BindDepthMap();
+					VX_CORE_TRACE(meshRendererComponent.Mesh->GetMeshes().size());
 					meshRendererComponent.Mesh->Render(scene->GetWorldSpaceTransformMatrix(entity));
 				}
 			}

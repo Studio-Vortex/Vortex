@@ -761,6 +761,10 @@ namespace Vortex {
 				DisplayAddComponentPopup<ParticleEmitterComponent>(componentName);
 			if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<TextMeshComponent>(componentName);
+			if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<AnimatorComponent>(componentName);
+			if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<AnimationComponent>(componentName);
 
 			if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<AudioSourceComponent>(componentName);
@@ -1611,6 +1615,16 @@ namespace Vortex {
 			Gui::DragFloat("Line Spacing", &component.LineSpacing);
 			Gui::DragFloat("Kerning", &component.Kerning);
 			Gui::DragFloat("Max Width", &component.MaxWidth);
+		});
+
+		DrawComponent<AnimatorComponent>("Animator", entity, [](auto& component)
+		{
+			SharedRef<Animator> animator = component.Animator;
+		});
+
+		DrawComponent<AnimationComponent>("Animation", entity, [](auto& component)
+		{
+			SharedRef<Animation> animation = component.Animation;
 		});
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)

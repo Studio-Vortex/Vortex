@@ -2,7 +2,7 @@
 #include "Shader.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Vortex/Platform/OpenGL/OpenGLShader.h"
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS

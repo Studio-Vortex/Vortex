@@ -154,6 +154,8 @@ namespace Vortex {
 	class Model;
 	class ParticleEmitter;
 	class Font;
+	class Animator;
+	class Animation;
 
 	struct CameraComponent
 	{
@@ -246,6 +248,22 @@ namespace Vortex {
 
 		TextMeshComponent() = default;
 		TextMeshComponent(const TextMeshComponent&) = default;
+	};
+
+	struct AnimatorComponent
+	{
+		SharedRef<Animator> Animator = nullptr;
+
+		AnimatorComponent() = default;
+		AnimatorComponent(const AnimatorComponent&) = default;
+	};
+
+	struct AnimationComponent
+	{
+		SharedRef<Animation> Animation = nullptr;
+
+		AnimationComponent() = default;
+		AnimationComponent(const AnimationComponent&) = default;
 	};
 
 #pragma endregion
@@ -485,7 +503,8 @@ namespace Vortex {
 		HierarchyComponent, TransformComponent,
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
-		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent, TextMeshComponent,
+		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
+		TextMeshComponent, AnimatorComponent, AnimationComponent,
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics
