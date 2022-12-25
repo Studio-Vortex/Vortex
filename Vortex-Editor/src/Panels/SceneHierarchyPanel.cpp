@@ -1087,6 +1087,15 @@ namespace Vortex {
 					{
 						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 						component.Type = MeshType::Custom;
+
+						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && component.Mesh->HasAnimations())
+						{
+							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+
+							animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
+							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+						}
 					}
 					else
 						VX_CORE_WARN("Could not load model file - {}", modelFilepath.filename().string());
@@ -1617,9 +1626,16 @@ namespace Vortex {
 			Gui::DragFloat("Max Width", &component.MaxWidth);
 		});
 
-		DrawComponent<AnimatorComponent>("Animator", entity, [](auto& component)
+		DrawComponent<AnimatorComponent>("Animator", entity, [&](auto& component)
 		{
 			SharedRef<Animator> animator = component.Animator;
+
+			if (animator)
+			{
+				bool isPlaying = animator->IsPlaying();
+				if (Gui::Checkbox("Is Playing", &isPlaying))
+					animator->SetIsPlaying(isPlaying);
+			}
 		});
 
 		DrawComponent<AnimationComponent>("Animation", entity, [](auto& component)

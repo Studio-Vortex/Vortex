@@ -225,8 +225,15 @@ namespace Vortex {
 						continue;
 
 					Renderer::BindDepthMap();
-					VX_CORE_TRACE(meshRendererComponent.Mesh->GetMeshes().size());
-					meshRendererComponent.Mesh->Render(scene->GetWorldSpaceTransformMatrix(entity));
+					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
+					{
+						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
+						continue;
+					}
+
+					meshRendererComponent.Mesh->Render(worldSpaceTransform);
 				}
 			}
 

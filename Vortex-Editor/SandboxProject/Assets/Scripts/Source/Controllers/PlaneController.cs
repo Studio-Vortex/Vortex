@@ -1,5 +1,4 @@
-﻿using System;
-using Vortex;
+﻿using Vortex;
 
 namespace Sandbox {
 

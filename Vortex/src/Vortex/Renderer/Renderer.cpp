@@ -398,6 +398,7 @@ namespace Vortex {
 		RenderCommand::EnableDepthMask();
 
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
 		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
 		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
 		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
@@ -483,6 +484,13 @@ namespace Vortex {
 						MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
 						Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
 						shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+						if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+						{
+							meshRendererComponent.Mesh->RenderForShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+							continue;
+						}
+
 						meshRendererComponent.Mesh->RenderForShadowMap(worldSpaceTransform);
 					}
 
@@ -517,7 +525,9 @@ namespace Vortex {
 	void Renderer::BindDepthMap()
 	{
 		s_Data.DepthMapFramebuffer->BindDepthTexture(4);
-		s_Data.ShaderLibrary->Get("PBR")->SetInt("u_SkylightShadowSettings.ShadowMap", 4);
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+		pbrShader->SetInt("u_SkylightShadowSettings.ShadowMap", 4);
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
@@ -538,6 +548,16 @@ namespace Vortex {
 	void Renderer::ResetStats()
 	{
 		memset(&s_Data.RendererStatistics, 0, sizeof(s_Data.RendererStatistics));
+	}
+
+	void Renderer::AddToQuadCountStats(uint32_t quadCount)
+	{
+		s_Data.RendererStatistics.QuadCount += quadCount;
+	}
+
+	void Renderer::AddToDrawCallCountStats(uint32_t drawCalls)
+	{
+		s_Data.RendererStatistics.DrawCalls += drawCalls;
 	}
 
 	float Renderer::GetSceneExposure()

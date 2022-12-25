@@ -7,21 +7,18 @@
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Core/Math.h"
 
+#include <vector>
+#include <unordered_map>
+#include <string>
+
 struct aiMesh;
 struct aiNode;
 struct aiScene;
 struct aiMaterial;
 
-namespace Assimp {
-
-	class Importer;
-
-}
-
-#include <vector>
-#include <string>
-
 namespace Vortex {
+
+#define MAX_BONE_INFLUENCE 4
 
 	struct ModelImportOptions
 	{
@@ -38,6 +35,12 @@ namespace Vortex {
 		}
 	};
 
+	struct BoneInfo
+	{
+		uint32_t ID;
+		Math::mat4 OffsetMatrix;
+	};
+
 	struct ModelVertex
 	{
 		Math::vec3 Position;
@@ -46,6 +49,8 @@ namespace Vortex {
 		Math::vec3 BiTangent;
 		Math::vec2 TexCoord;
 		Math::vec2 TexScale;
+		Math::ivec4 BoneIDs;
+		Math::vec4 BoneWeights;
 
 		// Editor-only
 		int EntityID;
@@ -124,7 +129,9 @@ namespace Vortex {
 
 		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
 		void Render(const Math::mat4& worldSpaceTransform);
+		void Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
 		void RenderForShadowMap(const Math::mat4& worldSpaceTransform);
+		void RenderForShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
 
 		const std::string& GetPath() const { return m_Filepath; }
 
@@ -135,7 +142,11 @@ namespace Vortex {
 		const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
 		std::vector<Mesh>& GetMeshes() { return m_Meshes; }
 
+		std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() { return m_BoneInfoMap; }
+		uint32_t& GetBoneCount() { return m_BoneCounter; }
+
 		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
+		inline bool HasAnimations() const { return m_HasAnimations; }
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
@@ -146,15 +157,23 @@ namespace Vortex {
 		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
+		void SetVertexBoneDataToDefault(ModelVertex& vertex) const;
+		void SetVertexBoneData(ModelVertex& vertex, int boneID, float weight) const;
+		bool ExtractBoneWeightsForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, const aiScene* scene);
+
 	private:
-		ModelImportOptions m_ImportOptions;
-		std::string m_Filepath;
-		int m_EntityID = -1;
-		Math::vec2 m_TextureScale = Math::vec2(1.0f);
 		std::vector<Mesh> m_Meshes;
-		const aiScene* m_Scene;
 		SharedRef<Shader> m_MeshShader = nullptr;
 		SharedRef<Material> m_Material = nullptr;
+		ModelImportOptions m_ImportOptions;
+		std::string m_Filepath;
+		const aiScene* m_Scene;
+		int m_EntityID = -1;
+		Math::vec2 m_TextureScale = Math::vec2(1.0f);
+
+		std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;
+		uint32_t m_BoneCounter = 0;
+		bool m_HasAnimations = false;
 	};
 
 }

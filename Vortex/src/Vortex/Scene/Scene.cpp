@@ -14,6 +14,8 @@
 #include "Vortex/Asset/AssetRegistry.h"
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/Animation.h"
 
 #include "Vortex/Physics/Physics.h"
 #include "Vortex/Physics/Physics2D.h"
@@ -426,6 +428,8 @@ namespace Vortex {
 			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
+			OnAnimatorUpdate(delta);
+
 			if (m_StepFrames)
 				m_StepFrames--;
 		}
@@ -469,6 +473,8 @@ namespace Vortex {
 			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
+			OnAnimatorUpdate(delta);
+
 			if (m_StepFrames)
 				m_StepFrames--;
 		}
@@ -486,6 +492,8 @@ namespace Vortex {
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
 	{
 		VX_PROFILE_FUNCTION();
+
+		OnAnimatorUpdate(delta);
 
 		// Render
 		s_SceneRenderer.RenderFromEditorCamera(camera, this);
@@ -707,6 +715,24 @@ namespace Vortex {
 		}
 	}
 
+	void Scene::OnAnimatorUpdate(TimeStep delta)
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<AnimatorComponent, AnimationComponent, MeshRendererComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+
+			if (!animator || !animator->IsPlaying())
+				continue;
+
+			animator->UpdateAnimation(delta);
+		}
+	}
+
 	void Scene::OnParticleEmitterUpdate(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
@@ -808,10 +834,25 @@ namespace Vortex {
 		component.FontAsset = Font::GetDefaultFont();
 	}
 	
-	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
+	template <> void Scene::OnComponentAdded<AnimatorComponent>(Entity entity, AnimatorComponent& component)
 	{
-		
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			component.Animator = Animator::Create(entity.GetComponent<AnimationComponent>().Animation);
+		}
 	}
+
+	template <> void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
+	{
+		if (entity.HasComponent<MeshRendererComponent>() && entity.GetComponent<MeshRendererComponent>().Mesh->HasAnimations())
+		{
+			SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+			std::string filepath = model->GetPath();
+			component.Animation = Animation::Create(filepath, model);
+		}
+	}
+
+	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)
 	{

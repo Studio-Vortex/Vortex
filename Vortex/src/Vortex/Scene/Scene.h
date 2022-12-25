@@ -87,6 +87,7 @@ namespace Vortex {
 		void OnComponentAdded(Entity entity, TComponent& component);
 
 		void OnModelUpdate();
+		void OnAnimatorUpdate(TimeStep delta);
 		void OnParticleEmitterUpdate(TimeStep delta);
 
 	private:

@@ -4,6 +4,8 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Project/Project.h"
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/AssimpAPIHelpers.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -118,13 +120,15 @@ namespace Vortex {
 		m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), dataSize);
 
 		m_VertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"  },
-			{ ShaderDataType::Float3, "a_Normal"    },
-			{ ShaderDataType::Float3, "a_Tangent"   },
-			{ ShaderDataType::Float3, "a_BiTangent" },
-			{ ShaderDataType::Float2, "a_TexCoord"  },
-			{ ShaderDataType::Float2, "a_TexScale"  },
-			{ ShaderDataType::Int,    "a_EntityID"  },
+			{ ShaderDataType::Float3, "a_Position"    },
+			{ ShaderDataType::Float3, "a_Normal"      },
+			{ ShaderDataType::Float3, "a_Tangent"     },
+			{ ShaderDataType::Float3, "a_BiTangent"   },
+			{ ShaderDataType::Float2, "a_TexCoord"    },
+			{ ShaderDataType::Float2, "a_TexScale"    },
+			{ ShaderDataType::Int4,   "a_BoneIDs"     },
+			{ ShaderDataType::Float4, "a_BoneWeights" },
+			{ ShaderDataType::Int,    "a_EntityID"    },
 		});
 
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
@@ -132,21 +136,33 @@ namespace Vortex {
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
 		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 
+		uint32_t triangleCount = m_IndexBuffer->GetCount() / 3;
+		Renderer::AddToQuadCountStats(triangleCount / 2);
+
 		{
-			std::vector<Math::vec3> positions;
+			struct ShadowMapVertex
+			{
+				Math::vec3 Position;
+				Math::ivec4 BoneIDs;
+				Math::vec4 BoneWeights;
+			};
+
+			std::vector<ShadowMapVertex> shadowMapVertices;
 
 			for (auto& vertex : m_Vertices)
 			{
-				positions.push_back(vertex.Position);
+				shadowMapVertices.push_back(ShadowMapVertex{ vertex.Position, vertex.BoneIDs, vertex.BoneWeights });
 			}
 
 			m_ShadowMapVertexArray = VertexArray::Create();
 
-			uint32_t dataSize = positions.size() * sizeof(Math::vec3);
-			m_ShadowMapVertexBuffer = VertexBuffer::Create(positions.data(), dataSize);
+			uint32_t dataSize = shadowMapVertices.size() * sizeof(ShadowMapVertex);
+			m_ShadowMapVertexBuffer = VertexBuffer::Create(shadowMapVertices.data(), dataSize);
 
 			m_ShadowMapVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" }
+				{ ShaderDataType::Float3, "a_Position"    },
+				{ ShaderDataType::Int4,   "a_BoneIDs"     },
+				{ ShaderDataType::Float4, "a_BoneWeights" },
 			});
 
 			m_ShadowMapVertexArray->AddVertexBuffer(m_ShadowMapVertexBuffer);
@@ -162,6 +178,7 @@ namespace Vortex {
 		material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
+		Renderer::AddToDrawCallCountStats(1);
 	}
 
 	void Mesh::RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
@@ -169,10 +186,12 @@ namespace Vortex {
 		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
 
-	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions), m_Filepath(filepath)
+	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+		: m_ImportOptions(importOptions)
 	{
 		LogStream::Initialize();
+
+		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
 
 		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
 
@@ -193,12 +212,10 @@ namespace Vortex {
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
 	}
 
-	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions)
+	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+		: m_ImportOptions(importOptions), m_Filepath(filepath)
 	{
 		LogStream::Initialize();
-
-		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
 
 		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
 
@@ -258,6 +275,8 @@ namespace Vortex {
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
 		{
 			ModelVertex vertex;
+
+			SetVertexBoneDataToDefault(vertex);
 
 			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
 			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
@@ -342,6 +361,8 @@ namespace Vortex {
 			}
 		}
 
+		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
+
 		return { vertices, indices, materials };
 	}
 
@@ -367,6 +388,69 @@ namespace Vortex {
 		}
 
 		return textures;
+	}
+
+	void Model::SetVertexBoneDataToDefault(ModelVertex& vertex) const
+	{
+		for (uint32_t i = 0; i < MAX_BONE_INFLUENCE; i++)
+		{
+			vertex.BoneIDs[i] = -1;
+			vertex.BoneWeights[i] = 0.0f;
+		}
+	}
+
+	void Model::SetVertexBoneData(ModelVertex& vertex, int boneID, float weight) const
+	{
+		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+		{
+			if (vertex.BoneIDs[i] < 0)
+			{
+				vertex.BoneIDs[i] = boneID;
+				vertex.BoneWeights[i] = weight;
+				break;
+			}
+		}
+	}
+
+	bool Model::ExtractBoneWeightsForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, const aiScene* scene)
+	{
+		if (!scene->HasAnimations())
+			return false;
+
+		auto& boneInfoMap = m_BoneInfoMap;
+		uint32_t& boneCount = m_BoneCounter;
+
+		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		{
+			int boneID = -1;
+			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+			if (boneInfoMap.find(boneName) == boneInfoMap.end())
+			{
+				BoneInfo newBoneInfo;
+				newBoneInfo.ID = boneCount;
+				newBoneInfo.OffsetMatrix = FromAssimpMat4(mesh->mBones[boneIndex]->mOffsetMatrix);
+				boneInfoMap[boneName] = newBoneInfo;
+				boneID = boneCount;
+				boneCount++;
+			}
+			else
+			{
+				boneID = boneInfoMap[boneName].ID;
+			}
+			assert(boneID != -1);
+			auto weights = mesh->mBones[boneIndex]->mWeights;
+			int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+			{
+				int vertexId = weights[weightIndex].mVertexId;
+				float weight = weights[weightIndex].mWeight;
+				assert(vertexId <= vertices.size());
+				SetVertexBoneData(vertices[vertexId], boneID, weight);
+			}
+		}
+
+		return true;
 	}
 
 	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
@@ -396,6 +480,8 @@ namespace Vortex {
 
 	void Model::Render(const Math::mat4& worldSpaceTransform)
 	{
+		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
+
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
 		m_MeshShader->Enable();
@@ -407,6 +493,39 @@ namespace Vortex {
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
+		m_MeshShader->SetBool("u_HasAnimations", false);
+
+		for (uint32_t i = 0; i < 100; i++)
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Identity());
+
+		Renderer::BindDepthMap();
+		for (auto& mesh : m_Meshes)
+		{
+			mesh.Render(m_MeshShader, m_Material);
+		}
+	}
+
+	void Model::Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	{
+		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
+
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+
+		m_MeshShader->Enable();
+
+		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
+		m_MeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+
+		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
+
+		m_MeshShader->SetBool("u_HasAnimations", true);
+
+		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+ 		for (uint32_t i = 0; i < transforms.size(); i++)
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+
 		Renderer::BindDepthMap();
 		for (auto& mesh : m_Meshes)
 		{
@@ -416,7 +535,29 @@ namespace Vortex {
 
 	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform)
 	{
+		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
+
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+
+		m_MeshShader->SetBool("u_HasAnimations", false);
+
+		for (auto& mesh : m_Meshes)
+		{
+			mesh.RenderForShadowMap(m_MeshShader, m_Material);
+		}
+	}
+
+	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	{
+		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
+
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+
+		m_MeshShader->SetBool("u_HasAnimations", true);
+
+		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+		for (uint32_t i = 0; i < transforms.size(); i++)
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 
 		for (auto& mesh : m_Meshes)
 		{

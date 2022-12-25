@@ -107,8 +107,10 @@ namespace Vortex {
 
 		inline void SetTransform(const Math::mat4& transform)
 		{
-			Math::DecomposeTransform(transform, Translation, RotationEuler, Scale);
-			//RotationEuler = Math::EulerAngles(Rotation);
+			glm::vec3 s;
+			glm::vec4 p;
+			Math::Decompose(transform, Scale, Rotation, Translation, s, p);
+			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
 		inline Math::vec3 GetRotationEuler() const

@@ -188,6 +188,12 @@ namespace Vortex::Math {
 		return glm::distance(v0, v1);
 	}
 
+	template <typename T, typename K>
+	static auto Mix(const T& v0, const T& v1, K c0)
+	{
+		return glm::mix(v0, v1, c0);
+	}
+
 	template <typename T>
 	static auto Quaternion(T v)
 	{

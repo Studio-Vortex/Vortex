@@ -1,17 +1,18 @@
 #include "vxpch.h"
 #include "SceneSerializer.h"
 
+#include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Animation/Animation.h"
+#include "Vortex/Animation/Animator.h"
 
 #include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
-
-#include "Vortex/Project/Project.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
@@ -475,6 +476,31 @@ namespace Vortex {
 			out << YAML::Key << "TextString" << YAML::Value << textMeshComponent.TextString;
 
 			out << YAML::EndMap; // TextMeshComponent
+		}
+
+		if (entity.HasComponent<AnimatorComponent>())
+		{
+
+			out << YAML::Key << "AnimatorComponent" << YAML::Value << YAML::BeginMap; // AnimatorComponent
+
+			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			SharedRef<Animator> animator = animatorComponent.Animator;
+
+			
+
+			out << YAML::EndMap; // AnimatorComponent
+		}
+
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			out << YAML::Key << "AnimationComponent" << YAML::Value << YAML::BeginMap; // AnimationComponent
+
+			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+			SharedRef<Animation> animation = animationComponent.Animation;
+
+			out << YAML::Key << "AnimationSourcePath" << YAML::Value << animation->GetPath();
+
+			out << YAML::EndMap; // AnimationComponent
 		}
 
 		if (entity.HasComponent<AudioSourceComponent>())
@@ -978,6 +1004,34 @@ namespace Vortex {
 				tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
 				tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
 				tmc.TextString = textMeshComponent["TextString"].as<std::string>();
+			}
+
+			auto animationComponent = entity["AnimationComponent"];
+			if (animationComponent)
+			{
+				if (!deserializedEntity.HasComponent<MeshRendererComponent>())
+				{
+					VX_CORE_WARN("Trying to add Animation Component without Mesh Renderer Component!");
+					return;
+				}
+
+				auto& animation = deserializedEntity.AddComponent<AnimationComponent>();
+				SharedRef<Model> model = deserializedEntity.GetComponent<MeshRendererComponent>().Mesh;
+				std::string filepath = model->GetPath();
+				animation.Animation = Animation::Create(filepath, model);
+			}
+
+			auto animatorComponent = entity["AnimatorComponent"];
+			if (animatorComponent)
+			{
+				if (!deserializedEntity.HasComponent<AnimationComponent>())
+				{
+					VX_CORE_WARN("Trying to add Animator Component without Animation Component!");
+					return;
+				}
+
+				auto& animator = deserializedEntity.AddComponent<AnimatorComponent>();
+				animator.Animator = Animator::Create(deserializedEntity.GetComponent<AnimationComponent>().Animation);
 			}
 
 			auto audioSourceComponent = entity["AudioSourceComponent"];
