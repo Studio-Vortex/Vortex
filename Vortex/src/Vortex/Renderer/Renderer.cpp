@@ -49,6 +49,7 @@ namespace Vortex {
 		float SceneGamma = 2.2f;
 
 		RenderStatistics RendererStatistics;
+		RenderTime RenderTime;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
 		// Editor Resources
@@ -554,13 +555,14 @@ namespace Vortex {
 		memset(&s_Data.RendererStatistics, 0, sizeof(s_Data.RendererStatistics));
 	}
 
-	RenderTime Renderer::GetRenderTime()
+	RenderTime& Renderer::GetRenderTime()
 	{
-		return RenderTime();
+		return s_Data.RenderTime;
 	}
 
 	void Renderer::ResetRenderTime()
 	{
+		memset(&s_Data.RenderTime, 0, sizeof(s_Data.RenderTime));
 	}
 
 	void Renderer::AddToQuadCountStats(uint32_t quadCount)

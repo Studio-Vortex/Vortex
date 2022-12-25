@@ -213,6 +213,7 @@ namespace Vortex {
 			}
 
 			// Geometry pass
+			InstrumentationTimer timer("Geometry Pass");
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
@@ -236,6 +237,9 @@ namespace Vortex {
 					meshRendererComponent.Mesh->Render(worldSpaceTransform);
 				}
 			}
+
+			RenderTime& renderTime = Renderer::GetRenderTime();
+			renderTime.GeometryPassRenderTime += timer.ElapsedMS();
 
 			Renderer::EndScene();
 		}

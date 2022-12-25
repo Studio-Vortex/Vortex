@@ -65,7 +65,12 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		Renderer::ResetRenderTime();
+
+		RenderTime& renderTime = Renderer::GetRenderTime();
+		InstrumentationTimer timer("Shadow Pass");
 		Renderer::RenderToDepthMap(m_ActiveScene.get());
+		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();

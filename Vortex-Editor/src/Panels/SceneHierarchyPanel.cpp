@@ -921,15 +921,14 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			bool isDirty = component.Source->IsDirty();
-			if (isDirty && Gui::Button("Reload Irradiance Map"))
+			if (component.Source->IsDirty())
 			{
-				component.Source->Reload();
-				component.Source->SetIsDirty(false);
-			}
+				if (Gui::Button("Reload Irradiance Map"))
+				{
+					component.Source->Reload();
+					component.Source->SetIsDirty(false);
+				}
 
-			if (isDirty)
-			{
 				Gui::SameLine();
 				UI::HelpMarker("Rebake the reflections in the scene");
 			}

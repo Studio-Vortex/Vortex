@@ -28,7 +28,7 @@ namespace Vortex {
 	struct RenderTime
 	{
 		float ShadowMapRenderTime;
-		float SceneRenderTime;
+		float GeometryPassRenderTime;
 	};
 
 	class VORTEX_API Renderer
@@ -73,7 +73,7 @@ namespace Vortex {
 
 		static RenderStatistics GetStats();
 		static void ResetStats();
-		static RenderTime GetRenderTime();
+		static RenderTime& GetRenderTime();
 		static void ResetRenderTime();
 		static void AddToQuadCountStats(uint32_t quadCount);
 		static void AddToDrawCallCountStats(uint32_t drawCalls);

@@ -27,6 +27,10 @@ namespace Vortex {
 			Gui::PopFont();
 			Gui::Separator();
 
+			RenderTime& renderTime = Renderer::GetRenderTime();
+			Gui::Text("Geometry Pass: %.4fms", renderTime.GeometryPassRenderTime);
+			Gui::Text("Shadow Pass: %.4fms", renderTime.ShadowMapRenderTime);
+
 			if (Gui::BeginTable("Renderer", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 			{
 				Gui::TableSetupColumn("3D Renderer");
