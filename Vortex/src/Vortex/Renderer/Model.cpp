@@ -523,8 +523,8 @@ namespace Vortex {
 		m_MeshShader->SetBool("u_HasAnimations", true);
 
 		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
- 		for (uint32_t i = 0; i < transforms.size(); i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+		for (uint32_t i = 0; i < transforms.size(); i++)
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Transpose(transforms[i]));
 
 		Renderer::BindDepthMap();
 		for (auto& mesh : m_Meshes)
@@ -557,7 +557,7 @@ namespace Vortex {
 
 		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
 		for (uint32_t i = 0; i < transforms.size(); i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Transpose(transforms[i]));
 
 		for (auto& mesh : m_Meshes)
 		{

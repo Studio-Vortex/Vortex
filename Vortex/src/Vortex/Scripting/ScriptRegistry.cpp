@@ -22,6 +22,8 @@
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Model.h"
 
+#include "Vortex/Animation/Animator.h"
+
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Core/Log.h"
 
@@ -830,6 +832,40 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
+	}
+
+#pragma endregion
+
+#pragma region Animator Component
+
+	static bool AnimatorComponent_IsPlaying(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<AnimatorComponent>().Animator->IsPlaying();
+	}
+
+	static void AnimatorComponent_Play(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Animation> animation = entity.GetComponent<AnimationComponent>().Animation;
+
+		if (!animation)
+		{
+			VX_CORE_WARN("Animation was invalid! exiting early");
+			return;
+		}
+
+		SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+		animator->SetIsPlaying(true);
+		animator->PlayAnimation(animation);
 	}
 
 #pragma endregion
@@ -2969,6 +3005,9 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetKerning);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetMaxWidth);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
+
+		VX_ADD_INTERNAL_CALL(AnimatorComponent_IsPlaying);
+		VX_ADD_INTERNAL_CALL(AnimatorComponent_Play);
 
 		VX_ADD_INTERNAL_CALL(MeshRendererComponent_GetMeshType);
 		VX_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);

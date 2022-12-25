@@ -550,6 +550,15 @@ namespace Vortex {
 		memset(&s_Data.RendererStatistics, 0, sizeof(s_Data.RendererStatistics));
 	}
 
+	RenderTime Renderer::GetRenderTime()
+	{
+		return RenderTime();
+	}
+
+	void Renderer::ResetRenderTime()
+	{
+	}
+
 	void Renderer::AddToQuadCountStats(uint32_t quadCount)
 	{
 		s_Data.RendererStatistics.QuadCount += quadCount;

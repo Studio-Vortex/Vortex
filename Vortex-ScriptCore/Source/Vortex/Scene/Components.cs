@@ -259,6 +259,21 @@
 		}
 	}
 
+	public class Animation : Component
+	{
+
+	}
+
+	public class Animator : Component
+	{
+		public bool IsPlaying
+		{
+			get => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
+		}
+
+		public void Play() => InternalCalls.AnimatorComponent_Play(Entity.ID);
+	}
+
 	public class MeshRenderer : Component
 	{
 		public MeshType Type

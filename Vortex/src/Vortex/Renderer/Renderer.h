@@ -25,6 +25,12 @@ namespace Vortex {
 		uint32_t ActiveSpotLights;
 	};
 
+	struct RenderTime
+	{
+		float ShadowMapRenderTime;
+		float SceneRenderTime;
+	};
+
 	class VORTEX_API Renderer
 	{
 	public:
@@ -67,6 +73,8 @@ namespace Vortex {
 
 		static RenderStatistics GetStats();
 		static void ResetStats();
+		static RenderTime GetRenderTime();
+		static void ResetRenderTime();
 		static void AddToQuadCountStats(uint32_t quadCount);
 		static void AddToDrawCallCountStats(uint32_t drawCalls);
 
