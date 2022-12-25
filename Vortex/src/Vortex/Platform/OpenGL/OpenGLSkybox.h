@@ -20,6 +20,11 @@ namespace Vortex {
 		bool PathChanged() const override { return m_PathChanged; }
 		void SetPathChanged(bool changed) override { m_PathChanged = changed; }
 
+		bool IsDirty() const override { return m_IsDirty; }
+		void SetIsDirty(bool dirty) override { m_IsDirty = dirty; }
+
+		void Reload() override;
+
 		uint32_t GetRendererID() const override { return m_RendererID; }
 
 		inline bool IsLoaded() const override { return m_IsLoaded; }
@@ -33,6 +38,7 @@ namespace Vortex {
 		std::string m_Filepath;
 		bool m_IsLoaded = false;
 		bool m_PathChanged = false;
+		bool m_IsDirty = false;
 	};
 
 }

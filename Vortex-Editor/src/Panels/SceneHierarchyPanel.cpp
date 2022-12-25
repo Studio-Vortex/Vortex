@@ -921,8 +921,25 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat("Multiplier", &component.Multiplier, 0.25f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f");
+			bool isDirty = component.Source->IsDirty();
+			if (isDirty && Gui::Button("Reload Irradiance Map"))
+			{
+				component.Source->Reload();
+				component.Source->SetIsDirty(false);
+			}
+
+			if (isDirty)
+			{
+				Gui::SameLine();
+				UI::HelpMarker("Rebake the reflections in the scene");
+			}
+
+			if (Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f"))
+			{
+				component.Source->SetIsDirty(true);
+			}
+
+			Gui::DragFloat("Intensity", &component.Intensity, 0.25f, 0.0f, 0.0f, "%.2f");
 		});
 
 		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)

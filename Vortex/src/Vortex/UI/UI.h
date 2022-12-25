@@ -30,6 +30,20 @@ namespace Vortex::UI {
 		Gui::PopStyleVar();
 	}
 
+	inline static void HelpMarker(const char* desc)
+	{
+		Gui::TextDisabled("(?)");
+
+		if (Gui::IsItemHovered())
+		{
+			Gui::BeginTooltip();
+			Gui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			Gui::TextUnformatted(desc);
+			Gui::PopTextWrapPos();
+			Gui::EndTooltip();
+		}
+	}
+
 	inline static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, std::function<void()> uiCallback = nullptr)
 	{
 		ImGuiIO& io = Gui::GetIO();

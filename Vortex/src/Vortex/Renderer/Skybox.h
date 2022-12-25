@@ -22,6 +22,11 @@ namespace Vortex {
 		virtual bool PathChanged() const = 0;
 		virtual void SetPathChanged(bool changed) = 0;
 
+		virtual bool IsDirty() const = 0;
+		virtual void SetIsDirty(bool dirty) = 0;
+
+		virtual void Reload() = 0;
+
 		virtual uint32_t GetRendererID() const = 0;
 
 		static SharedRef<Skybox> Create();

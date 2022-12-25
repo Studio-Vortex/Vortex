@@ -262,20 +262,24 @@ namespace Vortex {
 	{
 		SharedRef<Skybox> skybox = skyboxComponent.Source;
 
+		bool framebufferNotCreated = s_Data.HDRFramebuffer == nullptr;
+
 		// TODO fix this hack!
-		if (skybox->PathChanged() || s_Data.HDRFramebuffer == nullptr)
+		if (skybox->PathChanged() || framebufferNotCreated)
 		{
 			s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
+
+			Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
 
 			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
 			Math::mat4 captureViews[] =
 			{
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)),
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(-1.0f, 0.0f, 0.0f),  Math::vec3(0.0f, -1.0f,  0.0f)),
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  1.0f,  0.0f), Math::vec3(0.0f,  0.0f,  1.0f)),
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f, -1.0f,  0.0f), Math::vec3(0.0f,  0.0f, -1.0f)),
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f,  1.0f), Math::vec3(0.0f, -1.0f,  0.0f)),
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f))
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(-1.0f, 0.0f, 0.0f),  Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  1.0f,  0.0f), Math::vec3(0.0f,  0.0f,  1.0f)) * rotationMatrix,
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f, -1.0f,  0.0f), Math::vec3(0.0f,  0.0f, -1.0f)) * rotationMatrix,
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f,  1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix
 			};
 
 			s_Data.HDRFramebuffer->CreateEnvironmentCubemap();
@@ -383,12 +387,12 @@ namespace Vortex {
 
 		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
 		skyboxShader->Enable();
-		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view))* Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f }));
+		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)) * Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f }));
 		skyboxShader->SetMat4("u_Projection", projection);
 		skyboxShader->SetInt("u_EnvironmentMap", 0);
 		skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
 		skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		skyboxShader->SetFloat("u_Multiplier", Math::Max(skyboxComponent.Multiplier, 0.0f));
+		skyboxShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
 		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
