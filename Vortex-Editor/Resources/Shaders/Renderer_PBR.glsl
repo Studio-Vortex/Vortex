@@ -1,5 +1,5 @@
-//-------------------------
-// - Vortex Game Engine Physically Based Rendering Shader -
+//----------------------------------------------------------------------
+// - Vortex Game Engine PBR Static Shader -
 // - Includes
 //     Albedo Mapping,
 //     Normal Mapping,
@@ -10,11 +10,9 @@
 //     Ambient Occlusion Mapping,
 //     Image Based Lighting,
 //     HDR & Exposure ToneMapping,
-//     Directional Light Shadow Mapping and PCF
+//     Directional Light Shadow Mapping with Percentage Closer Filtering
 //     Gamma Correction
-//-------------------------
-
-// Still a work in progress, but will be seing many updates in the future
+//----------------------------------------------------------------------
 
 // NOTE: The attenation function used to calculate light intensity over distance,
 // is NOT considered to be realistic in a PBR renderer.
@@ -30,7 +28,9 @@ layout (location = 2) in vec3  a_Tangent;  // Vertex tangent
 layout (location = 3) in vec3  a_BiTangent;  // Vertex bitangent
 layout (location = 4) in vec2  a_TexCoord; // Vertex texture coordinate
 layout (location = 5) in vec2  a_TexScale; // Texture scale
-layout (location = 6) in int   a_EntityID; // Vertex Entity ID
+layout (location = 6) in ivec4 a_BoneIDs; // Vertex bone IDs
+layout (location = 7) in vec4  a_BoneWeights; // Vertex bone weights
+layout (location = 8) in int   a_EntityID; // Vertex Entity ID
 
 out DATA
 {
@@ -48,11 +48,42 @@ out DATA
 uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
 uniform mat4 u_LightProjection;
-uniform mat4 u_SpotLightProjection;
+
+#define MAX_BONES 100
+#define MAX_BONE_INFLUENCE 4
+uniform mat4 u_FinalBoneMatrices[MAX_BONES];
+uniform bool u_HasAnimations;
 
 void main()
 {
-	vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
+	if (u_HasAnimations)
+	{
+		vec4 totalPosition = vec4(0.0);
+		vec3 localNormal = vec3(0.0);
+
+		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+		{
+			if (a_BoneIDs[i] == -1)
+				continue;
+			
+			if (a_BoneIDs[i] >= MAX_BONES)
+			{
+				totalPosition = vec4(a_Position, 1.0);
+				break;
+			}
+
+			vec4 localPosition = u_FinalBoneMatrices[a_BoneIDs[i]] * vec4(a_Position, 1.0);
+			totalPosition += localPosition * a_BoneWeights[i];
+			localNormal = mat3(u_FinalBoneMatrices[a_BoneIDs[i]]) * a_Normal;
+		}
+
+		vertexOut.Position = vec3(u_Model * totalPosition);
+	}
+	else
+	{
+		vertexOut.Position = vec3(u_Model * vec4(a_Position, 1.0));
+	}
+
 	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
 
 	mat3 model = mat3(u_Model);

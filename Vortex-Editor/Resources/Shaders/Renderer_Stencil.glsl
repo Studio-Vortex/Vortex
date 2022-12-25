@@ -3,16 +3,18 @@
 //-------------------------
 
 #type vertex
+#version 460 core
 
 layout (location = 0) in vec3 a_Position;
 
 void main()
 {
-    
+    gl_Position = vec4(0);
 }
 
 
 #type fragment
+#version 460 core
 
 layout (location = 0) out vec4 o_Color;
 
