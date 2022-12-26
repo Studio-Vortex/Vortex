@@ -62,28 +62,28 @@ namespace Vortex {
 
 						// Copy Resources
 						{
-							if (std::is_same<TComponent, MeshRendererComponent>())
+							if constexpr (std::is_same<TComponent, MeshRendererComponent>())
 							{
 								const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
 								const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
 								Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
 							}
 
-							if (std::is_same<TComponent, LightSourceComponent>())
+							if constexpr (std::is_same<TComponent, LightSourceComponent>())
 							{
 								const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
 								const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
 								LightSource::Copy(destinationLightSource, sourceLightSource);
 							}
 
-							if (std::is_same<TComponent, AudioSourceComponent>())
+							if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 							{
 								const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
 								const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
 								AudioSource::Copy(destinationAudioSource, sourceAudioSource);
 							}
 
-							if (std::is_same<TComponent, ParticleEmitterComponent>())
+							if constexpr (std::is_same<TComponent, ParticleEmitterComponent>())
 							{
 								const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
 								const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
@@ -91,7 +91,7 @@ namespace Vortex {
 							}
 
 							// If we copy a script component, we should probably copy all of the script field values as well
-							if (std::is_same<TComponent, ScriptComponent>())
+							if constexpr (std::is_same<TComponent, ScriptComponent>())
 							{
 								const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
 								auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
@@ -428,6 +428,7 @@ namespace Vortex {
 			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
+			// Update Animators
 			OnAnimatorUpdate(delta);
 
 			if (m_StepFrames)
@@ -453,7 +454,12 @@ namespace Vortex {
 
 			if (primarySceneCamera != nullptr)
 			{
-				s_SceneRenderer.RenderFromSceneCamera(*primarySceneCamera, primarySceneCameraTransform, this);
+				SceneRenderPacket renderPacket{};
+				renderPacket.MainCamera = primarySceneCamera;
+				renderPacket.Scene = this;
+				renderPacket.CameraWorldSpaceTransform = primarySceneCameraTransform;
+				renderPacket.EditorScene = false;
+				s_SceneRenderer.RenderScene(renderPacket);
 			}
 		}
 
@@ -464,7 +470,7 @@ namespace Vortex {
 		OnParticleEmitterUpdate(delta);
 	}
 
-	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera& camera)
+	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -473,6 +479,7 @@ namespace Vortex {
 			Physics::OnSimulationUpdate(delta, this);
 			Physics2D::OnSimulationUpdate(delta, this);
 
+			// Update Animators
 			OnAnimatorUpdate(delta);
 
 			if (m_StepFrames)
@@ -480,7 +487,12 @@ namespace Vortex {
 		}
 
 		// Render
-		s_SceneRenderer.RenderFromEditorCamera(camera, this);
+		SceneRenderPacket renderPacket{};
+		renderPacket.CameraWorldSpaceTransform = TransformComponent{};
+		renderPacket.MainCamera = camera;
+		renderPacket.Scene = this;
+		renderPacket.EditorScene = true;
+		s_SceneRenderer.RenderScene(renderPacket);
 
 		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
 
@@ -489,14 +501,20 @@ namespace Vortex {
 		OnParticleEmitterUpdate(delta);
 	}
 
-	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera& camera)
+	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
+		// Update Animators
 		OnAnimatorUpdate(delta);
 
 		// Render
-		s_SceneRenderer.RenderFromEditorCamera(camera, this);
+		SceneRenderPacket renderPacket{};
+		renderPacket.CameraWorldSpaceTransform = TransformComponent{};
+		renderPacket.MainCamera = camera;
+		renderPacket.Scene = this;
+		renderPacket.EditorScene = true;
+		s_SceneRenderer.RenderScene(renderPacket);
 
 		Entity primaryCameraEntity = GetPrimaryCameraEntity();
 		if (primaryCameraEntity)

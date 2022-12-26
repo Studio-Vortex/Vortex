@@ -34,8 +34,8 @@ namespace Vortex {
 		void OnPhysicsSimulationStop();
 
 		void OnUpdateRuntime(TimeStep delta);
-		void OnUpdateSimulation(TimeStep delta, EditorCamera& camera);
-		void OnUpdateEditor(TimeStep delta, EditorCamera& camera);
+		void OnUpdateSimulation(TimeStep delta, EditorCamera* camera);
+		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
 		void OnUpdateEntityGui();
 
 		void Step(uint32_t frames = 1);

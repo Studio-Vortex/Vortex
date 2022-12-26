@@ -14,11 +14,9 @@ namespace Vortex {
 
 		for (int positionIndex = 0; positionIndex < m_NumPositions; ++positionIndex)
 		{
-			aiVector3D aiPosition = channel->mPositionKeys[positionIndex].mValue;
-			float timeStamp = channel->mPositionKeys[positionIndex].mTime;
 			KeyPosition data;
-			data.Position = FromAssimpVec3(aiPosition);
-			data.TimeStamp = timeStamp;
+			data.Position = FromAssimpVec3(channel->mPositionKeys[positionIndex].mValue);
+			data.TimeStamp = channel->mPositionKeys[positionIndex].mTime;
 			m_Positions.push_back(data);
 		}
 

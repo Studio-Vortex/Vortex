@@ -56,10 +56,13 @@ namespace Vortex {
 			}
 		}
 
-		m_EditorCamera = EditorCamera(Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
+		m_EditorCamera = new EditorCamera(Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
 	}
 
-	void EditorLayer::OnDetach() { }
+	void EditorLayer::OnDetach()
+	{
+		delete m_EditorCamera;
+	}
 
 	void EditorLayer::OnUpdate(TimeStep delta)
 	{
@@ -83,7 +86,7 @@ namespace Vortex {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 
 		// Render
@@ -103,11 +106,11 @@ namespace Vortex {
 			case SceneState::Edit:
 			{
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
-					m_EditorCamera.OnUpdate(delta);
+					m_EditorCamera->OnUpdate(delta);
 
-				float editorCameraFOV = m_EditorCamera.GetFOV();
+				float editorCameraFOV = m_EditorCamera->GetFOV();
 				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera.SetFOV(projectProps.EditorProps.EditorCameraFOV);
+					m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 
@@ -139,11 +142,11 @@ namespace Vortex {
 			{
 				const Math::vec2& mousePos = Input::GetMousePosition();
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
-					m_EditorCamera.OnUpdate(delta);
+					m_EditorCamera->OnUpdate(delta);
 
-				float editorCameraFOV = m_EditorCamera.GetFOV();
+				float editorCameraFOV = m_EditorCamera->GetFOV();
 				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera.SetFOV(projectProps.EditorProps.EditorCameraFOV);
+					m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
 
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
@@ -282,8 +285,8 @@ namespace Vortex {
 						{
 							Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 							TransformComponent& transform = selectedEntity.GetTransform();
-							transform.Translation = m_EditorCamera.GetPosition();
-							transform.SetRotationEuler(Math::vec3(-m_EditorCamera.GetPitch(), -m_EditorCamera.GetYaw(), transform.GetRotationEuler().z));
+							transform.Translation = m_EditorCamera->GetPosition();
+							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
 						}
 
 						Gui::Separator();
@@ -370,7 +373,7 @@ namespace Vortex {
 				if (inEditMode)
 				{
 					if (Gui::MenuItem("Center Editor Camera"))
-						m_EditorCamera.ResetCameraPositionToWorldOrigin();
+						m_EditorCamera->ResetCameraPositionToWorldOrigin();
 				}
 
 				Gui::EndMenu();
@@ -653,8 +656,8 @@ namespace Vortex {
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 			// Editor camera
-			const Math::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			Math::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			const Math::mat4& cameraProjection = m_EditorCamera->GetProjection();
+			Math::mat4 cameraView = m_EditorCamera->GetViewMatrix();
 
 			// Entity transform
 			TransformComponent& entityTransform = selectedEntity.GetTransform();
@@ -992,16 +995,16 @@ namespace Vortex {
 
 		if (Gui::ImageButton((void*)EditorResources::DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
 			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
-		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Scene Icons" : "Show Scene Icons");
+		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
 
-		bool isIn2DView = m_EditorCamera.IsIn2DView();
+		bool isIn2DView = m_EditorCamera->IsIn2DView();
 		if (Gui::ImageButton((void*)EditorResources::TwoDViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
-			m_EditorCamera.LockTo2DView(!isIn2DView);
+			m_EditorCamera->LockTo2DView(!isIn2DView);
 		UI::SetTooltip("2D View");
 
-		bool isInTopDownView = m_EditorCamera.IsInTopDownView();
+		bool isInTopDownView = m_EditorCamera->IsInTopDownView();
 		if (Gui::ImageButton((void*)EditorResources::TopDownViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isInTopDownView ? tintColor : normalColor))
-			m_EditorCamera.LockToTopDownView(!isInTopDownView);
+			m_EditorCamera->LockToTopDownView(!isInTopDownView);
 		UI::SetTooltip("Top Down View");
 
 		Gui::Spring();
@@ -1110,7 +1113,7 @@ namespace Vortex {
 			// Render 2D Colliders
 			{
 				float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
-				if (m_EditorCamera.GetPosition().z < 0) // Show colliders on the side that the editor camera facing
+				if (m_EditorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
 					colliderDistance = -colliderDistance;
 
 				{
@@ -1199,7 +1202,7 @@ namespace Vortex {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_EditorCamera.OnEvent(e);
+		m_EditorCamera->OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
@@ -1250,12 +1253,12 @@ namespace Vortex {
 			{
 				if (m_SceneState != SceneState::Play)
 				{
-					float editorCameraDistance = m_EditorCamera.GetDistance();
+					float editorCameraDistance = m_EditorCamera->GetDistance();
 
 					if (editorCameraDistance <= 2.0f)
-						m_EditorCamera.SetDistance(100.0f);
+						m_EditorCamera->SetDistance(100.0f);
 					else
-						m_EditorCamera.SetDistance(1.0f);
+						m_EditorCamera->SetDistance(1.0f);
 				}
 
 				break;
@@ -1300,7 +1303,7 @@ namespace Vortex {
 				if (selectedEntity && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-					m_EditorCamera.MoveToPosition(selectedEntity.GetTransform().Translation);
+					m_EditorCamera->MoveToPosition(selectedEntity.GetTransform().Translation);
 				}
 
 				break;

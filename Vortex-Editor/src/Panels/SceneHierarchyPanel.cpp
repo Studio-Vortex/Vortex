@@ -32,7 +32,7 @@ namespace Vortex {
 		m_ComponentSearchInputTextFilter.Build();
 	}
 
-	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera& editorCamera)
+	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
 	{
 		if (s_ShowSceneHierarchyPanel)
 		{
@@ -129,12 +129,12 @@ namespace Vortex {
 		}
 	}
 
-	inline static Math::vec3 GetEditorCameraForwardPosition(const EditorCamera& editorCamera)
+	inline static Math::vec3 GetEditorCameraForwardPosition(const EditorCamera* editorCamera)
 	{
-		return editorCamera.GetPosition() + (editorCamera.GetForwardDirection() * 3.0f);
+		return editorCamera->GetPosition() + (editorCamera->GetForwardDirection() * 3.0f);
 	}
 
-	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera& editorCamera)
+	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
 	{
 		entity = contextScene->CreateEntity(name);
 		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
@@ -148,7 +148,7 @@ namespace Vortex {
 		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 	}
 
-	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera& editorCamera)
+	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera* editorCamera)
 	{
 		if (Gui::MenuItem("Create Empty"))
 		{
@@ -436,7 +436,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity, const EditorCamera& editorCamera)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, const EditorCamera* editorCamera)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];

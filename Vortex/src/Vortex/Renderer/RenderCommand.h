@@ -59,6 +59,21 @@ namespace Vortex {
 			s_RendererAPI->EnableDepthTest();
 		}
 
+		inline static void DisableDepthTest()
+		{
+			s_RendererAPI->DisableDepthTest();
+		}
+
+		inline static void EnableStencilTest()
+		{
+			s_RendererAPI->EnableStencilTest();
+		}
+
+		inline static void DisableStencilTest()
+		{
+			s_RendererAPI->DisableStencilTest();
+		}
+
 		inline static void EnableDepthMask()
 		{
 			s_RendererAPI->EnableDepthMask();

@@ -293,11 +293,11 @@ namespace Vortex
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const EditorCamera& camera)
+	void Renderer2D::BeginScene(const EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetViewProjection();
+		Math::mat4 viewProjection = camera->GetViewProjection();
 
 		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
 		quadShader->Enable();

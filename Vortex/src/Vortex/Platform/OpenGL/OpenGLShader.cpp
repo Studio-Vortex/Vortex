@@ -11,6 +11,8 @@ namespace Vortex {
 	{
 		if (type == "vertex" || type == "Vertex")
 			return GL_VERTEX_SHADER;
+		if (type == "geometry" || type == "Geometry")
+			return GL_GEOMETRY_SHADER;
 		if (type == "fragment" || type == "Fragment" || type == "pixel" || type == "Pixel")
 			return GL_FRAGMENT_SHADER;
 
@@ -26,7 +28,7 @@ namespace Vortex {
 		CreateShader(m_Filepath);
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc = std::string())
 		: m_Name(name)
 	{
 		VX_PROFILE_FUNCTION();
@@ -123,7 +125,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
-		VX_CORE_ASSERT(shaderSources.size() <= 2, "Shader Limit Reached!");
+		VX_CORE_ASSERT(shaderSources.size() <= 3, "Shader Limit Reached!");
 		std::array<GLuint, 2> glShaderIDs;
 		int glShaderIDIndex = 0;
 

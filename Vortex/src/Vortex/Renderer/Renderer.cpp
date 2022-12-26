@@ -112,11 +112,11 @@ namespace Vortex {
 		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjection(), transform.Translation);
 	}
 
-	void Renderer::BeginScene(const EditorCamera& camera)
+	void Renderer::BeginScene(const EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
-		BindShaders(camera.GetViewMatrix(), camera.GetProjection(), camera.GetPosition());
+		BindShaders(camera->GetViewMatrix(), camera->GetProjection(), camera->GetPosition());
 	}
 
 	void Renderer::EndScene() { }

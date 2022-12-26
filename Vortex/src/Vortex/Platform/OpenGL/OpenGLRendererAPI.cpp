@@ -57,7 +57,6 @@ namespace Vortex {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_STENCIL_TEST);
 		//glEnable(GL_LINE_SMOOTH);
     }
 
@@ -113,6 +112,21 @@ namespace Vortex {
     {
 		glEnable(GL_DEPTH_TEST);
     }
+
+    void OpenGLRendererAPI::DisableDepthTest() const
+    {
+		glDisable(GL_DEPTH_TEST);
+    }
+
+	void OpenGLRendererAPI::EnableStencilTest() const
+	{
+		glEnable(GL_STENCIL_TEST);
+	}
+
+	void OpenGLRendererAPI::DisableStencilTest() const
+	{
+		glDisable(GL_STENCIL_TEST);
+	}
 
 	void OpenGLRendererAPI::EnableDepthMask() const
 	{

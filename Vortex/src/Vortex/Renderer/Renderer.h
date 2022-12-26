@@ -40,7 +40,7 @@ namespace Vortex {
 		static void OnWindowResize(const Viewport& viewport);
 
 		static void BeginScene(const Camera& camera, const TransformComponent& transform);
-		static void BeginScene(const EditorCamera& camera);
+		static void BeginScene(const EditorCamera* camera);
 		static void EndScene();
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);

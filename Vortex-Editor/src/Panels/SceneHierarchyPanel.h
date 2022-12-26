@@ -12,7 +12,7 @@ namespace Vortex {
 
 		void SetContext(const SharedRef<Scene>& context);
 
-		void OnGuiRender(Entity hoveredEntity, const EditorCamera& editorCamera);
+		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
@@ -24,7 +24,7 @@ namespace Vortex {
 
 		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
-		void DisplayCreateEntityMenu(const EditorCamera& editorCamera);
+		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
 
 		inline bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
@@ -37,7 +37,7 @@ namespace Vortex {
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
-		void DrawEntityNode(Entity entity, const EditorCamera& editorCamera);
+		void DrawEntityNode(Entity entity, const EditorCamera* editorCamera);
 		void DrawComponents(Entity entity);
 
 	private:

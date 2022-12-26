@@ -88,7 +88,7 @@ namespace Vortex {
 		void DuplicateSelectedEntity();
 
 	private:
-		EditorCamera m_EditorCamera;
+		EditorCamera* m_EditorCamera = nullptr;
 		SharedRef<Framebuffer> m_Framebuffer = nullptr;
 
 		SharedRef<Scene> m_ActiveScene = nullptr;

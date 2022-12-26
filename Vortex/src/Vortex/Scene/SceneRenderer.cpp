@@ -15,25 +15,25 @@
 
 namespace Vortex {
 
-	template <typename TCamera>
-	static void RenderScene(TCamera& activeCamera, const TransformComponent& sceneCameraTransform, Scene* scene)
+	void SceneRenderer::RenderScene(const SceneRenderPacket& renderPacket)
 	{
+		Scene* scene = renderPacket.Scene;
+		Camera activeCamera = *renderPacket.MainCamera;
+
 		// Render 2D
 		{
-			bool sceneCamera = false;
 			Math::mat4 cameraView;
 
-			if (std::is_same<TCamera, EditorCamera>())
+			if (renderPacket.EditorScene)
 			{
-				EditorCamera& editorCamera = (EditorCamera&)activeCamera;
+				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 				Renderer2D::BeginScene(editorCamera);
-				cameraView = editorCamera.GetViewMatrix();
+				cameraView = editorCamera->GetViewMatrix();
 			}
 			else
 			{
-				Renderer2D::BeginScene((Camera&)activeCamera, sceneCameraTransform.GetTransform());
-				sceneCamera = true;
-				cameraView = Math::Inverse(sceneCameraTransform.GetTransform());
+				Renderer2D::BeginScene((Camera&)activeCamera, renderPacket.CameraWorldSpaceTransform.GetTransform());
+				cameraView = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
 			}
 
 			// Render Sprites
@@ -126,7 +126,7 @@ namespace Vortex {
 			}
 
 			// Render Scene Icons
-			if (!sceneCamera && Project::GetActive()->GetProperties().RendererProps.DisplaySceneIconsInEditor)
+			if (renderPacket.EditorScene && Project::GetActive()->GetProperties().RendererProps.DisplaySceneIconsInEditor)
 			{
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
@@ -179,19 +179,19 @@ namespace Vortex {
 
 		// Render 3D
 		{
-			if (std::is_same<TCamera, EditorCamera>())
+			if (renderPacket.EditorScene)
 			{
-				EditorCamera& editorCamera = reinterpret_cast<EditorCamera&>(activeCamera);
+				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 				Renderer::BeginScene(editorCamera);
 
-				SceneRenderer::RenderSkybox(editorCamera.GetViewMatrix(), editorCamera.GetProjection(), scene);
+				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjection(), scene);
 			}
 			else
 			{
 				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
-				Renderer::BeginScene(sceneCamera, sceneCameraTransform);
+				Renderer::BeginScene(sceneCamera, renderPacket.CameraWorldSpaceTransform);
 
-				Math::mat4 view = Math::Inverse(sceneCameraTransform.GetTransform());
+				Math::mat4 view = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
 				Math::mat4 projection = sceneCamera.GetProjection();
 
 				SceneRenderer::RenderSkybox(view, projection, scene);
@@ -231,10 +231,11 @@ namespace Vortex {
 					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
 					{
 						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-						continue;
 					}
-
-					meshRendererComponent.Mesh->Render(worldSpaceTransform);
+					else
+					{
+						meshRendererComponent.Mesh->Render(worldSpaceTransform);
+					}
 				}
 			}
 
@@ -243,16 +244,6 @@ namespace Vortex {
 
 			Renderer::EndScene();
 		}
-	}
-
-	void SceneRenderer::RenderFromSceneCamera(SceneCamera& sceneCamera, const TransformComponent& cameraTransform, Scene* scene)
-	{
-		RenderScene(sceneCamera, cameraTransform, scene);
-	}
-
-	void SceneRenderer::RenderFromEditorCamera(EditorCamera& editorCamera, Scene* scene)
-	{
-		RenderScene(editorCamera, TransformComponent(), scene);
 	}
 
 	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
