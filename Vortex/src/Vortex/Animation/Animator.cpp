@@ -16,6 +16,11 @@ namespace Vortex {
 		}
 	}
 
+    void Animator::Stop()
+    {
+		m_IsPlaying = false;
+    }
+
 	void Animator::UpdateAnimation(float dt)
 	{
 		m_DeltaTime = dt;
@@ -28,10 +33,17 @@ namespace Vortex {
 		}
 	}
 
+	void Animator::PlayAnimation()
+	{
+		m_CurrentTime = 0.0f;
+		m_IsPlaying = true;
+	}
+
 	void Animator::PlayAnimation(const SharedRef<Animation>& animation)
 	{
 		m_CurrentAnimation = animation;
 		m_CurrentTime = 0.0f;
+		m_IsPlaying = true;
 	}
 
 	void Animator::CalculateBoneTransform(const AssimpNodeData* node, Math::mat4 parentTransform)

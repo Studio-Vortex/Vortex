@@ -14,13 +14,14 @@ namespace Vortex {
 		Animator(const SharedRef<Animation>& animation);
 
 		void UpdateAnimation(float dt);
+		void PlayAnimation();
 		void PlayAnimation(const SharedRef<Animation>& animation);
+		void Stop();
 		void CalculateBoneTransform(const AssimpNodeData* node, Math::mat4 parentTransform);
 
 		inline const std::vector<Math::mat4>& GetFinalBoneMatrices() const { return m_FinalBoneMatrices; }
 
 		bool IsPlaying() const { return m_IsPlaying; }
-		void SetIsPlaying(bool isPlaying) { m_IsPlaying = isPlaying; }
 
 		static SharedRef<Animator> Create(const SharedRef<Animation>& animation);
 

@@ -1648,9 +1648,13 @@ namespace Vortex {
 
 			if (animator)
 			{
-				bool isPlaying = animator->IsPlaying();
-				if (Gui::Checkbox("Is Playing", &isPlaying))
-					animator->SetIsPlaying(isPlaying);
+				if (Gui::Button("Play"))
+					animator->PlayAnimation();
+
+				Gui::SameLine();
+
+				if (Gui::Button("Stop"))
+					animator->Stop();
 			}
 		});
 

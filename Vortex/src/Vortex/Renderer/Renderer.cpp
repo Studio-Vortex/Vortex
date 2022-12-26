@@ -21,6 +21,8 @@ namespace Vortex {
 	static constexpr const char* SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_ShadowMap.glsl";
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
+	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.png";
+
 	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
 	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
 	static constexpr const char* POINT_LIGHT_ICON_PATH = "Resources/Icons/Scene/PointLight.png";
@@ -51,6 +53,8 @@ namespace Vortex {
 		RenderStatistics RendererStatistics;
 		RenderTime RenderTime;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
+
+		SharedRef<Texture2D> BRDF_LUT = nullptr;
 
 		// Editor Resources
 		SharedRef<Texture2D> CameraIcon = nullptr;
@@ -200,8 +204,8 @@ namespace Vortex {
 					break;
 
 				pbrShader->Enable();
-				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_DirectionalLights[{}].Direction", i).c_str(), Math::Normalize(transform.GetRotationEuler()));
+				pbrShader->SetFloat3("u_DirectionalLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
+				pbrShader->SetFloat3("u_DirectionalLights[" + std::to_string(i) + "].Direction", Math::Normalize(transform.GetRotationEuler()));
 
 				Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.01f, 100.0f);
 				Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
@@ -221,13 +225,13 @@ namespace Vortex {
 					break;
 
 				pbrShader->Enable();
-				pbrShader->SetFloat3(std::format("u_PointLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_PointLights[{}].Position", i).c_str(), transform.Translation);
+				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Radiance", lightSource->GetRadiance());
+				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Position", transform.Translation);
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
-				pbrShader->SetFloat(std::format("u_PointLights[{}].Constant", i).c_str(), 1.0f);
-				pbrShader->SetFloat(std::format("u_PointLights[{}].Linear", i).c_str(), attenuation.x);
-				pbrShader->SetFloat(std::format("u_PointLights[{}].Quadratic", i).c_str(), attenuation.y);
+				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Constant", 1.0f);
+				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Linear", attenuation.x);
+				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Quadratic", attenuation.y);
 
 				i++;
 
@@ -241,16 +245,16 @@ namespace Vortex {
 					break;
 
 				pbrShader->Enable();
-				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Radiance", i).c_str(), lightSource->GetRadiance());
-				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Position", i).c_str(), transform.Translation);
-				pbrShader->SetFloat3(std::format("u_SpotLights[{}].Direction", i).c_str(), Math::Normalize(transform.GetRotationEuler()));
-				pbrShader->SetFloat(std::format("u_SpotLights[{}].CutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				pbrShader->SetFloat(std::format("u_SpotLights[{}].OuterCutOff", i).c_str(), Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
+				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Position", transform.Translation);
+				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Direction", Math::Normalize(transform.GetRotationEuler()));
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
 
 				Math::vec2 attenuation = lightSource->GetAttenuation();
-				pbrShader->SetFloat(std::format("u_SpotLights[{}].Constant", i).c_str(), 1.0f);
-				pbrShader->SetFloat(std::format("u_SpotLights[{}].Linear", i).c_str(), attenuation.x);
-				pbrShader->SetFloat(std::format("u_SpotLights[{}].Quadratic", i).c_str(), attenuation.y);
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Constant", 1.0f);
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Linear", attenuation.x);
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Quadratic", attenuation.y);
 
 				i++;
 
@@ -295,7 +299,7 @@ namespace Vortex {
 			SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
 			// don't forget to configure the viewport to the capture dimensions.
-			RenderCommand::SetViewport(Viewport{ 0, 0, 4096, 4096 });
+			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
 			s_Data.HDRFramebuffer->Bind();
 			for (uint32_t i = 0; i < 6; i++)
 			{
@@ -309,15 +313,18 @@ namespace Vortex {
 			}
 			s_Data.HDRFramebuffer->Unbind();
 
+			// Generate mip maps
+			s_Data.HDRFramebuffer->BindAndGenerateEnvironmentMipMap();
+
 			// Create Irradiance Map
 			s_Data.HDRFramebuffer->CreateIrradianceCubemap();
 			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
 
 			SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 			irradianceConvolutionShader->Enable();
 			irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
 			irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
 			RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
 			s_Data.HDRFramebuffer->Bind();
@@ -336,11 +343,11 @@ namespace Vortex {
 			// Create Prefiltered Envrionment Map
 			s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
 
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 			SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
 			iblPrefilterShader->Enable();
 			iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
 			iblPrefilterShader->SetMat4("u_Projection", captureProjection);
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
 			uint32_t maxMipLevels = 5;
 			s_Data.HDRFramebuffer->Bind();
@@ -368,17 +375,7 @@ namespace Vortex {
 			s_Data.HDRFramebuffer->Unbind();
 
 			// Create BRDF Look-Up Texture
-			s_Data.HDRFramebuffer->CreateBRDFLutTexture();
-			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(4096, 4096);
-			s_Data.HDRFramebuffer->SetBRDFLutFramebufferTexture();
-
-			RenderCommand::SetViewport(Viewport{ 0, 0, 4096, 4096 });
-			SharedRef<Shader> brdfLutShader = s_Data.ShaderLibrary->Get("BRDF_LUT");
-			brdfLutShader->Enable();
-			s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
-			Renderer2D::DrawUnitQuadAtOrigin();
-
-			s_Data.HDRFramebuffer->Unbind();
+			s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH);
 
 			skybox->SetPathChanged(false);
 		}
@@ -398,19 +395,19 @@ namespace Vortex {
 		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
 		skyboxMeshVA->Bind();
-		skybox->Bind();
+		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 		RenderCommand::DrawTriangles(skyboxMeshVA, 36);
 		RenderCommand::EnableDepthMask();
 
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
-		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
-		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
-
 		s_Data.HDRFramebuffer->BindIrradianceCubemap();
+		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
 		s_Data.HDRFramebuffer->BindPrefilterCubemap();
-		s_Data.HDRFramebuffer->BindBRDFLutTexture();
+		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
+		s_Data.BRDF_LUT->Bind(3);
+		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 	}
 
 	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)

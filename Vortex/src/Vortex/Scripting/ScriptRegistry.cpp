@@ -864,8 +864,7 @@ namespace Vortex {
 		}
 
 		SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
-		animator->SetIsPlaying(true);
-		animator->PlayAnimation(animation);
+		animator->PlayAnimation();
 	}
 
 #pragma endregion

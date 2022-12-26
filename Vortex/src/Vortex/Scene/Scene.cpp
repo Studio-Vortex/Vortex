@@ -337,7 +337,7 @@ namespace Vortex {
 
 		ScriptEngine::OnRuntimeStop();
 
-		// Stop all active audio sources in the scene
+		// Stop all playing audio sources in the scene
 		{
 			auto view = m_Registry.view<AudioSourceComponent>();
 
@@ -350,6 +350,22 @@ namespace Vortex {
 					continue;
 
 				audioSource->Stop();
+			}
+		}
+
+		// Stop all animators in the scene
+		{
+			auto view = m_Registry.view<AnimatorComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+
+				if (!animator->IsPlaying())
+					continue;
+
+				animator->Stop();
 			}
 		}
 

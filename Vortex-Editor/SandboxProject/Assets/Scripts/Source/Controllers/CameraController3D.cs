@@ -75,16 +75,8 @@ namespace Sandbox {
 			if (rightAxisY < -ControllerDeadzone || rightAxisY > ControllerDeadzone)
 				m_Rotation.X = rightAxisY;
 
-			if (transform.Rotation.X >= MaxRoll_Up)
-			{
-				float roll = Mathf.Min(MaxRoll_Up, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
-			}
-			if (transform.Rotation.X <= MaxRoll_Down)
-			{
-				float roll = Mathf.Max(MaxRoll_Down, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
-			}
+			float roll = Mathf.Clamp(transform.Rotation.X, MaxRoll_Down, MaxRoll_Up);
+			transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
 		}
 
 		void UpdateFlashlight()

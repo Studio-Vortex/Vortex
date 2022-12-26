@@ -33,7 +33,7 @@ namespace Vortex {
 
 		// Primitives
 
-		static void DrawUnitQuadAtOrigin();
+		static void DrawUnitQuad();
 
 		static void DrawQuad(const Math::mat4& transform, const Math::vec3& color);
 		static void DrawQuad(const Math::mat4& transform, const Math::vec4& color, int entityID = -1);

@@ -50,20 +50,19 @@ namespace Vortex {
 
 		void BindEnvironmentCubemap() const override;
 		void BindIrradianceCubemap() const override;
+		void BindIrradianceCubemap2() const override;
 		void BindPrefilterCubemap() const override;
-		void BindBRDFLutTexture() const override;
 
 		void CreateEnvironmentCubemap() override;
 		void CreateIrradianceCubemap() override;
 		void CreatePrefilteredEnvironmentCubemap() override;
-		void CreateBRDFLutTexture() override;
 
+		void BindAndGenerateEnvironmentMipMap() const override;
 		void BindAndSetRenderbufferStorage(uint32_t width, uint32_t height) const override;
 
 		void SetEnvironmentCubemapFramebufferTexture(uint32_t index) const override;
 		void SetIrradianceCubemapFramebufferTexture(uint32_t index) const override;
 		void SetPrefilterCubemapFramebufferTexture(uint32_t index, uint32_t mipLevel) const override;
-		void SetBRDFLutFramebufferTexture() const override;
 		void ClearColorAndDepthAttachments() const override;
 		void RescaleAndBindFramebuffer(uint32_t width, uint32_t height) const override;
 

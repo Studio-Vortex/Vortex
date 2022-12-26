@@ -124,10 +124,10 @@ namespace Vortex
 		VX_PROFILE_FUNCTION();
 
 		float vertices[] = {
-			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 		};
 
 		/// Unit Quad
@@ -489,7 +489,7 @@ namespace Vortex
 #endif // SP_RENDERER_STATISTICS
 	}
 
-    void Renderer2D::DrawUnitQuadAtOrigin()
+    void Renderer2D::DrawUnitQuad()
     {
 		RenderCommand::DrawTriangleStrip(s_Data.UnitQuadVA, 4);
     }
