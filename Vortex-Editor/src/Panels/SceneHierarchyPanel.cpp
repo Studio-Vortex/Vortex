@@ -241,7 +241,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Directional"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Directional;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Directional;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::Separator();
@@ -249,7 +249,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Point"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Point;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Point;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 			Gui::Separator();
@@ -257,7 +257,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Spot"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightSourceComponent::LightType::Spot;
+				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Spot;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
@@ -923,14 +923,14 @@ namespace Vortex {
 
 			if (component.Source->IsDirty())
 			{
-				if (Gui::Button("Reload Irradiance Map"))
+				if (Gui::Button("Regenerate Environment Map"))
 				{
 					component.Source->Reload();
 					component.Source->SetIsDirty(false);
 				}
 
 				Gui::SameLine();
-				UI::HelpMarker("Rebake the reflections in the scene");
+				UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
 			}
 
 			if (Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f"))
@@ -956,7 +956,7 @@ namespace Vortex {
 					if (Gui::Selectable(lightTypes[i], isSelected))
 					{
 						currentLightType = lightTypes[i];
-						component.Type = static_cast<LightSourceComponent::LightType>(i);
+						component.Type = static_cast<LightType>(i);
 					}
 
 					if (isSelected)
@@ -973,11 +973,11 @@ namespace Vortex {
 
 			switch (component.Type)
 			{
-				case LightSourceComponent::LightType::Directional:
+				case LightType::Directional:
 				{
 					break;
 				}
-				case LightSourceComponent::LightType::Point:
+				case LightType::Point:
 				{
 					Math::vec2 attenuation = lightSource->GetAttenuation();
 
@@ -991,7 +991,7 @@ namespace Vortex {
 
 					break;
 				}
-				case LightSourceComponent::LightType::Spot:
+				case LightType::Spot:
 				{
 					Math::vec2 attenuation = lightSource->GetAttenuation();
 

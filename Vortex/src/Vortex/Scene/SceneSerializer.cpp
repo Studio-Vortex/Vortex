@@ -8,6 +8,7 @@
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
 
+#include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
@@ -35,27 +36,27 @@ namespace Vortex {
 
 	namespace Utils {
 
-		static std::string LightTypeToString(LightSourceComponent::LightType lightType)
+		static std::string LightTypeToString(LightType lightType)
 		{
 			switch (lightType)
 			{
-				case LightSourceComponent::LightType::Directional:  return "Directional";
-				case LightSourceComponent::LightType::Point:        return "Point";
-				case LightSourceComponent::LightType::Spot:         return "Spot";
+				case LightType::Directional:  return "Directional";
+				case LightType::Point:        return "Point";
+				case LightType::Spot:         return "Spot";
 			}
 
 			VX_CORE_ASSERT(false, "Unknown Light Type!");
 			return {};
 		}
 
-		static LightSourceComponent::LightType LightTypeFromString(const std::string& lightTypeString)
+		static LightType LightTypeFromString(const std::string& lightTypeString)
 		{
-			if (lightTypeString == "Directional")  return LightSourceComponent::LightType::Directional;
-			if (lightTypeString == "Point")        return LightSourceComponent::LightType::Point;
-			if (lightTypeString == "Spot")         return LightSourceComponent::LightType::Spot;
+			if (lightTypeString == "Directional")  return LightType::Directional;
+			if (lightTypeString == "Point")        return LightType::Point;
+			if (lightTypeString == "Spot")         return LightType::Spot;
 
 			VX_CORE_ASSERT(false, "Unknown Light Type!");
-			return LightSourceComponent::LightType::Directional;
+			return LightType::Directional;
 		}
 
 		static std::string MeshTypeToString(MeshType meshType)
@@ -317,16 +318,16 @@ namespace Vortex {
 
 			switch (lightComponent.Type)
 			{
-				case LightSourceComponent::LightType::Directional:
+				case LightType::Directional:
 				{
 					break;
 				}
-				case LightSourceComponent::LightType::Point:
+				case LightType::Point:
 				{
 					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					break;
 				}
-				case LightSourceComponent::LightType::Spot:
+				case LightType::Spot:
 				{
 					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
@@ -846,20 +847,24 @@ namespace Vortex {
 				if (lightSourceComponent["Radiance"])
 					lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
 
+				// Create a shadow map for the light source
+				Renderer::CreateShadowMap(lightComponent.Type);
+
 				switch (lightComponent.Type)
 				{
-					case LightSourceComponent::LightType::Directional:
+					case LightType::Directional:
 					{
+
 						break;
 					}
-					case LightSourceComponent::LightType::Point:
+					case LightType::Point:
 					{
 						if (lightSourceComponent["Attenuation"])
 							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 
 						break;
 					}
-					case LightSourceComponent::LightType::Spot:
+					case LightType::Spot:
 					{
 						if (lightSourceComponent["Attenuation"])
 							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());

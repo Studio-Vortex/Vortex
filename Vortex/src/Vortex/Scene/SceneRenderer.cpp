@@ -225,7 +225,7 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					Renderer::BindDepthMap();
+					Renderer::BindSkyLightDepthMap();
 					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
 					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())

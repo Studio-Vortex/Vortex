@@ -180,9 +180,10 @@ namespace Vortex {
 		SkyboxComponent(const SkyboxComponent&) = default;
 	};
 
+	enum class LightType { Directional = 0, Point, Spot };
+
 	struct LightSourceComponent
 	{
-		enum class LightType { Directional = 0, Point, Spot };
 		LightType Type = LightType::Directional;
 		SharedRef<LightSource> Source = nullptr;
 

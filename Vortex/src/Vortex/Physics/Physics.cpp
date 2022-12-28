@@ -4,6 +4,7 @@
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Physics/PhysXTypes.h"
 #include "Vortex/Physics/PhysXAPIHelpers.h"
+#include "Vortex/Scripting/ScriptEngine.h"
 
 namespace Vortex {
 
@@ -18,23 +19,145 @@ namespace Vortex {
 		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale TolerancesScale;
+
+		Scene* ContextScene = nullptr;
 	};
 
 	static PhysicsEngineInternalData* s_Data = nullptr;
 
 	namespace Utils {
 
-		static void ReplaceNonExistantVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
+		static void ReplaceInconsistentVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
 		{
-			if (vector.x == 0.0f)
-				vector.x = replacementVector.x;
-			if (vector.y == 0.0f)
-				vector.y = replacementVector.y;
-			if (vector.z == 0.0f)
-				vector.z = replacementVector.z;
+			uint32_t size = vector.length();
+			for (uint32_t i = 0; i < size; i++)
+			{
+				if (vector[i] == 0.0f)
+					vector[i] = replacementVector[i];
+			}
 		}
 
 	}
+
+	class PhysicsContactListener : public physx::PxSimulationEventCallback
+	{
+	public:
+		~PhysicsContactListener() override = default;
+
+		void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) override
+		{
+			PX_UNUSED(constraints);
+			PX_UNUSED(count);
+		}
+
+		void onWake(physx::PxActor** actors, physx::PxU32 count) override
+		{
+			PX_UNUSED(actors);
+			PX_UNUSED(count);
+		}
+
+		void onSleep(physx::PxActor** actors, physx::PxU32 count) override
+		{
+			PX_UNUSED(actors);
+			PX_UNUSED(count);
+		}
+
+		void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) override
+		{
+			bool removedActorA = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_0;
+			bool removedActorB = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_1;
+
+			PhysicsBodyData* entityDataA = (PhysicsBodyData*)pairHeader.actors[0]->userData;
+			PhysicsBodyData* entityDataB = (PhysicsBodyData*)pairHeader.actors[1]->userData;
+
+			if (!entityDataA || !entityDataB)
+				return;
+
+			Entity entityA = s_Data->ContextScene->TryGetEntityWithUUID(entityDataA->EntityUUID);
+			Entity entityB = s_Data->ContextScene->TryGetEntityWithUUID(entityDataB->EntityUUID);
+
+			if (!entityA || !entityB)
+				return;
+
+			if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
+			{
+				if (!entityA.HasComponent<ScriptComponent>() || !entityB.HasComponent<ScriptComponent>())
+					return;
+
+				Collision collisionA{};
+				collisionA.EntityID = entityB.GetUUID();
+				ScriptEngine::OnCollisionBeginEntity(entityA, entityB, collisionA);
+
+				Collision collisionB{};
+				collisionB.EntityID = entityA.GetUUID();
+				ScriptEngine::OnCollisionBeginEntity(entityB, entityA, collisionB);
+			}
+			else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
+			{
+				if (!entityA.HasComponent<ScriptComponent>() || !entityB.HasComponent<ScriptComponent>())
+					return;
+
+				Collision collisionA{};
+				collisionA.EntityID = entityB.GetUUID();
+				ScriptEngine::OnCollisionEndEntity(entityA, entityB, collisionA);
+
+				Collision collisionB{};
+				collisionB.EntityID = entityA.GetUUID();
+				ScriptEngine::OnCollisionEndEntity(entityB, entityA, collisionB);
+			}
+
+			VX_CORE_INFO("Physics::OnCollision, A: {}, B: {}", entityA.GetName(), entityB.GetName());
+		}
+
+		void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override
+		{
+			for (uint32_t i = 0; i < count; i++)
+			{
+				if (pairs[i].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+					continue;
+
+				PhysicsBodyData* triggerActorPhysicsBodyData = (PhysicsBodyData*)pairs[i].triggerActor->userData;
+				PhysicsBodyData* otherActorPhysicsBodyData = (PhysicsBodyData*)pairs[i].otherActor->userData;
+
+				if (!triggerActorPhysicsBodyData || !otherActorPhysicsBodyData)
+					continue;
+
+				Entity triggerEntity = s_Data->ContextScene->TryGetEntityWithUUID(triggerActorPhysicsBodyData->EntityUUID);
+				Entity otherEntity = s_Data->ContextScene->TryGetEntityWithUUID(otherActorPhysicsBodyData->EntityUUID);
+
+				if (!triggerEntity || !otherEntity)
+					continue;
+
+				if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_CCD)
+				{
+					if (!triggerEntity.HasComponent<ScriptComponent>() || !otherEntity.HasComponent<ScriptComponent>())
+						return;
+
+					ScriptEngine::OnTriggerBeginEntity(triggerEntity, otherEntity);
+					ScriptEngine::OnTriggerBeginEntity(otherEntity, triggerEntity);
+				}
+				else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+				{
+					if (!triggerEntity.HasComponent<ScriptComponent>() || !otherEntity.HasComponent<ScriptComponent>())
+						return;
+
+					ScriptEngine::OnTriggerEndEntity(triggerEntity, otherEntity);
+					ScriptEngine::OnTriggerEndEntity(otherEntity, triggerEntity);
+				}
+
+				VX_CORE_INFO("Physics::OnTrigger, trigger: {}, other: {}", triggerEntity.GetName(), otherEntity.GetName());
+			}
+		}
+
+		void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) override
+		{
+			PX_UNUSED(bodyBuffer);
+			PX_UNUSED(poseBuffer);
+			PX_UNUSED(count);
+		}
+	};
+
+	static PhysicsContactListener s_ContactListener;
 
 	void Physics::Init()
 	{
@@ -100,6 +223,7 @@ namespace Vortex {
 
 		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
+		sceneDescription.simulationEventCallback = &s_ContactListener;
 
 		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
 		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
@@ -111,6 +235,8 @@ namespace Vortex {
 			Entity entity{ e, contextScene };
 			CreatePhysicsBody(entity, entity.GetTransform(), entity.GetComponent<RigidBodyComponent>());
 		}
+
+		s_Data->ContextScene = contextScene;
 	}
 
 	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
@@ -120,7 +246,7 @@ namespace Vortex {
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
-		for (auto& e : view)
+		for (const auto& e : view)
 		{
 			Entity entity{ e, contextScene };
 			auto& transform = entity.GetTransform();
@@ -192,6 +318,8 @@ namespace Vortex {
 		s_Data->ControllerManager = nullptr;
 		s_Data->PhysicsScene->release();
 		s_Data->PhysicsScene = nullptr;
+
+		s_Data->ContextScene = nullptr;
 	}
 
 	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
@@ -412,7 +540,7 @@ namespace Vortex {
 			Math::vec3 linearVelocity = rigidbody.LinearVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getLinearVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceNonExistantVectorAxis(linearVelocity, actorVelocity);
+			Utils::ReplaceInconsistentVectorAxis(linearVelocity, actorVelocity);
 
 			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
 		}
@@ -424,16 +552,16 @@ namespace Vortex {
 			Math::vec3 angularVelocity = rigidbody.AngularVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getAngularVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceNonExistantVectorAxis(angularVelocity, actorVelocity);
+			Utils::ReplaceInconsistentVectorAxis(angularVelocity, actorVelocity);
 
 			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
 		}
 
 		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
 
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidbody.LockPositionX);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidbody.LockPositionY);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidbody.LockPositionZ);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X,  rigidbody.LockPositionX);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y,  rigidbody.LockPositionY);
+		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z,  rigidbody.LockPositionZ);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidbody.LockRotationX);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);

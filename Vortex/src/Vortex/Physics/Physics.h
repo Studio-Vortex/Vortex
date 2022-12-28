@@ -20,7 +20,7 @@ namespace Vortex {
 
 	struct PhysicsBodyData
 	{
-		UUID EntityUUID;
+		UUID EntityUUID = 0;
 	};
 
 	struct RaycastHit
@@ -29,6 +29,11 @@ namespace Vortex {
 		Math::vec3 Position;
 		Math::vec3 Normal;
 		float Distance;
+	};
+
+	struct Collision
+	{
+		uint64_t EntityID;
 	};
 
 	class Physics

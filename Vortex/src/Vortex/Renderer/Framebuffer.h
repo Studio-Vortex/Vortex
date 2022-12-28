@@ -116,4 +116,21 @@ namespace Vortex {
 		static SharedRef<DepthMapFramebuffer> Create(const FramebufferProperties& props);
 	};
 
+	class VORTEX_API DepthCubemapFramebuffer
+	{
+	public:
+		virtual ~DepthCubemapFramebuffer() = default;
+
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		virtual void BindDepthTexture(uint32_t slot) const = 0;
+
+		virtual void ClearDepthAttachment() const = 0;
+
+		virtual uint32_t GetDepthCubemapTextureRendererID() const = 0;
+
+		static SharedRef<DepthCubemapFramebuffer> Create(const FramebufferProperties& props);
+	};
+
 }

@@ -181,7 +181,7 @@ namespace Vortex {
 		Renderer::AddToDrawCallCountStats(1);
 	}
 
-	void Mesh::RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	void Mesh::RenderToShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
 	{
 		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
@@ -487,9 +487,9 @@ namespace Vortex {
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-		m_MeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights.size());
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights.size());
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
@@ -498,7 +498,9 @@ namespace Vortex {
 		for (uint32_t i = 0; i < 100; i++)
 			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Identity());
 
-		Renderer::BindDepthMap();
+		Renderer::BindSkyLightDepthMap();
+		//Renderer::BindPointLightDepthMaps();
+
 		for (auto& mesh : m_Meshes)
 		{
 			mesh.Render(m_MeshShader, m_Material);
@@ -514,9 +516,9 @@ namespace Vortex {
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-		m_MeshShader->SetInt("u_SceneProperties.ActiveDirectionalLights", lightDesc.ActiveDirLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights.size());
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights.size());
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
@@ -526,32 +528,34 @@ namespace Vortex {
 		for (uint32_t i = 0; i < transforms.size(); i++)
 			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 
-		Renderer::BindDepthMap();
+		Renderer::BindSkyLightDepthMap();
+		//Renderer::BindPointLightDepthMaps();
+
 		for (auto& mesh : m_Meshes)
 		{
 			mesh.Render(m_MeshShader, m_Material);
 		}
 	}
 
-	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform)
+	void Model::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform)
 	{
 		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
 
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
 
 		m_MeshShader->SetBool("u_HasAnimations", false);
 
 		for (auto& mesh : m_Meshes)
 		{
-			mesh.RenderForShadowMap(m_MeshShader, m_Material);
+			mesh.RenderToShadowMap(m_MeshShader, m_Material);
 		}
 	}
 
-	void Model::RenderForShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	void Model::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
 	{
 		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
 
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
 
 		m_MeshShader->SetBool("u_HasAnimations", true);
 
@@ -561,7 +565,39 @@ namespace Vortex {
 
 		for (auto& mesh : m_Meshes)
 		{
-			mesh.RenderForShadowMap(m_MeshShader, m_Material);
+			mesh.RenderToShadowMap(m_MeshShader, m_Material);
+		}
+	}
+
+	void Model::RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform)
+	{
+		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
+
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PointLightShadowMap");
+
+		m_MeshShader->SetBool("u_HasAnimations", false);
+
+		for (auto& mesh : m_Meshes)
+		{
+			mesh.RenderToShadowMap(m_MeshShader, m_Material);
+		}
+	}
+
+	void Model::RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	{
+		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
+
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PointLightShadowMap");
+
+		m_MeshShader->SetBool("u_HasAnimations", true);
+
+		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+		for (uint32_t i = 0; i < transforms.size(); i++)
+			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+
+		for (auto& mesh : m_Meshes)
+		{
+			mesh.RenderToShadowMap(m_MeshShader, m_Material);
 		}
 	}
 

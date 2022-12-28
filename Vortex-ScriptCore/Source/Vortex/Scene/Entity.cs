@@ -34,6 +34,10 @@ namespace Vortex {
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
 		protected virtual void OnDestroy() { }
+		protected virtual void OnCollisionBegin() { }
+		protected virtual void OnCollisionEnd() { }
+		protected virtual void OnTriggerBegin() { }
+		protected virtual void OnTriggerEnd() { }
 		protected virtual void OnRaycastCollision() { }
 		protected virtual void OnGui() { }
 

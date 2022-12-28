@@ -20,10 +20,10 @@ namespace Vortex {
 		}
 
 		static void OpenGLMessageCallback(
-			unsigned source,
-			unsigned type,
-			unsigned id,
-			unsigned severity,
+			uint32_t source,
+			uint32_t type,
+			uint32_t id,
+			uint32_t severity,
 			int length,
 			const char* message,
 			const void* userParam

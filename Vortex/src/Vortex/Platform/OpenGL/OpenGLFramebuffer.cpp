@@ -262,12 +262,6 @@ namespace Vortex {
 
 	OpenGLHDRFramebuffer::~OpenGLHDRFramebuffer()
 	{
-		if (m_CaptureFramebufferRendererID)
-			glDeleteFramebuffers(1, &m_CaptureFramebufferRendererID);
-
-		if (m_CaptureRenderbufferRendererID)
-			glDeleteRenderbuffers(1, &m_CaptureRenderbufferRendererID);
-
 		if (m_EnvironmentCubemapRendererID)
 			glDeleteTextures(1, &m_EnvironmentCubemapRendererID);
 
@@ -279,6 +273,12 @@ namespace Vortex {
 
 		if (m_BRDFLutTextureRendererID)
 			glDeleteTextures(1, &m_BRDFLutTextureRendererID);
+
+		if (m_CaptureRenderbufferRendererID)
+			glDeleteRenderbuffers(1, &m_CaptureRenderbufferRendererID);
+
+		if (m_CaptureFramebufferRendererID)
+			glDeleteFramebuffers(1, &m_CaptureFramebufferRendererID);
 	}
 
 	void OpenGLHDRFramebuffer::Bind() const
@@ -428,20 +428,16 @@ namespace Vortex {
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE)
-		{
-			VX_CORE_CRITICAL("Framebuffer failed to complete!");
-		}
+		VX_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer failed to complete!");
 	}
 
 	OpenGLDepthMapFramebuffer::~OpenGLDepthMapFramebuffer()
 	{
-		if (m_DepthMapFramebufferRendererID)
-			glDeleteFramebuffers(1, &m_DepthMapFramebufferRendererID);
-
 		if (m_DepthTextureRendererID)
 			glDeleteTextures(1, &m_DepthTextureRendererID);
+
+		if (m_DepthMapFramebufferRendererID)
+			glDeleteFramebuffers(1, &m_DepthMapFramebufferRendererID);
 	}
 
 	void OpenGLDepthMapFramebuffer::Bind() const
@@ -466,6 +462,63 @@ namespace Vortex {
 	}
 
 	void OpenGLDepthMapFramebuffer::ClearDepthAttachment() const
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+	OpenGLDepthCubeMapFramebuffer::OpenGLDepthCubeMapFramebuffer(const FramebufferProperties& props)
+	{
+		glGenFramebuffers(1, &m_DepthMapFramebufferRendererID);
+
+		// Create Depth Cubemap Texture
+		glGenTextures(1, &m_DepthCubemapTextureRendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemapTextureRendererID);
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, props.Width, props.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		// Attach to framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFramebufferRendererID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthCubemapTextureRendererID, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		VX_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer failed to complete!");
+	}
+
+	OpenGLDepthCubeMapFramebuffer::~OpenGLDepthCubeMapFramebuffer()
+	{
+		if (m_DepthCubemapTextureRendererID)
+			glDeleteTextures(1, &m_DepthCubemapTextureRendererID);
+
+		if (m_DepthMapFramebufferRendererID)
+			glDeleteFramebuffers(1, &m_DepthMapFramebufferRendererID);
+	}
+
+	void OpenGLDepthCubeMapFramebuffer::Bind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_DepthMapFramebufferRendererID);
+	}
+
+	void OpenGLDepthCubeMapFramebuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void OpenGLDepthCubeMapFramebuffer::BindDepthTexture(uint32_t slot) const
+	{
+		glActiveTexture(GL_TEXTURE12 + slot);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemapTextureRendererID);
+	}
+
+	void OpenGLDepthCubeMapFramebuffer::ClearDepthAttachment() const
 	{
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}

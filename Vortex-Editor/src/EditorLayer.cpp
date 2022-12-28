@@ -268,7 +268,7 @@ namespace Vortex {
 					SaveSceneAs();
 				Gui::Separator();
 
-				if (Gui::MenuItem("Exit"))
+				if (Gui::MenuItem("Exit", "Alt+F4"))
 					Application::Get().Quit();
 
 				Gui::EndMenu();

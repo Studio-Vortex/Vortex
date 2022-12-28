@@ -126,7 +126,7 @@ namespace Vortex {
 
 		GLuint program = glCreateProgram();
 		VX_CORE_ASSERT(shaderSources.size() <= 3, "Shader Limit Reached!");
-		std::array<GLuint, 2> glShaderIDs;
+		std::array<GLuint, 3> glShaderIDs;
 		int glShaderIDIndex = 0;
 
 		for (auto& [key, value] : shaderSources)

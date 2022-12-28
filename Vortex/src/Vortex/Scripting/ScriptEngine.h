@@ -102,6 +102,10 @@ namespace Vortex {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
+		void InvokeOnCollisionBegin();
+		void InvokeOnCollisionEnd();
+		void InvokeOnTriggerBegin();
+		void InvokeOnTriggerEnd();
 		void InvokeOnRaycastCollision();
 		void InvokeOnGui();
 
@@ -142,6 +146,10 @@ namespace Vortex {
 		MonoMethod* m_OnCreateFunc = nullptr;
 		MonoMethod* m_OnUpdateFunc = nullptr;
 		MonoMethod* m_OnDestroyFunc = nullptr;
+		MonoMethod* m_OnCollisionBeginFunc = nullptr;
+		MonoMethod* m_OnCollisionEndFunc = nullptr;
+		MonoMethod* m_OnTriggerBeginFunc = nullptr;
+		MonoMethod* m_OnTriggerEndFunc = nullptr;
 		MonoMethod* m_OnCollisionFunc = nullptr;
 		MonoMethod* m_OnGuiFunc = nullptr;
 
@@ -159,8 +167,9 @@ namespace Vortex {
 		uint32_t FieldCount;
 	};
 
-	// Forward declaration
+	// Forward declarations
 	class TimeStep;
+	class Collision;
 
 	class ScriptEngine
 	{
@@ -183,6 +192,10 @@ namespace Vortex {
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
+		static void OnCollisionBeginEntity(Entity entity, Entity other, Collision collision);
+		static void OnCollisionEndEntity(Entity entity, Entity other, Collision collision);
+		static void OnTriggerBeginEntity(Entity entity, Entity otherEntity);
+		static void OnTriggerEndEntity(Entity entity, Entity otherEntity);
 		static void OnRaycastCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
 

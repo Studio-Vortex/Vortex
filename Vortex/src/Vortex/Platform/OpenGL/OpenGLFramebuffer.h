@@ -96,4 +96,24 @@ namespace Vortex {
 		uint32_t m_DepthTextureRendererID = 0;
 	};
 
+	class OpenGLDepthCubeMapFramebuffer : public DepthCubemapFramebuffer
+	{
+	public:
+		OpenGLDepthCubeMapFramebuffer(const FramebufferProperties& props);
+		~OpenGLDepthCubeMapFramebuffer() override;
+
+		void Bind() const override;
+		void Unbind() const override;
+
+		void BindDepthTexture(uint32_t slot) const override;
+
+		void ClearDepthAttachment() const override;
+
+		inline uint32_t GetDepthCubemapTextureRendererID() const { return m_DepthCubemapTextureRendererID; }
+
+	private:
+		uint32_t m_DepthMapFramebufferRendererID = 0;
+		uint32_t m_DepthCubemapTextureRendererID = 0;
+	};
+
 }

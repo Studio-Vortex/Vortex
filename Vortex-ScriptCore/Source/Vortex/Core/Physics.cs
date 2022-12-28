@@ -42,4 +42,14 @@
 		}
 	}
 
+	public struct Collision
+	{
+		public ulong EntityID { get; private set; }
+
+		public Entity Entity
+		{
+			get => Scene.FindEntityByID(EntityID);
+		}
+	}
+
 }

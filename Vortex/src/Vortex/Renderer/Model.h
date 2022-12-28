@@ -65,7 +65,7 @@ namespace Vortex {
 		~Mesh() = default;
 
 		void Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
-		void RenderForShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
+		void RenderToShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
@@ -130,8 +130,10 @@ namespace Vortex {
 		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
 		void Render(const Math::mat4& worldSpaceTransform);
 		void Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
-		void RenderForShadowMap(const Math::mat4& worldSpaceTransform);
-		void RenderForShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
+		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
+		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
+		void RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform);
+		void RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
 
 		const std::string& GetPath() const { return m_Filepath; }
 
