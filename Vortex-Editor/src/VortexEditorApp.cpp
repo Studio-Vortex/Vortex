@@ -29,7 +29,7 @@ namespace Vortex {
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
 		props.SampleCount = 1;
-		props.MaximizeWindow = true;
+		props.MaximizeWindow = false;
 		props.WindowDecorated = true;
 		props.VSync = true;
 		props.EnableGUI = true;

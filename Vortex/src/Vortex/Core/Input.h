@@ -13,8 +13,6 @@ namespace Vortex {
 	class VORTEX_API Input
 	{
 	public:
-		static void Update(const Event& event);
-
 		static bool IsKeyPressed(KeyCode keycode);
 		static bool IsKeyReleased(KeyCode keycode);
 
@@ -32,6 +30,9 @@ namespace Vortex {
 		static Math::vec2 GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();
+
+		// For Internal Use
+		static void UpdateMouseState(const Event& event);
 	};
 
 }

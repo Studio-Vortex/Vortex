@@ -47,11 +47,7 @@ namespace Vortex {
 		m_Properties.VSync = props.VSync;
 		m_Properties.Decorated = props.Decorated;
 
-		VX_CORE_INFO("Creating window named '{}' with size: {}", props.Title, props.Size);
-
-#ifdef VX_PLATFORM_WINDOWS
-		SetConsoleTitleA(props.Title.c_str());
-#endif // VX_PLATFORM_WINDOWS
+		VX_CORE_INFO("Creating window '{}' {}", props.Title, props.Size);
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -70,17 +66,34 @@ namespace Vortex {
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // VX_DEBUG
 
+			if (!m_Properties.Decorated)
+			{
+				// Removes the title bar on all platforms
+				// and all of the native window effects on non-windows platforms
+#ifdef VX_PLATFORM_WINDOWS
+				glfwWindowHint(GLFW_TITLEBAR, false);
+#else
+				glfwWindowHint(GLFW_DECORATED, false);
+#endif
+			}
+
 			if (m_Properties.Maximized)
-				glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-			else
-				glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
+			{
+				GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
-			if (m_Properties.Decorated)
-				glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
-			else
-				glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+				glfwWindowHint(GLFW_DECORATED, false);
+				glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+				glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+				glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+				glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-			m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
+				m_Window = glfwCreateWindow(mode->width, mode->height, m_Properties.Title.c_str(), primaryMonitor, nullptr);
+			}
+			else
+			{
+				m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
+			}
 
 			// Set the correct window height if maximized
 			if (m_Properties.Maximized)
@@ -145,7 +158,7 @@ namespace Vortex {
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), true);
+					KeyPressedEvent event(static_cast<KeyCode>(key), 1);
 					data.EventCallback(event);
 					break;
 				}

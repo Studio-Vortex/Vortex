@@ -1293,6 +1293,12 @@ namespace Vortex {
 
 				break;
 			}
+			case Key::F11:
+			{
+				auto& window = Application::Get().GetWindow();
+				window.SetMaximized(!window.IsMaximized());
+				break;
+			}
 
 			case Key::Delete:
 			{

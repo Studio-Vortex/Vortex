@@ -10,16 +10,7 @@ namespace Vortex {
 
 	static Math::vec2 s_MouseScrollOffset(0.0f);
 
-    void Input::Update(const Event& event)
-    {
-		if (event.GetEventType() == EventType::MouseScrolled)
-		{
-			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)event;
-			SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
-		}
-    }
-
-    bool Input::IsKeyPressed(KeyCode keycode)
+	bool Input::IsKeyPressed(KeyCode keycode)
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		auto state = glfwGetKey(window, static_cast<int32_t>(keycode));
@@ -47,21 +38,21 @@ namespace Vortex {
 		return state == GLFW_RELEASE;
 	}
 
-    bool Input::IsGamepadButtonPressed(Gamepad gamepad)
-    {
+	bool Input::IsGamepadButtonPressed(Gamepad gamepad)
+	{
 		GLFWgamepadstate state;
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 			return state.buttons[static_cast<int32_t>(gamepad)] == true;
-    }
+	}
 
-    bool Input::IsGamepadButtonReleased(Gamepad gamepad)
-    {
+	bool Input::IsGamepadButtonReleased(Gamepad gamepad)
+	{
 		GLFWgamepadstate state;
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
 			return state.buttons[static_cast<int32_t>(gamepad)] == false;
-    }
+	}
 
 	Math::vec2 Input::GetMouseScrollOffset()
 	{
@@ -102,6 +93,15 @@ namespace Vortex {
 	float Input::GetMouseY()
 	{
 		return GetMousePosition().y;
+	}
+
+	void Input::UpdateMouseState(const Event& event)
+	{
+		if (event.GetEventType() == EventType::MouseScrolled)
+		{
+			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)event;
+			SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
+		}
 	}
 
 }

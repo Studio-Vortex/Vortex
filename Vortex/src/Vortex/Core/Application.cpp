@@ -109,7 +109,7 @@ namespace Vortex {
 		dispatcher.Dispatch<WindowResizeEvent>(VX_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
 		// Update Input State
-		Input::Update(e);
+		Input::UpdateMouseState(e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
