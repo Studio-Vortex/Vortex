@@ -1,5 +1,5 @@
-//----------------------------------------------------------------------
-// - Vortex Game Engine PBR Static Shader -
+//---------------------------------------------------------------
+// - Vortex Game Engine PBR Shader -
 // - Includes
 //     Albedo Mapping,
 //     Normal Mapping,
@@ -10,9 +10,10 @@
 //     Ambient Occlusion Mapping,
 //     Image Based Lighting,
 //     HDR & Exposure ToneMapping,
-//     Directional Light Shadow Mapping with Percentage Closer Filtering
+//     Directional & Omnidirectional Shadow Mapping with PCF
 //     Gamma Correction
-//----------------------------------------------------------------------
+//     Skinned Mesh Animations
+//---------------------------------------------------------------
 
 // NOTE: The attenation function used to calculate light intensity over distance,
 // is NOT considered to be realistic in a PBR renderer.
@@ -47,7 +48,7 @@ out DATA
 
 uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
-uniform mat4 u_LightProjection;
+uniform mat4 u_SkyLightProjection;
 
 #define MAX_BONES 100
 #define MAX_BONE_INFLUENCE 4
@@ -92,7 +93,7 @@ void main()
 	vertexOut.TexScale = a_TexScale;
 	vertexOut.EntityID = a_EntityID;
 
-	vertexOut.FragPosLight = u_LightProjection * vec4(vertexOut.Position, 1.0);
+	vertexOut.FragPosLight = u_SkyLightProjection * vec4(vertexOut.Position, 1.0);
 
 	// Calculate TBN matrix
 	vec3 T = normalize(model * a_Tangent);
@@ -145,10 +146,13 @@ struct Material
 	bool HasAOMap;
 };
 
-struct DirectionalLight
+struct SkyLight
 {
 	vec3 Radiance;
 	vec3 Direction;
+
+	sampler2D ShadowMap;
+	float ShadowBias;
 };
 
 struct PointLight
@@ -159,6 +163,9 @@ struct PointLight
 	float Constant;
 	float Linear;
 	float Quadratic;
+
+	float ShadowBias;
+	float FarPlane;
 };
 
 struct SpotLight
@@ -187,7 +194,7 @@ struct FragmentProperties
 
 struct SceneProperties
 {
-	int ActiveDirectionalLights;
+	bool HasSkyLight;
 	int ActivePointLights;
 	int ActiveSpotLights;
 
@@ -198,24 +205,18 @@ struct SceneProperties
 	vec3 CameraPosition;
 	float Exposure;
 	float Gamma;
+	float SkyboxIntensity;
 };
 
-#define MAX_DIRECTIONAL_LIGHTS 1
-#define MAX_POINT_LIGHTS 100
+#define MAX_POINT_LIGHTS 50
 #define MAX_SPOT_LIGHTS 50
 
-struct SkylightShadowSettings
-{
-	sampler2D ShadowMap;
-	float ShadowBias;
-};
-
-uniform Material         u_Material;
-uniform DirectionalLight u_DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
-uniform PointLight       u_PointLights[MAX_POINT_LIGHTS];
-uniform SpotLight        u_SpotLights[MAX_SPOT_LIGHTS];
-uniform SceneProperties  u_SceneProperties;
-uniform SkylightShadowSettings u_SkylightShadowSettings;
+uniform Material        u_Material;
+uniform SkyLight        u_SkyLight;
+uniform PointLight      u_PointLights[MAX_POINT_LIGHTS];
+uniform SpotLight       u_SpotLights[MAX_SPOT_LIGHTS];
+uniform SceneProperties u_SceneProperties;
+uniform samplerCube     u_PointLightShadowMaps[MAX_POINT_LIGHTS];
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
@@ -231,6 +232,7 @@ vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float rougness);
 float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic);
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir);
 float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias);
+float CubemapShadowCalculation(vec3 fragPos, vec3 lightPos, samplerCube shadowMap, float shadowBias, float farPlane);
 
 void main()
 {
@@ -245,9 +247,15 @@ void main()
 	properties.Emission = ((u_Material.HasEmissionMap) ? texture(u_Material.EmissionMap, textureCoords).rgb : u_Material.Emission);
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureCoords).r : 1.0);
 
+	// keep specular hightlight
+	properties.Metallic = max(0.05, properties.Metallic);
+	properties.Roughness = min(0.99, properties.Roughness);
+
 	vec3 N = properties.Normal;
 	vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
 	vec3 R = reflect(-V, N);
+
+	float NdotV = max(dot(N, V), 0.0);
 
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use F0 of 0.04
@@ -258,15 +266,13 @@ void main()
 	// Reflectance equation
 	vec3 Lo = vec3(0.0);
 
-	// Calculate per-light radiance
-	for (int i = 0; i < u_SceneProperties.ActiveDirectionalLights; i++)
+	// Calculate sky-light radiance
+	if (u_SceneProperties.HasSkyLight)
 	{
-		DirectionalLight dirLight = u_DirectionalLights[i];
-
-		vec3 L = normalize(-dirLight.Direction);
+		vec3 L = normalize(-u_SkyLight.Direction);
 		vec3 H = normalize(V + L);
 
-		vec3 radiance = dirLight.Radiance;
+		vec3 radiance = u_SkyLight.Radiance;
 
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
@@ -274,27 +280,31 @@ void main()
 		float cosTheta = max(dot(H, V), 0.0);
 		vec3 F = FresnelSchlick(cosTheta, F0);
 
-		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
 
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
-		vec3 specular = numerator / denominator;
+		float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias);
+		bool notInShadow = (1.0 - shadow) > 0.0;
 
-		// kS is equal to Fresnel
-		vec3 kS = F;
-		// For energy conservation, the diffuse and specular light can't
-		// be above 1.0 (unless the surface emits light); to preserve this
-		// relationship the diffuse component (kD) should equal 1.0 - kS
-		vec3 kD = vec3(1.0) - kS;
-		// Multiply kD by the inverse metalness such that only non-metals 
-		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
-		kD *= 1.0 - properties.Metallic;
+		if (notInShadow)
+		{
+			vec3 numerator = NDF * G * F;
+			float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
+			vec3 specular = numerator / denominator;
 
-		float shadow = ShadowCalculation(fragmentIn.FragPosLight, dot(N, L), u_SkylightShadowSettings.ShadowMap, u_SkylightShadowSettings.ShadowBias);
+			// kS is equal to Fresnel
+			vec3 kS = F;
+			// For energy conservation, the diffuse and specular light can't
+			// be above 1.0 (unless the surface emits light); to preserve this
+			// relationship the diffuse component (kD) should equal 1.0 - kS
+			vec3 kD = vec3(1.0) - kS;
+			// Multiply kD by the inverse metalness such that only non-metals 
+			// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
+			kD *= 1.0 - properties.Metallic;
 
-		// Add to outgoing radiance Lo
-		Lo += (1.0 - shadow) * (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			// Add to outgoing radiance Lo
+			// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+			Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
+		}
 	}
 
 	for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
@@ -314,7 +324,6 @@ void main()
 		float cosTheta = max(dot(H, V), 0.0);
 		vec3 F = FresnelSchlick(cosTheta, F0);
 
-		float NdotV = max(dot(N, V), 0.0);
 		float NdotL = max(dot(N, L), 0.0);
 
 		vec3 numerator = NDF * G * F;
@@ -331,8 +340,10 @@ void main()
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
 		kD *= 1.0 - properties.Metallic;
 
+		//float shadow = CubemapShadowCalculation(fragmentIn.Position, pointLight.Position, u_PointLightShadowMaps[i], pointLight.ShadowBias, pointLight.FarPlane);
+
 		// Add to outgoing radiance Lo
-		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		Lo += /*(1.0 - shadow) * */ (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
 	for (int i = 0; i < u_SceneProperties.ActiveSpotLights; i++)
@@ -352,7 +363,6 @@ void main()
 		float cosTheta = max(dot(H, V), 0.0f);
 		vec3 F = FresnelSchlick(cosTheta, F0);
 
-		float NdotV = max(dot(N, V), 0.0f);
 		float NdotL = max(dot(N, L), 0.0f);
 
 		vec3 numerator = NDF * G * F;
@@ -372,23 +382,23 @@ void main()
 	}
 
 	// Ambient lighting
-	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, properties.Roughness);
+	vec3 F = FresnelSchlickRoughness(NdotV, F0, properties.Roughness);
 
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - properties.Metallic;
 
 	vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
-	vec3 diffuse = irradiance * properties.Albedo;
+	vec3 diffuse = properties.Albedo * irradiance;
 
 	// sample both the pre-filter map and the BRDF lut and combine them together
 	// as per the Split-Sum approximation to get the IBL specular part.
 	const float MAX_REFLECTION_LOD = 4.0;
 	vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(max(dot(N, V), 0.0), properties.Roughness)).rg;
-	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, 1.0 - properties.Roughness)).rg;
+	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
 
-	vec3 ambient = (kD * diffuse + specular) * (properties.AO * 5);
+	vec3 ambient = (kD * diffuse + specular) * (properties.AO);
 	vec3 color = ambient + Lo;
 
 	// Exposure tonemapping
@@ -514,7 +524,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap
 	// get the current depth of the fragment from the light's perspective
 	float currentDepth = projCoords.z;
 
-	float bias = shadowBias;
+	float bias = max(0.005 * (1.0 - NdotL), shadowBias);
 	float shadow = 0.0;
 
 	// Percentage Closer Filtering
@@ -536,6 +546,20 @@ float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap
 
 	if (projCoords.z > 1.0)
 		shadow = 0.0;
+
+	return shadow;
+}
+
+float CubemapShadowCalculation(vec3 fragPos, vec3 lightPos, samplerCube shadowMap, float shadowBias, float farPlane)
+{
+	vec3 fragToLight = fragPos - lightPos;
+	float closestDepth = texture(shadowMap, fragToLight).r;
+
+	closestDepth *= farPlane;
+
+	float currentDepth = length(fragToLight);
+
+	float shadow = currentDepth - shadowBias > closestDepth ? 1.0 : 0.0;
 
 	return shadow;
 }

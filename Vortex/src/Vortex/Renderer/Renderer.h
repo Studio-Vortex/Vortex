@@ -22,10 +22,10 @@ namespace Vortex {
 	{
 		bool HasSkyLight = false;
 		std::unordered_map<uint32_t, SharedRef<LightSource>> ActivePointLights;
-		uint32_t NextPointLightSlot = 0;
+		uint32_t PointLightIndex = 0;
 		uint32_t NextAvailablePointLightSlot = 0;
 		std::unordered_map<uint32_t, SharedRef<LightSource>> ActiveSpotLights;
-		uint32_t NextSpotLightSlot = 0;
+		uint32_t SpotLightIndex = 0;
 		uint32_t NextAvailableSpotLightSlot = 0;
 	};
 
@@ -55,12 +55,13 @@ namespace Vortex {
 		static void RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
-		static void DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SkyboxComponent& skyboxComponent);
+		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent);
 
-		static void DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
+		static void DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		static SceneLightDescription GetSceneLightDescription();
 
+		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
 		static void CreateShadowMap(LightType type);
 
 		static void RenderToDepthMap(Scene* contextScene);

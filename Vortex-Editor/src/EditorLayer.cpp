@@ -962,7 +962,7 @@ namespace Vortex {
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
-		const float numberOfButtons = 6.0f;
+		const float numberOfButtons = 7.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
@@ -981,21 +981,25 @@ namespace Vortex {
 		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)EditorResources::MaximizeOnPlayIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MaximizeOnPlay ? tintColor : normalColor))
+		if (Gui::ImageButton((ImTextureID)EditorResources::MaximizeOnPlayIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MaximizeOnPlay ? tintColor : normalColor))
 			projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
 		UI::SetTooltip("Maximize On Play");
 
-		if (Gui::ImageButton((void*)EditorResources::ShowGridIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+		if (Gui::ImageButton((ImTextureID)EditorResources::ShowGridIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
 			projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 		UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
 
-		if (Gui::ImageButton((void*)EditorResources::DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
+		if (Gui::ImageButton((ImTextureID)EditorResources::DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
 			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
 		UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
 
-		if (Gui::ImageButton((void*)EditorResources::DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+		if (Gui::ImageButton((ImTextureID)EditorResources::DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
 			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
 		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
+
+		if (Gui::ImageButton((ImTextureID)EditorResources::MuteAudioSourcesIcons->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MuteAudioSources ? tintColor : normalColor))
+			projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
+		UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
 
 		bool isIn2DView = m_EditorCamera->IsIn2DView();
 		if (Gui::ImageButton((void*)EditorResources::TwoDViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
@@ -1634,11 +1638,17 @@ namespace Vortex {
 
 		m_SceneState = SceneState::Play;
 
-		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+
+		if (projectProps.EditorProps.ReloadAssemblyOnPlay)
+			ScriptEngine::ReloadAssembly();
+
+		if (projectProps.EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnRuntimeStart();
+		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -1733,6 +1743,12 @@ namespace Vortex {
 
 	void EditorLayer::ResumeAudioSources()
 	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+		
+		if (projectProps.EditorProps.MuteAudioSources)
+			return;
+
 		if (m_SceneState == SceneState::Play)
 		{
 			if (!m_AudioSourcesToResume.empty())

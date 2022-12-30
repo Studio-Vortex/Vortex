@@ -1,5 +1,5 @@
 //-------------------------
-// - Sparky Game Engine Renderer Skybox Shader -
+// - Vortex Game Engine Renderer Environment Shader -
 //-------------------------
 
 #type vertex
@@ -31,7 +31,7 @@ in vec3 f_TexCoord;
 uniform samplerCube u_EnvironmentMap;
 uniform float u_Gamma;
 uniform float u_Exposure;
-uniform float u_Multiplier;
+uniform float u_Intensity;
 
 void main()
 {
@@ -41,6 +41,6 @@ void main()
 	vec3 mapped = vec3(1.0) - exp(-envColor * u_Exposure);
 	mapped = pow(mapped, vec3(1.0 / u_Gamma));
 
-	o_Color = vec4(mapped * u_Multiplier, 1.0);
+	o_Color = vec4(mapped * u_Intensity, 1.0);
 	o_EntityID = -1;
 }

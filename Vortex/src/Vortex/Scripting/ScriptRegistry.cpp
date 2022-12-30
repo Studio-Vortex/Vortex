@@ -515,6 +515,16 @@ namespace Vortex {
 		entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
 	}
 
+	static void TransformComponent_SetRotationQuaterion(UUID entityUUID, Math::quaternion* orientation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetTransform().SetRotation(*orientation);
+	}
+
 	static void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -607,6 +617,24 @@ namespace Vortex {
 		transform.Scale = scale;
 	}
 	
+	static uint64_t TransformComponent_GetParent(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity child = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(child, "Invalid Child UUID!");
+
+		Entity parent = contextScene->TryGetEntityWithUUID(child.GetParentUUID());
+		
+		if (!parent)
+		{
+			VX_CORE_WARN("Invalid Parent UUID!");
+			return 0;
+		}
+
+		return parent.GetUUID();
+	}
+
 	static void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2973,6 +3001,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotationQuaterion);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
@@ -2980,6 +3009,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetRightDirection);
 		VX_ADD_INTERNAL_CALL(TransformComponent_LookAt);
+		VX_ADD_INTERNAL_CALL(TransformComponent_GetParent);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetParent);
 		VX_ADD_INTERNAL_CALL(TransformComponent_Unparent);
 		VX_ADD_INTERNAL_CALL(TransformComponent_Multiply);

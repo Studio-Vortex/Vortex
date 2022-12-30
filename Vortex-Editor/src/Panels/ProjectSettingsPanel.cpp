@@ -249,6 +249,10 @@ namespace Vortex {
 					if (Gui::Checkbox("Lock Camera To Top Down View", &lockFacingDown))
 						EditorCamera::LockToTopDownView(lockFacingDown);
 
+					Gui::Separator();
+
+					Gui::Checkbox("Reload Assembly On Play", &m_Properties.EditorProps.ReloadAssemblyOnPlay);
+
 					Gui::Spacing();
 
 					// Gizmo Settings

@@ -39,6 +39,11 @@
 			set => InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
 		}
 
+		public void SetRotation(Quaternion orientation)
+		{
+			InternalCalls.TransformComponent_SetRotationQuaternion(Entity.ID, ref orientation);
+		}
+
 		public void Rotate(Vector3 rotation)
 		{
 			Rotation += rotation;
@@ -112,13 +117,12 @@
 			get
 			{
 				InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Vector3 translation, out Vector3 rotation, out Vector3 scale);
-				WorldTransform worldTransform = new WorldTransform
+				return new WorldTransform
 				{
 					Translation = translation,
 					Rotation = rotation,
 					Scale = scale
 				};
-				return worldTransform;
 			}
 		}
 
@@ -146,6 +150,21 @@
 			{
 				InternalCalls.TransformComponent_GetForwardDirection(Entity.ID, out Vector3 result);
 				return result;
+			}
+		}
+
+		public Entity Parent
+		{
+			get
+			{
+				ulong entityID = InternalCalls.TransformComponent_GetParent(Entity.ID);
+
+				if (entityID == 0)
+				{
+					return null;
+				}
+
+				return new Entity(entityID);
 			}
 		}
 

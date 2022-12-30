@@ -28,12 +28,12 @@ namespace Vortex {
 		return nullptr;
     }
 
-    SharedRef<Texture2D> Texture2D::Create(const std::string& path, bool flipVertical)
+    SharedRef<Texture2D> Texture2D::Create(const std::string& path, TextureWrap wrapMode, bool flipVertical)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(path, flipVertical);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(path, wrapMode, flipVertical);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

@@ -136,6 +136,9 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetRotationQuaternion(ulong entityID, ref Quaternion orientation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -155,6 +158,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong TransformComponent_GetParent(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetParent(ulong childID, ulong parentID);

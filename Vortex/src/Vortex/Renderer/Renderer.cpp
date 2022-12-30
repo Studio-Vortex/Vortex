@@ -16,7 +16,8 @@ namespace Vortex {
 	static constexpr const char* EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
 	static constexpr const char* IRRADIANCE_CONVOLUTION_SHADER_PATH = "Resources/Shaders/Irradiance_Convolution.glsl";
 	static constexpr const char* IBL_PREFILTER_SHADER_PATH = "Resources/Shaders/IBL_Prefilter.glsl";
-	static constexpr const char* SKYBOX_SHADER_PATH = "Resources/Shaders/Renderer_Skybox.glsl";
+	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/Renderer_BRDF_LUT.glsl";
+	static constexpr const char* ENVIRONMENT_SHADER_PATH = "Resources/Shaders/Renderer_Environment.glsl";
 	static constexpr const char* SKYLIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SkyLightShadowMap.glsl";
 	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
@@ -77,12 +78,13 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("EquirectangularToCubemap", EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("IrradianceConvolution", IRRADIANCE_CONVOLUTION_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("IBL_Prefilter", IBL_PREFILTER_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Skybox", SKYBOX_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Environment", ENVIRONMENT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("SkyLightShadowMap", SKYLIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
-		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH);
+		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
 
 		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
 
@@ -147,8 +149,8 @@ namespace Vortex {
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
-		s_Data.SceneLightDesc.NextPointLightSlot = 0;
-		s_Data.SceneLightDesc.NextSpotLightSlot = 0;
+		s_Data.SceneLightDesc.PointLightIndex = 0;
+		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -221,7 +223,7 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.NextPointLightSlot;
+				uint32_t& i = s_Data.SceneLightDesc.PointLightIndex;
 
 				if (i + 1 > RendererInternalData::MaxPointLights)
 					break;
@@ -241,7 +243,7 @@ namespace Vortex {
 			}
 			case LightType::Spot:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.NextSpotLightSlot;
+				uint32_t& i = s_Data.SceneLightDesc.SpotLightIndex;
 
 				if (i + 1 > RendererInternalData::MaxSpotLights)
 					break;
@@ -265,7 +267,7 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::DrawSkybox(const Math::mat4& view, const Math::mat4& projection, const SkyboxComponent& skyboxComponent)
+	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent)
 	{
 		SharedRef<Skybox> skybox = skyboxComponent.Source;
 
@@ -274,129 +276,29 @@ namespace Vortex {
 		// TODO fix this hack!
 		if (skybox->PathChanged() || framebufferNotCreated)
 		{
-			s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
-
-			Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
-
-			Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
-			Math::mat4 captureViews[] =
-			{
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(-1.0f, 0.0f, 0.0f),  Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  1.0f,  0.0f), Math::vec3(0.0f,  0.0f,  1.0f)) * rotationMatrix,
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f, -1.0f,  0.0f), Math::vec3(0.0f,  0.0f, -1.0f)) * rotationMatrix,
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f,  1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
-			   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix
-			};
-
-			s_Data.HDRFramebuffer->CreateEnvironmentCubemap();
-
-			// convert HDR equirectangular environment map to cubemap equivalent
-			SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
-			equirectToCubemapShader->Enable();
-			equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
-			equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
-			skybox->Bind();
-
-			SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
-
-			// don't forget to configure the viewport to the capture dimensions.
-			RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
-			s_Data.HDRFramebuffer->Bind();
-			for (uint32_t i = 0; i < 6; i++)
-			{
-				equirectToCubemapShader->SetMat4("u_View", captureViews[i]);
-				s_Data.HDRFramebuffer->SetEnvironmentCubemapFramebufferTexture(i);
-				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
-
-				// Render a unit cube
-				cubeMeshVA->Bind();
-				RenderCommand::DrawTriangles(cubeMeshVA, 36);
-			}
-			s_Data.HDRFramebuffer->Unbind();
-
-			// Generate mip maps
-			s_Data.HDRFramebuffer->BindAndGenerateEnvironmentMipMap();
-
-			// Create Irradiance Map
-			s_Data.HDRFramebuffer->CreateIrradianceCubemap();
-			s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
-
-			SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
-			irradianceConvolutionShader->Enable();
-			irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
-			irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
-
-			RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
-			s_Data.HDRFramebuffer->Bind();
-			for (uint32_t i = 0; i < 6; i++)
-			{
-				irradianceConvolutionShader->SetMat4("u_View", captureViews[i]);
-				s_Data.HDRFramebuffer->SetIrradianceCubemapFramebufferTexture(i);
-				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
-
-				// Render a unit cube
-				cubeMeshVA->Bind();
-				RenderCommand::DrawTriangles(cubeMeshVA, 36);
-			}
-			s_Data.HDRFramebuffer->Unbind();
-
-			// Create Prefiltered Envrionment Map
-			s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
-
-			SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
-			iblPrefilterShader->Enable();
-			iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
-			iblPrefilterShader->SetMat4("u_Projection", captureProjection);
-			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
-
-			uint32_t maxMipLevels = 5;
-			s_Data.HDRFramebuffer->Bind();
-			for (uint32_t mip = 0; mip < maxMipLevels; mip++)
-			{
-				// Resize framebuffer according to mip-level size
-				uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
-				uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
-				s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
-				RenderCommand::SetViewport(Viewport{ 0, 0, mipWidth, mipHeight });
-
-				float roughness = (float)mip / (float)(maxMipLevels - 1);
-				iblPrefilterShader->SetFloat("u_Roughness", roughness);
-				for (uint32_t i = 0; i < 6; i++)
-				{
-					iblPrefilterShader->SetMat4("u_View", captureViews[i]);
-					s_Data.HDRFramebuffer->SetPrefilterCubemapFramebufferTexture(i, mip);
-					s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
-
-					// Render a unit cube
-					cubeMeshVA->Bind();
-					RenderCommand::DrawTriangles(cubeMeshVA, 36);
-				}
-			}
-			s_Data.HDRFramebuffer->Unbind();
-
-			skybox->SetPathChanged(false);
+			CreateEnvironmentMap(skyboxComponent);
 		}
 
 		// Render Environment Map
-		RenderCommand::DisableDepthMask();
+		{
+			RenderCommand::DisableDepthMask();
 
-		SharedRef<Shader> skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
-		skyboxShader->Enable();
-		skyboxShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
-		skyboxShader->SetMat4("u_Projection", projection);
-		skyboxShader->SetInt("u_EnvironmentMap", 0);
-		skyboxShader->SetFloat("u_Gamma", s_Data.SceneGamma);
-		skyboxShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		skyboxShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+			SharedRef<Shader> environmentShader = s_Data.ShaderLibrary->Get("Environment");
+			environmentShader->Enable();
+			environmentShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
+			environmentShader->SetMat4("u_Projection", projection);
+			environmentShader->SetInt("u_EnvironmentMap", 0);
+			environmentShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
+			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-		SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
-		skyboxMeshVA->Bind();
-		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
-		RenderCommand::DrawTriangles(skyboxMeshVA, 36);
-		RenderCommand::EnableDepthMask();
+			skyboxMeshVA->Bind();
+			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
+			RenderCommand::DrawTriangles(skyboxMeshVA, 36);
+			RenderCommand::EnableDepthMask();
+		}
 
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
@@ -409,7 +311,7 @@ namespace Vortex {
 		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 	}
 
-	void Renderer::DrawFrustum(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
+	void Renderer::DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
 	{
 		Math::vec3 rotation = transform.GetRotationEuler();
 		Math::vec3 forwardDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), { 0.0f, 0.0f, -1.0f });
@@ -433,6 +335,116 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
+	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent)
+	{
+		SharedRef<Skybox> skybox = skyboxComponent.Source;
+
+		s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
+
+		Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
+
+		Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
+		Math::mat4 captureViews[] =
+		{
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(-1.0f, 0.0f, 0.0f),  Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  1.0f,  0.0f), Math::vec3(0.0f,  0.0f,  1.0f)) * rotationMatrix,
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f, -1.0f,  0.0f), Math::vec3(0.0f,  0.0f, -1.0f)) * rotationMatrix,
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f,  1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
+		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix
+		};
+
+		s_Data.HDRFramebuffer->CreateEnvironmentCubemap();
+
+		// convert HDR equirectangular environment map to cubemap equivalent
+		SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
+		equirectToCubemapShader->Enable();
+		equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
+		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
+		skybox->Bind();
+
+		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+
+		// don't forget to configure the viewport to the capture dimensions.
+		RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
+		s_Data.HDRFramebuffer->Bind();
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			equirectToCubemapShader->SetMat4("u_View", captureViews[i]);
+			s_Data.HDRFramebuffer->SetEnvironmentCubemapFramebufferTexture(i);
+			s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+			// Render a unit cube
+			cubeMeshVA->Bind();
+			RenderCommand::DrawTriangles(cubeMeshVA, 36);
+		}
+		s_Data.HDRFramebuffer->Unbind();
+
+		// Generate mip maps
+		s_Data.HDRFramebuffer->BindAndGenerateEnvironmentMipMap();
+
+		// Create Irradiance Map
+		s_Data.HDRFramebuffer->CreateIrradianceCubemap();
+		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
+
+		SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
+		irradianceConvolutionShader->Enable();
+		irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
+		irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
+		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
+
+		RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
+		s_Data.HDRFramebuffer->Bind();
+		for (uint32_t i = 0; i < 6; i++)
+		{
+			irradianceConvolutionShader->SetMat4("u_View", captureViews[i]);
+			s_Data.HDRFramebuffer->SetIrradianceCubemapFramebufferTexture(i);
+			s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+			// Render a unit cube
+			cubeMeshVA->Bind();
+			RenderCommand::DrawTriangles(cubeMeshVA, 36);
+		}
+		s_Data.HDRFramebuffer->Unbind();
+
+		// Create Prefiltered Envrionment Map
+		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
+
+		SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
+		iblPrefilterShader->Enable();
+		iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
+		iblPrefilterShader->SetMat4("u_Projection", captureProjection);
+		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
+
+		// Render each mip level
+		uint32_t maxMipLevels = 5;
+		s_Data.HDRFramebuffer->Bind();
+		for (uint32_t mip = 0; mip < maxMipLevels; mip++)
+		{
+			// Resize framebuffer according to mip-level size
+			uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
+			uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
+			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
+			RenderCommand::SetViewport(Viewport{ 0, 0, mipWidth, mipHeight });
+
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			iblPrefilterShader->SetFloat("u_Roughness", roughness);
+			for (uint32_t i = 0; i < 6; i++)
+			{
+				iblPrefilterShader->SetMat4("u_View", captureViews[i]);
+				s_Data.HDRFramebuffer->SetPrefilterCubemapFramebufferTexture(i, mip);
+				s_Data.HDRFramebuffer->ClearColorAndDepthAttachments();
+
+				// Render a unit cube
+				cubeMeshVA->Bind();
+				RenderCommand::DrawTriangles(cubeMeshVA, 36);
+			}
+		}
+		s_Data.HDRFramebuffer->Unbind();
+
+		skybox->SetPathChanged(false);
+	}
+
 	void Renderer::CreateShadowMap(LightType type)
 	{
 		switch (type)
@@ -448,11 +460,11 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				FramebufferProperties depthCubemapProps{};
+				/*FramebufferProperties depthCubemapProps{};
 				depthCubemapProps.Width = s_Data.MaxShadowWidth;
 				depthCubemapProps.Height = s_Data.MaxShadowHeight;
 				SharedRef<DepthCubemapFramebuffer> pointLightDepthMapFramebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
-				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);
+				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);*/
 
 				break;
 			}

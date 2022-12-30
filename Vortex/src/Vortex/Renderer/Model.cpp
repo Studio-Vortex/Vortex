@@ -488,8 +488,8 @@ namespace Vortex {
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
 		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights.size());
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights.size());
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.PointLightIndex);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.SpotLightIndex);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
@@ -517,8 +517,8 @@ namespace Vortex {
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
 		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights.size());
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights.size());
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.PointLightIndex);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.SpotLightIndex);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 

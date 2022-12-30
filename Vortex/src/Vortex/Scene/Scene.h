@@ -27,7 +27,7 @@ namespace Vortex {
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
 
-		void OnRuntimeStart();
+		void OnRuntimeStart(bool muteAudio = false);
 		void OnRuntimeStop();
 
 		void OnPhysicsSimulationStart();

@@ -10,7 +10,7 @@ namespace Vortex {
 	{
 	public:
 		OpenGLTexture2D(uint32_t width, uint32_t height, bool rbga32f);
-		OpenGLTexture2D(const std::string& path, bool flipVertical);
+		OpenGLTexture2D(const std::string& path, TextureWrap wrapMode, bool flipVertical);
 		~OpenGLTexture2D() override;
 
 		inline uint32_t GetWidth() const override { return m_Width; }

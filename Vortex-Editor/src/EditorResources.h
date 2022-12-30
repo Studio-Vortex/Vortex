@@ -30,6 +30,7 @@ namespace Vortex {
 		inline static SharedRef<Texture2D> TwoDViewIcon = nullptr;
 		inline static SharedRef<Texture2D> DisplayPhysicsCollidersIcon = nullptr;
 		inline static SharedRef<Texture2D> DisplaySceneIconsIcon = nullptr;
+		inline static SharedRef<Texture2D> MuteAudioSourcesIcons = nullptr;
 
 		// Content Browser
 		inline static SharedRef<Texture2D> DirectoryIcon = nullptr;

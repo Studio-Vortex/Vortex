@@ -36,6 +36,8 @@ namespace Vortex {
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;
+			bool MuteAudioSources = false;
+			bool ReloadAssemblyOnPlay = false;
 			float EditorCameraFOV = 45.0f;
 		} EditorProps;
 

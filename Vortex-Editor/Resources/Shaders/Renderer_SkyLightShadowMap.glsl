@@ -1,5 +1,5 @@
 //-------------------------
-// - Vortex Game Engine Renderer Shadow Map Shader -
+// - Vortex Game Engine Renderer Sky Light Shadow Map Shader -
 //-------------------------
 
 #type vertex

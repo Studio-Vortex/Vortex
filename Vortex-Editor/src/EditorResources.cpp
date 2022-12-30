@@ -23,6 +23,7 @@ namespace Vortex {
 		TwoDViewIcon = Texture2D::Create("Resources/Icons/Scene/2DViewIcon.png");
 		DisplayPhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
 		DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
+		MuteAudioSourcesIcons = Texture2D::Create("Resources/Icons/Scene/MuteAudioIcon.png");
 
 		DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
 		AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");

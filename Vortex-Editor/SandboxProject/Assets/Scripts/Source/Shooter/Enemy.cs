@@ -57,10 +57,7 @@ namespace Sandbox.Shooter.AI {
 			wasHit = true;
 		}
 
-		float GetDistanceToPlayer()
-		{
-			return Vector3.Distance(transform.Translation, player.transform.Translation);
-		}
+		float GetDistanceToPlayer() => Vector3.Distance(transform.Translation, player.transform.Translation);
 
 		void MoveTowardsPlayer()
 		{
@@ -71,10 +68,7 @@ namespace Sandbox.Shooter.AI {
 			}
 		}
 
-		void FacePlayer()
-		{
-			transform.LookAt(player.transform.Translation);
-		}
+		void FacePlayer() => transform.LookAt(player.transform.Translation);
 	}
 
 }

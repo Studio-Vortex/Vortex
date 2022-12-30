@@ -129,7 +129,7 @@ namespace Vortex {
 			return instance as T;
 		}
 
-		public void Destroy(bool excludeChildren = false) => InternalCalls.Entity_Destroy(ID, excludeChildren);
+		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
 
 		public void SetActive(bool active)
 		{

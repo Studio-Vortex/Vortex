@@ -6,6 +6,21 @@
 
 namespace Vortex {
 	
+	namespace Utils {
+
+		static int VortexTextureWrapModeToGL(TextureWrap wrapMode)
+		{
+			switch (wrapMode)
+			{
+				case Vortex::TextureWrap::Clamp:  return GL_CLAMP_TO_EDGE;
+				case Vortex::TextureWrap::Repeat: return GL_REPEAT;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
+		}
+
+	}
+
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, bool rgba32f)
 		: m_Width(width), m_Height(height), m_Slot()
 	{
@@ -26,7 +41,7 @@ namespace Vortex {
 		m_IsLoaded = true;
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flipVertical)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, TextureWrap wrapMode, bool flipVertical)
 		: m_Path(path), m_Slot()
 	{
 		VX_PROFILE_FUNCTION();
@@ -72,8 +87,10 @@ namespace Vortex {
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			int wrap = Utils::VortexTextureWrapModeToGL(wrapMode);
+
+			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, wrap);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
 
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 

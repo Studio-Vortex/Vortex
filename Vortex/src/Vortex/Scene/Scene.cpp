@@ -16,9 +16,9 @@
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
-
 #include "Vortex/Physics/Physics.h"
 #include "Vortex/Physics/Physics2D.h"
+#include "Vortex/Project/Project.h"
 
 namespace Vortex {
 
@@ -278,7 +278,7 @@ namespace Vortex {
 		entity.SetParent(0);
 	}
 
-	void Scene::OnRuntimeStart()
+	void Scene::OnRuntimeStart(bool muteAudio)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -287,7 +287,11 @@ namespace Vortex {
 
 		OnPhysicsSimulationStart();
 
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+
 		// Audio Source - PlayOnStart
+		if (!muteAudio)
 		{
 			auto view = m_Registry.view<AudioSourceComponent>();
 

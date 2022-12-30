@@ -6,13 +6,11 @@
 
 namespace Vortex {
 
-	enum class TextureFormat
+	enum class TextureWrap
 	{
-		Default,
-		PNG,
-		JPG,
-		TGA,
-		HDR,
+		None = 0,
+		Clamp,
+		Repeat,
 	};
 
 	class VORTEX_API Texture
@@ -43,7 +41,7 @@ namespace Vortex {
 	public:
 		// TODO: rework the last parameter
 		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height, bool rgba32f = false);
-		static SharedRef<Texture2D> Create(const std::string& path, bool flipVertical = true);
+		static SharedRef<Texture2D> Create(const std::string& path, TextureWrap wrapMode = TextureWrap::Repeat, bool flipVertical = true);
 	};
 
 }
