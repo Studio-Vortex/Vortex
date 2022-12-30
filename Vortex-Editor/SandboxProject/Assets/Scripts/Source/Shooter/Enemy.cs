@@ -51,7 +51,7 @@ namespace Sandbox.Shooter.AI {
 
 			if (health <= 0f)
 			{
-				Destroy();
+				Destroy(this);
 			}
 
 			wasHit = true;

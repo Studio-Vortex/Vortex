@@ -11,7 +11,7 @@ namespace Sandbox.Basketball {
 				Entity hoveredEntity = Scene.GetHoveredEntity();
 				if (hoveredEntity.Tag == "Removable Cube")
 				{
-					hoveredEntity.Destroy();
+					Destroy(hoveredEntity);
 				}
 			}
 		}

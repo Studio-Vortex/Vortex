@@ -29,7 +29,7 @@ namespace Sandbox {
 				m_Velocity.X = -1.0f;
 
 			if (transform.Translation == targetPosition)
-				m_Target.Destroy();
+				Destroy(m_Target);
 
 			m_Velocity *= Speed * delta;
 			m_RigidBody.ApplyForce(m_Velocity.XY, true);

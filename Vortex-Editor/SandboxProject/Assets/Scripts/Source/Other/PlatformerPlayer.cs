@@ -57,7 +57,7 @@ namespace Sandbox {
 			if (IsGrounded && hit.Tag == "Grass Collider")
 			{
 				m_Sprite.Color = new Vector4(0.8f, 0.4f, 0.4f, 1.0f);
-				entity.Destroy();
+				Destroy(entity);
 			}
 
 			if (transform.Translation.Y <= PlayerResetYAxis)

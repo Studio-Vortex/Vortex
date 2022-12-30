@@ -174,7 +174,9 @@ namespace Vortex {
 #ifdef VX_DEBUG
 		bool DebuggingEnabled = true;
 #else
-		bool DebuggingEnabled = false;
+		//bool DebuggingEnabled = false;
+		// Temporary
+		bool DebuggingEnabled = true;
 #endif
 
 		SharedRef<AudioSource> AppAssemblyReloadSound;

@@ -136,6 +136,15 @@ namespace Vortex {
 
 				m_ActiveScene->OnUpdateRuntime(delta);
 
+				if (Input::IsKeyPressed(KeyCode::F6))
+				{
+					Application::Get().GetWindow().ShowMouseCursor(true, true);
+				}
+				else if (Input::IsKeyPressed(KeyCode::Escape))
+				{
+					Application::Get().GetWindow().ShowMouseCursor(false, true);
+				}
+
 				break;
 			}
 			case SceneState::Simulate:
@@ -1280,15 +1289,6 @@ namespace Vortex {
 				{
 					m_ActiveScene->SetDebugMode(!m_EditorDebugViewEnabled);
 					m_EditorDebugViewEnabled = !m_EditorDebugViewEnabled;
-				}
-
-				break;
-			}
-			case Key::F9:
-			{
-				if (m_SceneState == SceneState::Play)
-				{
-					Application::Get().GetWindow().ShowMouseCursor(true, true);
 				}
 
 				break;
