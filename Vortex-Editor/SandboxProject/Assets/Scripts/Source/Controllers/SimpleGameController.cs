@@ -26,6 +26,11 @@ namespace Sandbox {
 			ProcessInput(delta);
 		}
 
+		protected override void OnCollisionBegin()
+		{
+			Debug.Info("Collision Occurred!");
+		}
+
 		void ProcessInput(float delta)
 		{
 			Vector2 velocity = Vector2.Zero;

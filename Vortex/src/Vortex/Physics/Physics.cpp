@@ -157,8 +157,6 @@ namespace Vortex {
 		}
 	};
 
-	static PhysicsContactListener s_ContactListener;
-
 	void Physics::Init()
 	{
 		s_Data = new PhysicsEngineInternalData();
@@ -223,10 +221,12 @@ namespace Vortex {
 
 		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
-		sceneDescription.simulationEventCallback = &s_ContactListener;
 
 		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
 		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
+
+		PhysicsContactListener contactListener;
+		s_Data->PhysicsScene->setSimulationEventCallback(&contactListener);
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 

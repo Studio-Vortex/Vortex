@@ -1,6 +1,6 @@
 #include "ContentBrowserPanel.h"
 
-#include "../EditorResources.h"
+#include <Vortex/Editor/EditorResources.h>
 #include <Vortex/Utils/PlatformUtils.h>
 
 #include <imgui_internal.h>

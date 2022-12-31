@@ -4,7 +4,7 @@
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/OrthographicCamera.h"
 #include "Vortex/Renderer/Camera.h"
-#include "Vortex/Renderer/EditorCamera.h"
+#include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/SubTexture2D.h"
 #include "Vortex/Renderer/Shader.h"

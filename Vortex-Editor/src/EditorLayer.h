@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Renderer/EditorCamera.h>
+#include <Vortex/Editor/EditorCamera.h>
 
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"

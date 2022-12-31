@@ -3,7 +3,7 @@
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Renderer/EditorCamera.h"
+#include "Vortex/Editor/EditorCamera.h"
 
 #include <entt/entt.hpp>
 

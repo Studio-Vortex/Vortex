@@ -8,7 +8,7 @@
 
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/SceneCamera.h"
-#include "Vortex/Renderer/EditorCamera.h"
+#include "Vortex/Editor/EditorCamera.h"
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Scene.h"

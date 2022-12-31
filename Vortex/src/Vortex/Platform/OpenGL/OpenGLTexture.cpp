@@ -75,6 +75,11 @@ namespace Vortex {
 				internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
 			}
+			else if (channels == 1)
+			{
+				internalFormat = GL_RGBA8;
+				dataFormat = GL_RED;
+			}
 
 			m_InternalFormat = internalFormat;
 			m_DataFormat = dataFormat;
@@ -84,7 +89,7 @@ namespace Vortex {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 			glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
 
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			int wrap = Utils::VortexTextureWrapModeToGL(wrapMode);
@@ -93,6 +98,7 @@ namespace Vortex {
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
 
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+			glGenerateTextureMipmap(m_RendererID);
 
 			stbi_image_free(data);
 

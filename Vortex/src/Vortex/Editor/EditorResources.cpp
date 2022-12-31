@@ -1,3 +1,4 @@
+#include "vxpch.h"
 #include "EditorResources.h"
 
 namespace Vortex {

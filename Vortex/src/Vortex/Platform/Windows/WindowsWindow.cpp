@@ -68,32 +68,15 @@ namespace Vortex {
 
 			if (!m_Properties.Decorated)
 			{
-				// Removes the title bar on all platforms
-				// and all of the native window effects on non-windows platforms
-#ifdef VX_PLATFORM_WINDOWS
-				glfwWindowHint(GLFW_TITLEBAR, false);
-#else
 				glfwWindowHint(GLFW_DECORATED, false);
-#endif
 			}
 
 			if (m_Properties.Maximized)
 			{
-				GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-				const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-
-				glfwWindowHint(GLFW_DECORATED, false);
-				glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-				glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-				glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-				glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-
-				m_Window = glfwCreateWindow(mode->width, mode->height, m_Properties.Title.c_str(), primaryMonitor, nullptr);
+				glfwWindowHint(GLFW_MAXIMIZED, true);
 			}
-			else
-			{
-				m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
-			}
+
+			m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
 
 			// Set the correct window height if maximized
 			if (m_Properties.Maximized)

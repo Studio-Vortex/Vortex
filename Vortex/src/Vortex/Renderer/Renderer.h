@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Renderer/RendererAPI.h"
-#include "Vortex/Renderer/EditorCamera.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/Camera.h"

@@ -8,8 +8,7 @@
 #include <Vortex/Audio/AudioEngine.h>
 #include <Vortex/Utils/PlatformUtils.h>
 #include <Vortex/Scene/Components.h>
-
-#include "EditorResources.h"
+#include <Vortex/Editor/EditorResources.h>
 
 #include <ImGuizmo.h>
 
