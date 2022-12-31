@@ -395,7 +395,7 @@ void main()
 	// as per the Split-Sum approximation to get the IBL specular part.
 	const float MAX_REFLECTION_LOD = 4.0;
 	vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, 1.0 - properties.Roughness)).rg;
+	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).xy;
 	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
 
 	vec3 ambient = (kD * diffuse + specular) * (properties.AO);
