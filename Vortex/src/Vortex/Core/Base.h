@@ -42,6 +42,8 @@
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
+#define VX_FORCE_INLINE inline
+
 #define VX_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
 
 #define VX_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
