@@ -130,7 +130,8 @@
 		RightControl                     = 345,
 		RightAlt                         = 346,
 		RightSuper                       = 347,
-		Menu                             = 348
+		Menu                             = 348,
+		MaxKeys                          = 348,
 	}
 
 }

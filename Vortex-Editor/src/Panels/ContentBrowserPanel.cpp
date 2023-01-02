@@ -221,21 +221,25 @@ public class Untitled : Entity
 
 			// File icons
 
+			const std::string& extension = currentPath.extension().string();
+
 			if (directoryEntry.is_directory())
 				icon = EditorResources::DirectoryIcon;
-			else if (currentPath.extension().string() == ".vortex")
+			else if (extension == ".vortex")
 				icon = EditorResources::SceneIcon;
-			else if (currentPath.extension().string() == ".cs")
+			else if (extension == ".cs")
 				icon = EditorResources::CodeFileIcon;
-			else if (currentPath.extension().string() == ".obj")
+			else if (extension == ".obj")
 				icon = EditorResources::OBJIcon;
-			else if (currentPath.extension().string() == ".fbx")
+			else if (extension == ".fbx")
 				icon = EditorResources::FBXIcon;
-			else if (currentPath.extension().string() == ".ttf" || currentPath.extension().string() == ".TTF")
+			else if (extension == ".ttf" || extension == ".TTF")
 				icon = EditorResources::FontIcon;
-			else if (currentPath.extension().string() == ".wav" || currentPath.extension().string() == ".mp3")
+			else if (extension == ".wav" || extension == ".mp3")
 				icon = EditorResources::AudioFileIcon;
-			else if (currentPath.extension().string() == ".png" || currentPath.extension().string() == ".jpg" || currentPath.extension().string() == ".tga")
+			else if (extension == ".hdr")
+				icon = EditorResources::HDRImageIcon;
+			else if (extension == ".png" || extension == ".jpg" || extension == ".tga")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());

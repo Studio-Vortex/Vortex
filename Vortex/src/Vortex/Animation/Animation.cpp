@@ -63,14 +63,15 @@ namespace Vortex {
 		{
 			auto channel = animation->mChannels[i];
 			std::string boneName = channel->mNodeName.data;
+			auto it = boneInfoMap.find(boneName);
 
-			if (boneInfoMap.find(boneName) == boneInfoMap.end())
+			if (it == boneInfoMap.end())
 			{
 				boneInfoMap[boneName].ID = boneCount;
 				boneCount++;
 			}
 
-			Bone bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].ID, channel);
+			Bone bone(boneName, it->second.ID, channel);
 			m_Bones.push_back(bone);
 		}
 

@@ -62,10 +62,11 @@ namespace Vortex {
 		Math::mat4 globalTransformation = parentTransform * nodeTransform;
 
 		auto& boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
-		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+		auto it = boneInfoMap.find(nodeName);
+		if (it != boneInfoMap.end())
 		{
-			int index = boneInfoMap[nodeName].ID;
-			Math::mat4 offset = boneInfoMap[nodeName].OffsetMatrix;
+			int index = it->second.ID;
+			Math::mat4 offset = it->second.OffsetMatrix;
 			m_FinalBoneMatrices[index] = globalTransformation * offset;
 		}
 

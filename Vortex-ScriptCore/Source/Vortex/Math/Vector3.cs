@@ -57,14 +57,23 @@ namespace Vortex {
 		public static Vector3 operator /(Vector3 vector, Vector3 other) => new Vector3(vector.X / other.X, vector.Y / other.Y, vector.Z / other.Z);
 		public static Vector3 operator /(Vector3 vector, float scalar) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
 		public static Vector3 operator /(float scalar, Vector3 vector) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
+		public static bool operator <(Vector3 vector, Vector3 other) => vector.X < other.X && vector.Y < other.Y && vector.Z < other.Z;
+		public static bool operator >(Vector3 vector, Vector3 other) => !(vector < other);
+		public static bool operator <=(Vector3 vector, Vector3 other) => vector.X <= other.X && vector.Y <= other.Y && vector.Z <= other.Z;
+		public static bool operator >=(Vector3 vector, Vector3 other) => !(vector <= other);
+
+		public static bool operator <(Vector3 vector, float scalar) => vector.X < scalar && vector.Y < scalar && vector.Z < scalar;
+		public static bool operator >(Vector3 vector, float scalar) => !(vector < scalar);
+		public static bool operator <=(Vector3 vector, float scalar) => vector.X <= scalar && vector.Y <= scalar && vector.Z <= scalar;
+		public static bool operator >=(Vector3 vector, float scalar) => !(vector <= scalar);
+
+		public static bool operator ==(Vector3 left, Vector3 right) => left.Equals(right);
+		public static bool operator !=(Vector3 left, Vector3 right) => !(left == right);
 
 		public override bool Equals(object obj) => obj is Vector3 other && Equals(other);
 		public bool Equals(Vector3 right) => X == right.X && Y == right.Y && Z == right.Z;
 
 		public override int GetHashCode() => (X, Y, Z).GetHashCode();
-
-		public static bool operator ==(Vector3 left, Vector3 right) => left.Equals(right);
-		public static bool operator !=(Vector3 left, Vector3 right) => !(left == right);
 
 		public float Length() => Mathf.Sqrt(X * X + Y * Y + Z * Z);
 

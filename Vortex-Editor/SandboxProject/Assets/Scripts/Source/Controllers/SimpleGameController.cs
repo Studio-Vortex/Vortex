@@ -45,7 +45,6 @@ namespace Sandbox {
 				velocity = Vector2.Right * speed;
 			}
 
-
 			if (Input.IsKeyDown(KeyCode.Space) && m_Controller.IsGrounded)
 			{
 				m_Controller.Jump(JumpForce);
