@@ -212,6 +212,7 @@ namespace Vortex {
 				pbrShader->SetFloat3("u_SkyLight.Radiance", lightSource->GetRadiance());
 				pbrShader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
 				pbrShader->SetFloat("u_SkyLight.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
+				pbrShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
 				s_Data.SceneLightDesc.HasSkyLight = true;
 
 				Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.01f, 300.0f);
@@ -231,11 +232,7 @@ namespace Vortex {
 				pbrShader->Enable();
 				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Radiance", lightSource->GetRadiance());
 				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Position", transform.Translation);
-
-				Math::vec2 attenuation = lightSource->GetAttenuation();
-				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Constant", 1.0f);
-				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Linear", attenuation.x);
-				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Quadratic", attenuation.y);
+				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Intensity", lightSource->GetIntensity());
 
 				i++;
 
@@ -252,13 +249,9 @@ namespace Vortex {
 				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
 				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Position", transform.Translation);
 				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Direction", Math::Normalize(transform.GetRotationEuler()));
+				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
 				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
 				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
-
-				Math::vec2 attenuation = lightSource->GetAttenuation();
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Constant", 1.0f);
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Linear", attenuation.x);
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Quadratic", attenuation.y);
 
 				i++;
 

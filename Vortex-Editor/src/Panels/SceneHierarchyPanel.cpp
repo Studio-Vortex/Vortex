@@ -979,30 +979,10 @@ namespace Vortex {
 				}
 				case LightType::Point:
 				{
-					Math::vec2 attenuation = lightSource->GetAttenuation();
-
-					float range = attenuation.x * -4.0f;
-					if (Gui::DragFloat("Range", &range, 0.01f, -0.75f, 0.0f, "%.2f"))
-						lightSource->SetAttenuation({ range / -4.0f, attenuation.y });
-
-					float intensity = attenuation.y * -4.0f;
-					if (Gui::DragFloat("Intensity", &intensity, 0.001f, -0.75f, 0.0f, "%.3f"))
-						lightSource->SetAttenuation({ attenuation.x, intensity / -4.0f });
-
 					break;
 				}
 				case LightType::Spot:
 				{
-					Math::vec2 attenuation = lightSource->GetAttenuation();
-
-					float range = attenuation.x * -4.0f;
-					if (Gui::DragFloat("Range", &range, 0.01f, -0.75f, 0.0f, "%.2f"))
-						lightSource->SetAttenuation({ range / -4.0f, attenuation.y });
-
-					float intensity = attenuation.y * -4.0f;
-					if (Gui::DragFloat("Intensity", &intensity, 0.001f, -0.75f, 0.0f, "%.3f"))
-						lightSource->SetAttenuation({ attenuation.x, intensity / -4.0f });
-
 					float cutoff = lightSource->GetCutOff();
 					if (Gui::DragFloat("CutOff", &cutoff))
 						lightSource->SetCutOff(cutoff);
@@ -1018,6 +998,10 @@ namespace Vortex {
 			Math::vec3 radiance = lightSource->GetRadiance();
 			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
 				lightSource->SetRadiance(radiance);
+
+			float intensity = lightSource->GetIntensity();
+			if (Gui::DragFloat("Intensity", &intensity, 0.1f, 0.1f, 0, "%.2f"))
+				lightSource->SetIntensity(intensity);
 
 			if (Gui::TreeNodeEx("Shadows", treeNodeFlags))
 			{

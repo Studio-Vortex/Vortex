@@ -324,12 +324,10 @@ namespace Vortex {
 				}
 				case LightType::Point:
 				{
-					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					break;
 				}
 				case LightType::Spot:
 				{
-					out << YAML::Key << "Attenuation" << YAML::Value << lightSource->GetAttenuation();
 					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
 					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
 
@@ -337,6 +335,7 @@ namespace Vortex {
 				}
 			}
 
+			out << YAML::Key << "Intensity" << YAML::Value << lightSource->GetIntensity();
 			out << YAML::Key << "ShadowBias" << YAML::Value << lightSource->GetShadowBias();
 			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->ShouldCastShadows();
 
@@ -854,20 +853,14 @@ namespace Vortex {
 				{
 					case LightType::Directional:
 					{
-
 						break;
 					}
 					case LightType::Point:
 					{
-						if (lightSourceComponent["Attenuation"])
-							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
-
 						break;
 					}
 					case LightType::Spot:
 					{
-						if (lightSourceComponent["Attenuation"])
-							lightComponent.Source->SetAttenuation(lightSourceComponent["Attenuation"].as<Math::vec2>());
 						if (lightSourceComponent["CutOff"])
 							lightComponent.Source->SetCutOff(lightSourceComponent["CutOff"].as<float>());
 						if (lightSourceComponent["OuterCutOff"])
@@ -876,6 +869,9 @@ namespace Vortex {
 						break;
 					}
 				}
+
+				if (lightSourceComponent["Intensity"])
+					lightComponent.Source->SetIntensity(lightSourceComponent["Intensity"].as<float>());
 
 				if (lightSourceComponent["ShadowBias"])
 					lightComponent.Source->SetShadowBias(lightSourceComponent["ShadowBias"].as<float>());

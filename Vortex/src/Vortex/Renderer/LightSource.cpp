@@ -16,15 +16,15 @@ namespace Vortex {
 		m_Properties.Radiance = radiance;
 	}
 
-	const Math::vec2& LightSource::GetAttenuation() const
-	{
-		return m_Properties.Attenuation;
-	}
+    float LightSource::GetIntensity() const
+    {
+        return m_Properties.Intensity;
+    }
 
-	void LightSource::SetAttenuation(const Math::vec2& attenuation)
-	{
-		m_Properties.Attenuation = attenuation;
-	}
+    void LightSource::SetIntensity(float intensity)
+    {
+		m_Properties.Intensity = intensity;
+    }
 
 	float LightSource::GetCutOff() const
 	{
@@ -69,7 +69,7 @@ namespace Vortex {
 	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
 	{
 		dstLightSource->SetRadiance(srcLightSource->GetRadiance());
-		dstLightSource->SetAttenuation(srcLightSource->GetAttenuation());
+		dstLightSource->SetIntensity(srcLightSource->GetIntensity());
 		dstLightSource->SetCutOff(srcLightSource->GetCutOff());
 		dstLightSource->SetOuterCutOff(srcLightSource->GetOuterCutOff());
 		dstLightSource->SetCastShadows(srcLightSource->ShouldCastShadows());

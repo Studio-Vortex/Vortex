@@ -6,8 +6,7 @@ namespace Vortex {
 	{
 		Math::vec3 Radiance = Math::vec3(1.0f);
 
-		// (Linear, Quadratic)
-		Math::vec2 Attenuation = Math::vec2(0.045f, 0.0075f);
+		float Intensity = 1.0f;
 
 		// Spotlight
 		float Cutoff = 12.5f;
@@ -26,8 +25,8 @@ namespace Vortex {
 		const Math::vec3& GetRadiance() const;
 		void SetRadiance(const Math::vec3& radiance);
 
-		const Math::vec2& GetAttenuation() const;
-		void SetAttenuation(const Math::vec2& attenuation);
+		float GetIntensity() const;
+		void SetIntensity(float intensity);
 
 		float GetCutOff() const;
 		void SetCutOff(float cutoff);

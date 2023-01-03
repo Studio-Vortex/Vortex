@@ -15,11 +15,6 @@
 //     Skinned Mesh Animations
 //---------------------------------------------------------------
 
-// NOTE: The attenation function used to calculate light intensity over distance,
-// is NOT considered to be realistic in a PBR renderer.
-// To be more physically correct, attenuation should be calculated based on the actual distance
-// from the fragment to the light source. However this allows us to have extreme control over the lights in our scene
-
 #type vertex
 #version 460 core
 
@@ -150,6 +145,7 @@ struct SkyLight
 {
 	vec3 Radiance;
 	vec3 Direction;
+	float Intensity;
 
 	sampler2D ShadowMap;
 	float ShadowBias;
@@ -159,10 +155,7 @@ struct PointLight
 {
 	vec3 Radiance;
 	vec3 Position;
-
-	float Constant;
-	float Linear;
-	float Quadratic;
+	float Intensity;
 
 	float ShadowBias;
 	float FarPlane;
@@ -173,10 +166,7 @@ struct SpotLight
 	vec3 Radiance;
 	vec3 Position;
 	vec3 Direction;
-
-	float Constant;
-	float Linear;
-	float Quadratic;
+	float Intensity;
 
 	float CutOff;
 	float OuterCutOff;
@@ -228,8 +218,7 @@ float gaSchlickG1(float cosTheta, float k);
 float gaSchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
-vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float rougness);
-float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic);
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir);
 float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias);
 float CubemapShadowCalculation(vec3 fragPos, vec3 lightPos, samplerCube shadowMap, float shadowBias, float farPlane);
@@ -272,7 +261,7 @@ void main()
 		vec3 L = normalize(-u_SkyLight.Direction);
 		vec3 H = normalize(V + L);
 
-		vec3 radiance = u_SkyLight.Radiance;
+		vec3 radiance = u_SkyLight.Radiance * u_SkyLight.Intensity;
 
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
@@ -307,16 +296,15 @@ void main()
 		}
 	}
 
-	for(int i = 0; i < u_SceneProperties.ActivePointLights; i++)
+	for (int i = 0; i < u_SceneProperties.ActivePointLights; i++)
 	{
 		PointLight pointLight = u_PointLights[i];
 
 		vec3 L = normalize(pointLight.Position - fragmentIn.Position);
 		vec3 H = normalize(V + L);
-		float attenuation = Attenuate(pointLight.Position, fragmentIn.Position,
-									  pointLight.Constant, pointLight.Linear, pointLight.Quadratic);
-
-		vec3 radiance = pointLight.Radiance * attenuation;
+		float distance = length(pointLight.Position - fragmentIn.Position);
+		float attenuation = 1.0 / (distance * distance);
+		vec3 radiance = pointLight.Radiance * attenuation * pointLight.Intensity;
 
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
@@ -352,10 +340,9 @@ void main()
 
 		vec3 L = normalize(spotLight.Position - fragmentIn.Position);
 		vec3 H = normalize(V + L);
-		float attenuation = Attenuate(spotLight.Position, fragmentIn.Position,
-									  spotLight.Constant, spotLight.Linear, spotLight.Quadratic);
-
-		vec3 radiance = spotLight.Radiance * attenuation;
+		float distance = length(spotLight.Position - fragmentIn.Position);
+		float attenuation = 1.0 / (distance * distance);
+		vec3 radiance = spotLight.Radiance * attenuation * spotLight.Intensity;
 
 		// Cook-Torrance Bi-Directional Reflectance Distribution Function
 		float NDF = DistributionGGX(N, H, properties.Roughness);
@@ -374,11 +361,11 @@ void main()
 		float epsilon = spotLight.CutOff - spotLight.OuterCutOff;
 		float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0, 1.0);
 
-		vec3 kS = F * intensity;
+		vec3 kS = F;
 		vec3 kD = vec3(1.0) - kS;
-		kD *= 1.0 - properties.Roughness * intensity;
+		kD *= 1.0 - properties.Roughness;
 
-		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL;
+		Lo += intensity * (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
 	// Ambient lighting
@@ -471,12 +458,6 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
 	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
-float Attenuate(vec3 lightPosition, vec3 fragPosition, float constant, float linear, float quadratic)
-{
-	float distance = length(lightPosition - fragPosition);
-	return 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 }
 
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
