@@ -139,7 +139,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView);
+						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
 					}
 				}
 
@@ -154,7 +154,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView);
+						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView, (int)(entt::entity)e);
 					}
 				}
 
@@ -169,7 +169,7 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView);
+						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
 					}
 				}
 			}
@@ -225,7 +225,6 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					Renderer::BindSkyLightDepthMap();
 					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
 					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())

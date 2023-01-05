@@ -514,7 +514,7 @@ namespace Vortex {
 
 	void OpenGLDepthCubeMapFramebuffer::BindDepthTexture(uint32_t slot) const
 	{
-		glActiveTexture(GL_TEXTURE12 + slot);
+		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemapTextureRendererID);
 	}
 

@@ -499,7 +499,7 @@ namespace Vortex {
 			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Identity());
 
 		Renderer::BindSkyLightDepthMap();
-		//Renderer::BindPointLightDepthMaps();
+		Renderer::BindPointLightDepthMaps();
 
 		for (auto& mesh : m_Meshes)
 		{
@@ -529,7 +529,7 @@ namespace Vortex {
 			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 
 		Renderer::BindSkyLightDepthMap();
-		//Renderer::BindPointLightDepthMaps();
+		Renderer::BindPointLightDepthMaps();
 
 		for (auto& mesh : m_Meshes)
 		{

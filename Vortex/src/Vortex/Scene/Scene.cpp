@@ -415,6 +415,7 @@ namespace Vortex {
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
 			// Update Scripts
+			if (m_ShouldUpdateScripts)
 			{
 				// C# Entity OnUpdate
 				auto view = m_Registry.view<ScriptComponent>();
@@ -422,7 +423,6 @@ namespace Vortex {
 				{
 					Entity entity{ entityID, this };
 
-					// If the entity is not active do not run function
 					if (!entity.IsActive())
 						continue;
 
@@ -582,6 +582,15 @@ namespace Vortex {
 			if (!cameraComponent.FixedAspectRatio)
 				cameraComponent.Camera.SetViewportSize(width, height);
 		}
+	}
+
+	Entity Scene::TryGetTopEntityInHierarchy(Entity child) const
+	{
+		if (!child.HasParent())
+			return child;
+
+		Entity parent = child.GetParent();
+		return TryGetTopEntityInHierarchy(parent);
 	}
 
 	Entity Scene::DuplicateEntity(Entity src)

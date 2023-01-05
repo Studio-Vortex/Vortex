@@ -453,11 +453,11 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				/*FramebufferProperties depthCubemapProps{};
+				FramebufferProperties depthCubemapProps{};
 				depthCubemapProps.Width = s_Data.MaxShadowWidth;
 				depthCubemapProps.Height = s_Data.MaxShadowHeight;
 				SharedRef<DepthCubemapFramebuffer> pointLightDepthMapFramebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
-				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);*/
+				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);
 
 				break;
 			}
@@ -530,10 +530,10 @@ namespace Vortex {
 				}
 				case LightType::Point:
 				{
-					if (!lightSourceComponent.Source->ShouldCastShadows() || s_Data.PointLightDepthMapFramebuffers.empty())
+					if (!lightSourceComponent.Source->ShouldCastShadows())
 						continue;
 
-					/*// Configure shader
+					// Configure shader
 					float aspectRatio = (float)s_Data.MaxShadowWidth / (float)s_Data.MaxShadowHeight;
 					float nearPlane = 0.01f;
 					float farPlane = 100.0f;
@@ -573,6 +573,13 @@ namespace Vortex {
 					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.MaxShadowWidth, s_Data.MaxShadowHeight });
 
 					uint32_t framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
+
+					if (framebufferCount < s_Data.SceneLightDesc.ActivePointLights.size())
+					{
+						CreateShadowMap(LightType::Point);
+						framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
+					}
+
 					for (uint32_t i = 0; i < framebufferCount; i++)
 					{
 						SharedRef<DepthCubemapFramebuffer> pointLightDepthFramebuffer = s_Data.PointLightDepthMapFramebuffers[i];
@@ -604,7 +611,7 @@ namespace Vortex {
 						pointLightDepthFramebuffer->Unbind();
 					}
 
-					RenderCommand::SetCullMode(s_Data.CullMode);*/
+					RenderCommand::SetCullMode(s_Data.CullMode);
 
 					break;
 				}
@@ -643,7 +650,7 @@ namespace Vortex {
 		for (auto& framebuffer : s_Data.PointLightDepthMapFramebuffers)
 		{
 			uint32_t currentSlot = startSlot + index;
-			framebuffer->BindDepthTexture(index);
+			framebuffer->BindDepthTexture(currentSlot);
 			pbrShader->SetInt("u_PointLightShadowMaps[" + std::to_string(index) + "]", currentSlot);
 			index++;
 		}

@@ -42,14 +42,19 @@ namespace Vortex {
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		bool IsRunning() const { return m_IsRunning; }
-		bool IsPaused() const { return m_IsPaused; }
-		void SetPaused(bool paused) { m_IsPaused = paused; }
-		bool IsInDebugMode() const { return m_DebugMode; }
-		void SetDebugMode(bool mode) { m_DebugMode = mode; }
+		inline bool IsRunning() const { return m_IsRunning; }
+		inline bool IsPaused() const { return m_IsPaused; }
+		inline void SetPaused(bool paused) { m_IsPaused = paused; }
+
+		// -------- Editor Only ---------
+		inline bool IsInDebugMode() const { return m_DebugMode; }
+		inline void SetDebugMode(bool mode) { m_DebugMode = mode; }
+		inline void SetShouldUpdateScripts(bool shouldUpdate) { m_ShouldUpdateScripts = shouldUpdate; }
+		// ------------------------------
 
 		size_t GetEntityCount() const { return m_Registry.alive(); }
 
+		Entity TryGetTopEntityInHierarchy(Entity child) const;
 		Entity DuplicateEntity(Entity entity);
 
 		Entity TryGetEntityWithUUID(UUID uuid);
@@ -98,7 +103,11 @@ namespace Vortex {
 
 		bool m_IsRunning = false;
 		bool m_IsPaused = false;
-		bool m_DebugMode = false; // Editor-only
+
+		// ------ Editor-only ------
+		bool m_ShouldUpdateScripts = true;
+		bool m_DebugMode = false;
+		// -------------------------
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

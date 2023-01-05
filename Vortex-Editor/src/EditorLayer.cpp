@@ -138,10 +138,12 @@ namespace Vortex {
 				if (Input::IsKeyPressed(KeyCode::F6))
 				{
 					Application::Get().GetWindow().ShowMouseCursor(true, true);
+					m_ActiveScene->SetShouldUpdateScripts(false);
 				}
 				else if (Input::IsKeyPressed(KeyCode::Escape))
 				{
 					Application::Get().GetWindow().ShowMouseCursor(false, true);
+					m_ActiveScene->SetShouldUpdateScripts(true);
 				}
 
 				break;
@@ -177,9 +179,8 @@ namespace Vortex {
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
-
-		ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 
 		OnOverlayRender();
 
