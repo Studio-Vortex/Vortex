@@ -5,6 +5,7 @@
 #include "Vortex/Renderer/Color.h"
 
 #include <filesystem>
+#include <string>
 
 namespace Vortex {
 
@@ -20,7 +21,7 @@ namespace Vortex {
 
 		struct RendererProperties {
 			bool DisplaySceneIconsInEditor = true;
-			bool EnablePBRRenderer = true;
+			std::string TriangleCullMode = "";
 		} RendererProps;
 
 		struct PhysicsProperties

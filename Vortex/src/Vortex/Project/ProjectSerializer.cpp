@@ -2,6 +2,8 @@
 #include "ProjectSerializer.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
+#include "Vortex/Renderer/RendererAPI.h"
+#include "Vortex/Renderer/Renderer.h"
 
 #include <fstream>
 
@@ -33,7 +35,7 @@ namespace Vortex {
 			out << YAML::Key << "RendererProperties" << YAML::BeginMap; // RendererProperties
 			{
 				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
-				out << YAML::Key << "EnablePBRRenderer" << YAML::Value << props.RendererProps.EnablePBRRenderer;
+				out << YAML::Key << "TriangleCullMode" << YAML::Value << props.RendererProps.TriangleCullMode;
 			}
 			out << YAML::EndMap; // RendererProperties
 
@@ -111,7 +113,12 @@ namespace Vortex {
 		{
 			auto rendererData = projectData["RendererProperties"];
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
-			props.RendererProps.EnablePBRRenderer = rendererData["EnablePBRRenderer"].as<bool>();
+			if (rendererData["TriangleCullMode"])
+			{
+				props.RendererProps.TriangleCullMode = rendererData["TriangleCullMode"].as<std::string>();
+				RendererAPI::TriangleCullMode cullMode = Utils::TriangleCullModeFromString(props.RendererProps.TriangleCullMode);
+				Renderer::SetCullMode(cullMode);
+			}
 		}
 
 		{

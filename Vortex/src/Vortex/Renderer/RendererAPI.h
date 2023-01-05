@@ -125,6 +125,17 @@ namespace Vortex {
 			return "None";
 		}
 
+		static RendererAPI::TriangleCullMode TriangleCullModeFromString(const std::string& cullMode)
+		{
+			if (cullMode == "None") return RendererAPI::TriangleCullMode::None;
+			if (cullMode == "Front") return RendererAPI::TriangleCullMode::Front;
+			if (cullMode == "Back") return RendererAPI::TriangleCullMode::Back;
+			if (cullMode == "FrontAndBack") return RendererAPI::TriangleCullMode::FrontAndBack;
+
+			VX_CORE_ASSERT(false, "Unknown Triangle Cull Mode!");
+			return RendererAPI::TriangleCullMode::None;
+		}
+
 	}
 
 }

@@ -57,9 +57,18 @@ namespace Vortex {
 
 					static const char* currentCullMode = Utils::TriangleCullModeToString(cullMode);
 
+					SharedRef<Project> activeProject = Project::GetActive();
+					ProjectProperties& projectProps = activeProject->GetProperties();
+
 					if (Gui::BeginCombo("Cull Mode", currentCullMode))
 					{
 						uint32_t arraySize = VX_ARRAYCOUNT(cullModes);
+
+						auto SetCullModeFunc = [&](RendererAPI::TriangleCullMode cullMode)
+						{
+							Renderer::SetCullMode(cullMode);
+							projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(cullMode);
+						};
 
 						for (uint32_t i = 0; i < arraySize; i++)
 						{
@@ -69,13 +78,13 @@ namespace Vortex {
 								currentCullMode = cullModes[i];
 
 								if (currentCullMode == cullModes[0])
-									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
+									SetCullModeFunc(RendererAPI::TriangleCullMode::None);
 								if (currentCullMode == cullModes[1])
-									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Front);
+									SetCullModeFunc(RendererAPI::TriangleCullMode::Front);
 								if (currentCullMode == cullModes[2])
-									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Back);
+									SetCullModeFunc(RendererAPI::TriangleCullMode::Back);
 								if (currentCullMode == cullModes[3])
-									Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::FrontAndBack);
+									SetCullModeFunc(RendererAPI::TriangleCullMode::FrontAndBack);
 							}
 
 							if (isSelected)
@@ -96,26 +105,12 @@ namespace Vortex {
 					if (Gui::DragFloat("Gamma", &gamma, 0.01f, 0.01f, 0.0f, "%.2f"))
 						Renderer::SetSceneGamma(gamma);
 
-					ProjectProperties& projectProps = Project::GetActive()->GetProperties();
-
-					static bool displaySceneIcons = projectProps.RendererProps.DisplaySceneIconsInEditor;
-					if (Gui::Checkbox("Display Scene Icons", &displaySceneIcons))
-					{
-						projectProps.RendererProps.DisplaySceneIconsInEditor = displaySceneIcons;
-					}
-
-					static bool enablePBR = projectProps.RendererProps.EnablePBRRenderer;
-					if (Gui::Checkbox("Enable PBR Renderer", &enablePBR))
-					{
-						projectProps.RendererProps.EnablePBRRenderer = enablePBR;
-					}
-
 					static bool wireframeMode = false;
 					if (Gui::Checkbox("Show Wireframe", &wireframeMode))
 						RenderCommand::SetWireframe(wireframeMode);
 
 					static bool vsync = true;
-					if (Gui::Checkbox("Use VSync", &vsync))
+					if (Gui::Checkbox("Enable VSync", &vsync))
 						Application::Get().GetWindow().SetVSync(vsync);
 
 					Gui::EndTabItem();

@@ -266,6 +266,8 @@ namespace Vortex {
 
 		bool framebufferNotCreated = s_Data.HDRFramebuffer == nullptr;
 
+		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+
 		// TODO fix this hack!
 		if (skybox->PathChanged() || framebufferNotCreated)
 		{
@@ -302,6 +304,8 @@ namespace Vortex {
 		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
 		s_Data.BRDF_LUT->Bind(3);
 		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+
+		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
 	void Renderer::DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
