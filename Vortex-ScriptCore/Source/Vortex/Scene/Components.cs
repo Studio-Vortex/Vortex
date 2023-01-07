@@ -229,14 +229,34 @@
 			set => InternalCalls.LightSourceComponent_SetRadiance(Entity.ID, ref value);
 		}
 
-		public Vector3 Direction
+		public float Intensity
 		{
-			get
-			{
-				InternalCalls.LightSourceComponent_GetDirection(Entity.ID, out Vector3 direction);
-				return direction;
-			}
-			set => InternalCalls.LightSourceComponent_SetDirection(Entity.ID, ref value);
+			get => InternalCalls.LightSourceComponent_GetIntensity(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetIntensity(Entity.ID, value);
+		}
+
+		public float ShadowBias
+		{
+			get => InternalCalls.LightSourceComponent_GetShadowBias(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetShadowBias(Entity.ID, value);
+		}
+
+		public bool CastShadows
+		{
+			get => InternalCalls.LightSourceComponent_GetCastShadows(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetCastShadows(Entity.ID, value);
+		}
+
+		public float Cutoff
+		{
+			get => InternalCalls.LightSourceComponent_GetCutoff(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetCutoff(Entity.ID, value);
+		}
+
+		public float OuterCutoff
+		{
+			get => InternalCalls.LightSourceComponent_GetOuterCutoff(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetOuterCutoff(Entity.ID, value);
 		}
 	}
 

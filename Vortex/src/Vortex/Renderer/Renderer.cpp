@@ -310,21 +310,30 @@ namespace Vortex {
 
 	void Renderer::DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
 	{
-		Math::vec3 rotation = transform.GetRotationEuler();
-		Math::vec3 forwardDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), { 0.0f, 0.0f, -1.0f });
+		Math::mat4 cameraOrientation = Math::ToMat4(transform.GetRotation());
 
 		Math::vec3 corners[4] = {
-			transform.Translation + forwardDirection + (Math::vec3(transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
-			transform.Translation + forwardDirection + (Math::vec3(-transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
-			transform.Translation + forwardDirection + (Math::vec3(transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
-			transform.Translation + forwardDirection + (Math::vec3(-transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
+			 transform.Translation + (Math::vec3(transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
+			 transform.Translation + (Math::vec3(-transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
+			 transform.Translation + (Math::vec3(transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
+			 transform.Translation + (Math::vec3(-transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
 		};
 
+		// Transform the points to the camera's orientation
+		for (uint32_t i = 0; i < 4; i++)
+		{
+			corners[i] = Math::vec4(corners[i], 1.0f) * cameraOrientation;
+		}
+
+		// Draw frustum
 		Renderer2D::DrawLine(transform.Translation, corners[0], color);
 		Renderer2D::DrawLine(transform.Translation, corners[1], color);
 		Renderer2D::DrawLine(transform.Translation, corners[2], color);
 		Renderer2D::DrawLine(transform.Translation, corners[3], color);
-		Renderer2D::DrawRect(transform.GetTransform() * Math::Translate(forwardDirection), color);
+		Renderer2D::DrawLine(corners[0], corners[1], color);
+		Renderer2D::DrawLine(corners[1], corners[3], color);
+		Renderer2D::DrawLine(corners[3], corners[2], color);
+		Renderer2D::DrawLine(corners[2], corners[0], color);
 	}
 
 	SceneLightDescription Renderer::GetSceneLightDescription()

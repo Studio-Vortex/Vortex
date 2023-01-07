@@ -1197,11 +1197,12 @@ namespace Vortex {
 				const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 				if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				{
-					// TODO: Draw Camera Frustum
-					//Renderer::DrawFrustum(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+					Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
 				}
-
-				Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
+				else
+				{
+					Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
+				}
 			}
 			else
 			{

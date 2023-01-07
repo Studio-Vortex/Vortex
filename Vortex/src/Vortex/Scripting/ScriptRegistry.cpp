@@ -755,6 +755,106 @@ namespace Vortex {
 		entity.GetComponent<LightSourceComponent>().Source->SetRadiance(*radiance);
 	}
 
+	static float LightSourceComponent_GetIntensity(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<LightSourceComponent>().Source->GetIntensity();
+	}
+
+	static void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetIntensity(intensity);
+	}
+
+	static float LightSourceComponent_GetShadowBias(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<LightSourceComponent>().Source->GetShadowBias();
+	}
+
+	static void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetShadowBias(shadowBias);
+	}
+
+	static bool LightSourceComponent_GetCastShadows(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<LightSourceComponent>().Source->ShouldCastShadows();
+	}
+
+	static void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetCastShadows(castShadows);
+	}
+
+	static float LightSourceComponent_GetCutoff(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<LightSourceComponent>().Source->GetCutOff();
+	}
+
+	static void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetCutOff(cutoff);
+	}
+
+	static float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<LightSourceComponent>().Source->GetOuterCutOff();
+	}
+
+	static void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<LightSourceComponent>().Source->SetOuterCutOff(outerCutoff);
+	}
+
 #pragma endregion
 
 #pragma region TextMesh Component
@@ -3023,6 +3123,16 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetRadiance);
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetRadiance);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetIntensity);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetIntensity);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetShadowBias);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetShadowBias);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetCastShadows);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetCastShadows);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetCutoff);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetCutoff);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetOuterCutoff);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetOuterCutoff);
 
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetTextString);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetTextString);

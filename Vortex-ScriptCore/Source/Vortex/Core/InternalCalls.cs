@@ -204,10 +204,34 @@ namespace Vortex {
 		internal extern static void LightSourceComponent_SetRadiance(ulong entityID, ref Vector3 radiance);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_GetDirection(ulong entityID, out Vector3 outDirection);
+		internal extern static float LightSourceComponent_GetIntensity(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetDirection(ulong entityID, ref Vector3 direction);
+		internal extern static void LightSourceComponent_SetIntensity(ulong entityID, float intensity);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float LightSourceComponent_GetShadowBias(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetShadowBias(ulong entityID, float shadowBias);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool LightSourceComponent_GetCastShadows(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetCastShadows(ulong entityID, bool castShadows);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float LightSourceComponent_GetCutoff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetCutoff(ulong entityID, float cutoff);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float LightSourceComponent_GetOuterCutoff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetOuterCutoff(ulong entityID, float outerCutoff);
 
 		#endregion
 
