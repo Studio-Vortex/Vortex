@@ -5,8 +5,8 @@
 
 namespace Vortex {
 
-#define SP_MAX_PROJECT_NAME_LENGTH 256
-#define SP_MAX_PROJECT_DIR_LENGTH 256
+#define VX_MAX_PROJECT_NAME_LENGTH 256
+#define VX_MAX_PROJECT_DIR_LENGTH 256
 
 	LauncherLayer::LauncherLayer()
 		: Layer("LauncherLayer") { }
@@ -166,9 +166,15 @@ namespace Vortex {
 		Gui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		Gui::SetNextWindowSize(ImVec2(700, 0));
 
+		auto ResetInputBoxesFunc = [&](char* projectNameBuffer, char* projectDirectoryBuffer)
+		{
+			memset(projectNameBuffer, 0, VX_MAX_PROJECT_NAME_LENGTH);
+			memset(projectDirectoryBuffer, 0, VX_MAX_PROJECT_DIR_LENGTH);
+		};
+
 		if (Gui::BeginPopupModal("Create New Project"))
 		{
-			static char projectNameBuffer[SP_MAX_PROJECT_NAME_LENGTH]{ 0 };
+			static char projectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH]{ 0 };
 			ImGuiIO& io = Gui::GetIO();
 			auto contextRegionAvail = Gui::GetContentRegionAvail();
 			Gui::Columns(2);
@@ -177,11 +183,11 @@ namespace Vortex {
 			Gui::Text("Directory");
 			Gui::NextColumn();
 			Gui::PushItemWidth(-1);
-			Gui::InputText("##Project Name", projectNameBuffer, SP_MAX_PROJECT_NAME_LENGTH);
+			Gui::InputText("##Project Name", projectNameBuffer, VX_MAX_PROJECT_NAME_LENGTH);
 
 			Gui::PushItemWidth(-1);
-			static char projectDirectoryBuffer[SP_MAX_PROJECT_NAME_LENGTH]{ 0 };
-			Gui::InputText("##Directory", projectDirectoryBuffer, SP_MAX_PROJECT_NAME_LENGTH);
+			static char projectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH]{ 0 };
+			Gui::InputText("##Directory", projectDirectoryBuffer, VX_MAX_PROJECT_NAME_LENGTH);
 
 			Gui::Columns(1);
 
@@ -193,14 +199,15 @@ namespace Vortex {
 
 			if (Gui::Button("Go Back", buttonSize))
 			{
+				ResetInputBoxesFunc(projectNameBuffer, projectDirectoryBuffer);
 				Gui::CloseCurrentPopup();
 			}
 
-			bool projectReady = strlen(projectNameBuffer) != 0 && strlen(projectDirectoryBuffer) != 0;
+			bool textBoxesEmpty = strlen(projectNameBuffer) == 0 && strlen(projectDirectoryBuffer) == 0;
 
 			Gui::SameLine();
 			Gui::SetCursorPosX((Gui::GetWindowWidth() * 0.5f) - (buttonSize.x * 0.5f));
-			Gui::BeginDisabled(!projectReady);
+			Gui::BeginDisabled(textBoxesEmpty);
 			if (Gui::Button("Create Project", buttonSize))
 			{
 				if (!std::filesystem::exists(projectDirectoryBuffer))
@@ -235,6 +242,7 @@ namespace Vortex {
 
 				LaunchEditor();
 
+				ResetInputBoxesFunc(projectNameBuffer, projectDirectoryBuffer);
 				Gui::CloseCurrentPopup();
 			}
 			Gui::EndDisabled();
