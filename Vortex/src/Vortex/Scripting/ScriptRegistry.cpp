@@ -1957,6 +1957,26 @@ namespace Vortex {
 		return false;
 	}
 
+	static bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().DisableGravity;
+	}
+
+	static void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().DisableGravity = disableGravity;
+	}
+
 #pragma endregion
 
 #pragma region BoxCollider Component
@@ -3215,6 +3235,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
 
 		VX_ADD_INTERNAL_CALL(BoxColliderComponent_GetHalfSize);
 		VX_ADD_INTERNAL_CALL(BoxColliderComponent_SetHalfSize);

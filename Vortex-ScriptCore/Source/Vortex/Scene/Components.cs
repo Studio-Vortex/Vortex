@@ -617,6 +617,12 @@
 	{
 		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
 
+		public bool DisableGravity
+		{
+			get => InternalCalls.CharacterControllerComponent_GetDisableGravity(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetDisableGravity(Entity.ID, value);
+		}
+
 		public void Move(Vector3 displacement)
 		{
 			InternalCalls.CharacterControllerComponent_Move(Entity.ID, ref displacement);

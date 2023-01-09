@@ -547,6 +547,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool CharacterControllerComponent_GetDisableGravity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetDisableGravity(ulong entityID, bool disableGravity);
+
 		#endregion
 
 		#region PhysicsMaterial
