@@ -1895,6 +1895,12 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CORE_WARN("Trying to move entity without Character Controller!");
+			return;
+		}
+
 		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
 
 		physx::PxControllerFilters filters; // TODO
