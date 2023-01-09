@@ -382,7 +382,7 @@ namespace Vortex {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = Physics::GetControllerManager()->createController(desc);
+				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
 			}
 			else if (entity.HasComponent<BoxColliderComponent>())
 			{
@@ -413,7 +413,7 @@ namespace Vortex {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = Physics::GetControllerManager()->createController(desc);
+				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
 			}
 		}
 		else
@@ -566,8 +566,8 @@ namespace Vortex {
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
 		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
 
-		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
-		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, true);
+		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::Continuous);
+		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 	}

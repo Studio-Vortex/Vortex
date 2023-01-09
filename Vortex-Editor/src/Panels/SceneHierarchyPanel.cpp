@@ -1926,6 +1926,32 @@ namespace Vortex {
 
 				Gui::TreePop();
 			}
+
+			const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
+			const char* currentCollisionDetectionType = collisionDetectionTypes[(uint32_t)component.CollisionDetection];
+
+			if (Gui::BeginCombo("Collision Detection Type", currentCollisionDetectionType))
+			{
+				uint32_t arraySize = VX_ARRAYCOUNT(collisionDetectionTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
+				{
+					bool isSelected = strcmp(currentCollisionDetectionType, collisionDetectionTypes[i]) == 0;
+					if (Gui::Selectable(collisionDetectionTypes[i], isSelected))
+					{
+						currentCollisionDetectionType = collisionDetectionTypes[i];
+						component.CollisionDetection = static_cast<CollisionDetectionType>(i);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
+				}
+
+				Gui::EndCombo();
+			}
 		});
 
 		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)

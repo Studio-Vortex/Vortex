@@ -295,6 +295,8 @@ namespace Vortex {
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
+	enum class CollisionDetectionType : uint32_t { None = -1, Discrete, Continuous, ContinuousSpeculative };
+
 	struct RigidBodyComponent
 	{
 		RigidBodyType Type = RigidBodyType::Static;
@@ -308,13 +310,6 @@ namespace Vortex {
 		float AngularDrag = 0.05f;
 		bool DisableGravity = false;
 		bool IsKinematic = false;
-
-		enum class CollisionDetectionType : uint32_t
-		{
-			Discrete,
-			Continuous,
-			ContinuousSpeculative
-		};
 
 		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
 

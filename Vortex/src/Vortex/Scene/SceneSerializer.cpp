@@ -136,6 +136,29 @@ namespace Vortex {
 			return RigidBodyType::Static;
 		}
 
+		static std::string CollisionDetectionTypeToString(CollisionDetectionType collisionDetection)
+		{
+			switch (collisionDetection)
+			{
+				case Vortex::CollisionDetectionType::Discrete:              return "Discrete";
+				case Vortex::CollisionDetectionType::Continuous:            return "Continuous";
+				case Vortex::CollisionDetectionType::ContinuousSpeculative: return "ContinuousSpeculative";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Collision Detection Type!");
+			return {};
+		}
+
+		static CollisionDetectionType CollisionDetectionTypeFromString(const std::string& collisionDetectionString)
+		{
+			if (collisionDetectionString == "Discrete")              return CollisionDetectionType::Discrete;
+			if (collisionDetectionString == "Continuous")            return CollisionDetectionType::Continuous;
+			if (collisionDetectionString == "ContinuousSpeculative") return CollisionDetectionType::ContinuousSpeculative;
+
+			VX_CORE_ASSERT(false, "Unknown Collision Detection Type!");
+			return CollisionDetectionType::None;
+		}
+
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
@@ -562,6 +585,7 @@ namespace Vortex {
 			out << YAML::Key << "LockRotationX" << YAML::Value << rigidbodyComponent.LockRotationX;
 			out << YAML::Key << "LockRotationY" << YAML::Value << rigidbodyComponent.LockRotationY;
 			out << YAML::Key << "LockRotationZ" << YAML::Value << rigidbodyComponent.LockRotationZ;
+			out << YAML::Key << "CollisionDetectionType" << YAML::Value << Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection);
 			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
 
 			out << YAML::EndMap; // RigidbodyComponent
@@ -1116,6 +1140,8 @@ namespace Vortex {
 					rigidbody.LockRotationY = rigidbodyComponent["LockRotationY"].as<bool>();
 				if (rigidbodyComponent["LockRotationZ"])
 					rigidbody.LockRotationZ = rigidbodyComponent["LockRotationZ"].as<bool>();
+				if (rigidbodyComponent["CollisionDetectionType"])
+					rigidbody.CollisionDetection = Utils::CollisionDetectionTypeFromString(rigidbodyComponent["CollisionDetectionType"].as<std::string>());
 				if (rigidbodyComponent["Mass"])
 					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 			}
