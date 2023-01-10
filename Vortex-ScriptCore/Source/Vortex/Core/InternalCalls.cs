@@ -486,6 +486,12 @@ namespace Vortex {
 		internal extern static void RigidBodyComponent_SetMass(ulong entityID, float mass);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetCollisionDetectionType(ulong entityID, CollisionDetectionType collisionDetectionType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_GetLinearVelocity(ulong entityID, out Vector3 velocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

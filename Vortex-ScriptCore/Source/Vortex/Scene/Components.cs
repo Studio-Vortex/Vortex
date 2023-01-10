@@ -14,7 +14,6 @@
 				InternalCalls.TransformComponent_GetTranslation(Entity.ID, out Vector3 translation);
 				return translation;
 			}
-
 			set => InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
 		}
 
@@ -192,7 +191,6 @@
 				InternalCalls.CameraComponent_GetPrimary(Entity.ID, out bool primary);
 				return primary;
 			}
-
 			set => InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
 		}
 
@@ -209,7 +207,6 @@
 				InternalCalls.CameraComponent_GetFixedAspectRatio(Entity.ID, out bool fixedAspectRatio);
 				return fixedAspectRatio;
 			}
-
 			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
 		}
 	}
@@ -225,7 +222,6 @@
 				InternalCalls.LightSourceComponent_GetRadiance(Entity.ID, out Vector3 result);
 				return result;
 			}
-
 			set => InternalCalls.LightSourceComponent_SetRadiance(Entity.ID, ref value);
 		}
 
@@ -275,7 +271,6 @@
 				InternalCalls.TextMeshComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
-
 			set => InternalCalls.TextMeshComponent_SetColor(Entity.ID, ref value);
 		}
 
@@ -328,7 +323,6 @@
 				InternalCalls.MeshRendererComponent_GetScale(Entity.ID, out Vector2 scale);
 				return scale;
 			}
-
 			set => InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
 		}
 
@@ -355,21 +349,13 @@
 				InternalCalls.SpriteRendererComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
-
 			set => InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
 		}
 
 		public string Texture
 		{
-			get
-			{
-				return InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
-			}
-
-			set
-			{
-				InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value);
-			}
+			get => InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
+			set => InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value);
 		}
 
 		public Vector2 Scale
@@ -379,11 +365,7 @@
 				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out Vector2 scale);
 				return scale;
 			}
-
-			set
-			{
-				InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, ref value);
-			}
+			set => InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, ref value);
 		}
 	}
 
@@ -396,11 +378,7 @@
 				InternalCalls.CircleRendererComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
-
-			set
-			{
-				InternalCalls.CircleRendererComponent_SetColor(Entity.ID, ref value);
-			}
+			set => InternalCalls.CircleRendererComponent_SetColor(Entity.ID, ref value);
 		}
 
 		public float Thickness
@@ -410,11 +388,7 @@
 				InternalCalls.CircleRendererComponent_GetThickness(Entity.ID, out float thickness);
 				return thickness;
 			}
-
-			set
-			{
-				InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, value);
-			}
+			set => InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, value);
 		}
 
 		public float Fade
@@ -424,11 +398,7 @@
 				InternalCalls.CircleRendererComponent_GetFade(Entity.ID, out float fade);
 				return fade;
 			}
-
-			set
-			{
-				InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
-			}
+			set => InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
 		}
 	}
 
@@ -437,21 +407,12 @@
 		public string Source;
 		public bool IsPlaying
 		{
-			get
-			{
-				return InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
-			}
+			get => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
 		}
 
-		public void Play()
-		{
-			InternalCalls.AudioSourceComponent_Play(Entity.ID);
-		}
+		public void Play() => InternalCalls.AudioSourceComponent_Play(Entity.ID);
 
-		public void Stop()
-		{
-			InternalCalls.AudioSourceComponent_Stop(Entity.ID);
-		}
+		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 	}
 
 	public class AudioListener : Component
@@ -468,10 +429,7 @@
 				InternalCalls.RigidBodyComponent_GetTranslation(Entity.ID, out Vector3 result);
 				return result;
 			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetTranslation(Entity.ID, ref value);
-			}
+			set => InternalCalls.RigidBodyComponent_SetTranslation(Entity.ID, ref value);
 		}
 
 		public Vector3 Rotation
@@ -481,35 +439,25 @@
 				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Vector3 result);
 				return result;
 			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetRotation(Entity.ID, ref value);
-			}
+			set => InternalCalls.RigidBodyComponent_SetRotation(Entity.ID, ref value);
 		}
 
 		public RigidBodyType BodyType
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetBodyType(Entity.ID);
-			}
+			get => InternalCalls.RigidBodyComponent_GetBodyType(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
+		}
 
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
-			}
+		public CollisionDetectionType CollisionDetection
+		{
+			get => InternalCalls.RigidBodyComponent_GetCollisionDetectionType(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetCollisionDetectionType(Entity.ID, value);
 		}
 
 		public float Mass
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetMass(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetMass(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBodyComponent_GetMass(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetMass(Entity.ID, value);
 		}
 
 		public Vector3 Velocity
@@ -519,22 +467,13 @@
 				InternalCalls.RigidBodyComponent_GetLinearVelocity(Entity.ID, out Vector3 velocity);
 				return velocity;
 			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
-			}
+			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
 		}
 
 		public float Drag
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetLinearDrag(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetLinearDrag(Entity.ID, value);
-			}
+			get =>InternalCalls.RigidBodyComponent_GetLinearDrag(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetLinearDrag(Entity.ID, value);
 		}
 
 		public Vector3 AngularVelocity
@@ -544,46 +483,25 @@
 				InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID, out Vector3 velocity);
 				return velocity;
 			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, ref value);
-			}
+			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, ref value);
 		}
 
 		public float AngularDrag
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
 		}
 
 		public bool DisableGravity
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetDisableGravity(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetDisableGravity(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBodyComponent_GetDisableGravity(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetDisableGravity(Entity.ID, value);
 		}
 
 		public bool IsKinematic
 		{
-			get
-			{
-				return InternalCalls.RigidBodyComponent_GetIsKinematic(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBodyComponent_GetIsKinematic(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
 		}
 
 		public void Translate(Vector3 translation)
@@ -739,15 +657,8 @@
 	{
 		public RigidBody2DType BodyType
 		{
-			get
-			{
-				return InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);
-			}
-
-			set
-			{
-				InternalCalls.RigidBody2DComponent_SetBodyType(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetBodyType(Entity.ID, value);
 		}
 
 		public Vector2 Velocity
@@ -757,34 +668,19 @@
 				InternalCalls.RigidBody2DComponent_GetVelocity(Entity.ID, out Vector2 velocity);
 				return velocity;
 			}
-			set
-			{
-				InternalCalls.RigidBody2DComponent_SetVelocity(Entity.ID, ref value);
-			}
+			set => InternalCalls.RigidBody2DComponent_SetVelocity(Entity.ID, ref value);
 		}
 
 		public float Drag
 		{
-			get
-			{
-				return InternalCalls.RigidBody2DComponent_GetDrag(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBody2DComponent_GetDrag(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
 		}
 
 		public bool FreezeRotation
 		{
-			get
-			{
-				return InternalCalls.RigidBody2DComponent_GetFixedRotation(Entity.ID);
-			}
-			set
-			{
-				InternalCalls.RigidBody2DComponent_SetFixedRotation(Entity.ID, value);
-			}
+			get => InternalCalls.RigidBody2DComponent_GetFixedRotation(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetFixedRotation(Entity.ID, value);
 		}
 
 		public void ApplyForce(Vector2 force, Vector2 worldPosition, bool wake)
@@ -818,10 +714,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, ref value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, ref value);
 		}
 
 		public Vector2 Size
@@ -832,10 +725,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, ref value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, ref value);
 		}
 
 		public float Density
@@ -846,10 +736,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, value);
 		}
 
 		public float Friction
@@ -860,10 +747,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, value);
 		}
 
 		public float Restitution
@@ -874,10 +758,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, value);
 		}
 
 		public float RestitutionThreshold
@@ -888,10 +769,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
-			}
+			set => InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
 		}
 	}
 
@@ -905,10 +783,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, ref value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, ref value);
 		}
 
 		public float Radius
@@ -919,10 +794,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, value);
 		}
 
 		public float Density
@@ -933,10 +805,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, value);
 		}
 
 		public float Friction
@@ -947,10 +816,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, value);
 		}
 
 		public float Restitution
@@ -961,10 +827,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, value);
 		}
 
 		public float RestitutionThreshold
@@ -975,10 +838,7 @@
 				return result;
 			}
 
-			set
-			{
-				InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
-			}
+			set => InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
 		}
 	}
 
@@ -992,10 +852,7 @@
 				return velocity;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetVelocity(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetVelocity(Entity.ID, ref value);
 		}
 
 		public Vector3 VelocityVariation
@@ -1006,10 +863,7 @@
 				return velocityVariation;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetVelocityVariation(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetVelocityVariation(Entity.ID, ref value);
 		}
 
 		public Vector3 Offset
@@ -1020,10 +874,7 @@
 				return offset;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetOffset(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetOffset(Entity.ID, ref value);
 		}
 
 		public Vector2 SizeBegin
@@ -1034,10 +885,7 @@
 				return sizeBegin;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetSizeBegin(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetSizeBegin(Entity.ID, ref value);
 		}
 
 		public Vector2 SizeEnd
@@ -1048,10 +896,7 @@
 				return sizeEnd;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetSizeEnd(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetSizeEnd(Entity.ID, ref value);
 		}
 
 		public Vector2 SizeVariation
@@ -1062,10 +907,7 @@
 				return sizeVariation;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetSizeVariation(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetSizeVariation(Entity.ID, ref value);
 		}
 
 		public Vector4 ColorBegin
@@ -1076,10 +918,7 @@
 				return colorBegin;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetColorBegin(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetColorBegin(Entity.ID, ref value);
 		}
 
 		public Vector4 ColorEnd
@@ -1090,10 +929,7 @@
 				return colorEnd;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetColorEnd(Entity.ID, ref value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetColorEnd(Entity.ID, ref value);
 		}
 
 		public float Rotation
@@ -1104,10 +940,7 @@
 				return rotation;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetRotation(Entity.ID, value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetRotation(Entity.ID, value);
 		}
 
 		public float LifeTime
@@ -1118,21 +951,12 @@
 				return lifetime;
 			}
 
-			set
-			{
-				InternalCalls.ParticleEmitterComponent_SetLifeTime(Entity.ID, value);
-			}
+			set => InternalCalls.ParticleEmitterComponent_SetLifeTime(Entity.ID, value);
 		}
 
-		public void Start()
-		{
-			InternalCalls.ParticleEmitterComponent_Start(Entity.ID);
-		}
+		public void Start() => InternalCalls.ParticleEmitterComponent_Start(Entity.ID);
 
-		public void Stop()
-		{
-			InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
-		}
+		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
 	}
 
 }

@@ -1660,6 +1660,26 @@ namespace Vortex {
 		}
 	}
 
+	static CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<RigidBodyComponent>().CollisionDetection;
+	}
+
+	static void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<RigidBodyComponent>().CollisionDetection = collisionDetectionType;
+	}
+
 	static float RigidBodyComponent_GetMass(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -3215,6 +3235,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_LookAt);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetCollisionDetectionType);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetCollisionDetectionType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetMass);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetMass);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLinearVelocity);

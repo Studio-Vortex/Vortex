@@ -217,7 +217,7 @@ namespace Vortex {
 				auto& projectProps = project->GetProperties();
 				projectProps.General.Name = std::string(projectNameBuffer);
 				projectProps.General.AssetDirectory = "Assets";
-				projectProps.General.StartScene = "Scenes/Untitled.vortex";
+				projectProps.General.StartScene = "Scenes/SampleScene.vortex";
 				projectProps.General.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", projectNameBuffer);
 
 				auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
@@ -236,7 +236,7 @@ namespace Vortex {
 				SharedRef<Scene> startScene = Scene::Create();
 				Scene::CreateDefaultEntities(startScene);
 				SceneSerializer serializer(startScene);
-				serializer.Serialize((projectDirectoryBuffer / std::filesystem::path("Assets/Scenes/Untitled.vortex")).string());
+				serializer.Serialize((projectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
 
 				Project::SaveActive(m_ProjectPath);
 
