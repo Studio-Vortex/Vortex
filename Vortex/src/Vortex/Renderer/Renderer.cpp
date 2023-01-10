@@ -215,7 +215,7 @@ namespace Vortex {
 				pbrShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
 				s_Data.SceneLightDesc.HasSkyLight = true;
 
-				Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.01f, 300.0f);
+				Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
 				Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
 				Math::mat4 lightProjection = orthogonalProjection * lightView;
 				pbrShader->SetMat4("u_SkyLightProjection", lightProjection);
@@ -500,7 +500,7 @@ namespace Vortex {
 						continue;
 
 					// Configure shader
-					Math::mat4 orthogonalProjection = Math::Ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.01f, 300.0f);
+					Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
 					TransformComponent& transform = lightSourceEntity.GetTransform();
 					Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
 					Math::mat4 lightProjection = orthogonalProjection * lightView;

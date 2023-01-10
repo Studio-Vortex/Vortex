@@ -93,7 +93,7 @@ namespace Sandbox.Shooter.Weapons {
 
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
-				camera.FieldOfView = zoomedFOV;
+				camera.FieldOfView = Mathf.Lerp(zoomedFOV, normalFOV, Time.DeltaTime);
 				transform.Translation = zoomedPosition;
 				transform.Rotation = zoomedRotation;
 				isZoomed = true;
