@@ -56,10 +56,10 @@ namespace Vortex {
 		static void UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 
 		static uint32_t GetPhysicsPositionIterations() { return s_PhysicsSolverIterations; }
-		static void SetPhysicsPositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
+		static void SetPhysicsScenePositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
 
 		static uint32_t GetPhysicsVelocityIterations() { return s_PhysicsSolverVelocityIterations; }
-		static void SetPhysicsVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsSolverVelocityIterations = veloctiyIterations; }
+		static void SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsSolverVelocityIterations = veloctiyIterations; }
 
 		static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
 		static void SetPhysicsSceneGravitty(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }

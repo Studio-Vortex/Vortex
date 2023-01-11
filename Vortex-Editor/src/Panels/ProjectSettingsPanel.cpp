@@ -118,35 +118,49 @@ namespace Vortex {
 
 				if (Gui::BeginTabItem("Physics"))
 				{
-					Gui::ColorEdit4("3D Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
+					Gui::Checkbox("Show Physics Colliders", &m_Properties.PhysicsProps.ShowColliders);
+
+					Gui::Spacing();
+
+					Gui::PushFont(boldFont);
+					Gui::Text("3D Physics");
+					Gui::PopFont();
+					Gui::Separator();
+					Gui::Spacing();
+
+					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
 
 					static Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
-					if (Gui::DragFloat3("3D Gravity", Math::ValuePtr(gravity3D), 0.1f))
+					if (Gui::DragFloat3("Gravity", Math::ValuePtr(gravity3D), 0.1f))
 						Physics::SetPhysicsSceneGravitty(gravity3D);
 
 					static int32_t physicsPositionIterations = Physics::GetPhysicsPositionIterations();
-					if (Gui::DragInt("3D Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
-						Physics::SetPhysicsPositionIterations(physicsPositionIterations);
+					if (Gui::DragInt("Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
+						Physics::SetPhysicsScenePositionIterations(physicsPositionIterations);
 
 					static int32_t physicsVelocityIterations = Physics::GetPhysicsVelocityIterations();
-					if (Gui::DragInt("3D Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
-						Physics::SetPhysicsVelocityIterations(physicsVelocityIterations);
+					if (Gui::DragInt("Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
+						Physics::SetPhysicsSceneVelocityIterations(physicsVelocityIterations);
 
-					Gui::ColorEdit4("2D Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
+					Gui::PushFont(boldFont);
+					Gui::Text("2D Physics");
+					Gui::PopFont();
+					Gui::Separator();
+					Gui::Spacing();
+
+					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
 
 					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorld2DGravity();
-					if (Gui::DragFloat2("2D Gravity", Math::ValuePtr(gravity2D), 0.1f))
-						Physics2D::SetPhysicsWorld2DGravitty(gravity2D);
+					if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity2D), 0.1f))
+						Physics2D::SetPhysicsWorldGravitty(gravity2D);
 
 					static int32_t velocityIterations = Physics2D::GetPhysicsWorld2DVeloctiyIterations();
-					if (Gui::DragInt("2D Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
-						Physics2D::SetPhysicsWorld2DVelocityIterations(velocityIterations);
+					if (Gui::DragInt("Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
+						Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
 
 					static int32_t positionIterations = Physics2D::GetPhysicsWorld2DPositionIterations();
-					Gui::DragInt("2D Position Iterations", &positionIterations, 1.0f, 1, 100);
-					Physics2D::SetPhysicsWorld2DPositionIterations(positionIterations);
-
-					Gui::Checkbox("Show Physics Colliders", &m_Properties.PhysicsProps.ShowColliders);
+					Gui::DragInt("Position Iterations", &positionIterations, 1.0f, 1, 100);
+					Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
 
 					Gui::EndTabItem();
 				}

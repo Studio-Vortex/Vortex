@@ -29,13 +29,13 @@ namespace Vortex {
 		static b2World* GetPhysicsScene() { return s_PhysicsScene; }
 
 		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorld2DVeloctityIterations; }
-		static void SetPhysicsWorld2DVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
+		static void SetPhysicsWorldVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
 
 		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorld2DPositionIterations; }
-		static void SetPhysicsWorld2DPositionIterations(int32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
+		static void SetPhysicsWorldPositionIterations(int32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
 
 		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorld2DGravity; }
-		static void SetPhysicsWorld2DGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
+		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
 
 	private:
 		inline static b2World* s_PhysicsScene = nullptr;
