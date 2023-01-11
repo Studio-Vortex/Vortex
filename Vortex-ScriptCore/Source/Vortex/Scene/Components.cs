@@ -529,6 +529,16 @@
 		}
 
 		public void LookAt(Vector3 worldPoint) => InternalCalls.RigidBodyComponent_LookAt(Entity.ID, ref worldPoint);
+
+		public void ClearTorque(ForceMode mode = ForceMode.Force)
+		{
+			InternalCalls.RigidBodyComponent_ClearTorque(Entity.ID, mode);
+		}
+
+		public void ClearForces(ForceMode mode = ForceMode.Force)
+		{
+			InternalCalls.RigidBodyComponent_ClearForce(Entity.ID, mode);
+		}
 	}
 
 	public class CharacterController : Component

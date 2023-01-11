@@ -1836,7 +1836,7 @@ namespace Vortex {
 		}
 
 		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
+		actor->addForce(ToPhysXVector(*force), static_cast<physx::PxForceMode::Enum>(mode));
 	}
 
 	static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
@@ -1846,7 +1846,7 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
@@ -1855,7 +1855,45 @@ namespace Vortex {
 		}
 
 		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
+		actor->addTorque(ToPhysXVector(*torque), static_cast<physx::PxForceMode::Enum>(mode));
+	}
+
+	static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+		{
+			VX_CORE_ASSERT("Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		actor->clearTorque(static_cast<physx::PxForceMode::Enum>(mode));
+	}
+
+	static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+		{
+			VX_CORE_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		actor->clearForce(static_cast<physx::PxForceMode::Enum>(mode));
 	}
 
 #pragma endregion
@@ -3349,6 +3387,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_ClearTorque);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_ClearForce);
 
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
