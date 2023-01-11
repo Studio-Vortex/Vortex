@@ -531,6 +531,9 @@ namespace Vortex {
 		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_AddForceAtPosition(ulong entityID, ref Vector3 force, ref Vector3 position, ForceMode forceMode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_AddTorque(ulong entityID, ref Vector3 torque, ForceMode forceMode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

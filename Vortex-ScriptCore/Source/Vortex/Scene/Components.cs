@@ -522,6 +522,11 @@
 		{
 			InternalCalls.RigidBodyComponent_AddForce(Entity.ID, ref force, forceMode);
 		}
+		
+		public void AddForceAtPosition(Vector3 force, Vector3 position, ForceMode forceMode = ForceMode.Force)
+		{
+			InternalCalls.RigidBodyComponent_AddForceAtPosition(Entity.ID, ref force, ref position, forceMode);
+		}
 
 		public void AddTorque(Vector3 torque, ForceMode forceMode = ForceMode.Force)
 		{

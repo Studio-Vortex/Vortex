@@ -1827,7 +1827,7 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
@@ -1837,6 +1837,25 @@ namespace Vortex {
 
 		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
 		actor->addForce(ToPhysXVector(*force), static_cast<physx::PxForceMode::Enum>(mode));
+	}
+
+	static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+		{
+			VX_CORE_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
 	}
 
 	static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
@@ -3386,6 +3405,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddForceAtPosition);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_ClearTorque);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_ClearForce);
