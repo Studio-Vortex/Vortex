@@ -1904,6 +1904,54 @@ namespace Vortex {
 		return result;
 	}
 
+	static void Physics_GetSceneGravity(Math::vec3* outGravity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		*outGravity = Physics::GetPhysicsSceneGravity();
+	}
+
+	static void Physics_SetSceneGravity(Math::vec3* gravity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics::SetPhysicsSceneGravity(*gravity);
+	}
+
+	static uint32_t Physics_GetScenePositionIterations()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return Physics::GetPhysicsScenePositionIterations();
+	}
+
+	static void Physics_SetScenePositionIterations(uint32_t positionIterations)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics::SetPhysicsScenePositionIterations(positionIterations);
+	}
+
+	static uint32_t Physics_GetSceneVelocityIterations()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return Physics::GetPhysicsSceneVelocityIterations();
+	}
+
+	static void Physics_SetSceneVelocityIterations(uint32_t velocityIterations)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics::SetPhysicsSceneVelocityIterations(velocityIterations);
+	}
+
 #pragma endregion
 
 #pragma region Character Controller Component
@@ -2431,6 +2479,54 @@ namespace Vortex {
 		{
 			return 0; // Invalid entity
 		}
+	}
+
+	static void Physics2D_GetWorldGravity(Math::vec2* outGravity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		*outGravity = Physics2D::GetPhysicsWorldGravity();
+	}
+
+	static void Physics2D_SetWorldGravity(Math::vec2* gravity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics2D::SetPhysicsWorldGravitty(*gravity);
+	}
+
+	static uint32_t Physics2D_GetWorldPositionIterations()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return Physics2D::GetPhysicsWorldPositionIterations();
+	}
+
+	static void Physics2D_SetWorldPositionIterations(uint32_t positionIterations)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
+	}
+
+	static uint32_t Physics2D_GetWorldVelocityIterations()
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		return Physics2D::GetPhysicsWorldVelocityIterations();
+	}
+
+	static void Physics2D_SetWorldVelocityIterations(uint32_t velocityIterations)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
 	}
 
 #pragma endregion
@@ -3284,6 +3380,12 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
 
 		VX_ADD_INTERNAL_CALL(Physics_Raycast);
+		VX_ADD_INTERNAL_CALL(Physics_GetSceneGravity);
+		VX_ADD_INTERNAL_CALL(Physics_SetSceneGravity);
+		VX_ADD_INTERNAL_CALL(Physics_GetScenePositionIterations);
+		VX_ADD_INTERNAL_CALL(Physics_SetScenePositionIterations);
+		VX_ADD_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
+		VX_ADD_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
 
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
@@ -3299,6 +3401,12 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
 
 		VX_ADD_INTERNAL_CALL(Physics2D_Raycast);
+		VX_ADD_INTERNAL_CALL(Physics2D_GetWorldGravity);
+		VX_ADD_INTERNAL_CALL(Physics2D_SetWorldGravity);
+		VX_ADD_INTERNAL_CALL(Physics2D_GetWorldPositionIterations);
+		VX_ADD_INTERNAL_CALL(Physics2D_SetWorldPositionIterations);
+		VX_ADD_INTERNAL_CALL(Physics2D_GetWorldVelocityIterations);
+		VX_ADD_INTERNAL_CALL(Physics2D_SetWorldVelocityIterations);
 
 		VX_ADD_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
 		VX_ADD_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);

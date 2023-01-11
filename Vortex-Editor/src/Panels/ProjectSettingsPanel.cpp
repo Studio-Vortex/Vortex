@@ -53,13 +53,13 @@ namespace Vortex {
 
 					static Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
 					if (Gui::DragFloat3("Gravity", Math::ValuePtr(gravity3D), 0.1f))
-						Physics::SetPhysicsSceneGravitty(gravity3D);
+						Physics::SetPhysicsSceneGravity(gravity3D);
 
-					static int32_t physicsPositionIterations = Physics::GetPhysicsPositionIterations();
+					static int32_t physicsPositionIterations = Physics::GetPhysicsScenePositionIterations();
 					if (Gui::DragInt("Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
 						Physics::SetPhysicsScenePositionIterations(physicsPositionIterations);
 
-					static int32_t physicsVelocityIterations = Physics::GetPhysicsVelocityIterations();
+					static int32_t physicsVelocityIterations = Physics::GetPhysicsSceneVelocityIterations();
 					if (Gui::DragInt("Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
 						Physics::SetPhysicsSceneVelocityIterations(physicsVelocityIterations);
 
@@ -71,15 +71,15 @@ namespace Vortex {
 
 					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
 
-					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorld2DGravity();
+					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
 					if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity2D), 0.1f))
 						Physics2D::SetPhysicsWorldGravitty(gravity2D);
 
-					static int32_t velocityIterations = Physics2D::GetPhysicsWorld2DVeloctiyIterations();
+					static int32_t velocityIterations = Physics2D::GetPhysicsWorldVelocityIterations();
 					if (Gui::DragInt("Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
 						Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
 
-					static int32_t positionIterations = Physics2D::GetPhysicsWorld2DPositionIterations();
+					static int32_t positionIterations = Physics2D::GetPhysicsWorldPositionIterations();
 					Gui::DragInt("Position Iterations", &positionIterations, 1.0f, 1, 100);
 					Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
 

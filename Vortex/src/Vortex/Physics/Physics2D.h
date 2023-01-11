@@ -28,21 +28,21 @@ namespace Vortex {
 
 		static b2World* GetPhysicsScene() { return s_PhysicsScene; }
 
-		static int32_t GetPhysicsWorld2DVeloctiyIterations() { return s_PhysicsWorld2DVeloctityIterations; }
-		static void SetPhysicsWorldVelocityIterations(int32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
+		static uint32_t GetPhysicsWorldVelocityIterations() { return s_PhysicsWorld2DVeloctityIterations; }
+		static void SetPhysicsWorldVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsWorld2DVeloctityIterations = veloctiyIterations; }
 
-		static int32_t GetPhysicsWorld2DPositionIterations() { return s_PhysicsWorld2DPositionIterations; }
-		static void SetPhysicsWorldPositionIterations(int32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
+		static uint32_t GetPhysicsWorldPositionIterations() { return s_PhysicsWorld2DPositionIterations; }
+		static void SetPhysicsWorldPositionIterations(uint32_t positionIterations) { s_PhysicsWorld2DPositionIterations = positionIterations; }
 
-		static Math::vec2 GetPhysicsWorld2DGravity() { return s_PhysicsWorld2DGravity; }
+		static Math::vec2 GetPhysicsWorldGravity() { return s_PhysicsWorld2DGravity; }
 		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
 
 	private:
 		inline static b2World* s_PhysicsScene = nullptr;
 
 		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.8f);
-		inline static int32_t s_PhysicsWorld2DVeloctityIterations = 6;
-		inline static int32_t s_PhysicsWorld2DPositionIterations = 2;
+		inline static uint32_t s_PhysicsWorld2DVeloctityIterations = 6;
+		inline static uint32_t s_PhysicsWorld2DPositionIterations = 2;
 
 		inline static std::unordered_map<b2Fixture*, UniqueRef<PhysicsBody2DData>> s_PhysicsBodyDataMap;
 	};

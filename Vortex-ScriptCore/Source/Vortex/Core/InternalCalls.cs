@@ -540,6 +540,24 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool Physics_Raycast(ref Vector3 origin, ref Vector3 direction, float maxDistance, out RaycastHit hit);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics_GetSceneGravity(out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics_SetSceneGravity(ref Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint Physics_GetScenePositionIterations();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics_SetScenePositionIterations(uint positionIterations);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint Physics_GetSceneVelocityIterations();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics_SetSceneVelocityIterations(uint velocityIterations);
+
 		#endregion
 
 		#region CharacterController
@@ -683,6 +701,24 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics2D_GetWorldGravity(out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics2D_SetWorldGravity(ref Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint Physics2D_GetWorldPositionIterations();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics2D_SetWorldPositionIterations(uint positionIterations);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern uint Physics2D_GetWorldVelocityIterations();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void Physics2D_SetWorldVelocityIterations(uint velocityIterations);
 
 		#endregion
 
