@@ -100,6 +100,81 @@ namespace Vortex {
 				Gui::TreePop();
 			}
 
+			if (Gui::TreeNodeEx("Renderer", treeNodeFlags))
+			{
+				float lineWidth = Renderer2D::GetLineWidth();
+				if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
+					Renderer2D::SetLineWidth(lineWidth);
+
+				RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
+				static const char* cullModes[4] = {
+					Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::None),
+					Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Front),
+					Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Back),
+					Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::FrontAndBack)
+				};
+
+				static const char* currentCullMode = Utils::TriangleCullModeToString(cullMode);
+
+				SharedRef<Project> activeProject = Project::GetActive();
+				ProjectProperties& projectProps = activeProject->GetProperties();
+
+				if (Gui::BeginCombo("Cull Mode", currentCullMode))
+				{
+					uint32_t arraySize = VX_ARRAYCOUNT(cullModes);
+
+					auto SetCullModeFunc = [&](RendererAPI::TriangleCullMode cullMode)
+					{
+						Renderer::SetCullMode(cullMode);
+						projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(cullMode);
+					};
+
+					for (uint32_t i = 0; i < arraySize; i++)
+					{
+						bool isSelected = strcmp(currentCullMode, cullModes[i]) == 0;
+						if (Gui::Selectable(cullModes[i], isSelected))
+						{
+							currentCullMode = cullModes[i];
+
+							if (currentCullMode == cullModes[0])
+								SetCullModeFunc(RendererAPI::TriangleCullMode::None);
+							if (currentCullMode == cullModes[1])
+								SetCullModeFunc(RendererAPI::TriangleCullMode::Front);
+							if (currentCullMode == cullModes[2])
+								SetCullModeFunc(RendererAPI::TriangleCullMode::Back);
+							if (currentCullMode == cullModes[3])
+								SetCullModeFunc(RendererAPI::TriangleCullMode::FrontAndBack);
+						}
+
+						if (isSelected)
+							Gui::SetItemDefaultFocus();
+
+						if (i != arraySize - 1)
+							Gui::Separator();
+					}
+
+					Gui::EndMenu();
+				}
+
+				float sceneExposure = Renderer::GetSceneExposure();
+				if (Gui::DragFloat("Scene Exposure", &sceneExposure, 0.01f, 0.01f, 1.0f, "%.2f"))
+					Renderer::SetSceneExposure(sceneExposure);
+
+				float gamma = Renderer::GetSceneGamma();
+				if (Gui::DragFloat("Gamma", &gamma, 0.01f, 0.01f, 0.0f, "%.2f"))
+					Renderer::SetSceneGamma(gamma);
+
+				static bool wireframeMode = false;
+				if (Gui::Checkbox("Show Wireframe", &wireframeMode))
+					RenderCommand::SetWireframe(wireframeMode);
+
+				static bool vsync = true;
+				if (Gui::Checkbox("Enable VSync", &vsync))
+					Application::Get().GetWindow().SetVSync(vsync);
+
+				Gui::TreePop();
+			}
+
 			Gui::End();
 		}
 	}

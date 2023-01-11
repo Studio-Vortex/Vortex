@@ -170,14 +170,7 @@ namespace Vortex {
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
 		bool AssemblyReloadPending = false;
-
-#ifdef VX_DEBUG
-		bool DebuggingEnabled = true;
-#else
-		//bool DebuggingEnabled = false;
-		// Temporary
-		bool DebuggingEnabled = true;
-#endif
+		bool DebuggingEnabled = false;
 
 		SharedRef<AudioSource> AppAssemblyReloadSound;
 
@@ -202,10 +195,6 @@ namespace Vortex {
 			Application::Get().SubmitToMainThread([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
-				//FileSystem::LaunchApplication("CopyMonoAssembly.bat", "");
-
-				using namespace std::chrono_literals;
-				std::this_thread::sleep_for(150ms);
 
 				ScriptEngine::ReloadAssembly();
 				s_Data->AppAssemblyReloadSound->Play();
@@ -216,6 +205,10 @@ namespace Vortex {
 	void ScriptEngine::Init()
 	{
 		s_Data = new ScriptEngineData();
+
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+		s_Data->DebuggingEnabled = projectProps.General.EnableMonoDebugging;
 
 		InitMono();
 		ScriptRegistry::RegisterMethods();
@@ -228,8 +221,6 @@ namespace Vortex {
 			VX_CORE_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
 			return;
 		}
-
-		const auto& projectProps = Project::GetActive()->GetProperties();
 
 		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.General.ScriptBinaryPath);
 		status = LoadAppAssembly(appAssemblyPath);

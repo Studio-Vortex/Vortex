@@ -41,87 +41,8 @@ namespace Vortex {
 					Gui::EndTabItem();
 				}
 
-				if (Gui::BeginTabItem("Renderer"))
-				{
-					float lineWidth = Renderer2D::GetLineWidth();
-					if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
-						Renderer2D::SetLineWidth(lineWidth);
-
-					RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
-					static const char* cullModes[4] = {
-						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::None),
-						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Front),
-						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::Back),
-						Utils::TriangleCullModeToString(RendererAPI::TriangleCullMode::FrontAndBack)
-					};
-
-					static const char* currentCullMode = Utils::TriangleCullModeToString(cullMode);
-
-					SharedRef<Project> activeProject = Project::GetActive();
-					ProjectProperties& projectProps = activeProject->GetProperties();
-
-					if (Gui::BeginCombo("Cull Mode", currentCullMode))
-					{
-						uint32_t arraySize = VX_ARRAYCOUNT(cullModes);
-
-						auto SetCullModeFunc = [&](RendererAPI::TriangleCullMode cullMode)
-						{
-							Renderer::SetCullMode(cullMode);
-							projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(cullMode);
-						};
-
-						for (uint32_t i = 0; i < arraySize; i++)
-						{
-							bool isSelected = strcmp(currentCullMode, cullModes[i]) == 0;
-							if (Gui::Selectable(cullModes[i], isSelected))
-							{
-								currentCullMode = cullModes[i];
-
-								if (currentCullMode == cullModes[0])
-									SetCullModeFunc(RendererAPI::TriangleCullMode::None);
-								if (currentCullMode == cullModes[1])
-									SetCullModeFunc(RendererAPI::TriangleCullMode::Front);
-								if (currentCullMode == cullModes[2])
-									SetCullModeFunc(RendererAPI::TriangleCullMode::Back);
-								if (currentCullMode == cullModes[3])
-									SetCullModeFunc(RendererAPI::TriangleCullMode::FrontAndBack);
-							}
-
-							if (isSelected)
-								Gui::SetItemDefaultFocus();
-
-							if (i != arraySize - 1)
-								Gui::Separator();
-						}
-
-						Gui::EndMenu();
-					}
-
-					float sceneExposure = Renderer::GetSceneExposure();
-					if (Gui::DragFloat("Scene Exposure", &sceneExposure, 0.01f, 0.01f, 1.0f, "%.2f"))
-						Renderer::SetSceneExposure(sceneExposure);
-
-					float gamma = Renderer::GetSceneGamma();
-					if (Gui::DragFloat("Gamma", &gamma, 0.01f, 0.01f, 0.0f, "%.2f"))
-						Renderer::SetSceneGamma(gamma);
-
-					static bool wireframeMode = false;
-					if (Gui::Checkbox("Show Wireframe", &wireframeMode))
-						RenderCommand::SetWireframe(wireframeMode);
-
-					static bool vsync = true;
-					if (Gui::Checkbox("Enable VSync", &vsync))
-						Application::Get().GetWindow().SetVSync(vsync);
-
-					Gui::EndTabItem();
-				}
-
 				if (Gui::BeginTabItem("Physics"))
 				{
-					Gui::Checkbox("Show Physics Colliders", &m_Properties.PhysicsProps.ShowColliders);
-
-					Gui::Spacing();
-
 					Gui::PushFont(boldFont);
 					Gui::Text("3D Physics");
 					Gui::PopFont();
@@ -161,6 +82,14 @@ namespace Vortex {
 					static int32_t positionIterations = Physics2D::GetPhysicsWorld2DPositionIterations();
 					Gui::DragInt("Position Iterations", &positionIterations, 1.0f, 1, 100);
 					Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
+
+					Gui::EndTabItem();
+				}
+
+				if (Gui::BeginTabItem("Scripting"))
+				{
+					Gui::Checkbox("Enable Debugging", &m_Properties.General.EnableMonoDebugging);
+					Gui::Checkbox("Reload Assembly On Play", &m_Properties.EditorProps.ReloadAssemblyOnPlay);
 
 					Gui::EndTabItem();
 				}
@@ -250,18 +179,7 @@ namespace Vortex {
 
 					Gui::DragFloat("Camera FOV", &m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
 
-					static bool lockFacingForward = false;
-					if (Gui::Checkbox("Lock Camera To 2D View", &lockFacingForward))
-						EditorCamera::LockTo2DView(lockFacingForward);
-
-					static bool lockFacingDown = false;
-					if (Gui::Checkbox("Lock Camera To Top Down View", &lockFacingDown))
-						EditorCamera::LockToTopDownView(lockFacingDown);
-
 					Gui::Separator();
-
-					Gui::Checkbox("Reload Assembly On Play", &m_Properties.EditorProps.ReloadAssemblyOnPlay);
-
 					Gui::Spacing();
 
 					// Gizmo Settings
