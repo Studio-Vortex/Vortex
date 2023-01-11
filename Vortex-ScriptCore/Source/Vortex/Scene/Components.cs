@@ -540,7 +540,7 @@
 			InternalCalls.RigidBodyComponent_ClearTorque(Entity.ID, mode);
 		}
 
-		public void ClearForces(ForceMode mode = ForceMode.Force)
+		public void ClearForce(ForceMode mode = ForceMode.Force)
 		{
 			InternalCalls.RigidBodyComponent_ClearForce(Entity.ID, mode);
 		}

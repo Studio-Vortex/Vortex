@@ -278,6 +278,42 @@ namespace Vortex {
 		entity.SetParent(0);
 	}
 
+    void Scene::ActiveateChildren(Entity entity)
+    {
+		const std::vector<UUID>& children = entity.Children();
+
+		for (const auto& child : children)
+		{
+			Entity childEntity = TryGetEntityWithUUID(child);
+
+			if (!childEntity)
+				continue;
+
+			childEntity.SetActive(true);
+
+			if (!childEntity.Children().empty())
+				ActiveateChildren(childEntity);
+		}
+    }
+
+    void Scene::DeactiveateChildren(Entity entity)
+    {
+		const std::vector<UUID>& children = entity.Children();
+
+		for (const auto& child : children)
+		{
+			Entity childEntity = TryGetEntityWithUUID(child);
+
+			if (!childEntity)
+				continue;
+
+			childEntity.SetActive(false);
+
+			if (!childEntity.Children().empty())
+				DeactiveateChildren(childEntity);
+		}
+    }
+
 	void Scene::OnRuntimeStart(bool muteAudio)
 	{
 		VX_PROFILE_FUNCTION();
@@ -648,7 +684,7 @@ namespace Vortex {
 		{
 			const auto& idComponent = m_Registry.get<IDComponent>(entity);
 			if (idComponent.ID == uuid)
-				return Entity(entity, this);
+				return Entity{ entity, this };
 		}
 
 		return Entity{};

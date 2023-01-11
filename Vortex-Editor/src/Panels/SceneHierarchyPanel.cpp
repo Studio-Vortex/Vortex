@@ -451,12 +451,18 @@ namespace Vortex {
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		bool isPrefab = entity.HasComponent<PrefabComponent>();
+		bool entityActive = entity.IsActive();
+
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
+		if (!entityActive)
+			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
 
 		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)entity, flags, tag.c_str());
-
+		
 		if (isPrefab)
+			Gui::PopStyleColor();
+		if (!entityActive)
 			Gui::PopStyleColor();
 
 		if (Gui::IsItemClicked())
@@ -672,7 +678,15 @@ namespace Vortex {
 
 			bool active = tagComponent.IsActive;
 			if (Gui::Checkbox("Active", &active))
+			{
 				tagComponent.IsActive = active;
+
+				if (active)
+					m_ContextScene->ActiveateChildren(entity);
+				else
+					m_ContextScene->DeactiveateChildren(entity);
+
+			}
 
 			Gui::SameLine();
 
