@@ -1107,6 +1107,8 @@ namespace Vortex {
 						soundProperties.Spacialized = soundProps["Spacialized"].as<bool>();
 					if (soundProps["Loop"])
 						soundProperties.Loop = soundProps["Loop"].as<bool>();
+
+					asc.Source->SetProperties(soundProperties);
 				}
 			}
 

@@ -856,29 +856,29 @@ namespace Vortex {
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
 				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
-				if (Gui::DragFloat("Field of View", &perspectiveVerticalFOV))
+				if (Gui::DragFloat("Field of View", &perspectiveVerticalFOV, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(perspectiveVerticalFOV));
 
 				float nearClip = camera.GetPerspectiveNearClip();
-				if (Gui::DragFloat("Near", &nearClip))
+				if (Gui::DragFloat("Near", &nearClip, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetPerspectiveNearClip(nearClip);
 
 				float farClip = camera.GetPerspectiveFarClip();
-				if (Gui::DragFloat("Far", &farClip))
+				if (Gui::DragFloat("Far", &farClip, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetPerspectiveFarClip(farClip);
 			}
 			else
 			{
 				float orthoSize = camera.GetOrthographicSize();
-				if (Gui::DragFloat("Size", &orthoSize))
+				if (Gui::DragFloat("Size", &orthoSize, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetOrthographicSize(orthoSize);
 
 				float nearClip = camera.GetOrthographicNearClip();
-				if (Gui::DragFloat("Near", &nearClip))
+				if (Gui::DragFloat("Near", &nearClip, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetOrthographicNearClip(nearClip);
 
 				float farClip = camera.GetOrthographicFarClip();
-				if (Gui::DragFloat("Far", &farClip))
+				if (Gui::DragFloat("Far", &farClip, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetOrthographicFarClip(farClip);
 
 				Gui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
@@ -984,11 +984,11 @@ namespace Vortex {
 				case LightType::Spot:
 				{
 					float cutoff = lightSource->GetCutOff();
-					if (Gui::DragFloat("CutOff", &cutoff))
+					if (Gui::DragFloat("CutOff", &cutoff, 1.0f, 0.0f, 0.0f, "%.2f"))
 						lightSource->SetCutOff(cutoff);
 
 					float outerCutoff = lightSource->GetOuterCutOff();
-					if (Gui::DragFloat("Outer CutOff", &outerCutoff))
+					if (Gui::DragFloat("Outer CutOff", &outerCutoff, 1.0f, 0.0f, 0.0f, "%.2f"))
 						lightSource->SetOuterCutOff(outerCutoff);
 
 					break;
@@ -1547,7 +1547,7 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f);
+			Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f, 0.0f, 0.0f, "%.2f");
 		});
 
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
@@ -1621,9 +1621,9 @@ namespace Vortex {
 			}
 
 			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-			Gui::DragFloat("Line Spacing", &component.LineSpacing);
-			Gui::DragFloat("Kerning", &component.Kerning);
-			Gui::DragFloat("Max Width", &component.MaxWidth);
+			Gui::DragFloat("Line Spacing", &component.LineSpacing, 1.0f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat("Kerning", &component.Kerning, 1.0f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat("Max Width", &component.MaxWidth, 1.0f, 0.0f, 0.0f, "%.2f");
 		});
 
 		DrawComponent<AnimatorComponent>("Animator", entity, [&](auto& component)
@@ -1720,10 +1720,10 @@ namespace Vortex {
 			{
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
-				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f))
+				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f, "%.2f"))
 					component.Source->SetPitch(props.Pitch);
 
-				if (Gui::DragFloat("Volume", &props.Volume, 0.1f))
+				if (Gui::DragFloat("Volume", &props.Volume, 0.1f, 0.0f, 0.0f, "%.2f"))
 					component.Source->SetVolume(props.Volume);
 
 				if (Gui::Checkbox("Play On Start", &props.PlayOnStart))
@@ -1764,19 +1764,19 @@ namespace Vortex {
 					{
 						Gui::Unindent();
 						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-						if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+						if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
 						{
 							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
 							component.Source->SetCone(props.Cone);
 						}
 						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-						if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+						if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
 						{
 							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
 							component.Source->SetCone(props.Cone);
 						}
 						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-						if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+						if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f, 0.0f, 0.0f, "%.2f"))
 						{
 							props.Cone.OuterGain = Math::Deg2Rad(outerGain);
 							component.Source->SetCone(props.Cone);
@@ -1784,13 +1784,13 @@ namespace Vortex {
 
 						Gui::Spacing();
 
-						if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f))
+						if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f, 0.0f, 0.0f, "%.2f"))
 							component.Source->SetMinDistance(props.MinDistance);
 
-						if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f))
+						if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f, 0.0f, 0.0f, "%.2f"))
 							component.Source->SetMaxDistance(props.MaxDistance);
 
-						if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f))
+						if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f, 0.0f, 0.0f, "%.2f"))
 							component.Source->SetDopplerFactor(props.DopplerFactor);
 
 						Gui::Indent();
@@ -1831,19 +1831,19 @@ namespace Vortex {
 				Gui::Unindent();
 
 				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-				if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f))
+				if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
 				{
 					props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
 					component.Listener->SetCone(props.Cone);
 				}
 				float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-				if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f))
+				if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
 				{
 					props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
 					component.Listener->SetCone(props.Cone);
 				}
 				float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-				if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f))
+				if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f, 0.0f, 0.0f, "%.2f"))
 				{
 					props.Cone.OuterGain = Math::Deg2Rad(outerGain);
 					component.Listener->SetCone(props.Cone);
@@ -1956,8 +1956,8 @@ namespace Vortex {
 
 		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
 		{
-			Gui::DragFloat("Slope Limit", &component.SlopeLimitDegrees);
-			Gui::DragFloat("Step Offset", &component.StepOffset);
+			Gui::DragFloat("Slope Limit", &component.SlopeLimitDegrees, 1.0f, 0.0f, 0.0f, "%.2f");
+			Gui::DragFloat("Step Offset", &component.StepOffset, 1.0f, 0.0f, 0.0f, "%.2f");
 			Gui::Checkbox("Disable Gravity", &component.DisableGravity);
 		});
 

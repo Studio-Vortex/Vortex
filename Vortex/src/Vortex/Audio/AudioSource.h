@@ -67,6 +67,7 @@ namespace Vortex {
 
 		inline const SoundProperties& GetProperties() const { return m_Properties; }
 		inline SoundProperties& GetProperties() { return m_Properties; }
+		void SetProperties(const SoundProperties& soundProps);
 
 		inline static uint32_t AddAudioListener() { return ++s_ListenerCount; }
 		inline static void RemoveAudioListener() { --s_ListenerCount; }

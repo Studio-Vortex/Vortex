@@ -142,7 +142,23 @@ namespace Vortex {
 		m_Properties.PlayOneShot = playOneShot;
 	}
 
-	float AudioSource::GetAmountComplete()
+    void AudioSource::SetProperties(const SoundProperties& soundProps)
+    {
+		SetDirection(soundProps.Direction);
+		SetVelocity(soundProps.Veloctiy);
+		SetCone(soundProps.Cone);
+		SetMinDistance(soundProps.MinDistance);
+		SetMaxDistance(soundProps.MaxDistance);
+		SetPitch(soundProps.Pitch);
+		SetDopplerFactor(soundProps.DopplerFactor);
+		SetVolume(soundProps.Volume);
+		SetPlayOnStart(soundProps.PlayOnStart);
+		SetPlayOneShot(soundProps.PlayOneShot);
+		SetLoop(soundProps.Loop);
+		SetSpacialized(soundProps.Spacialized);
+    }
+
+    float AudioSource::GetAmountComplete()
 	{
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
