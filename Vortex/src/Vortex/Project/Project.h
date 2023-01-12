@@ -3,6 +3,7 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
 #include "Vortex/Renderer/Color.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
 
 #include <filesystem>
 #include <string>
@@ -27,6 +28,8 @@ namespace Vortex {
 		struct PhysicsProperties
 		{
 			Math::vec4 Physics3DColliderColor = ColorToVec4(Color::Green);
+			BroadphaseType BroadphaseModel = BroadphaseType::AutomaticBoxPrune;
+			FrictionType FrictionModel = FrictionType::Patch;
 			Math::vec4 Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
 			bool ShowColliders = false;
 		} PhysicsProps;

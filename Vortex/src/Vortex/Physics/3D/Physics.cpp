@@ -2,11 +2,52 @@
 #include "Physics.h"
 
 #include "Vortex/Utils/PlatformUtils.h"
-#include "Vortex/Physics/PhysXTypes.h"
-#include "Vortex/Physics/PhysXAPIHelpers.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Project/Project.h"
 
 namespace Vortex {
+
+	namespace Utils {
+
+		static physx::PxBroadPhaseType::Enum VortexBroadphaseTypeToPhysXBroadphaseType(BroadphaseType broadphaseModel)
+		{
+			switch (broadphaseModel)
+			{
+				case BroadphaseType::SweepAndPrune:     return physx::PxBroadPhaseType::eSAP;
+				case BroadphaseType::MultiBoxPrune:     return physx::PxBroadPhaseType::eMBP;
+				case BroadphaseType::AutomaticBoxPrune: return physx::PxBroadPhaseType::eABP;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
+			return physx::PxBroadPhaseType::eABP;
+		}
+
+		static physx::PxFrictionType::Enum VortexFrictionTypeToPhysXFrictionType(FrictionType frictionModel)
+		{
+			switch (frictionModel)
+			{
+				case Vortex::FrictionType::OneDirectional: return physx::PxFrictionType::eONE_DIRECTIONAL;
+				case Vortex::FrictionType::Patch:          return physx::PxFrictionType::ePATCH;
+				case Vortex::FrictionType::TwoDirectional: return physx::PxFrictionType::eTWO_DIRECTIONAL;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Friction Type!");
+			return physx::PxFrictionType::ePATCH;
+		}
+
+		static void ReplaceInconsistentVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
+		{
+			uint32_t size = vector.length();
+			for (uint32_t i = 0; i < size; i++)
+			{
+				if (vector[i] == 0.0f)
+					vector[i] = replacementVector[i];
+			}
+		}
+
+	}
 
 	struct PhysicsEngineInternalData
 	{
@@ -24,20 +65,6 @@ namespace Vortex {
 	};
 
 	static PhysicsEngineInternalData* s_Data = nullptr;
-
-	namespace Utils {
-
-		static void ReplaceInconsistentVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
-		{
-			uint32_t size = vector.length();
-			for (uint32_t i = 0; i < size; i++)
-			{
-				if (vector[i] == 0.0f)
-					vector[i] = replacementVector[i];
-			}
-		}
-
-	}
 
 	class PhysicsContactListener : public physx::PxSimulationEventCallback
 	{
@@ -216,8 +243,12 @@ namespace Vortex {
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
 		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
-		sceneDescription.broadPhaseType = physx::PxBroadPhaseType::eABP; // May potenially want different options
-		sceneDescription.frictionType = physx::PxFrictionType::ePATCH; // Same here
+
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
+		sceneDescription.broadPhaseType = Utils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
+		sceneDescription.frictionType = Utils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
 
 		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
 		sceneDescription.filterShader = physx::PxDefaultSimulationFilterShader;
@@ -233,7 +264,7 @@ namespace Vortex {
 		for (const auto& e : view)
 		{
 			Entity entity{ e, contextScene };
-			CreatePhysicsBody(entity, entity.GetTransform(), entity.GetComponent<RigidBodyComponent>());
+			CreatePhysicsActor(entity, entity.GetTransform(), entity.GetComponent<RigidBodyComponent>());
 		}
 
 		s_Data->ContextScene = contextScene;
@@ -255,7 +286,7 @@ namespace Vortex {
 
 			if (!rigidbody.RuntimeActor)
 			{
-				CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
+				CreatePhysicsActor(entity, entity.GetTransform(), rigidbody);
 			}
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
@@ -322,7 +353,7 @@ namespace Vortex {
 		s_Data->ContextScene = nullptr;
 	}
 
-	void Physics::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
+	void Physics::CreatePhysicsActor(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody)
 	{
 		physx::PxRigidActor* actor = nullptr;
 
@@ -503,6 +534,12 @@ namespace Vortex {
 			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
+	}
+
+	void Physics::SetPhysicsSceneGravity(const Math::vec3& gravity)
+	{
+		s_PhysicsSceneGravity = gravity;
+		s_Data->PhysicsScene->setGravity(ToPhysXVector(gravity));
 	}
 
 	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)

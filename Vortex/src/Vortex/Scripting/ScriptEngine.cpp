@@ -11,7 +11,7 @@
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Debug/Instrumentor.h"
 #include "Vortex/Project/Project.h"
-#include "Vortex/Physics/Physics.h"
+#include "Vortex/Physics/3D/Physics.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/class.h>
@@ -660,10 +660,10 @@ namespace Vortex {
 		m_OnCreateFunc         = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 1);
-		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 1);
-		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 1);
-		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 1);
+		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 0);
+		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 0);
+		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 0);
+		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 0);
 		m_OnCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
 		m_OnGuiFunc            = m_ScriptClass->GetMethod("OnGui", 0);
 

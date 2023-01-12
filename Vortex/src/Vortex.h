@@ -28,8 +28,8 @@ namespace Gui = ImGui;
 #include "Vortex/Audio/AudioListener.h"
 
 /// Physics
-#include "Vortex/Physics/Physics.h"
-#include "Vortex/Physics/Physics2D.h"
+#include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/2D/Physics2D.h"
 
 /// Project
 #include "Vortex/Project/Project.h"

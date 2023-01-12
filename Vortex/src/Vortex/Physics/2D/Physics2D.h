@@ -40,7 +40,7 @@ namespace Vortex {
 	private:
 		inline static b2World* s_PhysicsScene = nullptr;
 
-		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.8f);
+		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.81f);
 		inline static uint32_t s_PhysicsWorld2DVeloctityIterations = 6;
 		inline static uint32_t s_PhysicsWorld2DPositionIterations = 2;
 

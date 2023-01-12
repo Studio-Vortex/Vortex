@@ -4,6 +4,7 @@
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/Renderer.h"
+#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 
 #include <fstream>
 
@@ -41,8 +42,10 @@ namespace Vortex {
 
 			out << YAML::Key << "PhysicsProperties" << YAML::BeginMap; // Physics Properties
 			{
-				out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
 				out << YAML::Key << "Physics3DColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
+				out << YAML::Key << "BroadphaseModel" << YAML::Value << Utils::BroadphaseTypeToString(props.PhysicsProps.BroadphaseModel);
+				out << YAML::Key << "FrictionModel" << YAML::Value << Utils::FrictionTypeToString(props.PhysicsProps.FrictionModel);
+				out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
 				out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
 			}
 			out << YAML::EndMap; // Physics Properties
@@ -115,16 +118,22 @@ namespace Vortex {
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
 			if (rendererData["TriangleCullMode"])
 			{
-				props.RendererProps.TriangleCullMode = rendererData["TriangleCullMode"].as<std::string>();
-				RendererAPI::TriangleCullMode cullMode = Utils::TriangleCullModeFromString(props.RendererProps.TriangleCullMode);
-				Renderer::SetCullMode(cullMode);
+				std::string triangleCullMode = rendererData["TriangleCullMode"].as<std::string>();
+				if (!triangleCullMode.empty())
+				{
+					props.RendererProps.TriangleCullMode = triangleCullMode;
+					RendererAPI::TriangleCullMode cullMode = Utils::TriangleCullModeFromString(props.RendererProps.TriangleCullMode);
+					Renderer::SetCullMode(cullMode);
+				}
 			}
 		}
 
 		{
 			auto physicsData = projectData["PhysicsProperties"];
-			props.PhysicsProps.Physics2DColliderColor = physicsData["Physics2DColliderColor"].as<Math::vec4>();
 			props.PhysicsProps.Physics3DColliderColor = physicsData["Physics3DColliderColor"].as<Math::vec4>();
+			props.PhysicsProps.BroadphaseModel = Utils::BroadphaseTypeFromString(physicsData["BroadphaseModel"].as<std::string>());
+			props.PhysicsProps.FrictionModel = Utils::FrictionTypeFromString(physicsData["FrictionModel"].as<std::string>());
+			props.PhysicsProps.Physics2DColliderColor = physicsData["Physics2DColliderColor"].as<Math::vec4>();
 			props.PhysicsProps.ShowColliders = physicsData["ShowPhysicsColliders"].as<bool>();
 		}
 

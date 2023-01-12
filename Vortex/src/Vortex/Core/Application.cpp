@@ -7,7 +7,7 @@
 #include "Vortex/Audio/AudioEngine.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Physics/Physics.h"
+#include "Vortex/Physics/3D/Physics.h"
 
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Events/KeyEvent.h"

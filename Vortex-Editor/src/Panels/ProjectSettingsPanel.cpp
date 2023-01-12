@@ -1,7 +1,8 @@
 #include "ProjectSettingsPanel.h"
+#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 
 namespace Vortex {
-	
+
 	ProjectSettingsPanel::ProjectSettingsPanel(const SharedRef<Project>& project)
 		: m_Properties(project->GetProperties()) { }
 
@@ -49,18 +50,92 @@ namespace Vortex {
 					Gui::Separator();
 					Gui::Spacing();
 
-					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
+					Gui::ColorEdit4("3D##Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
 
-					static Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
-					if (Gui::DragFloat3("Gravity", Math::ValuePtr(gravity3D), 0.1f))
+					Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
+					if (Gui::DragFloat3("3D##Gravity", Math::ValuePtr(gravity3D), 0.1f))
 						Physics::SetPhysicsSceneGravity(gravity3D);
 
-					static int32_t physicsPositionIterations = Physics::GetPhysicsScenePositionIterations();
-					if (Gui::DragInt("Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
+					static const char* broadphaseTypes[] = {
+						"Sweep And Prune",
+						"Multi Box Prune",
+						"Automatic Box Prune",
+					};
+
+					static const char* currentBroadphaseType = broadphaseTypes[(uint32_t)m_Properties.PhysicsProps.BroadphaseModel];
+
+					if (Gui::BeginCombo("Broadphase Model", currentBroadphaseType))
+					{
+						uint32_t arraySize = VX_ARRAYCOUNT(broadphaseTypes);
+
+						for (uint32_t i = 0; i < arraySize; i++)
+						{
+							bool isSelected = strcmp(currentBroadphaseType, broadphaseTypes[i]) == 0;
+							if (Gui::Selectable(broadphaseTypes[i], isSelected))
+							{
+								currentBroadphaseType = broadphaseTypes[i];
+
+								if (i == 0)
+									m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::SweepAndPrune;
+								if (i == 1)
+									m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::MultiBoxPrune;
+								if (i == 2)
+									m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::AutomaticBoxPrune;
+							}
+
+							if (isSelected)
+								Gui::SetItemDefaultFocus();
+
+							if (i != arraySize - 1)
+								Gui::Separator();
+						}
+
+						Gui::EndMenu();
+					}
+
+					static const char* frictionTypes[] = {
+						"Patch",
+						"One Directional",
+						"Two Directional",
+					};
+
+					static const char* currentFrictionType = frictionTypes[(int)m_Properties.PhysicsProps.FrictionModel];
+
+					if (Gui::BeginCombo("Friction Model", currentFrictionType))
+					{
+						uint32_t arraySize = VX_ARRAYCOUNT(frictionTypes);
+
+						for (uint32_t i = 0; i < arraySize; i++)
+						{
+							bool isSelected = strcmp(currentFrictionType, frictionTypes[i]) == 0;
+							if (Gui::Selectable(frictionTypes[i], isSelected))
+							{
+								currentFrictionType = frictionTypes[i];
+
+								if (i == 0)
+									m_Properties.PhysicsProps.FrictionModel = FrictionType::Patch;
+								if (i == 1)
+									m_Properties.PhysicsProps.FrictionModel = FrictionType::OneDirectional;
+								if (i == 2)
+									m_Properties.PhysicsProps.FrictionModel = FrictionType::TwoDirectional;
+							}
+
+							if (isSelected)
+								Gui::SetItemDefaultFocus();
+
+							if (i != arraySize - 1)
+								Gui::Separator();
+						}
+
+						Gui::EndMenu();
+					}
+
+					int32_t physicsPositionIterations = Physics::GetPhysicsScenePositionIterations();
+					if (Gui::DragInt("3D##Position Iterations", &physicsPositionIterations, 1.0f, 1, 100))
 						Physics::SetPhysicsScenePositionIterations(physicsPositionIterations);
 
-					static int32_t physicsVelocityIterations = Physics::GetPhysicsSceneVelocityIterations();
-					if (Gui::DragInt("Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
+					int32_t physicsVelocityIterations = Physics::GetPhysicsSceneVelocityIterations();
+					if (Gui::DragInt("3D##Velocity Iterations", &physicsVelocityIterations, 1.0f, 1, 100))
 						Physics::SetPhysicsSceneVelocityIterations(physicsVelocityIterations);
 
 					Gui::PushFont(boldFont);
@@ -69,18 +144,18 @@ namespace Vortex {
 					Gui::Separator();
 					Gui::Spacing();
 
-					Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
+					Gui::ColorEdit4("2D##Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
 
-					static Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
-					if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity2D), 0.1f))
+					Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
+					if (Gui::DragFloat2("2D##Gravity", Math::ValuePtr(gravity2D), 0.1f))
 						Physics2D::SetPhysicsWorldGravitty(gravity2D);
 
-					static int32_t velocityIterations = Physics2D::GetPhysicsWorldVelocityIterations();
-					if (Gui::DragInt("Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
+					int32_t velocityIterations = Physics2D::GetPhysicsWorldVelocityIterations();
+					if (Gui::DragInt("2D##Velocity Iterations", &velocityIterations, 1.0f, 1, 100))
 						Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
 
-					static int32_t positionIterations = Physics2D::GetPhysicsWorldPositionIterations();
-					Gui::DragInt("Position Iterations", &positionIterations, 1.0f, 1, 100);
+					int32_t positionIterations = Physics2D::GetPhysicsWorldPositionIterations();
+					Gui::DragInt("2D##Position Iterations", &positionIterations, 1.0f, 1, 100);
 					Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
 
 					Gui::EndTabItem();
@@ -117,15 +192,15 @@ namespace Vortex {
 							{
 								currentTheme = themes[i];
 
-								if (currentTheme == themes[0])
+								if (i == 0)
 									Application::Get().GetGuiLayer()->SetDarkThemeColors();
-								if (currentTheme == themes[1])
+								if (i == 1)
 									Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
-								if (currentTheme == themes[2])
+								if (i == 2)
 									Gui::StyleColorsDark();
-								if (currentTheme == themes[3])
+								if (i == 3)
 									Gui::StyleColorsClassic();
-								if (currentTheme == themes[4])
+								if (i == 4)
 									Gui::StyleColorsLight();
 							}
 

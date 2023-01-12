@@ -97,7 +97,9 @@ namespace Vortex {
 								auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
 
 								for (const auto& [name, field] : sourceScriptFieldMap)
+								{
 									destinationScriptFieldMap[name] = field;
+								}
 							}
 						}
 					}
@@ -155,15 +157,15 @@ namespace Vortex {
 		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
 		lightSource.Type = LightType::Directional;
 		startingSkyLight.GetTransform().SetRotationEuler({ Math::Deg2Rad(0.25f), Math::Deg2Rad(-1.0f), Math::Deg2Rad(-0.5f) });
-		startingSkyLight.GetTransform().Translation = Math::vec3(0.0f, 4.0f, 0.0f);
+		startingSkyLight.GetTransform().Translation = { 0.0f, 4.0f, 0.0f };
 
 		Entity startingCamera = context->CreateEntity("Camera");
 		startingCamera.AddComponent<AudioListenerComponent>();
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
 		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = Math::vec3(-4.0f, 3.0f, 4.0f);
-		cameraTransform.SetRotationEuler(Math::vec3(Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f));
+		cameraTransform.Translation = { -4.0f, 3.0f, 4.0f };
+		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
@@ -323,9 +325,6 @@ namespace Vortex {
 
 		OnPhysicsSimulationStart();
 
-		SharedRef<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
-
 		// Audio Source - PlayOnStart
 		if (!muteAudio)
 		{
@@ -348,11 +347,10 @@ namespace Vortex {
 			}
 		}
 
-		// Create Script Instance
+		// Create Script Instances
 		{
 			ScriptEngine::OnRuntimeStart(this);
 
-			// Instantiate all script entities
 			auto view = m_Registry.view<ScriptComponent>();
 			for (auto e : view)
 			{
@@ -377,7 +375,7 @@ namespace Vortex {
 
 		ScriptEngine::OnRuntimeStop();
 
-		// Stop all playing audio sources in the scene
+		// Stop all active audio sources in the scene
 		{
 			auto view = m_Registry.view<AudioSourceComponent>();
 
@@ -393,7 +391,7 @@ namespace Vortex {
 			}
 		}
 
-		// Stop all animators in the scene
+		// Stop all active animators in the scene
 		{
 			auto view = m_Registry.view<AnimatorComponent>();
 
@@ -519,7 +517,13 @@ namespace Vortex {
 			}
 		}
 
-		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
+		Viewport viewport{};
+		viewport.TopLeftXPos = 0;
+		viewport.TopLeftYPos = 0;
+		viewport.Width = m_ViewportWidth;
+		viewport.Height = m_ViewportHeight;
+
+		RenderCommand::SetViewport(viewport);
 
 		// Update Components
 		OnModelUpdate();
@@ -590,7 +594,12 @@ namespace Vortex {
 
 	void Scene::OnUpdateEntityGui()
 	{
-		
+		/*m_Registry.each([scene = this](auto& entityID)
+		{
+			Entity entity{ entityID, scene };
+			if (entity.HasComponent<ScriptComponent>())
+				ScriptEngine::OnGuiEntity(entity);
+		});*/
 	}
 
 	void Scene::Step(uint32_t frames)

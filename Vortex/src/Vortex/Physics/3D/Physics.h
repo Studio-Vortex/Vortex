@@ -42,7 +42,7 @@ namespace Vortex {
 		static void Init();
 		static void Shutdown();
 
-		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
+		static void CreatePhysicsActor(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
 		static void DestroyPhysicsBody(Entity entity);
 
 		static void OnSimulationStart(Scene* contextScene);
@@ -62,13 +62,13 @@ namespace Vortex {
 		static void SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsSolverVelocityIterations = veloctiyIterations; }
 
 		static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
-		static void SetPhysicsSceneGravity(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
+		static void SetPhysicsSceneGravity(const Math::vec3& gravity);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 
 	private:
 		inline constexpr static float s_FixedTimeStep = 1.0f / 100.0f;
-		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.8f, 0.0f);
+		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);
 		inline static uint32_t s_PhysicsSolverIterations = 8;
 		inline static uint32_t s_PhysicsSolverVelocityIterations = 2;
 	};

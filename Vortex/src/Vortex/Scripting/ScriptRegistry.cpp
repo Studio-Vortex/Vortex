@@ -11,10 +11,10 @@
 
 #include "Vortex/Audio/AudioSource.h"
 
-#include "Vortex/Physics/Physics.h"
-#include "Vortex/Physics/Physics2D.h"
-#include "Vortex/Physics/PhysXTypes.h"
-#include "Vortex/Physics/PhysXAPIHelpers.h"
+#include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
+#include "Vortex/Physics/2D/Physics2D.h"
 
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/Renderer2D.h"
@@ -1656,7 +1656,7 @@ namespace Vortex {
 
 			rigidbody.Type = bodyType;
 			rigidbody.RuntimeActor = nullptr;
-			Physics::CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
+			Physics::CreatePhysicsActor(entity, entity.GetTransform(), rigidbody);
 		}
 	}
 
@@ -1888,7 +1888,7 @@ namespace Vortex {
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
-			VX_CORE_ASSERT("Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
+			VX_CORE_ASSERT(false, "Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
 			return;
 		}
 
