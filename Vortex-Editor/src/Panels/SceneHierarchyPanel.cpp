@@ -1514,7 +1514,9 @@ namespace Vortex {
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
 		{
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.SpriteColor));
+			UI::BeginPropertyGrid();
+			UI::Property("Color", &component.SpriteColor);
+			UI::EndPropertyGrid();
 
 			auto textureSize = ImVec2{ 64, 64 };
 
@@ -1566,14 +1568,20 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f, 0.0f, 0.0f, "%.2f");
+			UI::BeginPropertyGrid();
+			UI::Property("UV", component.Scale, 0.05f);
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
 		{
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-			Gui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
-			Gui::DragFloat("Fade", &component.Fade, 0.00025f, 0.0f, 1.0f);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Color", &component.Color);
+			UI::Property("Thickness", component.Thickness, 0.025f, 0.0f, 1.0f);
+			UI::Property("Fade", component.Fade, 0.00025f, 0.0f, 1.0f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, [](auto& component)
@@ -1582,30 +1590,35 @@ namespace Vortex {
 
 			ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
 
-			Gui::DragFloat3("Velocity", Math::ValuePtr(emitterProperties.Velocity), 0.25f, 0.1f, 0.0f, "%.2f");
-			Gui::DragFloat3("Velocity Variation", Math::ValuePtr(emitterProperties.VelocityVariation), 0.25f, 0.1f, 0.0f, "%.2f");
-			Gui::DragFloat3("Offset", Math::ValuePtr(emitterProperties.Offset), 0.25f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat2("Size Start", Math::ValuePtr(emitterProperties.SizeBegin), 0.25f, 0.1f, 0.0f, "%.2f");
-			Gui::DragFloat2("Size End", Math::ValuePtr(emitterProperties.SizeEnd), 0.25f, 0.1f, 0.0f, "%.2f");
-			Gui::DragFloat2("Size Variation", Math::ValuePtr(emitterProperties.SizeVariation), 0.25f, 0.1f, 0.0f, "%.2f");
-			Gui::ColorEdit4("Color Start", Math::ValuePtr(emitterProperties.ColorBegin));
-			Gui::ColorEdit4("Color End", Math::ValuePtr(emitterProperties.ColorEnd));
-			Gui::DragFloat("Rotation", &emitterProperties.Rotation, 0.1f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Lifetime", &emitterProperties.LifeTime, 0.25f, 0.1f, 0.0f, "%.2f");
-
 			if (Gui::Button("Start"))
 				particleEmitter->Start();
 			Gui::SameLine();
 
 			if (Gui::Button("Stop"))
 				particleEmitter->Stop();
+
+			UI::BeginPropertyGrid();
+
+			UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
+			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
+			UI::Property("Offset", emitterProperties.Offset, 0.25f);
+			UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
+			UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
+			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
+			UI::Property("Color Start", &emitterProperties.ColorBegin);
+			UI::Property("Color End", &emitterProperties.ColorEnd);
+			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
+			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
 			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
-			Gui::Text(fontFilepath.c_str());
-			Gui::InputText("##FontSource", (char*)fontFilepath.c_str(), fontFilepath.size(), ImGuiInputTextFlags_ReadOnly);
+			UI::BeginPropertyGrid();
+			UI::Property("Font Source", fontFilepath, true);
+			UI::EndPropertyGrid();
 
 			// Accept a Font from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1631,18 +1644,21 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			char buffer[2048] = { 0 };
-			memcpy(buffer, component.TextString.c_str(), component.TextString.size());
-			if (Gui::InputTextMultiline("Text", buffer, sizeof(buffer)))
+			UI::BeginPropertyGrid();
+
+			std::string textString = component.TextString;
+			if (UI::MultilineTextBox("Text", textString))
 			{
-				component.TextString = std::string(buffer);
+				component.TextString = textString;
 				component.TextHash = std::hash<std::string>()(component.TextString);
 			}
 
-			Gui::ColorEdit4("Color", Math::ValuePtr(component.Color));
-			Gui::DragFloat("Line Spacing", &component.LineSpacing, 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Kerning", &component.Kerning, 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Max Width", &component.MaxWidth, 1.0f, 0.0f, 0.0f, "%.2f");
+			UI::Property("Color", &component.Color);
+			UI::Property("Line Spacing", component.LineSpacing, 1.0f);
+			UI::Property("Kerning", component.Kerning, 1.0f);
+			UI::Property("Max Width", component.MaxWidth, 1.0f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<AnimatorComponent>("Animator", entity, [&](auto& component)
@@ -1851,24 +1867,28 @@ namespace Vortex {
 			{
 				Gui::Unindent();
 
+				UI::BeginPropertyGrid();
+
 				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-				if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Inner Angle", innerAngle, 0.5f))
 				{
 					props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
 					component.Listener->SetCone(props.Cone);
 				}
 				float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-				if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Outer Angle", outerAngle, 0.5f))
 				{
 					props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
 					component.Listener->SetCone(props.Cone);
 				}
 				float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-				if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Outer Gain", outerGain, 0.5f))
 				{
 					props.Cone.OuterGain = Math::Deg2Rad(outerGain);
 					component.Listener->SetCone(props.Cone);
 				}
+
+				UI::EndPropertyGrid();
 
 				Gui::Indent();
 				Gui::TreePop();
@@ -1903,18 +1923,18 @@ namespace Vortex {
 				Gui::EndCombo();
 			}
 
-			Gui::DragFloat("Mass", &component.Mass, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat3("Linear Velocity", Math::ValuePtr(component.LinearVelocity), 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Linear Drag", &component.LinearDrag, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat3("Angular Velocity", Math::ValuePtr(component.AngularVelocity), 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Angular Drag", &component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
+			UI::BeginPropertyGrid();
 
-			Gui::Text("Disable Gravity");
-			Gui::SameLine();
-			Gui::Checkbox("##DisableGravity", &component.DisableGravity);
-			Gui::Text("Is Kinematic");
-			Gui::SameLine();
-			Gui::Checkbox("##IsKinematic", &component.IsKinematic);
+			UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
+			UI::Property("Linear Velocity", component.LinearVelocity);
+			UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
+			UI::Property("Angular Velocity", component.AngularVelocity);
+			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
+
+			UI::Property("DisableGravity", component.DisableGravity);
+			UI::Property("IsKinematic", component.IsKinematic);
+
+			UI::EndPropertyGrid();
 
 			if (Gui::TreeNodeEx("Constraints", treeNodeFlags))
 			{
@@ -1977,38 +1997,58 @@ namespace Vortex {
 
 		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
 		{
-			Gui::DragFloat("Slope Limit", &component.SlopeLimitDegrees, 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Step Offset", &component.StepOffset, 1.0f, 0.0f, 0.0f, "%.2f");
-			Gui::Checkbox("Disable Gravity", &component.DisableGravity);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Slope Limit", component.SlopeLimitDegrees);
+			UI::Property("Step Offset", component.StepOffset);
+			UI::Property("Disable Gravity", component.DisableGravity);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](auto& component)
 		{
-			Gui::DragFloat("Static Friction", &component.StaticFriction, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat("Dynamic Friction", &component.DynamicFriction, 0.01f, 0.01f, 1.0f, "%.2f");
-			Gui::DragFloat("Bounciness", &component.Bounciness, 0.01f, 0.01f, 1.0f, "%.2f");
+			UI::BeginPropertyGrid();
+
+			UI::Property("Static Friction", component.StaticFriction, 0.01f, 0.01f, 1.0f);
+			UI::Property("Dynamic Friction", component.DynamicFriction, 0.01f, 0.01f, 1.0f);
+			UI::Property("Bounciness", component.Bounciness, 0.01f, 0.01f, 1.0f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat3("Half Size", Math::ValuePtr(component.HalfSize), 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::Checkbox("Is Trigger", &component.IsTrigger);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Half Size", component.HalfSize, 0.01f);
+			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Is Trigger", component.IsTrigger);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat("Radius", &component.Radius, 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::Checkbox("Is Trigger", &component.IsTrigger);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Radius", component.Radius, 0.01f);
+			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Is Trigger", component.IsTrigger);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](auto& component)
 		{
-			Gui::DragFloat("Radius", &component.Radius, 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat("Height", &component.Height, 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::DragFloat3("Offset", Math::ValuePtr(component.Offset), 0.01f, 0.0f, 0.0f, "%.2f");
-			Gui::Checkbox("Is Trigger", &component.IsTrigger);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Radius", component.Radius, 0.01f);
+			UI::Property("Height", component.Height, 0.01f);
+			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Is Trigger", component.IsTrigger);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<StaticMeshColliderComponent>("Static Mesh Collider", entity, [](auto& component)
@@ -2044,32 +2084,44 @@ namespace Vortex {
 				Gui::EndCombo();
 			}
 
-			Gui::DragFloat2("Velocity", Math::ValuePtr(component.Velocity), 0.01f);
-			Gui::DragFloat("Drag", &component.Drag, 0.01f, 0.01f, 1.0f);
-			Gui::DragFloat("Angular Drag", &component.AngularDrag, 0.01f, 0.01f, 1.0f);
-			Gui::DragFloat("Gravity Scale", &component.GravityScale, 0.01f, 0.01f, 1.0f);
-			Gui::Checkbox("Freeze Rotation", &component.FixedRotation);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Velocity", component.Velocity, 0.01f);
+			UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
+			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
+			UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
+			UI::Property("Freeze Rotation", component.FixedRotation);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
 		{
-			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
-			Gui::DragFloat2("Size", Math::ValuePtr(component.Size), 0.01f);
-			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
-			Gui::Checkbox("Is Tigger", &component.IsTrigger);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Size", component.Size, 0.01f);
+			UI::Property("Density", component.Density, 0.01f, 0.0f, 1.0f);
+			UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
+			UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
+			UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+			UI::Property("Is Tigger", component.IsTrigger);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
 		{
-			Gui::DragFloat2("Offset", Math::ValuePtr(component.Offset), 0.01f);
-			Gui::DragFloat("Radius", &component.Radius, 0.01, 0.01f);
-			Gui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
-			Gui::DragFloat("Threshold", &component.RestitutionThreshold, 0.1f, 0.0f);
+			UI::BeginPropertyGrid();
+
+			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Radius", component.Radius, 0.01, 0.01f);
+			UI::Property("Density", component.Density, 0.01f, 0.0f, 1.0f);
+			UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
+			UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
+			UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", entity, [](auto& component)
@@ -2138,6 +2190,8 @@ namespace Vortex {
 			// Fields
 			bool sceneRunning = m_ContextScene->IsRunning();
 
+			UI::BeginPropertyGrid();
+
 			if (sceneRunning)
 			{
 				SharedRef<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
@@ -2151,91 +2205,91 @@ namespace Vortex {
 						if (field.Type == ScriptFieldType::Float)
 						{
 							float data = scriptInstance->GetFieldValue<float>(name);
-							if (Gui::DragFloat(name.c_str(), &data, 0.01f))
+							if (UI::Property(name.c_str(), data, 0.01f))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Double)
 						{
 							double data = scriptInstance->GetFieldValue<double>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Vector2)
 						{
 							Math::vec2 data = scriptInstance->GetFieldValue<Math::vec2>(name);
-							if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Vector3)
 						{
 							Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
-							if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Vector4)
 						{
 							Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
-							if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Bool)
 						{
 							bool data = scriptInstance->GetFieldValue<bool>(name);
-							if (Gui::Checkbox(name.c_str(), &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Char)
 						{
 							char data = scriptInstance->GetFieldValue<char>(name);
-							if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Short)
 						{
 							short data = scriptInstance->GetFieldValue<short>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Int)
 						{
 							int data = scriptInstance->GetFieldValue<int>(name);
-							if (Gui::DragInt(name.c_str(), &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Long)
 						{
 							long long data = scriptInstance->GetFieldValue<long long>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Byte)
 						{
 							unsigned char data = scriptInstance->GetFieldValue<unsigned char>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::UShort)
 						{
 							unsigned short data = scriptInstance->GetFieldValue<unsigned short>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::UInt)
 						{
 							unsigned int data = scriptInstance->GetFieldValue<unsigned int>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::ULong)
 						{
 							unsigned long long data = scriptInstance->GetFieldValue<unsigned long long>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 						if (field.Type == ScriptFieldType::Entity)
 						{
 							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
-							if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
 					}
@@ -2262,91 +2316,91 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Float)
 							{
 								float data = scriptField.GetValue<float>();
-								if (Gui::DragFloat(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Double)
 							{
 								double data = scriptField.GetValue<double>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Vector2)
 							{
 								Math::vec2 data = scriptField.GetValue<Math::vec2>();
-								if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Vector3)
 							{
 								Math::vec3 data = scriptField.GetValue<Math::vec3>();
-								if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Vector4)
 							{
 								Math::vec4 data = scriptField.GetValue<Math::vec4>();
-								if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Bool)
 							{
 								bool data = scriptField.GetValue<bool>();
-								if (Gui::Checkbox(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Char)
 							{
 								char data = scriptField.GetValue<char>();
-								if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Short)
 							{
 								short data = scriptField.GetValue<short>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Int)
 							{
 								int data = scriptField.GetValue<int>();
-								if (Gui::DragInt(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Long)
 							{
 								long long data = scriptField.GetValue<long long>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Byte)
 							{
 								unsigned char data = scriptField.GetValue<unsigned char>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::UShort)
 							{
 								unsigned short data = scriptField.GetValue<unsigned short>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::UInt)
 							{
 								unsigned int data = scriptField.GetValue<unsigned int>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::ULong)
 							{
 								unsigned long long data = scriptField.GetValue<unsigned long long>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Entity)
 							{
 								uint64_t data = scriptField.GetValue<uint64_t>();
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								if (UI::Property(name.c_str(), data))
 									scriptField.SetValue(data);
 							}
 						}
@@ -2356,7 +2410,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Float)
 							{
 								float data = 0.0f;
-								if (Gui::DragFloat(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2366,7 +2420,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Double)
 							{
 								double data = 0.0f;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_Double, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2376,7 +2430,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Vector2)
 							{
 								Math::vec2 data = Math::vec2(0.0f);
-								if (Gui::DragFloat2(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2386,7 +2440,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Vector3)
 							{
 								Math::vec3 data = Math::vec3(0.0f);
-								if (Gui::DragFloat3(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2396,7 +2450,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Vector4)
 							{
 								Math::vec4 data = Math::vec4(0.0f);
-								if (Gui::DragFloat4(name.c_str(), Math::ValuePtr(data)))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2406,7 +2460,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Bool)
 							{
 								bool data = false;
-								if (Gui::Checkbox(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2416,7 +2470,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Char)
 							{
 								char data = 0;
-								if (Gui::InputScalar(name.c_str(), ImGuiDataType_S8, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2426,7 +2480,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Short)
 							{
 								short data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S16, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2436,7 +2490,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Int)
 							{
 								int data = 0;
-								if (Gui::DragInt(name.c_str(), &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2446,7 +2500,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Long)
 							{
 								long long data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_S64, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2456,7 +2510,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Byte)
 							{
 								unsigned char data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U8, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2466,7 +2520,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::UShort)
 							{
 								unsigned short data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U16, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2476,7 +2530,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::UInt)
 							{
 								unsigned int data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U32, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2486,7 +2540,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::ULong)
 							{
 								unsigned long long data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2496,7 +2550,7 @@ namespace Vortex {
 							if (field.Type == ScriptFieldType::Entity)
 							{
 								uint64_t data = 0;
-								if (Gui::DragScalar(name.c_str(), ImGuiDataType_U64, &data))
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance& fieldInstance = entityFields[name];
 									fieldInstance.Field = field;
@@ -2526,6 +2580,8 @@ namespace Vortex {
 					}
 				}
 			}
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<NativeScriptComponent>("Native Script", entity, [](auto& component) {});

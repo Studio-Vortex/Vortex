@@ -192,6 +192,90 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	inline static bool Property(const char* label, char& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S8, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, unsigned char& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U8, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, short& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S16, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, unsigned short& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U16, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
 	inline static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0)
 	{
 		bool modified = false;
@@ -234,6 +318,48 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	inline static bool Property(const char* label, long long& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S64, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, unsigned long long& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U64, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
 	inline static bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
 	{
 		bool modified = false;
@@ -245,6 +371,28 @@ namespace Vortex::UI {
 		Gui::PushItemWidth(-1);
 
 		if (Gui::DragFloat(fmt::format("##{}", label).c_str(), &value, speed, min, max, format))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+
+	inline static bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_Double, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -360,7 +508,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 	
-	inline static bool Property(const char* label, std::string& value, bool readOnly = false)
+	inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false)
 	{
 		bool modified = false;
 
@@ -373,7 +521,36 @@ namespace Vortex::UI {
 		char buffer[256];
 		strcpy_s(buffer, sizeof(buffer), value.c_str());
 
-		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, readOnly ? ImGuiInputTextFlags_ReadOnly : 0))
+		const ImGuiInputTextFlags inputTextFlags = readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+
+		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, inputTextFlags))
+		{
+			value = buffer;
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool MultilineTextBox(const char* label, std::string& value, bool readOnly = false)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		char buffer[2048];
+		strcpy_s(buffer, sizeof(buffer), value.c_str());
+
+		const ImGuiInputTextFlags inputTextFlags = readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+
+		if (Gui::InputTextMultiline(fmt::format("##{}", label).c_str(), buffer, 2048, ImVec2{ 0, 0 }, inputTextFlags))
 		{
 			value = buffer;
 			modified = true;
