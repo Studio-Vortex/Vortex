@@ -839,7 +839,7 @@ namespace Vortex {
 		{
 			auto& camera = component.Camera;
 
-			Gui::Checkbox("Primary", &component.Primary);
+			UI::Property("Primary", component.Primary);
 
 			const char* projectionTypes[] = { "Perspective", "Othrographic" };
 			const char* currentProjectionType = projectionTypes[(uint32_t)camera.GetProjectionType()];
@@ -895,7 +895,7 @@ namespace Vortex {
 				if (Gui::DragFloat("Far", &farClip, 1.0f, 0.0f, 0.0f, "%.2f"))
 					camera.SetOrthographicFarClip(farClip);
 
-				Gui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+				UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
 			}
 
 			Gui::ColorEdit3("Clear Color", Math::ValuePtr(component.ClearColor));
@@ -1020,7 +1020,7 @@ namespace Vortex {
 			if (Gui::TreeNodeEx("Shadows", treeNodeFlags))
 			{
 				bool shouldCastShadows = lightSource->ShouldCastShadows();
-				if (Gui::Checkbox("Cast Shadows", &shouldCastShadows))
+				if (UI::Property("Cast Shadows", shouldCastShadows))
 					lightSource->SetCastShadows(shouldCastShadows);
 
 				if (shouldCastShadows)
@@ -1740,16 +1740,16 @@ namespace Vortex {
 				if (Gui::DragFloat("Volume", &props.Volume, 0.1f, 0.0f, 0.0f, "%.2f"))
 					component.Source->SetVolume(props.Volume);
 
-				if (Gui::Checkbox("Play On Start", &props.PlayOnStart))
+				if (UI::Property("Play On Start", props.PlayOnStart))
 					component.Source->SetPlayOnStart(props.PlayOnStart);
 
-				if (Gui::Checkbox("Play One Shot", &props.PlayOneShot))
+				if (UI::Property("Play One Shot", props.PlayOneShot))
 					component.Source->SetPlayOneShot(props.PlayOneShot);
 
-				if (Gui::Checkbox("Loop", &props.Loop))
+				if (UI::Property("Loop", props.Loop))
 					component.Source->SetLoop(props.Loop);
 
-				if (Gui::Checkbox("Spacialized", &props.Spacialized))
+				if (UI::Property("Spacialized", props.Spacialized))
 					component.Source->SetSpacialized(props.Spacialized);
 
 				if (props.Spacialized && Gui::TreeNodeEx("Spatialization", treeNodeFlags))

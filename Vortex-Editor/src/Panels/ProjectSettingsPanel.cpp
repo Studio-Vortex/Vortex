@@ -22,21 +22,21 @@ namespace Vortex {
 			{
 				if (Gui::BeginTabItem("General"))
 				{
-					char buffer[256];
-					std::string& projectName = m_Properties.General.Name;
-					memcpy(buffer, projectName.c_str(), projectName.size());
-					buffer[projectName.size()] = '\0';
+					UI::BeginPropertyGrid();
 
-					if (Gui::InputText("Project Name", buffer, sizeof(buffer)))
-					{
-						projectName = std::string(buffer);
-					}
+					std::string& projectName = m_Properties.General.Name;
+					UI::Property("Project Name", projectName);
 
 					std::filesystem::path& assetDirectory = m_Properties.General.AssetDirectory;
-					Gui::InputText("Asset Directory", (char*)assetDirectory.string().c_str(), assetDirectory.string().size(), ImGuiInputTextFlags_ReadOnly);
+					std::string assetDirectoryStr = assetDirectory.string();
+					UI::Property("Asset Directory", assetDirectoryStr, true);
 
 					std::filesystem::path& startScene = m_Properties.General.StartScene;
-					Gui::InputText("Start Scene", (char*)startScene.string().c_str(), startScene.string().size(), ImGuiInputTextFlags_ReadOnly);
+					std::string startSceneStr = startScene.string();
+					if (UI::Property("Start Scene", startSceneStr, true))
+						m_Properties.General.StartScene = startSceneStr;
+
+					UI::EndPropertyGrid();
 
 					Gui::EndTabItem();
 				}
@@ -45,11 +45,15 @@ namespace Vortex {
 				{
 					if (Gui::TreeNodeEx("3D", treeNodeFlags))
 					{
-						Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics3DColliderColor));
+						UI::BeginPropertyGrid();
+
+						UI::Property("Collider Color", &m_Properties.PhysicsProps.Physics3DColliderColor);
 
 						Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
-						if (Gui::DragFloat3("Gravity", Math::ValuePtr(gravity3D), 0.1f))
+						if (UI::Property("Gravity", gravity3D))
 							Physics::SetPhysicsSceneGravity(gravity3D);
+
+						UI::EndPropertyGrid();
 
 						static const char* broadphaseTypes[] = {
 							"Sweep And Prune",
@@ -125,32 +129,41 @@ namespace Vortex {
 							Gui::EndMenu();
 						}
 
+						UI::BeginPropertyGrid();
+
 						int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
-						if (Gui::DragInt("Position Iterations", &positionIterations3D, 1.0f, 1, 100))
+						if (UI::Property("Position Iterations", positionIterations3D, 1.0f, 1, 100))
 							Physics::SetPhysicsScenePositionIterations(positionIterations3D);
 
 						int32_t velocityIterations3D = Physics::GetPhysicsSceneVelocityIterations();
-						if (Gui::DragInt("Velocity Iterations", &velocityIterations3D, 1.0f, 1, 100))
+						if (UI::Property("Velocity Iterations", velocityIterations3D, 1.0f, 1, 100))
 							Physics::SetPhysicsSceneVelocityIterations(velocityIterations3D);
+
+						UI::EndPropertyGrid();
 
 						Gui::TreePop();
 					}
 
 					if (Gui::TreeNodeEx("2D", treeNodeFlags))
 					{
-						Gui::ColorEdit4("Collider Color", Math::ValuePtr(m_Properties.PhysicsProps.Physics2DColliderColor));
+						UI::BeginPropertyGrid();
+
+						UI::Property("Collider Color", &m_Properties.PhysicsProps.Physics2DColliderColor);
 
 						Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
-						if (Gui::DragFloat2("Gravity", Math::ValuePtr(gravity2D), 0.1f))
+						if (UI::Property("Gravity", gravity2D))
 							Physics2D::SetPhysicsWorldGravitty(gravity2D);
 
+
 						int32_t positionIterations2D = Physics2D::GetPhysicsWorldPositionIterations();
-						if (Gui::DragInt("Position Iterations", &positionIterations2D, 1.0f, 1, 100))
+						if (UI::Property("Position Iterations", positionIterations2D, 1.0f, 1, 100))
 							Physics2D::SetPhysicsWorldPositionIterations(positionIterations2D);
 
 						int32_t velocityIterations2D = Physics2D::GetPhysicsWorldVelocityIterations();
-						if (Gui::DragInt("Velocity Iterations", &velocityIterations2D, 1.0f, 1, 100))
+						if (UI::Property("Velocity Iterations", velocityIterations2D, 1.0f, 1, 100))
 							Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations2D);
+
+						UI::EndPropertyGrid();
 
 						Gui::TreePop();
 					}
@@ -160,11 +173,16 @@ namespace Vortex {
 
 				if (Gui::BeginTabItem("Scripting"))
 				{
-					std::filesystem::path& scriptBinPath = m_Properties.ScriptingProps.ScriptBinaryPath;
-					Gui::InputText("Script Binary Path", (char*)scriptBinPath.string().c_str(), scriptBinPath.string().size(), ImGuiInputTextFlags_ReadOnly);
+					UI::BeginPropertyGrid();
 
-					Gui::Checkbox("Enable Debugging", &m_Properties.ScriptingProps.EnableMonoDebugging);
-					Gui::Checkbox("Reload Assembly On Play", &m_Properties.ScriptingProps.ReloadAssemblyOnPlay);
+					std::filesystem::path& scriptBinaryPath = m_Properties.ScriptingProps.ScriptBinaryPath;
+					std::string scriptBinaryPathStr = scriptBinaryPath.string();
+					UI::Property("Script Binary Path", scriptBinaryPathStr, true);
+
+					UI::Property("Enable Debugging", m_Properties.ScriptingProps.EnableMonoDebugging);
+					UI::Property("Reload Assembly On Play", m_Properties.ScriptingProps.ReloadAssemblyOnPlay);
+
+					UI::EndPropertyGrid();
 
 					Gui::EndTabItem();
 				}
@@ -174,11 +192,11 @@ namespace Vortex {
 					if (Gui::TreeNodeEx("Preferences", treeNodeFlags))
 					{
 						static const char* themes[] = {
-						"Dark",
-						"Light Gray",
-						"Default",
-						"Classic",
-						"Light",
+							"Dark",
+							"Light Gray",
+							"Default",
+							"Classic",
+							"Light",
 						};
 
 						static const char* currentTheme = themes[0];
@@ -237,35 +255,47 @@ namespace Vortex {
 							Gui::EndCombo();
 						}
 
-						Gui::DragScalar("Frame Step Count", ImGuiDataType_U32, &m_Properties.EditorProps.FrameStepCount);
-						Gui::Checkbox("Draw Editor Grid", &m_Properties.EditorProps.DrawEditorGrid);
-						Gui::Checkbox("Draw Editor Axes", &m_Properties.EditorProps.DrawEditorAxes);
+						UI::BeginPropertyGrid();
+
+						UI::Property("Frame Step Count", m_Properties.EditorProps.FrameStepCount);
+						UI::Property("Draw Editor Grid", m_Properties.EditorProps.DrawEditorGrid);
+						UI::Property("Draw Editor Axes", m_Properties.EditorProps.DrawEditorAxes);
+
+						UI::EndPropertyGrid();
 
 						Gui::TreePop();
 					}
 
 					if (Gui::TreeNodeEx("Editor Camera", treeNodeFlags))
 					{
+						UI::BeginPropertyGrid();
+
 						Math::vec3 moveSpeed = EditorCamera::GetMoveSpeed();
-						if (Gui::DragFloat3("Move Speed", Math::ValuePtr(moveSpeed), 0.01f, 0.01f, 1.0f, "%.2f"))
+						if (UI::Property("Move Speed", moveSpeed))
 							EditorCamera::SetMoveSpeed(moveSpeed);
 
-						Gui::DragFloat("Camera FOV", &m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f, "%.2f");
+						UI::Property("Camera FOV", m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f);
+
+						UI::EndPropertyGrid();
 
 						Gui::TreePop();
 					}
 
 					if (Gui::TreeNodeEx("Gizmos", treeNodeFlags))
 					{
+						UI::BeginPropertyGrid();
+
 						// Minimums don't work here for some reason
-						Gui::Checkbox("Enabled", &m_Properties.GizmoProps.Enabled);
-						Gui::Checkbox("Orthographic Gizmos", &m_Properties.GizmoProps.IsOrthographic);
-						Gui::Checkbox("Snap", &m_Properties.GizmoProps.SnapEnabled);
-						Gui::DragFloat("Snap Value", &m_Properties.GizmoProps.SnapValue, 0.05f, 0.05f, 0.0f, "%.2f");
-						Gui::DragFloat("Rotation Snap Value", &m_Properties.GizmoProps.RotationSnapValue, 1.0f, 1.0f, 0.0f, "%.2f");
-						Gui::Checkbox("Draw Grid", &m_Properties.GizmoProps.DrawGrid);
+						UI::Property("Enabled", m_Properties.GizmoProps.Enabled);
+						UI::Property("Orthographic Gizmos", m_Properties.GizmoProps.IsOrthographic);
+						UI::Property("Snap", m_Properties.GizmoProps.SnapEnabled);
+						UI::Property("Snap Value", m_Properties.GizmoProps.SnapValue, 0.05f, 0.05f);
+						UI::Property("Rotation Snap Value", m_Properties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
+						UI::Property("Draw Grid", m_Properties.GizmoProps.DrawGrid);
 						if (m_Properties.GizmoProps.DrawGrid)
-							Gui::DragFloat("Grid Size", &m_Properties.GizmoProps.GridSize, 0.5f, 0.5f, 0.0f, "%.2f");
+							UI::Property("Grid Size", m_Properties.GizmoProps.GridSize, 0.5f, 0.5f);
+
+						UI::EndPropertyGrid();
 
 						Gui::TreePop();
 					}

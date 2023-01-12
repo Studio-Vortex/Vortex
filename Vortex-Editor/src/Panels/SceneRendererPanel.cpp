@@ -102,9 +102,13 @@ namespace Vortex {
 
 			if (Gui::TreeNodeEx("Renderer", treeNodeFlags))
 			{
+				UI::BeginPropertyGrid();
+
 				float lineWidth = Renderer2D::GetLineWidth();
-				if (Gui::DragFloat("Line Width", &lineWidth, 0.1f, 0.1f, 4.0f, "%.2f"))
+				if (UI::Property("Line Width", lineWidth, 0.1f, 0.1f, 4.0f))
 					Renderer2D::SetLineWidth(lineWidth);
+
+				UI::EndPropertyGrid();
 
 				RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
 				static const char* cullModes[4] = {
@@ -156,21 +160,25 @@ namespace Vortex {
 					Gui::EndMenu();
 				}
 
+				UI::BeginPropertyGrid();
+
 				float sceneExposure = Renderer::GetSceneExposure();
-				if (Gui::DragFloat("Scene Exposure", &sceneExposure, 0.01f, 0.01f, 1.0f, "%.2f"))
+				if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f, 1.0f))
 					Renderer::SetSceneExposure(sceneExposure);
 
 				float gamma = Renderer::GetSceneGamma();
-				if (Gui::DragFloat("Gamma", &gamma, 0.01f, 0.01f, 0.0f, "%.2f"))
+				if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
 					Renderer::SetSceneGamma(gamma);
 
 				static bool wireframeMode = false;
-				if (Gui::Checkbox("Show Wireframe", &wireframeMode))
+				if (UI::Property("Show Wireframe", wireframeMode))
 					RenderCommand::SetWireframe(wireframeMode);
 
 				static bool vsync = true;
-				if (Gui::Checkbox("Enable VSync", &vsync))
+				if (UI::Property("Use VSync", vsync))
 					Application::Get().GetWindow().SetVSync(vsync);
+
+				UI::EndPropertyGrid();
 
 				Gui::TreePop();
 			}

@@ -8,6 +8,8 @@ namespace Vortex::UI {
 
 	namespace Gui = ImGui;
 
+	static uint32_t s_UIContextID = 0;
+
 	inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
@@ -124,6 +126,242 @@ namespace Vortex::UI {
 		Gui::PopStyleVar();
 		Gui::Columns(1);
 		Gui::PopID();
+	}
+
+	inline void PushID()
+	{
+		Gui::PushID(s_UIContextID++);
+	}
+
+	inline void PopID()
+	{
+		Gui::PopID();
+		s_UIContextID--;
+	}
+
+	inline void ShiftCursorX(float distance)
+	{
+		Gui::SetCursorPosX(Gui::GetCursorPosX() + distance);
+	}
+
+	inline void ShiftCursorY(float distance)
+	{
+		Gui::SetCursorPosY(Gui::GetCursorPosY() + distance);
+	}
+
+	inline void ShiftCursor(float x, float y)
+	{
+		ImVec2 cursorPos = Gui::GetCursorPos();
+		Gui::SetCursorPos(ImVec2{ cursorPos.x + x, cursorPos.y + y });
+	}
+
+	inline static void BeginPropertyGrid(uint32_t columns = 2)
+	{
+		PushID();
+		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
+		Gui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.0f, 4.0f });
+		Gui::Columns(columns);
+	}
+
+	inline static void EndPropertyGrid()
+	{
+		Gui::Columns(1);
+		Gui::PopStyleVar(2);
+		ShiftCursorY(18.0f);
+		PopID();
+	}
+
+	inline static bool Property(const char* label, bool& value)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::Checkbox(fmt::format("##{}", label).c_str(), &value))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragInt(fmt::format("##{}", label).c_str(), &value, speed, min, max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, uint32_t& value, float speed = 1.0f, int min = 0, int max = 0)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U32, &value, speed, (const void*)&min, (const void*)&max))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragFloat(fmt::format("##{}", label).c_str(), &value, speed, min, max, format))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, Math::vec2& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragFloat2(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, Math::vec3& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragFloat3(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, Math::vec4& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::DragFloat4(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool Property(const char* label, Math::vec4* value)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::ColorEdit4(fmt::format("##{}", label).c_str(), Math::ValuePtr(*value)))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+	
+	inline static bool Property(const char* label, std::string& value, bool readOnly = false)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		char buffer[256];
+		strcpy_s(buffer, sizeof(buffer), value.c_str());
+
+		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, readOnly ? ImGuiInputTextFlags_ReadOnly : 0))
+		{
+			value = buffer;
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
 	}
 
 	class ScopedStyle
