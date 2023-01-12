@@ -839,7 +839,11 @@ namespace Vortex {
 		{
 			auto& camera = component.Camera;
 
+			UI::BeginPropertyGrid();
+
 			UI::Property("Primary", component.Primary);
+
+			UI::EndPropertyGrid();
 
 			const char* projectionTypes[] = { "Perspective", "Othrographic" };
 			const char* currentProjectionType = projectionTypes[(uint32_t)camera.GetProjectionType()];
@@ -867,56 +871,54 @@ namespace Vortex {
 				Gui::EndCombo();
 			}
 
+			UI::BeginPropertyGrid();
+
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
 				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
-				if (Gui::DragFloat("Field of View", &perspectiveVerticalFOV, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Field of View", perspectiveVerticalFOV))
 					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(perspectiveVerticalFOV));
 
 				float nearClip = camera.GetPerspectiveNearClip();
-				if (Gui::DragFloat("Near", &nearClip, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Near", nearClip))
 					camera.SetPerspectiveNearClip(nearClip);
 
 				float farClip = camera.GetPerspectiveFarClip();
-				if (Gui::DragFloat("Far", &farClip, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Far", farClip))
 					camera.SetPerspectiveFarClip(farClip);
 			}
 			else
 			{
 				float orthoSize = camera.GetOrthographicSize();
-				if (Gui::DragFloat("Size", &orthoSize, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Size", orthoSize))
 					camera.SetOrthographicSize(orthoSize);
 
 				float nearClip = camera.GetOrthographicNearClip();
-				if (Gui::DragFloat("Near", &nearClip, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Near", nearClip))
 					camera.SetOrthographicNearClip(nearClip);
 
 				float farClip = camera.GetOrthographicFarClip();
-				if (Gui::DragFloat("Far", &farClip, 1.0f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Far", farClip))
 					camera.SetOrthographicFarClip(farClip);
 
 				UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
 			}
 
-			Gui::ColorEdit3("Clear Color", Math::ValuePtr(component.ClearColor));
+			UI::Property("Clear Color", &component.ClearColor);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
 		{
 			SharedRef<Skybox> skybox = component.Source;
 			
-			char buffer[256];
+			UI::BeginPropertyGrid();
 
 			std::string skyboxPath = skybox->GetFilepath();
+			UI::Property("Source", skyboxPath, true);
 
-			if (!skyboxPath.empty())
-				memcpy(buffer, skyboxPath.c_str(), sizeof(buffer));
-			else
-				memset(buffer, 0, sizeof(buffer));
-
-			Gui::Text("Source");
-			Gui::SameLine();
-			Gui::InputText("##Skybox Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+			UI::EndPropertyGrid();
 
 			// Accept a Skybox Directory from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -947,12 +949,14 @@ namespace Vortex {
 				UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
 			}
 
-			if (Gui::DragFloat("Rotation", &component.Rotation, 1.0f, 0.0f, 0.0f, "%.2f"))
-			{
-				component.Source->SetIsDirty(true);
-			}
+			UI::BeginPropertyGrid();
 
-			Gui::DragFloat("Intensity", &component.Intensity, 0.25f, 0.0f, 0.0f, "%.2f");
+			if (UI::Property("Rotation", component.Rotation))
+				component.Source->SetIsDirty(true);
+
+			UI::Property("Intensity", component.Intensity, 0.25f);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)
@@ -985,6 +989,8 @@ namespace Vortex {
 
 			SharedRef<LightSource> lightSource = component.Source;
 
+			UI::BeginPropertyGrid();
+
 			switch (component.Type)
 			{
 				case LightType::Directional:
@@ -998,11 +1004,11 @@ namespace Vortex {
 				case LightType::Spot:
 				{
 					float cutoff = lightSource->GetCutOff();
-					if (Gui::DragFloat("CutOff", &cutoff, 1.0f, 0.0f, 0.0f, "%.2f"))
+					if (UI::Property("CutOff", cutoff))
 						lightSource->SetCutOff(cutoff);
 
 					float outerCutoff = lightSource->GetOuterCutOff();
-					if (Gui::DragFloat("Outer CutOff", &outerCutoff, 1.0f, 0.0f, 0.0f, "%.2f"))
+					if (UI::Property("Outer CutOff", outerCutoff))
 						lightSource->SetOuterCutOff(outerCutoff);
 
 					break;
@@ -1010,15 +1016,19 @@ namespace Vortex {
 			}
 
 			Math::vec3 radiance = lightSource->GetRadiance();
-			if (Gui::ColorEdit3("Radiance", Math::ValuePtr(radiance)))
+			if (UI::Property("Radiance", &radiance))
 				lightSource->SetRadiance(radiance);
 
 			float intensity = lightSource->GetIntensity();
-			if (Gui::DragFloat("Intensity", &intensity, 0.1f, 0.1f, 0, "%.2f"))
+			if (UI::Property("Intensity", intensity, 0.1f, 0.1f))
 				lightSource->SetIntensity(intensity);
+
+			UI::EndPropertyGrid();
 
 			if (Gui::TreeNodeEx("Shadows", treeNodeFlags))
 			{
+				UI::BeginPropertyGrid();
+
 				bool shouldCastShadows = lightSource->ShouldCastShadows();
 				if (UI::Property("Cast Shadows", shouldCastShadows))
 					lightSource->SetCastShadows(shouldCastShadows);
@@ -1026,9 +1036,11 @@ namespace Vortex {
 				if (shouldCastShadows)
 				{
 					float shadowBias = lightSource->GetShadowBias();
-					if (Gui::DragFloat("Shadow Bias", &shadowBias, 1.0f, 0.0f, 1000.0f, "%.2f"))
+					if (UI::Property("Shadow Bias", shadowBias, 1.0f, 0.0f, 1000.0f))
 						lightSource->SetShadowBias(shadowBias);
 				}
+
+				UI::EndPropertyGrid();
 
 				Gui::TreePop();
 			}
@@ -1038,55 +1050,15 @@ namespace Vortex {
 
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
-			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
-			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
+			std::string meshSourcePath = "";
 
-			char buffer[512];
-			memset(buffer, 0, sizeof(buffer));
-
-			if (Gui::BeginCombo("Mesh Type", currentMeshType))
-			{
-				uint32_t arraySize = VX_ARRAYCOUNT(meshTypes);
-
-				for (uint32_t i = 0; i < arraySize; i++)
-				{
-					bool isSelected = strcmp(currentMeshType, meshTypes[i]) == 0;
-					if (Gui::Selectable(meshTypes[i], isSelected))
-					{
-						currentMeshType = meshTypes[i];
-						component.Type = static_cast<MeshType>(i);
-
-						if (component.Type == MeshType::Capsule)
-						{
-							ModelImportOptions importOptions = ModelImportOptions();
-							importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), importOptions, (int)(entt::entity)entity);
-						}
-						else if (component.Type != MeshType::Custom)
-							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
-						else
-							component.Mesh = Model::Create(std::string(buffer), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
-					}
-
-					if (isSelected)
-						Gui::SetItemDefaultFocus();
-
-					if (i != arraySize - 1)
-						Gui::Separator();
-				}
-
-				Gui::EndCombo();
-			}
-			
 			if (component.Mesh)
 			{
-				memcpy(buffer, component.Mesh->GetPath().c_str(), sizeof(buffer));
-				buffer[component.Mesh->GetPath().size()] = '\0';
+				UI::BeginPropertyGrid();
+				meshSourcePath = component.Mesh->GetPath();
+				UI::Property("Mesh Source", meshSourcePath, true);
+				UI::EndPropertyGrid();
 			}
-
-			Gui::Text("Mesh Source");
-			Gui::SameLine();
-			Gui::InputText("##Mesh Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1117,6 +1089,43 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
+			static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
+			const char* currentMeshType = meshTypes[(uint32_t)component.Type];
+
+			if (Gui::BeginCombo("Mesh Type", currentMeshType))
+			{
+				uint32_t arraySize = VX_ARRAYCOUNT(meshTypes);
+
+				for (uint32_t i = 0; i < arraySize; i++)
+				{
+					bool isSelected = strcmp(currentMeshType, meshTypes[i]) == 0;
+					if (Gui::Selectable(meshTypes[i], isSelected))
+					{
+						currentMeshType = meshTypes[i];
+						component.Type = static_cast<MeshType>(i);
+
+						if (component.Type == MeshType::Capsule)
+						{
+							ModelImportOptions importOptions = ModelImportOptions();
+							importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+						}
+						else if (component.Type != MeshType::Custom)
+							component.Mesh = Model::Create(static_cast<Model::Default>(i), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+						else
+							component.Mesh = Model::Create(meshSourcePath, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+					}
+
+					if (isSelected)
+						Gui::SetItemDefaultFocus();
+
+					if (i != arraySize - 1)
+						Gui::Separator();
+				}
+
+				Gui::EndCombo();
+			}
+
 			if (component.Mesh)
 			{
 				SharedRef<Material> material = component.Mesh->GetMaterial();
@@ -1125,382 +1134,378 @@ namespace Vortex {
 
 				if (Gui::TreeNodeEx("Material", treeNodeFlags))
 				{
-					if (Gui::TreeNodeEx("Normal", treeNodeFlags))
+					Gui::Text("Normal");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-						if (SharedRef<Texture2D> normalMap = material->GetNormalMap())
+						if (Gui::ImageButton((void*)normalMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetNormalMap(nullptr);
+						else if (Gui::IsItemHovered())
 						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
-
-							if (Gui::ImageButton((void*)normalMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetNormalMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(normalMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
+							Gui::BeginTooltip();
+							Gui::Text(normalMap->GetPath().c_str());
+							Gui::EndTooltip();
 						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 
-						// Accept a Normal map from the content browser
-						if (Gui::BeginDragDropTarget())
+					// Accept a Normal map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetNormalMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
+								if (texture->IsLoaded())
+									material->SetNormalMap(texture);
 								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
 							}
-							Gui::EndDragDropTarget();
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 						}
-
-						Gui::TreePop();
+						Gui::EndDragDropTarget();
 					}
 
-					if (Gui::TreeNodeEx("Albedo", treeNodeFlags))
+					Gui::Text("Albedo");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-						if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
+						if (Gui::ImageButton((void*)albedoMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetAlbedoMap(nullptr);
+						else if (Gui::IsItemHovered())
 						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
-
-							if (Gui::ImageButton((void*)albedoMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetAlbedoMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(albedoMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
+							Gui::BeginTooltip();
+							Gui::Text(albedoMap->GetPath().c_str());
+							Gui::EndTooltip();
 						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 
-						// Accept a Albedo map from the content browser
-						if (Gui::BeginDragDropTarget())
+					// Accept a Albedo map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetAlbedoMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
+								if (texture->IsLoaded())
+									material->SetAlbedoMap(texture);
 								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
 							}
-							Gui::EndDragDropTarget();
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 						}
-
-						if (!material->GetAlbedoMap())
-						{
-							Math::vec3 albedo = material->GetAlbedo();
-							if (Gui::ColorEdit3("##Albedo", Math::ValuePtr(albedo)))
-								material->SetAlbedo(albedo);
-						}
-
-						Gui::TreePop();
+						Gui::EndDragDropTarget();
 					}
 
-					if (Gui::TreeNodeEx("Metallic", treeNodeFlags))
+					if (!material->GetAlbedoMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						UI::BeginPropertyGrid();
 
-						if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
-						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+						Math::vec3 albedo = material->GetAlbedo();
+						if (UI::Property("Albedo", &albedo))
+							material->SetAlbedo(albedo);
 
-							if (Gui::ImageButton((void*)metallicMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetMetallicMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(metallicMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
-						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
-
-						// Accept a Metallic map from the content browser
-						if (Gui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
-
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetMetallicMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
-								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
-							}
-							Gui::EndDragDropTarget();
-						}
-
-						if (!material->GetMetallicMap())
-						{
-							float metallic = material->GetMetallic();
-							if (Gui::DragFloat("##Metallic", &metallic, 0.01f, 0.01f, 1.0f, "%.2f"))
-								material->SetMetallic(metallic);
-						}
-
-						Gui::TreePop();
+						UI::EndPropertyGrid();
 					}
 
-					if (Gui::TreeNodeEx("Roughness", treeNodeFlags))
+					Gui::Text("Metallic");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-						if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
+						if (Gui::ImageButton((void*)metallicMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetMetallicMap(nullptr);
+						else if (Gui::IsItemHovered())
 						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
-
-							if (Gui::ImageButton((void*)roughnessMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetRoughnessMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(roughnessMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
+							Gui::BeginTooltip();
+							Gui::Text(metallicMap->GetPath().c_str());
+							Gui::EndTooltip();
 						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 
-						// Accept a Roughness map from the content browser
-						if (Gui::BeginDragDropTarget())
+					// Accept a Metallic map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetRoughnessMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
+								if (texture->IsLoaded())
+									material->SetMetallicMap(texture);
 								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
 							}
-							Gui::EndDragDropTarget();
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 						}
-
-						if (!material->GetRoughnessMap())
-						{
-							float roughness = material->GetRoughness();
-							if (Gui::DragFloat("##Roughness", &roughness, 0.01f, 0.01f, 1.0f, "%.2f"))
-								material->SetRoughness(roughness);
-						}
-
-						Gui::TreePop();
+						Gui::EndDragDropTarget();
 					}
 
-					if (Gui::TreeNodeEx("Emission", treeNodeFlags))
+					if (!material->GetMetallicMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						UI::BeginPropertyGrid();
 
-						if (SharedRef<Texture2D> emissionMap = material->GetEmissionMap())
-						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+						float metallic = material->GetMetallic();
+						if (UI::Property("Metallic", metallic, 0.01f, 0.01f, 1.0f))
+							material->SetMetallic(metallic);
 
-							if (Gui::ImageButton((void*)emissionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetEmissionMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(emissionMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
-						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
-
-						// Accept a Albedo map from the content browser
-						if (Gui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
-
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetEmissionMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
-								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
-							}
-							Gui::EndDragDropTarget();
-						}
-
-						if (!material->GetEmissionMap())
-						{
-							Math::vec3 emission = material->GetEmission();
-							if (Gui::ColorEdit3("##Emission", Math::ValuePtr(emission)))
-								material->SetEmission(emission);
-						}
-
-						Gui::TreePop();
+						UI::EndPropertyGrid();
 					}
 
-					if (Gui::TreeNodeEx("Parallax Occlusion", treeNodeFlags))
+					Gui::Text("Roughness");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-						if (SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap())
+						if (Gui::ImageButton((void*)roughnessMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetRoughnessMap(nullptr);
+						else if (Gui::IsItemHovered())
 						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
-
-							if (Gui::ImageButton((void*)parallaxOcclusionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetParallaxOcclusionMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(parallaxOcclusionMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
+							Gui::BeginTooltip();
+							Gui::Text(roughnessMap->GetPath().c_str());
+							Gui::EndTooltip();
 						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 
-						// Accept a Albedo map from the content browser
-						if (Gui::BeginDragDropTarget())
+					// Accept a Roughness map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
 
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetParallaxOcclusionMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
+								if (texture->IsLoaded())
+									material->SetRoughnessMap(texture);
 								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
 							}
-							Gui::EndDragDropTarget();
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 						}
-
-						float parallaxHeightScale = material->GetParallaxHeightScale();
-						if (Gui::DragFloat("Height Scale", &parallaxHeightScale, 0.01f, 0.01f, 1.0f, "%.2f"))
-							material->SetParallaxHeightScale(parallaxHeightScale);
-
-						Gui::TreePop();
+						Gui::EndDragDropTarget();
 					}
 
-					if (Gui::TreeNodeEx("Ambient Occlusion", treeNodeFlags))
+					if (!material->GetRoughnessMap())
 					{
-						Gui::Text("Map");
-						Gui::SameLine();
-						Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+						UI::BeginPropertyGrid();
 
-						if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
-						{
-							ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+						float roughness = material->GetRoughness();
+						if (UI::Property("Roughness", roughness, 0.01f, 0.01f, 1.0f))
+							material->SetRoughness(roughness);
 
-							if (Gui::ImageButton((void*)ambientOcclusionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
-								material->SetAmbientOcclusionMap(nullptr);
-							else if (Gui::IsItemHovered())
-							{
-								Gui::BeginTooltip();
-								Gui::Text(ambientOcclusionMap->GetPath().c_str());
-								Gui::EndTooltip();
-							}
-						}
-						else
-							Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
-
-						// Accept a Ambient Occlusion map from the content browser
-						if (Gui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = std::filesystem::path(path);
-
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
-								{
-									SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-									if (texture->IsLoaded())
-										material->SetAmbientOcclusionMap(texture);
-									else
-										VX_WARN("Could not load texture {}", texturePath.filename().string());
-								}
-								else
-									VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
-							}
-							Gui::EndDragDropTarget();
-						}
-
-						Gui::TreePop();
+						UI::EndPropertyGrid();
 					}
 
-					Gui::DragFloat2("UV", Math::ValuePtr(component.Scale), 0.05f, 0.0f, 0.0f, "%.2f");
+					Gui::Text("Emission");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> emissionMap = material->GetEmissionMap())
+					{
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+
+						if (Gui::ImageButton((void*)emissionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetEmissionMap(nullptr);
+						else if (Gui::IsItemHovered())
+						{
+							Gui::BeginTooltip();
+							Gui::Text(emissionMap->GetPath().c_str());
+							Gui::EndTooltip();
+						}
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+					// Accept a Albedo map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							{
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+								if (texture->IsLoaded())
+									material->SetEmissionMap(texture);
+								else
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
+							}
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+						}
+						Gui::EndDragDropTarget();
+					}
+
+					if (!material->GetEmissionMap())
+					{
+						UI::BeginPropertyGrid();
+
+						Math::vec3 emission = material->GetEmission();
+						if (UI::Property("Emission", &emission))
+							material->SetEmission(emission);
+
+						UI::EndPropertyGrid();
+					}
+
+					Gui::Text("Parallax Occlusion");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap())
+					{
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+
+						if (Gui::ImageButton((void*)parallaxOcclusionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetParallaxOcclusionMap(nullptr);
+						else if (Gui::IsItemHovered())
+						{
+							Gui::BeginTooltip();
+							Gui::Text(parallaxOcclusionMap->GetPath().c_str());
+							Gui::EndTooltip();
+						}
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+					// Accept a Albedo map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							{
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+								if (texture->IsLoaded())
+									material->SetParallaxOcclusionMap(texture);
+								else
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
+							}
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+						}
+						Gui::EndDragDropTarget();
+					}
+
+					UI::BeginPropertyGrid();
+
+					float parallaxHeightScale = material->GetParallaxHeightScale();
+					if (UI::Property("Height Scale", parallaxHeightScale, 0.01f, 0.01f, 1.0f))
+						material->SetParallaxHeightScale(parallaxHeightScale);
+
+					UI::EndPropertyGrid();
+
+					Gui::Text("Ambient Occlusion");
+					Gui::Text("Map");
+					Gui::SameLine();
+					Gui::SetCursorPosX(Gui::GetContentRegionAvail().x);
+
+					if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
+					{
+						ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+
+						if (Gui::ImageButton((void*)ambientOcclusionMap->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 }, -1, { 0, 0, 0, 0 }, tintColor))
+							material->SetAmbientOcclusionMap(nullptr);
+						else if (Gui::IsItemHovered())
+						{
+							Gui::BeginTooltip();
+							Gui::Text(ambientOcclusionMap->GetPath().c_str());
+							Gui::EndTooltip();
+						}
+					}
+					else
+						Gui::ImageButton((void*)checkerboardIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+
+					// Accept a Ambient Occlusion map from the content browser
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							{
+								SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+								if (texture->IsLoaded())
+									material->SetAmbientOcclusionMap(texture);
+								else
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
+							}
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+						}
+						Gui::EndDragDropTarget();
+					}
+
+					UI::BeginPropertyGrid();
+
+					UI::Property("UV", component.Scale, 0.05f);
+
+					UI::EndPropertyGrid();
 
 					Gui::TreePop();
 				}
@@ -1670,14 +1675,10 @@ namespace Vortex {
 				Gui::EndDisabled();
 			}
 
-			char buffer[256];
-			
-			if (component.Source)
-				memcpy(buffer, component.Source->GetPath().c_str(), sizeof(buffer));
-			else
-				memset(buffer, 0, sizeof(buffer));
-
-			Gui::InputText("Source", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+			UI::BeginPropertyGrid();
+			std::string audioSourcePath = component.Source->GetPath();
+			UI::Property("Source", audioSourcePath, true);
+			UI::EndPropertyGrid();
 
 			// Accept a Audio File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1732,12 +1733,14 @@ namespace Vortex {
 
 			if (component.Source != nullptr)
 			{
+				UI::BeginPropertyGrid();
+
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
-				if (Gui::DragFloat("Pitch", &props.Pitch, 0.01f, 0.2f, 2.0f, "%.2f"))
+				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
 					component.Source->SetPitch(props.Pitch);
 
-				if (Gui::DragFloat("Volume", &props.Volume, 0.1f, 0.0f, 0.0f, "%.2f"))
+				if (UI::Property("Volume", props.Volume, 0.1f))
 					component.Source->SetVolume(props.Volume);
 
 				if (UI::Property("Play On Start", props.PlayOnStart))
@@ -1752,9 +1755,10 @@ namespace Vortex {
 				if (UI::Property("Spacialized", props.Spacialized))
 					component.Source->SetSpacialized(props.Spacialized);
 
+				UI::EndPropertyGrid();
+
 				if (props.Spacialized && Gui::TreeNodeEx("Spatialization", treeNodeFlags))
 				{
-					Gui::Spacing();
 					Gui::Unindent();
 
 					UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
@@ -1777,35 +1781,38 @@ namespace Vortex {
 					if (Gui::TreeNodeEx("Cone", treeNodeFlags))
 					{
 						Gui::Unindent();
+
+						UI::BeginPropertyGrid();
+
 						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-						if (Gui::DragFloat("Inner Angle", &innerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Inner Angle", innerAngle, 0.5f))
 						{
 							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
 							component.Source->SetCone(props.Cone);
 						}
 						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-						if (Gui::DragFloat("Outer Angle", &outerAngle, 0.5f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Outer Angle", outerAngle, 0.5f))
 						{
 							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
 							component.Source->SetCone(props.Cone);
 						}
 						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-						if (Gui::DragFloat("Outer Gain", &outerGain, 0.5f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Outer Gain", outerGain, 0.5f))
 						{
 							props.Cone.OuterGain = Math::Deg2Rad(outerGain);
 							component.Source->SetCone(props.Cone);
 						}
 
-						Gui::Spacing();
-
-						if (Gui::DragFloat("Min Distance", &props.MinDistance, 0.1f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Min Distance", props.MinDistance, 0.1f))
 							component.Source->SetMinDistance(props.MinDistance);
 
-						if (Gui::DragFloat("Max Distance", &props.MaxDistance, 0.1f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
 							component.Source->SetMaxDistance(props.MaxDistance);
 
-						if (Gui::DragFloat("Doppler Factor", &props.DopplerFactor, 0.1f, 0.0f, 0.0f, "%.2f"))
+						if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
 							component.Source->SetDopplerFactor(props.DopplerFactor);
+
+						UI::EndPropertyGrid();
 
 						Gui::Indent();
 						Gui::TreePop();

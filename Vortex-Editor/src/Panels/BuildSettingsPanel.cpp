@@ -22,23 +22,15 @@ namespace Vortex {
 		{
 			Gui::Begin("Build Settings", &s_ShowPanel);
 
-			char buffer[256];
-			if (m_ProjectPath.empty())
-				memset(buffer, 0, sizeof(buffer));
-			else
-				memcpy(buffer, m_ProjectPath.string().c_str(), m_ProjectPath.string().size());
-			buffer[m_ProjectPath.string().size()] = '\0';
+			UI::BeginPropertyGrid();
 
-			Gui::InputText("Project", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+			std::string projectPath = m_ProjectPath.string();
+			UI::Property("Project Location", projectPath, true);
 
-			char buffer2[256];
-			if (m_StartupScene.empty())
-				memset(buffer2, 0, sizeof(buffer2));
-			else
-				memcpy(buffer2, m_StartupScene.string().c_str(), m_StartupScene.string().size());
-			buffer2[m_StartupScene.string().size()] = '\0';
+			std::string startupScene = m_StartupScene.string();
+			UI::Property("Startup Scene", startupScene, true);
 
-			Gui::InputText("Startup Scene", buffer2, sizeof(buffer2), ImGuiInputTextFlags_ReadOnly);
+			UI::EndPropertyGrid();
 
 			// Accept Items from the content browser
 			if (Gui::BeginDragDropTarget())

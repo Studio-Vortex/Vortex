@@ -318,6 +318,27 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	inline static bool Property(const char* label, Math::vec3* value)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::ColorEdit3(fmt::format("##{}", label).c_str(), Math::ValuePtr(*value)))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
 	inline static bool Property(const char* label, Math::vec4* value)
 	{
 		bool modified = false;
