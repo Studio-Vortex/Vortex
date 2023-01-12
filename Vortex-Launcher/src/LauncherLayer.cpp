@@ -218,7 +218,7 @@ namespace Vortex {
 				projectProps.General.Name = std::string(projectNameBuffer);
 				projectProps.General.AssetDirectory = "Assets";
 				projectProps.General.StartScene = "Scenes/SampleScene.vortex";
-				projectProps.General.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", projectNameBuffer);
+				projectProps.ScriptingProps.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", projectNameBuffer);
 
 				auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
 				m_ProjectPath = projectDirectoryBuffer / std::filesystem::path(projectFilename);

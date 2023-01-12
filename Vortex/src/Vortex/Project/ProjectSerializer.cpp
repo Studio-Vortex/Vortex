@@ -27,9 +27,7 @@ namespace Vortex {
 			{
 				out << YAML::Key << "Name" << YAML::Value << props.General.Name;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << props.General.AssetDirectory.string();
-				out << YAML::Key << "ScriptBinaryPath" << YAML::Value << props.General.ScriptBinaryPath.string();
 				out << YAML::Key << "StartScene" << YAML::Value << props.General.StartScene.string();
-				out << YAML::Key << "EnableMonoDebugging" << YAML::Value << props.General.EnableMonoDebugging;
 			}
 			out << YAML::EndMap; // General
 
@@ -50,6 +48,14 @@ namespace Vortex {
 			}
 			out << YAML::EndMap; // Physics Properties
 
+			out << YAML::Key << "ScriptingProperties" << YAML::BeginMap; // Scripting Properties
+			{
+				out << YAML::Key << "ScriptBinaryPath" << YAML::Value << props.ScriptingProps.ScriptBinaryPath.string();
+				out << YAML::Key << "EnableMonoDebugging" << YAML::Value << props.ScriptingProps.EnableMonoDebugging;
+				out << YAML::Key << "ReloadAssemblyOnPlay" << YAML::Value << props.ScriptingProps.ReloadAssemblyOnPlay;
+			}
+			out << YAML::EndMap; // Scripting Properties
+
 			out << YAML::Key << "EditorProperties" << YAML::BeginMap; // Editior Properties
 			{
 				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
@@ -57,7 +63,6 @@ namespace Vortex {
 				out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
 				out << YAML::Key << "MaximizeOnPlay" << YAML::Value << props.EditorProps.MaximizeOnPlay;
 				out << YAML::Key << "MuteAudioSources" << YAML::Value << props.EditorProps.MuteAudioSources;
-				out << YAML::Key << "ReloadAssemblyOnPlay" << YAML::Value << props.EditorProps.ReloadAssemblyOnPlay;
 				out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
 			}
 			out << YAML::EndMap; // Editior Properties
@@ -107,9 +112,7 @@ namespace Vortex {
 		{
 			auto generalData = projectData["General"];
 			props.General.AssetDirectory = generalData["AssetDirectory"].as<std::string>();
-			props.General.EnableMonoDebugging = generalData["EnableMonoDebugging"].as<bool>();
 			props.General.Name = generalData["Name"].as<std::string>();
-			props.General.ScriptBinaryPath = generalData["ScriptBinaryPath"].as<std::string>();
 			props.General.StartScene = generalData["StartScene"].as<std::string>();
 		}
 
@@ -138,13 +141,19 @@ namespace Vortex {
 		}
 
 		{
+			auto scriptingData = projectData["ScriptingProperties"];
+			props.ScriptingProps.ScriptBinaryPath = scriptingData["ScriptBinaryPath"].as<std::string>();
+			props.ScriptingProps.EnableMonoDebugging = scriptingData["EnableMonoDebugging"].as<bool>();
+			props.ScriptingProps.ReloadAssemblyOnPlay = scriptingData["ReloadAssemblyOnPlay"].as<bool>();
+		}
+
+		{
 			auto editorData = projectData["EditorProperties"];
 			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
 			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
 			props.EditorProps.EditorCameraFOV = editorData["EditorCameraFOV"].as<float>();
 			props.EditorProps.MaximizeOnPlay = editorData["MaximizeOnPlay"].as<bool>();
 			props.EditorProps.MuteAudioSources = editorData["MuteAudioSources"].as<bool>();
-			props.EditorProps.ReloadAssemblyOnPlay = editorData["ReloadAssemblyOnPlay"].as<bool>();
 			props.EditorProps.FrameStepCount = editorData["FrameStepCount"].as<uint32_t>();
 		}
 

@@ -1651,7 +1651,7 @@ namespace Vortex {
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties projectProps = activeProject->GetProperties();
 
-		if (projectProps.EditorProps.ReloadAssemblyOnPlay)
+		if (projectProps.ScriptingProps.ReloadAssemblyOnPlay)
 			ScriptEngine::ReloadAssembly();
 
 		if (projectProps.EditorProps.MaximizeOnPlay)

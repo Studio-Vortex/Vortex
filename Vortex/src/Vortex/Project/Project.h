@@ -12,12 +12,10 @@ namespace Vortex {
 
 	struct ProjectProperties
 	{
-		struct {
+		struct GeneralProperties {
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
-			std::filesystem::path ScriptBinaryPath = "";
 			std::filesystem::path StartScene = "";
-			bool EnableMonoDebugging = false;
 		} General;
 
 		struct RendererProperties {
@@ -34,6 +32,13 @@ namespace Vortex {
 			bool ShowColliders = false;
 		} PhysicsProps;
 
+		struct ScriptingProperties
+		{
+			std::filesystem::path ScriptBinaryPath = "";
+			bool EnableMonoDebugging = false;
+			bool ReloadAssemblyOnPlay = false;
+		} ScriptingProps;
+
 		struct EditorProperties
 		{
 			uint32_t FrameStepCount = 1;
@@ -41,7 +46,6 @@ namespace Vortex {
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;
 			bool MuteAudioSources = false;
-			bool ReloadAssemblyOnPlay = false;
 			float EditorCameraFOV = 45.0f;
 		} EditorProps;
 

@@ -274,6 +274,7 @@ namespace Vortex {
 	{
 		s_Data->PhysicsScene->simulate(s_FixedTimeStep);
 		s_Data->PhysicsScene->fetchResults(true);
+		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_PhysicsSceneGravity));
 
 		auto view = contextScene->GetAllEntitiesWith<RigidBodyComponent>();
 
@@ -534,12 +535,6 @@ namespace Vortex {
 			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
-	}
-
-	void Physics::SetPhysicsSceneGravity(const Math::vec3& gravity)
-	{
-		s_PhysicsSceneGravity = gravity;
-		s_Data->PhysicsScene->setGravity(ToPhysXVector(gravity));
 	}
 
 	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)

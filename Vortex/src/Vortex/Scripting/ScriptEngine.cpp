@@ -208,7 +208,7 @@ namespace Vortex {
 
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
-		s_Data->DebuggingEnabled = projectProps.General.EnableMonoDebugging;
+		s_Data->DebuggingEnabled = projectProps.ScriptingProps.EnableMonoDebugging;
 
 		InitMono();
 		ScriptRegistry::RegisterMethods();
@@ -222,7 +222,7 @@ namespace Vortex {
 			return;
 		}
 
-		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.General.ScriptBinaryPath);
+		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.ScriptingProps.ScriptBinaryPath);
 		status = LoadAppAssembly(appAssemblyPath);
 		
 		if (!status)
@@ -318,7 +318,7 @@ namespace Vortex {
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 
 		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
-		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>((Project::GetAssetDirectory() / projectProps.General.ScriptBinaryPath).string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AppAssemblyFilewatcher = CreateUnique<filewatch::FileWatch<std::string>>((Project::GetAssetDirectory() / projectProps.ScriptingProps.ScriptBinaryPath).string(), OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadPending = false;
 
 		return true;
