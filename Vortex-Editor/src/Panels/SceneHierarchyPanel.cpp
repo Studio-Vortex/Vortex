@@ -1544,15 +1544,42 @@ namespace Vortex {
 				Gui::EndDisabled();
 			}
 
+			Gui::BeginDisabled(component.Source == nullptr);
+
+			if (Gui::Button("Play"))
+				component.Source->Play();
+
+			Gui::SameLine();
+
+			{
+				Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
+
+				if (Gui::Button("Pause"))
+					component.Source->Pause();
+
+				Gui::SameLine();
+
+				if (Gui::Button("Restart"))
+					component.Source->Restart();
+
+				Gui::EndDisabled();
+			}
+
+			Gui::SameLine();
+
+			if (Gui::Button("Stop"))
+				component.Source->Stop();
+
+			Gui::EndDisabled();
+
 			UI::BeginPropertyGrid();
 			std::string audioSourcePath = component.Source->GetPath();
 			std::string relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
 			UI::Property("Source", relativeAudioSourcePath, true);
-			UI::EndPropertyGrid();
 
 			// Accept a Audio File from the content browser
 			if (Gui::BeginDragDropTarget())
-			{	
+			{
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
@@ -1573,38 +1600,10 @@ namespace Vortex {
 				Gui::EndDragDropTarget();
 			}
 
-			Gui::Spacing();
-
 			Gui::BeginDisabled(component.Source == nullptr);
-
-			if (Gui::Button("Play"))
-				component.Source->Play();
-
-			Gui::SameLine();
-
-			Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
-
-			if (Gui::Button("Pause"))
-				component.Source->Pause();
-
-			Gui::SameLine();
-			
-			if (Gui::Button("Restart"))
-				component.Source->Restart();
-
-			Gui::EndDisabled();
-
-			Gui::SameLine();
-
-			if (Gui::Button("Stop"))
-				component.Source->Stop();
-
-			Gui::Spacing();
 
 			if (component.Source != nullptr)
 			{
-				UI::BeginPropertyGrid();
-
 				AudioSource::SoundProperties& props = component.Source->GetProperties();
 
 				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
