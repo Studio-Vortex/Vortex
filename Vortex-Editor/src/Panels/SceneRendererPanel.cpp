@@ -127,19 +127,18 @@ namespace Vortex {
 				}
 
 				enum class EnvironmentMapResolution { e512, e1024, e2048 };
-				static const char* mapSizes[3] = { "512", "1024", "2048" };
-				float resolution = Renderer::GetEnvironmentMapResolution();
-				int32_t currentMapSize;
-				if (resolution == 512.0f)
-					currentMapSize = 0;
-				if (resolution == 1024.0f)
-					currentMapSize = 1;
-				if (resolution == 2048.0f)
-					currentMapSize = 2;
+				static const char* envMapSizes[3] = { "512", "1024", "2048" };
+				float envMapResolution = Renderer::GetEnvironmentMapResolution();
+				
+				int32_t currentEnvMapSize = 0;
 
-				if (UI::PropertyDropdown("Environment Map Resolution", mapSizes, VX_ARRAYCOUNT(mapSizes), currentMapSize))
+				if (envMapResolution == 512.0f)  currentEnvMapSize = 0;
+				if (envMapResolution == 1024.0f) currentEnvMapSize = 1;
+				if (envMapResolution == 2048.0f) currentEnvMapSize = 2;
+
+				if (UI::PropertyDropdown("Environment Map Resolution", envMapSizes, VX_ARRAYCOUNT(envMapSizes), currentEnvMapSize))
 				{
-					switch (currentMapSize)
+					switch (currentEnvMapSize)
 					{
 						case 0: Renderer::SetEnvironmentMapResolution(512.0f);  break;
 						case 1: Renderer::SetEnvironmentMapResolution(1024.0f); break;
@@ -150,6 +149,32 @@ namespace Vortex {
 
 					Entity entity{ skyboxView[0], m_ContextScene.get()};
 					Renderer::CreateEnvironmentMap(entity.GetComponent<SkyboxComponent>());
+				}
+
+				enum class ShadowMapResolution { e512, e1024, e2048, e4096, e8192 };
+				static const char* shadowMapSizes[5] = { "512", "1024", "2048", "4096", "8192" };
+				float shadowMapResolution = Renderer::GetShadowMapResolution();
+				
+				int32_t currentShadowMapSize = 0;
+
+				if (shadowMapResolution == 512.0f)  currentShadowMapSize = 0;
+				if (shadowMapResolution == 1024.0f) currentShadowMapSize = 1;
+				if (shadowMapResolution == 2048.0f) currentShadowMapSize = 2;
+				if (shadowMapResolution == 4096.0f) currentShadowMapSize = 3;
+				if (shadowMapResolution == 8192.0f) currentShadowMapSize = 4;
+
+				if (UI::PropertyDropdown("Shadow Map Resolution", shadowMapSizes, VX_ARRAYCOUNT(shadowMapSizes), currentShadowMapSize))
+				{
+					switch (currentShadowMapSize)
+					{
+						case 0: Renderer::SetShadowMapResolution(512.0f);  break;
+						case 1: Renderer::SetShadowMapResolution(1024.0f); break;
+						case 2: Renderer::SetShadowMapResolution(2048.0f); break;
+						case 3: Renderer::SetShadowMapResolution(4096.0f); break;
+						case 4: Renderer::SetShadowMapResolution(8192.0f); break;
+					}
+
+					Renderer::CreateShadowMap(LightType::Directional);
 				}
 
 				float sceneExposure = Renderer::GetSceneExposure();

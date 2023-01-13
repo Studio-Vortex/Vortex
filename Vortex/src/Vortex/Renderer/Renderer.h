@@ -89,6 +89,9 @@ namespace Vortex {
 		static float GetEnvironmentMapResolution();
 		static void SetEnvironmentMapResolution(float resolution);
 
+		static float GetShadowMapResolution();
+		static void SetShadowMapResolution(float resolution);
+
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
 

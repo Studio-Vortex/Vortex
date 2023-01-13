@@ -36,6 +36,7 @@ namespace Vortex {
 			{
 				out << YAML::Key << "TriangleCullMode" << YAML::Value << props.RendererProps.TriangleCullMode;
 				out << YAML::Key << "EnvironmentMapResolution" << YAML::Value << Renderer::GetEnvironmentMapResolution();
+				out << YAML::Key << "ShadowMapResolution" << YAML::Value << Renderer::GetShadowMapResolution();
 				out << YAML::Key << "Exposure" << YAML::Value << Renderer::GetSceneExposure();
 				out << YAML::Key << "Gamma" << YAML::Value << Renderer::GetSceneGamma();
 				out << YAML::Key << "UseVSync" << YAML::Value << Application::Get().GetWindow().IsVSyncEnabled();
@@ -135,6 +136,8 @@ namespace Vortex {
 			}
 			props.RendererProps.EnvironmentMapResolution = rendererData["EnvironmentMapResolution"].as<float>();
 			Renderer::SetEnvironmentMapResolution(props.RendererProps.EnvironmentMapResolution);
+			props.RendererProps.ShadowMapResolution = rendererData["ShadowMapResolution"].as<float>();
+			Renderer::SetShadowMapResolution(props.RendererProps.ShadowMapResolution);
 			props.RendererProps.Exposure = rendererData["Exposure"].as<float>();
 			Renderer::SetSceneExposure(props.RendererProps.Exposure);
 			props.RendererProps.Gamma = rendererData["Gamma"].as<float>();

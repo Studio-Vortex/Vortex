@@ -38,9 +38,6 @@ namespace Vortex {
 
 		static constexpr inline uint32_t MaxPointLights = 50;
 		static constexpr inline uint32_t MaxSpotLights = 50;
-
-		static constexpr inline uint32_t MaxShadowWidth = 4096;
-		static constexpr inline uint32_t MaxShadowHeight = 4096;
 		
 		SceneLightDescription SceneLightDesc{};
 
@@ -49,6 +46,7 @@ namespace Vortex {
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
 
 		float EnvironmentMapResolution = 512.0f;
+		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
 
@@ -466,8 +464,8 @@ namespace Vortex {
 			case LightType::Directional:
 			{
 				FramebufferProperties depthFramebufferProps{};
-				depthFramebufferProps.Width = s_Data.MaxShadowWidth;
-				depthFramebufferProps.Height = s_Data.MaxShadowHeight;
+				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
+				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
 				s_Data.SkylightDepthMapFramebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
 
 				break;
@@ -475,8 +473,8 @@ namespace Vortex {
 			case LightType::Point:
 			{
 				FramebufferProperties depthCubemapProps{};
-				depthCubemapProps.Width = s_Data.MaxShadowWidth;
-				depthCubemapProps.Height = s_Data.MaxShadowHeight;
+				depthCubemapProps.Width = s_Data.ShadowMapResolution;
+				depthCubemapProps.Height = s_Data.ShadowMapResolution;
 				SharedRef<DepthCubemapFramebuffer> pointLightDepthMapFramebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
 				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);
 
@@ -515,7 +513,14 @@ namespace Vortex {
 					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SkyLightShadowMap");
 
 					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
-					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.MaxShadowWidth, s_Data.MaxShadowHeight });
+
+					Viewport viewport;
+					viewport.TopLeftXPos = 0;
+					viewport.TopLeftYPos = 0;
+					viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+					viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+					RenderCommand::SetViewport(viewport);
 					s_Data.SkylightDepthMapFramebuffer->Bind();
 					shadowMapShader->Enable();
 					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
@@ -555,7 +560,7 @@ namespace Vortex {
 						continue;
 
 					// Configure shader
-					float aspectRatio = (float)s_Data.MaxShadowWidth / (float)s_Data.MaxShadowHeight;
+					float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
 					float nearPlane = 0.01f;
 					float farPlane = 100.0f;
 					Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(90.0f), aspectRatio, nearPlane, farPlane);
@@ -591,7 +596,14 @@ namespace Vortex {
 					shadowMapShader->SetFloat("u_FarPlane", farPlane);
 
 					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
-					RenderCommand::SetViewport(Viewport{ 0, 0, s_Data.MaxShadowWidth, s_Data.MaxShadowHeight });
+
+					Viewport viewport;
+					viewport.TopLeftXPos = 0;
+					viewport.TopLeftYPos = 0;
+					viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+					viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+					RenderCommand::SetViewport(viewport);
 
 					uint32_t framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
 
@@ -725,6 +737,16 @@ namespace Vortex {
 	void Renderer::SetEnvironmentMapResolution(float resolution)
 	{
 		s_Data.EnvironmentMapResolution = resolution;
+	}
+
+	float Renderer::GetShadowMapResolution()
+	{
+		return s_Data.ShadowMapResolution;
+	}
+
+	void Renderer::SetShadowMapResolution(float resolution)
+	{
+		s_Data.ShadowMapResolution = resolution;
 	}
 
 	float Renderer::GetSceneExposure()
