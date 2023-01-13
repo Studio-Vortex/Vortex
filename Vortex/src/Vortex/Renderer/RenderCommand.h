@@ -84,6 +84,11 @@ namespace Vortex {
 			s_RendererAPI->DisableDepthMask();
 		}
 
+		inline static void SetBlendMode(RendererAPI::BlendMode blendMode)
+		{
+			s_RendererAPI->SetBlendMode(blendMode);
+		}
+
 		inline static void SetLineSize(float thickness)
 		{
 			s_RendererAPI->SetLineWidth(thickness);

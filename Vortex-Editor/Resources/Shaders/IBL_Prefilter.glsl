@@ -57,7 +57,7 @@ void main()
         vec3 L  = normalize(2.0 * dot(V, H) * H - V);
 
         float NdotL = max(dot(N, L), 0.0);
-        if(NdotL > 0.0)
+        if (NdotL > 0.0)
         {
             // sample from the environment's mip level based on roughness/pdf
             float D   = DistributionGGX(N, H, u_Roughness);
@@ -65,7 +65,9 @@ void main()
             float HdotV = max(dot(H, V), 0.0);
             float pdf = D * NdotH / (4.0 * HdotV) + 0.0001;
 
-            float resolution = u_EnvironmentMapResolution; // resolution of source cubemap (per face)
+            // resolution of source cubemap (per face)
+            float resolution = u_EnvironmentMapResolution;
+            
             float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
             float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
 

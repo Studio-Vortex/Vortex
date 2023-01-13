@@ -13,9 +13,6 @@ namespace Vortex {
 	#define VX_RENDERER_STATISTICS 1; // Temporary
 #endif // VX_DEBUG
 
-	static constexpr uint32_t VERTICES_PER_CUBE = 24;
-	static constexpr uint32_t INDICES_PER_CUBE = 36;
-
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
 
@@ -56,6 +53,11 @@ namespace Vortex {
 			None = 0, Keep, Always, NotEqual, Replace
 		};
 
+		enum class BlendMode
+		{
+			None = 0, SrcAlphaOneMinusSrcAlpha, ZeroSrcColor
+		};
+
 		struct VORTEX_API RendererInfo
 		{
 			const char* API;
@@ -89,6 +91,8 @@ namespace Vortex {
 
 		virtual void EnableDepthMask() const = 0;
 		virtual void DisableDepthMask() const = 0;
+
+		virtual void SetBlendMode(BlendMode blendMode) const = 0;
 
 		virtual void SetLineWidth(float thickness) const = 0;
 

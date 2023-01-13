@@ -26,6 +26,8 @@ namespace Vortex {
 		SharedRef<Texture2D> ParallaxOcclusionMap = nullptr;
 
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
+
+		float Opacity = 1.0f;
 	};
 
 	class VORTEX_API Material
@@ -73,6 +75,9 @@ namespace Vortex {
 
 		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
 		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);
+
+		float GetOpacity() const;
+		void SetOpacity(float opacity);
 
 		static void Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial);
 

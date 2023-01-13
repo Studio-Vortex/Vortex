@@ -25,6 +25,8 @@ namespace Vortex {
 		void EnableDepthTest() const override;
 		void DisableDepthTest() const override;
 
+		void SetBlendMode(RendererAPI::BlendMode blendMode) const override;
+
 		void EnableStencilTest() const override;
 		void DisableStencilTest() const override;
 

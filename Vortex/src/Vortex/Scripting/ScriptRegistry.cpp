@@ -1128,6 +1128,26 @@ namespace Vortex {
 		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(*emission);
 	}
 
+	static float Material_GetOpacity(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetOpacity();
+	}
+
+	static void Material_SetOpacity(UUID entityUUID, float opacity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetOpacity(opacity);
+	}
+
 #pragma endregion
 
 #pragma region Sprite Renderer Component
@@ -3360,6 +3380,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Material_SetRoughness);
 		VX_ADD_INTERNAL_CALL(Material_GetEmission);
 		VX_ADD_INTERNAL_CALL(Material_SetEmission);
+		VX_ADD_INTERNAL_CALL(Material_GetOpacity);
+		VX_ADD_INTERNAL_CALL(Material_SetOpacity);
 
 		VX_ADD_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		VX_ADD_INTERNAL_CALL(SpriteRendererComponent_SetColor);

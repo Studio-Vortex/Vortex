@@ -482,6 +482,8 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
 
+		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
+
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
 		m_MeshShader->Enable();
@@ -510,6 +512,8 @@ namespace Vortex {
 	void Model::Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
 	{
 		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
+
+		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 

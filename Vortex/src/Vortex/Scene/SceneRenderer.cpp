@@ -32,7 +32,7 @@ namespace Vortex {
 			}
 			else
 			{
-				Renderer2D::BeginScene((Camera&)activeCamera, renderPacket.CameraWorldSpaceTransform.GetTransform());
+				Renderer2D::BeginScene(activeCamera, renderPacket.CameraWorldSpaceTransform.GetTransform());
 				cameraView = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
 			}
 
@@ -213,14 +213,38 @@ namespace Vortex {
 			}
 
 			// Geometry pass
+			// Sort Models by distance from camera and render in reverse order
+			std::map<float, Entity> sortedEntities;
+
+			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+
+			for (const auto e : meshView)
+			{
+				Entity entity{ e, renderPacket.Scene };
+
+				Math::vec3 entityTranslation = entity.GetTransform().Translation;
+
+				if (renderPacket.EditorScene)
+				{
+					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+					Math::vec3 cameraPosition = editorCamera->GetPosition();
+					float distance = Math::Distance(cameraPosition, entityTranslation);
+					sortedEntities[distance] = entity;
+				}
+				else
+				{
+					Math::vec3 cameraPosition = renderPacket.CameraWorldSpaceTransform.Translation;
+					float distance = Math::Distance(cameraPosition, entityTranslation);
+					sortedEntities[distance] = entity;
+				}
+			}
+
 			InstrumentationTimer timer("Geometry Pass");
 			{
-				auto view = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
-
-				for (const auto e : view)
+				for (auto it = sortedEntities.rbegin(); it != sortedEntities.rend(); it++)
 				{
-					auto [transformComponent, meshRendererComponent] = view.get<TransformComponent, MeshRendererComponent>(e);
-					Entity entity{ e, scene };
+					Entity entity = it->second;
+					MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 					if (!entity.IsActive())
 						continue;

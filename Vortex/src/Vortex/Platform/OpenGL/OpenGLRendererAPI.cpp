@@ -140,6 +140,31 @@ namespace Vortex {
 		glDepthFunc(GL_LEQUAL);
 	}
 
+	void OpenGLRendererAPI::SetBlendMode(BlendMode blendMode) const
+	{
+		VX_CORE_ASSERT(blendMode != BlendMode::None, "Invalid Blend Mode!");
+
+		int sFactor = 0, dFactor = 0;
+
+		switch (blendMode)
+		{
+			case RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha:
+			{
+				sFactor = GL_SRC_ALPHA;
+				dFactor = GL_ONE_MINUS_SRC_ALPHA;
+				break;
+			}
+			case RendererAPI::BlendMode::ZeroSrcColor:
+			{
+				sFactor = GL_SRC_COLOR;
+				dFactor = GL_ZERO;
+				break;
+			}
+		}
+
+		glBlendFunc(sFactor, dFactor);
+	}
+
 	void OpenGLRendererAPI::SetLineWidth(float thickness) const
 	{
 		glLineWidth(thickness);

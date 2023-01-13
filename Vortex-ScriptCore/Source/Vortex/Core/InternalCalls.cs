@@ -321,6 +321,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetEmission(ulong entityID, ref Vector3 emission);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Material_GetOpacity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetOpacity(ulong entityID, float opacity);
+
 		#endregion
 
 		#region SpriteRenderer

@@ -1360,6 +1360,10 @@ namespace Vortex {
 						}
 					}
 
+					float opacity = material->GetOpacity();
+					if (UI::Property("Opacity", opacity, 0.01f, 0.01f, 1.0f))
+						material->SetOpacity(opacity);
+
 					UI::Property("UV", component.Scale, 0.05f);
 
 					UI::EndPropertyGrid();

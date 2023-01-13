@@ -503,7 +503,9 @@ namespace Vortex {
 				case LightType::Directional:
 				{
 					if (!lightSourceComponent.Source->ShouldCastShadows())
+					{
 						continue;
+					}
 
 					// Configure shader
 					Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);

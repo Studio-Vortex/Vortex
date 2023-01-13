@@ -48,11 +48,11 @@ namespace Vortex {
 		struct EditorProperties
 		{
 			uint32_t FrameStepCount = 1;
+			float EditorCameraFOV = 45.0f;
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;
 			bool MuteAudioSources = false;
-			float EditorCameraFOV = 45.0f;
 		} EditorProps;
 
 		struct GizmoProperties

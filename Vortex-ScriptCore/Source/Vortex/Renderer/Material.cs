@@ -37,6 +37,12 @@
 
 			set => InternalCalls.Material_SetEmission(Entity.ID, ref value);
 		}
+
+		public float Opacity
+		{
+			get => InternalCalls.Material_GetOpacity(Entity.ID);
+			set => InternalCalls.Material_SetOpacity(Entity.ID, value);
+		}
 	}
 
 }

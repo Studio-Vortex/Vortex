@@ -11,7 +11,7 @@ namespace Vortex {
 
 	void Material::Bind() const
 	{
-		if (SharedRef<Texture2D> normalMap = GetNormalMap())
+		if (SharedRef<Texture2D> normalMap = m_Properties.NormalMap)
 		{
 			uint32_t normalMapTextureSlot = 5;
 			normalMap->Bind(normalMapTextureSlot);
@@ -21,7 +21,7 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasNormalMap", false);
 
-		if (SharedRef<Texture2D> albedoMap = GetAlbedoMap())
+		if (SharedRef<Texture2D> albedoMap = m_Properties.AlbedoMap)
 		{
 			uint32_t albedoMapTextureSlot = 6;
 			albedoMap->Bind(albedoMapTextureSlot);
@@ -30,11 +30,11 @@ namespace Vortex {
 		}
 		else
 		{
-			m_Shader->SetFloat3("u_Material.Albedo", GetAlbedo());
+			m_Shader->SetFloat3("u_Material.Albedo", m_Properties.Albedo);
 			m_Shader->SetBool("u_Material.HasAlbedoMap", false);
 		}
 
-		if (SharedRef<Texture2D> metallicMap = GetMetallicMap())
+		if (SharedRef<Texture2D> metallicMap = m_Properties.MetallicMap)
 		{
 			uint32_t metallicMapTextureSlot = 7;
 			metallicMap->Bind(metallicMapTextureSlot);
@@ -43,11 +43,11 @@ namespace Vortex {
 		}
 		else
 		{
-			m_Shader->SetFloat("u_Material.Metallic", GetMetallic());
+			m_Shader->SetFloat("u_Material.Metallic", m_Properties.Metallic);
 			m_Shader->SetBool("u_Material.HasMetallicMap", false);
 		}
 
-		if (SharedRef<Texture2D> roughnessMap = GetRoughnessMap())
+		if (SharedRef<Texture2D> roughnessMap = m_Properties.RoughnessMap)
 		{
 			uint32_t roughnessMapTextureSlot = 8;
 			roughnessMap->Bind(roughnessMapTextureSlot);
@@ -56,11 +56,11 @@ namespace Vortex {
 		}
 		else
 		{
-			m_Shader->SetFloat("u_Material.Roughness", GetRoughness());
+			m_Shader->SetFloat("u_Material.Roughness", m_Properties.Roughness);
 			m_Shader->SetBool("u_Material.HasRoughnessMap", false);
 		}
 
-		if (SharedRef<Texture2D> emissionMap = GetEmissionMap())
+		if (SharedRef<Texture2D> emissionMap = m_Properties.EmissionMap)
 		{
 			uint32_t emissionMapTextureSlot = 9;
 			emissionMap->Bind(emissionMapTextureSlot);
@@ -69,22 +69,22 @@ namespace Vortex {
 		}
 		else
 		{
-			m_Shader->SetFloat3("u_Material.Emission", GetEmission());
+			m_Shader->SetFloat3("u_Material.Emission", m_Properties.Emission);
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
 		}
 
-		if (SharedRef<Texture2D> parallaxOcclusionMap = GetParallaxOcclusionMap())
+		if (SharedRef<Texture2D> parallaxOcclusionMap = m_Properties.ParallaxOcclusionMap)
 		{
 			uint32_t parallaxOcclusionMapTextureSlot = 10;
 			parallaxOcclusionMap->Bind(parallaxOcclusionMapTextureSlot);
 			m_Shader->SetInt("u_Material.POMap", parallaxOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasPOMap", true);
-			m_Shader->SetFloat("u_Material.ParallaxHeightScale", GetParallaxHeightScale());
+			m_Shader->SetFloat("u_Material.ParallaxHeightScale", m_Properties.ParallaxHeightScale);
 		}
 		else
 			m_Shader->SetBool("u_Material.HasPOMap", false);
 
-		if (SharedRef<Texture2D> ambientOcclusionMap = GetAmbientOcclusionMap())
+		if (SharedRef<Texture2D> ambientOcclusionMap = m_Properties.AmbientOcclusionMap)
 		{
 			uint32_t ambientOcclusionMapTextureSlot = 11;
 			ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
@@ -93,6 +93,8 @@ namespace Vortex {
 		}
 		else
 			m_Shader->SetBool("u_Material.HasAOMap", false);
+
+		m_Shader->SetFloat("u_Material.Opacity", m_Properties.Opacity);
 	}
 
 	void Material::Unbind() const { }
@@ -217,6 +219,16 @@ namespace Vortex {
 		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
 	}
 
+    float Material::GetOpacity() const
+    {
+        return m_Properties.Opacity;
+    }
+
+    void Material::SetOpacity(float opacity)
+    {
+		m_Properties.Opacity = opacity;
+    }
+
 	void Material::Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial)
 	{
 		dstMaterial->SetNormalMap(srcMaterial->GetNormalMap());
@@ -231,6 +243,7 @@ namespace Vortex {
 		dstMaterial->SetParallaxHeightScale(srcMaterial->GetParallaxHeightScale());
 		dstMaterial->SetParallaxOcclusionMap(srcMaterial->GetParallaxOcclusionMap());
 		dstMaterial->SetAmbientOcclusionMap(srcMaterial->GetAmbientOcclusionMap());
+		dstMaterial->SetOpacity(srcMaterial->GetOpacity());
 	}
 
 	SharedRef<Material> Material::Create(const MaterialProperties& props)

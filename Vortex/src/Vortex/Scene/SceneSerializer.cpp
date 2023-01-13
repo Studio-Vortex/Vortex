@@ -426,6 +426,8 @@ namespace Vortex {
 				}
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
+
+				out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
 			}
 			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 
@@ -966,6 +968,9 @@ namespace Vortex {
 					material->SetParallaxHeightScale(meshComponent["ParallaxHeightScale"].as<float>());
 				if (meshComponent["AmbientOcclusionMapPath"])
 					material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
+
+				if (meshComponent["Opacity"])
+					material->SetOpacity(meshComponent["Opacity"].as<float>());
 
 				if (meshComponent["TextureScale"])
 					meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();

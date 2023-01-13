@@ -132,6 +132,8 @@ struct Material
 	sampler2D POMap;
 	sampler2D AOMap;
 
+	float Opacity;
+
 	bool HasAlbedoMap;
 	bool HasNormalMap;
 	bool HasMetallicMap;
@@ -180,6 +182,7 @@ struct FragmentProperties
 	float Roughness;
 	vec3 Emission;
 	float AO;
+	float Opacity;
 };
 
 struct SceneProperties
@@ -235,6 +238,7 @@ void main()
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureCoords).r : u_Material.Roughness);
 	properties.Emission = ((u_Material.HasEmissionMap) ? texture(u_Material.EmissionMap, textureCoords).rgb : u_Material.Emission);
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureCoords).r : 1.0);
+	properties.Opacity = u_Material.Opacity;
 
 	// keep specular hightlight
 	properties.Metallic = max(0.05, properties.Metallic);
@@ -398,7 +402,7 @@ void main()
 	// Gamma correct
 	mapped = pow(mapped, vec3(1.0 / u_SceneProperties.Gamma));
 
-	float alpha = ((u_Material.HasAlbedoMap) ? texture(u_Material.AlbedoMap, textureCoords).a : 1.0);
+	float alpha = properties.Opacity;
 
 	// Discard the fragment if it has an alpha of zero
 	if (alpha == 0.0)
