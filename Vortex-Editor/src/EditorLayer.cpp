@@ -992,7 +992,7 @@ namespace Vortex {
 			projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
 		UI::SetTooltip("Maximize On Play");
 
-		if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? bgColor : normalColor, tintColor))
+		if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
 			projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 		UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
 

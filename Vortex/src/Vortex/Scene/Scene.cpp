@@ -517,14 +517,6 @@ namespace Vortex {
 			}
 		}
 
-		Viewport viewport{};
-		viewport.TopLeftXPos = 0;
-		viewport.TopLeftYPos = 0;
-		viewport.Width = m_ViewportWidth;
-		viewport.Height = m_ViewportHeight;
-
-		RenderCommand::SetViewport(viewport);
-
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -554,8 +546,6 @@ namespace Vortex {
 		renderPacket.EditorScene = true;
 		s_SceneRenderer.RenderScene(renderPacket);
 
-		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
-
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
@@ -574,6 +564,7 @@ namespace Vortex {
 		renderPacket.MainCamera = camera;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
+
 		s_SceneRenderer.RenderScene(renderPacket);
 
 		Entity primaryCameraEntity = GetPrimaryCameraEntity();
@@ -584,8 +575,6 @@ namespace Vortex {
 			// Set Clear color
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 		}
-
-		RenderCommand::SetViewport(Viewport{ 0, 0, m_ViewportWidth, m_ViewportHeight });
 
 		// Update Components
 		OnModelUpdate();

@@ -214,7 +214,7 @@ namespace Vortex {
 
 			// Geometry pass
 			// Sort Models by distance from camera and render in reverse order
-			std::map<float, Entity> sortedEntities;
+			std::map<float, std::vector<Entity>> sortedEntities;
 
 			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
@@ -222,42 +222,47 @@ namespace Vortex {
 			{
 				Entity entity{ e, renderPacket.Scene };
 
-				Math::vec3 entityTranslation = entity.GetTransform().Translation;
+				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
 				{
 					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityTranslation);
-					sortedEntities[distance] = entity;
+					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					sortedEntities[distance].push_back(entity);
 				}
 				else
 				{
 					Math::vec3 cameraPosition = renderPacket.CameraWorldSpaceTransform.Translation;
-					float distance = Math::Distance(cameraPosition, entityTranslation);
-					sortedEntities[distance] = entity;
+					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					sortedEntities[distance].push_back(entity);
 				}
 			}
 
 			InstrumentationTimer timer("Geometry Pass");
 			{
-				for (auto it = sortedEntities.rbegin(); it != sortedEntities.rend(); it++)
+				for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 				{
-					Entity entity = it->second;
-					MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+					std::vector<Entity> entityList = it->second;
 
-					if (!entity.IsActive())
-						continue;
-
-					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-
-					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
+					for (uint32_t i = 0; i < entityList.size(); i++)
 					{
-						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-					}
-					else
-					{
-						meshRendererComponent.Mesh->Render(worldSpaceTransform);
+						Entity entity = entityList[i];
+						MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+						if (!entity.IsActive())
+							continue;
+
+						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
+						{
+							meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
+						}
+						else
+						{
+							meshRendererComponent.Mesh->Render(worldSpaceTransform);
+						}
 					}
 				}
 			}
