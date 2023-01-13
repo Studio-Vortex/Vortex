@@ -954,7 +954,7 @@ namespace Vortex {
 
 			UI::EndPropertyGrid();
 
-			if (Gui::TreeNodeEx("Shadows", treeNodeFlags))
+			if (UI::TreeNode("Shadows"))
 			{
 				UI::BeginPropertyGrid();
 
@@ -1050,7 +1050,7 @@ namespace Vortex {
 				ImVec4 bgColor = { 0, 0, 0, 0 };
 				ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-				if (Gui::TreeNodeEx("Material", treeNodeFlags))
+				if (UI::TreeNode("Material", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -1627,7 +1627,7 @@ namespace Vortex {
 
 				UI::EndPropertyGrid();
 
-				if (props.Spacialized && Gui::TreeNodeEx("Spatialization", treeNodeFlags))
+				if (props.Spacialized && UI::TreeNode("Spatialization", false))
 				{
 					Gui::Unindent();
 
@@ -1648,7 +1648,7 @@ namespace Vortex {
 
 					Gui::Spacing();
 
-					if (Gui::TreeNodeEx("Cone", treeNodeFlags))
+					if (UI::TreeNode("Cone", false))
 					{
 						Gui::Unindent();
 
@@ -1717,7 +1717,7 @@ namespace Vortex {
 
 			Gui::Spacing();
 
-			if (Gui::TreeNodeEx("Cone", treeNodeFlags))
+			if (UI::TreeNode("Cone", false))
 			{
 				Gui::Unindent();
 
@@ -1774,34 +1774,19 @@ namespace Vortex {
 
 			UI::EndPropertyGrid();
 
-			if (Gui::TreeNodeEx("Constraints", treeNodeFlags))
+			if (UI::TreeNode("Constraints", false))
 			{
-				Gui::Text("Position");
-				Gui::SameLine();
-				Gui::Text("X");
-				Gui::SameLine();
-				Gui::Checkbox("##XTranslationConstraint", &component.LockPositionX);
-				Gui::SameLine();
-				Gui::Text("Y");
-				Gui::SameLine();
-				Gui::Checkbox("##YTranslationConstraint", &component.LockPositionY);
-				Gui::SameLine();
-				Gui::Text("Z");
-				Gui::SameLine();
-				Gui::Checkbox("##ZTranslationConstraint", &component.LockPositionZ);
-				Gui::Text("Rotation");
-				Gui::SameLine();
-				Gui::Text("X");
-				Gui::SameLine();
-				Gui::Checkbox("##XRotationConstraint", &component.LockRotationX);
-				Gui::SameLine();
-				Gui::Text("Y");
-				Gui::SameLine();
-				Gui::Checkbox("##YRotationConstraint", &component.LockRotationY);
-				Gui::SameLine();
-				Gui::Text("Z");
-				Gui::SameLine();
-				Gui::Checkbox("##ZRotationConstraint", &component.LockRotationZ);
+				UI::BeginPropertyGrid();
+
+				UI::Property("X", component.LockPositionX);
+				UI::Property("Y", component.LockPositionY);
+				UI::Property("Z", component.LockPositionZ);
+
+				UI::Property("X", component.LockRotationX);
+				UI::Property("Y", component.LockRotationY);
+				UI::Property("Z", component.LockRotationZ);
+
+				UI::EndPropertyGrid();
 
 				Gui::TreePop();
 			}
@@ -1922,67 +1907,25 @@ namespace Vortex {
 
 		DrawComponent<ScriptComponent>("Script", entity, [&](auto& component)
 		{
-			std::vector<std::string> entityClassNameStrings;
-			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
-			bool allEntityClassNamesCollected = false;
-
-			// Retrieve all entity class names to display them in combo box
-			if (!allEntityClassNamesCollected)
-			{
-				auto entityClasses = ScriptEngine::GetClasses();
-
-				for (auto& [className, entityScriptClass] : entityClasses)
-					entityClassNameStrings.push_back(className);
-
-				allEntityClassNamesCollected = true;
-			}
-
-			const char* currentClassName = component.ClassName.c_str();
-
-			// Display available entity classes to choose from
-			if (allEntityClassNamesCollected && Gui::BeginCombo("Class", currentClassName))
-			{
-				bool isSearching = Gui::InputTextWithHint("##ClassNameSearch", "Search", m_EntityClassNameInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
-				if (isSearching)
-					m_EntityClassNameInputTextFilter.Build();
-
-				Gui::Spacing();
-				Gui::Separator();
-
-				for (uint32_t i = 0; i < entityClassNameStrings.size(); i++)
-				{
-					const char* currentEntityClassNameString = entityClassNameStrings[i].c_str();
-					bool isSelected = strcmp(currentClassName, currentEntityClassNameString) == 0;
-
-					if (!m_EntityClassNameInputTextFilter.PassFilter(currentEntityClassNameString))
-						continue;
-
-					if (Gui::Selectable(currentEntityClassNameString, isSelected))
-					{
-						// If we select a class we need to set the components class name here
-						currentClassName = currentEntityClassNameString;
-						component.ClassName = std::string(currentClassName);
-
-						// Reset the search bar once a class is chosen
-						memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
-						m_EntityClassNameInputTextFilter.Build();
-					}
-
-					if (isSelected)
-						Gui::SetItemDefaultFocus();
-
-					if (i != entityClassNameStrings.size() - 1)
-						Gui::Separator();
-				}
-
-				Gui::EndCombo();
-			}
-
-			// Fields
-			bool sceneRunning = m_ContextScene->IsRunning();
-
 			UI::BeginPropertyGrid();
 
+			std::vector<const char*> entityClassNameStrings;
+			bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+
+			auto entityClasses = ScriptEngine::GetClasses();
+
+			for (auto& [className, entityScriptClass] : entityClasses)
+				entityClassNameStrings.push_back(className.c_str());
+
+			std::string currentClassName = component.ClassName;
+
+			// Display available entity classes to choose from
+			if (UI::PropertyDropdownSearch("Class", entityClassNameStrings.data(), entityClassNameStrings.size(), currentClassName, m_EntityClassNameInputTextFilter))
+				component.ClassName = currentClassName;
+
+			bool sceneRunning = m_ContextScene->IsRunning();
+
+			// Fields
 			if (sceneRunning)
 			{
 				SharedRef<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());

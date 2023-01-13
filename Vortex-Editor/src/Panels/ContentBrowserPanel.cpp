@@ -21,9 +21,7 @@ namespace Vortex {
 		float directoryContainerWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 165.0f);
 		Gui::BeginChild("Left Pane", ImVec2(directoryContainerWidth, 0));
 
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-		if (Gui::TreeNodeEx(Project::GetActive()->GetName().c_str(), treeNodeFlags))
+		if (UI::TreeNode(Project::GetActive()->GetName().c_str()))
 		{
 			Gui::Unindent();
 

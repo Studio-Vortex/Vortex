@@ -612,6 +612,57 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter)
+	{
+		const char* current = selected.c_str();
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		bool modified = false;
+
+		const std::string id = "##" + std::string(label);
+		if (Gui::BeginCombo(id.c_str(), current))
+		{
+			bool isSearching = Gui::InputTextWithHint("##ClassNameSearch", "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
+			if (isSearching)
+				textFilter.Build();
+
+			Gui::Separator();
+
+			for (uint32_t i = 0; i < count; i++)
+			{
+				const bool isSelected = current == options[i];
+
+				if (!textFilter.PassFilter(options[i]))
+					continue;
+
+				if (Gui::Selectable(options[i], isSelected))
+				{
+					current = options[i];
+					selected = options[i];
+					modified = true;
+
+					memset(textFilter.InputBuf, 0, IM_ARRAYSIZE(textFilter.InputBuf));
+					textFilter.Build();
+				}
+
+				if (isSelected)
+					Gui::SetItemDefaultFocus();
+			}
+
+			Gui::EndCombo();
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
 	inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
 	{
 		const char* current = Gui::GetFont()->GetDebugName();
@@ -693,6 +744,22 @@ namespace Vortex::UI {
 		}
 
 		return modified;
+	}
+
+	inline static bool TreeNode(const char* label, bool defaultOpen = true)
+	{
+		bool opened = false;
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
+		if (defaultOpen)
+			treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+		if (Gui::TreeNodeEx(label, treeNodeFlags))
+		{
+			opened = true;
+		}
+
+		return opened;
 	}
 
 	inline static bool ShowMessageBox(const char* title, const ImVec2& size)

@@ -59,9 +59,7 @@ namespace Vortex {
 
 			Gui::Begin("Scene Renderer", &s_ShowPanel);
 
-			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-			if (Gui::TreeNodeEx("Shadow Maps", treeNodeFlags))
+			if (UI::TreeNode("Shadow Maps", false))
 			{
 				Gui::Text("Sky Light");
 				auto shadowMapID = Renderer::GetDepthMapFramebuffer()->GetDepthTextureRendererID();
@@ -70,7 +68,7 @@ namespace Vortex {
 				Gui::TreePop();
 			}
 
-			if (Gui::TreeNodeEx("Shaders", treeNodeFlags))
+			if (UI::TreeNode("Shaders", false))
 			{
 				Gui::PushFont(boldFont);
 				Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
@@ -105,7 +103,7 @@ namespace Vortex {
 				Gui::TreePop();
 			}
 
-			if (Gui::TreeNodeEx("Renderer", treeNodeFlags))
+			if (UI::TreeNode("Renderer", false))
 			{
 				UI::BeginPropertyGrid();
 
