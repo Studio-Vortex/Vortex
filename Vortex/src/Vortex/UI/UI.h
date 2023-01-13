@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Math.h"
+#include "Vortex/Renderer/Texture.h"
 
 #include <imgui_internal.h>
 
@@ -161,6 +162,15 @@ namespace Vortex::UI {
 		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
 		Gui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.0f, 4.0f });
 		Gui::Columns(columns);
+	}
+
+	inline static void BeginPropertyGrid(float columnWidth)
+	{
+		PushID();
+		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
+		Gui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.0f, 4.0f });
+		Gui::Columns(2);
+		Gui::SetColumnWidth(0, columnWidth);
 	}
 
 	inline static void EndPropertyGrid()
@@ -560,6 +570,148 @@ namespace Vortex::UI {
 		Gui::NextColumn();
 
 		return modified;
+	}
+
+	template <typename TEnum, typename TUnderlying = int32_t>
+	inline static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected)
+	{
+		TUnderlying selectedIndex = (TUnderlying)selected;
+		const char* current = options[selectedIndex];
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		bool modified = false;
+
+		const std::string id = "##" + std::string(label);
+		if (Gui::BeginCombo(id.c_str(), current))
+		{
+			for (uint32_t i = 0; i < count; i++)
+			{
+				const bool isSelected = current == options[i];
+				if (Gui::Selectable(options[i], isSelected))
+				{
+					current = options[i];
+					selected = (TEnum)i;
+					modified = true;
+				}
+
+				if (isSelected)
+					Gui::SetItemDefaultFocus();
+			}
+
+			Gui::EndCombo();
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
+	{
+		const char* current = Gui::GetFont()->GetDebugName();
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		bool modified = false;
+
+		const std::string id = "##" + std::string(label);
+		if (Gui::BeginCombo(id.c_str(), current))
+		{
+			ImGuiIO& io = Gui::GetIO();
+			for (uint32_t i = 0; i < count; i++)
+			{
+				const bool isSelected = current == selected->GetDebugName();
+				if (Gui::Selectable(options[i], isSelected))
+				{
+					current = options[i];
+					selected = io.Fonts->Fonts[i];
+					io.FontDefault = selected;
+					modified = true;
+				}
+
+				if (isSelected)
+					Gui::SetItemDefaultFocus();
+			}
+
+			Gui::EndCombo();
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static void ImageEx(uint32_t rendererID, const ImVec2& size = ImVec2(64, 64), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec4& borderColor = ImVec4(0, 0, 0, 0))
+	{
+		Gui::Image((ImTextureID)rendererID, size, { 0, 1 }, { 1, 0 }, tintColor, borderColor);
+	}
+
+	inline static void ImageEx(const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	{
+		Gui::Image((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, bgColor, tintColor);
+	}
+
+	inline static bool ImageButton(const char* label, const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::ImageButton((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, -1, bgColor, tintColor))
+		{
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+
+		return modified;
+	}
+
+	inline static bool ImageButtonEx(const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	{
+		bool modified = false;
+
+		if (Gui::ImageButton((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, -1, bgColor, tintColor))
+		{
+			modified = true;
+		}
+
+		return modified;
+	}
+
+	inline static bool ShowMessageBox(const char* title, const ImVec2& size)
+	{
+		bool opened = false;
+
+		if (Gui::IsPopupOpen(title))
+		{
+			Gui::SetNextWindowSize(size, ImGuiCond_Always);
+			ImVec2 center = Gui::GetMainViewport()->GetCenter();
+			Gui::SetNextWindowPos({ center.x - (size.x * 0.5f), center.y - (size.y * 0.5f) }, ImGuiCond_Appearing);
+		}
+
+		if (Gui::BeginPopupModal(title, nullptr, ImGuiWindowFlags_NoResize))
+		{
+			opened = true;
+		}
+
+		return opened;
 	}
 
 	class ScopedStyle

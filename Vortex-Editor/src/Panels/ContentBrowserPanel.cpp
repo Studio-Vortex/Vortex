@@ -294,27 +294,16 @@ public class Untitled : Entity
 				Gui::OpenPopup("Confirm");
 				confirmDeletionPopupOpen = false;
 			}
-
-			if (Gui::IsPopupOpen("Confirm"))
-			{
-				ImVec2 confirmWindowSize = { 500, 200 };
-				Gui::SetNextWindowSize(confirmWindowSize, ImGuiCond_Always);
-				ImVec2 center = Gui::GetMainViewport()->GetCenter();
-				Gui::SetNextWindowPos({center.x - (confirmWindowSize.x * 0.5f), center.y - (confirmWindowSize.y * 0.5f)}, ImGuiCond_Appearing);
-			}
 			
-			if (Gui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_NoResize))
+			if (UI::ShowMessageBox("Confirm", { 500, 200 }))
 			{
 				Gui::Separator();
 				Gui::Spacing();
 
 				ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
 
-				Gui::Text("Are you sure you want to permanently delete '%s' ?", currentPath.filename().string().c_str());
-				Gui::Text("This cannot be undone.");
-
-				Gui::Spacing();
-				Gui::Separator();
+				Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentPath.filename()).c_str(), 40.0f);
+				Gui::TextCentered("This cannot be undone.", 60.0f);
 
 				for (uint32_t i = 0; i < 18; i++)
 					Gui::Spacing();
@@ -335,7 +324,6 @@ public class Untitled : Entity
 				if (Gui::Button("Cancel", button_size))
 					Gui::CloseCurrentPopup();
 
-				Gui::Spacing();
 				Gui::EndPopup();
 			}
 

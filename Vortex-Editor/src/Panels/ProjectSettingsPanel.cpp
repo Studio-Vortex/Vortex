@@ -53,83 +53,15 @@ namespace Vortex {
 						if (UI::Property("Gravity", gravity3D))
 							Physics::SetPhysicsSceneGravity(gravity3D);
 
-						UI::EndPropertyGrid();
+						static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
+						int32_t currentBroadphaseType = (int32_t)m_Properties.PhysicsProps.BroadphaseModel;
+						if (UI::PropertyDropdown("Broadphase Model", broadphaseTypes, VX_ARRAYCOUNT(broadphaseTypes), currentBroadphaseType))
+							m_Properties.PhysicsProps.BroadphaseModel = (BroadphaseType)currentBroadphaseType;
 
-						static const char* broadphaseTypes[] = {
-							"Sweep And Prune",
-							"Multi Box Prune",
-							"Automatic Box Prune",
-						};
-
-						static const char* currentBroadphaseType = broadphaseTypes[(uint32_t)m_Properties.PhysicsProps.BroadphaseModel];
-
-						if (Gui::BeginCombo("Broadphase Model", currentBroadphaseType))
-						{
-							uint32_t arraySize = VX_ARRAYCOUNT(broadphaseTypes);
-
-							for (uint32_t i = 0; i < arraySize; i++)
-							{
-								bool isSelected = strcmp(currentBroadphaseType, broadphaseTypes[i]) == 0;
-								if (Gui::Selectable(broadphaseTypes[i], isSelected))
-								{
-									currentBroadphaseType = broadphaseTypes[i];
-
-									if (i == 0)
-										m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::SweepAndPrune;
-									if (i == 1)
-										m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::MultiBoxPrune;
-									if (i == 2)
-										m_Properties.PhysicsProps.BroadphaseModel = BroadphaseType::AutomaticBoxPrune;
-								}
-
-								if (isSelected)
-									Gui::SetItemDefaultFocus();
-
-								if (i != arraySize - 1)
-									Gui::Separator();
-							}
-
-							Gui::EndMenu();
-						}
-
-						static const char* frictionTypes[] = {
-							"Patch",
-							"One Directional",
-							"Two Directional",
-						};
-
-						static const char* currentFrictionType = frictionTypes[(int)m_Properties.PhysicsProps.FrictionModel];
-
-						if (Gui::BeginCombo("Friction Model", currentFrictionType))
-						{
-							uint32_t arraySize = VX_ARRAYCOUNT(frictionTypes);
-
-							for (uint32_t i = 0; i < arraySize; i++)
-							{
-								bool isSelected = strcmp(currentFrictionType, frictionTypes[i]) == 0;
-								if (Gui::Selectable(frictionTypes[i], isSelected))
-								{
-									currentFrictionType = frictionTypes[i];
-
-									if (i == 0)
-										m_Properties.PhysicsProps.FrictionModel = FrictionType::Patch;
-									if (i == 1)
-										m_Properties.PhysicsProps.FrictionModel = FrictionType::OneDirectional;
-									if (i == 2)
-										m_Properties.PhysicsProps.FrictionModel = FrictionType::TwoDirectional;
-								}
-
-								if (isSelected)
-									Gui::SetItemDefaultFocus();
-
-								if (i != arraySize - 1)
-									Gui::Separator();
-							}
-
-							Gui::EndMenu();
-						}
-
-						UI::BeginPropertyGrid();
+						static const char* frictionTypes[3] = { "Patch", "One Directional", "Two Directional" };
+						int32_t currentFrictionType = (int32_t)m_Properties.PhysicsProps.FrictionModel;
+						if (UI::PropertyDropdown("Friction Model", frictionTypes, VX_ARRAYCOUNT(frictionTypes), currentFrictionType))
+							m_Properties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
 
 						int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
 						if (UI::Property("Position Iterations", positionIterations3D, 1.0f, 1, 100))
@@ -191,71 +123,34 @@ namespace Vortex {
 				{
 					if (Gui::TreeNodeEx("Preferences", treeNodeFlags))
 					{
-						static const char* themes[] = {
-							"Dark",
-							"Light Gray",
-							"Default",
-							"Classic",
-							"Light",
-						};
+						UI::BeginPropertyGrid();
 
-						static const char* currentTheme = themes[0];
-
-						if (Gui::BeginCombo("Editor Theme", currentTheme))
+						enum class Theme { Dark, LightGray, Default, Classic, Light };
+						static const char* themes[] = { "Dark", "Light Gray", "Default", "Classic", "Light" };
+						static int32_t currentTheme = (int32_t)Theme::Dark;
+						if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYCOUNT(themes), currentTheme))
 						{
-							uint32_t arraySize = VX_ARRAYCOUNT(themes);
+							if (currentTheme == 0)
+								Application::Get().GetGuiLayer()->SetDarkThemeColors();
+							if (currentTheme == 1)
+								Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
+							if (currentTheme == 2)
+								Gui::StyleColorsDark();
+							if (currentTheme == 3)
+								Gui::StyleColorsClassic();
+							if (currentTheme == 4)
+								Gui::StyleColorsLight();
+						}
 
-							for (uint32_t i = 0; i < arraySize; i++)
-							{
-								bool isSelected = strcmp(currentTheme, themes[i]) == 0;
-								if (Gui::Selectable(themes[i], isSelected))
-								{
-									currentTheme = themes[i];
-
-									if (i == 0)
-										Application::Get().GetGuiLayer()->SetDarkThemeColors();
-									if (i == 1)
-										Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
-									if (i == 2)
-										Gui::StyleColorsDark();
-									if (i == 3)
-										Gui::StyleColorsClassic();
-									if (i == 4)
-										Gui::StyleColorsLight();
-								}
-
-								if (isSelected)
-									Gui::SetItemDefaultFocus();
-
-								if (i != arraySize - 1)
-									Gui::Separator();
-							}
-
-							Gui::EndMenu();
+						std::vector<const char*> buffer;
+						uint32_t count = io.Fonts->Fonts.Size;
+						for (uint32_t i = 0; i < count; i++)
+						{
+							buffer.push_back(io.Fonts->Fonts[i]->GetDebugName());
 						}
 
 						ImFont* currentFont = Gui::GetFont();
-						if (Gui::BeginCombo("Editor Font", currentFont->GetDebugName()))
-						{
-							uint32_t arraySize = io.Fonts->Fonts.Size;
-
-							for (uint32_t i = 0; i < arraySize; i++)
-							{
-								ImFont* font = io.Fonts->Fonts[i];
-								Gui::PushID((void*)font);
-								if (Gui::Selectable(font->GetDebugName(), font == currentFont))
-									io.FontDefault = font;
-
-								if (i != arraySize - 1)
-									Gui::Separator();
-
-								Gui::PopID();
-							}
-
-							Gui::EndCombo();
-						}
-
-						UI::BeginPropertyGrid();
+						UI::FontSelector("Editor Font", buffer.data(), count, currentFont);
 
 						UI::Property("Frame Step Count", m_Properties.EditorProps.FrameStepCount);
 						UI::Property("Draw Editor Grid", m_Properties.EditorProps.DrawEditorGrid);

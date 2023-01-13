@@ -486,7 +486,7 @@ namespace Vortex {
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		Gui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		UI::ImageEx(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
@@ -554,49 +554,39 @@ namespace Vortex {
 			meshImportPopupOpen = false;
 		}
 
-		if (Gui::IsPopupOpen("Mesh Import Options"))
-		{
-			ImVec2 meshImportWindowSize = { 500, 300 };
-			Gui::SetNextWindowSize(meshImportWindowSize, ImGuiCond_Always);
-			ImVec2 center = Gui::GetMainViewport()->GetCenter();
-			Gui::SetNextWindowPos({ center.x - (meshImportWindowSize.x * 0.5f), center.y - (meshImportWindowSize.y * 0.5f) }, ImGuiCond_Appearing);
-		}
-
-		if (Gui::BeginPopupModal("Mesh Import Options", nullptr, ImGuiWindowFlags_NoResize))
+		if (UI::ShowMessageBox("Mesh Import Options", { 500, 280 }))
 		{
 			Gui::Separator();
 			Gui::Spacing();
 
 			ImVec2 button_size(Gui::GetFontSize() * 13.25f, 0.0f);
 
-			Gui::Text("A mesh asset must be generated from this mesh file. (i.e. .fbx)");
-			Gui::Text("Import options can be selected below");
+			Gui::TextCentered("A mesh asset must be generated from this mesh file. (i.e. .fbx)", 40.0f);
+			Gui::TextCentered("Import options can be selected below", 60.0f);
 
 			Gui::Spacing();
 			Gui::Separator();
 
 			UI::DrawVec3Controls("Translation", m_ModelImportOptions.MeshTransformation.Translation);
-			Math::vec3 rotation = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
-			UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
+			Math::vec3 rotationEuler = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
+			UI::DrawVec3Controls("Rotation", rotationEuler, 0.0f, 100.0f, [&]()
 			{
-				m_ModelImportOptions.MeshTransformation.SetRotationEuler(rotation);
+				m_ModelImportOptions.MeshTransformation.SetRotationEuler(rotationEuler);
 			});
 			UI::DrawVec3Controls("Scale", m_ModelImportOptions.MeshTransformation.Scale);
 
-			for (uint32_t i = 0; i < 9; i++)
-				Gui::Spacing();
+			UI::ShiftCursorY(20.0f);
+
+			UI::BeginPropertyGrid();
 			
-			char buffer[256] = { 0 };
 			std::string assetDir = Project::GetAssetDirectory().string();
 			size_t assetDirPos = m_ModelFilepath.find(assetDir);
 			std::string filepath = m_ModelFilepath.substr(assetDirPos + assetDir.size() + 1);
-			memcpy(buffer, filepath.c_str(), filepath.size());
-			Gui::Text("Filepath");
-			Gui::SameLine();
-			Gui::InputText("##ModelFilepathInput", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+			UI::Property("Filepath", filepath, true);
 
-			for (uint32_t i = 0; i < 9; i++)
-				Gui::Spacing();
+			UI::EndPropertyGrid();
+
+			UI::ShiftCursorY(10.0f);
 
 			if (Gui::Button("Import", button_size))
 			{
@@ -621,10 +611,8 @@ namespace Vortex {
 				Gui::CloseCurrentPopup();
 			}
 
-			Gui::Spacing();
 			Gui::EndPopup();
 		}
-
 
 		if (m_ShowSceneCreateEntityMenu)
 		{
@@ -756,14 +744,16 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
-		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
 
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 2.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+		const ImVec2 textureSize = { buttonSize, buttonSize };
 
 		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
@@ -781,11 +771,11 @@ namespace Vortex {
 		Gui::BeginHorizontal("##viewport_gizmos_modeH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)EditorResources::LocalModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 0 ? tintColor : normalColor))
-			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::LOCAL);
+		if (UI::ImageButtonEx(EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
+			m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
 		UI::SetTooltip("Local Mode");
 
-		if (Gui::ImageButton((void*)EditorResources::WorldModeIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_TranslationMode == 1 ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
 			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
 		UI::SetTooltip("World Mode");
 
@@ -805,14 +795,16 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
-		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
 
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 4.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+		const ImVec2 textureSize = { buttonSize, buttonSize };
 
 		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
@@ -830,19 +822,19 @@ namespace Vortex {
 		Gui::BeginHorizontal("##viewport_gizmos_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((void*)EditorResources::SelectToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == -1 ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::SelectToolIcon, textureSize, m_GizmoType == -1 ? bgColor : normalColor, tintColor))
 			OnNoGizmoSelected();
 		UI::SetTooltip("Select Tool");
 
-		if (Gui::ImageButton((void*)EditorResources::TranslateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 0 ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::TranslateToolIcon, textureSize, m_GizmoType == 0 ? bgColor : normalColor, tintColor))
 			OnTranslationToolSelected();
 		UI::SetTooltip("Translate Tool");
 
-		if (Gui::ImageButton((void*)EditorResources::RotateToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 1 ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::RotateToolIcon, textureSize, m_GizmoType == 1 ? bgColor : normalColor, tintColor))
 			OnRotationToolSelected();
 		UI::SetTooltip("Rotate Tool");
 
-		if (Gui::ImageButton((void*)EditorResources::ScaleToolIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, m_GizmoType == 2 ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::ScaleToolIcon, textureSize, m_GizmoType == 2 ? bgColor : normalColor, tintColor))
 			OnScaleToolSelected();
 		UI::SetTooltip("Scale Tool");
 
@@ -865,11 +857,15 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
+		const ImVec4 bgColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
+
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 3.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+		const ImVec2 textureSize = { buttonSize, buttonSize };
 
 		float toolbarX = (m_ViewportBounds[0].x + m_ViewportBounds[1].x) / 2.0f;
 		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), m_ViewportBounds[0].y + edgeOffset));
@@ -896,7 +892,7 @@ namespace Vortex {
 		if (hasPlayButton)
 		{
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? EditorResources::PlayIcon : EditorResources::StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
+			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
 			{
 				if (hasSimulateButton)
 					OnScenePlay();
@@ -910,7 +906,7 @@ namespace Vortex {
 		if (hasSimulateButton)
 		{
 			SharedRef<Texture2D> icon = (hasPlayButton) ? EditorResources::SimulateIcon : EditorResources::StopIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
+			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
 			{
 				if (hasPlayButton)
 					OnSceneSimulate();
@@ -924,7 +920,7 @@ namespace Vortex {
 		if (hasPauseButton)
 		{
 			SharedRef<Texture2D> icon = EditorResources::PauseIcon;
-			if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
+			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
 			{
 				bool paused = !scenePaused;
 
@@ -939,7 +935,7 @@ namespace Vortex {
 			if (scenePaused)
 			{
 				SharedRef<Texture2D> icon = EditorResources::StepIcon;
-				if (Gui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(buttonSize, buttonSize), ImVec2(0, 0), ImVec2(1, 1)))
+				if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
 
 				UI::SetTooltip("Next Frame");
@@ -965,14 +961,16 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
-		ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-		ImVec4 tintColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		const float buttonSize = 18.0f + 5.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 7.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+		const ImVec2 textureSize = { buttonSize, buttonSize };
 
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
@@ -990,33 +988,33 @@ namespace Vortex {
 		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		if (Gui::ImageButton((ImTextureID)EditorResources::MaximizeOnPlayIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MaximizeOnPlay ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
 			projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
 		UI::SetTooltip("Maximize On Play");
 
-		if (Gui::ImageButton((ImTextureID)EditorResources::ShowGridIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+		if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? bgColor : normalColor, tintColor))
 			projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 		UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
 
-		if (Gui::ImageButton((ImTextureID)EditorResources::DisplayPhysicsCollidersIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.PhysicsProps.ShowColliders ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
 			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
 		UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
 
-		if (Gui::ImageButton((ImTextureID)EditorResources::DisplaySceneIconsIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, normalColor))
+		if (UI::ImageButtonEx(EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
 			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
 		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
 
-		if (Gui::ImageButton((ImTextureID)EditorResources::MuteAudioSourcesIcons->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, projectProps.EditorProps.MuteAudioSources ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 			projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
 		UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
 
 		bool isIn2DView = m_EditorCamera->IsIn2DView();
-		if (Gui::ImageButton((void*)EditorResources::TwoDViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isIn2DView ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
 			m_EditorCamera->LockTo2DView(!isIn2DView);
 		UI::SetTooltip("2D View");
 
 		bool isInTopDownView = m_EditorCamera->IsInTopDownView();
-		if (Gui::ImageButton((void*)EditorResources::TopDownViewIcon->GetRendererID(), ImVec2(buttonSize, buttonSize), { 0, 1 }, { 1, 0 }, -1, isInTopDownView ? tintColor : normalColor))
+		if (UI::ImageButtonEx(EditorResources::TopDownViewIcon, textureSize, isInTopDownView ? bgColor : normalColor, tintColor))
 			m_EditorCamera->LockToTopDownView(!isInTopDownView);
 		UI::SetTooltip("Top Down View");
 
