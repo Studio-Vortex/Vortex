@@ -12,7 +12,7 @@ namespace Vortex {
 	public:
 		BuildSettingsPanel() = default;
 		
-		void SetContext(const LaunchRuntimeFn& callback);
+		void SetLaunchRuntimeCallback(const LaunchRuntimeFn& callback);
 
 		void OnGuiRender(bool showDefault = false);
 		bool& IsOpen() { return s_ShowPanel; }

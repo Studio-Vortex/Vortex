@@ -48,6 +48,7 @@ namespace Vortex {
 		SharedRef<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
 
+		float EnvironmentMapResolution = 512.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
 
@@ -372,7 +373,13 @@ namespace Vortex {
 		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
 		// don't forget to configure the viewport to the capture dimensions.
-		RenderCommand::SetViewport(Viewport{ 0, 0, 512, 512 });
+		Viewport viewport;
+		viewport.TopLeftXPos = 0;
+		viewport.TopLeftYPos = 0;
+		viewport.Width = (uint32_t)s_Data.EnvironmentMapResolution;
+		viewport.Height = (uint32_t)s_Data.EnvironmentMapResolution;
+		RenderCommand::SetViewport(viewport);
+
 		s_Data.HDRFramebuffer->Bind();
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -420,6 +427,7 @@ namespace Vortex {
 		iblPrefilterShader->Enable();
 		iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
 		iblPrefilterShader->SetMat4("u_Projection", captureProjection);
+		iblPrefilterShader->SetFloat("u_EnvironmentMapResolution", s_Data.EnvironmentMapResolution);
 		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
 		// Render each mip level
@@ -707,6 +715,16 @@ namespace Vortex {
 	void Renderer::AddToDrawCallCountStats(uint32_t drawCalls)
 	{
 		s_Data.RendererStatistics.DrawCalls += drawCalls;
+	}
+
+	float Renderer::GetEnvironmentMapResolution()
+	{
+		return s_Data.EnvironmentMapResolution;
+	}
+
+	void Renderer::SetEnvironmentMapResolution(float resolution)
+	{
+		s_Data.EnvironmentMapResolution = resolution;
 	}
 
 	float Renderer::GetSceneExposure()

@@ -19,8 +19,13 @@ namespace Vortex {
 		} General;
 
 		struct RendererProperties {
-			bool DisplaySceneIconsInEditor = true;
 			std::string TriangleCullMode = "";
+			float LineWidth = 1.5f;
+			float EnvironmentMapResolution = 512.0f;
+			float Exposure = 1.0f;
+			float Gamma = 2.2f;
+			bool UseVSync = true;
+			bool DisplaySceneIconsInEditor = true;
 		} RendererProps;
 
 		struct PhysicsProperties

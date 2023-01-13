@@ -554,12 +554,12 @@ namespace Vortex {
 			meshImportPopupOpen = false;
 		}
 
-		if (UI::ShowMessageBox("Mesh Import Options", { 500, 280 }))
+		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))
 		{
 			Gui::Separator();
 			Gui::Spacing();
 
-			ImVec2 button_size(Gui::GetFontSize() * 13.25f, 0.0f);
+			ImVec2 button_size(Gui::GetFontSize() * 13.27f, 0.0f);
 
 			Gui::TextCentered("A mesh asset must be generated from this mesh file. (i.e. .fbx)", 40.0f);
 			Gui::TextCentered("Import options can be selected below", 60.0f);
@@ -1533,7 +1533,7 @@ namespace Vortex {
 
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(Project::GetActive());
 			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel.SetContext(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+			m_BuildSettingsPanel.SetLaunchRuntimeCallback(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 
 			TagComponent::ResetAddedMarkers();
 		}
@@ -1554,6 +1554,7 @@ namespace Vortex {
 
 		m_ActiveScene = Scene::Create();
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneRendererPanel.SetContext(m_ActiveScene);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
@@ -1598,6 +1599,7 @@ namespace Vortex {
 		{
 			m_EditorScene = newScene;
 			m_SceneHierarchyPanel.SetContext(m_EditorScene);
+			m_SceneRendererPanel.SetContext(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
@@ -1659,6 +1661,8 @@ namespace Vortex {
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneRendererPanel.SetContext(m_ActiveScene);
+
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
 		OnNoGizmoSelected();
@@ -1699,6 +1703,7 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{};
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneRendererPanel.SetContext(m_ActiveScene);
 
 		// Reset the mouse cursor in case a script turned it off
 		Application::Get().GetWindow().ShowMouseCursor(true);
@@ -1723,6 +1728,7 @@ namespace Vortex {
 		m_ActiveScene->OnPhysicsSimulationStart();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneRendererPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::RestartSceneSimulation()

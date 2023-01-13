@@ -2,7 +2,7 @@
 
 namespace Vortex {
 
-	void BuildSettingsPanel::SetContext(const LaunchRuntimeFn& callback)
+	void BuildSettingsPanel::SetLaunchRuntimeCallback(const LaunchRuntimeFn& callback)
 	{
 		m_LaunchRuntimeCallback = callback;
 		const auto& projectProps = Project::GetActive()->GetProperties();

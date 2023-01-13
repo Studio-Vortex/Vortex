@@ -33,7 +33,7 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name, bool lastComponent = false, bool allowMultiple = false);
+		void DisplayAddComponentPopup(const std::string& name);
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
@@ -45,7 +45,7 @@ namespace Vortex {
 		inline static bool s_ShowInspectorPanel = true;
 
 	private:
-		SharedRef<Scene> m_ContextScene;
+		SharedRef<Scene> m_ContextScene = nullptr;
 		Entity m_SelectedEntity;
 		TransformComponent m_TransformToCopy;
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
@@ -57,18 +57,15 @@ namespace Vortex {
 	};
 
 	template <typename TComponent>
-	void SceneHierarchyPanel::DisplayAddComponentPopup(const std::string& name, bool lastComponent, bool allowMultiple)
+	void SceneHierarchyPanel::DisplayAddComponentPopup(const std::string& name)
 	{
-		if (!m_SelectedEntity.HasComponent<TComponent>() || allowMultiple)
+		if (!m_SelectedEntity.HasComponent<TComponent>())
 		{
 			if (Gui::MenuItem(name.c_str()))
 			{
 				m_SelectedEntity.AddComponent<TComponent>();
 				Gui::CloseCurrentPopup();
 			}
-
-			if (!lastComponent)
-				Gui::Separator();
 		}
 	}
 

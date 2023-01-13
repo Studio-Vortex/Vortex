@@ -261,7 +261,7 @@ namespace Vortex {
 		m_Properties.VSync = enabled;
 	}
 
-	bool WindowsWindow::IsVSync() const
+	bool WindowsWindow::IsVSyncEnabled() const
 	{
 		return m_Properties.VSync;
 	}

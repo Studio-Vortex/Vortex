@@ -248,7 +248,7 @@ public class Untitled : Entity
 			}
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
-			Gui::ImageButton((void*)icon->GetRendererID(), { thumbnailSize, thumbnailSize }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+			UI::ImageButtonEx(icon, { thumbnailSize, thumbnailSize }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
 			Gui::PopStyleColor();
 
 			static bool confirmDeletionPopupOpen = false;

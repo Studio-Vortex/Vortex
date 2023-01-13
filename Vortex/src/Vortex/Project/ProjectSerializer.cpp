@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "ProjectSerializer.h"
 
+#include "Vortex/Core/Application.h"
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/Renderer.h"
@@ -33,8 +34,12 @@ namespace Vortex {
 
 			out << YAML::Key << "RendererProperties" << YAML::BeginMap; // RendererProperties
 			{
-				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
 				out << YAML::Key << "TriangleCullMode" << YAML::Value << props.RendererProps.TriangleCullMode;
+				out << YAML::Key << "EnvironmentMapResolution" << YAML::Value << Renderer::GetEnvironmentMapResolution();
+				out << YAML::Key << "Exposure" << YAML::Value << Renderer::GetSceneExposure();
+				out << YAML::Key << "Gamma" << YAML::Value << Renderer::GetSceneGamma();
+				out << YAML::Key << "UseVSync" << YAML::Value << Application::Get().GetWindow().IsVSyncEnabled();
+				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
 			}
 			out << YAML::EndMap; // RendererProperties
 
@@ -118,7 +123,6 @@ namespace Vortex {
 
 		{
 			auto rendererData = projectData["RendererProperties"];
-			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
 			if (rendererData["TriangleCullMode"])
 			{
 				std::string triangleCullMode = rendererData["TriangleCullMode"].as<std::string>();
@@ -129,6 +133,15 @@ namespace Vortex {
 					Renderer::SetCullMode(cullMode);
 				}
 			}
+			props.RendererProps.EnvironmentMapResolution = rendererData["EnvironmentMapResolution"].as<float>();
+			Renderer::SetEnvironmentMapResolution(props.RendererProps.EnvironmentMapResolution);
+			props.RendererProps.Exposure = rendererData["Exposure"].as<float>();
+			Renderer::SetSceneExposure(props.RendererProps.Exposure);
+			props.RendererProps.Gamma = rendererData["Gamma"].as<float>();
+			Renderer::SetSceneGamma(props.RendererProps.Gamma);
+			props.RendererProps.UseVSync = rendererData["UseVSync"].as<bool>();
+			Application::Get().GetWindow().SetVSync(props.RendererProps.UseVSync);
+			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
 		}
 
 		{

@@ -86,6 +86,9 @@ namespace Vortex {
 		static void AddToQuadCountStats(uint32_t quadCount);
 		static void AddToDrawCallCountStats(uint32_t drawCalls);
 
+		static float GetEnvironmentMapResolution();
+		static void SetEnvironmentMapResolution(float resolution);
+
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
 

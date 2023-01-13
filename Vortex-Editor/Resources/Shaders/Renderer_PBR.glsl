@@ -300,6 +300,12 @@ void main()
 	{
 		PointLight pointLight = u_PointLights[i];
 
+		// float shadow = CubemapShadowCalculation(fragmentIn.Position, pointLight.Position, u_PointLightShadowMaps[i], pointLight.ShadowBias, pointLight.FarPlane);
+		// bool inShadow = (1.0 - shadow) <= 0.0;
+
+		// if (inShadow)
+		// 	continue;
+
 		vec3 L = normalize(pointLight.Position - fragmentIn.Position);
 		vec3 H = normalize(V + L);
 		float distance = length(pointLight.Position - fragmentIn.Position);
@@ -328,10 +334,8 @@ void main()
 		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
 		kD *= 1.0 - properties.Metallic;
 
-		//float shadow = CubemapShadowCalculation(fragmentIn.Position, pointLight.Position, u_PointLightShadowMaps[i], pointLight.ShadowBias, pointLight.FarPlane);
-
 		// Add to outgoing radiance Lo
-		Lo += /*(1.0 - shadow) * */ (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
 	for (int i = 0; i < u_SceneProperties.ActiveSpotLights; i++)

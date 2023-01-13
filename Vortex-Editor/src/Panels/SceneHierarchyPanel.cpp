@@ -1,5 +1,6 @@
 #include "SceneHierarchyPanel.h"
 
+#include <Vortex/Editor/EditorResources.h>
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Core/Buffer.h"
 
@@ -155,40 +156,32 @@ namespace Vortex {
 			m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
 			m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
 				CreateModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Sphere"))
 				CreateModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Capsule"))
 				CreateModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Cone"))
 				CreateModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Cylinder"))
 				CreateModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Plane"))
 				CreateModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
-			Gui::Separator();
 
 			if (Gui::MenuItem("Torus"))
 				CreateModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Create 2D"))
 		{
@@ -200,8 +193,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 			}
 
-			Gui::Separator();
-
 			if (Gui::MenuItem("Circle"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
@@ -212,7 +203,6 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Camera"))
 		{
@@ -223,7 +213,6 @@ namespace Vortex {
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-			Gui::Separator();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
@@ -234,7 +223,6 @@ namespace Vortex {
 			}
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Light"))
 		{
@@ -244,7 +232,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Directional;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-			Gui::Separator();
 
 			if (Gui::MenuItem("Point"))
 			{
@@ -252,7 +239,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Point;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-			Gui::Separator();
 
 			if (Gui::MenuItem("Spot"))
 			{
@@ -263,7 +249,6 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Physics"))
 		{
@@ -275,8 +260,6 @@ namespace Vortex {
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
-			Gui::Separator();
-
 			if (Gui::MenuItem("Sphere Collider"))
 			{
 				CreateModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
@@ -284,8 +267,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<SphereColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-
-			Gui::Separator();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
@@ -295,8 +276,6 @@ namespace Vortex {
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
-			Gui::Separator();
-
 			if (Gui::MenuItem("Static Mesh Collider"))
 			{
 				CreateModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
@@ -304,8 +283,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-
-			Gui::Separator();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
@@ -315,8 +292,6 @@ namespace Vortex {
 				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
-
-			Gui::Separator();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
@@ -329,7 +304,6 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Audio"))
 		{
@@ -340,8 +314,6 @@ namespace Vortex {
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
-			Gui::Separator();
-
 			if (Gui::MenuItem("Listener Entity"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
@@ -351,7 +323,6 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("UI"))
 		{
@@ -364,7 +335,6 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		Gui::Separator();
 
 		if (Gui::BeginMenu("Effects"))
 		{
@@ -562,8 +532,6 @@ namespace Vortex {
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		static SharedRef<Texture2D> settingsIcon = Texture2D::Create("Resources/Icons/Inspector/SettingsIcon.png");
-
 		if (entity.HasComponent<TComponent>())
 		{
 			auto& component = entity.GetComponent<TComponent>();
@@ -575,7 +543,7 @@ namespace Vortex {
 			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (Gui::ImageButton((void*)settingsIcon->GetRendererID(), ImVec2{ lineHeight - 5.5f, lineHeight - 5.5f }))
+			if (UI::ImageButtonEx(EditorResources::DotsIcon, { lineHeight - 5.4f, lineHeight - 5.4f }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
@@ -589,7 +557,9 @@ namespace Vortex {
 
 					Gui::CloseCurrentPopup();
 				}
+
 				Gui::Separator();
+
 				if (Gui::MenuItem("Paste Component"))
 				{
 					if (pasteCallback)
@@ -597,6 +567,7 @@ namespace Vortex {
 
 					Gui::CloseCurrentPopup();
 				}
+
 				if (removeable)
 					Gui::Separator();
 
@@ -814,7 +785,7 @@ namespace Vortex {
 				DisplayAddComponentPopup<NavMeshAgentComponent>(componentName);
 
 			if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ScriptComponent>(componentName, true);
+				DisplayAddComponentPopup<ScriptComponent>(componentName);
 
 			Gui::EndPopup();
 		}
@@ -893,8 +864,9 @@ namespace Vortex {
 			
 			UI::BeginPropertyGrid();
 
-			std::string skyboxPath = skybox->GetFilepath();
-			UI::Property("Source", skyboxPath, true);
+			std::string skyboxSourcePath = skybox->GetFilepath();
+			std::string relativeSkyboxPath = std::filesystem::relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
+			UI::Property("Source", relativeSkyboxPath, true);
 
 			UI::EndPropertyGrid();
 
@@ -1003,8 +975,6 @@ namespace Vortex {
 			}
 		});
 
-		static SharedRef<Texture2D> checkerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
-
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
@@ -1014,7 +984,13 @@ namespace Vortex {
 			if (component.Mesh)
 			{
 				meshSourcePath = component.Mesh->GetPath();
-				UI::Property("Mesh Source", meshSourcePath, true);
+				if (Model::IsDefaultMesh(meshSourcePath))
+					UI::Property("Mesh Source", meshSourcePath, true);
+				else
+				{
+					std::string relativeMeshPath = std::filesystem::relative(meshSourcePath, Project::GetAssetDirectory()).string();
+					UI::Property("Mesh Source", relativeMeshPath, true);
+				}
 			}
 
 			// Accept a Model File from the content browser
@@ -1078,7 +1054,7 @@ namespace Vortex {
 				{
 					UI::BeginPropertyGrid();
 
-					SharedRef<Texture2D> icon = checkerboardIcon;
+					SharedRef<Texture2D> icon = EditorResources::CheckerboardIcon;
 
 					// Normal
 					{
@@ -1120,7 +1096,7 @@ namespace Vortex {
 
 					// Albedo
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> albedoMap = material->GetAlbedoMap())
 							icon = albedoMap;
 
@@ -1166,7 +1142,7 @@ namespace Vortex {
 
 					// Metallic
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> metallicMap = material->GetMetallicMap())
 							icon = metallicMap;
 
@@ -1212,7 +1188,7 @@ namespace Vortex {
 
 					// Roughness
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap())
 							icon = roughnessMap;
 
@@ -1258,7 +1234,7 @@ namespace Vortex {
 
 					// Emission
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> emissionMap = material->GetEmissionMap())
 							icon = emissionMap;
 
@@ -1304,7 +1280,7 @@ namespace Vortex {
 
 					// Parallax Occlusion
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap())
 							icon = parallaxOcclusionMap;
 
@@ -1347,7 +1323,7 @@ namespace Vortex {
 
 					// Ambient Occlusion
 					{
-						icon = checkerboardIcon;
+						icon = EditorResources::CheckerboardIcon;
 						if (SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap())
 							icon = ambientOcclusionMap;
 
@@ -1399,7 +1375,7 @@ namespace Vortex {
 
 			// Texutre
 			{
-				SharedRef<Texture2D> icon = checkerboardIcon;
+				SharedRef<Texture2D> icon = EditorResources::CheckerboardIcon;
 
 				if (component.Texture)
 					icon = component.Texture;
@@ -1487,10 +1463,17 @@ namespace Vortex {
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
-			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
 			UI::BeginPropertyGrid();
-			UI::Property("Font Source", fontFilepath, true);
-			UI::EndPropertyGrid();
+
+			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
+
+			if (Font::GetDefaultFont()->GetFontAtlas()->GetPath() == fontFilepath)
+				UI::Property("Font Source", fontFilepath, true);
+			else
+			{
+				std::string relativeFontPath = std::filesystem::relative(fontFilepath, Project::GetAssetDirectory()).string();
+				UI::Property("Font Source", relativeFontPath, true);
+			}
 
 			// Accept a Font from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1515,8 +1498,6 @@ namespace Vortex {
 				}
 				Gui::EndDragDropTarget();
 			}
-
-			UI::BeginPropertyGrid();
 
 			std::string textString = component.TextString;
 			if (UI::MultilineTextBox("Text", textString))
@@ -1565,7 +1546,8 @@ namespace Vortex {
 
 			UI::BeginPropertyGrid();
 			std::string audioSourcePath = component.Source->GetPath();
-			UI::Property("Source", audioSourcePath, true);
+			std::string relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
+			UI::Property("Source", relativeAudioSourcePath, true);
 			UI::EndPropertyGrid();
 
 			// Accept a Audio File from the content browser

@@ -2,6 +2,11 @@
 
 namespace Vortex {
 
+	void SceneRendererPanel::SetContext(const SharedRef<Scene>& context)
+	{
+		m_ContextScene = context;
+	}
+
 	void SceneRendererPanel::OnGuiRender(bool showDefault)
 	{
 		if (s_ShowPanel || showDefault)
@@ -121,6 +126,32 @@ namespace Vortex {
 					projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
 				}
 
+				enum class EnvironmentMapResolution { e512, e1024, e2048 };
+				static const char* mapSizes[3] = { "512", "1024", "2048" };
+				float resolution = Renderer::GetEnvironmentMapResolution();
+				int32_t currentMapSize;
+				if (resolution == 512.0f)
+					currentMapSize = 0;
+				if (resolution == 1024.0f)
+					currentMapSize = 1;
+				if (resolution == 2048.0f)
+					currentMapSize = 2;
+
+				if (UI::PropertyDropdown("Environment Map Resolution", mapSizes, VX_ARRAYCOUNT(mapSizes), currentMapSize))
+				{
+					switch (currentMapSize)
+					{
+						case 0: Renderer::SetEnvironmentMapResolution(512.0f);  break;
+						case 1: Renderer::SetEnvironmentMapResolution(1024.0f); break;
+						case 2: Renderer::SetEnvironmentMapResolution(2048.0f); break;
+					}
+
+					auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
+
+					Entity entity{ skyboxView[0], m_ContextScene.get()};
+					Renderer::CreateEnvironmentMap(entity.GetComponent<SkyboxComponent>());
+				}
+
 				float sceneExposure = Renderer::GetSceneExposure();
 				if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f, 1.0f))
 					Renderer::SetSceneExposure(sceneExposure);
@@ -133,7 +164,7 @@ namespace Vortex {
 				if (UI::Property("Show Wireframe", wireframeMode))
 					RenderCommand::SetWireframe(wireframeMode);
 
-				static bool vsync = true;
+				static bool vsync = Application::Get().GetWindow().IsVSyncEnabled();
 				if (UI::Property("Use VSync", vsync))
 					Application::Get().GetWindow().SetVSync(vsync);
 

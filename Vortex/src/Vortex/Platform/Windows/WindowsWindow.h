@@ -32,7 +32,7 @@ namespace Vortex {
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Properties.EventCallback = callback; }
 		void SetTitle(const std::string& title) override;
 		void SetVSync(bool enabled) override;
-		bool IsVSync() const override;
+		bool IsVSyncEnabled() const override;
 
 		void CenterWindow() const override;
 

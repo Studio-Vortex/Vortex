@@ -1,11 +1,13 @@
 #include "vxpch.h"
 #include "OpenGLFramebuffer.h"
 
+#include "Vortex/Renderer/Renderer.h"
+
 #include <Glad/glad.h>
 
 namespace Vortex {
 
-	static constexpr uint32_t MAX_FRAME_BUFFER_SIZE = 8192;
+	static constexpr uint32_t MAX_FRAME_BUFFER_SIZE = 8'192;
 
 	namespace Utils
 	{
@@ -254,7 +256,10 @@ namespace Vortex {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFramebufferRendererID);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+
+		float environmentMapResolution = Renderer::GetEnvironmentMapResolution();
+
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, environmentMapResolution, environmentMapResolution);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRenderbufferRendererID);
 
 		VX_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer failed to complete!");
@@ -320,10 +325,24 @@ namespace Vortex {
 		glGenTextures(1, &m_EnvironmentCubemapRendererID);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemapRendererID);
+
+		float environmentMapResoulution = Renderer::GetEnvironmentMapResolution();
+
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				GL_RGB16F,
+				environmentMapResoulution,
+				environmentMapResoulution,
+				0,
+				GL_RGB,
+				GL_FLOAT,
+				nullptr
+			);
 		}
+
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);

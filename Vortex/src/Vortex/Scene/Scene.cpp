@@ -16,8 +16,8 @@
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
-#include "Vortex/Physics/Physics.h"
-#include "Vortex/Physics/Physics2D.h"
+#include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/2D/Physics2D.h"
 #include "Vortex/Project/Project.h"
 
 namespace Vortex {
