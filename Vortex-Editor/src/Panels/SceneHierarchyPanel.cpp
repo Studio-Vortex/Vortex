@@ -1576,10 +1576,13 @@ namespace Vortex {
 
 			Gui::EndDisabled();
 
-			UI::BeginPropertyGrid();
-			std::string audioSourcePath = component.Source->GetPath();
-			std::string relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
-			UI::Property("Source", relativeAudioSourcePath, true);
+			if (component.Source)
+			{
+				UI::BeginPropertyGrid();
+				std::string audioSourcePath = component.Source->GetPath();
+				std::string relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
+				UI::Property("Source", relativeAudioSourcePath, true);
+			}
 
 			// Accept a Audio File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1593,7 +1596,7 @@ namespace Vortex {
 					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
 					{
 						// If there is another file playing we need to stop it
-						if (component.Source)
+						if (component.Source->IsPlaying())
 							component.Source->Stop();
 
 						component.Source = AudioSource::Create(audioSourcePath.string());
