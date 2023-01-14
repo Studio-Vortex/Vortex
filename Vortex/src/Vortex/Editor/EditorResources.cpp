@@ -26,6 +26,12 @@ namespace Vortex {
 		DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
 		MuteAudioSourcesIcons = Texture2D::Create("Resources/Icons/Scene/MuteAudioIcon.png");
 
+		CameraIcon = Texture2D::Create("Resources/Icons/Scene/CameraIcon.png");
+		PointLightIcon = Texture2D::Create("Resources/Icons/Scene/PointLight.png");
+		SpotLightIcon = Texture2D::Create("Resources/Icons/Scene/SpotLight.png");
+		SkyLightIcon = Texture2D::Create("Resources/Icons/Scene/SkyLightIcon.png");
+		AudioSourceIcon = Texture2D::Create("Resources/Icons/Scene/AudioSourceIcon.png");
+
 		CheckerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
 		SettingsIcon = Texture2D::Create("Resources/Icons/Inspector/SettingsIcon.png");
 		DotsIcon = Texture2D::Create("Resources/Icons/Inspector/DotsIcon.png");

@@ -46,13 +46,13 @@ namespace Vortex {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-    void OpenGLSkybox::Reload()
-    {
+	void OpenGLSkybox::Reload()
+	{
 		if (m_RendererID)
 			glDeleteTextures(1, &m_RendererID);
 
 		LoadSkybox(m_Filepath);
-    }
+	}
 
 	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::string& path)
 	{
@@ -97,6 +97,14 @@ namespace Vortex {
 		{
 			VX_CORE_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
 		}
+
+		m_IsDirty = false;
+	}
+
+	void OpenGLSkybox::Copy(const SharedRef<Skybox>& dstSkybox) const
+	{
+		dstSkybox->SetFilepath(m_Filepath);
+		dstSkybox->Reload();
 	}
 
 }

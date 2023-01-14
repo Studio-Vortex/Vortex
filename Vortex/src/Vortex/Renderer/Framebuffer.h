@@ -82,9 +82,9 @@ namespace Vortex {
 		virtual void BindIrradianceCubemap2() const = 0;
 		virtual void BindPrefilterCubemap() const = 0;
 
-		virtual void CreateEnvironmentCubemap() = 0;
-		virtual void CreateIrradianceCubemap() = 0;
-		virtual void CreatePrefilteredEnvironmentCubemap() = 0;
+		virtual void CreateEnvironmentCubemap(uint32_t environmentTexSize) = 0;
+		virtual void CreateIrradianceCubemap(uint32_t irradianceTexSize) = 0;
+		virtual void CreatePrefilteredEnvironmentCubemap(uint32_t prefilterTexSize) = 0;
 
 		virtual void BindAndGenerateEnvironmentMipMap() const = 0;
 		virtual void BindAndSetRenderbufferStorage(uint32_t width, uint32_t height) const = 0;

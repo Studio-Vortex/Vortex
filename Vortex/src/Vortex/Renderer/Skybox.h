@@ -29,6 +29,8 @@ namespace Vortex {
 
 		virtual uint32_t GetRendererID() const = 0;
 
+		virtual void Copy(const SharedRef<Skybox>& dstSkybox) const = 0;
+
 		static SharedRef<Skybox> Create();
 		static SharedRef<Skybox> Create(const std::string& filepath);
 	};

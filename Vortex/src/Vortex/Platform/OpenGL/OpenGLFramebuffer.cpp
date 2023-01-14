@@ -320,7 +320,7 @@ namespace Vortex {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
 	}
 
-	void OpenGLHDRFramebuffer::CreateEnvironmentCubemap()
+	void OpenGLHDRFramebuffer::CreateEnvironmentCubemap(uint32_t environmentTexSize)
 	{
 		glGenTextures(1, &m_EnvironmentCubemapRendererID);
 		glActiveTexture(GL_TEXTURE0);
@@ -334,8 +334,8 @@ namespace Vortex {
 				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
 				0,
 				GL_RGB16F,
-				environmentMapResoulution,
-				environmentMapResoulution,
+				environmentTexSize,
+				environmentTexSize,
 				0,
 				GL_RGB,
 				GL_FLOAT,
@@ -356,14 +356,25 @@ namespace Vortex {
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
 
-	void OpenGLHDRFramebuffer::CreateIrradianceCubemap()
+	void OpenGLHDRFramebuffer::CreateIrradianceCubemap(uint32_t irradianceTexSize)
 	{
 		glGenTextures(1, &m_IrradianceCubemapRendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				GL_RGB16F,
+				irradianceTexSize,
+				irradianceTexSize,
+				0,
+				GL_RGB,
+				GL_FLOAT,
+				nullptr
+			);
 		}
+
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -371,15 +382,26 @@ namespace Vortex {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
-	void OpenGLHDRFramebuffer::CreatePrefilteredEnvironmentCubemap()
+	void OpenGLHDRFramebuffer::CreatePrefilteredEnvironmentCubemap(uint32_t prefilterTexSize)
 	{
 		// If there are a large number of smooth materials you may want to increase the resolution here
 		glGenTextures(1, &m_PrefilteredEnvironmentCubemapRendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
 		for (uint32_t i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				GL_RGB16F,
+				prefilterTexSize,
+				prefilterTexSize,
+				0,
+				GL_RGB,
+				GL_FLOAT,
+				nullptr
+			);
 		}
+
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);

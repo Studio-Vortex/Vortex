@@ -19,6 +19,8 @@ namespace Vortex {
 	{
 		Scene* scene = renderPacket.Scene;
 		Camera activeCamera = *renderPacket.MainCamera;
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		// Render 2D
 		{
@@ -104,7 +106,8 @@ namespace Vortex {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
 
-				Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Front);
+				RendererAPI::TriangleCullMode cullMode = Renderer2D::GetCullMode();
+				Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 				for (auto& e : view)
 				{
@@ -126,11 +129,11 @@ namespace Vortex {
 					);
 				}
 
-				Renderer2D::SetCullMode(Renderer2D::GetCullMode());
+				Renderer2D::SetCullMode(cullMode);
 			}
 
 			// Render Scene Icons
-			if (renderPacket.EditorScene && Project::GetActive()->GetProperties().RendererProps.DisplaySceneIconsInEditor)
+			if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
 			{
 				{
 					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();

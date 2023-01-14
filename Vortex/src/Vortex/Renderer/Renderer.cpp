@@ -10,6 +10,8 @@
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Model.h"
 
+#include "Vortex/Editor/EditorResources.h"
+
 namespace Vortex {
 
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
@@ -23,12 +25,6 @@ namespace Vortex {
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
 	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
-
-	static constexpr const char* CAMERA_ICON_PATH = "Resources/Icons/Scene/CameraIcon.png";
-	static constexpr const char* DIR_LIGHT_ICON_PATH = "Resources/Icons/Scene/DirLightIcon.png";
-	static constexpr const char* POINT_LIGHT_ICON_PATH = "Resources/Icons/Scene/PointLight.png";
-	static constexpr const char* SPOT_LIGHT_ICON_PATH = "Resources/Icons/Scene/SpotLight.png";
-	static constexpr const char* AUDIO_SOURCE_ICON_PATH = "Resources/Icons/Scene/AudioSourceIcon.png";
 
 	struct RendererInternalData
 	{
@@ -55,13 +51,6 @@ namespace Vortex {
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
 		SharedRef<Texture2D> BRDF_LUT = nullptr;
-
-		// Editor Resources
-		SharedRef<Texture2D> CameraIcon = nullptr;
-		SharedRef<Texture2D> PointLightIcon = nullptr;
-		SharedRef<Texture2D> SpotLightIcon = nullptr;
-		SharedRef<Texture2D> DirLightIcon = nullptr;
-		SharedRef<Texture2D> AudioSourceIcon = nullptr;
 	};
 
 	static RendererInternalData s_Data;
@@ -86,12 +75,6 @@ namespace Vortex {
 		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
 
 		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
-
-		s_Data.CameraIcon = Texture2D::Create(CAMERA_ICON_PATH);
-		s_Data.PointLightIcon = Texture2D::Create(POINT_LIGHT_ICON_PATH);
-		s_Data.SpotLightIcon = Texture2D::Create(SPOT_LIGHT_ICON_PATH);
-		s_Data.DirLightIcon = Texture2D::Create(DIR_LIGHT_ICON_PATH);
-		s_Data.AudioSourceIcon = Texture2D::Create(AUDIO_SOURCE_ICON_PATH);
 
 #if VX_RENDERER_STATISTICS
 		ResetStats();
@@ -174,7 +157,7 @@ namespace Vortex {
 
 	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID)
@@ -182,20 +165,20 @@ namespace Vortex {
 		switch (lightSource.Type)
 		{
 			case LightType::Directional:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.DirLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SkyLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 			case LightType::Point:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 			case LightType::Spot:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 				break;
 		}
 	}
 
 	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
 	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, s_Data.AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
+		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
@@ -359,7 +342,7 @@ namespace Vortex {
 		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(0.0f,  0.0f, -1.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix
 		};
 
-		s_Data.HDRFramebuffer->CreateEnvironmentCubemap();
+		s_Data.HDRFramebuffer->CreateEnvironmentCubemap(s_Data.EnvironmentMapResolution);
 
 		// convert HDR equirectangular environment map to cubemap equivalent
 		SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
@@ -370,13 +353,16 @@ namespace Vortex {
 
 		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
 
-		// don't forget to configure the viewport to the capture dimensions.
-		Viewport viewport;
-		viewport.TopLeftXPos = 0;
-		viewport.TopLeftYPos = 0;
-		viewport.Width = (uint32_t)s_Data.EnvironmentMapResolution;
-		viewport.Height = (uint32_t)s_Data.EnvironmentMapResolution;
-		RenderCommand::SetViewport(viewport);
+		{
+			// don't forget to configure the viewport to the capture dimensions.
+			Viewport viewport;
+			viewport.TopLeftXPos = 0;
+			viewport.TopLeftYPos = 0;
+			viewport.Width = (uint32_t)s_Data.EnvironmentMapResolution;
+			viewport.Height = (uint32_t)s_Data.EnvironmentMapResolution;
+
+			RenderCommand::SetViewport(viewport);
+		}
 
 		s_Data.HDRFramebuffer->Bind();
 		for (uint32_t i = 0; i < 6; i++)
@@ -395,7 +381,7 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->BindAndGenerateEnvironmentMipMap();
 
 		// Create Irradiance Map
-		s_Data.HDRFramebuffer->CreateIrradianceCubemap();
+		s_Data.HDRFramebuffer->CreateIrradianceCubemap(32);
 		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
 
 		SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
@@ -404,7 +390,17 @@ namespace Vortex {
 		irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
 		s_Data.HDRFramebuffer->BindEnvironmentCubemap();
 
-		RenderCommand::SetViewport(Viewport{ 0, 0, 32, 32 }); // don't forget to configure the viewport to the capture dimensions.
+		{
+			// don't forget to configure the viewport to the capture dimensions.
+			Viewport viewport;
+			viewport.TopLeftXPos = 0;
+			viewport.TopLeftYPos = 0;
+			viewport.Width = 32;
+			viewport.Height = 32;
+
+			RenderCommand::SetViewport(viewport);
+		}
+
 		s_Data.HDRFramebuffer->Bind();
 		for (uint32_t i = 0; i < 6; i++)
 		{
@@ -419,7 +415,7 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->Unbind();
 
 		// Create Prefiltered Envrionment Map
-		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap();
+		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap(128);
 
 		SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
 		iblPrefilterShader->Enable();
@@ -437,7 +433,16 @@ namespace Vortex {
 			uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
 			uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
 			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
-			RenderCommand::SetViewport(Viewport{ 0, 0, mipWidth, mipHeight });
+
+			{
+				Viewport viewport;
+				viewport.TopLeftXPos = 0;
+				viewport.TopLeftYPos = 0;
+				viewport.Width = mipWidth;
+				viewport.Height = mipHeight;
+
+				RenderCommand::SetViewport(viewport);
+			}
 
 			float roughness = (float)mip / (float)(maxMipLevels - 1);
 			iblPrefilterShader->SetFloat("u_Roughness", roughness);
@@ -516,13 +521,17 @@ namespace Vortex {
 
 					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
 
-					Viewport viewport;
-					viewport.TopLeftXPos = 0;
-					viewport.TopLeftYPos = 0;
-					viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
-					viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+					{
+						// don't forget to configure the viewport to the shadow resolution
+						Viewport viewport;
+						viewport.TopLeftXPos = 0;
+						viewport.TopLeftYPos = 0;
+						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
 
-					RenderCommand::SetViewport(viewport);
+						RenderCommand::SetViewport(viewport);
+					}
+					
 					s_Data.SkylightDepthMapFramebuffer->Bind();
 					shadowMapShader->Enable();
 					shadowMapShader->SetMat4("u_LightProjection", lightProjection);

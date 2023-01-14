@@ -53,9 +53,9 @@ namespace Vortex {
 		void BindIrradianceCubemap2() const override;
 		void BindPrefilterCubemap() const override;
 
-		void CreateEnvironmentCubemap() override;
-		void CreateIrradianceCubemap() override;
-		void CreatePrefilteredEnvironmentCubemap() override;
+		void CreateEnvironmentCubemap(uint32_t environmentTexSize) override;
+		void CreateIrradianceCubemap(uint32_t irradianceTexSize) override;
+		void CreatePrefilteredEnvironmentCubemap(uint32_t prefilterTexSize) override;
 
 		void BindAndGenerateEnvironmentMipMap() const override;
 		void BindAndSetRenderbufferStorage(uint32_t width, uint32_t height) const override;

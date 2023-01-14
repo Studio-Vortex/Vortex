@@ -32,6 +32,12 @@ namespace Vortex {
 		inline static SharedRef<Texture2D> DisplaySceneIconsIcon = nullptr;
 		inline static SharedRef<Texture2D> MuteAudioSourcesIcons = nullptr;
 
+		inline static SharedRef<Texture2D> CameraIcon = nullptr;
+		inline static SharedRef<Texture2D> PointLightIcon = nullptr;
+		inline static SharedRef<Texture2D> SpotLightIcon = nullptr;
+		inline static SharedRef<Texture2D> SkyLightIcon = nullptr;
+		inline static SharedRef<Texture2D> AudioSourceIcon = nullptr;
+
 		// Inspector
 		inline static SharedRef<Texture2D> CheckerboardIcon = nullptr;
 		inline static SharedRef<Texture2D> SettingsIcon = nullptr;

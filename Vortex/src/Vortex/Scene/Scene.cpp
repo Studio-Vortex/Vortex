@@ -62,6 +62,13 @@ namespace Vortex {
 
 						// Copy Resources
 						{
+							if constexpr (std::is_same<TComponent, SkyboxComponent>())
+							{
+								const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
+								const auto& dstSkybox = dst.GetComponent<SkyboxComponent>().Source;
+								srcSkybox->Copy(dstSkybox);
+							}
+
 							if constexpr (std::is_same<TComponent, MeshRendererComponent>())
 							{
 								const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
