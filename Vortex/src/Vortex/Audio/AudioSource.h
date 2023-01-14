@@ -34,6 +34,7 @@ namespace Vortex {
 		};
 
 	public:
+		AudioSource() = default;
 		AudioSource(const std::string& filepath);
 		~AudioSource();
 
@@ -64,6 +65,9 @@ namespace Vortex {
 		void SetPlayOneShot(bool playOneShot);
 
 		inline const std::string& GetPath() const { return m_Path; }
+		inline void SetPath(const std::string& filepath) { m_Path = filepath; }
+
+		void Reload();
 
 		inline const SoundProperties& GetProperties() const { return m_Properties; }
 		inline SoundProperties& GetProperties() { return m_Properties; }
@@ -77,6 +81,10 @@ namespace Vortex {
 		static void Copy(const SharedRef<AudioSource>& dstAudioSource, const SharedRef<AudioSource>& srcAudioSource);
 
 		static SharedRef<AudioSource> Create(const std::string& filepath);
+		static SharedRef<AudioSource> Create();
+
+	private:
+		void LoadFromPathAndInitEngine(const std::string& filepath);
 
 	private:
 		inline static uint32_t s_ListenerCount = 0;

@@ -1576,11 +1576,17 @@ namespace Vortex {
 
 			Gui::EndDisabled();
 
+			UI::BeginPropertyGrid();
+
+			std::string audioSourcePath = "";
 			if (component.Source)
 			{
-				UI::BeginPropertyGrid();
-				std::string audioSourcePath = component.Source->GetPath();
-				std::string relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
+				audioSourcePath = component.Source->GetPath();
+
+				std::string relativeAudioSourcePath = "";
+				if (component.Source && !audioSourcePath.empty())
+					relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
+
 				UI::Property("Source", relativeAudioSourcePath, true);
 			}
 
@@ -1599,7 +1605,9 @@ namespace Vortex {
 						if (component.Source->IsPlaying())
 							component.Source->Stop();
 
-						component.Source = AudioSource::Create(audioSourcePath.string());
+						SharedRef<AudioSource> audioSource = component.Source;
+						audioSource->SetPath(audioSourcePath.string());
+						audioSource->Reload();
 					}
 					else
 						VX_CORE_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());

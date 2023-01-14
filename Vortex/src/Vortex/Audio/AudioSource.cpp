@@ -8,10 +8,7 @@ namespace Vortex {
 	AudioSource::AudioSource(const std::string& filepath)
 		: m_Path(filepath)
 	{
-		AudioEngine::InitEngine(&m_Engine);
-		AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, &m_LengthInSeconds, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
-		m_Initialized = true;
-		AudioEngine::StopEngine(&m_Engine);
+		LoadFromPathAndInitEngine(filepath);
 	}
 
 	AudioSource::~AudioSource()
@@ -142,7 +139,12 @@ namespace Vortex {
 		m_Properties.PlayOneShot = playOneShot;
 	}
 
-    void AudioSource::SetProperties(const SoundProperties& soundProps)
+	void AudioSource::Reload()
+	{
+		LoadFromPathAndInitEngine(m_Path);
+	}
+
+	void AudioSource::SetProperties(const SoundProperties& soundProps)
     {
 		SetDirection(soundProps.Direction);
 		SetVelocity(soundProps.Veloctiy);
@@ -184,6 +186,28 @@ namespace Vortex {
 	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
 	{
 		return CreateShared<AudioSource>(filepath);
+	}
+
+    SharedRef<AudioSource> AudioSource::Create()
+    {
+        return CreateShared<AudioSource>();
+    }
+
+	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
+	{
+		AudioEngine::InitEngine(&m_Engine);
+
+		AudioEngine::InitSoundFromPath(
+			&m_Engine,
+			filepath,
+			&m_Sound,
+			&m_LengthInSeconds,
+			m_Properties.Loop,
+			m_Properties.Spacialized,
+			m_Properties.Volume
+		);
+
+		m_Initialized = true;
 	}
 
 }
