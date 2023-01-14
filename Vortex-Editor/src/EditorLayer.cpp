@@ -631,10 +631,13 @@ namespace Vortex {
 			Gui::EndPopup();
 		}
 
-		UI_GizmosModeToolbar();
-		UI_GizmosToolbar();
-		UI_CentralToolbar();
-		UI_SceneSettingsToolbar();
+		if (Gui::IsItemVisible())
+		{
+			UI_GizmosModeToolbar();
+			UI_GizmosToolbar();
+			UI_CentralToolbar();
+			UI_SceneSettingsToolbar();
+		}
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
