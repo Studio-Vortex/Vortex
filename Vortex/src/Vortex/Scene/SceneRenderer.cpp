@@ -104,6 +104,8 @@ namespace Vortex {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
 
+				Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::Front);
+
 				for (auto& e : view)
 				{
 					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
@@ -123,6 +125,8 @@ namespace Vortex {
 						(int)(entt::entity)e
 					);
 				}
+
+				Renderer2D::SetCullMode(Renderer2D::GetCullMode());
 			}
 
 			// Render Scene Icons
@@ -214,14 +218,14 @@ namespace Vortex {
 
 			// Geometry pass
 			// Sort Models by distance from camera and render in reverse order
-			std::map<float, std::vector<Entity>> sortedEntities;
+			std::map<float, Entity> sortedEntities;
 
 			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			uint32_t i = 0;
 
 			for (const auto e : meshView)
 			{
 				Entity entity{ e, renderPacket.Scene };
-
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
@@ -229,40 +233,45 @@ namespace Vortex {
 					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
-					sortedEntities[distance].push_back(entity);
+
+					if (sortedEntities.find(distance) == sortedEntities.end())
+						sortedEntities[distance] = entity;
+					else
+						sortedEntities[distance + (0.01f * i)] = entity;
 				}
 				else
 				{
 					Math::vec3 cameraPosition = renderPacket.CameraWorldSpaceTransform.Translation;
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
-					sortedEntities[distance].push_back(entity);
+
+					if (sortedEntities.find(distance) == sortedEntities.end())
+						sortedEntities[distance] = entity;
+					else
+						sortedEntities[distance + (0.01f * i)] = entity;
 				}
+
+				i++;
 			}
 
 			InstrumentationTimer timer("Geometry Pass");
 			{
 				for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 				{
-					std::vector<Entity> entityList = it->second;
+					Entity entity = it->second;
+					MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-					for (uint32_t i = 0; i < entityList.size(); i++)
+					if (!entity.IsActive())
+						continue;
+
+					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
 					{
-						Entity entity = entityList[i];
-						MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
-
-						if (!entity.IsActive())
-							continue;
-
-						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-
-						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
-						{
-							meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-						}
-						else
-						{
-							meshRendererComponent.Mesh->Render(worldSpaceTransform);
-						}
+						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
+					}
+					else
+					{
+						meshRendererComponent.Mesh->Render(worldSpaceTransform);
 					}
 				}
 			}
