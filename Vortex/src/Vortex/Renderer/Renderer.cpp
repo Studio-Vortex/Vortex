@@ -2,7 +2,6 @@
 #include "Renderer.h"
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetRegistry.h"
 #include "Vortex/Core/Application.h"
 
@@ -42,6 +41,7 @@ namespace Vortex {
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
 
 		float EnvironmentMapResolution = 512.0f;
+		float PrefilterMapResolution = 128.0f;
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
@@ -381,8 +381,9 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->BindAndGenerateEnvironmentMipMap();
 
 		// Create Irradiance Map
-		s_Data.HDRFramebuffer->CreateIrradianceCubemap(32);
-		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(32, 32);
+		uint32_t irradianceTexSize = 32;
+		s_Data.HDRFramebuffer->CreateIrradianceCubemap(irradianceTexSize);
+		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(irradianceTexSize, irradianceTexSize);
 
 		SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
 		irradianceConvolutionShader->Enable();
@@ -395,8 +396,8 @@ namespace Vortex {
 			Viewport viewport;
 			viewport.TopLeftXPos = 0;
 			viewport.TopLeftYPos = 0;
-			viewport.Width = 32;
-			viewport.Height = 32;
+			viewport.Width = irradianceTexSize;
+			viewport.Height = irradianceTexSize;
 
 			RenderCommand::SetViewport(viewport);
 		}
@@ -415,7 +416,7 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->Unbind();
 
 		// Create Prefiltered Envrionment Map
-		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap(128);
+		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap(s_Data.PrefilterMapResolution);
 
 		SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
 		iblPrefilterShader->Enable();
@@ -430,8 +431,8 @@ namespace Vortex {
 		for (uint32_t mip = 0; mip < maxMipLevels; mip++)
 		{
 			// Resize framebuffer according to mip-level size
-			uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
-			uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
+			uint32_t mipWidth = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
+			uint32_t mipHeight = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
 			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
 
 			{
@@ -740,6 +741,20 @@ namespace Vortex {
 		s_Data.RendererStatistics.DrawCalls += drawCalls;
 	}
 
+	void Renderer::SetProperties(const ProjectProperties::RendererProperties& props)
+	{
+		Renderer2D::SetLineWidth(props.LineWidth);
+		s_Data.EnvironmentMapResolution = props.EnvironmentMapResolution;
+		s_Data.PrefilterMapResolution = props.PrefilterMapResolution;
+		s_Data.ShadowMapResolution = props.ShadowMapResolution;
+		s_Data.SceneExposure = props.Exposure;
+		s_Data.SceneGamma = props.Gamma;
+		Application::Get().GetWindow().SetVSync(props.UseVSync);
+
+		if (!props.TriangleCullMode.empty())
+			s_Data.CullMode = Utils::TriangleCullModeFromString(props.TriangleCullMode);
+	}
+
 	float Renderer::GetEnvironmentMapResolution()
 	{
 		return s_Data.EnvironmentMapResolution;
@@ -748,6 +763,16 @@ namespace Vortex {
 	void Renderer::SetEnvironmentMapResolution(float resolution)
 	{
 		s_Data.EnvironmentMapResolution = resolution;
+	}
+
+	float Renderer::GetPrefilterMapResolution()
+	{
+		return s_Data.PrefilterMapResolution;
+	}
+
+	void Renderer::SetPrefilterMapResolution(float resolution)
+	{
+		s_Data.PrefilterMapResolution = resolution;
 	}
 
 	float Renderer::GetShadowMapResolution()

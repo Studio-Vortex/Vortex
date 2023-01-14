@@ -7,6 +7,7 @@
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Scene.h"
 
@@ -86,8 +87,13 @@ namespace Vortex {
 		static void AddToQuadCountStats(uint32_t quadCount);
 		static void AddToDrawCallCountStats(uint32_t drawCalls);
 
+		static void SetProperties(const ProjectProperties::RendererProperties& props);
+
 		static float GetEnvironmentMapResolution();
 		static void SetEnvironmentMapResolution(float resolution);
+
+		static float GetPrefilterMapResolution();
+		static void SetPrefilterMapResolution(float resolution);
 
 		static float GetShadowMapResolution();
 		static void SetShadowMapResolution(float resolution);

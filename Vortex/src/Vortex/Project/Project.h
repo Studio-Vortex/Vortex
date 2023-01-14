@@ -22,6 +22,7 @@ namespace Vortex {
 			std::string TriangleCullMode = "";
 			float LineWidth = 1.5f;
 			float EnvironmentMapResolution = 512.0f;
+			float PrefilterMapResolution = 128.0f;
 			float ShadowMapResolution = 1024.0f;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;

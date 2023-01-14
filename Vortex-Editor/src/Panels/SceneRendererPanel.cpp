@@ -124,6 +124,17 @@ namespace Vortex {
 					projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
 				}
 
+				auto RecreateEnvironmentMapFunc = [&]()
+				{
+					auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
+
+					Entity entity{ skyboxView[0], m_ContextScene.get() };
+					SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+					SharedRef<Skybox> skybox = skyboxComponent.Source;
+					skybox->Reload();
+					Renderer::CreateEnvironmentMap(skyboxComponent);
+				};
+
 				enum class EnvironmentMapResolution { e512, e1024, e2048 };
 				static const char* envMapSizes[3] = { "512", "1024", "2048" };
 				float envMapResolution = Renderer::GetEnvironmentMapResolution();
@@ -143,10 +154,29 @@ namespace Vortex {
 						case 2: Renderer::SetEnvironmentMapResolution(2048.0f); break;
 					}
 
-					auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
+					RecreateEnvironmentMapFunc();
+				}
 
-					Entity entity{ skyboxView[0], m_ContextScene.get()};
-					Renderer::CreateEnvironmentMap(entity.GetComponent<SkyboxComponent>());
+				enum class PrefilterMapResolution { e128, e256, e512 };
+				static const char* prefilterMapSizes[3] = { "128", "256", "512" };
+				float prefilterMapResolution = Renderer::GetPrefilterMapResolution();
+
+				int32_t currentPrefilterMapSize = 0;
+
+				if (prefilterMapResolution == 128.0f)  currentPrefilterMapSize = 0;
+				if (prefilterMapResolution == 256.0f)  currentPrefilterMapSize = 1;
+				if (prefilterMapResolution == 512.0f)  currentPrefilterMapSize = 2;
+
+				if (UI::PropertyDropdown("Prefilter Map Resolution", prefilterMapSizes, VX_ARRAYCOUNT(prefilterMapSizes), currentPrefilterMapSize))
+				{
+					switch (currentPrefilterMapSize)
+					{
+						case 0: Renderer::SetPrefilterMapResolution(128.0f);  break;
+						case 1: Renderer::SetPrefilterMapResolution(256.0f);  break;
+						case 2: Renderer::SetPrefilterMapResolution(512.0f);  break;
+					}
+
+					RecreateEnvironmentMapFunc();
 				}
 
 				enum class ShadowMapResolution { e512, e1024, e2048, e4096, e8192 };
