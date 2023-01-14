@@ -1,5 +1,4 @@
-﻿namespace Vortex
-{
+﻿namespace Vortex {
 
 	public enum MouseButton
 	{
@@ -14,7 +13,14 @@
 
 		Left = Button0,
 		Right = Button1,
-		Middle = Button2
+		Middle = Button2,
+	}
+
+	public enum CursorMode
+	{
+		Normal = 0,
+		Hidden = 1,
+		Locked = 2,
 	}
 
 }

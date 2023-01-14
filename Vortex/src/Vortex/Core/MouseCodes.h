@@ -19,12 +19,25 @@ namespace Vortex {
 		ButtonLast = Button7,
 		ButtonLeft = Button0,
 		ButtonRight = Button1,
-		ButtonMiddle = Button2
+		ButtonMiddle = Button2,
 	} Mouse;
+
+	typedef enum class CursorMode : uint16_t
+	{
+		Normal = 0,
+		Hidden = 1,
+		Locked = 2,
+	};
 
 	inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode)
 	{
 		os << static_cast<int32_t>(mouseCode);
+		return os;
+	}
+
+	inline std::ostream& operator<<(std::ostream& os, CursorMode cursorMode)
+	{
+		os << static_cast<uint32_t>(cursorMode);
 		return os;
 	}
 

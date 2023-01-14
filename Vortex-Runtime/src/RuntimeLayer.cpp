@@ -192,7 +192,7 @@ namespace Vortex {
 			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 			// Reset the mouse cursor in case a script turned it off
-			Application::Get().GetWindow().ShowMouseCursor(true);
+			Input::SetCursorMode(CursorMode::Normal);
 		}
 
 		if (std::filesystem::exists(filepath) && filepath.extension().string() == ".vortex")

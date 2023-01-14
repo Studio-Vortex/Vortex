@@ -78,7 +78,7 @@ namespace Vortex {
 
 	Math::vec2 Input::GetMousePosition()
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		double xPos, yPos;
 		glfwGetCursorPos(window, &xPos, &yPos);
 
@@ -93,6 +93,24 @@ namespace Vortex {
 	float Input::GetMouseY()
 	{
 		return GetMousePosition().y;
+	}
+
+	void Input::SetCursorPosition(const Math::vec2& position)
+	{
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
+		glfwSetCursorPos(window, position.x, position.y);
+	}
+
+	CursorMode Input::GetCursorMode()
+	{
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
+		return static_cast<CursorMode>(glfwGetInputMode(window, GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
+	}
+
+	void Input::SetCursorMode(CursorMode cursorMode)
+	{
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)cursorMode);
 	}
 
 	void Input::UpdateMouseState(const Event& event)

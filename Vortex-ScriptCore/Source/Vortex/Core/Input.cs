@@ -1,17 +1,7 @@
-﻿using System.Runtime.InteropServices.WindowsRuntime;
-
-namespace Vortex {
+﻿namespace Vortex {
 
 	public static class Input
 	{
-		public static bool ShowMouseCursor
-		{
-			set
-			{
-				InternalCalls.Input_ShowMouseCursor(value);
-			}
-		}
-
 		public static bool IsKeyDown(KeyCode key) => InternalCalls.Input_IsKeyDown(key);
 
 		public static bool IsKeyUp(KeyCode key) => InternalCalls.Input_IsKeyUp(key);
@@ -37,6 +27,9 @@ namespace Vortex {
 		public static bool IsGamepadButtonUp(Gamepad button) => InternalCalls.Input_IsGamepadButtonUp(button);
 
 		public static float GetGamepadAxis(Gamepad axis) => InternalCalls.Input_GetGamepadAxis(axis);
+
+		public static CursorMode GetCursorMode() => InternalCalls.Input_GetCursorMode();
+		public static void SetCursorMode(CursorMode mode) => InternalCalls.Input_SetCursorMode(mode);
 	}
 
 }

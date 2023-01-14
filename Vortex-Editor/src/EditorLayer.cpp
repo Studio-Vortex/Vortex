@@ -137,12 +137,12 @@ namespace Vortex {
 
 				if (Input::IsKeyPressed(KeyCode::F6))
 				{
-					Application::Get().GetWindow().ShowMouseCursor(true, true);
+					Input::SetCursorMode(CursorMode::Normal);
 					m_ActiveScene->SetShouldUpdateScripts(false);
 				}
 				else if (Input::IsKeyPressed(KeyCode::Escape))
 				{
-					Application::Get().GetWindow().ShowMouseCursor(false, true);
+					Input::SetCursorMode(CursorMode::Locked);
 					m_ActiveScene->SetShouldUpdateScripts(true);
 				}
 
@@ -1470,7 +1470,7 @@ namespace Vortex {
 			case Mouse::ButtonRight:
 			{
 				if (m_SceneViewportHovered && m_SceneState != SceneState::Play)
-					Application::Get().GetWindow().ShowMouseCursor(false, true);
+					Input::SetCursorMode(CursorMode::Locked);
 
 				break;
 			}
@@ -1486,7 +1486,7 @@ namespace Vortex {
 			case Mouse::ButtonRight:
 			{
 				if (m_SceneState != SceneState::Play)
-					Application::Get().GetWindow().ShowMouseCursor(true);
+					Input::SetCursorMode(CursorMode::Normal);
 
 				break;
 			}
@@ -1709,7 +1709,7 @@ namespace Vortex {
 		m_SceneRendererPanel.SetContext(m_ActiveScene);
 
 		// Reset the mouse cursor in case a script turned it off
-		Application::Get().GetWindow().ShowMouseCursor(true);
+		Input::SetCursorMode(CursorMode::Normal);
 	}
 
 	void EditorLayer::RestartScene()

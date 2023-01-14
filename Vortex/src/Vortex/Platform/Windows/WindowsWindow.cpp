@@ -277,27 +277,6 @@ namespace Vortex {
 		glfwSetWindowPos(m_Window, posX, posY);
 	}
 
-	void WindowsWindow::SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const
-	{
-		glfwSetCursorPos(m_Window, (double)mouseCursorX, (double)mouseCursorY);
-	}
-
-	void WindowsWindow::ShowMouseCursor(bool enabled, bool rawInputMode) const
-	{
-		if (enabled)
-		{
-			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
-		}
-		else
-		{
-			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-			if (rawInputMode)
-				glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-		}
-	}
-
 	void WindowsWindow::Shutdown()
 	{
 		VX_PROFILE_FUNCTION();

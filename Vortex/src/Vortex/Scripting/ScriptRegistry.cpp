@@ -3045,12 +3045,20 @@ namespace Vortex {
 		return Input::GetGamepadAxis(axis);
 	}
 
-	static void Input_ShowMouseCursor(bool enabled)
+	static CursorMode Input_GetCursorMode()
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Application::Get().GetWindow().ShowMouseCursor(enabled);
+		return Input::GetCursorMode();
+	}
+
+	static void Input_SetCursorMode(CursorMode cursorMode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+		Input::SetCursorMode(cursorMode);
 	}
 
 #pragma endregion
@@ -3571,7 +3579,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		VX_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);
 		VX_ADD_INTERNAL_CALL(Input_GetGamepadAxis);
-		VX_ADD_INTERNAL_CALL(Input_ShowMouseCursor);
+		VX_ADD_INTERNAL_CALL(Input_GetCursorMode);
+		VX_ADD_INTERNAL_CALL(Input_SetCursorMode);
 
 		VX_ADD_INTERNAL_CALL(Gui_Begin);
 		VX_ADD_INTERNAL_CALL(Gui_BeginWithPosition);

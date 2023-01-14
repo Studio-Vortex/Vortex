@@ -920,7 +920,10 @@ namespace Vortex {
 		internal extern static float Input_GetGamepadAxis(Gamepad gamepadAxis);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Input_ShowMouseCursor(bool enabled);
+		internal extern static CursorMode Input_GetCursorMode();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Input_SetCursorMode(CursorMode cursorMode);
 
 		#endregion
 

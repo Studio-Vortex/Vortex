@@ -38,10 +38,6 @@ namespace Vortex {
 
 		inline void* GetNativeWindowHandle() const override { return m_Window; }
 
-		void SetCursorPosition(uint32_t mouseCursorX, uint32_t mouseCursorY) const override;
-
-		void ShowMouseCursor(bool enabled, bool rawInputMode = false) const override;
-
 	private:
 		virtual void Init(const WindowProperties& props);
 		virtual void Shutdown();
