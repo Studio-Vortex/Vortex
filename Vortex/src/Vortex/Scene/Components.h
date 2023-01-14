@@ -25,7 +25,7 @@ namespace Vortex {
 
 	struct TagComponent
 	{
-		inline static std::vector<std::string> Markers = { "UnTagged", "Start", "Finish", "Player", "MainCamera" };
+		inline static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
 
 		std::string Tag = "";
 		std::string Marker = Markers[0];

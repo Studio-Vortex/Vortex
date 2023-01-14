@@ -180,6 +180,17 @@ namespace Vortex {
 		return CreateEntityWithUUID(UUID(), name, marker);
 	}
 
+	Entity Scene::CreateChildEntity(Entity parent, const std::string& name, const std::string& marker)
+	{
+		Entity child = CreateEntity(name, marker);
+
+		ParentEntity(child, parent);
+
+		SortEntities();
+
+		return child;
+	}
+
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name, const std::string& marker)
 	{
 		VX_PROFILE_FUNCTION();
@@ -190,7 +201,7 @@ namespace Vortex {
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
-		tag.Marker = marker.empty() ? "UnTagged" : marker;
+		tag.Marker = marker.empty() ? "Untagged" : marker;
 
 		entity.AddComponent<HierarchyComponent>();
 
@@ -683,14 +694,8 @@ namespace Vortex {
 
 	Entity Scene::TryGetEntityWithUUID(UUID uuid)
 	{
-		auto view = m_Registry.view<IDComponent>();
-
-		for (auto entity : view)
-		{
-			const auto& idComponent = m_Registry.get<IDComponent>(entity);
-			if (idComponent.ID == uuid)
-				return Entity{ entity, this };
-		}
+		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
+			return Entity{ it->second, this };
 
 		return Entity{};
 	}
@@ -833,8 +838,8 @@ namespace Vortex {
 			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
 
 			// Set the starting particle position to the entity's translation
-			particleEmitter->GetProperties().Position = GetWorldSpaceTransform(entity).Translation;
-
+			Math::vec3 worldSpaceTranslation = GetWorldSpaceTransform(entity).Translation;
+			particleEmitter->GetProperties().Position = worldSpaceTranslation;
 			particleEmitter->OnUpdate(delta);
 
 			if (particleEmitter->IsActive())

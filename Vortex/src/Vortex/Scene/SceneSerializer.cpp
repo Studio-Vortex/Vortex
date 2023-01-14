@@ -297,7 +297,7 @@ namespace Vortex {
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
+			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOVRad();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
 			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
@@ -832,7 +832,7 @@ namespace Vortex {
 				auto cameraProps = cameraComponent["Camera"];
 				cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
-				cc.Camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(cameraProps["PerspectiveFOV"].as<float>()));
+				cc.Camera.SetPerspectiveVerticalFOVRad(cameraProps["PerspectiveFOV"].as<float>());
 				cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 				cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 

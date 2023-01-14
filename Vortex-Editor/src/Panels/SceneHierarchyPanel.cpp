@@ -824,10 +824,10 @@ namespace Vortex {
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOV());
+				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
 				if (UI::Property("Field of View", perspectiveVerticalFOV))
-					camera.SetPerspectiveVerticalFOV(Math::Deg2Rad(perspectiveVerticalFOV));
-
+					camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
+				
 				float nearClip = camera.GetPerspectiveNearClip();
 				if (UI::Property("Near", nearClip))
 					camera.SetPerspectiveNearClip(nearClip);

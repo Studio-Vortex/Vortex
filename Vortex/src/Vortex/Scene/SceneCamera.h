@@ -13,18 +13,18 @@ namespace Vortex {
 		SceneCamera();
 		~SceneCamera() override = default;
 
-		void SetPerspective(float verticalFOV, float nearClip, float farClip);
-		void SetOrthographic(float size, float nearClip, float farClip);
+		void SetPerspective(float verticalFOV, float nearClip = 0.01f, float farClip = 1000.0f);
+		void SetOrthographic(float size, float nearClip = -1.0f, float farClip = 1.0f);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 		const Math::vec2& GetViewportSize() const { return m_ViewportSize; }
 
-		float GetPerspectiveVerticalFOV() const { return m_PerspectiveFOV; }
-		void SetPerspectiveVerticalFOV(float verticalFOV) { m_PerspectiveFOV = verticalFOV; ReCalculateProjection(); }
+		float GetPerspectiveVerticalFOVRad() const { return m_PerspectiveFOV; }
+		void SetPerspectiveVerticalFOVRad(float verticalFOV) { m_PerspectiveFOV = verticalFOV; ReCalculateProjection(); }
 		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
-		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveFOV = nearClip; ReCalculateProjection(); }
+		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; ReCalculateProjection(); }
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
-		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFOV = farClip; ReCalculateProjection(); }
+		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; ReCalculateProjection(); }
 
 		float GetOrthographicSize() const { return m_OrthographicSize; }
 		void SetOrthographicSize(float size) { m_OrthographicSize = size; ReCalculateProjection(); }

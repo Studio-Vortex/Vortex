@@ -21,6 +21,7 @@ namespace Vortex {
 		static void CreateDefaultEntities(const SharedRef<Scene>& context);
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
+		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool excludeChildren = false);
 
@@ -112,7 +113,9 @@ namespace Vortex {
 		bool m_DebugMode = false;
 		// -------------------------
 
-		std::unordered_map<UUID, entt::entity> m_EntityMap;
+		using EntityMap = std::unordered_map<UUID, Entity>;
+
+		EntityMap m_EntityMap;
 
 	private:
 		friend class Entity;
