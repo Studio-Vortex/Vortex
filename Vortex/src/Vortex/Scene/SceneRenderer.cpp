@@ -191,7 +191,7 @@ namespace Vortex {
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 				Renderer::BeginScene(editorCamera);
 
-				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjection(), scene);
+				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
 			}
 			else
 			{
@@ -199,7 +199,7 @@ namespace Vortex {
 				Renderer::BeginScene(sceneCamera, renderPacket.CameraWorldSpaceTransform);
 
 				Math::mat4 view = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
-				Math::mat4 projection = sceneCamera.GetProjection();
+				Math::mat4 projection = sceneCamera.GetProjectionMatrix();
 
 				SceneRenderer::RenderSkybox(view, projection, scene);
 			}

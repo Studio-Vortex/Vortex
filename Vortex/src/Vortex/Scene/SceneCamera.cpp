@@ -3,49 +3,31 @@
 
 namespace Vortex {
 
-	SceneCamera::SceneCamera()
-	{
-		ReCalculateProjection();
-	}
-
 	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip)
 	{
 		m_ProjectionType = ProjectionType::Perspective;
-
 		m_PerspectiveFOV = verticalFOV;
 		m_PerspectiveNear = nearClip;
 		m_PerspectiveFar = farClip;
-
-		ReCalculateProjection();
 	}
 
 	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
 	{
 		m_ProjectionType = ProjectionType::Orthographic;
-
 		m_OrthographicSize = size;
 		m_OrthographicNear = nearClip;
 		m_OrthographicFar = farClip;
-
-		ReCalculateProjection();
 	}
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-
-	
-		VX_CORE_ASSERT(width > 0 && height > 0, "Invalid Resize!");
 		m_AspectRatio = (float)width / (float)height;
-		ReCalculateProjection();
 		m_ViewportSize = { (float)width, (float)height };
-	}
 
-    void SceneCamera::ReCalculateProjection()
-	{
 		switch (m_ProjectionType)
 		{
 			case ProjectionType::Perspective:
-				m_ProjectionMatrix = Math::Perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+				SetPerspectiveProjectionMatrix(m_PerspectiveFOV, (float)width, (float)height, m_PerspectiveNear, m_PerspectiveFar);
 				break;
 			case ProjectionType::Orthographic:
 				float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
@@ -56,6 +38,23 @@ namespace Vortex {
 				m_ProjectionMatrix = Math::Ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
 				break;
 		}
+	}
+
+	void SceneCamera::SetProjectionType(ProjectionType type)
+	{
+		m_ProjectionType = type;
+
+		switch (m_ProjectionType)
+		{
+			case ProjectionType::Perspective:
+				SetPerspective(m_PerspectiveFOV, m_PerspectiveNear, m_PerspectiveFar);
+				break;
+			case ProjectionType::Orthographic:
+				SetOrthographic(m_OrthographicSize, m_OrthographicNear, m_OrthographicFar);
+				break;
+		}
+
+		SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
 }

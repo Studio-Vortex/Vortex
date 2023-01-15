@@ -8,7 +8,13 @@
 namespace Vortex {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), Camera(Math::Perspective(Math::Deg2Rad(fov), aspectRatio, nearClip, farClip))
+		:
+		m_FOV(fov),
+		m_AspectRatio(aspectRatio),
+		m_NearClip(nearClip),
+		m_FarClip(farClip),
+		Camera(Math::Perspective(Math::Deg2Rad(fov), aspectRatio, nearClip, farClip),
+			Math::Perspective(Math::Deg2Rad(fov), aspectRatio, nearClip, farClip))
 	{
 		UpdateView();
 	}

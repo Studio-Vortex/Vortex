@@ -61,6 +61,12 @@ namespace Vortex::Math {
 		return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
 	}
 
+	template <typename T>
+	static auto PerspectiveFOV(T FOV, T width, T height, T zNear, T zFar)
+	{
+		return glm::perspectiveFov(FOV, width, height, zNear, zFar);
+	}
+
 	static auto LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
 	{
 		return glm::lookAt(eyePos, point, up);

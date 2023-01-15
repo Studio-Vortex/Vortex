@@ -656,7 +656,7 @@ namespace Vortex {
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 			// Editor camera
-			const Math::mat4& cameraProjection = m_EditorCamera->GetProjection();
+			const Math::mat4& cameraProjection = m_EditorCamera->GetProjectionMatrix();
 			Math::mat4 cameraView = m_EditorCamera->GetViewMatrix();
 
 			// Entity transform

@@ -272,7 +272,7 @@ namespace Vortex
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetProjection() * Math::Inverse(transform);
+		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
 
 		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
 		quadShader->Enable();

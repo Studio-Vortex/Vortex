@@ -56,7 +56,8 @@ namespace Vortex {
 		inline void SetShouldUpdateScripts(bool shouldUpdate) { m_ShouldUpdateScripts = shouldUpdate; }
 		// ------------------------------
 
-		size_t GetEntityCount() const { return m_Registry.alive(); }
+		inline const Math::ivec2& GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
+		inline size_t GetEntityCount() const { return m_Registry.alive(); }
 
 		Entity TryGetTopEntityInHierarchy(Entity child) const;
 		Entity DuplicateEntity(Entity entity);
@@ -114,7 +115,6 @@ namespace Vortex {
 		// -------------------------
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
-
 		EntityMap m_EntityMap;
 
 	private:

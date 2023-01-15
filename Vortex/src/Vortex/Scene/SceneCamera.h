@@ -10,34 +10,31 @@ namespace Vortex {
 		enum class ProjectionType { Perspective = 0, Orthographic = 1 };
 
 	public:
-		SceneCamera();
+		SceneCamera() = default;
 		~SceneCamera() override = default;
 
 		void SetPerspective(float verticalFOV, float nearClip = 0.01f, float farClip = 1000.0f);
 		void SetOrthographic(float size, float nearClip = -1.0f, float farClip = 1.0f);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
-		const Math::vec2& GetViewportSize() const { return m_ViewportSize; }
+		inline const Math::vec2& GetViewportSize() const { return m_ViewportSize; }
 
-		float GetPerspectiveVerticalFOVRad() const { return m_PerspectiveFOV; }
-		void SetPerspectiveVerticalFOVRad(float verticalFOV) { m_PerspectiveFOV = verticalFOV; ReCalculateProjection(); }
-		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
-		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; ReCalculateProjection(); }
-		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
-		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; ReCalculateProjection(); }
+		inline float GetPerspectiveVerticalFOVRad() const { return m_PerspectiveFOV; }
+		inline void SetPerspectiveVerticalFOVRad(float verticalFOV) { m_PerspectiveFOV = verticalFOV; }
+		inline float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
+		inline void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; }
+		inline float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
+		inline void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; }
 
-		float GetOrthographicSize() const { return m_OrthographicSize; }
-		void SetOrthographicSize(float size) { m_OrthographicSize = size; ReCalculateProjection(); }
-		float GetOrthographicNearClip() const { return m_OrthographicNear; }
-		void SetOrthographicNearClip(float nearClip) { m_OrthographicNear = nearClip; ReCalculateProjection(); }
-		float GetOrthographicFarClip() const { return m_OrthographicFar; }
-		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; ReCalculateProjection(); }
+		inline float GetOrthographicSize() const { return m_OrthographicSize; }
+		inline void SetOrthographicSize(float size) { m_OrthographicSize = size; }
+		inline float GetOrthographicNearClip() const { return m_OrthographicNear; }
+		inline void SetOrthographicNearClip(float nearClip) { m_OrthographicNear = nearClip; }
+		inline float GetOrthographicFarClip() const { return m_OrthographicFar; }
+		inline void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; }
 
-		ProjectionType GetProjectionType() const { return m_ProjectionType; }
-		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; ReCalculateProjection(); }
-
-	private:
-		void ReCalculateProjection();
+		inline ProjectionType GetProjectionType() const { return m_ProjectionType; }
+		void SetProjectionType(ProjectionType type);
 
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;

@@ -809,7 +809,7 @@ namespace Vortex {
 			component = m_TransformToCopy;
 		}, false);
 
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		DrawComponent<CameraComponent>("Camera", entity, [&](auto& component)
 		{
 			SceneCamera& camera = component.Camera;
 
@@ -822,33 +822,53 @@ namespace Vortex {
 			if (UI::PropertyDropdown("Projection", projectionTypes, VX_ARRAYCOUNT(projectionTypes), currentProjectionType))
 				camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
 
+			bool modified = false;
+
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
 				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
 				if (UI::Property("Field of View", perspectiveVerticalFOV))
+				{
 					camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
+					modified = true;
+				}
 				
 				float nearClip = camera.GetPerspectiveNearClip();
 				if (UI::Property("Near", nearClip))
+				{
 					camera.SetPerspectiveNearClip(nearClip);
+					modified = true;
+				}
 
 				float farClip = camera.GetPerspectiveFarClip();
 				if (UI::Property("Far", farClip))
+				{
 					camera.SetPerspectiveFarClip(farClip);
+					modified = true;
+				}
 			}
 			else
 			{
 				float orthoSize = camera.GetOrthographicSize();
 				if (UI::Property("Size", orthoSize))
+				{
 					camera.SetOrthographicSize(orthoSize);
+					modified = true;
+				}
 
 				float nearClip = camera.GetOrthographicNearClip();
 				if (UI::Property("Near", nearClip))
+				{
 					camera.SetOrthographicNearClip(nearClip);
+					modified = true;
+				}
 
 				float farClip = camera.GetOrthographicFarClip();
 				if (UI::Property("Far", farClip))
+				{
 					camera.SetOrthographicFarClip(farClip);
+					modified = true;
+				}
 
 				UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
 			}
@@ -856,6 +876,12 @@ namespace Vortex {
 			UI::Property("Clear Color", &component.ClearColor);
 
 			UI::EndPropertyGrid();
+
+			if (modified)
+			{
+				Math::ivec2 viewportSize = m_ContextScene->GetViewportSize();
+				camera.SetViewportSize(viewportSize.x, viewportSize.y);
+			}
 		});
 
 		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
