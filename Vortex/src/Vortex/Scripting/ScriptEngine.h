@@ -24,15 +24,16 @@ namespace Vortex {
 		Bool, Char, Short, Int, Long,
 		Byte, UShort, UInt, ULong,
 		Vector2, Vector3, Vector4,
+		Color3, Color4,
 		Entity,
 	};
 
 	struct ScriptField
 	{
-		ScriptFieldType Type;
-		std::string Name;
+		ScriptFieldType Type = ScriptFieldType::None;
+		std::string Name = "";
 
-		MonoClassField* ClassField;
+		MonoClassField* ClassField = nullptr;
 	};
 
 	struct ScriptFieldInstance
@@ -249,6 +250,8 @@ namespace Vortex {
 				case ScriptFieldType::Vector2: return "Vector2";
 				case ScriptFieldType::Vector3: return "Vector3";
 				case ScriptFieldType::Vector4: return "Vector4";
+				case ScriptFieldType::Color3:  return "Color3";
+				case ScriptFieldType::Color4:  return "Color4";
 				case ScriptFieldType::Entity:  return "Entity";
 			}
 
@@ -273,6 +276,8 @@ namespace Vortex {
 			if (fieldType == "Vector2") return ScriptFieldType::Vector2;
 			if (fieldType == "Vector3") return ScriptFieldType::Vector3;
 			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
+			if (fieldType == "Color3")  return ScriptFieldType::Color3;
+			if (fieldType == "Color4")  return ScriptFieldType::Color4;
 			if (fieldType == "Entity")  return ScriptFieldType::Entity;
 
 			VX_CORE_ASSERT(false, "Unknown Script Field Type!");

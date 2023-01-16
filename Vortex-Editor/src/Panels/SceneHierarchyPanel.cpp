@@ -2006,6 +2006,18 @@ namespace Vortex {
 							if (UI::Property(name.c_str(), data))
 								scriptInstance->SetFieldValue(name, data);
 						}
+						if (field.Type == ScriptFieldType::Color3)
+						{
+							Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
+							if (UI::Property(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
+						if (field.Type == ScriptFieldType::Color4)
+						{
+							Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
+							if (UI::Property(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+						}
 						if (field.Type == ScriptFieldType::Bool)
 						{
 							bool data = scriptInstance->GetFieldValue<bool>(name);
@@ -2076,13 +2088,13 @@ namespace Vortex {
 					SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto& fields = entityClass->GetFields();
 
-					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+					auto& entityClassFields = ScriptEngine::GetScriptFieldMap(entity);
 					for (const auto& [name, field] : fields)
 					{
-						auto it = entityFields.find(name);
+						auto it = entityClassFields.find(name);
 
 						// Field has been set in editor
-						if (it != entityFields.end())
+						if (it != entityClassFields.end())
 						{
 							ScriptFieldInstance& scriptField = it->second;
 
@@ -2115,6 +2127,18 @@ namespace Vortex {
 							{
 								Math::vec4 data = scriptField.GetValue<Math::vec4>();
 								if (UI::Property(name.c_str(), data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Color3)
+							{
+								Math::vec3 data = scriptField.GetValue<Math::vec3>();
+								if (UI::Property(name.c_str(), &data))
+									scriptField.SetValue(data);
+							}
+							if (field.Type == ScriptFieldType::Color4)
+							{
+								Math::vec4 data = scriptField.GetValue<Math::vec4>();
+								if (UI::Property(name.c_str(), &data))
 									scriptField.SetValue(data);
 							}
 							if (field.Type == ScriptFieldType::Bool)
@@ -2186,7 +2210,7 @@ namespace Vortex {
 								float data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2196,7 +2220,7 @@ namespace Vortex {
 								double data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2206,7 +2230,7 @@ namespace Vortex {
 								Math::vec2 data = Math::vec2(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2216,7 +2240,7 @@ namespace Vortex {
 								Math::vec3 data = Math::vec3(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2226,7 +2250,27 @@ namespace Vortex {
 								Math::vec4 data = Math::vec4(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Color3)
+							{
+								Math::vec3 data = Math::vec3(0.0f);
+								if (UI::Property(name.c_str(), &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Color4)
+							{
+								Math::vec4 data = Math::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+								if (UI::Property(name.c_str(), &data))
+								{
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2236,7 +2280,7 @@ namespace Vortex {
 								bool data = false;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2246,7 +2290,7 @@ namespace Vortex {
 								char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2256,7 +2300,7 @@ namespace Vortex {
 								short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2266,7 +2310,7 @@ namespace Vortex {
 								int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2276,7 +2320,7 @@ namespace Vortex {
 								long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2286,7 +2330,7 @@ namespace Vortex {
 								unsigned char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2296,7 +2340,7 @@ namespace Vortex {
 								unsigned short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2306,7 +2350,7 @@ namespace Vortex {
 								unsigned int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2316,7 +2360,7 @@ namespace Vortex {
 								unsigned long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2326,7 +2370,7 @@ namespace Vortex {
 								uint64_t data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityFields[name];
+									ScriptFieldInstance& fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2340,7 +2384,7 @@ namespace Vortex {
 										
 										if (Entity entity = m_ContextScene->TryGetEntityWithUUID(*entityUUID))
 										{
-											ScriptFieldInstance& fieldInstance = entityFields[name];
+											ScriptFieldInstance& fieldInstance = entityClassFields[name];
 											fieldInstance.Field = field;
 											fieldInstance.SetValue(*entityUUID);
 										}

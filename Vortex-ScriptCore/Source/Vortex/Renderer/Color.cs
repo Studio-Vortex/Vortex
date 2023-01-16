@@ -16,4 +16,20 @@
 		public static Vector4 LightYellow  { get => new Vector4(0.8f, 0.8f, 0.2f, 1.0f); }
 	}
 
+	public struct Color3
+	{
+		public float R, G, B;
+
+		public static implicit operator Vector3(Color3 color)
+			=> new Vector3(color.R, color.G, color.B);
+	}
+
+	public struct Color4
+	{
+		public float R, G, B, A;
+
+		public static implicit operator Vector4(Color4 color)
+			=> new Vector4(color.R, color.G, color.B, color.A);
+	}
+
 }

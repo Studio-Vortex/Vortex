@@ -745,21 +745,23 @@ namespace Vortex {
 
 					switch (field.Type)
 					{
-							WRITE_SCRIPT_FIELD(Float, float)
-							WRITE_SCRIPT_FIELD(Double, double)
-							WRITE_SCRIPT_FIELD(Bool, bool)
-							WRITE_SCRIPT_FIELD(Char, int8_t)
-							WRITE_SCRIPT_FIELD(Short, int16_t)
-							WRITE_SCRIPT_FIELD(Int, int32_t)
-							WRITE_SCRIPT_FIELD(Long, int64_t)
-							WRITE_SCRIPT_FIELD(Byte, uint8_t)
-							WRITE_SCRIPT_FIELD(UShort, uint16_t)
-							WRITE_SCRIPT_FIELD(UInt, uint32_t)
-							WRITE_SCRIPT_FIELD(ULong, uint64_t)
-							WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
-							WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
-							WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
-							WRITE_SCRIPT_FIELD(Entity, UUID)
+						WRITE_SCRIPT_FIELD(Float, float)
+						WRITE_SCRIPT_FIELD(Double, double)
+						WRITE_SCRIPT_FIELD(Bool, bool)
+						WRITE_SCRIPT_FIELD(Char, int8_t)
+						WRITE_SCRIPT_FIELD(Short, int16_t)
+						WRITE_SCRIPT_FIELD(Int, int32_t)
+						WRITE_SCRIPT_FIELD(Long, int64_t)
+						WRITE_SCRIPT_FIELD(Byte, uint8_t)
+						WRITE_SCRIPT_FIELD(UShort, uint16_t)
+						WRITE_SCRIPT_FIELD(UInt, uint32_t)
+						WRITE_SCRIPT_FIELD(ULong, uint64_t)
+						WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
+						WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
+						WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
+						WRITE_SCRIPT_FIELD(Color3, Math::vec3)
+						WRITE_SCRIPT_FIELD(Color4, Math::vec4)
+						WRITE_SCRIPT_FIELD(Entity, UUID)
 					}
 
 					out << YAML::EndMap; // ScriptFields
@@ -1275,30 +1277,33 @@ namespace Vortex {
 
 							ScriptFieldInstance& fieldInstance = entityFields[name];
 
-							// TODO: Turn this into editor log warning
-							VX_CORE_ASSERT(fields.find(name) != fields.end(), "Script Field was not found in Field Map!");
 							if (fields.find(name) == fields.end())
+							{
+								VX_CORE_WARN("Script Field '{}' was not found in Field Map!", name);
 								continue;
+							}
 
 							fieldInstance.Field = fields.at(name);
 
 							switch (type)
 							{
-									READ_SCRIPT_FIELD(Float, float)
-									READ_SCRIPT_FIELD(Double, double)
-									READ_SCRIPT_FIELD(Bool, bool)
-									READ_SCRIPT_FIELD(Char, int8_t)
-									READ_SCRIPT_FIELD(Short, int16_t)
-									READ_SCRIPT_FIELD(Int, int32_t)
-									READ_SCRIPT_FIELD(Long, int64_t)
-									READ_SCRIPT_FIELD(Byte, uint8_t)
-									READ_SCRIPT_FIELD(UShort, uint16_t)
-									READ_SCRIPT_FIELD(UInt, uint32_t)
-									READ_SCRIPT_FIELD(ULong, uint64_t)
-									READ_SCRIPT_FIELD(Vector2, Math::vec2)
-									READ_SCRIPT_FIELD(Vector3, Math::vec3)
-									READ_SCRIPT_FIELD(Vector4, Math::vec4)
-									READ_SCRIPT_FIELD(Entity, UUID)
+								READ_SCRIPT_FIELD(Float, float)
+								READ_SCRIPT_FIELD(Double, double)
+								READ_SCRIPT_FIELD(Bool, bool)
+								READ_SCRIPT_FIELD(Char, int8_t)
+								READ_SCRIPT_FIELD(Short, int16_t)
+								READ_SCRIPT_FIELD(Int, int32_t)
+								READ_SCRIPT_FIELD(Long, int64_t)
+								READ_SCRIPT_FIELD(Byte, uint8_t)
+								READ_SCRIPT_FIELD(UShort, uint16_t)
+								READ_SCRIPT_FIELD(UInt, uint32_t)
+								READ_SCRIPT_FIELD(ULong, uint64_t)
+								READ_SCRIPT_FIELD(Vector2, Math::vec2)
+								READ_SCRIPT_FIELD(Vector3, Math::vec3)
+								READ_SCRIPT_FIELD(Vector4, Math::vec4)
+								READ_SCRIPT_FIELD(Color3, Math::vec3)
+								READ_SCRIPT_FIELD(Color4, Math::vec4)
+								READ_SCRIPT_FIELD(Entity, UUID)
 							}
 						}
 					}

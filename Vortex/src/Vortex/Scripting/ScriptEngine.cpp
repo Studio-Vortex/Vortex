@@ -43,6 +43,8 @@ namespace Vortex {
 		{ "Vortex.Vector2", ScriptFieldType::Vector2 },
 		{ "Vortex.Vector3", ScriptFieldType::Vector3 },
 		{ "Vortex.Vector4", ScriptFieldType::Vector4 },
+		{ "Vortex.Color3",  ScriptFieldType::Color3  },
+		{ "Vortex.Color4",  ScriptFieldType::Color4  },
 		{ "Vortex.Entity",  ScriptFieldType::Entity  },
 	};
 
