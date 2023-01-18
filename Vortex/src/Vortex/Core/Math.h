@@ -212,6 +212,12 @@ namespace Vortex::Math {
 		return glm::toQuat(v);
 	}
 
+	template <typename T, typename U>
+	static auto AngleAxis(T angle, const U& axis)
+	{
+		return glm::angleAxis(angle, axis);
+	}
+
 	static quaternion GetOrientation(float pitch, float yaw, float roll)
 	{
 		return quaternion(vec3(pitch, yaw, roll));

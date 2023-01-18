@@ -6,10 +6,10 @@ namespace Vortex
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Quaternion : IEquatable<Quaternion>
 	{
-		public float W;
 		public float X;
 		public float Y;
 		public float Z;
+		public float W;
 
 		public Quaternion(float x, float y, float z, float w)
 		{
@@ -32,10 +32,10 @@ namespace Vortex
 			Vector3 c = Vector3.Cos(euler * 0.5f);
 			Vector3 s = Vector3.Sin(euler * 0.5f);
 
-			W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
 			X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
 			Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
 			Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
+			W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
 		}
 
 		public static Vector3 operator *(Quaternion q, Vector3 v)
@@ -44,6 +44,16 @@ namespace Vortex
 			Vector3 uv = Vector3.Cross(qv, v);
 			Vector3 uuv = Vector3.Cross(qv, uv);
 			return v + ((uv * q.W) + uuv) * 2.0f;
+		}
+
+		public static Quaternion operator *(Quaternion a, Quaternion b)
+		{
+			Quaternion result = new Quaternion();
+			result.X = a.W * b.X + a.X * b.W + a.Y * b.Z - a.Z * b.Y;
+			result.Y = a.W * b.Y + a.Y * b.W + a.Z * b.X - a.X * b.Z;
+			result.Z = a.W * b.Z + a.Z * b.W + a.X * b.Y - a.Y * b.X;
+			result.W = a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z;
+			return result;
 		}
 
 		public Vector3 XYZ
@@ -68,18 +78,12 @@ namespace Vortex
 
 		public float Length
 		{
-			get
-			{
-				return (float)System.Math.Sqrt(LengthSquared);
-			}
+			get => Mathf.Sqrt(LengthSquared);
 		}
 
 		public float LengthSquared
 		{
-			get
-			{
-				return X * X + Y * Y + Z * Z + W * W;
-			}
+			get => X * X + Y * Y + Z * Z + W * W;
 		}
 
 		public static Quaternion FromToRotation(Vector3 aFrom, Vector3 aTo)
@@ -92,7 +96,7 @@ namespace Vortex
 		public static Quaternion AngleAxis(float aAngle, Vector3 aAxis)
 		{
 			aAxis.Normalize();
-			float rad = aAngle * Mathf.PI / 180.0f * 0.5f;
+			float rad = Mathf.Deg2Rad(aAngle) * 0.5f;
 			aAxis *= Mathf.Sin(rad);
 			return new Quaternion(aAxis.X, aAxis.Y, aAxis.Z, Mathf.Cos(rad));
 		}

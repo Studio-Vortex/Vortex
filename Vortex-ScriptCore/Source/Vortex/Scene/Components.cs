@@ -38,6 +38,12 @@
 			set => InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
 		}
 
+		public Quaternion GetRotation()
+		{
+			InternalCalls.TransformComponent_GetRotationQuaternion(Entity.ID, out Quaternion result);
+			return result;
+		}
+
 		public void SetRotation(Quaternion orientation)
 		{
 			InternalCalls.TransformComponent_SetRotationQuaternion(Entity.ID, ref orientation);
@@ -231,6 +237,18 @@
 			set => InternalCalls.LightSourceComponent_SetIntensity(Entity.ID, value);
 		}
 
+		public float Cutoff
+		{
+			get => InternalCalls.LightSourceComponent_GetCutoff(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetCutoff(Entity.ID, value);
+		}
+
+		public float OuterCutoff
+		{
+			get => InternalCalls.LightSourceComponent_GetOuterCutoff(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetOuterCutoff(Entity.ID, value);
+		}
+
 		public float ShadowBias
 		{
 			get => InternalCalls.LightSourceComponent_GetShadowBias(Entity.ID);
@@ -243,16 +261,10 @@
 			set => InternalCalls.LightSourceComponent_SetCastShadows(Entity.ID, value);
 		}
 
-		public float Cutoff
+		public bool SoftShadows
 		{
-			get => InternalCalls.LightSourceComponent_GetCutoff(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetCutoff(Entity.ID, value);
-		}
-
-		public float OuterCutoff
-		{
-			get => InternalCalls.LightSourceComponent_GetOuterCutoff(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetOuterCutoff(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetSoftShadows(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetSoftShadows(Entity.ID, value);
 		}
 	}
 

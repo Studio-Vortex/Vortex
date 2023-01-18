@@ -24,7 +24,7 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps;
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::Depth };
 		framebufferProps.Width = 1600;
 		framebufferProps.Height = 900;
 		framebufferProps.Samples = appProps.SampleCount;
@@ -86,6 +86,7 @@ namespace Vortex {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			Renderer::CreateGaussianBlurFramebuffers(m_ViewportSize);
 		}
 
 		// Render
@@ -96,6 +97,7 @@ namespace Vortex {
 
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
+		m_Framebuffer->ClearAttachment(2, 0);
 
 		const Math::vec2& mousePos = Input::GetMousePosition();
 
@@ -485,8 +487,8 @@ namespace Vortex {
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		UI::ImageEx(textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
+		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
+		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
@@ -1031,6 +1033,7 @@ namespace Vortex {
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
 	{
+		SaveScene();
 		Project::SaveActive(path);
 		std::string runtimePath = Application::Get().GetRuntimeBinaryPath();
 		FileSystem::LaunchApplication(runtimePath.c_str(), path.string().c_str());

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 namespace Vortex {
 
 	struct LightSourceProperties
@@ -15,6 +17,7 @@ namespace Vortex {
 		// Shadow Settings
 		float ShadowBias = 0.2f;
 		bool CastShadows = true;
+		bool SoftShadows = true;
 	};
 
 	class LightSource
@@ -37,8 +40,17 @@ namespace Vortex {
 		float GetShadowBias() const;
 		void SetShadowBias(float bias);
 
-		bool ShouldCastShadows() const;
+		bool GetCastShadows() const;
 		void SetCastShadows(bool castShadows);
+
+		bool GetSoftShadows() const;
+		void SetSoftShadows(bool softShadows);
+
+		uint32_t GetPointLightIndex() const;
+		void SetPointLightIndex(uint32_t index);
+
+		uint32_t GetSpotLightIndex() const;
+		void SetSpotLightIndex(uint32_t index);
 
 		static void Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource);
 
@@ -46,6 +58,8 @@ namespace Vortex {
 
 	private:
 		LightSourceProperties m_Properties;
+		uint32_t m_PointLightIndex = 0;
+		uint32_t m_SpotLightIndex = 0;
 	};
 
 }

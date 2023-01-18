@@ -142,8 +142,31 @@ namespace Vortex {
 		meshRenderer.Type = static_cast<MeshType>(defaultMesh);
 
 		ModelImportOptions importOptions = ModelImportOptions();
-		if (defaultMesh == Model::Default::Capsule)
-			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+
+		switch (defaultMesh)
+		{
+			case Model::Default::Cube:
+				entity.AddComponent<RigidBodyComponent>();
+				entity.AddComponent<BoxColliderComponent>();
+				break;
+			case Model::Default::Sphere:
+				entity.AddComponent<RigidBodyComponent>();
+				entity.AddComponent<SphereColliderComponent>();
+				break;
+			case Model::Default::Capsule:
+				entity.AddComponent<RigidBodyComponent>();
+				entity.AddComponent<CapsuleColliderComponent>();
+				importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
+				break;
+			case Model::Default::Cone:
+				break;
+			case Model::Default::Cylinder:
+				break;
+			case Model::Default::Plane:
+				break;
+			case Model::Default::Torus:
+				break;
+		}
 		
 		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -984,12 +1007,16 @@ namespace Vortex {
 			{
 				UI::BeginPropertyGrid();
 
-				bool shouldCastShadows = lightSource->ShouldCastShadows();
-				if (UI::Property("Cast Shadows", shouldCastShadows))
-					lightSource->SetCastShadows(shouldCastShadows);
+				bool castShadows = lightSource->GetCastShadows();
+				if (UI::Property("Cast Shadows", castShadows))
+					lightSource->SetCastShadows(castShadows);
 
-				if (shouldCastShadows)
+				if (castShadows)
 				{
+					bool softShadows = lightSource->GetSoftShadows();
+					if (UI::Property("Soft Shadows", softShadows))
+						lightSource->SetSoftShadows(softShadows);
+
 					float shadowBias = lightSource->GetShadowBias();
 					if (UI::Property("Shadow Bias", shadowBias, 1.0f, 0.0f, 1000.0f))
 						lightSource->SetShadowBias(shadowBias);
@@ -1798,37 +1825,42 @@ namespace Vortex {
 			if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
 				component.Type = (RigidBodyType)currentBodyType;
 
-			UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
-			UI::Property("Linear Velocity", component.LinearVelocity);
-			UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
-			UI::Property("Angular Velocity", component.AngularVelocity);
-			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
-
-			UI::Property("DisableGravity", component.DisableGravity);
-			UI::Property("IsKinematic", component.IsKinematic);
-
-			const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
-			int32_t currentCollisionDetectionType = (uint32_t)component.CollisionDetection;
-			if (UI::PropertyDropdown("Collision Detection", collisionDetectionTypes, VX_ARRAYCOUNT(collisionDetectionTypes), currentCollisionDetectionType))
-				component.CollisionDetection = (CollisionDetectionType)currentCollisionDetectionType;
-
-			UI::EndPropertyGrid();
-
-			if (UI::TreeNode("Constraints", false))
+			if (component.Type == RigidBodyType::Static)
+				UI::EndPropertyGrid();
+			else
 			{
-				UI::BeginPropertyGrid();
+				UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
+				UI::Property("Linear Velocity", component.LinearVelocity);
+				UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
+				UI::Property("Angular Velocity", component.AngularVelocity);
+				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
-				UI::Property("X", component.LockPositionX);
-				UI::Property("Y", component.LockPositionY);
-				UI::Property("Z", component.LockPositionZ);
+				UI::Property("DisableGravity", component.DisableGravity);
+				UI::Property("IsKinematic", component.IsKinematic);
 
-				UI::Property("X", component.LockRotationX);
-				UI::Property("Y", component.LockRotationY);
-				UI::Property("Z", component.LockRotationZ);
+				const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
+				int32_t currentCollisionDetectionType = (uint32_t)component.CollisionDetection;
+				if (UI::PropertyDropdown("Collision Detection", collisionDetectionTypes, VX_ARRAYCOUNT(collisionDetectionTypes), currentCollisionDetectionType))
+					component.CollisionDetection = (CollisionDetectionType)currentCollisionDetectionType;
 
 				UI::EndPropertyGrid();
 
-				Gui::TreePop();
+				if (UI::TreeNode("Constraints", false))
+				{
+					UI::BeginPropertyGrid();
+
+					UI::Property("X", component.LockPositionX);
+					UI::Property("Y", component.LockPositionY);
+					UI::Property("Z", component.LockPositionZ);
+
+					UI::Property("X", component.LockRotationX);
+					UI::Property("Y", component.LockRotationY);
+					UI::Property("Z", component.LockRotationZ);
+
+					UI::EndPropertyGrid();
+
+					Gui::TreePop();
+				}
 			}
 		});
 
@@ -1902,11 +1934,14 @@ namespace Vortex {
 			if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
 				component.Type = (RigidBody2DType)currentBodyType;
 
-			UI::Property("Velocity", component.Velocity, 0.01f);
-			UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
-			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
-			UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
-			UI::Property("Freeze Rotation", component.FixedRotation);
+			if (component.Type == RigidBody2DType::Dynamic)
+			{
+				UI::Property("Velocity", component.Velocity, 0.01f);
+				UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
+				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
+				UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
+				UI::Property("Freeze Rotation", component.FixedRotation);
+			}
 
 			UI::EndPropertyGrid();
 		});

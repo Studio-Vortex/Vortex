@@ -21,6 +21,8 @@ namespace Vortex {
 	static constexpr const char* ENVIRONMENT_SHADER_PATH = "Resources/Shaders/Renderer_Environment.glsl";
 	static constexpr const char* SKYLIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SkyLightShadowMap.glsl";
 	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
+	static constexpr const char* SPOT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SpotLightShadowMap.glsl";
+	static constexpr const char* GAUSSIAN_BLUR_SHADER_PATH = "Resources/Shaders/GaussianBlur.glsl";
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
 	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
@@ -39,6 +41,9 @@ namespace Vortex {
 		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
 		SharedRef<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
+		std::vector<SharedRef<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
+
+		SharedRef<Framebuffer> GaussianBlurFramebuffers[2] = { nullptr, nullptr };
 
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
@@ -70,6 +75,8 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("Environment", ENVIRONMENT_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("SkyLightShadowMap", SKYLIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("SpotLightShadowMap", SPOT_LIGHT_SHADOW_MAP_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("Blur", GAUSSIAN_BLUR_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
 		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
@@ -111,10 +118,6 @@ namespace Vortex {
 
 	void Renderer::EndScene()
 	{
-		s_Data.SceneLightDesc.ActivePointLights.clear();
-		s_Data.SceneLightDesc.ActiveSpotLights.clear();
-		s_Data.SceneLightDesc.NextAvailablePointLightSlot = 0;
-		s_Data.SceneLightDesc.NextAvailableSpotLightSlot = 0;
 	}
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
@@ -194,6 +197,7 @@ namespace Vortex {
 				pbrShader->SetFloat3("u_SkyLight.Radiance", lightSource->GetRadiance());
 				pbrShader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
 				pbrShader->SetFloat("u_SkyLight.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
+				pbrShader->SetBool("u_SkyLight.SoftShadows", lightSource->GetSoftShadows());
 				pbrShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
 				s_Data.SceneLightDesc.HasSkyLight = true;
 
@@ -321,6 +325,19 @@ namespace Vortex {
 	SceneLightDescription Renderer::GetSceneLightDescription()
 	{
 		return s_Data.SceneLightDesc;
+	}
+
+	void Renderer::CreateGaussianBlurFramebuffers(const Math::vec2& viewportSize)
+	{
+		FramebufferProperties framebufferProps{};
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8 };
+		framebufferProps.Width = viewportSize.x;
+		framebufferProps.Height = viewportSize.y;
+
+		for (uint32_t i = 0; i < 2; i++)
+		{
+			s_Data.GaussianBlurFramebuffers[i] = Framebuffer::Create(framebufferProps);
+		}
 	}
 
 	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent)
@@ -463,7 +480,7 @@ namespace Vortex {
 		skybox->SetPathChanged(false);
 	}
 
-	void Renderer::CreateShadowMap(LightType type)
+	void Renderer::CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource)
 	{
 		switch (type)
 		{
@@ -481,13 +498,22 @@ namespace Vortex {
 				FramebufferProperties depthCubemapProps{};
 				depthCubemapProps.Width = s_Data.ShadowMapResolution;
 				depthCubemapProps.Height = s_Data.ShadowMapResolution;
-				SharedRef<DepthCubemapFramebuffer> pointLightDepthMapFramebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
-				s_Data.PointLightDepthMapFramebuffers.push_back(pointLightDepthMapFramebuffer);
+				SharedRef<DepthCubemapFramebuffer> framebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
+				s_Data.PointLightDepthMapFramebuffers.push_back(framebuffer);
+				lightSource->SetPointLightIndex(s_Data.SceneLightDesc.PointLightIndex++);
+				s_Data.SceneLightDesc.ActivePointLights++;
 
 				break;
 			}
 			case LightType::Spot:
 			{
+				FramebufferProperties depthFramebufferProps{};
+				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
+				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
+				SharedRef<DepthMapFramebuffer> framebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
+				s_Data.SpotLightDepthMapFramebuffers.push_back(framebuffer);
+				lightSource->SetSpotLightIndex(s_Data.SceneLightDesc.SpotLightIndex++);
+				s_Data.SceneLightDesc.ActiveSpotLights++;
 
 				break;
 			}
@@ -508,10 +534,8 @@ namespace Vortex {
 			{
 				case LightType::Directional:
 				{
-					if (!lightSourceComponent.Source->ShouldCastShadows())
-					{
+					if (!lightSourceComponent.Source->GetCastShadows())
 						continue;
-					}
 
 					// Configure shader
 					Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
@@ -568,7 +592,7 @@ namespace Vortex {
 				}
 				case LightType::Point:
 				{
-					if (!lightSourceComponent.Source->ShouldCastShadows())
+					if (!lightSourceComponent.Source->GetCastShadows())
 						continue;
 
 					// Configure shader
@@ -586,18 +610,12 @@ namespace Vortex {
 					shadowTransforms[4] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, 1.0), Math::vec3(0.0, -1.0, 0.0));
 					shadowTransforms[5] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, -1.0), Math::vec3(0.0, -1.0, 0.0));
 
-					uint32_t& nextAvailableSlot = s_Data.SceneLightDesc.NextAvailablePointLightSlot;
-					if (s_Data.SceneLightDesc.ActivePointLights.find(nextAvailableSlot) == s_Data.SceneLightDesc.ActivePointLights.end())
-					{
-						s_Data.SceneLightDesc.ActivePointLights[nextAvailableSlot] = lightSourceComponent.Source;
-					}
+					uint32_t pointLightIndex = lightSourceComponent.Source->GetPointLightIndex();
 
 					SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 					pbrShader->Enable();
-					pbrShader->SetFloat("u_PointLights[" + std::to_string(nextAvailableSlot) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
-					pbrShader->SetFloat("u_PointLights[" + std::to_string(nextAvailableSlot) + "].FarPlane", farPlane);
-
-					nextAvailableSlot++;
+					pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
+					pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].FarPlane", farPlane);
 
 					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("PointLightShadowMap");
 					shadowMapShader->Enable();
@@ -607,21 +625,25 @@ namespace Vortex {
 					shadowMapShader->SetFloat3("u_LightPosition", transform.Translation);
 					shadowMapShader->SetFloat("u_FarPlane", farPlane);
 
-					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
+					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
 
-					Viewport viewport;
-					viewport.TopLeftXPos = 0;
-					viewport.TopLeftYPos = 0;
-					viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
-					viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+					{
+						// don't forget to configure the viewport to the shadow resolution
+						Viewport viewport;
+						viewport.TopLeftXPos = 0;
+						viewport.TopLeftYPos = 0;
+						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
 
-					RenderCommand::SetViewport(viewport);
+						RenderCommand::SetViewport(viewport);
+					}
 
 					uint32_t framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
+					uint32_t pointLightCount = s_Data.SceneLightDesc.ActivePointLights;
 
-					if (framebufferCount < s_Data.SceneLightDesc.ActivePointLights.size())
+					if (framebufferCount < pointLightCount)
 					{
-						CreateShadowMap(LightType::Point);
+						CreateShadowMap(LightType::Point, lightSourceComponent.Source);
 						framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
 					}
 
@@ -662,8 +684,79 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					if (!lightSourceComponent.Source->ShouldCastShadows())
+					if (!lightSourceComponent.Source->GetCastShadows())
 						continue;
+
+					float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
+					float nearPlane = 0.01f;
+					float farPlane = 100.0f;
+					Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(45.0f), aspectRatio, nearPlane, farPlane);
+					TransformComponent& transform = lightSourceEntity.GetTransform();
+
+					Math::mat4 view = Math::LookAt(transform.Translation, transform.Translation + Math::Normalize(transform.GetRotationEuler()), { 0.0f, 1.0f, 0.0f });
+
+					uint32_t spotLightIndex = lightSourceComponent.Source->GetSpotLightIndex();
+
+					SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+					pbrShader->Enable();
+					pbrShader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
+
+					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SpotLightShadowMap");
+					shadowMapShader->Enable();
+
+					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+
+					{
+						// don't forget to configure the viewport to the shadow resolution
+						Viewport viewport;
+						viewport.TopLeftXPos = 0;
+						viewport.TopLeftYPos = 0;
+						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+						RenderCommand::SetViewport(viewport);
+					}
+
+					uint32_t framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
+					uint32_t spotLightCount = s_Data.SceneLightDesc.ActiveSpotLights;
+
+					if (framebufferCount < spotLightCount)
+					{
+						CreateShadowMap(LightType::Spot, lightSourceComponent.Source);
+						framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
+					}
+
+					for (uint32_t i = 0; i < framebufferCount; i++)
+					{
+						SharedRef<DepthMapFramebuffer> spotLightDepthFramebuffer = s_Data.SpotLightDepthMapFramebuffers[i];
+						spotLightDepthFramebuffer->Bind();
+						spotLightDepthFramebuffer->ClearDepthAttachment();
+
+						for (auto& meshRenderer : meshRendererView)
+						{
+							Entity meshRendererEntity{ meshRenderer, contextScene };
+
+							// Skip if not active
+							if (!meshRendererEntity.IsActive())
+								continue;
+
+							MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
+							Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
+							shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+							if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+							{
+								meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+								continue;
+							}
+
+							meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform);
+						}
+
+						spotLightDepthFramebuffer->Unbind();
+					}
+
+					RenderCommand::SetCullMode(s_Data.CullMode);
 
 					break;
 				}
@@ -697,6 +790,23 @@ namespace Vortex {
 			uint32_t currentSlot = startSlot + index;
 			framebuffer->BindDepthTexture(currentSlot);
 			pbrShader->SetInt("u_PointLightShadowMaps[" + std::to_string(index) + "]", currentSlot);
+			index++;
+		}
+	}
+
+	void Renderer::BindSpotLightDepthMaps()
+	{
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+
+		const uint32_t startSlot = 12;
+		uint32_t index = 0;
+
+		for (auto& framebuffer : s_Data.SpotLightDepthMapFramebuffers)
+		{
+			uint32_t currentSlot = startSlot + index;
+			framebuffer->BindDepthTexture(currentSlot);
+			pbrShader->SetInt("u_SpotLightShadowMaps[" + std::to_string(index) + "]", currentSlot);
 			index++;
 		}
 	}

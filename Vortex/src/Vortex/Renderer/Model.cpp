@@ -502,6 +502,7 @@ namespace Vortex {
 
 		Renderer::BindSkyLightDepthMap();
 		Renderer::BindPointLightDepthMaps();
+		Renderer::BindSpotLightDepthMaps();
 
 		for (auto& mesh : m_Meshes)
 		{
@@ -534,6 +535,7 @@ namespace Vortex {
 
 		Renderer::BindSkyLightDepthMap();
 		Renderer::BindPointLightDepthMaps();
+		Renderer::BindSpotLightDepthMaps();
 
 		for (auto& mesh : m_Meshes)
 		{

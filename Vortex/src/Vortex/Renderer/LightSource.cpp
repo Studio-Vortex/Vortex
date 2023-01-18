@@ -56,7 +56,7 @@ namespace Vortex {
 		m_Properties.ShadowBias = bias;
 	}
 
-    bool LightSource::ShouldCastShadows() const
+    bool LightSource::GetCastShadows() const
     {
         return m_Properties.CastShadows;
     }
@@ -66,13 +66,46 @@ namespace Vortex {
 		m_Properties.CastShadows = castShadows;
     }
 
+	bool LightSource::GetSoftShadows() const
+	{
+		return m_Properties.SoftShadows;
+	}
+
+	void LightSource::SetSoftShadows(bool softShadows)
+	{
+		m_Properties.SoftShadows = softShadows;
+	}
+
+	uint32_t LightSource::GetPointLightIndex() const
+	{
+		return m_PointLightIndex;
+	}
+
+	void LightSource::SetPointLightIndex(uint32_t index)
+	{
+		m_PointLightIndex = index;
+	}
+
+	uint32_t LightSource::GetSpotLightIndex() const
+	{
+		return m_SpotLightIndex;
+	}
+
+	void LightSource::SetSpotLightIndex(uint32_t index)
+	{
+		m_SpotLightIndex = index;
+	}
+
 	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
 	{
 		dstLightSource->SetRadiance(srcLightSource->GetRadiance());
 		dstLightSource->SetIntensity(srcLightSource->GetIntensity());
 		dstLightSource->SetCutOff(srcLightSource->GetCutOff());
 		dstLightSource->SetOuterCutOff(srcLightSource->GetOuterCutOff());
-		dstLightSource->SetCastShadows(srcLightSource->ShouldCastShadows());
+		dstLightSource->SetCastShadows(srcLightSource->GetCastShadows());
+		dstLightSource->SetSoftShadows(srcLightSource->GetSoftShadows());
+		dstLightSource->SetPointLightIndex(srcLightSource->GetPointLightIndex());
+		dstLightSource->SetSpotLightIndex(srcLightSource->GetSpotLightIndex());
 	}
 
 	SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)

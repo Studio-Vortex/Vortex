@@ -136,6 +136,9 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetRotationQuaternion(ulong entityID, out Quaternion result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetRotationQuaternion(ulong entityID, ref Quaternion orientation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -208,7 +211,19 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_SetIntensity(ulong entityID, float intensity);
-		
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float LightSourceComponent_GetCutoff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetCutoff(ulong entityID, float cutoff);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float LightSourceComponent_GetOuterCutoff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetOuterCutoff(ulong entityID, float outerCutoff);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float LightSourceComponent_GetShadowBias(ulong entityID);
 
@@ -222,16 +237,10 @@ namespace Vortex {
 		internal extern static void LightSourceComponent_SetCastShadows(ulong entityID, bool castShadows);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float LightSourceComponent_GetCutoff(ulong entityID);
+		internal extern static bool LightSourceComponent_GetSoftShadows(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetCutoff(ulong entityID, float cutoff);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float LightSourceComponent_GetOuterCutoff(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void LightSourceComponent_SetOuterCutoff(ulong entityID, float outerCutoff);
+		internal extern static void LightSourceComponent_SetSoftShadows(ulong entityID, bool softShadows);
 
 		#endregion
 
@@ -867,6 +876,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_Rad2DegVector3(ref Vector3 value, out Vector3 result);
+
+		#endregion
+
+		#region Quaternion
+
+		
 
 		#endregion
 

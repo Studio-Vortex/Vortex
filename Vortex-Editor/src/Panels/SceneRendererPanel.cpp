@@ -202,7 +202,16 @@ namespace Vortex {
 						case 4: Renderer::SetShadowMapResolution(8192.0f); break;
 					}
 
-					Renderer::CreateShadowMap(LightType::Directional);
+					LightSourceComponent skylight;
+					auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
+					for (auto& e : lightSourceView)
+					{
+						Entity entity{ e, m_ContextScene.get() };
+						if (const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>(); lightSourceComponent.Type == LightType::Directional)
+							skylight = lightSourceComponent;
+					}
+
+					Renderer::CreateShadowMap(LightType::Directional, skylight.Source);
 				}
 
 				float sceneExposure = Renderer::GetSceneExposure();

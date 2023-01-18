@@ -19,31 +19,30 @@ uniform bool u_HasAnimations;
 
 void main()
 {
-    if (u_HasAnimations)
-    {
-        vec4 totalPosition = vec4(0.0);
-
-		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-		{
-			if (a_BoneIDs[i] == -1)
-				continue;
-			
-			if (a_BoneIDs[i] >= MAX_BONES)
-			{
-				totalPosition = vec4(a_Position, 1.0);
-				break;
-			}
-
-			vec4 localPosition = u_FinalBoneMatrices[a_BoneIDs[i]] * vec4(a_Position, 1.0);
-			totalPosition += localPosition * a_BoneWeights[i];
-		}
-
-        gl_Position = u_LightProjection * u_Model * totalPosition;
-    }
-    else
+    if (!u_HasAnimations)
     {
         gl_Position = u_LightProjection * u_Model * vec4(a_Position, 1.0);
+		return;
     }
+
+	vec4 totalPosition = vec4(0.0);
+
+	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		if (a_BoneIDs[i] == -1)
+			continue;
+		
+		if (a_BoneIDs[i] >= MAX_BONES)
+		{
+			totalPosition = vec4(a_Position, 1.0);
+			break;
+		}
+
+		vec4 localPosition = u_FinalBoneMatrices[a_BoneIDs[i]] * vec4(a_Position, 1.0);
+		totalPosition += localPosition * a_BoneWeights[i];
+	}
+
+	gl_Position = u_LightProjection * u_Model * totalPosition;
 }
 
 

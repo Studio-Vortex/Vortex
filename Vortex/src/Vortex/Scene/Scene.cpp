@@ -159,12 +159,14 @@ namespace Vortex {
 		// Starting Entities
 		Entity startingCube = context->CreateEntity("Cube");
 		startingCube.AddComponent<MeshRendererComponent>();
+		startingCube.AddComponent<RigidBodyComponent>();
+		startingCube.AddComponent<BoxColliderComponent>();
 
 		Entity startingSkyLight = context->CreateEntity("Sky Light");
 		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
 		lightSource.Type = LightType::Directional;
-		startingSkyLight.GetTransform().SetRotationEuler({ Math::Deg2Rad(0.25f), Math::Deg2Rad(-1.0f), Math::Deg2Rad(-0.5f) });
-		startingSkyLight.GetTransform().Translation = { 0.0f, 4.0f, 0.0f };
+		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-1.0f), 0.0f });
+		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
 
 		Entity startingCamera = context->CreateEntity("Camera");
 		startingCamera.AddComponent<AudioListenerComponent>();
@@ -881,7 +883,7 @@ namespace Vortex {
 	{
 		component.Source = LightSource::Create(LightSourceProperties());
 
-		Renderer::CreateShadowMap(component.Type);
+		Renderer::CreateShadowMap(component.Type, component.Source);
 	}
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)

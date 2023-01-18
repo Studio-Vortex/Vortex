@@ -26,7 +26,7 @@ void main()
 layout (location = 0) out vec4 o_Color;
 layout (location = 1) out int o_EntityID;
 
-in vec3 f_TexCoord;
+layout (location = 0) in vec3 f_TexCoord;
 
 uniform samplerCube u_EnvironmentMap;
 uniform float u_Gamma;

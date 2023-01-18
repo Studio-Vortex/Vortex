@@ -360,7 +360,8 @@ namespace Vortex {
 
 			out << YAML::Key << "Intensity" << YAML::Value << lightSource->GetIntensity();
 			out << YAML::Key << "ShadowBias" << YAML::Value << lightSource->GetShadowBias();
-			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->ShouldCastShadows();
+			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->GetCastShadows();
+			out << YAML::Key << "SoftShadows" << YAML::Value << lightSource->GetSoftShadows();
 
 			out << YAML::EndMap; // LightSourceComponent
 		}
@@ -875,7 +876,7 @@ namespace Vortex {
 					lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
 
 				// Create a shadow map for the light source
-				Renderer::CreateShadowMap(lightComponent.Type);
+				Renderer::CreateShadowMap(lightComponent.Type, lightComponent.Source);
 
 				switch (lightComponent.Type)
 				{
@@ -906,6 +907,9 @@ namespace Vortex {
 
 				if (lightSourceComponent["CastShadows"])
 					lightComponent.Source->SetCastShadows(lightSourceComponent["CastShadows"].as<bool>());
+
+				if (lightSourceComponent["SoftShadows"])
+					lightComponent.Source->SetSoftShadows(lightSourceComponent["SoftShadows"].as<bool>());
 			}
 
 			auto meshComponent = entity["MeshRendererComponent"];

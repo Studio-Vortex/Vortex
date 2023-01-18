@@ -22,12 +22,10 @@ namespace Vortex {
 	struct SceneLightDescription
 	{
 		bool HasSkyLight = false;
-		std::unordered_map<uint32_t, SharedRef<LightSource>> ActivePointLights;
 		uint32_t PointLightIndex = 0;
-		uint32_t NextAvailablePointLightSlot = 0;
-		std::unordered_map<uint32_t, SharedRef<LightSource>> ActiveSpotLights;
+		uint32_t ActivePointLights = 0;
 		uint32_t SpotLightIndex = 0;
-		uint32_t NextAvailableSpotLightSlot = 0;
+		uint32_t ActiveSpotLights = 0;
 	};
 
 	struct RenderTime
@@ -62,14 +60,17 @@ namespace Vortex {
 
 		static SceneLightDescription GetSceneLightDescription();
 
+		static void CreateGaussianBlurFramebuffers(const Math::vec2& viewportSize);
+
 		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
-		static void CreateShadowMap(LightType type);
+		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
 
 		static void RenderToDepthMap(Scene* contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetDepthMapFramebuffer();
 
 		static void BindSkyLightDepthMap();
 		static void BindPointLightDepthMaps();
+		static void BindSpotLightDepthMaps();
 
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }

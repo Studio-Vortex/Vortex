@@ -103,6 +103,7 @@ void main()
 
 layout (location = 0) out vec4 o_Color;
 layout (location = 1) out int o_EntityID;
+layout (location = 2) out vec4 o_BrightColor;
 
 in DATA
 {
@@ -151,6 +152,7 @@ struct SkyLight
 
 	sampler2D ShadowMap;
 	float ShadowBias;
+	bool SoftShadows;
 };
 
 struct PointLight
@@ -172,6 +174,8 @@ struct SpotLight
 
 	float CutOff;
 	float OuterCutOff;
+
+	float ShadowBias;
 };
 
 struct FragmentProperties
@@ -210,6 +214,7 @@ uniform PointLight      u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight       u_SpotLights[MAX_SPOT_LIGHTS];
 uniform SceneProperties u_SceneProperties;
 uniform samplerCube     u_PointLightShadowMaps[MAX_POINT_LIGHTS];
+uniform sampler2D       u_SpotLightShadowMaps[MAX_SPOT_LIGHTS];
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
@@ -223,7 +228,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir);
-float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias);
+float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias, bool softShadows);
 float CubemapShadowCalculation(vec3 fragPos, vec3 lightPos, samplerCube shadowMap, float shadowBias, float farPlane);
 
 void main()
@@ -275,7 +280,7 @@ void main()
 
 		float NdotL = max(dot(N, L), 0.0);
 
-		float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias);
+		float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias, u_SkyLight.SoftShadows);
 		bool notInShadow = (1.0 - shadow) > 0.0;
 
 		if (notInShadow)
@@ -384,13 +389,13 @@ void main()
 	kD *= 1.0 - properties.Metallic;
 
 	vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
-	vec3 diffuse = properties.Albedo * irradiance;
+	vec3 diffuse = irradiance * properties.Albedo;
 
 	// sample both the pre-filter map and the BRDF lut and combine them together
 	// as per the Split-Sum approximation to get the IBL specular part.
 	const float MAX_REFLECTION_LOD = 4.0;
 	vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).xy;
+	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).rg;
 	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
 
 	vec3 ambient = (kD * diffuse + specular) * (properties.AO);
@@ -410,6 +415,15 @@ void main()
 
 	o_Color = vec4(mapped, alpha) + vec4(properties.Emission, 0.0);
 	o_EntityID = fragmentIn.EntityID;
+
+	// check whether fragment output is higher than threshold,
+	// if so, use output as brighness color
+	float brightness = dot(o_Color.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+	if (brightness > 1.0)
+		o_BrightColor = vec4(o_Color.rgb, 1.0);
+	else
+		o_BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 // Towbridge-Reitz normal distribuion function
@@ -499,7 +513,7 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 	return currentTexCoords;
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias)
+float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias, bool softShadows)
 {
 	// perspective division
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -515,6 +529,15 @@ float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap
 
 	float bias = max(0.005 * (1.0 - NdotL), shadowBias);
 	float shadow = 0.0;
+
+	if (!softShadows)
+	{
+		shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+		if (projCoords.z > 1.0)
+			shadow = 0.0;
+		
+		return shadow;
+	}
 
 	// Percentage Closer Filtering
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);

@@ -97,6 +97,7 @@ namespace Vortex {
 			switch (format)
 			{
 				case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+				case FramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
 				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
@@ -176,6 +177,7 @@ namespace Vortex {
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
+
 			switch (m_DepthAttachmentProperty.TextureFormat)
 			{
 				case FramebufferTextureFormat::DEPTH24STENCIL8:
