@@ -20,16 +20,29 @@
 	{
 		public float R, G, B;
 
-		public static implicit operator Vector3(Color3 color)
-			=> new Vector3(color.R, color.G, color.B);
+		public Color3(float r, float g, float b)
+		{
+			R = r;
+			G = g;
+			B = b;
+		}
+
+		public static implicit operator Vector3(Color3 color) => new Vector3(color.R, color.G, color.B);
 	}
 
 	public struct Color4
 	{
 		public float R, G, B, A;
 
-		public static implicit operator Vector4(Color4 color)
-			=> new Vector4(color.R, color.G, color.B, color.A);
+		public Color4(float r, float g, float b, float a)
+		{
+			R = r;
+			G = g;
+			B = b;
+			A = a;
+		}
+
+		public static implicit operator Vector4(Color4 color) => new Vector4(color.R, color.G, color.B, color.A);
 	}
 
 }

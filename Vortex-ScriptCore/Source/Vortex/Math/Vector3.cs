@@ -57,6 +57,7 @@ namespace Vortex {
 		public static Vector3 operator /(Vector3 vector, Vector3 other) => new Vector3(vector.X / other.X, vector.Y / other.Y, vector.Z / other.Z);
 		public static Vector3 operator /(Vector3 vector, float scalar) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
 		public static Vector3 operator /(float scalar, Vector3 vector) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
+		
 		public static bool operator <(Vector3 vector, Vector3 other) => vector.X < other.X && vector.Y < other.Y && vector.Z < other.Z;
 		public static bool operator >(Vector3 vector, Vector3 other) => !(vector < other);
 		public static bool operator <=(Vector3 vector, Vector3 other) => vector.X <= other.X && vector.Y <= other.Y && vector.Z <= other.Z;
@@ -136,6 +137,8 @@ namespace Vortex {
 		}
 
 		public override string ToString() { return $"Vector3: {X}, {Y}, {Z}"; }
+
+		public static implicit operator Color3(Vector3 vector) => new Color3(vector.X, vector.Y, vector.Z);
 	}
 
 }

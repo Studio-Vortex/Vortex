@@ -1,6 +1,10 @@
-﻿namespace Vortex {
+﻿using System;
+using System.Runtime.InteropServices;
 
-	public struct Vector4
+namespace Vortex {
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct Vector4 : IEquatable<Vector4>
 	{
 		public float X, Y, Z, W;
 
@@ -63,55 +67,41 @@
 			}
 		}
 
-		public static Vector4 operator -(Vector4 vector)
-		{
-			return new Vector4(-vector.X, -vector.Y, -vector.Z, -vector.W);
-		}
+		public static Vector4 operator +(Vector4 vector, Vector4 other) => new Vector4(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z, vector.W + other.W);
+		public static Vector4 operator +(Vector4 vector, float scalar) => new Vector4(vector.X + scalar, vector.Y + scalar, vector.Z + scalar, vector.W + scalar);
+		public static Vector4 operator +(float scalar, Vector4 vector) => new Vector4(scalar + vector.X, scalar + vector.Y, scalar + vector.Z, scalar + vector.W);
+		public static Vector4 operator -(Vector4 vector, Vector4 other) => new Vector4(vector.X - other.X, vector.Y - other.Y, vector.Z - other.Z, vector.W - other.W);
+		public static Vector4 operator -(Vector4 vector, float scalar) => new Vector4(vector.X - scalar, vector.Y - scalar, vector.Z - scalar, vector.W - scalar);
+		public static Vector4 operator -(float scalar, Vector4 vector) => new Vector4(scalar - vector.X, scalar - vector.Y, scalar - vector.Z, scalar - vector.W);
+		public static Vector4 operator -(Vector4 vector) => new Vector4(-vector.X, -vector.Y, -vector.Z, -vector.W);
+		public static Vector4 operator *(Vector4 vector, Vector4 other) => new Vector4(vector.X * other.X, vector.Y * other.Y, vector.Z * other.Z, vector.W * other.W);
+		public static Vector4 operator *(Vector4 vector, float scalar) => new Vector4(vector.X * scalar, vector.Y * scalar, vector.Z * scalar, vector.W * scalar);
+		public static Vector4 operator *(float scalar, Vector4 vector) => new Vector4(scalar * vector.X, scalar * vector.Y, scalar * vector.Z, scalar * vector.W);
+		public static Vector4 operator /(Vector4 vector, Vector4 other) => new Vector4(vector.X / other.X, vector.Y / other.Y, vector.Z / other.Z, vector.W / other.W);
+		public static Vector4 operator /(Vector4 vector, float scalar) => new Vector4(vector.X / scalar, vector.Y / scalar, vector.Z / scalar, vector.W / scalar);
+		public static Vector4 operator /(float scalar, Vector4 vector) => new Vector4(scalar / vector.X, scalar / vector.Y, scalar / vector.Z, scalar / vector.W);
 
-		public static Vector4 operator +(Vector4 vector, Vector4 other)
-		{
-			return new Vector4(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z, vector.W + other.W);
-		}
+		public static bool operator <(Vector4 vector, Vector4 other) => vector.X < other.X && vector.Y < other.Y && vector.Z < other.Z && vector.W < other.W;
+		public static bool operator >(Vector4 vector, Vector4 other) => !(vector < other);
+		public static bool operator <=(Vector4 vector, Vector4 other) => vector.X <= other.X && vector.Y <= other.Y && vector.Z <= other.Z && vector.W <= other.W;
+		public static bool operator >=(Vector4 vector, Vector4 other) => !(vector <= other);
 
-		public static Vector4 operator -(Vector4 vector, Vector4 other)
-		{
-			return new Vector4(vector.X - other.X, vector.Y - other.Y, vector.Z - other.Z, vector.W - other.W);
-		}
+		public static bool operator <(Vector4 vector, float scalar) => vector.X < scalar && vector.Y < scalar && vector.Z < scalar && vector.W < scalar;
+		public static bool operator >(Vector4 vector, float scalar) => !(vector < scalar);
+		public static bool operator <=(Vector4 vector, float scalar) => vector.X <= scalar && vector.Y <= scalar && vector.Z <= scalar && vector.W <= scalar;
+		public static bool operator >=(Vector4 vector, float scalar) => !(vector <= scalar);
 
-		public static Vector4 operator *(Vector4 vector, Vector4 other)
-		{
-			return new Vector4(vector.X * other.X, vector.Y * other.Y, vector.Z * other.Z, vector.W * other.W);
-		}
+		public static bool operator ==(Vector4 left, Vector4 right) => left.Equals(right);
+		public static bool operator !=(Vector4 left, Vector4 right) => !(left == right);
 
-		public static Vector4 operator +(Vector4 vector, float scalar)
-		{
-			return new Vector4(vector.X + scalar, vector.Y + scalar, vector.Z + scalar, vector.W + scalar);
-		}
+		public override bool Equals(object obj) => obj is Vector4 other && Equals(other);
+		public bool Equals(Vector4 right) => X == right.X && Y == right.Y && Z == right.Z && W == right.W;
 
-		public static Vector4 operator -(Vector4 vector, float scalar)
-		{
-			return new Vector4(vector.X - scalar, vector.Y - scalar, vector.Z - scalar, vector.W - scalar);
-		}
+		public override int GetHashCode() => (X, Y, Z, W).GetHashCode();
 
-		public static Vector4 operator *(Vector4 vector, float scalar)
-		{
-			return new Vector4(vector.X * scalar, vector.Y * scalar, vector.Z * scalar, vector.W * scalar);
-		}
+		public float Length() => Mathf.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
-		public static Vector4 operator /(Vector4 vector, float scalar)
-		{
-			return new Vector4(vector.X / scalar, vector.Y / scalar, vector.Z / scalar, vector.W / scalar);
-		}
-
-		public static bool operator ==(Vector4 vector, Vector4 other)
-		{
-			return vector.X == other.X && vector.Y == other.Y && vector.Z == other.Z && vector.W == other.W;
-		}
-
-		public static bool operator !=(Vector4 vector, Vector4 other)
-		{
-			return !(vector == other);
-		}
+		public static implicit operator Color4(Vector4 vector) => new Color4(vector.X, vector.Y, vector.Z, vector.W);
 	}
 
 }
