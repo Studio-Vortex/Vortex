@@ -882,8 +882,6 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
 	{
 		component.Source = LightSource::Create(LightSourceProperties());
-
-		Renderer::CreateShadowMap(component.Type, component.Source);
 	}
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)

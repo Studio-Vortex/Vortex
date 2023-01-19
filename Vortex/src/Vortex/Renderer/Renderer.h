@@ -66,7 +66,7 @@ namespace Vortex {
 		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
 
 		static void RenderToDepthMap(Scene* contextScene);
-		static const SharedRef<DepthMapFramebuffer>& GetDepthMapFramebuffer();
+		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
 
 		static void BindSkyLightDepthMap();
 		static void BindPointLightDepthMaps();

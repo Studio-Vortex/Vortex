@@ -135,7 +135,7 @@ namespace Vortex {
 		return editorCamera->GetPosition() + (editorCamera->GetForwardDirection() * 3.0f);
 	}
 
-	inline static void CreateModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
+	inline static void CreateDefaultModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
 	{
 		entity = contextScene->CreateEntity(name);
 		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
@@ -183,25 +183,25 @@ namespace Vortex {
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-				CreateModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Sphere"))
-				CreateModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Capsule"))
-				CreateModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Cone"))
-				CreateModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Cylinder"))
-				CreateModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Plane"))
-				CreateModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Torus"))
-				CreateModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			Gui::EndMenu();
 		}
@@ -252,22 +252,28 @@ namespace Vortex {
 			if (Gui::MenuItem("Directional"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Directional;
+				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				lightSourceComponent.Type = LightType::Directional;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			if (Gui::MenuItem("Point"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Point;
+				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				lightSourceComponent.Type = LightType::Point;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			if (Gui::MenuItem("Spot"))
 			{
 				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
-				m_SelectedEntity.AddComponent<LightSourceComponent>().Type = LightType::Spot;
+				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				lightSourceComponent.Type = LightType::Spot;
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			Gui::EndMenu();
@@ -277,7 +283,7 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<BoxColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -285,7 +291,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<SphereColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -293,7 +299,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -301,7 +307,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Static Mesh Collider"))
 			{
-				CreateModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -1849,13 +1855,13 @@ namespace Vortex {
 				{
 					UI::BeginPropertyGrid();
 
-					UI::Property("X", component.LockPositionX);
-					UI::Property("Y", component.LockPositionY);
-					UI::Property("Z", component.LockPositionZ);
+					UI::Property("Position X", component.LockPositionX);
+					UI::Property("Position Y", component.LockPositionY);
+					UI::Property("Position Z", component.LockPositionZ);
 
-					UI::Property("X", component.LockRotationX);
-					UI::Property("Y", component.LockRotationY);
-					UI::Property("Z", component.LockRotationZ);
+					UI::Property("Rotation X", component.LockRotationX);
+					UI::Property("Rotation Y", component.LockRotationY);
+					UI::Property("Rotation Z", component.LockRotationZ);
 
 					UI::EndPropertyGrid();
 

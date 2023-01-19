@@ -22,6 +22,8 @@ namespace Vortex {
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
+		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
+
 		// Render 2D
 		{
 			Math::mat4 cameraView;

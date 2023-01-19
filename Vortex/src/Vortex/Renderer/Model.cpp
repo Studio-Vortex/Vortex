@@ -482,16 +482,14 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
 
-		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
-
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
 		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.PointLightIndex);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.SpotLightIndex);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 
@@ -514,16 +512,14 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
 
-		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
-
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 
 		m_MeshShader->Enable();
 
 		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
 		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.PointLightIndex);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.SpotLightIndex);
+		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
 

@@ -31,9 +31,9 @@ namespace Vortex {
 			switch (severity)
 			{
 				case GL_DEBUG_SEVERITY_HIGH:         VX_CORE_CRITICAL(message); return;
-				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR(message); return;
-				case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN(message); return;
-				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE(message); return;
+				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR(message);    return;
+				case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN(message);     return;
+				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE(message);    return;
 			}
 
 			VX_CORE_ASSERT(false, "Unknown severity level!");

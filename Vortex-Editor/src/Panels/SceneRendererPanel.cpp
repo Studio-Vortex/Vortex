@@ -62,7 +62,7 @@ namespace Vortex {
 			if (UI::TreeNode("Shadow Maps", false))
 			{
 				Gui::Text("Sky Light");
-				auto shadowMapID = Renderer::GetDepthMapFramebuffer()->GetDepthTextureRendererID();
+				auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
 				Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
 
 				Gui::TreePop();

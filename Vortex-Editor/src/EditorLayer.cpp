@@ -97,7 +97,6 @@ namespace Vortex {
 
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
-		m_Framebuffer->ClearAttachment(2, 0);
 
 		const Math::vec2& mousePos = Input::GetMousePosition();
 
@@ -763,7 +762,7 @@ namespace Vortex {
 		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("##viewport_gizmos_mode", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("Gizmos Mode Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
 		// Filling the background for the desired 26px height
@@ -814,7 +813,7 @@ namespace Vortex {
 		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("##viewport_gizmos_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("Gizmos Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
 		// Filling the background for the desired 26px height
@@ -876,7 +875,7 @@ namespace Vortex {
 		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("##viewport_central_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("Central Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
 		// Filling the background for the desired 26px height
@@ -980,7 +979,7 @@ namespace Vortex {
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("##scene_settings_toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("Scene Settings Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
 		// Filling the background for the desired 26px height
