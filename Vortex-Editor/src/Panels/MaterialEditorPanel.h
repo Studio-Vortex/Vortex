@@ -9,11 +9,11 @@ namespace Vortex {
 	public:
 		MaterialEditorPanel() = default;
 
-		void OnGuiRender(Entity selectedEntity, bool showDefault = false);
+		void OnGuiRender(Entity selectedEntity);
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		inline static bool s_ShowPanel = false;
+		inline static bool s_ShowPanel = true;
 	};
 
 }

@@ -320,12 +320,6 @@ namespace Vortex {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceCubemapRendererID);
 	}
 
-	void OpenGLHDRFramebuffer::BindIrradianceCubemap2() const
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilteredEnvironmentCubemapRendererID);
-	}
-
 	void OpenGLHDRFramebuffer::BindPrefilterCubemap() const
 	{
 		glActiveTexture(GL_TEXTURE2);

@@ -9,7 +9,7 @@ namespace Vortex {
 	public:
 		PerformancePanel() = default;
 
-		void OnGuiRender(size_t entityCount, bool showDefault = false);
+		void OnGuiRender(size_t entityCount);
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

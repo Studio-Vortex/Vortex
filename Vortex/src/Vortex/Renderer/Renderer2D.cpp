@@ -74,8 +74,6 @@ namespace Vortex
 
 		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
 
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
-
 		SharedRef<VertexArray> UnitQuadVA = nullptr;
 		SharedRef<VertexBuffer> UnitQuadVB = nullptr;
 		SharedRef<IndexBuffer> UnitQuadIB = nullptr;
@@ -139,7 +137,7 @@ namespace Vortex
 
 		/// Unit Quad
 		s_Data.UnitQuadVA = VertexArray::Create();
-		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * 20);
+		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * VX_ARRAYCOUNT(vertices));
 		s_Data.UnitQuadVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
@@ -275,15 +273,9 @@ namespace Vortex
 		delete[] s_Data.TextVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform, const SharedRef<Framebuffer>& targetFramebuffer)
+	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
 	{
 		VX_PROFILE_FUNCTION();
-
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
 
 		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
 		SetShaderViewProjectionMatrix(viewProjection);
@@ -291,15 +283,9 @@ namespace Vortex
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer)
+	void Renderer2D::BeginScene(const EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
-
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
 
 		Math::mat4 viewProjection = camera->GetViewProjection();
 		SetShaderViewProjectionMatrix(viewProjection);
@@ -307,15 +293,9 @@ namespace Vortex
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const OrthographicCamera& camera, const SharedRef<Framebuffer>& targetFramebuffer)
+	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		VX_PROFILE_FUNCTION();
-
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
 
 		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
 		SetShaderViewProjectionMatrix(viewProjection);
@@ -378,10 +358,6 @@ namespace Vortex
 	void Renderer2D::EndScene()
 	{
 		VX_PROFILE_FUNCTION();
-
-		if (s_Data.TargetFramebuffer)
-			s_Data.TargetFramebuffer->Unbind();
-		s_Data.TargetFramebuffer = nullptr;
 
 		// Render vertices as a batch
 		Flush();

@@ -9,7 +9,7 @@ namespace Vortex {
 	public:
 		ProjectSettingsPanel(const SharedRef<Project>& project);
 
-		void OnGuiRender(bool showDefault = false);
+		void OnGuiRender();
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

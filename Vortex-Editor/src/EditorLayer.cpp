@@ -1055,11 +1055,11 @@ namespace Vortex {
 			SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
 			if (cameraEntity)
-				Renderer2D::BeginScene(camera, transform, m_Framebuffer);
+				Renderer2D::BeginScene(camera, transform);
 		}
 		else
 		{
-			Renderer2D::BeginScene(m_EditorCamera, m_Framebuffer);
+			Renderer2D::BeginScene(m_EditorCamera);
 		}
 
 		// Render Editor Grid

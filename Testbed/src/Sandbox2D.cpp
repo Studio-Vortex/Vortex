@@ -36,7 +36,7 @@ void Sandbox2D::OnUpdate(Vortex::TimeStep delta)
 
 	{
 		VX_PROFILE_SCOPE("Renderer Draw");
-		Vortex::Renderer2D::BeginScene(m_CameraController.GetCamera(), nullptr);
+		Vortex::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		Vortex::Renderer2D::DrawQuad(Math::vec2(), Math::vec2(1.0f), m_SquareColor);
 		Vortex::Renderer2D::DrawQuad(Math::vec2(1.5f), Math::vec2(2.0f, 1.0f), Vortex::Color::Purple);

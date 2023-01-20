@@ -860,13 +860,14 @@ namespace Vortex {
 		bool firstIteration = true;
 		uint32_t samples = 10;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
-		glActiveTexture(GL_TEXTURE20);
-		sceneFramebuffer->BindColorTexture(2);
 		blurShader->Enable();
+		glActiveTexture(GL_TEXTURE0);
+		sceneFramebuffer->BindColorTexture(2);
 		blurShader->SetInt("u_Texture", 20);
 
 		for (uint32_t i = 0; i < samples; i++)
 		{
+			glActiveTexture(GL_TEXTURE1);
 			s_Data.GaussianBlurFramebuffers[horizontal]->Bind();
 			blurShader->SetBool("u_Horizontal", horizontal);
 
@@ -886,16 +887,18 @@ namespace Vortex {
 
 		s_Data.GaussianBlurFramebuffers[0]->Unbind();
 
+		RenderCommand::Clear();
+
 		SharedRef<Shader> bloomFinalShader = s_Data.ShaderLibrary->Get("BloomFinal");
 		bloomFinalShader->Enable();
 
-		glActiveTexture(GL_TEXTURE21);
+		glActiveTexture(GL_TEXTURE2);
 		sceneFramebuffer->BindColorTexture(0);
-		bloomFinalShader->SetInt("u_SceneTexture", 21);
+		bloomFinalShader->SetInt("u_SceneTexture", 2);
 
-		glActiveTexture(GL_TEXTURE22);
+		glActiveTexture(GL_TEXTURE3);
 		s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture(0);
-		bloomFinalShader->SetInt("u_BloomTexture", 22);
+		bloomFinalShader->SetInt("u_BloomTexture", 3);
 
 		bloomFinalShader->SetBool("u_Bloom", true);
 		bloomFinalShader->SetFloat("u_Exposure", s_Data.SceneExposure);

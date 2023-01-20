@@ -29,12 +29,12 @@ namespace Vortex {
 			if (renderPacket.EditorScene)
 			{
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-				Renderer2D::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
+				Renderer2D::BeginScene(editorCamera);
 				cameraView = editorCamera->GetViewMatrix();
 			}
 			else
 			{
-				Renderer2D::BeginScene(activeCamera, renderPacket.MainCameraWorldSpaceTransform.GetTransform(), renderPacket.TargetFramebuffer);
+				Renderer2D::BeginScene(activeCamera, renderPacket.MainCameraWorldSpaceTransform.GetTransform());
 				cameraView = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
 			}
 

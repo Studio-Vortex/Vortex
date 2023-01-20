@@ -14,7 +14,7 @@ namespace Vortex {
 		
 		void SetLaunchRuntimeCallback(const LaunchRuntimeFn& callback);
 
-		void OnGuiRender(bool showDefault = false);
+		void OnGuiRender();
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

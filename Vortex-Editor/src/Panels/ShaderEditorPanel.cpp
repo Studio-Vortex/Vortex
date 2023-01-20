@@ -12,20 +12,20 @@ namespace Vortex {
 		m_TextEditor.SetBreakpoints(breakpoints);
 	}
 
-	void ShaderEditorPanel::OnGuiRender(bool showDefault)
+	void ShaderEditorPanel::OnGuiRender()
 	{
-		if (s_ShowPanel || showDefault)
-		{
-			std::string filepath;
-			std::string srcCode;
+		if (!s_ShowPanel)
+			return;
 
-			Gui::Begin("Shader Editor", &s_ShowPanel);
+		std::string filepath;
+		std::string srcCode;
 
-			// Right (Code Editor)
-			RenderShaderCodeEditor();
+		Gui::Begin("Shader Editor", &s_ShowPanel);
+
+		// Right (Code Editor)
+		RenderShaderCodeEditor();
 			
-			Gui::End();
-		}
+		Gui::End();
 	}
 
 	void ShaderEditorPanel::RenderShaderCodeEditor()

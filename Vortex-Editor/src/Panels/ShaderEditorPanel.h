@@ -11,7 +11,7 @@ namespace Vortex {
 	public:
 		ShaderEditorPanel();
 
-		void OnGuiRender(bool showDefault = false);
+		void OnGuiRender();
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
