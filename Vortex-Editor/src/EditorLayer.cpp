@@ -1,6 +1,6 @@
 #include "EditorLayer.h"
 
-#include <Vortex/Scene/SceneSerializer.h>
+#include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Project/ProjectSerializer.h>
 #include <Vortex/Renderer/RenderCommand.h>
 #include <Vortex/Scripting/ScriptEngine.h>
@@ -189,7 +189,7 @@ namespace Vortex {
 		m_Framebuffer->Unbind();
 
 		PostProcessProperties postProcessProps{};
-		postProcessProps.SceneFramebuffer = m_Framebuffer;
+		postProcessProps.TargetFramebuffer = m_Framebuffer;
 		Renderer::BeginPostProcessStage(PostProcessStage::Bloom, postProcessProps);
 	}
 

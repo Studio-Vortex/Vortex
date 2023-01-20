@@ -2,7 +2,7 @@
 #include "PrefabSerializer.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Scene/SceneSerializer.h"
+#include "Vortex/Serialization/SceneSerializer.h"
 
 #include <yaml-cpp/yaml.h>
 

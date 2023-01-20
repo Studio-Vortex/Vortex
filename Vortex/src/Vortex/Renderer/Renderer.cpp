@@ -26,7 +26,7 @@ namespace Vortex {
 	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
 	static constexpr const char* SPOT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SpotLightShadowMap.glsl";
 	static constexpr const char* GAUSSIAN_BLUR_SHADER_PATH = "Resources/Shaders/GaussianBlur.glsl";
-	static constexpr const char* BLOOM_FINAL_SHADER_PATH = "Resources/Shaders/Renderer_BloomFinal.glsl";
+	static constexpr const char* BLOOM_FINAL_COMPOSITE_SHADER_PATH = "Resources/Shaders/BloomFinalComposite.glsl";
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
 	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
@@ -83,7 +83,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("SpotLightShadowMap", SPOT_LIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Blur", GAUSSIAN_BLUR_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("BloomFinal", BLOOM_FINAL_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("BloomFinalComposite", BLOOM_FINAL_COMPOSITE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
 		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
@@ -534,7 +534,7 @@ namespace Vortex {
 				VX_CORE_ASSERT(false, "Unknown Post Process Stage!");
 				break;
 			case PostProcessStage::Bloom:
-				BlurScene(postProcessProps.SceneFramebuffer);
+				BlurScene(postProcessProps.TargetFramebuffer);
 				break;
 		}
 	}
@@ -889,20 +889,20 @@ namespace Vortex {
 
 		RenderCommand::Clear();
 
-		SharedRef<Shader> bloomFinalShader = s_Data.ShaderLibrary->Get("BloomFinal");
-		bloomFinalShader->Enable();
+		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary->Get("BloomFinalComposite");
+		bloomFinalCompositeShader->Enable();
 
 		glActiveTexture(GL_TEXTURE2);
 		sceneFramebuffer->BindColorTexture(0);
-		bloomFinalShader->SetInt("u_SceneTexture", 2);
+		bloomFinalCompositeShader->SetInt("u_SceneTexture", 2);
 
 		glActiveTexture(GL_TEXTURE3);
 		s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture(0);
-		bloomFinalShader->SetInt("u_BloomTexture", 3);
+		bloomFinalCompositeShader->SetInt("u_BloomTexture", 3);
 
-		bloomFinalShader->SetBool("u_Bloom", true);
-		bloomFinalShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		bloomFinalShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+		bloomFinalCompositeShader->SetBool("u_Bloom", true);
+		bloomFinalCompositeShader->SetFloat("u_Exposure", s_Data.SceneExposure);
+		bloomFinalCompositeShader->SetFloat("u_Gamma", s_Data.SceneGamma);
 		Renderer2D::DrawUnitQuad();
 	}
 

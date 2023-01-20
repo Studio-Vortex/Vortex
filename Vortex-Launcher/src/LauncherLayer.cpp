@@ -1,7 +1,7 @@
 #include "LauncherLayer.h"
 
 #include <Vortex/Utils/PlatformUtils.h>
-#include <Vortex/Scene/SceneSerializer.h>
+#include <Vortex/Serialization/SceneSerializer.h>
 
 namespace Vortex {
 
@@ -16,7 +16,7 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::Depth };
 		framebufferProps.Width = appProps.WindowWidth;
 		framebufferProps.Height = appProps.WindowHeight;
 

@@ -6,69 +6,164 @@ namespace Vortex {
 
 	namespace Utils {
 
-		static void RenderTextureButton(const char* label, SharedRef<Texture2D>& texture)
+		static SharedRef<Texture2D> GetMaterialTexture(const SharedRef<Material>& material, uint32_t index)
 		{
-			SharedRef<Texture2D> tex = texture ? texture : EditorResources::CheckerboardIcon;
+			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
+
+			switch (index)
+			{
+				case 0: return material->GetAlbedoMap();
+				case 1: return material->GetNormalMap();
+				case 2: return material->GetMetallicMap();
+				case 3: return material->GetRoughnessMap();
+				case 4: return material->GetEmissionMap();
+				case 5: return material->GetParallaxOcclusionMap();
+				case 6: return material->GetAmbientOcclusionMap();
+			}
+		}
+
+		static void SetMaterialTexture(const SharedRef<Material>& material, const SharedRef<Texture2D>& texture, uint32_t index)
+		{
+			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
+
+			switch (index)
+			{
+				case 0: material->SetAlbedoMap(texture);            break;
+				case 1: material->SetNormalMap(texture);            break;
+				case 2: material->SetMetallicMap(texture);          break;
+				case 3: material->SetRoughnessMap(texture);         break;
+				case 4: material->SetEmissionMap(texture);          break;
+				case 5: material->SetParallaxOcclusionMap(texture); break;
+				case 6: material->SetAmbientOcclusionMap(texture);  break;
+			}
+		}
+
+		static void RenderMaterialFlags(const SharedRef<Material>& material)
+		{
+			static const char* displayNames[] = { "No Depth Test" };
+			static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
+
+			uint32_t count = VX_ARRAYCOUNT(displayNames);
+
+			for (uint32_t i = 0; i < count; i++)
+			{
+				bool flagEnabled = material->HasFlag(flags[i]);
+				if (UI::Property(displayNames[i], flagEnabled))
+					material->ToggleFlag(flags[i]);
+			}
+		}
+
+		static void RenderMaterialProperties(const SharedRef<Material>& material)
+		{
+			float opacity = material->GetOpacity();
+			if (UI::Property("Opacity", opacity, 0.01f, 0.01f, 1.0f))
+				material->SetOpacity(opacity);
+
+			RenderMaterialFlags(material);
+		}
+
+		using MaterialParameterCallbackFunc = const std::function<void(const SharedRef<Material>&, uint32_t)>&;
+		static void RenderMaterialTexturesAndProperties(const SharedRef<Material>& material, MaterialParameterCallbackFunc parameterCallback)
+		{
+			static const char* displayNames[] = {
+				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
+			};
+
 			ImVec2 textureSize = { 96, 96 };
 			ImVec4 bgColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 			ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+			uint32_t count = VX_ARRAYCOUNT(displayNames);
 
-			if (UI::ImageButton(label, tex, textureSize, bgColor, tintColor))
+			UI::BeginPropertyGrid();
+
+			for (uint32_t i = 0; i < count; i++)
 			{
-				std::string filepath = FileSystem::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
-				if (!filepath.empty())
+				SharedRef<Texture2D> texture = nullptr;
+				if (SharedRef<Texture2D> entry = GetMaterialTexture(material, i))
+					texture = entry;
+				else
+					texture = EditorResources::CheckerboardIcon;
+
+				bool hovered = false;
+				bool rightMouseButtonClicked = false;
+
+				if (Gui::CollapsingHeader(displayNames[i]))
 				{
-					std::string projectDir = Project::GetProjectDirectory().string();
-					std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
-					texture = Texture2D::Create(relativePath);
-				}
-			}
-
-			UI::SetTooltip(tex->GetPath().c_str());
-
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path texturePath = std::filesystem::path(path);
-
-					// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-					if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+					if (UI::ImageButton(displayNames[i], texture, textureSize, bgColor, tintColor))
 					{
-						SharedRef<Texture2D> newTexture = Texture2D::Create(texturePath.string());
-
-						if (newTexture->IsLoaded())
-							texture = newTexture;
-						else
-							VX_WARN("Could not load texture {}", texturePath.filename().string());
+						std::string filepath = FileSystem::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
+						if (!filepath.empty())
+						{
+							std::string projectDir = Project::GetProjectDirectory().string();
+							std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
+							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
+						}
 					}
-					else
-						VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
-				}
-				Gui::EndDragDropTarget();
-			}
+					
+					hovered = Gui::IsItemHovered();
+					rightMouseButtonClicked = Gui::IsItemClicked(ImGuiMouseButton_Right);
 
-			// right click for utilities
-			if (tex != EditorResources::CheckerboardIcon && Gui::BeginPopupContextItem())
-			{
-				std::string remove = "Remove##" + tex->GetPath();
-				if (Gui::MenuItem(remove.c_str()))
-				{
-					texture = nullptr;
-					Gui::CloseCurrentPopup();
+					UI::SetTooltip(texture->GetPath().c_str());
+
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path texturePath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							{
+								SharedRef<Texture2D> newTexture = Texture2D::Create(texturePath.string());
+
+								if (newTexture->IsLoaded())
+									SetMaterialTexture(material, newTexture, i);
+								else
+									VX_WARN("Could not load texture {}", texturePath.filename().string());
+							}
+							else
+								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+						}
+
+						Gui::EndDragDropTarget();
+					}
+					
+					if (parameterCallback != nullptr)
+						parameterCallback(material, i);
+
+
 				}
+
+				// right click for utilities
+				if (hovered && rightMouseButtonClicked)
+					Gui::OpenPopup("MaterialUtility");
+				if (texture && texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
+				{
+					std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);
+					if (Gui::MenuItem(remove.c_str()))
+					{
+						SetMaterialTexture(material, nullptr, i);
+						Gui::CloseCurrentPopup();
+					}
+					Gui::Separator();
+
+					std::string openInExplorer = fmt::format("Open in Explorer##{}##{}", texture->GetPath(), i);
+					if (Gui::MenuItem(openInExplorer.c_str()))
+					{
+						FileSystem::OpenInFileExplorer(texture->GetPath().c_str());
+						Gui::CloseCurrentPopup();
+					}
+
+					Gui::EndPopup();
+				}
+
 				Gui::Separator();
-
-				std::string openInExplorer = "Open in Explorer##" + tex->GetPath();
-				if (Gui::MenuItem(openInExplorer.c_str()))
-				{
-					FileSystem::OpenInFileExplorer(tex->GetPath().c_str());
-					Gui::CloseCurrentPopup();
-				}
-
-				Gui::EndPopup();
 			}
+
+			RenderMaterialProperties(material);
+
+			UI::EndPropertyGrid();
 		}
 
 	}
@@ -106,31 +201,59 @@ namespace Vortex {
 			return;
 		}
 
-		static const char* displayNames[] = {
-			"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
-		};
-		static SharedRef<Texture2D> textures[] = {
-			material->GetAlbedoMap(),
-			material->GetNormalMap(),
-			material->GetMetallicMap(),
-			material->GetRoughnessMap(),
-			material->GetEmissionMap(),
-			material->GetParallaxOcclusionMap(),
-			material->GetAmbientOcclusionMap()
-		};
-
-		uint32_t count = VX_ARRAYCOUNT(displayNames);
-
-		UI::BeginPropertyGrid();
-
-		for (uint32_t i = 0; i < count; i++)
-		{
-			Utils::RenderTextureButton(displayNames[i], textures[i]);
-		}
-
-		UI::EndPropertyGrid();
+		Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialParameterCallback));
 
 		Gui::End();
+	}
+
+	void MaterialEditorPanel::MaterialParameterCallback(const SharedRef<Material>& material, uint32_t materialIndex)
+	{
+		switch (materialIndex)
+		{
+			case 0:
+			{
+				Math::vec3 albedo = material->GetAlbedo();
+				if (UI::Property("Albedo", &albedo))
+					material->SetAlbedo(albedo);
+				break;
+			}
+			case 1:
+			{
+				break;
+			}
+			case 2:
+			{
+				float metallic = material->GetMetallic();
+				if (UI::Property("Metallic", metallic, 0.01f, 0.01f, 1.0f))
+					material->SetMetallic(metallic);
+				break;
+			}
+			case 3:
+			{
+				float roughness = material->GetRoughness();
+				if (UI::Property("Roughness", roughness, 0.01f, 0.01f, 1.0f))
+					material->SetRoughness(roughness);
+				break;
+			}
+			case 4:
+			{
+				Math::vec3 emission = material->GetEmission();
+				if (UI::Property("Emission", &emission))
+					material->SetEmission(emission);
+				break;
+			}
+			case 5:
+			{
+				float parallaxHeightScale = material->GetParallaxHeightScale();
+				if (UI::Property("Height Scale", parallaxHeightScale, 0.01f, 0.01f, 1.0f))
+					material->SetParallaxHeightScale(parallaxHeightScale);
+				break;
+			}
+			case 6:
+			{
+				break;
+			}
+		}
 	}
 
 }

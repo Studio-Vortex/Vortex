@@ -1,3 +1,7 @@
+//-------------------------
+// - Vortex Game Engine Bloom Final Composite Shader -
+//------------------------
+
 #type vertex
 #version 460 core
 
@@ -29,7 +33,8 @@ uniform float u_Gamma;
 void main()
 {
     vec3 hdrColor = texture(u_SceneTexture, f_TexCoord).rgb;
-    vec3 bloomColor = texture(u_BloomTextre, f_TexCoord).rgb;
+    vec3 bloomColor = texture(u_BloomTexture, f_TexCoord).rgb;
+    
     if (u_Bloom)
         hdrColor += bloomColor; // additive blending
     

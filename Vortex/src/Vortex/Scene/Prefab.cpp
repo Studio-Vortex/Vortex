@@ -2,7 +2,7 @@
 #include "Prefab.h"
 
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Scene/SceneSerializer.h"
+#include "Vortex/Serialization/SceneSerializer.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 namespace Vortex {

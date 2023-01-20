@@ -92,8 +92,8 @@ void main()
 
 	// Calculate TBN matrix
 	vec3 T = normalize(model * a_Tangent);
-	vec3 N = vertexOut.Normal;
 	vec3 B = normalize(model * a_BiTangent);
+	vec3 N = vertexOut.Normal;
 	vertexOut.TBN = mat3(T, B, N);
 }
 
@@ -417,15 +417,17 @@ void main()
 	if (alpha == 0.0)
 		discard;
 
-	o_Color = vec4(mapped, alpha) + vec4(properties.Emission, 0.0);
+	vec4 result = vec4(mapped, alpha) + vec4(properties.Emission, 0.0);
+
+	o_Color = result;
 	o_EntityID = fragmentIn.EntityID;
 
 	// check whether fragment output is higher than threshold,
 	// if so, use output as brighness color
-	float brightness = dot(o_Color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	float brightness = dot(result.rgb, vec3(0.2126, 0.7152, 0.0722));
 
 	if (brightness > 1.0)
-		o_BrightColor = vec4(o_Color.rgb, 1.0);
+		o_BrightColor = vec4(result.rgb, 1.0);
 	else
 		o_BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

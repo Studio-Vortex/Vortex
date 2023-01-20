@@ -41,7 +41,7 @@ namespace Vortex {
 
 	struct PostProcessProperties
 	{
-		SharedRef<Framebuffer> SceneFramebuffer = nullptr;
+		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
 	};
 
 	class VORTEX_API Renderer

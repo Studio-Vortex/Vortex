@@ -2,7 +2,7 @@
 
 #include <Vortex/Scene/Scene.h>
 #include <Vortex/Utils/PlatformUtils.h>
-#include <Vortex/Scene/SceneSerializer.h>
+#include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
 
@@ -102,7 +102,7 @@ namespace Vortex {
 		m_Framebuffer->Unbind();
 		
 		PostProcessProperties postProcessProps{};
-		postProcessProps.SceneFramebuffer = m_Framebuffer;
+		postProcessProps.TargetFramebuffer = m_Framebuffer;
 		Renderer::BeginPostProcessStage(PostProcessStage::Bloom, postProcessProps);
 	}
 
