@@ -10,11 +10,13 @@
 namespace Vortex {
 
 	class Entity;
+	class Framebuffer;
 
 	class Scene
 	{
 	public:
 		Scene() = default;
+		Scene(const SharedRef<Framebuffer>& targetFramebuffer);
 		~Scene() = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
@@ -45,6 +47,9 @@ namespace Vortex {
 		void Step(uint32_t frames = 1);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		inline const SharedRef<Framebuffer>& GetTargetFramebuffer() const { return m_TargetFramebuffer; }
+		inline void SetTargetFramebuffer(const SharedRef<Framebuffer>& target) { m_TargetFramebuffer = target; }
 
 		inline bool IsRunning() const { return m_IsRunning; }
 		inline bool IsPaused() const { return m_IsPaused; }
@@ -90,6 +95,7 @@ namespace Vortex {
 			return m_Registry.view<TComponent...>();
 		}
 
+		static SharedRef<Scene> Create(const SharedRef<Framebuffer>& targetFramebuffer);
 		static SharedRef<Scene> Create();
 
 	private:
@@ -101,6 +107,7 @@ namespace Vortex {
 		void OnParticleEmitterUpdate(TimeStep delta);
 
 	private:
+		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;

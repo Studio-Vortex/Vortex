@@ -4,6 +4,7 @@
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/OrthographicCamera.h"
 #include "Vortex/Renderer/Camera.h"
+#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/SubTexture2D.h"
@@ -25,16 +26,15 @@ namespace Vortex {
 		static void Init(RendererAPI::TriangleCullMode cullMode = RendererAPI::TriangleCullMode::None);
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const Math::mat4& transform);
-		static void BeginScene(const EditorCamera* camera);
-		static void BeginScene(const OrthographicCamera& camera);
+		static void BeginScene(const Camera& camera, const Math::mat4& transform, const SharedRef<Framebuffer>& targetFramebuffer);
+		static void BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer);
+		static void BeginScene(const OrthographicCamera& camera, const SharedRef<Framebuffer>& targetFramebuffer);
 		static void EndScene();
 		static void Flush();
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSource2DComponent& lightSourceComponent);
 
 		// Primitives
-
 		static void DrawUnitQuad();
 
 		static void DrawQuad(const Math::mat4& transform, const Math::vec3& color);

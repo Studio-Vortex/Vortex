@@ -17,6 +17,7 @@ namespace Vortex {
 		int ReadPixel(uint32_t attachmentIndex, int x, int y) const override;
 
 		void ClearAttachment(uint32_t attachmentIndex, int clearValue) const override;
+		void ClearDepthAttachment() const override;
 
 		inline uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override
 		{

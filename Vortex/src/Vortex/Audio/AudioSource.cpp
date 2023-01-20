@@ -165,22 +165,22 @@ namespace Vortex {
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
 
-	void AudioSource::Copy(const SharedRef<AudioSource>& dstAudioSource, const SharedRef<AudioSource>& srcAudioSource)
+	void AudioSource::Copy(const SharedRef<AudioSource>& dest, const SharedRef<AudioSource>& src)
 	{
-		const auto& props = srcAudioSource->GetProperties();
-		dstAudioSource->SetCone(props.Cone);
-		dstAudioSource->SetDirection(props.Direction);
-		dstAudioSource->SetDopplerFactor(props.DopplerFactor);
-		dstAudioSource->SetLoop(props.Loop);
-		dstAudioSource->SetMaxDistance(props.MaxDistance);
-		dstAudioSource->SetMinDistance(props.MinDistance);
-		dstAudioSource->SetPitch(props.Pitch);
-		dstAudioSource->SetPosition(props.Position);
-		dstAudioSource->SetSpacialized(props.Spacialized);
-		dstAudioSource->SetPlayOnStart(props.PlayOnStart);
-		dstAudioSource->SetPlayOneShot(props.PlayOneShot);
-		dstAudioSource->SetVelocity(props.Veloctiy);
-		dstAudioSource->SetVolume(props.Volume);
+		const auto& props = src->GetProperties();
+		dest->SetCone(props.Cone);
+		dest->SetDirection(props.Direction);
+		dest->SetDopplerFactor(props.DopplerFactor);
+		dest->SetLoop(props.Loop);
+		dest->SetMaxDistance(props.MaxDistance);
+		dest->SetMinDistance(props.MinDistance);
+		dest->SetPitch(props.Pitch);
+		dest->SetPosition(props.Position);
+		dest->SetSpacialized(props.Spacialized);
+		dest->SetPlayOnStart(props.PlayOnStart);
+		dest->SetPlayOneShot(props.PlayOneShot);
+		dest->SetVelocity(props.Veloctiy);
+		dest->SetVolume(props.Volume);
 	}
 
 	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)

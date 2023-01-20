@@ -256,6 +256,11 @@ namespace Vortex {
 			Utils::VortexFBTextureFormatToGL(props.TextureFormat), GL_INT, &clearValue);
 	}
 
+	void OpenGLFramebuffer::ClearDepthAttachment() const
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
 	OpenGLHDRFramebuffer::OpenGLHDRFramebuffer(const FramebufferProperties& props)
 	{
 		glGenFramebuffers(1, &m_CaptureFramebufferRendererID);

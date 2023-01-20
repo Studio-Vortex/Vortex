@@ -78,7 +78,7 @@ namespace Vortex {
 
 		float GetAmountComplete();
 
-		static void Copy(const SharedRef<AudioSource>& dstAudioSource, const SharedRef<AudioSource>& srcAudioSource);
+		static void Copy(const SharedRef<AudioSource>& dest, const SharedRef<AudioSource>& src);
 
 		static SharedRef<AudioSource> Create(const std::string& filepath);
 		static SharedRef<AudioSource> Create();

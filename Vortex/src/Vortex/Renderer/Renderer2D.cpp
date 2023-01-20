@@ -74,6 +74,8 @@ namespace Vortex
 
 		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
 
+		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+
 		SharedRef<VertexArray> UnitQuadVA = nullptr;
 		SharedRef<VertexBuffer> UnitQuadVB = nullptr;
 		SharedRef<IndexBuffer> UnitQuadIB = nullptr;
@@ -273,34 +275,49 @@ namespace Vortex
 		delete[] s_Data.TextVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
+	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform, const SharedRef<Framebuffer>& targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
+
+		if (targetFramebuffer)
+		{
+			s_Data.TargetFramebuffer = targetFramebuffer;
+			s_Data.TargetFramebuffer->Bind();
+		}
 
 		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
-
 		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const EditorCamera* camera)
+	void Renderer2D::BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
+
+		if (targetFramebuffer)
+		{
+			s_Data.TargetFramebuffer = targetFramebuffer;
+			s_Data.TargetFramebuffer->Bind();
+		}
 
 		Math::mat4 viewProjection = camera->GetViewProjection();
-
 		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const OrthographicCamera& camera)
+	void Renderer2D::BeginScene(const OrthographicCamera& camera, const SharedRef<Framebuffer>& targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
+		if (targetFramebuffer)
+		{
+			s_Data.TargetFramebuffer = targetFramebuffer;
+			s_Data.TargetFramebuffer->Bind();
+		}
 
+		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
 		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
@@ -361,6 +378,10 @@ namespace Vortex
 	void Renderer2D::EndScene()
 	{
 		VX_PROFILE_FUNCTION();
+
+		if (s_Data.TargetFramebuffer)
+			s_Data.TargetFramebuffer->Unbind();
+		s_Data.TargetFramebuffer = nullptr;
 
 		// Render vertices as a batch
 		Flush();

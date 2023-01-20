@@ -109,7 +109,7 @@ namespace Vortex {
 		}
 
 		SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
-		Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
+		Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform(), contextScene->GetTargetFramebuffer());
 	}
 
 	static void DebugRenderer_SetClearColor(Math::vec3* color)

@@ -429,6 +429,7 @@ namespace Vortex {
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 
 				out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
+				out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
 			}
 			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 
@@ -977,6 +978,9 @@ namespace Vortex {
 
 				if (meshComponent["Opacity"])
 					material->SetOpacity(meshComponent["Opacity"].as<float>());
+
+				if (meshComponent["MaterialFlags"])
+					material->SetFlags(meshComponent["MaterialFlags"].as<uint32_t>());
 
 				if (meshComponent["TextureScale"])
 					meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();

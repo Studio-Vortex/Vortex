@@ -61,6 +61,7 @@ namespace Vortex {
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) const = 0;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, int clearValue) const = 0;
+		virtual void ClearDepthAttachment() const = 0;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 

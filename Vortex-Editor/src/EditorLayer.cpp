@@ -38,7 +38,7 @@ namespace Vortex {
 
 		EditorResources::Init();
 
-		m_EditorScene = Scene::Create();
+		m_EditorScene = Scene::Create(m_Framebuffer);
 		m_ActiveScene = m_EditorScene;
 
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
@@ -113,10 +113,6 @@ namespace Vortex {
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					m_EditorCamera->OnUpdate(delta);
 
-				float editorCameraFOV = m_EditorCamera->GetFOV();
-				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
-
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
 
 				break;
@@ -160,16 +156,16 @@ namespace Vortex {
 				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					m_EditorCamera->OnUpdate(delta);
 
-				float editorCameraFOV = m_EditorCamera->GetFOV();
-				if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-					m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
-
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
 			}
 		}
 
 		m_MousePosLastFrame = Input::GetMousePosition();
+
+		float editorCameraFOV = m_EditorCamera->GetFOV();
+		if (editorCameraFOV != m_EditorCameraFOVLastFrame)
+			m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
 		m_EditorCameraFOVLastFrame = projectProps.EditorProps.EditorCameraFOV;
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -1055,13 +1051,15 @@ namespace Vortex {
 		if (m_SceneState == SceneState::Play)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			Math::mat4 transform = cameraEntity.GetComponent<TransformComponent>().GetTransform();
+			SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
 			if (cameraEntity)
-				Renderer2D::BeginScene(cameraEntity.GetComponent<CameraComponent>().Camera, cameraEntity.GetComponent<TransformComponent>().GetTransform());
+				Renderer2D::BeginScene(camera, transform, m_Framebuffer);
 		}
 		else
 		{
-			Renderer2D::BeginScene(m_EditorCamera);
+			Renderer2D::BeginScene(m_EditorCamera, m_Framebuffer);
 		}
 
 		// Render Editor Grid
@@ -1566,7 +1564,7 @@ namespace Vortex {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		m_ActiveScene = Scene::Create();
+		m_ActiveScene = Scene::Create(m_Framebuffer);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		m_SceneRendererPanel.SetContext(m_ActiveScene);
 

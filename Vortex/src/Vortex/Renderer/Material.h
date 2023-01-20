@@ -6,6 +6,12 @@
 
 namespace Vortex {
 
+	enum class MaterialFlag
+	{
+		None = 0,
+		NoDepthTest = BIT(1),
+	};
+
 	struct VORTEX_API MaterialProperties
 	{
 		SharedRef<Texture2D> NormalMap = nullptr;
@@ -28,6 +34,8 @@ namespace Vortex {
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
 
 		float Opacity = 1.0f;
+
+		uint32_t Flags = 0;
 	};
 
 	class VORTEX_API Material
@@ -79,7 +87,19 @@ namespace Vortex {
 		float GetOpacity() const;
 		void SetOpacity(float opacity);
 
-		static void Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial);
+		// Flags
+		uint32_t GetFlags() const;
+		bool HasFlag(MaterialFlag flag) const;
+		void SetFlag(MaterialFlag flag);
+		void SetFlags(MaterialFlag* flags, uint32_t count);
+		void SetFlags(uint32_t flags);
+		void ToggleFlag(MaterialFlag flag);
+		void ToggleFlags(MaterialFlag* flags, uint32_t count);
+		void RemoveFlag(MaterialFlag flag);
+		void RemoveFlags(MaterialFlag* flags, uint32_t count);
+		void ClearFlags();
+
+		static void Copy(const SharedRef<Material>& dest, const SharedRef<Material>& src);
 
 		static SharedRef<Material> Create(const MaterialProperties& props);
 		static SharedRef<Material> Create(const SharedRef<Shader>& shader, const MaterialProperties& props);

@@ -492,11 +492,7 @@ namespace Vortex {
 		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-
 		m_MeshShader->SetBool("u_HasAnimations", false);
-
-		for (uint32_t i = 0; i < 100; i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", Math::Identity());
 
 		Renderer::BindSkyLightDepthMap();
 		Renderer::BindPointLightDepthMaps();
@@ -522,7 +518,6 @@ namespace Vortex {
 		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
 
 		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-
 		m_MeshShader->SetBool("u_HasAnimations", true);
 
 		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();

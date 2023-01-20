@@ -22,8 +22,6 @@ namespace Vortex {
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
-
 		// Render 2D
 		{
 			Math::mat4 cameraView;
@@ -31,13 +29,13 @@ namespace Vortex {
 			if (renderPacket.EditorScene)
 			{
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-				Renderer2D::BeginScene(editorCamera);
+				Renderer2D::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
 				cameraView = editorCamera->GetViewMatrix();
 			}
 			else
 			{
-				Renderer2D::BeginScene(activeCamera, renderPacket.CameraWorldSpaceTransform.GetTransform());
-				cameraView = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
+				Renderer2D::BeginScene(activeCamera, renderPacket.MainCameraWorldSpaceTransform.GetTransform(), renderPacket.TargetFramebuffer);
+				cameraView = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
 			}
 
 			// Light Pass 2D
@@ -207,16 +205,16 @@ namespace Vortex {
 			if (renderPacket.EditorScene)
 			{
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-				Renderer::BeginScene(editorCamera);
+				Renderer::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
 
 				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
 			}
 			else
 			{
 				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
-				Renderer::BeginScene(sceneCamera, renderPacket.CameraWorldSpaceTransform);
+				Renderer::BeginScene(sceneCamera, renderPacket.MainCameraWorldSpaceTransform, renderPacket.TargetFramebuffer);
 
-				Math::mat4 view = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
+				Math::mat4 view = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
 				Math::mat4 projection = sceneCamera.GetProjectionMatrix();
 
 				SceneRenderer::RenderSkybox(view, projection, scene);
@@ -239,15 +237,27 @@ namespace Vortex {
 			}
 
 			// Geometry pass
-			// Sort Models by distance from camera and render in reverse order
+			// Sort Meshes by distance from camera and render in reverse order
 			std::map<float, Entity> sortedEntities;
 
 			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 			uint32_t i = 0;
 
+			auto SortEntityByDistanceFunc = [&](float distance, Entity entity, uint32_t offset = 0)
+			{
+				if (sortedEntities.find(distance) == sortedEntities.end())
+				{
+					sortedEntities[distance] = entity;
+					return;
+				}
+
+				// slightly modify the distance
+				sortedEntities[distance + (0.01f * offset)] = entity;
+			};
+
 			for (const auto e : meshView)
 			{
-				Entity entity{ e, renderPacket.Scene };
+				Entity entity{ e, scene };
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
@@ -256,20 +266,14 @@ namespace Vortex {
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					if (sortedEntities.find(distance) == sortedEntities.end())
-						sortedEntities[distance] = entity;
-					else
-						sortedEntities[distance + (0.01f * i)] = entity;
+					SortEntityByDistanceFunc(distance, entity, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.CameraWorldSpaceTransform.Translation;
+					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTransform.Translation;
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					if (sortedEntities.find(distance) == sortedEntities.end())
-						sortedEntities[distance] = entity;
-					else
-						sortedEntities[distance + (0.01f * i)] = entity;
+					SortEntityByDistanceFunc(distance, entity, i);
 				}
 
 				i++;
@@ -287,14 +291,15 @@ namespace Vortex {
 
 					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
+					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
+					SetMaterialFlags(material, renderPacket.TargetFramebuffer);
+
 					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
-					{
 						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-					}
 					else
-					{
 						meshRendererComponent.Mesh->Render(worldSpaceTransform);
-					}
+
+					ResetAllMaterialFlags();
 				}
 			}
 
@@ -322,6 +327,22 @@ namespace Vortex {
 			// Only render one skybox per scene
 			break;
 		}
+	}
+
+	void SceneRenderer::SetMaterialFlags(const SharedRef<Material>& material, const SharedRef<Framebuffer>& framebuffer)
+	{
+		if (material->HasFlag(MaterialFlag::NoDepthTest))
+		{
+			RenderCommand::DisableDepthTest();
+			RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+		}
+	}
+
+	void SceneRenderer::ResetAllMaterialFlags()
+	{
+		RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
+		RenderCommand::EnableDepthTest();
+		RenderCommand::SetCullMode(cullMode);
 	}
 
 }

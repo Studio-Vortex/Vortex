@@ -124,12 +124,16 @@ namespace Vortex {
 
 	static SceneRenderer s_SceneRenderer;
 
+	Scene::Scene(const SharedRef<Framebuffer>& targetFramebuffer)
+		: m_TargetFramebuffer(targetFramebuffer) { }
+
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
 	{
 		VX_PROFILE_FUNCTION();
 
 		SharedRef<Scene> destination = CreateShared<Scene>();
 
+		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
 		destination->m_ViewportWidth = source->m_ViewportWidth;
 		destination->m_ViewportHeight = source->m_ViewportHeight;
 
@@ -531,8 +535,9 @@ namespace Vortex {
 			{
 				SceneRenderPacket renderPacket{};
 				renderPacket.MainCamera = primarySceneCamera;
+				renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
+				renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 				renderPacket.Scene = this;
-				renderPacket.CameraWorldSpaceTransform = primarySceneCameraTransform;
 				renderPacket.EditorScene = false;
 				s_SceneRenderer.RenderScene(renderPacket);
 			}
@@ -561,8 +566,8 @@ namespace Vortex {
 
 		// Render
 		SceneRenderPacket renderPacket{};
-		renderPacket.CameraWorldSpaceTransform = TransformComponent{};
 		renderPacket.MainCamera = camera;
+		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
 		s_SceneRenderer.RenderScene(renderPacket);
@@ -581,8 +586,8 @@ namespace Vortex {
 
 		// Render
 		SceneRenderPacket renderPacket{};
-		renderPacket.CameraWorldSpaceTransform = TransformComponent{};
 		renderPacket.MainCamera = camera;
+		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
 
@@ -974,6 +979,11 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
+
+	SharedRef<Scene> Scene::Create(const SharedRef<Framebuffer>& targetFramebuffer)
+	{
+		return CreateShared<Scene>(targetFramebuffer);
+	}
 
 	SharedRef<Scene> Scene::Create()
 	{

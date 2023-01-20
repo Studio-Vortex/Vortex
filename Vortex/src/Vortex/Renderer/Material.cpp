@@ -229,21 +229,89 @@ namespace Vortex {
 		m_Properties.Opacity = opacity;
     }
 
-	void Material::Copy(const SharedRef<Material>& dstMaterial, const SharedRef<Material>& srcMaterial)
+	uint32_t Material::GetFlags() const
 	{
-		dstMaterial->SetNormalMap(srcMaterial->GetNormalMap());
-		dstMaterial->SetAlbedoMap(srcMaterial->GetAlbedoMap());
-		dstMaterial->SetAlbedo(srcMaterial->GetAlbedo());
-		dstMaterial->SetMetallicMap(srcMaterial->GetMetallicMap());
-		dstMaterial->SetMetallic(srcMaterial->GetMetallic());
-		dstMaterial->SetRoughnessMap(srcMaterial->GetRoughnessMap());
-		dstMaterial->SetRoughness(srcMaterial->GetRoughness());
-		dstMaterial->SetEmission(srcMaterial->GetEmission());
-		dstMaterial->SetEmissionMap(srcMaterial->GetEmissionMap());
-		dstMaterial->SetParallaxHeightScale(srcMaterial->GetParallaxHeightScale());
-		dstMaterial->SetParallaxOcclusionMap(srcMaterial->GetParallaxOcclusionMap());
-		dstMaterial->SetAmbientOcclusionMap(srcMaterial->GetAmbientOcclusionMap());
-		dstMaterial->SetOpacity(srcMaterial->GetOpacity());
+		return m_Properties.Flags;
+	}
+
+	bool Material::HasFlag(MaterialFlag flag) const
+	{
+		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
+		return m_Properties.Flags & (uint32_t)flag;
+	}
+
+	void Material::SetFlag(MaterialFlag flag)
+	{
+		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
+		m_Properties.Flags |= (uint32_t)flag;
+	}
+
+	void Material::SetFlags(MaterialFlag* flags, uint32_t count)
+	{
+		for (uint32_t i = 0; i < count; i++)
+		{
+			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
+			SetFlag(flags[i]);
+		}
+	}
+
+	void Material::SetFlags(uint32_t flags)
+	{
+		ClearFlags();
+		m_Properties.Flags = flags;
+	}
+
+	void Material::ToggleFlag(MaterialFlag flag)
+	{
+		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
+		m_Properties.Flags ^= (uint32_t)flag;
+	}
+
+	void Material::ToggleFlags(MaterialFlag* flags, uint32_t count)
+	{
+		for (uint32_t i = 0; i < count; i++)
+		{
+			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
+			ToggleFlag(flags[i]);
+		}
+	}
+
+	void Material::RemoveFlag(MaterialFlag flag)
+	{
+		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
+		m_Properties.Flags &= (uint32_t)flag;
+	}
+
+	void Material::RemoveFlags(MaterialFlag* flags, uint32_t count)
+	{
+		for (uint32_t i = 0; i < count; i++)
+		{
+			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
+			RemoveFlag(flags[i]);
+		}
+	}
+
+	void Material::ClearFlags()
+	{
+		memset(&m_Properties.Flags, 0, sizeof(uint32_t));
+	}
+
+	void Material::Copy(const SharedRef<Material>& dest, const SharedRef<Material>& src)
+	{
+		dest->SetNormalMap(src->GetNormalMap());
+		dest->SetAlbedoMap(src->GetAlbedoMap());
+		dest->SetAlbedo(src->GetAlbedo());
+		dest->SetMetallicMap(src->GetMetallicMap());
+		dest->SetMetallic(src->GetMetallic());
+		dest->SetRoughnessMap(src->GetRoughnessMap());
+		dest->SetRoughness(src->GetRoughness());
+		dest->SetEmission(src->GetEmission());
+		dest->SetEmissionMap(src->GetEmissionMap());
+		dest->SetParallaxHeightScale(src->GetParallaxHeightScale());
+		dest->SetParallaxOcclusionMap(src->GetParallaxOcclusionMap());
+		dest->SetAmbientOcclusionMap(src->GetAmbientOcclusionMap());
+		dest->SetOpacity(src->GetOpacity());
+		dest->ClearFlags();
 	}
 
 	SharedRef<Material> Material::Create(const MaterialProperties& props)

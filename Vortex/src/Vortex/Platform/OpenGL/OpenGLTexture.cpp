@@ -77,7 +77,7 @@ namespace Vortex {
 			}
 			else if (channels == 1)
 			{
-				internalFormat = GL_RGBA8;
+				internalFormat = GL_R8;
 				dataFormat = GL_RED;
 			}
 

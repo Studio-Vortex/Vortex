@@ -42,6 +42,8 @@ namespace Vortex {
 		
 		SceneLightDescription SceneLightDesc{};
 
+		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+
 		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
 		SharedRef<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
@@ -107,23 +109,39 @@ namespace Vortex {
 		RenderCommand::SetViewport(viewport);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform)
+	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, const SharedRef<Framebuffer>& targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
+
+		if (targetFramebuffer)
+		{
+			s_Data.TargetFramebuffer = targetFramebuffer;
+			s_Data.TargetFramebuffer->Bind();
+		}
 
 		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjectionMatrix(), transform.Translation);
+		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
-	void Renderer::BeginScene(const EditorCamera* camera)
+	void Renderer::BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
+		if (targetFramebuffer)
+		{
+			s_Data.TargetFramebuffer = targetFramebuffer;
+			s_Data.TargetFramebuffer->Bind();
+		}
+
 		BindShaders(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPosition());
+		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
 	void Renderer::EndScene()
 	{
-
+		if (s_Data.TargetFramebuffer)
+			s_Data.TargetFramebuffer->Unbind();
+		s_Data.TargetFramebuffer = nullptr;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)

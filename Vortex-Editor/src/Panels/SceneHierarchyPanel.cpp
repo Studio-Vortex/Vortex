@@ -770,6 +770,8 @@ namespace Vortex {
 				DisplayAddComponentPopup<LightSourceComponent>(componentName);
 			if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<MeshRendererComponent>(componentName);
+			if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<LightSource2DComponent>(componentName);
 			if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<SpriteRendererComponent>(componentName);
 			if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -1105,9 +1107,9 @@ namespace Vortex {
 			{
 				SharedRef<Material> material = component.Mesh->GetMaterial();
 				Math::vec3 albedo = material->GetAlbedo();
-				auto textureSize = ImVec2{ 64, 64 };
-				ImVec4 bgColor = { 0, 0, 0, 0 };
-				ImVec4 tintColor = { albedo.r, albedo.g, albedo.b, 1.0f };
+				auto textureSize = ImVec2{ 64.0f, 64.0f };
+				ImVec4 bgColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 				if (UI::TreeNode("Material", false))
 				{
@@ -1422,6 +1424,18 @@ namespace Vortex {
 					float opacity = material->GetOpacity();
 					if (UI::Property("Opacity", opacity, 0.01f, 0.01f, 1.0f))
 						material->SetOpacity(opacity);
+
+					static const char* displayNames[] = { "No Depth Test" };
+					static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
+
+					uint32_t count = VX_ARRAYCOUNT(displayNames);
+
+					for (uint32_t i = 0; i < count; i++)
+					{
+						bool flagEnabled = material->HasFlag(flags[i]);
+						if (UI::Property(displayNames[i], flagEnabled))
+							material->ToggleFlag(flags[i]);
+					}
 
 					UI::Property("UV", component.Scale, 0.05f);
 
