@@ -2941,6 +2941,11 @@ namespace Vortex {
 		return Math::PI_D;
 	}
 
+	static float Mathf_Abs(float in)
+	{
+		return Math::Abs(in);
+	}
+
 	static float Mathf_Sqrt(float in)
 	{
 		return Math::Sqrt(in);
@@ -3591,6 +3596,7 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI);
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI_D);
+		VX_ADD_INTERNAL_CALL(Mathf_Abs);
 		VX_ADD_INTERNAL_CALL(Mathf_Sqrt);
 		VX_ADD_INTERNAL_CALL(Mathf_Sin);
 		VX_ADD_INTERNAL_CALL(Mathf_Cos);

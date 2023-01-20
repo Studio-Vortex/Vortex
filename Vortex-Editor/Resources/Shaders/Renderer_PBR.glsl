@@ -261,6 +261,8 @@ void main()
 	vec3 F0 = Fdielectric;
 	F0 = mix(F0, properties.Albedo, properties.Metallic);
 
+	float totalShadow = 0.0;
+
 	// Reflectance equation
 	vec3 Lo = vec3(0.0);
 
@@ -282,6 +284,8 @@ void main()
 
 		float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias, u_SkyLight.SoftShadows);
 		bool notInShadow = (1.0 - shadow) > 0.0;
+
+		totalShadow += 1.0 - shadow;
 
 		if (notInShadow)
 		{
@@ -309,11 +313,11 @@ void main()
 	{
 		PointLight pointLight = u_PointLights[i];
 
-		// float shadow = CubemapShadowCalculation(fragmentIn.Position, pointLight.Position, u_PointLightShadowMaps[i], pointLight.ShadowBias, pointLight.FarPlane);
-		// bool inShadow = (1.0 - shadow) <= 0.0;
+		//float shadow = CubemapShadowCalculation(fragmentIn.Position, pointLight.Position, u_PointLightShadowMaps[i], pointLight.ShadowBias, pointLight.FarPlane);
+		//bool inShadow = (1.0 - shadow) <= 0.0;
 
-		// if (inShadow)
-		// 	continue;
+		//if (inShadow)
+			//continue;
 
 		vec3 L = normalize(pointLight.Position - fragmentIn.Position);
 		vec3 H = normalize(V + L);

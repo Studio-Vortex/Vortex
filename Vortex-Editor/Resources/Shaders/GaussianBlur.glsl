@@ -5,9 +5,15 @@
 #type vertex
 #version 460 core
 
+layout (location = 0) in vec3  a_Position; // Vertex position
+layout (location = 1) in vec2  a_TexCoord; // Vertex texture coordinate
+
+layout (location = 0) out vec2 f_TexCoord;
+
 void main()
 {
-
+    f_TexCoord = a_TexCoord;
+    gl_Position = vec4(a_Position, 1.0);
 }
 
 

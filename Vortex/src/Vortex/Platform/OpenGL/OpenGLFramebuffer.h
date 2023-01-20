@@ -24,6 +24,8 @@ namespace Vortex {
 			return m_ColorAttachments[index];
 		}
 
+		void BindColorTexture(uint32_t index) const override;
+
 		inline const FramebufferProperties& GetProperties() const override { return m_Properties; }
 
 		void Invalidate();

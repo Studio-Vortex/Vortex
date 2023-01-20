@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Vortex {
+﻿namespace Vortex {
 
 	public static class Mathf
 	{
@@ -19,6 +17,7 @@ namespace Vortex {
 			return a + (1.0f - t) + (b * t);
 		}
 
+		public static float Abs(float value) => InternalCalls.Mathf_Abs(value);
 		public static float Sqrt(float value) => InternalCalls.Mathf_Sqrt(value);
 		public static float Sin(float value) => InternalCalls.Mathf_Sin(value);
 		public static float Cos(float value) => InternalCalls.Mathf_Cos(value);

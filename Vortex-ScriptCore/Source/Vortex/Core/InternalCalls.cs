@@ -845,6 +845,9 @@ namespace Vortex {
 		internal extern static double Mathf_GetPI_D();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Abs(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Sqrt(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

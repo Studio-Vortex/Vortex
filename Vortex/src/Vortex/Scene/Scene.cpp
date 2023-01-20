@@ -7,6 +7,7 @@
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/LightSource.h"
+#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Scene/ScriptableEntity.h"
 #include "Vortex/Scene/Prefab.h"
@@ -348,7 +349,7 @@ namespace Vortex {
 		// Audio Source - PlayOnStart
 		if (!muteAudio)
 		{
-			auto view = m_Registry.view<AudioSourceComponent>();
+			auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
 
 			for (auto& e : view)
 			{
@@ -397,7 +398,7 @@ namespace Vortex {
 
 		// Stop all active audio sources in the scene
 		{
-			auto view = m_Registry.view<AudioSourceComponent>();
+			auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
 
 			for (auto& e : view)
 			{
@@ -413,7 +414,7 @@ namespace Vortex {
 
 		// Stop all active animators in the scene
 		{
-			auto view = m_Registry.view<AnimatorComponent>();
+			auto view = m_Registry.view<TransformComponent, AnimatorComponent>();
 
 			for (auto& e : view)
 			{
@@ -429,7 +430,7 @@ namespace Vortex {
 
 		// Stop all active particle emitters in the scene
 		{
-			auto view = m_Registry.view<ParticleEmitterComponent>();
+			auto view = m_Registry.view<TransformComponent, ParticleEmitterComponent>();
 
 			for (auto& e : view)
 			{
@@ -877,6 +878,11 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)
 	{
 		component.Source = Skybox::Create();
+	}
+
+	template <> void Scene::OnComponentAdded<LightSource2DComponent>(Entity entity, LightSource2DComponent& component)
+	{
+		component.Source = LightSource2D::Create(LightSource2DProperties());
 	}
 
 	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)

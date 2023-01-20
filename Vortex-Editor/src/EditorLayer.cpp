@@ -24,7 +24,12 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps;
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = {
+			FramebufferTextureFormat::RGBA16F,
+			FramebufferTextureFormat::RED_INTEGER,
+			FramebufferTextureFormat::RGBA16F,
+			FramebufferTextureFormat::Depth
+		};
 		framebufferProps.Width = 1600;
 		framebufferProps.Height = 900;
 		framebufferProps.Samples = appProps.SampleCount;
@@ -186,6 +191,10 @@ namespace Vortex {
 		OnOverlayRender();
 
 		m_Framebuffer->Unbind();
+
+		PostProcessProperties postProcessProps{};
+		postProcessProps.SceneFramebuffer = m_Framebuffer;
+		Renderer::BeginPostProcessStage(PostProcessStage::Bloom, postProcessProps);
 	}
 
 	void EditorLayer::OnGuiRender()

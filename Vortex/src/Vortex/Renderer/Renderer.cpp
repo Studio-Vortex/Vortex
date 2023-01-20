@@ -11,6 +11,9 @@
 
 #include "Vortex/Editor/EditorResources.h"
 
+// Temporary
+#include <Glad/glad.h>
+
 namespace Vortex {
 
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
@@ -23,6 +26,7 @@ namespace Vortex {
 	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
 	static constexpr const char* SPOT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SpotLightShadowMap.glsl";
 	static constexpr const char* GAUSSIAN_BLUR_SHADER_PATH = "Resources/Shaders/GaussianBlur.glsl";
+	static constexpr const char* BLOOM_FINAL_SHADER_PATH = "Resources/Shaders/Renderer_BloomFinal.glsl";
 	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
 
 	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
@@ -77,6 +81,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("SpotLightShadowMap", SPOT_LIGHT_SHADOW_MAP_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Blur", GAUSSIAN_BLUR_SHADER_PATH);
+		s_Data.ShaderLibrary->Load("BloomFinal", BLOOM_FINAL_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
 		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
@@ -118,24 +123,7 @@ namespace Vortex {
 
 	void Renderer::EndScene()
 	{
-	}
 
-	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
-	{
-		VX_PROFILE_FUNCTION();
-
-		Math::mat4 viewProjection = projection * view;
-
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
-		pbrShader->Enable();
-		pbrShader->SetMat4("u_ViewProjection", viewProjection);
-		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
-		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
-		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-
-		s_Data.SceneLightDesc.HasSkyLight = false;
-		s_Data.SceneLightDesc.PointLightIndex = 0;
-		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
 	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
@@ -334,14 +322,12 @@ namespace Vortex {
 	void Renderer::CreateGaussianBlurFramebuffers(const Math::vec2& viewportSize)
 	{
 		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8 };
+		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA16F };
 		framebufferProps.Width = viewportSize.x;
 		framebufferProps.Height = viewportSize.y;
 
-		for (uint32_t i = 0; i < 2; i++)
-		{
-			s_Data.GaussianBlurFramebuffers[i] = Framebuffer::Create(framebufferProps);
-		}
+		s_Data.GaussianBlurFramebuffers[0] = Framebuffer::Create(framebufferProps);
+		s_Data.GaussianBlurFramebuffers[1] = Framebuffer::Create(framebufferProps);
 	}
 
 	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent)
@@ -519,6 +505,19 @@ namespace Vortex {
 
 				break;
 			}
+		}
+	}
+
+	void Renderer::BeginPostProcessStage(PostProcessStage stage, const PostProcessProperties& postProcessProps)
+	{
+		switch (stage)
+		{
+			case PostProcessStage::None:
+				VX_CORE_ASSERT(false, "Unknown Post Process Stage!");
+				break;
+			case PostProcessStage::Bloom:
+				BlurScene(postProcessProps.SceneFramebuffer);
+				break;
 		}
 	}
 
@@ -811,6 +810,79 @@ namespace Vortex {
 			pbrShader->SetInt("u_SpotLightShadowMaps[" + std::to_string(index) + "]", currentSlot);
 			index++;
 		}*/
+	}
+
+	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Math::mat4 viewProjection = projection * view;
+
+		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+		pbrShader->SetMat4("u_ViewProjection", viewProjection);
+		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
+
+		s_Data.SceneLightDesc.HasSkyLight = false;
+		s_Data.SceneLightDesc.PointLightIndex = 0;
+		s_Data.SceneLightDesc.SpotLightIndex = 0;
+	}
+
+	void Renderer::BlurScene(const SharedRef<Framebuffer>& sceneFramebuffer)
+	{
+		if (!s_Data.GaussianBlurFramebuffers[0] || !s_Data.GaussianBlurFramebuffers[1])
+		{
+			const FramebufferProperties& sceneFramebufferProps = sceneFramebuffer->GetProperties();
+			CreateGaussianBlurFramebuffers({ sceneFramebufferProps.Width, sceneFramebufferProps.Height });
+		}
+
+		bool horizontal = true;
+		bool firstIteration = true;
+		uint32_t samples = 10;
+		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
+		glActiveTexture(GL_TEXTURE20);
+		sceneFramebuffer->BindColorTexture(2);
+		blurShader->Enable();
+		blurShader->SetInt("u_Texture", 20);
+
+		for (uint32_t i = 0; i < samples; i++)
+		{
+			s_Data.GaussianBlurFramebuffers[horizontal]->Bind();
+			blurShader->SetBool("u_Horizontal", horizontal);
+
+			if (firstIteration)
+			{
+				sceneFramebuffer->BindColorTexture(2);
+				firstIteration = false;
+			}
+			else
+			{
+				s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture();
+			}
+
+			Renderer2D::DrawUnitQuad();
+			horizontal = !horizontal;
+		}
+
+		s_Data.GaussianBlurFramebuffers[0]->Unbind();
+
+		SharedRef<Shader> bloomFinalShader = s_Data.ShaderLibrary->Get("BloomFinal");
+		bloomFinalShader->Enable();
+
+		glActiveTexture(GL_TEXTURE21);
+		sceneFramebuffer->BindColorTexture(0);
+		bloomFinalShader->SetInt("u_SceneTexture", 21);
+
+		glActiveTexture(GL_TEXTURE22);
+		s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture(0);
+		bloomFinalShader->SetInt("u_BloomTexture", 22);
+
+		bloomFinalShader->SetBool("u_Bloom", true);
+		bloomFinalShader->SetFloat("u_Exposure", s_Data.SceneExposure);
+		bloomFinalShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+		Renderer2D::DrawUnitQuad();
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()

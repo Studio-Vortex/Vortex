@@ -17,7 +17,12 @@ namespace Vortex {
 		const auto& commandLineArgs = appProps.CommandLineArgs;
 
 		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = {
+			FramebufferTextureFormat::RGBA16F,
+			FramebufferTextureFormat::RED_INTEGER,
+			FramebufferTextureFormat::RGBA16F,
+			FramebufferTextureFormat::Depth
+		};
 		framebufferProps.Width = appProps.WindowWidth;
 		framebufferProps.Height = appProps.WindowHeight;
 
@@ -55,6 +60,7 @@ namespace Vortex {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			Renderer::CreateGaussianBlurFramebuffers(m_ViewportSize);
 		}
 
 		m_Framebuffer->Bind();
@@ -90,11 +96,14 @@ namespace Vortex {
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.get() };
+			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
 
-		ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
-
 		m_Framebuffer->Unbind();
+		
+		PostProcessProperties postProcessProps{};
+		postProcessProps.SceneFramebuffer = m_Framebuffer;
+		Renderer::BeginPostProcessStage(PostProcessStage::Bloom, postProcessProps);
 	}
 
 	void RuntimeLayer::OnGuiRender()

@@ -34,6 +34,16 @@ namespace Vortex {
 		float GeometryPassRenderTime = 0.0f;
 	};
 
+	enum class PostProcessStage
+	{
+		None = 0, Bloom,
+	};
+
+	struct PostProcessProperties
+	{
+		SharedRef<Framebuffer> SceneFramebuffer = nullptr;
+	};
+
 	class VORTEX_API Renderer
 	{
 	public:
@@ -64,6 +74,8 @@ namespace Vortex {
 
 		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
 		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
+
+		static void BeginPostProcessStage(PostProcessStage stage, const PostProcessProperties& postProcessProps);
 
 		static void RenderToDepthMap(Scene* contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
@@ -109,6 +121,7 @@ namespace Vortex {
 
 	private:
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+		static void BlurScene(const SharedRef<Framebuffer>& sceneFramebuffer);
 	};
 
 }

@@ -31,6 +31,8 @@ namespace Vortex {
 		static void EndScene();
 		static void Flush();
 
+		static void RenderLightSource(const TransformComponent& transform, const LightSource2DComponent& lightSourceComponent);
+
 		// Primitives
 
 		static void DrawUnitQuad();
@@ -125,6 +127,7 @@ namespace Vortex {
 		static SharedRef<ShaderLibrary> GetShaderLibrary();
 
 	private:
+		static void SetShaderViewProjectionMatrix(const Math::mat4& viewProjection);
 		static void StartBatch();
 		static void NextBatch();
 

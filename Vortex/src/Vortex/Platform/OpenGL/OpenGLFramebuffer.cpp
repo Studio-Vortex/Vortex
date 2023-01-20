@@ -132,6 +132,11 @@ namespace Vortex {
 			glDeleteTextures(1, &m_DepthAttachment);
 	}
 
+	void OpenGLFramebuffer::BindColorTexture(uint32_t index) const
+	{
+		Utils::BindTexture(m_Properties.Samples > 1, m_ColorAttachments[index]);
+	}
+
 	void OpenGLFramebuffer::Invalidate()
 	{
 		if (m_RendererID)

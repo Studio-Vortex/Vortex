@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include "Vortex/Core/Base.h"
 
 namespace Vortex {
 
@@ -24,6 +24,7 @@ namespace Vortex {
 	{
 	public:
 		LightSource(const LightSourceProperties& props);
+		~LightSource() = default;
 
 		const Math::vec3& GetRadiance() const;
 		void SetRadiance(const Math::vec3& radiance);
@@ -52,7 +53,7 @@ namespace Vortex {
 		uint32_t GetSpotLightIndex() const;
 		void SetSpotLightIndex(uint32_t index);
 
-		static void Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource);
+		static void Copy(const SharedRef<LightSource>& dest, const SharedRef<LightSource>& src);
 
 		static SharedRef<LightSource> Create(const LightSourceProperties& props);
 

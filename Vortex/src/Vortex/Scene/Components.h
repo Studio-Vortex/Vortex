@@ -153,6 +153,7 @@ namespace Vortex {
 	// Forward declarations
 	class Skybox;
 	class LightSource;
+	class LightSource2D;
 	class Model;
 	class ParticleEmitter;
 	class Font;
@@ -178,6 +179,14 @@ namespace Vortex {
 
 		SkyboxComponent() = default;
 		SkyboxComponent(const SkyboxComponent&) = default;
+	};
+
+	struct LightSource2DComponent
+	{
+		SharedRef<LightSource2D> Source = nullptr;
+
+		LightSource2DComponent() = default;
+		LightSource2DComponent(const LightSource2DComponent&) = default;
 	};
 
 	enum class LightType { Directional = 0, Point, Spot };

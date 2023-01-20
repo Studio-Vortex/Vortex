@@ -40,7 +40,23 @@ namespace Vortex {
 				cameraView = Math::Inverse(renderPacket.CameraWorldSpaceTransform.GetTransform());
 			}
 
-			// Render Sprites
+			// Light Pass 2D
+			{
+				auto view = scene->GetAllEntitiesWith<TransformComponent, LightSource2DComponent>();
+
+				for (const auto e : view)
+				{
+					auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
+					Entity entity{ e, scene };
+
+					if (!entity.IsActive())
+						continue;
+
+					Renderer2D::RenderLightSource(transformComponent, lightSource2DComponent);
+				}
+			}
+
+			// Sprite Pass 2D
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
 
@@ -56,7 +72,7 @@ namespace Vortex {
 				}
 			}
 
-			// Render Circles
+			// Circle Pass 2D
 			{
 				auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
 
@@ -207,8 +223,9 @@ namespace Vortex {
 			}
 
 			// Light pass
-			auto lightSourceView = scene->GetAllEntitiesWith<LightSourceComponent>();
 			{
+				auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+
 				for (auto& e : lightSourceView)
 				{
 					Entity entity{ e, scene };

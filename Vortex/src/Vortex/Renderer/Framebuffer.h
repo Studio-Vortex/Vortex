@@ -44,7 +44,7 @@ namespace Vortex {
 		uint32_t Width;
 		uint32_t Height;
 		FramebufferAttachmentProperties Attachments;
-		uint32_t Samples;
+		uint32_t Samples = 1;
 
 		bool SwapChainTarget = false;
 	};
@@ -63,6 +63,8 @@ namespace Vortex {
 		virtual void ClearAttachment(uint32_t attachmentIndex, int clearValue) const = 0;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+
+		virtual void BindColorTexture(uint32_t index = 0) const = 0;
 
 		virtual const FramebufferProperties& GetProperties() const = 0;
 

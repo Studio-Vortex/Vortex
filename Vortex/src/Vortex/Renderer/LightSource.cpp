@@ -96,16 +96,16 @@ namespace Vortex {
 		m_SpotLightIndex = index;
 	}
 
-	void LightSource::Copy(const SharedRef<LightSource>& dstLightSource, const SharedRef<LightSource>& srcLightSource)
+	void LightSource::Copy(const SharedRef<LightSource>& dest, const SharedRef<LightSource>& src)
 	{
-		dstLightSource->SetRadiance(srcLightSource->GetRadiance());
-		dstLightSource->SetIntensity(srcLightSource->GetIntensity());
-		dstLightSource->SetCutOff(srcLightSource->GetCutOff());
-		dstLightSource->SetOuterCutOff(srcLightSource->GetOuterCutOff());
-		dstLightSource->SetCastShadows(srcLightSource->GetCastShadows());
-		dstLightSource->SetSoftShadows(srcLightSource->GetSoftShadows());
-		dstLightSource->SetPointLightIndex(srcLightSource->GetPointLightIndex());
-		dstLightSource->SetSpotLightIndex(srcLightSource->GetSpotLightIndex());
+		dest->SetRadiance(src->GetRadiance());
+		dest->SetIntensity(src->GetIntensity());
+		dest->SetCutOff(src->GetCutOff());
+		dest->SetOuterCutOff(src->GetOuterCutOff());
+		dest->SetCastShadows(src->GetCastShadows());
+		dest->SetSoftShadows(src->GetSoftShadows());
+		dest->SetPointLightIndex(src->GetPointLightIndex());
+		dest->SetSpotLightIndex(src->GetSpotLightIndex());
 	}
 
 	SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)

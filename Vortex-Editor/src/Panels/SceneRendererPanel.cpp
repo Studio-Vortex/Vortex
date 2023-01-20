@@ -215,7 +215,7 @@ namespace Vortex {
 				}
 
 				float sceneExposure = Renderer::GetSceneExposure();
-				if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f, 1.0f))
+				if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f))
 					Renderer::SetSceneExposure(sceneExposure);
 
 				float gamma = Renderer::GetSceneGamma();

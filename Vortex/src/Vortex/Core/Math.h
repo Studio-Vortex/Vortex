@@ -123,6 +123,12 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Abs(T v)
+	{
+		return glm::abs(v);
+	}
+
+	template <typename T>
 	static auto Sqrt(T x)
 	{
 		return glm::sqrt(x);

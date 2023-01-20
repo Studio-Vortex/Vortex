@@ -2,6 +2,7 @@
 #include "Renderer2D.h"
 
 #include "Vortex/Renderer/RenderCommand.h"
+#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Shader.h"
 
@@ -67,6 +68,8 @@ namespace Vortex
 		static constexpr inline uint32_t MaxIndices = MaxQuads * INDICES_PER_QUAD;
 		static constexpr inline uint32_t MaxTextureSlots = 32; // TODO: RendererCapabilities
 
+		static constexpr inline uint32_t MaxLightSources = 100;
+
 		SharedRef<Texture2D> WhiteTexture; // Default texture
 
 		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
@@ -110,6 +113,8 @@ namespace Vortex
 
 		std::array<SharedRef<Texture2D>, MaxTextureSlots> FontTextureSlots;
 		uint32_t FontTextureSlotIndex = 0;
+
+		uint32_t LightSourceIndex = 0;
 
 		Math::vec4 QuadVertexPositions[4];
 
@@ -274,21 +279,7 @@ namespace Vortex
 
 		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
 
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
-		quadShader->Enable();
-		quadShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary->Get("Circle");
-		circleShader->Enable();
-		circleShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> lineShader = s_Data.ShaderLibrary->Get("Line");
-		lineShader->Enable();
-		lineShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary->Get("Text");
-		textShader->Enable();
-		textShader->SetMat4("u_ViewProjection", viewProjection);
+		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
 	}
@@ -299,21 +290,7 @@ namespace Vortex
 
 		Math::mat4 viewProjection = camera->GetViewProjection();
 
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
-		quadShader->Enable();
-		quadShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary->Get("Circle");
-		circleShader->Enable();
-		circleShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> lineShader = s_Data.ShaderLibrary->Get("Line");
-		lineShader->Enable();
-		lineShader->SetMat4("u_ViewProjection", viewProjection);
-
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary->Get("Text");
-		textShader->Enable();
-		textShader->SetMat4("u_ViewProjection", viewProjection);
+		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
 	}
@@ -324,6 +301,13 @@ namespace Vortex
 
 		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
 
+		SetShaderViewProjectionMatrix(viewProjection);
+
+		StartBatch();
+	}
+
+	void Renderer2D::SetShaderViewProjectionMatrix(const Math::mat4& viewProjection)
+	{
 		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
 		quadShader->Enable();
 		quadShader->SetMat4("u_ViewProjection", viewProjection);
@@ -340,7 +324,7 @@ namespace Vortex
 		textShader->Enable();
 		textShader->SetMat4("u_ViewProjection", viewProjection);
 
-		StartBatch();
+		s_Data.LightSourceIndex = 0;
 	}
 
 	void Renderer2D::StartBatch()
@@ -397,7 +381,8 @@ namespace Vortex
 				s_Data.TextureSlots[i]->Bind(i);
 
 			// Bind a shader and make a draw call
-			s_Data.ShaderLibrary->Get("Quad")->Enable();
+			SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
+			quadShader->Enable();
 			RenderCommand::DrawIndexed(s_Data.QuadVA, s_Data.QuadIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
@@ -447,6 +432,26 @@ namespace Vortex
 			RenderCommand::DrawIndexed(s_Data.TextVA, s_Data.TextIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
+	}
+
+	void Renderer2D::RenderLightSource(const TransformComponent& transform, const LightSource2DComponent& lightSourceComponent)
+	{
+		SharedRef<LightSource2D> lightSource = lightSourceComponent.Source;
+		uint32_t& i = s_Data.LightSourceIndex;
+
+		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
+		quadShader->Enable();
+		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
+		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+
+		SharedRef<Shader> circleShader = s_Data.ShaderLibrary->Get("Circle");
+		circleShader->Enable();
+		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
+		circleShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+
+		i++;
 	}
 
 	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID)
@@ -509,7 +514,7 @@ namespace Vortex
 		constexpr float textureIndex = 0.0f; // Our White Texture
 		constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		Math::vec2 textureCoords[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		AddToQuadVertexBuffer(transform, color, textureCoords, textureIndex, textureScale, entityID);
 	}
@@ -553,7 +558,7 @@ namespace Vortex
 			s_Data.TextureSlotIndex++;
 		}
 
-		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		Math::vec2 textureCoords[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		// Vertex Descriptions
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale, entityID);
