@@ -796,6 +796,10 @@ namespace Vortex {
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
+
+		// TEMPORARY FIX
+		pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
+		pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
 	}
 
 	void Renderer::BindPointLightDepthMaps()
