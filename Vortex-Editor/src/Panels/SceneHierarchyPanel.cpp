@@ -618,34 +618,32 @@ namespace Vortex {
 					}
 					else if constexpr (std::is_same<TComponent, LightSourceComponent>())
 					{
+						auto ResetLightFunc = [&](auto type)
+						{
+							component = LightSourceComponent();
+							component.Source = LightSource::Create(LightSourceProperties());
+							component.Type = type;
+						};
+
 						switch (component.Type)
 						{
-							case LightType::Directional:
-								component = LightSourceComponent();
-								component.Type = LightType::Directional;
-								break;
-							case LightType::Point:
-								component = LightSourceComponent();
-								component.Type = LightType::Point;
-								break;
-							case LightType::Spot:
-								component = LightSourceComponent();
-								component.Type = LightType::Spot;
-								break;
+							case LightType::Directional: ResetLightFunc(LightType::Directional); break;
+							case LightType::Point:       ResetLightFunc(LightType::Point);       break;
+							case LightType::Spot:        ResetLightFunc(LightType::Spot);        break;
 						}
 					}
 					else if constexpr (std::is_same<TComponent, CameraComponent>())
 					{
+						auto ResetCameraFunc = [&](auto type)
+						{
+							component = CameraComponent();
+							component.Camera.SetProjectionType(type);
+						};
+
 						switch (component.Camera.GetProjectionType())
 						{
-							case SceneCamera::ProjectionType::Perspective:
-								component = CameraComponent();
-								component.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-								break;
-							case SceneCamera::ProjectionType::Orthographic:
-								component = CameraComponent();
-								component.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-								break;
+							case SceneCamera::ProjectionType::Perspective:  ResetCameraFunc(SceneCamera::ProjectionType::Perspective);  break;
+							case SceneCamera::ProjectionType::Orthographic: ResetCameraFunc(SceneCamera::ProjectionType::Orthographic); break;
 						}
 					}
 					else
@@ -1076,7 +1074,13 @@ namespace Vortex {
 
 				bool castShadows = lightSource->GetCastShadows();
 				if (UI::Property("Cast Shadows", castShadows))
+				{
 					lightSource->SetCastShadows(castShadows);
+					if (castShadows && component.Type == LightType::Directional)
+					{
+						Renderer::CreateShadowMap(LightType::Directional, lightSource);
+					}
+				}
 
 				if (castShadows)
 				{

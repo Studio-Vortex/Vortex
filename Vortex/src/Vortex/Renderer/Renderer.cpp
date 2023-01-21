@@ -556,7 +556,10 @@ namespace Vortex {
 				case LightType::Directional:
 				{
 					if (!lightSourceComponent.Source->GetCastShadows())
+					{
+						s_Data.SkylightDepthMapFramebuffer = nullptr;
 						continue;
+					}
 
 					// Configure shader
 					Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
@@ -796,14 +799,21 @@ namespace Vortex {
 
 	void Renderer::BindSkyLightDepthMap()
 	{
-		s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
 		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
-		pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
 
 		// TEMPORARY FIX
-		pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
-		pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+		{
+			pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
+			pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+		}
+
+		if (!s_Data.SkylightDepthMapFramebuffer)
+			return;
+
+		s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
+		pbrShader->Enable();
+		pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
 	}
 
 	void Renderer::BindPointLightDepthMaps()

@@ -16,7 +16,7 @@ namespace Vortex {
 
 	private:
 		SharedRef<Scene> m_ContextScene = nullptr;
-		inline static bool s_ShowPanel = false;
+		inline static bool s_ShowPanel = true;
 		inline static std::vector<SharedRef<Shader>> s_Loaded2DShaders;
 		inline static std::vector<SharedRef<Shader>> s_Loaded3DShaders;
 	};
