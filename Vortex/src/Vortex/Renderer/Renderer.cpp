@@ -597,13 +597,17 @@ namespace Vortex {
 						Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
 						shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
 
-						if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+						SharedRef<Model> model = meshRendererComponent.Mesh;
+						if (!model)
+							continue;
+
+						if (model->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
 						{
-							meshRendererComponent.Mesh->RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+							model->RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
 							continue;
 						}
 
-						meshRendererComponent.Mesh->RenderToSkylightShadowMap(worldSpaceTransform);
+						model->RenderToSkylightShadowMap(worldSpaceTransform);
 					}
 
 					s_Data.SkylightDepthMapFramebuffer->Unbind();

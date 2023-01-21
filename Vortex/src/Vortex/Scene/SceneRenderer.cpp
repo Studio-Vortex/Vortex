@@ -291,13 +291,18 @@ namespace Vortex {
 
 					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
-					SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial();
+					SharedRef<Model> model = meshRendererComponent.Mesh;
+					if (!model)
+						continue;
+					SharedRef<Material> material = model->GetMaterial();
+					if (!material)
+						continue;
 					SetMaterialFlags(material, renderPacket.TargetFramebuffer);
 
-					if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && meshRendererComponent.Mesh->HasAnimations())
-						meshRendererComponent.Mesh->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
+					if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+						model->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
 					else
-						meshRendererComponent.Mesh->Render(worldSpaceTransform);
+						model->Render(worldSpaceTransform);
 
 					ResetAllMaterialFlags();
 				}

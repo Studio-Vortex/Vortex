@@ -812,7 +812,11 @@ namespace Vortex {
 		{
 			const auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
 
-			meshRendererComponent.Mesh->OnUpdate((int)entity, meshRendererComponent.Scale);
+			SharedRef<Model> model = meshRendererComponent.Mesh;
+			if (!model)
+				continue;
+
+			model->OnUpdate((int)entity, meshRendererComponent.Scale);
 		}
 	}
 

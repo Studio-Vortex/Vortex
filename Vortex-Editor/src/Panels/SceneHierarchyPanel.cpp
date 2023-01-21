@@ -578,6 +578,7 @@ namespace Vortex {
 			bool componentShouldBeRemoved = false;
 			if (Gui::BeginPopup("ComponentSettings"))
 			{
+				Gui::BeginDisabled(copyCallback == nullptr);
 				if (Gui::MenuItem("Copy Component"))
 				{
 					// TODO: Copy Component
@@ -586,13 +587,71 @@ namespace Vortex {
 
 					Gui::CloseCurrentPopup();
 				}
+				Gui::EndDisabled();
 
 				Gui::Separator();
 
+				Gui::BeginDisabled(pasteCallback == nullptr);
 				if (Gui::MenuItem("Paste Component"))
 				{
 					if (pasteCallback)
 						pasteCallback(component);
+
+					Gui::CloseCurrentPopup();
+				}
+				Gui::EndDisabled();
+
+				Gui::Separator();
+
+				if (Gui::MenuItem("Reset Component"))
+				{
+					if constexpr (std::is_same<TComponent, MeshRendererComponent>())
+					{
+						component = MeshRendererComponent();
+						component.Mesh = Model::Create(Model::Default::Cube, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+					}
+					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
+					{
+						SharedRef<AudioSource> audioSource = component.Source;
+						component = AudioSourceComponent();
+						component.Source = audioSource;
+					}
+					else if constexpr (std::is_same<TComponent, LightSourceComponent>())
+					{
+						switch (component.Type)
+						{
+							case LightType::Directional:
+								component = LightSourceComponent();
+								component.Type = LightType::Directional;
+								break;
+							case LightType::Point:
+								component = LightSourceComponent();
+								component.Type = LightType::Point;
+								break;
+							case LightType::Spot:
+								component = LightSourceComponent();
+								component.Type = LightType::Spot;
+								break;
+						}
+					}
+					else if constexpr (std::is_same<TComponent, CameraComponent>())
+					{
+						switch (component.Camera.GetProjectionType())
+						{
+							case SceneCamera::ProjectionType::Perspective:
+								component = CameraComponent();
+								component.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+								break;
+							case SceneCamera::ProjectionType::Orthographic:
+								component = CameraComponent();
+								component.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+								break;
+						}
+					}
+					else
+					{
+						component = TComponent();
+					}
 
 					Gui::CloseCurrentPopup();
 				}
