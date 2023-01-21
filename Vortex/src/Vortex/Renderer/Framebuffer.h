@@ -135,4 +135,17 @@ namespace Vortex {
 		static SharedRef<DepthCubemapFramebuffer> Create(const FramebufferProperties& props);
 	};
 
+	class VORTEX_API GaussianBlurFramebuffer
+	{
+	public:
+		virtual ~GaussianBlurFramebuffer() = default;
+
+		virtual void Bind(uint32_t horizontal) const = 0;
+		virtual void Unbind() const = 0;
+
+		virtual void BindColorTexture(uint32_t horizontal) const = 0;
+
+		static SharedRef<GaussianBlurFramebuffer> Create(const FramebufferProperties& props);
+	};
+
 }

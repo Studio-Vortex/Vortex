@@ -118,4 +118,20 @@ namespace Vortex {
 		uint32_t m_DepthCubemapTextureRendererID = 0;
 	};
 
+	class OpenGLGaussianBlurFramebuffer : public GaussianBlurFramebuffer
+	{
+	public:
+		OpenGLGaussianBlurFramebuffer(const FramebufferProperties& props);
+		~OpenGLGaussianBlurFramebuffer() override;
+
+		void Bind(uint32_t horizontal) const override;
+		void Unbind() const override;
+
+		void BindColorTexture(uint32_t horizontal) const override;
+
+	private:
+		uint32_t m_BlurFramebufferRendererIDs[2] = { 0, 0 };
+		uint32_t m_BlurTextures[2] = { 0, 0 };
+	};
+
 }

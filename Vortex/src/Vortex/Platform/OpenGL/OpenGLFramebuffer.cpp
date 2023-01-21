@@ -570,4 +570,45 @@ namespace Vortex {
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
+	OpenGLGaussianBlurFramebuffer::OpenGLGaussianBlurFramebuffer(const FramebufferProperties& props)
+	{
+		glGenFramebuffers(2, m_BlurFramebufferRendererIDs);
+		glGenTextures(2, m_BlurTextures);
+
+		for (uint32_t i = 0; i < 2; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_BlurFramebufferRendererIDs[i]);
+			glBindTexture(GL_TEXTURE_2D, m_BlurTextures[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, props.Width, props.Height, 0, GL_RGBA, GL_FLOAT, nullptr);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_BlurTextures[i], 0);
+
+			VX_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer failed to complete!");
+		}
+	}
+
+	OpenGLGaussianBlurFramebuffer::~OpenGLGaussianBlurFramebuffer()
+	{
+		glDeleteTextures(2, m_BlurTextures);
+		glDeleteFramebuffers(2, m_BlurFramebufferRendererIDs);
+	}
+
+	void OpenGLGaussianBlurFramebuffer::Bind(uint32_t horizontal) const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_BlurFramebufferRendererIDs[horizontal]);
+	}
+
+	void OpenGLGaussianBlurFramebuffer::Unbind() const
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void OpenGLGaussianBlurFramebuffer::BindColorTexture(uint32_t horizontal) const
+	{
+		glBindTexture(GL_TEXTURE_2D, m_BlurTextures[horizontal]);
+	}
+
 }

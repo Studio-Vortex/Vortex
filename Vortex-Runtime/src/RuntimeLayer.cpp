@@ -60,7 +60,6 @@ namespace Vortex {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			Renderer::CreateGaussianBlurFramebuffers(m_ViewportSize);
 		}
 
 		m_Framebuffer->Bind();

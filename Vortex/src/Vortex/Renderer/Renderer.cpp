@@ -49,7 +49,7 @@ namespace Vortex {
 		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
 		std::vector<SharedRef<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
 
-		SharedRef<Framebuffer> GaussianBlurFramebuffers[2] = { nullptr, nullptr };
+		SharedRef<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
 
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
@@ -107,6 +107,7 @@ namespace Vortex {
 	void Renderer::OnWindowResize(const Viewport& viewport)
 	{
 		RenderCommand::SetViewport(viewport);
+		CreateBlurFramebuffer(viewport.Width, viewport.Height);
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, const SharedRef<Framebuffer>& targetFramebuffer)
@@ -337,17 +338,6 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
-	void Renderer::CreateGaussianBlurFramebuffers(const Math::vec2& viewportSize)
-	{
-		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA16F };
-		framebufferProps.Width = viewportSize.x;
-		framebufferProps.Height = viewportSize.y;
-
-		s_Data.GaussianBlurFramebuffers[0] = Framebuffer::Create(framebufferProps);
-		s_Data.GaussianBlurFramebuffers[1] = Framebuffer::Create(framebufferProps);
-	}
-
 	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent)
 	{
 		SharedRef<Skybox> skybox = skyboxComponent.Source;
@@ -534,7 +524,7 @@ namespace Vortex {
 				VX_CORE_ASSERT(false, "Unknown Post Process Stage!");
 				break;
 			case PostProcessStage::Bloom:
-				BlurScene(postProcessProps.TargetFramebuffer);
+				BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
 				break;
 		}
 	}
@@ -848,57 +838,54 @@ namespace Vortex {
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
-	void Renderer::BlurScene(const SharedRef<Framebuffer>& sceneFramebuffer)
+	void Renderer::CreateBlurFramebuffer(uint32_t width, uint32_t height)
 	{
-		if (!s_Data.GaussianBlurFramebuffers[0] || !s_Data.GaussianBlurFramebuffers[1])
+		FramebufferProperties props{};
+		props.Width = width;
+		props.Height = height;
+		s_Data.BlurFramebuffer = GaussianBlurFramebuffer::Create(props);
+	}
+
+	void Renderer::BlurAndSubmitFinalSceneComposite(const SharedRef<Framebuffer>& sceneFramebuffer)
+	{
+		if (!s_Data.BlurFramebuffer)
 		{
-			const FramebufferProperties& sceneFramebufferProps = sceneFramebuffer->GetProperties();
-			CreateGaussianBlurFramebuffers({ sceneFramebufferProps.Width, sceneFramebufferProps.Height });
+			const FramebufferProperties& props = sceneFramebuffer->GetProperties();
+			CreateBlurFramebuffer(props.Width, props.Height);
 		}
 
 		bool horizontal = true;
-		bool firstIteration = true;
 		uint32_t samples = 10;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
 		blurShader->Enable();
 		glActiveTexture(GL_TEXTURE0);
 		sceneFramebuffer->BindColorTexture(2);
-		blurShader->SetInt("u_Texture", 20);
+		blurShader->SetInt("u_Texture", 0);
 
 		for (uint32_t i = 0; i < samples; i++)
 		{
-			glActiveTexture(GL_TEXTURE1);
-			s_Data.GaussianBlurFramebuffers[horizontal]->Bind();
-			blurShader->SetBool("u_Horizontal", horizontal);
+			s_Data.BlurFramebuffer->Bind(!horizontal);
+			blurShader->SetBool("u_Horizontal", !horizontal);
 
-			if (firstIteration)
-			{
-				sceneFramebuffer->BindColorTexture(2);
-				firstIteration = false;
-			}
-			else
-			{
-				s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture();
-			}
+			s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
 
 			Renderer2D::DrawUnitQuad();
 			horizontal = !horizontal;
 		}
 
-		s_Data.GaussianBlurFramebuffers[0]->Unbind();
-
+		s_Data.BlurFramebuffer->Unbind();
 		RenderCommand::Clear();
 
 		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary->Get("BloomFinalComposite");
 		bloomFinalCompositeShader->Enable();
 
-		glActiveTexture(GL_TEXTURE2);
+		glActiveTexture(GL_TEXTURE0);
 		sceneFramebuffer->BindColorTexture(0);
-		bloomFinalCompositeShader->SetInt("u_SceneTexture", 2);
+		bloomFinalCompositeShader->SetInt("u_SceneTexture", 0);
 
-		glActiveTexture(GL_TEXTURE3);
-		s_Data.GaussianBlurFramebuffers[!horizontal]->BindColorTexture(0);
-		bloomFinalCompositeShader->SetInt("u_BloomTexture", 3);
+		glActiveTexture(GL_TEXTURE1);
+		s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
+		bloomFinalCompositeShader->SetInt("u_BloomTexture", 1);
 
 		bloomFinalCompositeShader->SetBool("u_Bloom", true);
 		bloomFinalCompositeShader->SetFloat("u_Exposure", s_Data.SceneExposure);

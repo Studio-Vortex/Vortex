@@ -62,6 +62,23 @@ namespace Vortex {
 			RenderMaterialFlags(material);
 		}
 
+		static bool MaterialTextureHasProperties(uint32_t index)
+		{
+			switch (index)
+			{
+				case 0: return true;
+				case 1: return false;
+				case 2: return true;
+				case 3: return true;
+				case 4: return true;
+				case 5: return true;
+				case 6: return false;
+			}
+
+			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
+			return -1;
+		}
+
 		using MaterialParameterCallbackFunc = const std::function<void(const SharedRef<Material>&, uint32_t)>&;
 		static void RenderMaterialTexturesAndProperties(const SharedRef<Material>& material, MaterialParameterCallbackFunc parameterCallback)
 		{
@@ -70,11 +87,9 @@ namespace Vortex {
 			};
 
 			ImVec2 textureSize = { 96, 96 };
-			ImVec4 bgColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+			ImVec4 bgColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			uint32_t count = VX_ARRAYCOUNT(displayNames);
-
-			UI::BeginPropertyGrid();
 
 			for (uint32_t i = 0; i < count; i++)
 			{
@@ -85,22 +100,19 @@ namespace Vortex {
 					texture = EditorResources::CheckerboardIcon;
 
 				bool hovered = false;
+				bool leftMouseButtonClicked = false;
 				bool rightMouseButtonClicked = false;
 
 				if (Gui::CollapsingHeader(displayNames[i]))
 				{
-					if (UI::ImageButton(displayNames[i], texture, textureSize, bgColor, tintColor))
-					{
-						std::string filepath = FileSystem::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
-						if (!filepath.empty())
-						{
-							std::string projectDir = Project::GetProjectDirectory().string();
-							std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
-							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
-						}
-					}
-					
+					UI::BeginPropertyGrid();
+					UI::ImageEx(texture, textureSize, bgColor, tintColor);
+
+					if (MaterialTextureHasProperties(i))
+						Gui::SameLine();
+
 					hovered = Gui::IsItemHovered();
+					leftMouseButtonClicked = Gui::IsItemClicked(ImGuiMouseButton_Left);
 					rightMouseButtonClicked = Gui::IsItemClicked(ImGuiMouseButton_Right);
 
 					UI::SetTooltip(texture->GetPath().c_str());
@@ -128,38 +140,49 @@ namespace Vortex {
 
 						Gui::EndDragDropTarget();
 					}
-					
+
+					if (hovered && leftMouseButtonClicked)
+					{
+						std::string filepath = FileSystem::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
+						if (!filepath.empty())
+						{
+							std::string projectDir = Project::GetProjectDirectory().string();
+							std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
+							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
+						}
+					}
+
+					// right click for utilities
+					if (hovered && rightMouseButtonClicked)
+						Gui::OpenPopup("MaterialUtility");
+					if (texture && texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
+					{
+						std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);
+						if (Gui::MenuItem(remove.c_str()))
+						{
+							SetMaterialTexture(material, nullptr, i);
+							Gui::CloseCurrentPopup();
+						}
+						Gui::Separator();
+
+						std::string openInExplorer = fmt::format("Open in Explorer##{}##{}", texture->GetPath(), i);
+						if (Gui::MenuItem(openInExplorer.c_str()))
+						{
+							FileSystem::OpenInFileExplorer(texture->GetPath().c_str());
+							Gui::CloseCurrentPopup();
+						}
+
+						Gui::EndPopup();
+					}
+
 					if (parameterCallback != nullptr)
 						parameterCallback(material, i);
 
-
+					UI::EndPropertyGrid();
 				}
-
-				// right click for utilities
-				if (hovered && rightMouseButtonClicked)
-					Gui::OpenPopup("MaterialUtility");
-				if (texture && texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
-				{
-					std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);
-					if (Gui::MenuItem(remove.c_str()))
-					{
-						SetMaterialTexture(material, nullptr, i);
-						Gui::CloseCurrentPopup();
-					}
-					Gui::Separator();
-
-					std::string openInExplorer = fmt::format("Open in Explorer##{}##{}", texture->GetPath(), i);
-					if (Gui::MenuItem(openInExplorer.c_str()))
-					{
-						FileSystem::OpenInFileExplorer(texture->GetPath().c_str());
-						Gui::CloseCurrentPopup();
-					}
-
-					Gui::EndPopup();
-				}
-
-				Gui::Separator();
 			}
+
+			UI::BeginPropertyGrid();
 
 			RenderMaterialProperties(material);
 

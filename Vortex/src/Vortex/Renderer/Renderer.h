@@ -70,8 +70,6 @@ namespace Vortex {
 
 		static SceneLightDescription GetSceneLightDescription();
 
-		static void CreateGaussianBlurFramebuffers(const Math::vec2& viewportSize);
-
 		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
 		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
 
@@ -121,7 +119,8 @@ namespace Vortex {
 
 	private:
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
-		static void BlurScene(const SharedRef<Framebuffer>& sceneFramebuffer);
+		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
+		static void BlurAndSubmitFinalSceneComposite(const SharedRef<Framebuffer>& sceneFramebuffer);
 	};
 
 }

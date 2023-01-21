@@ -91,7 +91,6 @@ namespace Vortex {
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			Renderer::CreateGaussianBlurFramebuffers(m_ViewportSize);
 		}
 
 		// Render
