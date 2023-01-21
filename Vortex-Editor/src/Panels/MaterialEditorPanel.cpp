@@ -149,8 +149,8 @@ namespace Vortex {
 							std::string projectDir = Project::GetProjectDirectory().string();
 							std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
 							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
+							}
 						}
-					}
 
 					// right click for utilities
 					if (hovered && rightMouseButtonClicked)

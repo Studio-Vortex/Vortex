@@ -224,7 +224,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// Call the entitys OnDestroy function if they are a script instance
-		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
+		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr && m_IsRunning)
 		{
 			const std::string& className = entity.GetComponent<ScriptComponent>().ClassName;
 
@@ -232,10 +232,10 @@ namespace Vortex {
 				ScriptEngine::OnDestroyEntity(entity);
 		}
 
-		if (entity.HasComponent<RigidBodyComponent>())
+		if (entity.HasComponent<RigidBodyComponent>() && m_IsRunning)
 			Physics::DestroyPhysicsBody(entity);
 
-		if (entity.HasComponent<RigidBody2DComponent>())
+		if (entity.HasComponent<RigidBody2DComponent>() && m_IsRunning)
 			Physics2D::DestroyPhysicsBody(entity);
 
 		if (!excludeChildren)

@@ -136,7 +136,6 @@ namespace Vortex {
 				Renderer::CreateEnvironmentMap(skyboxComponent);
 			};
 
-			enum class EnvironmentMapResolution { e512, e1024, e2048 };
 			static const char* envMapSizes[3] = { "512", "1024", "2048" };
 			float envMapResolution = Renderer::GetEnvironmentMapResolution();
 
@@ -150,15 +149,14 @@ namespace Vortex {
 			{
 				switch (currentEnvMapSize)
 				{
-				case 0: Renderer::SetEnvironmentMapResolution(512.0f);  break;
-				case 1: Renderer::SetEnvironmentMapResolution(1024.0f); break;
-				case 2: Renderer::SetEnvironmentMapResolution(2048.0f); break;
+					case 0: Renderer::SetEnvironmentMapResolution(512.0f);  break;
+					case 1: Renderer::SetEnvironmentMapResolution(1024.0f); break;
+					case 2: Renderer::SetEnvironmentMapResolution(2048.0f); break;
 				}
 
 				RecreateEnvironmentMapFunc();
 			}
 
-			enum class PrefilterMapResolution { e128, e256, e512 };
 			static const char* prefilterMapSizes[3] = { "128", "256", "512" };
 			float prefilterMapResolution = Renderer::GetPrefilterMapResolution();
 
@@ -172,15 +170,14 @@ namespace Vortex {
 			{
 				switch (currentPrefilterMapSize)
 				{
-				case 0: Renderer::SetPrefilterMapResolution(128.0f);  break;
-				case 1: Renderer::SetPrefilterMapResolution(256.0f);  break;
-				case 2: Renderer::SetPrefilterMapResolution(512.0f);  break;
+					case 0: Renderer::SetPrefilterMapResolution(128.0f);  break;
+					case 1: Renderer::SetPrefilterMapResolution(256.0f);  break;
+					case 2: Renderer::SetPrefilterMapResolution(512.0f);  break;
 				}
 
 				RecreateEnvironmentMapFunc();
 			}
 
-			enum class ShadowMapResolution { e512, e1024, e2048, e4096, e8192 };
 			static const char* shadowMapSizes[5] = { "512", "1024", "2048", "4096", "8192" };
 			float shadowMapResolution = Renderer::GetShadowMapResolution();
 
@@ -196,11 +193,11 @@ namespace Vortex {
 			{
 				switch (currentShadowMapSize)
 				{
-				case 0: Renderer::SetShadowMapResolution(512.0f);  break;
-				case 1: Renderer::SetShadowMapResolution(1024.0f); break;
-				case 2: Renderer::SetShadowMapResolution(2048.0f); break;
-				case 3: Renderer::SetShadowMapResolution(4096.0f); break;
-				case 4: Renderer::SetShadowMapResolution(8192.0f); break;
+					case 0: Renderer::SetShadowMapResolution(512.0f);  break;
+					case 1: Renderer::SetShadowMapResolution(1024.0f); break;
+					case 2: Renderer::SetShadowMapResolution(2048.0f); break;
+					case 3: Renderer::SetShadowMapResolution(4096.0f); break;
+					case 4: Renderer::SetShadowMapResolution(8192.0f); break;
 				}
 
 				LightSourceComponent skylight;
@@ -222,6 +219,45 @@ namespace Vortex {
 			float gamma = Renderer::GetSceneGamma();
 			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
 				Renderer::SetSceneGamma(gamma);
+
+			Math::vec3 bloomThreshold = Renderer::GetBloomThreshold();
+			if (UI::Property("Bloom Threshold", bloomThreshold))
+				Renderer::SetBloomThreshold(bloomThreshold);
+
+			static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
+			uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
+
+			uint32_t currentBloomBlurSamplesSize = 0;
+
+			if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
+			if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
+			if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
+			if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
+			if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
+
+			if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYCOUNT(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
+			{
+				switch (currentBloomBlurSamplesSize)
+				{
+					case 0: Renderer::SetBloomSampleSize(5);  break;
+					case 1: Renderer::SetBloomSampleSize(10); break;
+					case 2: Renderer::SetBloomSampleSize(15); break;
+					case 3: Renderer::SetBloomSampleSize(20); break;
+					case 4: Renderer::SetBloomSampleSize(40); break;
+				}
+			}
+
+			static const char* renderFlagDisplayNames[] = { "Enable Bloom" };
+			static RenderFlag renderFlags[] = { RenderFlag::EnableBloom };
+
+			uint32_t count = VX_ARRAYCOUNT(renderFlagDisplayNames);
+
+			for (uint32_t i = 0; i < count; i++)
+			{
+				bool flagEnabled = Renderer::IsFlagSet(renderFlags[i]);
+				if (UI::Property(renderFlagDisplayNames[i], flagEnabled))
+					Renderer::SetFlag(renderFlags[i]);
+			}
 
 			static bool wireframeMode = false;
 			if (UI::Property("Show Wireframe", wireframeMode))

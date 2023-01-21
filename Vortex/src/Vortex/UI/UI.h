@@ -27,9 +27,11 @@ namespace Vortex::UI {
 			return;
 
 		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+		Gui::PushStyleColor(ImGuiCol_Text, { 1.0f, 1.0f, 1.0f, 1.0f });
 		Gui::BeginTooltip();
 		Gui::Text(message);
 		Gui::EndTooltip();
+		Gui::PopStyleColor();
 		Gui::PopStyleVar();
 	}
 

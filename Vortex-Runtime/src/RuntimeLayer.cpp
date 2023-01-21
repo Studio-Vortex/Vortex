@@ -102,7 +102,11 @@ namespace Vortex {
 		
 		PostProcessProperties postProcessProps{};
 		postProcessProps.TargetFramebuffer = m_Framebuffer;
-		Renderer::BeginPostProcessStage(PostProcessStage::Bloom, postProcessProps);
+		postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
+		PostProcessStage stages[] = { PostProcessStage::Bloom };
+		postProcessProps.Stages = stages;
+		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+		Renderer::BeginPostProcessingStages(postProcessProps);
 	}
 
 	void RuntimeLayer::OnGuiRender()

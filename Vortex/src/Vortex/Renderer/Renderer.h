@@ -42,6 +42,15 @@ namespace Vortex {
 	struct PostProcessProperties
 	{
 		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		Viewport ViewportSize = {};
+		PostProcessStage* Stages = nullptr;
+		uint32_t StageCount = 0;
+	};
+
+	enum class RenderFlag
+	{
+		None = 0,
+		EnableBloom = BIT(1),
 	};
 
 	class VORTEX_API Renderer
@@ -73,7 +82,7 @@ namespace Vortex {
 		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
 		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
 
-		static void BeginPostProcessStage(PostProcessStage stage, const PostProcessProperties& postProcessProps);
+		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
 
 		static void RenderToDepthMap(Scene* contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
@@ -115,10 +124,26 @@ namespace Vortex {
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
 
+		static void SetFlag(RenderFlag flag);
+		static void ToggleFlag(RenderFlag flag);
+		static void DisableFlag(RenderFlag flag);
+		static bool IsFlagSet(RenderFlag flag);
+		static void ClearFlags();
+
+		static Math::vec3 GetBloomThreshold();
+		static void SetBloomThreshold(const Math::vec3& threshold);
+
+		static uint32_t GetBloomSampleSize();
+		static void SetBloomSampleSize(uint32_t samples);
+
 		static SharedRef<ShaderLibrary> GetShaderLibrary();
 
 	private:
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+		static void ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps);
+		static std::vector<PostProcessStage> SortPostProcessStages(PostProcessStage* stages, uint32_t count);
+		static uint32_t GetPostProcessStageScore(PostProcessStage stage);
+		static PostProcessStage FindHighestPriortyStage(PostProcessStage* stages, uint32_t count);
 		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
 		static void BlurAndSubmitFinalSceneComposite(const SharedRef<Framebuffer>& sceneFramebuffer);
 	};

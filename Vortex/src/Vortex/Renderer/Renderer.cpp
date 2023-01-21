@@ -56,12 +56,16 @@ namespace Vortex {
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
+		Math::vec3 BloomThreshold = Math::vec3(0.2126f, 0.7152f, 0.0722f);
+		uint32_t BloomSampleSize = 5;
 
 		RenderStatistics RendererStatistics;
 		RenderTime RenderTime;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
 		SharedRef<Texture2D> BRDF_LUT = nullptr;
+
+		uint32_t RenderFlags = 0;
 	};
 
 	static RendererInternalData s_Data;
@@ -107,7 +111,6 @@ namespace Vortex {
 	void Renderer::OnWindowResize(const Viewport& viewport)
 	{
 		RenderCommand::SetViewport(viewport);
-		CreateBlurFramebuffer(viewport.Width, viewport.Height);
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, const SharedRef<Framebuffer>& targetFramebuffer)
@@ -516,16 +519,25 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::BeginPostProcessStage(PostProcessStage stage, const PostProcessProperties& postProcessProps)
+	void Renderer::BeginPostProcessingStages(const PostProcessProperties& postProcessProps)
 	{
-		switch (stage)
+		ConfigurePostProcessingPipeline(postProcessProps);
+
+		std::vector<PostProcessStage> postProcessStages = SortPostProcessStages(postProcessProps.Stages, postProcessProps.StageCount);
+
+		for (auto postProcessStage : postProcessStages)
 		{
-			case PostProcessStage::None:
-				VX_CORE_ASSERT(false, "Unknown Post Process Stage!");
-				break;
-			case PostProcessStage::Bloom:
-				BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
-				break;
+			VX_CORE_ASSERT(postProcessStage != PostProcessStage::None, "Unknown Post Process Stage!");
+
+			switch (postProcessStage)
+			{
+				case PostProcessStage::Bloom:
+				{
+					if (IsFlagSet(RenderFlag::EnableBloom))
+						BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
+					break;
+				}
+			}
 		}
 	}
 
@@ -832,10 +844,65 @@ namespace Vortex {
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
+		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomThreshold);
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
 		s_Data.SceneLightDesc.PointLightIndex = 0;
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
+	}
+
+	void Renderer::ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps)
+	{
+		if (!s_Data.BlurFramebuffer)
+		{
+			Viewport viewport = postProcessProps.ViewportSize;
+			CreateBlurFramebuffer(viewport.Width, viewport.Height);
+		}
+	}
+
+	std::vector<PostProcessStage> Renderer::SortPostProcessStages(PostProcessStage* stages, uint32_t count)
+	{
+		std::vector<PostProcessStage> result(count);
+		for (uint32_t i = 0; i < count; i++)
+		{
+			VX_CORE_ASSERT(stages[i] != PostProcessStage::None, "Unknown post process stage!");
+			result[i] = stages[i];
+		}
+
+		std::sort(result.begin(), result.end(), [](PostProcessStage lhs, PostProcessStage rhs)
+		{
+			return GetPostProcessStageScore(lhs) > GetPostProcessStageScore(rhs);
+		});
+
+		return result;
+	}
+
+	uint32_t Renderer::GetPostProcessStageScore(PostProcessStage stage)
+	{
+		switch (stage)
+		{
+			case Vortex::PostProcessStage::Bloom: return 1;
+		}
+
+		VX_CORE_ASSERT(false, "Unknown post process stage!");
+	}
+
+	PostProcessStage Renderer::FindHighestPriortyStage(PostProcessStage* stages, uint32_t count)
+	{
+		uint32_t highestScore = 0;
+		PostProcessStage result = PostProcessStage::None;
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			uint32_t score = GetPostProcessStageScore(stages[i]);
+			if (score > highestScore)
+			{
+				highestScore = score;
+				result = stages[i];
+			}
+		}
+
+		return result;
 	}
 
 	void Renderer::CreateBlurFramebuffer(uint32_t width, uint32_t height)
@@ -855,14 +922,13 @@ namespace Vortex {
 		}
 
 		bool horizontal = true;
-		uint32_t samples = 10;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
 		blurShader->Enable();
 		glActiveTexture(GL_TEXTURE0);
 		sceneFramebuffer->BindColorTexture(2);
 		blurShader->SetInt("u_Texture", 0);
 
-		for (uint32_t i = 0; i < samples; i++)
+		for (uint32_t i = 0; i < s_Data.BloomSampleSize; i++)
 		{
 			s_Data.BlurFramebuffer->Bind(!horizontal);
 			blurShader->SetBool("u_Horizontal", !horizontal);
@@ -995,6 +1061,51 @@ namespace Vortex {
 	void Renderer::SetSceneGamma(float gamma)
 	{
 		s_Data.SceneGamma = gamma;
+	}
+
+	void Renderer::SetFlag(RenderFlag flag)
+	{
+		s_Data.RenderFlags |= (uint32_t)flag;
+	}
+
+	void Renderer::ToggleFlag(RenderFlag flag)
+	{
+		s_Data.RenderFlags ^= (uint32_t)flag;
+	}
+
+	void Renderer::DisableFlag(RenderFlag flag)
+	{
+		s_Data.RenderFlags &= (uint32_t)flag;
+	}
+
+	bool Renderer::IsFlagSet(RenderFlag flag)
+	{
+		return s_Data.RenderFlags & (uint32_t)flag;
+	}
+
+	void Renderer::ClearFlags()
+	{
+		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
+	}
+
+	Math::vec3 Renderer::GetBloomThreshold()
+	{
+		return s_Data.BloomThreshold;
+	}
+
+	void Renderer::SetBloomThreshold(const Math::vec3& threshold)
+	{
+		s_Data.BloomThreshold = threshold;
+	}
+
+	uint32_t Renderer::GetBloomSampleSize()
+	{
+		return s_Data.BloomSampleSize;
+	}
+
+	void Renderer::SetBloomSampleSize(uint32_t samples)
+	{
+		s_Data.BloomSampleSize = samples;
 	}
 
 	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()
