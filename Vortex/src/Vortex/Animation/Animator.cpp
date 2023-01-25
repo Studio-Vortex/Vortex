@@ -76,7 +76,7 @@ namespace Vortex {
 
 	SharedRef<Animator> Animator::Create(const SharedRef<Animation>& animation)
 	{
-		return CreateShared<Animator>(animation);
+		return SharedRef<Animator>::Create(animation);
 	}
 
 }

@@ -1,22 +1,23 @@
 #pragma once
 
-#include "Vortex/Core/base.h"
+#include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 
 #include <string>
 
 namespace Vortex {
 
-	enum class TextureWrap
+	enum class VORTEX_API TextureWrap
 	{
 		None = 0,
 		Clamp,
 		Repeat,
 	};
 
-	class VORTEX_API Texture
+	class VORTEX_API Texture : public Asset
 	{
 	public:
-		virtual ~Texture() = default;
+		virtual ~Texture() override = default;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
@@ -34,11 +35,16 @@ namespace Vortex {
 		virtual uint32_t GetRendererID() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
+		static AssetType GetStaticType() { return AssetType::Texture; }
+		AssetType GetAssetType() const override { return AssetType::Texture; }
 	};
 
 	class VORTEX_API Texture2D : public Texture
 	{
 	public:
+		virtual ~Texture2D() override = default;
+
 		// TODO: rework the last parameter
 		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height, bool rgba32f = false);
 		static SharedRef<Texture2D> Create(const std::string& path, TextureWrap wrapMode = TextureWrap::Repeat, bool flipVertical = true);

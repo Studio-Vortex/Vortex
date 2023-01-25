@@ -2,12 +2,13 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/TimeStep.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	struct ParticleEmitterProperties
+	struct VORTEX_API ParticleEmitterProperties
 	{
-		Math::vec3 Position;
+		Math::vec3 Position = Math::vec3(0.0f);
 		Math::vec3 Offset = Math::vec3(0.0f);
 		Math::vec3 Velocity = Math::vec3(1.0f);
 		Math::vec3 VelocityVariation = Math::vec3(1.0f);
@@ -20,15 +21,15 @@ namespace Vortex {
 		float LifeTime = 1.0f;
 	};
 
-	class ParticleEmitter
+	class VORTEX_API ParticleEmitter : public RefCounted
 	{
 	public:
-		struct Particle
+		struct VORTEX_API Particle
 		{
-			Math::vec3 Position;
-			Math::vec3 Velocity;
-			Math::vec2 SizeBegin, SizeEnd;
-			Math::vec4 ColorBegin, ColorEnd;
+			Math::vec3 Position = Math::vec3(0.0f);
+			Math::vec3 Velocity = Math::vec3(1.0f);
+			Math::vec2 SizeBegin = Math::vec2(1.0f), SizeEnd = Math::vec2(1.0f);
+			Math::vec4 ColorBegin = Math::vec4(1.0f), ColorEnd = Math::vec4(1.0f);
 			float Rotation = 0.0f;
 
 			float LifeTime = 1.0f;
@@ -38,7 +39,9 @@ namespace Vortex {
 		};
 
 	public:
+		ParticleEmitter() = default;
 		ParticleEmitter(const ParticleEmitterProperties& props);
+		~ParticleEmitter() = default;
 
 		const ParticleEmitterProperties& GetProperties() const { return m_Properties; }
 		ParticleEmitterProperties& GetProperties() { return m_Properties; }
@@ -55,7 +58,7 @@ namespace Vortex {
 
 		bool IsActive() const { return m_IsActive; }
 
-		static void Copy(const SharedRef<ParticleEmitter>& dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter);
+		static void Copy(SharedRef<ParticleEmitter> dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter);
 
 		static SharedRef<ParticleEmitter> Create(const ParticleEmitterProperties& props);
 

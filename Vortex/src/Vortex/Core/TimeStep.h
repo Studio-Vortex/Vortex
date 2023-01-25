@@ -29,7 +29,7 @@ namespace Vortex {
 		}
 		
 	private:
-		float m_DeltaTime;
+		float m_DeltaTime = 0.0f;
 	};
 
 }

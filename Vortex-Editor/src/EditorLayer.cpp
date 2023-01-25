@@ -76,7 +76,7 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene.get());
+		Renderer::RenderToDepthMap(m_ActiveScene.Raw());
 		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
 		SharedRef<Project> activeProject = Project::GetActive();
@@ -109,7 +109,7 @@ namespace Vortex {
 		{
 			case SceneState::Edit:
 			{
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(MouseButton::Right))
 					m_EditorCamera->OnUpdate(delta);
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
@@ -152,7 +152,7 @@ namespace Vortex {
 			case SceneState::Simulate:
 			{
 				const Math::vec2& mousePos = Input::GetMousePosition();
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(Mouse::ButtonRight))
+				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(MouseButton::Right))
 					m_EditorCamera->OnUpdate(delta);
 
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
@@ -179,7 +179,7 @@ namespace Vortex {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
 
@@ -1120,7 +1120,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::AABB aabb = {
 							- Math::vec3(0.5f),
@@ -1147,7 +1147,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
@@ -1164,7 +1164,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
@@ -1244,7 +1244,7 @@ namespace Vortex {
 	{
 		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 
@@ -1462,11 +1462,11 @@ namespace Vortex {
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(Mouse::ButtonRight);
+		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
 
 		switch (e.GetMouseButton())
 		{
-			case Mouse::ButtonLeft:
+			case MouseButton::Left:
 			{
 				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed)
 				{
@@ -1479,7 +1479,7 @@ namespace Vortex {
 				break;
 			}
 
-			case Mouse::ButtonRight:
+			case MouseButton::Right:
 			{
 				if (m_SceneViewportHovered && m_SceneState != SceneState::Play)
 					Input::SetCursorMode(CursorMode::Locked);
@@ -1495,7 +1495,7 @@ namespace Vortex {
 	{
 		switch (e.GetMouseButton())
 		{
-			case Mouse::ButtonRight:
+			case MouseButton::Right:
 			{
 				if (m_SceneState != SceneState::Play)
 					Input::SetCursorMode(CursorMode::Normal);
@@ -1546,8 +1546,9 @@ namespace Vortex {
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 
-			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(Project::GetActive());
-			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
+			SharedRef<Project> activeProject = Project::GetActive();
+			m_ProjectSettingsPanel = SharedRef<ProjectSettingsPanel>::Create(activeProject);
+			m_ContentBrowserPanel = SharedRef<ContentBrowserPanel>::Create();
 			m_BuildSettingsPanel.SetLaunchRuntimeCallback(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 
 			TagComponent::ResetAddedMarkers();
@@ -1600,7 +1601,7 @@ namespace Vortex {
 			return;
 		}
 
-		SharedRef<Scene> newScene = CreateShared<Scene>();
+		SharedRef<Scene> newScene = Scene::Create(m_Framebuffer);
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -1685,7 +1686,7 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePause()
 	{
-		if (m_SceneState == SceneState::Edit)
+		if (m_SceneState == SceneState::Edit )
 			return;
 
 		PauseAudioSources();
@@ -1759,7 +1760,7 @@ namespace Vortex {
 
 			for (auto& e : view)
 			{
-				Entity entity{ e, m_ActiveScene.get() };
+				Entity entity{ e, m_ActiveScene.Raw() };
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 				if (audioSource->IsPlaying())
 				{
@@ -1780,13 +1781,10 @@ namespace Vortex {
 
 		if (m_SceneState == SceneState::Play)
 		{
-			if (!m_AudioSourcesToResume.empty())
-			{
-				for (auto& audioSource : m_AudioSourcesToResume)
-					audioSource->Play();
+			for (auto& audioSource : m_AudioSourcesToResume)
+				audioSource->Play();
 
-				m_AudioSourcesToResume.clear();
-			}
+			m_AudioSourcesToResume.clear();
 		}
 	}
 
@@ -1796,7 +1794,7 @@ namespace Vortex {
 
 		for (auto& e : view)
 		{
-			Entity entity{ e, m_ActiveScene.get() };
+			Entity entity{ e, m_ActiveScene.Raw() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 			if (audioSource->IsPlaying())

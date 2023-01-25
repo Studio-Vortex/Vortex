@@ -4,23 +4,24 @@
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Asset/Asset.h"
+#include "Vortex/Renderer/Framebuffer.h"
 
 #include <entt/entt.hpp>
 
 namespace Vortex {
 
 	class Entity;
-	class Framebuffer;
 
-	class Scene
+	class Scene : public Asset
 	{
 	public:
 		Scene() = default;
 		Scene(const SharedRef<Framebuffer>& targetFramebuffer);
-		~Scene() = default;
+		~Scene() override = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
-		static void CreateDefaultEntities(const SharedRef<Scene>& context);
+		static void CreateDefaultEntities(SharedRef<Scene>& context);
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
@@ -94,6 +95,9 @@ namespace Vortex {
 		{
 			return m_Registry.view<TComponent...>();
 		}
+
+		static AssetType GetStaticType() { return AssetType::Scene; }
+		AssetType GetAssetType() const override { return AssetType::Scene; }
 
 		static SharedRef<Scene> Create(const SharedRef<Framebuffer>& targetFramebuffer);
 		static SharedRef<Scene> Create();

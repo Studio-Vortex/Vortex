@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	struct LightSourceProperties
+	struct VORTEX_API LightSourceProperties
 	{
 		Math::vec3 Radiance = Math::vec3(1.0f);
 
@@ -20,9 +21,10 @@ namespace Vortex {
 		bool SoftShadows = true;
 	};
 
-	class LightSource
+	class VORTEX_API LightSource : public RefCounted
 	{
 	public:
+		LightSource() = default;
 		LightSource(const LightSourceProperties& props);
 		~LightSource() = default;
 
@@ -53,7 +55,7 @@ namespace Vortex {
 		uint32_t GetSpotLightIndex() const;
 		void SetSpotLightIndex(uint32_t index);
 
-		static void Copy(const SharedRef<LightSource>& dest, const SharedRef<LightSource>& src);
+		static void Copy(SharedRef<LightSource> dest, const SharedRef<LightSource>& src);
 
 		static SharedRef<LightSource> Create(const LightSourceProperties& props);
 

@@ -2,17 +2,21 @@
 
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
+#include "Vortex/Asset/Asset.h"
 
 #include <filesystem>
 
 namespace Vortex {
 
-	class Prefab
+	class Prefab : public Asset
 	{
 	public:
 		Prefab(const std::filesystem::path& filepath);
 		Prefab(Entity entity);
-		~Prefab();
+		~Prefab() override = default;
+
+		static AssetType GetStaticType() { return AssetType::Prefab; }
+		AssetType GetAssetType() const override { return AssetType::Prefab; }
 
 		// Create a prefab with an empty entity
 		static SharedRef<Prefab> Create(const std::filesystem::path& filepath);

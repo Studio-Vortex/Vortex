@@ -1,19 +1,22 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
+
 #include <miniaudio/miniaudio.h>
 
 namespace Vortex {
 
-	class AudioSource
+	class VORTEX_API AudioSource : public Asset
 	{
 	public:
-		struct SoundProperties
+		struct VORTEX_API SoundProperties
 		{
 			Math::vec3 Position = Math::vec3(0.0f);
 			Math::vec3 Direction = Math::vec3(0.0f);
 			Math::vec3 Veloctiy = Math::vec3(0.0f);
 
-			struct AudioCone
+			struct VORTEX_API AudioCone
 			{
 				float InnerAngle = Math::Deg2Rad(10.0f);
 				float OuterAngle = Math::Deg2Rad(45.0f);
@@ -36,7 +39,7 @@ namespace Vortex {
 	public:
 		AudioSource() = default;
 		AudioSource(const std::string& filepath);
-		~AudioSource();
+		~AudioSource() override;
 
 		void Play();
 		void Pause();
@@ -78,7 +81,10 @@ namespace Vortex {
 
 		float GetAmountComplete();
 
-		static void Copy(const SharedRef<AudioSource>& dest, const SharedRef<AudioSource>& src);
+		static void Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src);
+
+		static AssetType GetStaticType() { return AssetType::Audio; }
+		AssetType GetAssetType() const override { return AssetType::Audio; }
 
 		static SharedRef<AudioSource> Create(const std::string& filepath);
 		static SharedRef<AudioSource> Create();

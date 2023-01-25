@@ -43,11 +43,11 @@ namespace Vortex {
 		}
 	};
 
-	Mesh::Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials)
+	Mesh::Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<Material>>& materials)
 		: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
 	{
 		CreateAndUploadMesh();
-		m_Materials.insert(m_Materials.end(), MaterialInstance::Create());
+		m_Materials.insert(m_Materials.end(), Material::Create(MaterialProperties()));
 	}
 
 	Mesh::Mesh(bool skybox)
@@ -106,7 +106,7 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void Mesh::SetMaterial(const SharedRef<MaterialInstance>& material)
+	void Mesh::SetMaterial(const SharedRef<Material>& material)
 	{
 		m_Materials.clear();
 		m_Materials.push_back(material);
@@ -261,7 +261,7 @@ namespace Vortex {
 	{
 		std::vector<ModelVertex> vertices;
 		std::vector<uint32_t> indices;
-		std::vector<SharedRef<MaterialInstance>> materials;
+		std::vector<SharedRef<Material>> materials;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -329,7 +329,7 @@ namespace Vortex {
 
 			for (uint32_t i = 0; i < maxTextures; i++)
 			{
-				SharedRef<MaterialInstance> materialInstance = MaterialInstance::Create();
+				SharedRef<Material> materialInstance = Material::Create(MaterialProperties());
 
 				if (albedoMaps.size() - 1 > i)
 				{
@@ -420,7 +420,7 @@ namespace Vortex {
 		auto& boneInfoMap = m_BoneInfoMap;
 		uint32_t& boneCount = m_BoneCounter;
 
-		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 		{
 			int boneID = -1;
 			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
@@ -598,7 +598,7 @@ namespace Vortex {
 		}
 	}
 
-	void Model::SetMaterial(const SharedRef<MaterialInstance>& material)
+	void Model::SetMaterial(const SharedRef<Material>& material)
 	{
 		for (auto& mesh : m_Meshes)
 			mesh.SetMaterial(material);
@@ -608,17 +608,17 @@ namespace Vortex {
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(defaultMesh, transform, importOptions, entityID);
+		return SharedRef<Model>::Create(defaultMesh, transform, importOptions, entityID);
 	}
 
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(filepath, transform, importOptions, entityID);
+		return SharedRef<Model>::Create(filepath, transform, importOptions, entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)
 	{
-		return CreateShared<Model>(meshType);
+		return SharedRef<Model>::Create(meshType);
 	}
 
 }

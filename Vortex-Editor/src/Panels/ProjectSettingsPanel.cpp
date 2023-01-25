@@ -3,7 +3,7 @@
 
 namespace Vortex {
 
-	ProjectSettingsPanel::ProjectSettingsPanel(const SharedRef<Project>& project)
+	ProjectSettingsPanel::ProjectSettingsPanel(SharedRef<Project> project)
 		: m_Properties(project->GetProperties()) { }
 
 	void ProjectSettingsPanel::OnGuiRender()

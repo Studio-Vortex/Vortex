@@ -6,7 +6,7 @@ namespace Vortex {
 	{
 		m_LaunchRuntimeCallback = callback;
 		const auto& projectProps = Project::GetActive()->GetProperties();
-		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
+		auto projectFilename = projectProps.General.Name + ".vxproject";
 		const auto& dirPath = Project::GetProjectDirectory();
 		m_ProjectPath = dirPath / std::filesystem::path(projectFilename);
 		m_StartupScene = projectProps.General.StartScene;

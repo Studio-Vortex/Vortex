@@ -17,7 +17,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLVertexBuffer>::Create(vertices, size);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -33,7 +33,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLVertexBuffer>::Create(vertices, size);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -49,7 +49,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLVertexBuffer>::Create(size);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -65,7 +65,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLIndexBuffer>(indices, size);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLIndexBuffer>::Create(indices, size);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -81,7 +81,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLIndexBuffer>(indices, size);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLIndexBuffer>::Create(indices, size);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

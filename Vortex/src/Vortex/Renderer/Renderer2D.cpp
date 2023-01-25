@@ -230,7 +230,7 @@ namespace Vortex
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		// Gpu Sampler2D Array
-		int32_t samplers[s_Data.MaxTextureSlots];
+		int32_t samplers[s_Data.MaxTextureSlots]{};
 		for (size_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
@@ -538,7 +538,7 @@ namespace Vortex
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
 				textureIndex = (float)i;
 				break;
@@ -642,7 +642,7 @@ namespace Vortex
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
 				textureIndex = (float)i;
 				break;
@@ -756,7 +756,7 @@ namespace Vortex
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
 				textureIndex = (float)i;
 				break;
@@ -853,7 +853,7 @@ namespace Vortex
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
 				textureIndex = (float)i;
 				break;
@@ -960,7 +960,7 @@ namespace Vortex
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
+			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
 				textureIndex = (float)i;
 				break;
@@ -1041,7 +1041,7 @@ namespace Vortex
 
 	void Renderer2D::DrawRect(const Math::mat4& transform, const Math::vec4& color, int entityID)
 	{
-		Math::vec3 lineVertices[4];
+		Math::vec3 lineVertices[4]{};
 
 		for (size_t i = 0; i < 4; i++)
 			lineVertices[i] = transform * s_Data.QuadVertexPositions[i];
@@ -1119,7 +1119,7 @@ namespace Vortex
 
 		for (uint32_t i = 0; i < s_Data.FontTextureSlotIndex; i++)
 		{
-			if (*s_Data.FontTextureSlots[i].get() == *fontAtlas.get())
+			if (*s_Data.FontTextureSlots[i].Raw() == *fontAtlas.Raw())
 			{
 				textureIndex = (float)i;
 				break;

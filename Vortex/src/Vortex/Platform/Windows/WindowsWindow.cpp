@@ -164,13 +164,13 @@ namespace Vortex {
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(static_cast<MouseCode>(button));
+					MouseButtonPressedEvent event(static_cast<MouseButton>(button));
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(static_cast<MouseCode>(button));
+					MouseButtonReleasedEvent event(static_cast<MouseButton>(button));
 					data.EventCallback(event);
 					break;
 				}

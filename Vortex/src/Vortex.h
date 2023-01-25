@@ -23,12 +23,16 @@ namespace Gui = ImGui;
 /// AI
 #include "Vortex/AI/AStarPathFinder.h"
 
+/// Asset Manager
+#include "Vortex/Asset/AssetManager.h"
+
 /// Audio
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
 
 /// Physics
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/2D/Physics2D.h"
 
 /// Project
@@ -72,7 +76,9 @@ namespace Gui = ImGui;
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/Material.h"
+#include "Vortex/Renderer/MaterialAsset.h"
 #include "Vortex/Renderer/LightSource.h"
+#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Font/Font.h"
 /// ---------------------------------------------------

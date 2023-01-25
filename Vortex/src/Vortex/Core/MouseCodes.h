@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	typedef enum class MouseCode : uint16_t
+	enum class MouseButton : uint16_t
 	{
 		// From glfw3.h
 		Button0 = 0,
@@ -16,20 +16,20 @@ namespace Vortex {
 		Button6 = 6,
 		Button7 = 7,
 
-		ButtonLast = Button7,
-		ButtonLeft = Button0,
-		ButtonRight = Button1,
-		ButtonMiddle = Button2,
-	} Mouse;
+		Last = Button7,
+		Left = Button0,
+		Right = Button1,
+		Middle = Button2,
+	};
 
-	typedef enum class CursorMode : uint16_t
+	enum class CursorMode : uint16_t
 	{
 		Normal = 0,
 		Hidden = 1,
 		Locked = 2,
 	};
 
-	inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode)
+	inline std::ostream& operator<<(std::ostream& os, MouseButton mouseCode)
 	{
 		os << static_cast<int32_t>(mouseCode);
 		return os;

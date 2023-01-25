@@ -4,10 +4,10 @@
 
 namespace Vortex {
 
-	class ProjectSettingsPanel
+	class ProjectSettingsPanel : public RefCounted
 	{
 	public:
-		ProjectSettingsPanel(const SharedRef<Project>& project);
+		ProjectSettingsPanel(SharedRef<Project> project);
 
 		void OnGuiRender();
 		bool& IsOpen() { return s_ShowPanel; }

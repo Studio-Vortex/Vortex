@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Vortex/Core/Math.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Buffer.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Asset/Asset.h"
 
 #include <vector>
 #include <unordered_map>
@@ -20,7 +21,7 @@ namespace Vortex {
 
 #define MAX_BONE_INFLUENCE 4
 
-	struct ModelImportOptions
+	struct VORTEX_API ModelImportOptions
 	{
 		TransformComponent MeshTransformation;
 
@@ -35,13 +36,13 @@ namespace Vortex {
 		}
 	};
 
-	struct BoneInfo
+	struct VORTEX_API BoneInfo
 	{
 		uint32_t ID;
 		Math::mat4 OffsetMatrix;
 	};
 
-	struct ModelVertex
+	struct VORTEX_API ModelVertex
 	{
 		Math::vec3 Position;
 		Math::vec3 Normal;
@@ -56,11 +57,11 @@ namespace Vortex {
 		int EntityID;
 	};
 
-	class Mesh
+	class VORTEX_API Mesh
 	{
 	public:
 		Mesh() = default;
-		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<MaterialInstance>>& materials);
+		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<Material>>& materials);
 		Mesh(bool skybox = true);
 		~Mesh() = default;
 
@@ -69,8 +70,8 @@ namespace Vortex {
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
-		const std::vector<SharedRef<MaterialInstance>>& GetMaterials() const { return m_Materials; }
-		void SetMaterial(const SharedRef<MaterialInstance>& material);
+		const std::vector<SharedRef<Material>>& GetMaterials() const { return m_Materials; }
+		void SetMaterial(const SharedRef<Material>& material);
 		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
 		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
 
@@ -83,7 +84,7 @@ namespace Vortex {
 	private:
 		std::vector<ModelVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		std::vector<SharedRef<MaterialInstance>> m_Materials;
+		std::vector<SharedRef<Material>> m_Materials;
 
 		SharedRef<VertexArray> m_VertexArray = nullptr;
 		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
@@ -94,7 +95,7 @@ namespace Vortex {
 		SharedRef<IndexBuffer> m_ShadowMapIndexBuffer = nullptr;
 	};
 
-	class Model
+	class VORTEX_API Model : public Asset
 	{
 	public:
 		enum class Default
@@ -125,7 +126,7 @@ namespace Vortex {
 		Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(MeshType meshType);
-		~Model() = default;
+		~Model() override = default;
 
 		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
 		void Render(const Math::mat4& worldSpaceTransform);
@@ -139,7 +140,8 @@ namespace Vortex {
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_Meshes[0].GetVertexArray(); }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }
-		void SetMaterial(const SharedRef<MaterialInstance>& material);
+		SharedRef<Material> GetMaterial() { return m_Material; }
+		void SetMaterial(const SharedRef<Material>& material);
 
 		const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
 		std::vector<Mesh>& GetMeshes() { return m_Meshes; }
@@ -149,6 +151,9 @@ namespace Vortex {
 
 		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
+
+		static AssetType GetStaticType() { return AssetType::Mesh; }
+		AssetType GetAssetType() const override { return AssetType::Mesh; }
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);

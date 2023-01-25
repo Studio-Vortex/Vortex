@@ -5,6 +5,7 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
+#include "Vortex/Renderer/LightSource.h"
 
 namespace Vortex {
 
@@ -304,7 +305,7 @@ namespace Vortex {
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
-	enum class CollisionDetectionType : uint32_t { None = -1, Discrete, Continuous, ContinuousSpeculative };
+	enum class CollisionDetectionType : int32_t { None = -1, Discrete, Continuous, ContinuousSpeculative };
 
 	struct RigidBodyComponent
 	{

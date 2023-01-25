@@ -17,7 +17,7 @@ namespace Vortex {
 	{
 	public:
 		WindowsWindow(const WindowProperties& props);
-		virtual ~WindowsWindow();
+		virtual ~WindowsWindow() override;
 
 		void OnUpdate() override;
 
@@ -45,19 +45,19 @@ namespace Vortex {
 		void LoadWindowIcon();
 
 	private:
-		GLFWwindow* m_Window;
-		UniqueRef<GraphicsContext> m_Context;
+		GLFWwindow* m_Window = nullptr;
+		UniqueRef<GraphicsContext> m_Context = nullptr;
 
 		struct WindowData
 		{
-			std::string Title;
-			Math::vec2 Size;
-			Math::vec2 Position;
-			bool Maximized;
-			bool VSync;
-			bool Decorated;
+			std::string Title = "";
+			Math::vec2 Size = Math::vec2(0.0f);
+			Math::vec2 Position = Math::vec2(0.0f);
+			bool Maximized = false;
+			bool VSync = false;
+			bool Decorated = false;
 
-			EventCallbackFn EventCallback;
+			EventCallbackFn EventCallback = nullptr;
 		};
 
 		WindowData m_Properties;

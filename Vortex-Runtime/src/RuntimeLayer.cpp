@@ -50,7 +50,7 @@ namespace Vortex {
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{
-		Renderer::RenderToDepthMap(m_RuntimeScene.get());
+		Renderer::RenderToDepthMap(m_RuntimeScene.Raw());
 
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -94,7 +94,7 @@ namespace Vortex {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.get() };
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
 			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
 
@@ -146,7 +146,7 @@ namespace Vortex {
 		// Pause all audio sources in the scene
 		for (auto& e : view)
 		{
-			Entity entity{ e, m_RuntimeScene.get() };
+			Entity entity{ e, m_RuntimeScene.Raw() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 			if (audioSource->IsPlaying())
 			{
@@ -198,9 +198,9 @@ namespace Vortex {
 		if (m_RuntimeScene->IsRunning())
 		{
 			m_RuntimeScene->OnRuntimeStop();
-
+			
 			SharedRef<Scene> newScene = Scene::Create();
-			m_RuntimeScene.swap(newScene);
+			m_RuntimeScene.Swap(newScene);
 			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 			// Reset the mouse cursor in case a script turned it off

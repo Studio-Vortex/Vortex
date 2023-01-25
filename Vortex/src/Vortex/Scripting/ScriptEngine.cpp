@@ -168,13 +168,13 @@ namespace Vortex {
 		std::filesystem::path CoreAssemblyFilepath;
 		std::filesystem::path AppAssemblyFilepath;
 
-		ScriptClass EntityClass;
+		SharedRef<ScriptClass> EntityClass = nullptr;
 
-		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
+		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
 		bool DebuggingEnabled = false;
 
-		SharedRef<AudioSource> AppAssemblyReloadSound;
+		SharedRef<AudioSource> AppAssemblyReloadSound = nullptr;
 
 		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
@@ -237,7 +237,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = ScriptClass("Vortex", "Entity", true);
+		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 		s_ScriptEngineInitialized = true;
 	}
@@ -339,7 +339,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = ScriptClass("Vortex", "Entity", true);
+		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
@@ -368,7 +368,7 @@ namespace Vortex {
 		{
 			UUID uuid = entity.GetUUID();
 
-			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
+			SharedRef<ScriptInstance> instance = SharedRef<ScriptInstance>::Create(s_Data->EntityClasses[scriptComponent.ClassName], entity);
 			s_Data->EntityInstances[uuid] = instance;
 
 			// Copy field values
@@ -480,7 +480,7 @@ namespace Vortex {
 		it->second->InvokeOnGui();
 	}
 
-	ScriptClass ScriptEngine::GetCoreEntityClass()
+	SharedRef<ScriptClass> ScriptEngine::GetCoreEntityClass()
 	{
 		return s_Data->EntityClass;
 	}
@@ -595,7 +595,7 @@ namespace Vortex {
 			if (!isEntityClass)
 				continue;
 
-			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
+			SharedRef<ScriptClass> scriptClass = SharedRef<ScriptClass>::Create(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);
@@ -658,7 +658,7 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_Constructor          = s_Data->EntityClass.GetMethod(".ctor", 1);
+		m_Constructor          = s_Data->EntityClass->GetMethod(".ctor", 1);
 		m_OnCreateFunc         = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);

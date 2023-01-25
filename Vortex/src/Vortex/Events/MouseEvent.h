@@ -53,20 +53,20 @@ namespace Vortex {
 	class VORTEX_API MouseButtonEvent : public Event
 	{
 	public:
-		inline MouseCode GetMouseButton() const { return m_Button; }
+		inline MouseButton GetMouseButton() const { return m_Button; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouseButton | EventCategoryInput)
 	protected:
-		MouseButtonEvent(MouseCode button)
+		MouseButtonEvent(MouseButton button)
 			: m_Button(button) {}
 
-		MouseCode m_Button;
+		MouseButton m_Button;
 	};
 
 	class VORTEX_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(MouseCode button)
+		MouseButtonPressedEvent(MouseButton button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
@@ -82,7 +82,7 @@ namespace Vortex {
 	class VORTEX_API MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(MouseCode button)
+		MouseButtonReleasedEvent(MouseButton button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override

@@ -20,9 +20,11 @@
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Model.h"
 
 #include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/Animation.h"
 
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Core/Log.h"
@@ -304,7 +306,7 @@ namespace Vortex {
 
 		const auto& children = entity.Children();
 
-		MonoClass* coreEntityClass =  ScriptEngine::GetCoreEntityClass().GetMonoClass();
+		MonoClass* coreEntityClass =  ScriptEngine::GetCoreEntityClass()->GetMonoClass();
 		VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
 
 		MonoArray* result = mono_array_new(mono_domain_get(), coreEntityClass, children.size());
@@ -3049,12 +3051,12 @@ namespace Vortex {
 		return Input::IsKeyReleased(key);
 	}
 
-	static bool Input_IsMouseButtonDown(MouseCode mouseButton)
+	static bool Input_IsMouseButtonDown(MouseButton mouseButton)
 	{
 		return Input::IsMouseButtonPressed(mouseButton);
 	}
 
-	static bool Input_IsMouseButtonUp(MouseCode mouseButton)
+	static bool Input_IsMouseButtonUp(MouseButton mouseButton)
 	{
 		return Input::IsMouseButtonReleased(mouseButton);
 	}

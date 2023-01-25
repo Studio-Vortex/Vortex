@@ -96,7 +96,7 @@ namespace Vortex {
 		m_SpotLightIndex = index;
 	}
 
-	void LightSource::Copy(const SharedRef<LightSource>& dest, const SharedRef<LightSource>& src)
+	void LightSource::Copy(SharedRef<LightSource> dest, const SharedRef<LightSource>& src)
 	{
 		dest->SetRadiance(src->GetRadiance());
 		dest->SetIntensity(src->GetIntensity());
@@ -110,7 +110,7 @@ namespace Vortex {
 
 	SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)
 	{
-		return CreateShared<LightSource>(props);
+		return SharedRef<LightSource>::Create(props);
 	}
 
 }

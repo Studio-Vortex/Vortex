@@ -211,17 +211,17 @@ namespace Vortex {
 	void GuiLayer::SetLightGrayThemeColors()
 	{
 		auto& colors = ImGui::GetStyle().Colors;
-		colors[ImGuiCol_Text] = ImVec4(1, 1, 1, 1);
-		colors[ImGuiCol_WindowBg] = ImVec4(.2, .2, .2, .95);
-		colors[ImGuiCol_PopupBg] = ImVec4(.15, .15, .15, 1);
-		colors[ImGuiCol_Button] = ImVec4(.2, .4, .75, .65);
-		colors[ImGuiCol_TitleBg] = ImVec4(.1, .1, .1, 1);
+		colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 0.95f);
+		colors[ImGuiCol_PopupBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);
+		colors[ImGuiCol_Button] = ImVec4(0.2f, 0.4f, 0.75f, 0.65f);
+		colors[ImGuiCol_TitleBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 		colors[ImGuiCol_TitleBgActive] = ImVec4(.15, .15, .15, 1);
-		colors[ImGuiCol_Tab] = ImVec4(.2, .4, .75, .5);
-		colors[ImGuiCol_TabActive] = ImVec4(.2, .4, .75, 1);
-		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(.2, .4, .75, .65);
-		colors[ImGuiCol_FrameBg] = ImVec4(.5, .5, .5, .25);
-		colors[ImGuiCol_MenuBarBg] = ImVec4(.15, .15, .15, 1);
+		colors[ImGuiCol_Tab] = ImVec4(0.2f, 0.4f, 0.75f, 0.5f);
+		colors[ImGuiCol_TabActive] = ImVec4(0.2f, 0.4f, 0.75f, 1.0f);
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.2f, 0.4f, 0.75f, 0.65f);
+		colors[ImGuiCol_FrameBg] = ImVec4(0.5f, 0.5f, 0.5f, 0.25f);
+		colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);
 	}
 
 }

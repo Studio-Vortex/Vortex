@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	struct LightSource2DProperties
+	struct VORTEX_API LightSource2DProperties
 	{
 		Math::vec3 Color = Math::vec3(1.0f);
 		float Intensity = 1.0f;
 	};
-
-	class LightSource2D
+	
+	class VORTEX_API LightSource2D : public RefCounted
 	{
 	public:
+		LightSource2D() = default;
 		LightSource2D(const LightSource2DProperties& props);
 		~LightSource2D() = default;
 		
@@ -22,7 +24,7 @@ namespace Vortex {
 		float GetIntensity() const;
 		void SetIntensity(float intensity);
 
-		static void Copy(const SharedRef<LightSource2D>& dest, const SharedRef<LightSource2D>& src);
+		static void Copy(SharedRef<LightSource2D>& dest, const SharedRef<LightSource2D>& src);
 
 		static SharedRef<LightSource2D> Create(const LightSource2DProperties& props);
 

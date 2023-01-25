@@ -26,7 +26,7 @@ namespace Vortex {
 		m_Properties.Intensity = intensity;
 	}
 
-	void LightSource2D::Copy(const SharedRef<LightSource2D>& dest, const SharedRef<LightSource2D>& src)
+	void LightSource2D::Copy(SharedRef<LightSource2D>& dest, const SharedRef<LightSource2D>& src)
 	{
 		dest->SetColor(src->GetColor());
 		dest->SetIntensity(src->GetIntensity());
@@ -34,7 +34,7 @@ namespace Vortex {
 
 	SharedRef<LightSource2D> LightSource2D::Create(const LightSource2DProperties& props)
 	{
-		return CreateShared<LightSource2D>(props);
+		return SharedRef<LightSource2D>::Create(props);
 	}
 
 }

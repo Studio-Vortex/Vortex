@@ -4,21 +4,22 @@
 #include "Vortex/Core/Math.h"
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <filesystem>
 #include <string>
 
 namespace Vortex {
 
-	struct ProjectProperties
+	struct VORTEX_API ProjectProperties
 	{
-		struct GeneralProperties {
+		struct VORTEX_API GeneralProperties {
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
 			std::filesystem::path StartScene = "";
 		} General;
 
-		struct RendererProperties {
+		struct VORTEX_API RendererProperties {
 			std::string TriangleCullMode = "";
 			float LineWidth = 1.5f;
 			float EnvironmentMapResolution = 512.0f;
@@ -30,7 +31,7 @@ namespace Vortex {
 			bool DisplaySceneIconsInEditor = true;
 		} RendererProps;
 
-		struct PhysicsProperties
+		struct VORTEX_API PhysicsProperties
 		{
 			Math::vec4 Physics3DColliderColor = ColorToVec4(Color::Green);
 			BroadphaseType BroadphaseModel = BroadphaseType::AutomaticBoxPrune;
@@ -39,14 +40,14 @@ namespace Vortex {
 			bool ShowColliders = false;
 		} PhysicsProps;
 
-		struct ScriptingProperties
+		struct VORTEX_API ScriptingProperties
 		{
 			std::filesystem::path ScriptBinaryPath = "";
 			bool EnableMonoDebugging = false;
 			bool ReloadAssemblyOnPlay = false;
 		} ScriptingProps;
 
-		struct EditorProperties
+		struct VORTEX_API EditorProperties
 		{
 			uint32_t FrameStepCount = 1;
 			float EditorCameraFOV = 45.0f;
@@ -56,7 +57,7 @@ namespace Vortex {
 			bool MuteAudioSources = false;
 		} EditorProps;
 
-		struct GizmoProperties
+		struct VORTEX_API GizmoProperties
 		{
 			bool Enabled = true;
 			bool IsOrthographic = false;
@@ -68,7 +69,7 @@ namespace Vortex {
 		} GizmoProps;
 	};
 
-	class Project
+	class VORTEX_API Project : public RefCounted
 	{
 	public:
 		inline ProjectProperties& GetProperties() { return m_Properties; }

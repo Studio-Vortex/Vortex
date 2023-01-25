@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
 #include "Vortex/Scene/Scene.h"
+#include "Vortex/Asset/Asset.h"
 
 #include <filesystem>
 #include <string>
@@ -17,7 +19,7 @@ extern "C"
 
 namespace Vortex {
 
-	enum class ScriptFieldType
+	enum class VORTEX_API ScriptFieldType
 	{
 		None = 0,
 		Float, Double,
@@ -28,7 +30,7 @@ namespace Vortex {
 		Entity,
 	};
 
-	struct ScriptField
+	struct VORTEX_API ScriptField
 	{
 		ScriptFieldType Type = ScriptFieldType::None;
 		std::string Name = "";
@@ -36,7 +38,7 @@ namespace Vortex {
 		MonoClassField* ClassField = nullptr;
 	};
 
-	struct ScriptFieldInstance
+	struct VORTEX_API ScriptFieldInstance
 	{
 		ScriptField Field;
 
@@ -69,11 +71,12 @@ namespace Vortex {
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
-	class ScriptClass
+	class VORTEX_API ScriptClass : public RefCounted
 	{
 	public:
 		ScriptClass() = default;
 		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
+		~ScriptClass() = default;
 
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
@@ -95,10 +98,12 @@ namespace Vortex {
 		friend class ScriptEngine;
 	};
 
-	class ScriptInstance
+	class VORTEX_API ScriptInstance : public RefCounted
 	{
 	public:
+		ScriptInstance() = default;
 		ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity);
+		~ScriptInstance() = default;
 
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
@@ -170,9 +175,9 @@ namespace Vortex {
 
 	// Forward declarations
 	class TimeStep;
-	class Collision;
+	struct Collision;
 
-	class ScriptEngine
+	class VORTEX_API ScriptEngine
 	{
 	public:
 		ScriptEngine() = delete;
@@ -200,7 +205,7 @@ namespace Vortex {
 		static void OnRaycastCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
 
-		static ScriptClass GetCoreEntityClass();
+		static SharedRef<ScriptClass> GetCoreEntityClass();
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();

@@ -21,15 +21,15 @@ namespace Vortex {
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
-	Animation::Animation(const std::string& animationPath, const SharedRef<Model>& model)
+	Animation::Animation(const std::string& animationPath, SharedRef<Model>& model)
 		: m_Filepath(animationPath)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(animationPath, s_AnimatedMeshImportFlags);
 		VX_CORE_ASSERT(scene && scene->mRootNode, "Invalid Scene");
 		auto animation = scene->mAnimations[0];
-		m_Duration = animation->mDuration;
-		m_TicksPerSecond = animation->mTicksPerSecond;
+		m_Duration = (float)animation->mDuration;
+		m_TicksPerSecond = (int)animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHeirarchyData(m_RootNode, scene->mRootNode);
@@ -51,7 +51,7 @@ namespace Vortex {
 			return &(*iter);
 	}
 
-	void Animation::ReadMissingBones(const aiAnimation* animation, const SharedRef<Model>& model)
+	void Animation::ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model)
 	{
 		int size = animation->mNumChannels;
 
@@ -86,7 +86,7 @@ namespace Vortex {
 		dest.Transformation = FromAssimpMat4(src->mTransformation);
 		dest.ChildrenCount = src->mNumChildren;
 
-		for (int i = 0; i < src->mNumChildren; i++)
+		for (uint32_t i = 0; i < src->mNumChildren; i++)
 		{
 			AssimpNodeData newData;
 			ReadHeirarchyData(newData, src->mChildren[i]);
@@ -94,9 +94,9 @@ namespace Vortex {
 		}
 	}
 
-	SharedRef<Animation> Animation::Create(const std::string& animationPath, const SharedRef<Model>& model)
+	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Model>& model)
 	{
-		return CreateShared<Animation>(animationPath, model);
+		return SharedRef<Animation>::Create(animationPath, model);
 	}
 
 }

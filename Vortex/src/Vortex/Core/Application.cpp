@@ -150,18 +150,24 @@ namespace Vortex {
 				VX_PROFILE_SCOPE("LayerStack OnUpdate");
 
 				for (Layer* layer : m_LayerStack)
+				{
 					layer->OnUpdate(delta);
+				}
 			}
 
 			if (m_Properties.EnableGUI)
 			{
 				m_GuiLayer->BeginFrame();
+
 				{
 					VX_PROFILE_SCOPE("LayerStack OnGuiRender");
 
 					for (Layer* layer : m_LayerStack)
+					{
 						layer->OnGuiRender();
+					}
 				}
+
 				m_GuiLayer->EndFrame();
 			}
 

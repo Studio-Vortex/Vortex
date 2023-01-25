@@ -97,14 +97,14 @@ namespace Vortex {
 
 		if (Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt))
 		{
-			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+			if (Input::IsMouseButtonPressed(MouseButton::Left))
 				MouseRotate(mouseDelta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+			else if (Input::IsMouseButtonPressed(MouseButton::Right))
 				MouseZoom(mouseDelta.y);
 		}
-		else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+		else if (Input::IsMouseButtonPressed(MouseButton::Middle))
 			MousePan(mouseDelta);
-		else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+		else if (Input::IsMouseButtonPressed(MouseButton::Right))
 		{
 			// Handle movement and rotation
 			Math::vec3 moveSpeed = s_MoveSpeed;
@@ -168,7 +168,7 @@ namespace Vortex {
 		float deltaX = m_MouseXDelta * 0.15f;
 		float deltaY = m_MouseYDelta * 0.1f;
 		
-		if (!Input::IsMouseButtonPressed(Mouse::ButtonRight)) // Only scroll if user is not moving or looking around
+		if (!Input::IsMouseButtonPressed(MouseButton::Right)) // Only scroll if user is not moving or looking around
 		{
 			// Handle X Scrolling
 			MousePanHorizontal(deltaX);
@@ -189,7 +189,7 @@ namespace Vortex {
 
 	void EditorCamera::MousePanHorizontal(float delta)
 	{
-		if (!Input::IsMouseButtonPressed(Mouse::ButtonLeft)) // user could be clicking on a gizmo
+		if (!Input::IsMouseButtonPressed(MouseButton::Left)) // user could be clicking on a gizmo
 		{
 			auto [xSpeed, ySpeed] = PanSpeed();
 			m_FocalPoint += -GetRightDirection() * delta * xSpeed * m_Distance;

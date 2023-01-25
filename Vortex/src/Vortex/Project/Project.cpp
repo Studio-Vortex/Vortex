@@ -7,23 +7,22 @@ namespace Vortex {
 
 	SharedRef<Project> Project::New()
 	{
-		s_ActiveProject = CreateShared<Project>();
+		s_ActiveProject = SharedRef<Project>::Create();
 		return s_ActiveProject;
 	}
 
 	SharedRef<Project> Project::Load(const std::filesystem::path& path)
 	{
-		SharedRef<Project> project = CreateShared<Project>();
+		Project::New();
 
-		ProjectSerializer serializer(project);
+		ProjectSerializer serializer(s_ActiveProject);
 		if (serializer.Deserialize(path))
 		{
-			project->m_ProjectDirectory = path.parent_path(); 
-			s_ActiveProject = project;
+			s_ActiveProject->m_ProjectDirectory = path.parent_path(); 
 			return s_ActiveProject;
 		}
 		
-		return project;
+		return s_ActiveProject;
 	}
 
 	bool Project::SaveActive(const std::filesystem::path& path)

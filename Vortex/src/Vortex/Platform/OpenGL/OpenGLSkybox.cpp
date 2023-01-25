@@ -101,10 +101,4 @@ namespace Vortex {
 		m_IsDirty = false;
 	}
 
-	void OpenGLSkybox::Copy(const SharedRef<Skybox>& dstSkybox) const
-	{
-		dstSkybox->SetFilepath(m_Filepath);
-		dstSkybox->Reload();
-	}
-
 }

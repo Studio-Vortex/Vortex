@@ -4,6 +4,11 @@
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Serialization/SceneSerializer.h"
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/LightSource.h"
 
 namespace Vortex {
 
@@ -18,11 +23,6 @@ namespace Vortex {
 	{
 		m_Scene = Scene::Create();
 		m_Entity = CreatePrefabFromEntity(entity);
-	}
-
-	Prefab::~Prefab()
-	{
-
 	}
 
 	Entity Prefab::CreatePrefabFromEntity(Entity entity)
@@ -79,12 +79,12 @@ namespace Vortex {
 
 	SharedRef<Prefab> Prefab::Create(const std::filesystem::path& filepath)
 	{
-		return CreateShared<Prefab>(filepath);
+		return SharedRef<Prefab>::Create(filepath);
 	}
 
 	SharedRef<Prefab> Prefab::Create(Entity entity)
 	{
-		return CreateShared<Prefab>(entity);
+		return SharedRef<Prefab>::Create(entity);
 	}
 
 }

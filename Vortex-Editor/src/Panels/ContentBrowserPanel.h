@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	class ContentBrowserPanel
+	class ContentBrowserPanel : public RefCounted
 	{
 	public:
 		ContentBrowserPanel();

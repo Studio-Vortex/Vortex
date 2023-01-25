@@ -15,7 +15,7 @@ namespace Vortex {
 		{
 			KeyPosition data{};
 			data.Position = FromAssimpVec3(channel->mPositionKeys[positionIndex].mValue);
-			data.TimeStamp = channel->mPositionKeys[positionIndex].mTime;
+			data.TimeStamp = (float)channel->mPositionKeys[positionIndex].mTime;
 			m_Positions.push_back(data);
 		}
 
@@ -24,7 +24,7 @@ namespace Vortex {
 		{
 			KeyRotation data{};
 			data.Orientation = FromAssimpQuat(channel->mRotationKeys[rotationIndex].mValue);
-			data.TimeStamp = channel->mRotationKeys[rotationIndex].mTime;
+			data.TimeStamp = (float)channel->mRotationKeys[rotationIndex].mTime;
 			m_Rotations.push_back(data);
 		}
 
@@ -33,7 +33,7 @@ namespace Vortex {
 		{
 			KeyScale data{};
 			data.Scale = FromAssimpVec3(channel->mScalingKeys[scaleIndex].mValue);
-			data.TimeStamp = channel->mScalingKeys[scaleIndex].mTime;
+			data.TimeStamp = (float)channel->mScalingKeys[scaleIndex].mTime;
 			m_Scales.push_back(data);
 		}
 	}

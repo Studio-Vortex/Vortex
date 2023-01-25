@@ -29,8 +29,6 @@ namespace Vortex {
 
 		inline bool IsLoaded() const override { return m_IsLoaded; }
 
-		void Copy(const SharedRef<Skybox>& dstSkybox) const override;
-
 	private:
 		void LoadEquirectangularMapFromPath(const std::string& path);
 		void LoadSkybox(const std::string& filepath);

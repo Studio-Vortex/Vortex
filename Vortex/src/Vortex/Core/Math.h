@@ -298,7 +298,7 @@ namespace Vortex::Math {
 		translation = vec3(LocalMatrix[3]);
 		LocalMatrix[3] = vec4(0, 0, 0, LocalMatrix[3].w);
 
-		vec3 Row[3], Pdum3;
+		vec3 Row[3]{}, Pdum3{};
 
 		// Now get scale and shear.
 		for (length_t i = 0; i < 3; ++i)
@@ -417,7 +417,7 @@ namespace Vortex::Math {
 		translation = vec3(LocalMatrix[3]);
 		LocalMatrix[3] = vec4(0, 0, 0, LocalMatrix[3].w);
 
-		vec3 Row[3];
+		vec3 Row[3]{ vec3() };
 
 		// Now get scale and shear.
 		for (length_t i = 0; i < 3; ++i)

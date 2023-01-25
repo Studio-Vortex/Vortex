@@ -296,7 +296,7 @@ namespace Vortex {
 		memset(&m_Properties.Flags, 0, sizeof(uint32_t));
 	}
 
-	void Material::Copy(const SharedRef<Material>& dest, const SharedRef<Material>& src)
+	void Material::Copy(SharedRef<Material> dest, const SharedRef<Material>& src)
 	{
 		dest->SetNormalMap(src->GetNormalMap());
 		dest->SetAlbedoMap(src->GetAlbedoMap());
@@ -316,30 +316,12 @@ namespace Vortex {
 
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
-		return CreateShared<Material>(props);
+		return SharedRef<Material>::Create(props);
 	}
 
 	SharedRef<Material> Material::Create(const SharedRef<Shader>& shader, const MaterialProperties& props)
 	{
-		return CreateShared<Material>(shader, props);
-	}
-
-	MaterialInstance::MaterialInstance()
-	{
-		m_BaseMaterial = MaterialInstance::Create(Material::Create(MaterialProperties()));
-	}
-
-	MaterialInstance::MaterialInstance(const SharedRef<Material>& material)
-		: m_BaseMaterial(material) { }
-
-	SharedRef<MaterialInstance> MaterialInstance::Create()
-	{
-		return CreateShared<MaterialInstance>();
-	}
-
-	SharedRef<MaterialInstance> MaterialInstance::Create(const SharedRef<Material>& material)
-	{
-		return CreateShared<MaterialInstance>(material);
+		return SharedRef<Material>::Create(shader, props);
 	}
 
 }

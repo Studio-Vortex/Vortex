@@ -16,8 +16,8 @@ namespace Vortex {
 		static bool IsKeyPressed(KeyCode keycode);
 		static bool IsKeyReleased(KeyCode keycode);
 
-		static bool IsMouseButtonPressed(MouseCode button);
-		static bool IsMouseButtonReleased(MouseCode button);
+		static bool IsMouseButtonPressed(MouseButton button);
+		static bool IsMouseButtonReleased(MouseButton button);
 
 		static bool IsGamepadButtonPressed(Gamepad button);
 		static bool IsGamepadButtonReleased(Gamepad button);

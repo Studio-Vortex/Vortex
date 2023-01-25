@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -49,9 +50,10 @@ namespace Vortex {
 		bool SwapChainTarget = false;
 	};
 
-	class VORTEX_API Framebuffer
+	class VORTEX_API Framebuffer : public RefCounted
 	{
 	public:
+		Framebuffer() = default;
 		virtual ~Framebuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -72,9 +74,10 @@ namespace Vortex {
 		static SharedRef<Framebuffer> Create(const FramebufferProperties& props);
 	};
 
-	class VORTEX_API HDRFramebuffer
+	class VORTEX_API HDRFramebuffer : public RefCounted
 	{
 	public:
+		HDRFramebuffer() = default;
 		virtual ~HDRFramebuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -100,9 +103,10 @@ namespace Vortex {
 		static SharedRef<HDRFramebuffer> Create(const FramebufferProperties& props);
 	};
 
-	class VORTEX_API DepthMapFramebuffer
+	class VORTEX_API DepthMapFramebuffer : public RefCounted
 	{
 	public:
+		DepthMapFramebuffer() = default;
 		virtual ~DepthMapFramebuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -118,9 +122,10 @@ namespace Vortex {
 		static SharedRef<DepthMapFramebuffer> Create(const FramebufferProperties& props);
 	};
 
-	class VORTEX_API DepthCubemapFramebuffer
+	class VORTEX_API DepthCubemapFramebuffer : public RefCounted
 	{
 	public:
+		DepthCubemapFramebuffer() = default;
 		virtual ~DepthCubemapFramebuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -135,9 +140,10 @@ namespace Vortex {
 		static SharedRef<DepthCubemapFramebuffer> Create(const FramebufferProperties& props);
 	};
 
-	class VORTEX_API GaussianBlurFramebuffer
+	class VORTEX_API GaussianBlurFramebuffer : public RefCounted
 	{
 	public:
+		GaussianBlurFramebuffer() = default;
 		virtual ~GaussianBlurFramebuffer() = default;
 
 		virtual void Bind(uint32_t horizontal) const = 0;

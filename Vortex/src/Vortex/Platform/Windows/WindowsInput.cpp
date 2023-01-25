@@ -24,14 +24,14 @@ namespace Vortex {
 		return state == GLFW_RELEASE;
 	}
 
-	bool Input::IsMouseButtonPressed(MouseCode button)
+	bool Input::IsMouseButtonPressed(MouseButton button)
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool Input::IsMouseButtonReleased(MouseCode button)
+	bool Input::IsMouseButtonReleased(MouseButton button)
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));

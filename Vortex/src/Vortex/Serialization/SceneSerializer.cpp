@@ -180,7 +180,7 @@ namespace Vortex {
 
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			Entity entity = { entityID, m_Scene.Raw() };
 			if (!entity)
 				return;
 
@@ -778,7 +778,7 @@ namespace Vortex {
 		out << YAML::EndMap; // Entity
 	}
 
-	void SceneSerializer::DeserializeEntities(YAML::Node& entitiesNode, const SharedRef<Scene>& scene)
+	void SceneSerializer::DeserializeEntities(YAML::Node& entitiesNode, SharedRef<Scene>& scene)
 	{
 		for (auto entity : entitiesNode)
 		{
@@ -870,7 +870,7 @@ namespace Vortex {
 			{
 				auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
 
-				lightComponent.Source = CreateShared<LightSource>(LightSourceProperties());
+				lightComponent.Source = LightSource::Create(LightSourceProperties());
 
 				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
 				if (lightSourceComponent["Radiance"])

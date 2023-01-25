@@ -2,15 +2,17 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 #include <string>
 
 namespace Vortex {
 
-	class VORTEX_API Shader
+	class VORTEX_API Shader : public RefCounted
 	{
 	public:
+		Shader() = default;
 		virtual ~Shader() = default;
 
 		virtual void Enable() const = 0;
@@ -38,9 +40,12 @@ namespace Vortex {
 	};
 
 
-	class VORTEX_API ShaderLibrary
+	class VORTEX_API ShaderLibrary : public RefCounted
 	{
 	public:
+		ShaderLibrary() = default;
+		~ShaderLibrary() = default;
+
 		void Add(const std::string& name, const SharedRef<Shader>& shader);
 		void Add(const SharedRef<Shader>& shader);
 		SharedRef<Shader> Load(const std::string& filepath);

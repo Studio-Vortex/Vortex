@@ -80,7 +80,7 @@ namespace Vortex {
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					Entity entity{ entityID, m_ContextScene.get() };
+					Entity entity{ entityID, m_ContextScene.Raw() };
 
 					if (entity)
 					{

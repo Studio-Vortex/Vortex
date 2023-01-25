@@ -19,7 +19,7 @@
 
 namespace Vortex {
 
-	struct SceneLightDescription
+	struct VORTEX_API SceneLightDescription
 	{
 		bool HasSkyLight = false;
 		uint32_t PointLightIndex = 0;
@@ -28,7 +28,7 @@ namespace Vortex {
 		uint32_t ActiveSpotLights = 0;
 	};
 
-	struct RenderTime
+	struct VORTEX_API RenderTime
 	{
 		float ShadowMapRenderTime = 0.0f;
 		float GeometryPassRenderTime = 0.0f;
@@ -39,7 +39,7 @@ namespace Vortex {
 		None = 0, Bloom,
 	};
 
-	struct PostProcessProperties
+	struct VORTEX_API PostProcessProperties
 	{
 		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
 		Viewport ViewportSize = {};
@@ -47,7 +47,7 @@ namespace Vortex {
 		uint32_t StageCount = 0;
 	};
 
-	enum class RenderFlag
+	enum class VORTEX_API RenderFlag
 	{
 		None = 0,
 		EnableBloom = BIT(1),

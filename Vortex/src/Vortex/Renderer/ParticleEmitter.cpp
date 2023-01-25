@@ -70,7 +70,7 @@ namespace Vortex {
 		m_PoolIndex = --m_PoolIndex % m_ParticlePool.size();
 	}
 
-	void ParticleEmitter::Copy(const SharedRef<ParticleEmitter>& dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter)
+	void ParticleEmitter::Copy(SharedRef<ParticleEmitter> dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter)
 	{
 		const auto& props = srcEmitter->GetProperties();
 		dstEmitter->SetProperties(props);
@@ -83,7 +83,7 @@ namespace Vortex {
 
 	SharedRef<ParticleEmitter> ParticleEmitter::Create(const ParticleEmitterProperties& props)
 	{
-		return CreateShared<ParticleEmitter>(props);
+		return SharedRef<ParticleEmitter>::Create(props);
 	}
 
 }

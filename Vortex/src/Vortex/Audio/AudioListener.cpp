@@ -5,7 +5,8 @@
 
 namespace Vortex {
 
-	AudioListener::AudioListener()
+	AudioListener::AudioListener(const ListenerProperties& props)
+		: m_Properties(props)
 	{
 		s_ListenerCount++;
 		m_ListenerIndex = s_ListenerCount;
@@ -33,6 +34,14 @@ namespace Vortex {
 	{
 	}
 
+	SharedRef<AudioListener> AudioListener::Create(const ListenerProperties& props)
+	{
+		return SharedRef<AudioListener>::Create(props);
+	}
 
+	SharedRef<AudioListener> AudioListener::Create()
+	{
+		return SharedRef<AudioListener>::Create();
+	}
 
 }

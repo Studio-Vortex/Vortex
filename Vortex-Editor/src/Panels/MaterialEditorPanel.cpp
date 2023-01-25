@@ -22,7 +22,7 @@ namespace Vortex {
 			}
 		}
 
-		static void SetMaterialTexture(const SharedRef<Material>& material, const SharedRef<Texture2D>& texture, uint32_t index)
+		static void SetMaterialTexture(SharedRef<Material> material, const SharedRef<Texture2D>& texture, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
@@ -38,7 +38,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialFlags(const SharedRef<Material>& material)
+		static void RenderMaterialFlags(SharedRef<Material>& material)
 		{
 			static const char* displayNames[] = { "No Depth Test" };
 			static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
@@ -53,7 +53,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialProperties(const SharedRef<Material>& material)
+		static void RenderMaterialProperties(SharedRef<Material>& material)
 		{
 			float opacity = material->GetOpacity();
 			if (UI::Property("Opacity", opacity, 0.01f, 0.01f, 1.0f))
@@ -79,8 +79,8 @@ namespace Vortex {
 			return -1;
 		}
 
-		using MaterialParameterCallbackFunc = const std::function<void(const SharedRef<Material>&, uint32_t)>&;
-		static void RenderMaterialTexturesAndProperties(const SharedRef<Material>& material, MaterialParameterCallbackFunc parameterCallback)
+		using MaterialParameterCallbackFunc = const std::function<void(SharedRef<Material>, uint32_t)>&;
+		static void RenderMaterialTexturesAndProperties(SharedRef<Material> material, MaterialParameterCallbackFunc parameterCallback)
 		{
 			static const char* displayNames[] = {
 				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
@@ -224,12 +224,12 @@ namespace Vortex {
 			return;
 		}
 
-		Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialParameterCallback));
+		Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
 
 		Gui::End();
 	}
 
-	void MaterialEditorPanel::MaterialParameterCallback(const SharedRef<Material>& material, uint32_t materialIndex)
+	void MaterialEditorPanel::MaterialParameterCallback(SharedRef<Material> material, uint32_t materialIndex)
 	{
 		switch (materialIndex)
 		{

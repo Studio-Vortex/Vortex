@@ -6,25 +6,25 @@ struct aiNodeAnim;
 
 namespace Vortex {
 
-	struct KeyPosition
+	struct VORTEX_API KeyPosition
 	{
 		Math::vec3 Position;
 		float TimeStamp;
 	};
 
-	struct KeyRotation
+	struct VORTEX_API KeyRotation
 	{
 		Math::quaternion Orientation;
 		float TimeStamp;
 	};
 
-	struct KeyScale
+	struct VORTEX_API KeyScale
 	{
 		Math::vec3 Scale;
 		float TimeStamp;
 	};
 
-	class Bone
+	class VORTEX_API Bone
 	{
 	public:
 		/*reads keyframes from aiNodeAnim*/

@@ -11,12 +11,12 @@ namespace Vortex {
 
 	struct WindowProperties
 	{
-		std::string Title;
-		Math::vec2 Size;
-		Math::vec2 Position;
-		bool Maximized;
-		bool VSync;
-		bool Decorated;
+		std::string Title = "";
+		Math::vec2 Size = Math::vec2(0.0f);
+		Math::vec2 Position = Math::vec2(0.0f);
+		bool Maximized = false;
+		bool VSync = false;
+		bool Decorated = false;
 	};
 
 	// Interface representing a desktop system based window

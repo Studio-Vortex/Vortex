@@ -66,7 +66,7 @@ namespace Vortex {
 							{
 								const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
 								const auto& dstSkybox = dst.GetComponent<SkyboxComponent>().Source;
-								srcSkybox->Copy(dstSkybox);
+								Skybox::Copy(dstSkybox, srcSkybox);
 							}
 
 							if constexpr (std::is_same<TComponent, MeshRendererComponent>())
@@ -130,7 +130,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedRef<Scene> destination = CreateShared<Scene>();
+		SharedRef<Scene> destination = Scene::Create();
 
 		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
 		destination->m_ViewportWidth = source->m_ViewportWidth;
@@ -158,7 +158,7 @@ namespace Vortex {
 		return destination;
 	}
 
-	void Scene::CreateDefaultEntities(const SharedRef<Scene>& context)
+	void Scene::CreateDefaultEntities(SharedRef<Scene>& context)
 	{
 		// Starting Entities
 		Entity startingCube = context->CreateEntity("Cube");
@@ -955,7 +955,7 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)
 	{
-		component.Listener = CreateShared<AudioListener>();
+		component.Listener = AudioListener::Create();
 		AudioSource::AddAudioListener();
 	}
 	
@@ -985,12 +985,12 @@ namespace Vortex {
 
 	SharedRef<Scene> Scene::Create(const SharedRef<Framebuffer>& targetFramebuffer)
 	{
-		return CreateShared<Scene>(targetFramebuffer);
+		return SharedRef<Scene>::Create(targetFramebuffer);
 	}
 
 	SharedRef<Scene> Scene::Create()
 	{
-		return CreateShared<Scene>();
+		return SharedRef<Scene>::Create();
 	}
 
 }

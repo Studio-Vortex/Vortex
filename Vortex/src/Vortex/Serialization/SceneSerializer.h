@@ -20,7 +20,7 @@ namespace Vortex {
 		SceneSerializer(const SharedRef<Scene>& scene);
 		
 		static void SerializeEntity(YAML::Emitter& out, Entity entity);
-		static void DeserializeEntities(YAML::Node& entitiesNode, const SharedRef<Scene>& scene);
+		static void DeserializeEntities(YAML::Node& entitiesNode, SharedRef<Scene>& scene);
 
 		void Serialize(const std::string& filepath);
 		void SerializeRuntime(const std::string& filepath);

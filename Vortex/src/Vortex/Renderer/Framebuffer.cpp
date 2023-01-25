@@ -17,7 +17,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -33,7 +33,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLHDRFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLHDRFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -48,7 +48,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLDepthMapFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLDepthMapFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -64,7 +64,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLDepthCubeMapFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLDepthCubeMapFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -80,7 +80,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLGaussianBlurFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLGaussianBlurFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

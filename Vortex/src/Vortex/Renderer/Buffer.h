@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	enum class ShaderDataType
+	enum class VORTEX_API ShaderDataType
 	{
 		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Boolean,
 	};
@@ -30,7 +31,7 @@ namespace Vortex {
 		return 0;
 	}
 
-	struct BufferElement
+	struct VORTEX_API BufferElement
 	{
 		std::string Name;
 		ShaderDataType Type;
@@ -65,7 +66,7 @@ namespace Vortex {
 		}
 	};
 
-	class BufferLayout
+	class VORTEX_API BufferLayout
 	{
 	public:
 		BufferLayout() = default;
@@ -103,7 +104,7 @@ namespace Vortex {
 		uint32_t m_Stride = 0;
 	};
 
-	class VertexBuffer
+	class VORTEX_API VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -122,7 +123,7 @@ namespace Vortex {
 	};
 
 	// Only supports 32 bit unsigned integers
-	class IndexBuffer
+	class VORTEX_API IndexBuffer : public RefCounted
 	{
 	public:
 		virtual ~IndexBuffer() = default;

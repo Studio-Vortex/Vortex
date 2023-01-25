@@ -165,7 +165,7 @@ namespace Vortex {
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
 	}
 
-	void AudioSource::Copy(const SharedRef<AudioSource>& dest, const SharedRef<AudioSource>& src)
+	void AudioSource::Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
 		dest->SetCone(props.Cone);
@@ -183,16 +183,6 @@ namespace Vortex {
 		dest->SetVolume(props.Volume);
 	}
 
-	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
-	{
-		return CreateShared<AudioSource>(filepath);
-	}
-
-    SharedRef<AudioSource> AudioSource::Create()
-    {
-        return CreateShared<AudioSource>();
-    }
-
 	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
 	{
 		AudioEngine::InitEngine(&m_Engine);
@@ -209,5 +199,15 @@ namespace Vortex {
 
 		m_Initialized = true;
 	}
+
+	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
+	{
+		return SharedRef<AudioSource>::Create(filepath);
+	}
+
+    SharedRef<AudioSource> AudioSource::Create()
+    {
+        return SharedRef<AudioSource>::Create();
+    }
 
 }

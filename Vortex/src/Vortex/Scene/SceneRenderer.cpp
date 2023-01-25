@@ -5,6 +5,11 @@
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/LightSource.h"
+#include "Vortex/Renderer/LightSource2D.h"
+
+#include "Vortex/Animation/Animation.h"
+#include "Vortex/Animation/Animator.h"
 
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/SceneCamera.h"

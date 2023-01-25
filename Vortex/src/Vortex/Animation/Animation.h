@@ -4,6 +4,7 @@
 #include "Vortex/Core/Math.h"
 #include "Vortex/Animation/Bone.h"
 #include "Vortex/Renderer/Model.h"
+#include "Vortex/Asset/Asset.h"
 
 #include <string>
 #include <unordered_map>
@@ -13,7 +14,7 @@ struct aiNode;
 
 namespace Vortex {
 
-	struct AssimpNodeData
+	struct VORTEX_API AssimpNodeData
 	{
 		Math::mat4 Transformation;
 		std::string Name;
@@ -21,16 +22,16 @@ namespace Vortex {
 		std::vector<AssimpNodeData> Children;
 	};
 
-	class Animation
+	class VORTEX_API Animation : public Asset
 	{
 	public:
 		Animation() = default;
-		Animation(const std::string& animationPath, const SharedRef<Model>& model);
-		~Animation() = default;
+		Animation(const std::string& animationPath, SharedRef<Model>& model);
+		~Animation() override = default;
 
 		Bone* FindBone(const std::string& name);
 
-		inline float GetTicksPerSecond() const { return m_TicksPerSecond; }
+		inline float GetTicksPerSecond() const { return (float)m_TicksPerSecond; }
 		inline float GetDuration() const { return m_Duration; }
 		inline const AssimpNodeData& GetRootNode() const { return m_RootNode; }
 
@@ -41,10 +42,13 @@ namespace Vortex {
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 
-		static SharedRef<Animation> Create(const std::string& animationPath, const SharedRef<Model>& model);
+		static AssetType GetStaticType() { return AssetType::Animation; }
+		AssetType GetAssetType() const override { return AssetType::Animation; }
+
+		static SharedRef<Animation> Create(const std::string& animationPath, SharedRef<Model>& model);
 
 	private:
-		void ReadMissingBones(const aiAnimation* animation, const SharedRef<Model>& model);
+		void ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model);
 		void ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src) const;
 
 	private:
