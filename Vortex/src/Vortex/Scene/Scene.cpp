@@ -12,7 +12,6 @@
 #include "Vortex/Scene/ScriptableEntity.h"
 #include "Vortex/Scene/Prefab.h"
 #include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Asset/AssetRegistry.h"
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Animation/Animator.h"

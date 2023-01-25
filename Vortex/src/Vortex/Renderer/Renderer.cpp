@@ -2,7 +2,6 @@
 #include "Renderer.h"
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Asset/AssetRegistry.h"
 #include "Vortex/Core/Application.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
