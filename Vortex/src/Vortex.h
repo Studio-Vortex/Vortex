@@ -4,7 +4,10 @@
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Layer.h"
 #include "Vortex/Core/Log.h"
+#include "Vortex/Core/Window.h"
+#include "Vortex/Core/Buffer.h"
 #include "Vortex/Core/TimeStep.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 /// ---------------------------------------------------
 
 /// Math
@@ -22,21 +25,26 @@ namespace Gui = ImGui;
 
 /// AI
 #include "Vortex/AI/AStarPathFinder.h"
+/// ---------------------------------------------------
 
 /// Asset Manager
 #include "Vortex/Asset/AssetManager.h"
+/// ---------------------------------------------------
 
 /// Audio
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
+/// ---------------------------------------------------
 
 /// Physics
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/2D/Physics2D.h"
+/// ---------------------------------------------------
 
 /// Project
 #include "Vortex/Project/Project.h"
+/// ---------------------------------------------------
 
 /// Scene
 #include "Vortex/Scene/Scene.h"
@@ -59,6 +67,7 @@ namespace Gui = ImGui;
 /// Animation
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
+/// ---------------------------------------------------
 
 /// Rendering
 #include "Vortex/Renderer/Renderer.h"
@@ -81,4 +90,9 @@ namespace Gui = ImGui;
 #include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Font/Font.h"
+/// ---------------------------------------------------
+
+/// Utilities
+#include "Vortex/Utils/FileSystem.h"
+#include "Vortex/Utils/PlatformUtils.h"
 /// ---------------------------------------------------

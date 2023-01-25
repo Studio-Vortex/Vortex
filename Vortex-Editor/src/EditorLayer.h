@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorCamera.h>
 
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
@@ -16,6 +15,8 @@
 #include "Panels/AboutPanel.h"
 
 namespace Vortex {
+
+	class EditorCamera;
 
 	class EditorLayer : public Layer
 	{

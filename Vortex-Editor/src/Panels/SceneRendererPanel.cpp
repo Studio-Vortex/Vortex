@@ -220,45 +220,6 @@ namespace Vortex {
 			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
 				Renderer::SetSceneGamma(gamma);
 
-			Math::vec3 bloomThreshold = Renderer::GetBloomThreshold();
-			if (UI::Property("Bloom Threshold", bloomThreshold))
-				Renderer::SetBloomThreshold(bloomThreshold);
-
-			static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
-			uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
-
-			uint32_t currentBloomBlurSamplesSize = 0;
-
-			if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
-			if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
-			if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
-			if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
-			if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
-
-			if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYCOUNT(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
-			{
-				switch (currentBloomBlurSamplesSize)
-				{
-					case 0: Renderer::SetBloomSampleSize(5);  break;
-					case 1: Renderer::SetBloomSampleSize(10); break;
-					case 2: Renderer::SetBloomSampleSize(15); break;
-					case 3: Renderer::SetBloomSampleSize(20); break;
-					case 4: Renderer::SetBloomSampleSize(40); break;
-				}
-			}
-
-			static const char* renderFlagDisplayNames[] = { "Enable Bloom" };
-			static RenderFlag renderFlags[] = { RenderFlag::EnableBloom };
-
-			uint32_t count = VX_ARRAYCOUNT(renderFlagDisplayNames);
-
-			for (uint32_t i = 0; i < count; i++)
-			{
-				bool flagEnabled = Renderer::IsFlagSet(renderFlags[i]);
-				if (UI::Property(renderFlagDisplayNames[i], flagEnabled))
-					Renderer::SetFlag(renderFlags[i]);
-			}
-
 			static bool wireframeMode = false;
 			if (UI::Property("Show Wireframe", wireframeMode))
 				RenderCommand::SetWireframe(wireframeMode);
@@ -268,6 +229,48 @@ namespace Vortex {
 				Application::Get().GetWindow().SetVSync(vsync);
 
 			UI::EndPropertyGrid();
+
+			if (UI::PropertyGridHeader("Bloom", false))
+			{
+				UI::BeginPropertyGrid();
+
+				bool bloomEnabled = Renderer::IsFlagSet(RenderFlag::EnableBloom);
+				if (UI::Property("Enable Bloom", bloomEnabled))
+					Renderer::ToggleFlag(RenderFlag::EnableBloom);
+
+				if (bloomEnabled)
+				{
+					Math::vec3 bloomThreshold = Renderer::GetBloomThreshold();
+					if (UI::Property("Bloom Threshold", bloomThreshold))
+						Renderer::SetBloomThreshold(bloomThreshold);
+
+					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
+					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
+
+					uint32_t currentBloomBlurSamplesSize = 0;
+
+					if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
+					if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
+					if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
+					if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
+					if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
+
+					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYCOUNT(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
+					{
+						switch (currentBloomBlurSamplesSize)
+						{
+						case 0: Renderer::SetBloomSampleSize(5);  break;
+						case 1: Renderer::SetBloomSampleSize(10); break;
+						case 2: Renderer::SetBloomSampleSize(15); break;
+						case 3: Renderer::SetBloomSampleSize(20); break;
+						case 4: Renderer::SetBloomSampleSize(40); break;
+						}
+					}
+				}
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
 
 			UI::EndTreeNode();
 		}

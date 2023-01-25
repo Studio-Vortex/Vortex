@@ -1,6 +1,6 @@
 #include "MaterialEditorPanel.h"
+
 #include <Vortex/Editor/EditorResources.h>
-#include <Vortex/Utils/PlatformUtils.h>
 
 namespace Vortex {
 
@@ -86,7 +86,7 @@ namespace Vortex {
 				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
 			};
 
-			ImVec2 textureSize = { 96, 96 };
+			ImVec2 textureSize = { 64, 64 };
 			ImVec4 bgColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			uint32_t count = VX_ARRAYCOUNT(displayNames);
@@ -143,14 +143,14 @@ namespace Vortex {
 
 					if (hovered && leftMouseButtonClicked)
 					{
-						std::string filepath = FileSystem::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
+						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
 						if (!filepath.empty())
 						{
 							std::string projectDir = Project::GetProjectDirectory().string();
-							std::string relativePath = std::filesystem::relative(filepath, projectDir).string();
+							std::string relativePath = FileSystem::Relative(filepath, projectDir).string();
 							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
-							}
 						}
+					}
 
 					// right click for utilities
 					if (hovered && rightMouseButtonClicked)
@@ -163,12 +163,13 @@ namespace Vortex {
 							SetMaterialTexture(material, nullptr, i);
 							Gui::CloseCurrentPopup();
 						}
+
 						Gui::Separator();
 
 						std::string openInExplorer = fmt::format("Open in Explorer##{}##{}", texture->GetPath(), i);
 						if (Gui::MenuItem(openInExplorer.c_str()))
 						{
-							FileSystem::OpenInFileExplorer(texture->GetPath().c_str());
+							FileDialogue::OpenInFileExplorer(texture->GetPath().c_str());
 							Gui::CloseCurrentPopup();
 						}
 

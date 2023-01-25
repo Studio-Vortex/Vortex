@@ -1,5 +1,6 @@
 #include "vxpch.h"
 #include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include "Vortex/Core/Application.h"
 
@@ -11,51 +12,6 @@
 #include <shellapi.h>
 
 namespace Vortex {
-
-	std::string FileSystem::OpenFileDialog(const char* fileFilter)
-	{
-		OPENFILENAMEA ofn;
-		CHAR szFile[260] = { 0 };
-
-		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindowHandle());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = fileFilter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetOpenFileNameA(&ofn) == TRUE)
-			return ofn.lpstrFile;
-
-		return std::string();
-	}
-	
-	std::string FileSystem::SaveFileDialog(const char* fileFilter)
-	{
-		OPENFILENAMEA ofn;
-		CHAR szFile[260] = { 0 };
-
-		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindowHandle());
-		ofn.lpstrFile = szFile;
-		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = fileFilter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-		if (GetSaveFileNameA(&ofn) == TRUE)
-			return ofn.lpstrFile;
-
-		return std::string();
-	}
-
-	void FileSystem::OpenInFileExplorer(const char* directoryName)
-	{
-		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
-	}
 
 	Buffer FileSystem::ReadBinary(const std::filesystem::path& filepath)
 	{
@@ -84,8 +40,8 @@ namespace Vortex {
 		return result;
 	}
 
-    std::string FileSystem::ReadText(const std::filesystem::path& filepath)
-    {
+	std::string FileSystem::ReadText(const std::filesystem::path& filepath)
+	{
 		std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
 		if (!stream)
@@ -109,11 +65,119 @@ namespace Vortex {
 		stream.close();
 
 		return result;
-    }
+	}
+
+	bool FileSystem::Exists(const std::filesystem::path& filepath)
+	{
+		return std::filesystem::exists(filepath);
+	}
+
+	bool FileSystem::CreateDirectory(const std::filesystem::path& directory)
+	{
+		return std::filesystem::create_directory(directory);
+	}
+
+	bool FileSystem::CreateDirectories(const std::filesystem::path& directories)
+	{
+		return std::filesystem::create_directories(directories);
+	}
+
+	bool FileSystem::Remove(const std::filesystem::path& filepath)
+	{
+		return std::filesystem::remove(filepath);
+	}
+
+	void FileSystem::Copy(const std::filesystem::path& from, const std::filesystem::path& to)
+	{
+		std::filesystem::copy(from, to);
+	}
+
+	bool FileSystem::CopyFile(const std::filesystem::path& from, const std::filesystem::path& to)
+	{
+		return std::filesystem::copy_file(from, to);
+	}
+
+	std::filesystem::path FileSystem::GetParentDirectory(const std::filesystem::path& filepath)
+	{
+		if (filepath.has_parent_path())
+			return filepath.parent_path();
+
+		return "";
+	}
+
+	std::filesystem::path FileSystem::Absolute(const std::filesystem::path& filepath)
+	{
+		return std::filesystem::absolute(filepath);
+	}
+
+	std::filesystem::path FileSystem::Relative(const std::filesystem::path& filepath)
+	{
+		return std::filesystem::relative(filepath);
+	}
+
+	std::filesystem::path FileSystem::Relative(const std::filesystem::path& path, const std::filesystem::path& base)
+	{
+		return std::filesystem::relative(path, base);
+	}
+
+	std::filesystem::path FileSystem::GetCurrentPath()
+	{
+		return std::filesystem::current_path();
+	}
+
+	void FileSystem::SetCurrentPath(const std::filesystem::path& filepath)
+	{
+		std::filesystem::current_path(filepath);
+	}
 
 	void FileSystem::LaunchApplication(const char* binaryPath, const char* args)
 	{
 		ShellExecuteA(NULL, "open", binaryPath, args, NULL, SWP_SHOWWINDOW);
+	}
+
+	std::string FileDialogue::OpenFileDialog(const char* fileFilter)
+	{
+		OPENFILENAMEA ofn;
+		CHAR szFile[260] = { 0 };
+
+		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+		ofn.lStructSize = sizeof(OPENFILENAMEA);
+		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindowHandle());
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = fileFilter;
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetOpenFileNameA(&ofn) == TRUE)
+			return ofn.lpstrFile;
+
+		return std::string();
+	}
+	
+	std::string FileDialogue::SaveFileDialog(const char* fileFilter)
+	{
+		OPENFILENAMEA ofn;
+		CHAR szFile[260] = { 0 };
+
+		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+		ofn.lStructSize = sizeof(OPENFILENAMEA);
+		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindowHandle());
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = fileFilter;
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetSaveFileNameA(&ofn) == TRUE)
+			return ofn.lpstrFile;
+
+		return std::string();
+	}
+
+	void FileDialogue::OpenInFileExplorer(const char* directoryName)
+	{
+		ShellExecuteA(NULL, "open", directoryName, NULL, NULL, SW_SHOWDEFAULT);
 	}
 
 	void Random::Init()

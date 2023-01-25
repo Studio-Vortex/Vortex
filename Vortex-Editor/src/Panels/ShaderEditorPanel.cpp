@@ -1,7 +1,5 @@
 #include "ShaderEditorPanel.h"
 
-#include <Vortex/Utils/PlatformUtils.h>
-
 namespace Vortex {
 
 	ShaderEditorPanel::ShaderEditorPanel()

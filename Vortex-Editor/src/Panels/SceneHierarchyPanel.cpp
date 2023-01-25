@@ -1,8 +1,8 @@
 #include "SceneHierarchyPanel.h"
 
 #include <Vortex/Editor/EditorResources.h>
-#include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Core/Buffer.h"
+#include <Vortex/Scripting/ScriptEngine.h>
+#include <Vortex/Core/Buffer.h>
 
 #include <imgui_internal.h>
 
@@ -977,7 +977,7 @@ namespace Vortex {
 			UI::BeginPropertyGrid();
 
 			std::string skyboxSourcePath = skybox->GetFilepath();
-			std::string relativeSkyboxPath = std::filesystem::relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
+			std::string relativeSkyboxPath = FileSystem::Relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
 			UI::Property("Source", relativeSkyboxPath, true);
 
 			UI::EndPropertyGrid();
@@ -1016,7 +1016,7 @@ namespace Vortex {
 			if (UI::Property("Rotation", component.Rotation))
 				component.Source->SetIsDirty(true);
 
-			UI::Property("Intensity", component.Intensity, 0.25f);
+			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
 
 			UI::EndPropertyGrid();
 		});
@@ -1061,12 +1061,12 @@ namespace Vortex {
 				lightSource->SetRadiance(radiance);
 
 			float intensity = lightSource->GetIntensity();
-			if (UI::Property("Intensity", intensity, 0.1f, 0.1f))
+			if (UI::Property("Intensity", intensity, 0.05f, 0.05f))
 				lightSource->SetIntensity(intensity);
 
 			UI::EndPropertyGrid();
 
-			if (UI::TreeNode("Shadows"))
+			if (UI::PropertyGridHeader("Shadows", false))
 			{
 				UI::BeginPropertyGrid();
 
@@ -1092,8 +1092,7 @@ namespace Vortex {
 				}
 
 				UI::EndPropertyGrid();
-
-				Gui::TreePop();
+				UI::EndTreeNode();
 			}
 		});
 
@@ -1110,7 +1109,7 @@ namespace Vortex {
 					UI::Property("Mesh Source", meshSourcePath, true);
 				else
 				{
-					std::string relativeMeshPath = std::filesystem::relative(meshSourcePath, Project::GetAssetDirectory()).string();
+					std::string relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
 					UI::Property("Mesh Source", relativeMeshPath, true);
 				}
 			}
@@ -1271,7 +1270,7 @@ namespace Vortex {
 				UI::Property("Font Source", fontFilepath, true);
 			else
 			{
-				std::string relativeFontPath = std::filesystem::relative(fontFilepath, Project::GetAssetDirectory()).string();
+				std::string relativeFontPath = FileSystem::Relative(fontFilepath, Project::GetAssetDirectory()).string();
 				UI::Property("Font Source", relativeFontPath, true);
 			}
 
@@ -1381,7 +1380,7 @@ namespace Vortex {
 
 				std::string relativeAudioSourcePath = "";
 				if (component.Source && !audioSourcePath.empty())
-					relativeAudioSourcePath = std::filesystem::relative(audioSourcePath, Project::GetAssetDirectory()).string();
+					relativeAudioSourcePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
 
 				UI::Property("Source", relativeAudioSourcePath, true);
 			}
@@ -1437,9 +1436,9 @@ namespace Vortex {
 
 				UI::EndPropertyGrid();
 
-				if (props.Spacialized && UI::TreeNode("Spatialization", false))
+				if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
 				{
-					Gui::Unindent();
+					UI::BeginPropertyGrid();
 
 					UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 					{
@@ -1456,12 +1455,10 @@ namespace Vortex {
 						component.Source->SetVelocity(props.Veloctiy);
 					});
 
-					Gui::Spacing();
+					UI::EndPropertyGrid();
 
-					if (UI::TreeNode("Cone", false))
+					if (UI::PropertyGridHeader("Cone", false))
 					{
-						Gui::Unindent();
-
 						UI::BeginPropertyGrid();
 
 						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
@@ -1493,13 +1490,10 @@ namespace Vortex {
 							component.Source->SetDopplerFactor(props.DopplerFactor);
 
 						UI::EndPropertyGrid();
-
-						Gui::Indent();
-						Gui::TreePop();
+						UI::EndTreeNode();
 					}
 
-					Gui::Indent();
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 			}
 
@@ -1508,6 +1502,8 @@ namespace Vortex {
 
 		DrawComponent<AudioListenerComponent>("Audio Listener", entity, [](auto& component)
 		{
+			UI::BeginPropertyGrid();
+
 			AudioListener::ListenerProperties& props = component.Listener->GetProperties();
 
 			UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
@@ -1525,12 +1521,10 @@ namespace Vortex {
 				component.Listener->SetVelocity(props.Veloctiy);
 			});
 
-			Gui::Spacing();
+			UI::EndPropertyGrid();
 
-			if (UI::TreeNode("Cone", false))
+			if (UI::PropertyGridHeader("Cone", false))
 			{
-				Gui::Unindent();
-
 				UI::BeginPropertyGrid();
 
 				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
@@ -1553,9 +1547,7 @@ namespace Vortex {
 				}
 
 				UI::EndPropertyGrid();
-
-				Gui::Indent();
-				Gui::TreePop();
+				UI::EndTreeNode();
 			}
 		});
 

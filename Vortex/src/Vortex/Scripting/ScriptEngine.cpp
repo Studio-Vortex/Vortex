@@ -8,7 +8,7 @@
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Scripting/ScriptRegistry.h"
 #include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Debug/Instrumentor.h"
 #include "Vortex/Project/Project.h"
 #include "Vortex/Physics/3D/Physics.h"
@@ -76,7 +76,7 @@ namespace Vortex {
 				std::filesystem::path assemblyPath = filepath;
 				std::filesystem::path pdbPath = assemblyPath.replace_extension(".pdb");
 
-				if (std::filesystem::exists(pdbPath))
+				if (FileSystem::Exists(pdbPath))
 				{
 					UniqueBuffer pdbFileData = FileSystem::ReadBinary(pdbPath);
 

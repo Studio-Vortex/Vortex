@@ -1,6 +1,5 @@
 #include "LauncherLayer.h"
 
-#include <Vortex/Utils/PlatformUtils.h>
 #include <Vortex/Serialization/SceneSerializer.h>
 
 namespace Vortex {

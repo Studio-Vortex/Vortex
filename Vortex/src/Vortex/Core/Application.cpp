@@ -4,13 +4,14 @@
 #include "Vortex/Renderer/Renderer.h"
 
 #include "Vortex/Core/Input.h"
+#include "Vortex/Events/KeyEvent.h"
 #include "Vortex/Audio/AudioEngine.h"
-#include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Scripting/ScriptEngine.h"
 
+#include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Utils/PlatformUtils.h"
-#include "Vortex/Events/KeyEvent.h"
 
 extern bool g_ApplicationRunning;
 
@@ -28,7 +29,7 @@ namespace Vortex {
 
 		// Set working directory here
 		if (!m_Properties.WorkingDirectory.empty())
-			std::filesystem::current_path(m_Properties.WorkingDirectory);
+			FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
 
 		WindowProperties windowProps;
 		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };

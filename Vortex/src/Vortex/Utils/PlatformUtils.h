@@ -1,24 +1,21 @@
 #pragma once
 
-#include "Vortex/Core/Buffer.h"
+#include "Vortex/Core/Base.h"
 
 #include <string>
 #include <random>
 
 namespace Vortex {
 
-	class FileSystem
+	class VORTEX_API FileDialogue
 	{
 	public:
 		static std::string OpenFileDialog(const char* fileFilter);
 		static std::string SaveFileDialog(const char* fileFilter);
 		static void OpenInFileExplorer(const char* directoryName);
-		static Buffer ReadBinary(const std::filesystem::path& filepath);
-		static std::string ReadText(const std::filesystem::path& filepath);
-		static void LaunchApplication(const char* binaryPath, const char* args);
 	};
 
-	class Random
+	class VORTEX_API Random
 	{
 	public:
 		static void Init();
@@ -28,7 +25,7 @@ namespace Vortex {
 		inline static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
 	};
 
-	class Time
+	class VORTEX_API Time
 	{
 	public:
 		static float GetTime();

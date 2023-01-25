@@ -1,5 +1,6 @@
 #include "ProjectSettingsPanel.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
+
+#include <Vortex/Physics/3D/PhysXAPIHelpers.h>
 
 namespace Vortex {
 
@@ -44,7 +45,7 @@ namespace Vortex {
 
 			if (Gui::BeginTabItem("Physics"))
 			{
-				if (Gui::TreeNodeEx("3D", treeNodeFlags))
+				if (UI::PropertyGridHeader("3D", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -73,11 +74,10 @@ namespace Vortex {
 						Physics::SetPhysicsSceneVelocityIterations(velocityIterations3D);
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 
-				if (Gui::TreeNodeEx("2D", treeNodeFlags))
+				if (UI::PropertyGridHeader("2D", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -97,8 +97,7 @@ namespace Vortex {
 						Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations2D);
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 
 				Gui::EndTabItem();
@@ -122,7 +121,7 @@ namespace Vortex {
 
 			if (Gui::BeginTabItem("Editor"))
 			{
-				if (Gui::TreeNodeEx("Preferences", treeNodeFlags))
+				if (UI::PropertyGridHeader("Preferences", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -158,11 +157,10 @@ namespace Vortex {
 					UI::Property("Draw Editor Axes", m_Properties.EditorProps.DrawEditorAxes);
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 
-				if (Gui::TreeNodeEx("Editor Camera", treeNodeFlags))
+				if (UI::PropertyGridHeader("Editor Camera", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -173,11 +171,10 @@ namespace Vortex {
 					UI::Property("Camera FOV", m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f);
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 
-				if (Gui::TreeNodeEx("Gizmos", treeNodeFlags))
+				if (UI::PropertyGridHeader("Gizmos", false))
 				{
 					UI::BeginPropertyGrid();
 
@@ -192,8 +189,7 @@ namespace Vortex {
 						UI::Property("Grid Size", m_Properties.GizmoProps.GridSize, 0.5f, 0.5f);
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 
 				Gui::EndTabItem();

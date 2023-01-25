@@ -4,7 +4,7 @@
 #include "Vortex/Renderer/Font/MSDFData.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 
@@ -131,9 +131,9 @@ namespace Vortex {
 	Font::Font(const std::filesystem::path& filepath)
 		: m_Filepath(filepath), m_MSDFData(new MSDFData())
 	{
-		int result = 0;
-		FontInput fontInput = { };
-		Configuration config = { };
+		int result{};
+		FontInput fontInput{};
+		Configuration config{};
 		fontInput.glyphIdentifierType = GlyphIdentifierType::UNICODE_CODEPOINT;
 		fontInput.fontScale = -1;
 		config.imageType = ImageType::MSDF;
@@ -159,11 +159,10 @@ namespace Vortex {
 		// Load fonts
 		bool anyCodepointsAvailable = false;
 		class FontHolder {
-			msdfgen::FreetypeHandle* ft;
-			msdfgen::FontHandle* font;
-			const char* fontFilename;
 		public:
-			FontHolder() : ft(msdfgen::initializeFreetype()), font(nullptr), fontFilename(nullptr) { }
+			FontHolder()
+				: ft(msdfgen::initializeFreetype()), font(nullptr), fontFilename(nullptr) { }
+
 			~FontHolder() {
 				if (ft) {
 					if (font)
@@ -171,6 +170,7 @@ namespace Vortex {
 					msdfgen::deinitializeFreetype(ft);
 				}
 			}
+
 			bool load(const char* fontFilename) {
 				if (ft && fontFilename) {
 					if (this->fontFilename && !strcmp(this->fontFilename, fontFilename))
@@ -185,9 +185,15 @@ namespace Vortex {
 				}
 				return false;
 			}
+
 			operator msdfgen::FontHandle* () const {
 				return font;
 			}
+
+		private:
+			msdfgen::FreetypeHandle* ft;
+			msdfgen::FontHandle* font;
+			const char* fontFilename;
 		} font;
 
 		bool success = font.load(fontInput.fontFilename);
@@ -221,17 +227,18 @@ namespace Vortex {
 		int glyphsLoaded = -1;
 		switch (fontInput.glyphIdentifierType)
 		{
-		case GlyphIdentifierType::GLYPH_INDEX:
-			glyphsLoaded = m_MSDFData->FontGeometry.loadGlyphset(font, fontInput.fontScale, charset);
-			break;
-		case GlyphIdentifierType::UNICODE_CODEPOINT:
-			glyphsLoaded = m_MSDFData->FontGeometry.loadCharset(font, fontInput.fontScale, charset);
-			anyCodepointsAvailable |= glyphsLoaded > 0;
-			break;
+			case GlyphIdentifierType::GLYPH_INDEX:
+				glyphsLoaded = m_MSDFData->FontGeometry.loadGlyphset(font, fontInput.fontScale, charset);
+				break;
+			case GlyphIdentifierType::UNICODE_CODEPOINT:
+				glyphsLoaded = m_MSDFData->FontGeometry.loadCharset(font, fontInput.fontScale, charset);
+				anyCodepointsAvailable |= glyphsLoaded > 0;
+				break;
 		}
 
-		VX_CORE_ASSERT(glyphsLoaded >= 0, "");
+		VX_CORE_ASSERT(glyphsLoaded >= 0, "No geometry glyphs were loaded!");
 		VX_CORE_TRACE("Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
+
 		// List missing glyphs
 		if (glyphsLoaded < (int)charset.size())
 		{
@@ -240,10 +247,6 @@ namespace Vortex {
 
 		if (fontInput.fontName)
 			m_MSDFData->FontGeometry.setName(fontInput.fontName);
-
-		// NOTE(Yan): we still need to "pack" the font to determine atlas metadata, though this could also be cached.
-			//            The most intensive part is the actual atlas generation, which is what we do cache - it takes
-			//            around 96% of total time spent in this Font constructor.
 
 			// Determine final atlas dimensions, scale and range, pack glyphs
 		double pxRange = rangeValue;
@@ -262,6 +265,7 @@ namespace Vortex {
 			atlasPacker.setMinimumScale(minEmSize);
 		atlasPacker.setPixelRange(pxRange);
 		atlasPacker.setMiterLimit(config.miterLimit);
+
 		if (int remaining = atlasPacker.pack(m_MSDFData->Glyphs.data(), (int)m_MSDFData->Glyphs.size()))
 		{
 			if (remaining < 0)
@@ -274,6 +278,7 @@ namespace Vortex {
 				VX_CORE_ASSERT(false,  "");
 			}
 		}
+
 		atlasPacker.getDimensions(config.width, config.height);
 		VX_CORE_ASSERT(config.width > 0 && config.height > 0, "");
 		config.emSize = atlasPacker.getScale();
@@ -311,7 +316,8 @@ namespace Vortex {
 		// Check cache here
 		Buffer storageBuffer;
 		AtlasHeader header;
-		void* pixels;
+		void* pixels = nullptr;
+
 		if (TryReadFontAtlasFromCache(fontName, (float)config.emSize, header, pixels, storageBuffer))
 		{
 			m_TextureAtlas = CreateCachedAtlas(header, pixels);
@@ -320,21 +326,22 @@ namespace Vortex {
 		else
 		{
 			bool floatingPointFormat = true;
-			SharedRef<Texture2D> texture;
+			SharedRef<Texture2D> texture = nullptr;
+
 			switch (config.imageType)
 			{
-			case ImageType::MSDF:
-				if (floatingPointFormat)
-					texture = CreateAndCacheAtlas<float, float, 3, msdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
-				else
-					texture = CreateAndCacheAtlas<byte, float, 3, msdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
-				break;
-			case ImageType::MTSDF:
-				if (floatingPointFormat)
-					texture = CreateAndCacheAtlas<float, float, 4, mtsdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
-				else
-					texture = CreateAndCacheAtlas<byte, float, 4, mtsdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
-				break;
+				case ImageType::MSDF:
+					if (floatingPointFormat)
+						texture = CreateAndCacheAtlas<float, float, 3, msdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					else
+						texture = CreateAndCacheAtlas<byte, float, 3, msdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					break;
+				case ImageType::MTSDF:
+					if (floatingPointFormat)
+						texture = CreateAndCacheAtlas<float, float, 4, mtsdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					else
+						texture = CreateAndCacheAtlas<byte, float, 4, mtsdfGenerator>(fontName, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					break;
 			}
 
 			m_TextureAtlas = texture;

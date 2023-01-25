@@ -1,7 +1,6 @@
 #include "ContentBrowserPanel.h"
 
 #include <Vortex/Editor/EditorResources.h>
-#include <Vortex/Utils/PlatformUtils.h>
 
 #include <imgui_internal.h>
 
@@ -273,7 +272,7 @@ public class Untitled : Entity
 
 				if (Gui::MenuItem("Open in Explorer"))
 				{
-					FileSystem::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
+					FileDialogue::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
 				}
 				Gui::Separator();

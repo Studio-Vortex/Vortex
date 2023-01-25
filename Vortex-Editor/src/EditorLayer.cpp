@@ -6,8 +6,7 @@
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
 #include <Vortex/Audio/AudioEngine.h>
-#include <Vortex/Utils/PlatformUtils.h>
-#include <Vortex/Scene/Components.h>
+#include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
 
 #include <ImGuizmo.h>
@@ -1514,7 +1513,7 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
-		std::string filepath = FileSystem::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
+		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())
 			return false;
@@ -1580,7 +1579,7 @@ namespace Vortex {
 
 	void EditorLayer::OpenExistingScene()
 	{
-		std::string filepath = FileSystem::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
+		std::string filepath = FileDialogue::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
 
 		if (!filepath.empty())
 			OpenScene(filepath);
@@ -1626,7 +1625,7 @@ namespace Vortex {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileSystem::SaveFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
+		std::string filepath = FileDialogue::SaveFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
 
 		if (!filepath.empty())
 		{

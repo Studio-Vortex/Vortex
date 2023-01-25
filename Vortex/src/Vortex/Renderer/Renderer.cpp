@@ -556,7 +556,7 @@ namespace Vortex {
 				{
 					if (!lightSourceComponent.Source->GetCastShadows())
 					{
-						s_Data.SkylightDepthMapFramebuffer = nullptr;
+						s_Data.SkylightDepthMapFramebuffer.Reset();
 						continue;
 					}
 
@@ -580,6 +580,9 @@ namespace Vortex {
 						RenderCommand::SetViewport(viewport);
 					}
 					
+					if (!s_Data.SkylightDepthMapFramebuffer)
+						CreateShadowMap(LightType::Directional, lightSourceComponent.Source);
+
 					s_Data.SkylightDepthMapFramebuffer->Bind();
 					shadowMapShader->Enable();
 					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
