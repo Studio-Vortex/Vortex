@@ -325,10 +325,10 @@ namespace Vortex {
 		internal extern static void Material_SetRoughness(ulong entityID, float roughness);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_GetEmission(ulong entityID, out Vector3 result);
+		internal extern static float Material_GetEmission(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetEmission(ulong entityID, ref Vector3 emission);
+		internal extern static void Material_SetEmission(ulong entityID, float emission);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Material_GetOpacity(ulong entityID);

@@ -11,6 +11,21 @@ namespace Vortex::UI {
 
 	static uint32_t s_UIContextID = 0;
 
+	class ScopedStyle
+	{
+	public:
+		ScopedStyle(ImGuiStyleVar var, ImVec2 value);
+		ScopedStyle(ImGuiStyleVar var, float value);
+		~ScopedStyle();
+	};
+
+	class ScopedColor
+	{
+	public:
+		ScopedColor(ImGuiCol col, ImVec4 color);
+		~ScopedColor();
+	};
+
 	inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
@@ -181,6 +196,35 @@ namespace Vortex::UI {
 		Gui::PopStyleVar(2);
 		ShiftCursorY(18.0f);
 		PopID();
+	}
+
+	inline static bool PropertyGridHeader(const char* label, bool defaultOpen = true)
+	{
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed
+			| ImGuiTreeNodeFlags_SpanAvailWidth
+			| ImGuiTreeNodeFlags_AllowItemOverlap
+			| ImGuiTreeNodeFlags_FramePadding;
+
+		if (defaultOpen)
+			flags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+		bool open = false;
+		const float framePaddingX = 6.0f;
+		const float framePaddingY = 6.0f;
+
+		UI::ScopedStyle headerRounding(ImGuiStyleVar_FrameRounding, 0.0f);
+		UI::ScopedStyle headerPaddingAndHeight(ImGuiStyleVar_FramePadding, { framePaddingX, framePaddingY });
+
+		Gui::PushID(label);
+		open = Gui::TreeNodeEx("##dummy_id", flags, label);
+		Gui::PopID();
+
+		return open;
+	}
+
+	inline static void EndTreeNode()
+	{
+		Gui::TreePop();
 	}
 
 	inline static bool Property(const char* label, bool& value)
@@ -782,20 +826,5 @@ namespace Vortex::UI {
 
 		return opened;
 	}
-
-	class ScopedStyle
-	{
-	public:
-		ScopedStyle(ImGuiStyleVar var, ImVec2 value);
-		ScopedStyle(ImGuiStyleVar var, float value);
-		~ScopedStyle();
-	};
-
-	class ScopedColor
-	{
-	public:
-		ScopedColor(ImGuiCol col, ImVec4 color);
-		~ScopedColor();
-	};
 
 }

@@ -127,7 +127,7 @@ struct Material
 	sampler2D MetallicMap;
 	float Roughness;
 	sampler2D RoughnessMap;
-	vec3 Emission;
+	float Emission;
 	sampler2D EmissionMap;
 	float ParallaxHeightScale;
 	sampler2D POMap;
@@ -184,7 +184,8 @@ struct FragmentProperties
 	vec3 Normal;
 	float Metallic;
 	float Roughness;
-	vec3 Emission;
+	vec3 EmissionMap;
+	float Emission;
 	float AO;
 	float Opacity;
 };
@@ -203,6 +204,7 @@ struct SceneProperties
 	float Exposure;
 	float Gamma;
 	float SkyboxIntensity;
+	vec3 BloomThreshold;
 };
 
 #define MAX_POINT_LIGHTS 50
@@ -241,7 +243,8 @@ void main()
 	properties.Normal = ((u_Material.HasNormalMap) ? normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureCoords).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureCoords).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureCoords).r : u_Material.Roughness);
-	properties.Emission = ((u_Material.HasEmissionMap) ? texture(u_Material.EmissionMap, textureCoords).rgb : u_Material.Emission);
+	properties.EmissionMap = ((u_Material.HasEmissionMap) ? texture(u_Material.EmissionMap, textureCoords).rgb : vec3(0.0));
+	properties.Emission = u_Material.Emission;
 	properties.AO = ((u_Material.HasAOMap) ? texture(u_Material.AOMap, textureCoords).r : 1.0);
 	properties.Opacity = u_Material.Opacity;
 
@@ -417,14 +420,18 @@ void main()
 	if (alpha == 0.0)
 		discard;
 
-	vec4 result = vec4(mapped, alpha) + vec4(properties.Emission, 0.0);
+	vec4 result = vec4(mapped, alpha);
+	if (u_Material.HasEmissionMap)
+		result += vec4(properties.EmissionMap, 0.0);
+	else
+		result += vec4(vec3(properties.Emission), 0.0);
 
 	o_Color = result;
 	o_EntityID = fragmentIn.EntityID;
 
 	// check whether fragment output is higher than threshold,
 	// if so, use output as brighness color
-	float brightness = dot(result.rgb, vec3(0.2126, 0.7152, 0.0722));
+	float brightness = dot(result.rgb, u_SceneProperties.BloomThreshold);
 
 	if (brightness > 1.0)
 		o_BrightColor = vec4(result.rgb, 1.0);

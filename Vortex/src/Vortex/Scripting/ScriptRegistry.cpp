@@ -1138,24 +1138,24 @@ namespace Vortex {
 		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetRoughness(roughness);
 	}
 
-	static void Material_GetEmission(UUID entityUUID, Math::vec3* outEmission)
+	static float Material_GetEmission(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outEmission = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetEmission();
+		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetEmission();
 	}
 
-	static void Material_SetEmission(UUID entityUUID, Math::vec3* emission)
+	static void Material_SetEmission(UUID entityUUID, float emission)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(*emission);
+		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(emission);
 	}
 
 	static float Material_GetOpacity(UUID entityUUID)

@@ -60,16 +60,16 @@ namespace Vortex {
 
 		Gui::Begin("Scene Renderer", &s_ShowPanel);
 
-		if (UI::TreeNode("Shadow Maps", false))
+		if (UI::PropertyGridHeader("Shadow Maps", false))
 		{
 			Gui::Text("Sky Light");
 			auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
 			Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
 
-			Gui::TreePop();
+			UI::EndTreeNode();
 		}
 
-		if (UI::TreeNode("Shaders", false))
+		if (UI::PropertyGridHeader("Shaders", false))
 		{
 			Gui::PushFont(boldFont);
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
@@ -101,10 +101,10 @@ namespace Vortex {
 				Gui::Columns(1);
 			}
 
-			Gui::TreePop();
+			UI::EndTreeNode();
 		}
 
-		if (UI::TreeNode("Renderer", false))
+		if (UI::PropertyGridHeader("Renderer", false))
 		{
 			UI::BeginPropertyGrid();
 
@@ -269,7 +269,7 @@ namespace Vortex {
 
 			UI::EndPropertyGrid();
 
-			Gui::TreePop();
+			UI::EndTreeNode();
 		}
 
 		Gui::End();

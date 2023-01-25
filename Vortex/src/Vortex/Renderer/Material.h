@@ -25,7 +25,7 @@ namespace Vortex {
 		float Roughness = 0.5f;
 		SharedRef<Texture2D> RoughnessMap = nullptr;
 
-		Math::vec3 Emission = Math::vec3(0.0f);
+		float Emission = 0.0f;
 		SharedRef<Texture2D> EmissionMap = nullptr;
 
 		float ParallaxHeightScale = 0.5f;
@@ -69,8 +69,8 @@ namespace Vortex {
 		const SharedRef<Texture2D>& GetRoughnessMap() const;
 		void SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap);
 
-		Math::vec3 GetEmission() const;
-		void SetEmission(const Math::vec3& emission);
+		float GetEmission() const;
+		void SetEmission(float emission);
 
 		const SharedRef<Texture2D>& GetEmissionMap() const;
 		void SetEmissionMap(const SharedRef<Texture2D>& emissionMap);

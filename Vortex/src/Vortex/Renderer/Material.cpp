@@ -69,7 +69,7 @@ namespace Vortex {
 		}
 		else
 		{
-			m_Shader->SetFloat3("u_Material.Emission", m_Properties.Emission);
+			m_Shader->SetFloat("u_Material.Emission", m_Properties.Emission);
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
 		}
 
@@ -169,12 +169,12 @@ namespace Vortex {
 		m_Properties.RoughnessMap = roughnessMap;
 	}
 
-	Math::vec3 Material::GetEmission() const
+	float Material::GetEmission() const
 	{
 		return m_Properties.Emission;
 	}
 
-	void Material::SetEmission(const Math::vec3& emission)
+	void Material::SetEmission(float emission)
 	{
 		m_Properties.Emission = emission;
 	}

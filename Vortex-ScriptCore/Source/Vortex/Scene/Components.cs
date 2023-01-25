@@ -341,14 +341,16 @@
 		public Material GetMaterial()
 		{
 			InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 albedo);
-			Material material = new Material
+
+			return new Material
 			{
 				Entity = Entity,
 				Albedo = albedo,
 				Metallic = InternalCalls.Material_GetRoughness(Entity.ID),
-				Roughness = InternalCalls.Material_GetRoughness(Entity.ID)
+				Roughness = InternalCalls.Material_GetRoughness(Entity.ID),
+				Emission = InternalCalls.Material_GetEmission(Entity.ID),
+				Opacity = InternalCalls.Material_GetOpacity(Entity.ID),
 			};
-			return material;
 		}
 	}
 

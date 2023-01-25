@@ -559,8 +559,6 @@ namespace Vortex {
 	template <typename TComponent, typename UIFunction>
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiCallback, std::function<void(const TComponent&)> copyCallback = nullptr, std::function<void(TComponent&)> pasteCallback = nullptr, bool removeable = true)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
 		if (entity.HasComponent<TComponent>())
 		{
 			auto& component = entity.GetComponent<TComponent>();
@@ -569,10 +567,10 @@ namespace Vortex {
 			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			Gui::Separator();
-			bool open = Gui::TreeNodeEx((void*)typeid(TComponent).hash_code(), treeNodeFlags, name.c_str());
+			bool open = UI::PropertyGridHeader(name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (UI::ImageButtonEx(EditorResources::DotsIcon, { lineHeight - 5.4f, lineHeight - 5.4f }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
+			if (UI::ImageButtonEx(EditorResources::DotsIcon, { lineHeight * 0.75f, lineHeight * 0.8f }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
@@ -666,7 +664,7 @@ namespace Vortex {
 			if (open)
 			{
 				uiCallback(component);
-				Gui::TreePop();
+				UI::EndTreeNode();
 			}
 
 			if (componentShouldBeRemoved)

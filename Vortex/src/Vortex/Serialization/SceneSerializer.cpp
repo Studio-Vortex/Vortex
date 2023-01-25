@@ -968,7 +968,7 @@ namespace Vortex {
 				if (meshComponent["EmissionMapPath"])
 					material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["EmissionMapPath"].as<std::string>()).string()));
 				if (meshComponent["Emission"])
-					material->SetEmission(meshComponent["Emission"].as<Math::vec3>());
+					material->SetEmission(meshComponent["Emission"].as<float>());
 				if (meshComponent["ParallaxOcclusionMapPath"])
 					material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["ParallaxOcclusionMapPath"].as<std::string>()).string()));
 				if (meshComponent["ParallaxHeightScale"])

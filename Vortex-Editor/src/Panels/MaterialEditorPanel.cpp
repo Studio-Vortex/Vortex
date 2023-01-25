@@ -260,8 +260,8 @@ namespace Vortex {
 			}
 			case 4:
 			{
-				Math::vec3 emission = material->GetEmission();
-				if (UI::Property("Emission", &emission))
+				float emission = material->GetEmission();
+				if (UI::Property("Emission", emission))
 					material->SetEmission(emission);
 				break;
 			}
