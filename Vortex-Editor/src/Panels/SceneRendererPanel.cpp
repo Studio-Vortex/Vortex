@@ -2,11 +2,6 @@
 
 namespace Vortex {
 
-	void SceneRendererPanel::SetContext(const SharedRef<Scene>& context)
-	{
-		m_ContextScene = context;
-	}
-
 	void SceneRendererPanel::OnGuiRender()
 	{
 		ImGuiIO& io = ImGui::GetIO();
@@ -259,11 +254,11 @@ namespace Vortex {
 					{
 						switch (currentBloomBlurSamplesSize)
 						{
-						case 0: Renderer::SetBloomSampleSize(5);  break;
-						case 1: Renderer::SetBloomSampleSize(10); break;
-						case 2: Renderer::SetBloomSampleSize(15); break;
-						case 3: Renderer::SetBloomSampleSize(20); break;
-						case 4: Renderer::SetBloomSampleSize(40); break;
+							case 0: Renderer::SetBloomSampleSize(5);  break;
+							case 1: Renderer::SetBloomSampleSize(10); break;
+							case 2: Renderer::SetBloomSampleSize(15); break;
+							case 3: Renderer::SetBloomSampleSize(20); break;
+							case 4: Renderer::SetBloomSampleSize(40); break;
 						}
 					}
 				}
@@ -277,5 +272,10 @@ namespace Vortex {
 
 		Gui::End();
 	}
+
+    void SceneRendererPanel::SetSceneContext(SharedRef<Scene> scene)
+    {
+		m_ContextScene = scene;
+    }
 
 }

@@ -12,25 +12,7 @@ namespace Vortex {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
 	{
-		SetContext(context);
-	}
-
-	void SceneHierarchyPanel::SetContext(const SharedRef<Scene>& context)
-	{
-		m_ContextScene = context;
-		m_SelectedEntity = {};
-		m_EntityShouldBeRenamed = false;
-		m_EntityShouldBeDestroyed = false;
-
-		// Clear all search bars
-		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
-		m_EntitySearchInputTextFilter.Build();
-
-		memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
-		m_EntityClassNameInputTextFilter.Build();
-
-		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
-		m_ComponentSearchInputTextFilter.Build();
+		SetSceneContext(context);
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
@@ -103,7 +85,6 @@ namespace Vortex {
 					ImGui::EndDragDropTarget();
 				}
 
-
 				// Left click anywhere on the panel to deselect entity
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 				{
@@ -129,6 +110,24 @@ namespace Vortex {
 			DisplayInsectorPanel(hoveredEntity);
 		}
 	}
+
+    void SceneHierarchyPanel::SetSceneContext(SharedRef<Scene> scene)
+    {
+		m_ContextScene = scene;
+		m_SelectedEntity = {};
+		m_EntityShouldBeRenamed = false;
+		m_EntityShouldBeDestroyed = false;
+
+		// Clear all search bars
+		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
+		m_EntitySearchInputTextFilter.Build();
+
+		memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
+		m_EntityClassNameInputTextFilter.Build();
+
+		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+		m_ComponentSearchInputTextFilter.Build();
+    }
 
 	inline static Math::vec3 GetEditorCameraForwardPosition(const EditorCamera* editorCamera)
 	{

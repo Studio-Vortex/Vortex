@@ -201,4 +201,9 @@ namespace Vortex {
 		Gui::End();
 	}
 
+    void ProjectSettingsPanel::SetProjectContext(SharedRef<Project> project)
+    {
+		m_Properties = project->GetProperties();
+    }
+
 }

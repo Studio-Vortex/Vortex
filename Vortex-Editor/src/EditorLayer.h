@@ -2,17 +2,8 @@
 
 #include <Vortex.h>
 
-#include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/ScriptRegistryPanel.h"
-#include "Panels/MaterialEditorPanel.h"
-#include "Panels/BuildSettingsPanel.h"
-#include "Panels/SceneRendererPanel.h"
-#include "Panels/ShaderEditorPanel.h"
-#include "Panels/PerformancePanel.h"
-#include "Panels/ConsolePanel.h"
-#include "Panels/AboutPanel.h"
+#include "Panels/PanelManager.h"
 
 namespace Vortex {
 
@@ -120,27 +111,10 @@ namespace Vortex {
 		std::string m_ModelFilepath = "";
 		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 
-		// Panels
-
-		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
+		PanelManager m_PanelManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
-		ScriptRegistryPanel m_ScriptRegistryPanel;
-		MaterialEditorPanel m_MaterialEditorPanel;
-		BuildSettingsPanel m_BuildSettingsPanel;
-		SceneRendererPanel m_SceneRendererPanel;
-		ShaderEditorPanel m_ShaderEditorPanel;
-		PerformancePanel m_PerformancePanel;
-		ConsolePanel m_ConsolePanel;
-		AboutPanel m_AboutPanel;
 
-		// Settings
-
-		enum class SceneState
-		{
-			Edit = 0, Play = 1, Simulate = 2,
-		};
-
+		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;
 	};
 

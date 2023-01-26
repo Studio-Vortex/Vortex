@@ -1,18 +1,20 @@
 #pragma once
 
 #include <Vortex.h>
+#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 	
-	class SceneHierarchyPanel
+	class SceneHierarchyPanel : public EditorPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const SharedRef<Scene>& context);
-
-		void SetContext(const SharedRef<Scene>& context);
+		~SceneHierarchyPanel() override = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
+		void SetProjectContext(SharedRef<Project> project) override {}
+		void SetSceneContext(SharedRef<Scene> scene) override;
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
@@ -33,7 +35,17 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name);
+		void DisplayAddComponentPopup(const std::string& name)
+		{
+			if (!m_SelectedEntity.HasComponent<TComponent>())
+			{
+				if (Gui::MenuItem(name.c_str()))
+				{
+					m_SelectedEntity.AddComponent<TComponent>();
+					Gui::CloseCurrentPopup();
+				}
+			}
+		}
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
@@ -55,18 +67,5 @@ namespace Vortex {
 		bool m_EntityShouldBeDestroyed = false;
 		bool m_DisplayAddMarkerPopup = false;
 	};
-
-	template <typename TComponent>
-	void SceneHierarchyPanel::DisplayAddComponentPopup(const std::string& name)
-	{
-		if (!m_SelectedEntity.HasComponent<TComponent>())
-		{
-			if (Gui::MenuItem(name.c_str()))
-			{
-				m_SelectedEntity.AddComponent<TComponent>();
-				Gui::CloseCurrentPopup();
-			}
-		}
-	}
 
 }
