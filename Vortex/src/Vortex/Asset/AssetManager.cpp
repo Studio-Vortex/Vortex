@@ -5,32 +5,32 @@ namespace Vortex {
 
 	bool AssetManager::IsHandleValid(AssetHandle handle)
 	{
-		return false;
+		return Project::GetAssetManager()->IsHandleValid(handle);
 	}
 
 	bool AssetManager::IsMemoryOnlyAsset(AssetHandle handle)
 	{
-		return false;
+		return Project::GetAssetManager()->IsMemoryOnlyAsset(handle);
 	}
 
 	bool AssetManager::ReloadData(AssetHandle handle)
 	{
-		return false;
+		return Project::GetAssetManager()->ReloadData(handle);
 	}
 
 	AssetType AssetManager::GetAssetType(AssetHandle handle)
 	{
-		return AssetType();
+		return Project::GetAssetManager()->GetAssetType(handle);
 	}
 
 	const std::unordered_map<AssetHandle, SharedRef<Asset>>& AssetManager::GetLoadedAssets()
 	{
-		return std::unordered_map<AssetHandle, SharedRef<Asset>>();
+		return Project::GetAssetManager()->GetLoadedAssets();
 	}
 
 	const std::unordered_map<AssetHandle, SharedRef<Asset>>& AssetManager::GetMemoryOnlyAssets()
 	{
-		return std::unordered_map<AssetHandle, SharedRef<Asset>>();
+		return Project::GetAssetManager()->GetMemoryOnlyAssets();
 	}
 
 }

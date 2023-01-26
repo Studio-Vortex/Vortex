@@ -5,6 +5,7 @@
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Asset/AssetManager/EditorAssetManager.h"
 
 #include <filesystem>
 #include <string>
@@ -16,6 +17,7 @@ namespace Vortex {
 		struct VORTEX_API GeneralProperties {
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
+			std::filesystem::path AssetRegistryPath = "";
 			std::filesystem::path StartScene = "";
 		} General;
 
@@ -74,6 +76,10 @@ namespace Vortex {
 	public:
 		inline ProjectProperties& GetProperties() { return m_Properties; }
 		inline const ProjectProperties& GetProperties() const { return m_Properties; }
+		inline const std::string& GetName() const { return m_Properties.General.Name; }
+
+		inline static SharedRef<IAssetManager> GetAssetManager() { return s_AssetManager; }
+		inline static SharedRef<EditorAssetManager> GetEditorAssetManager() { return s_AssetManager.As<EditorAssetManager>(); }
 
 		inline static SharedRef<Project> GetActive()
 		{
@@ -99,22 +105,22 @@ namespace Vortex {
 		}
 
 		// TODO: move to asset manager
-		inline static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)
+		inline static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& filepath)
 		{
 			VX_CORE_ASSERT(s_ActiveProject, "No active project!");
-			return GetAssetDirectory() / path;
+			return GetAssetDirectory() / filepath;
 		}
 
-		inline const std::string& GetName() const { return m_Properties.General.Name; }
-
 		static SharedRef<Project> New();
-		static SharedRef<Project> Load(const std::filesystem::path& path);
-		static bool SaveActive(const std::filesystem::path& path);
+		static SharedRef<Project> Load(const std::filesystem::path& filepath);
+		static SharedRef<Project> LoadRuntime(const std::filesystem::path& filepath);
+		static bool SaveActive(const std::filesystem::path& filepath);
 
 	private:
 		ProjectProperties m_Properties;
 		std::filesystem::path m_ProjectDirectory = "";
 
+		inline static SharedRef<IAssetManager> s_AssetManager = nullptr;
 		inline static SharedRef<Project> s_ActiveProject = nullptr;
 	};
 

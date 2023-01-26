@@ -25,31 +25,52 @@ namespace Vortex {
 		template <typename TAsset>
 		VX_FORCE_INLINE static SharedRef<TAsset> GetAsset(AssetHandle handle)
 		{
-			return SharedRef<TAsset>();
+			static_assert(std::is_base_of<Asset, TAsset>::value, "GetAsset only works with types derived from Asset!");
+
+			SharedRef<Asset> asset = Project::GetAssetManager()->GetAsset(handle);
+			return asset.As<TAsset>();
 		}
 
 		template <typename TAsset>
 		VX_FORCE_INLINE static std::unordered_set<AssetHandle> GetAllAssetsWithType()
 		{
-			return std::unordered_set<AssetHandle>();
+			static_assert(std::is_base_of<Asset, TAsset>::value, "GetAllAssetsWithType only works with types derived from Asset!");
+
+			return Project::GetAssetManager()->GetAllAssetsWithType(TAsset::GetStaticType());
 		}
 
 		template <typename TAsset, typename... TArgs>
 		VX_FORCE_INLINE static AssetHandle CreateMemoryOnlyAsset(TArgs&&... args)
 		{
-			return AssetHandle();
+			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateMemoryOnlyAsset only works with types derived from Asset!");
+
+			SharedRef<TAsset> asset = SharedRef<TAsset>::Create(std::forward<TArgs>(args)...);
+			asset->Handle = AssetHandle();
+
+			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+			return asset->Handle;
 		}
 
 		template <typename TAsset, typename... TArgs>
 		VX_FORCE_INLINE static AssetHandle CreateMemoryOnlyAssetWithHandle(AssetHandle handle, TArgs&&... args)
 		{
-			return AssetHandle();
+			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateMemoryOnlyAssetWithHandle only works with types derived from Asset!");
+
+			SharedRef<TAsset> asset = SharedRef<TAsset>::Create(std::forward<TArgs>(args)...);
+			asset->Handle = handle;
+
+			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+			return asset->Handle;
 		}
 
 		template <typename TAsset>
 		VX_FORCE_INLINE static AssetHandle AddMemoryOnlyAsset(SharedRef<TAsset> asset)
 		{
-			return AssetHandle();
+			static_assert(std::is_base_of<Asset, TAsset>::value, "AddMemoryOnlyAsset only works with types derived from Asset!");
+
+			asset->Handle = AssetHandle();
+			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+			return asset->Handle;
 		}
 	};
 
