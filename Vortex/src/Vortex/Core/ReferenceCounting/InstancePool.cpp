@@ -10,12 +10,15 @@ namespace Vortex {
 		m_Pool.insert(instance);
 	}
 
-	size_t InstancePool::RemoveInstance(void* instance)
+	void InstancePool::RemoveInstance(void* instance)
 	{
-		std::lock_guard<std::mutex> lock(m_InstancePoolMutex);
 		VX_CORE_ASSERT(instance, "Invalid Instance!");
-		VX_CORE_ASSERT(Contains(instance), "Pool doesn't contain Instance!");
-		return m_Pool.erase(instance);
+
+		if (!Contains(instance))
+			return;
+
+		std::lock_guard<std::mutex> lock(m_InstancePoolMutex);
+		m_Pool.erase(instance);
 	}
 
 	bool InstancePool::Contains(void* instance)

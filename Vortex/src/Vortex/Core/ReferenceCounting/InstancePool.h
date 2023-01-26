@@ -12,7 +12,7 @@ namespace Vortex {
 		~InstancePool() = default;
 
 		void AddInstance(void* instance);
-		size_t RemoveInstance(void* instance);
+		void RemoveInstance(void* instance);
 		bool Contains(void* instance);
 
 	private:

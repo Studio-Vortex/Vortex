@@ -130,7 +130,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedRef<Scene> destination = Scene::Create();
+		SharedRef<Scene> destination = Scene::Create(source->m_TargetFramebuffer);
 
 		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
 		destination->m_ViewportWidth = source->m_ViewportWidth;

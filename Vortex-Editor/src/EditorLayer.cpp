@@ -194,6 +194,7 @@ namespace Vortex {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+			VX_CORE_INFO("{}, {}, {}", pixelData, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
