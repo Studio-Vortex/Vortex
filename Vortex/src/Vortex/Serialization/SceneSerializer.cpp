@@ -15,6 +15,7 @@
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
 
+#include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
 #include <fstream>
@@ -237,8 +238,7 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
 
-		const SharedRef<Project> activeProject = Project::GetActive();
-		const std::filesystem::path projectAssetDirectory = activeProject->GetAssetDirectory();
+		const std::filesystem::path projectAssetDirectory = Project::GetAssetDirectory();
 
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
@@ -378,7 +378,7 @@ namespace Vortex {
 			{
 				SharedRef<Model> model = meshRendererComponent.Mesh;
 				const auto& meshSourcePath = model->GetPath();
-				out << YAML::Key << "MeshSource" << YAML::Value << (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : std::filesystem::relative(meshSourcePath, projectAssetDirectory).string());
+				out << YAML::Key << "MeshSource" << YAML::Value << (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
 
 				if (ModelImportOptions importOptions = model->GetImportOptions(); importOptions != ModelImportOptions{})
 				{
@@ -539,8 +539,9 @@ namespace Vortex {
 			if (audioSourceComponent.Source)
 			{
 				const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
-
-				out << YAML::Key << "AudioSourcePath" << YAML::Value << std::filesystem::relative(audioSourceComponent.Source->GetPath(), projectAssetDirectory).string();
+				
+				const std::string& audioSourcePath = audioSourceComponent.Source->GetPath();
+				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourcePath;
 
 				out << YAML::Key << "SoundSettings" << YAML::Value;
 				out << YAML::BeginMap; // SoundSettings
@@ -937,6 +938,7 @@ namespace Vortex {
 						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
 					}
 
+					VX_CORE_INFO("Mesh Deserialized Path: '{}'", assetPath);
 
 					if (meshComponent["ModelImportOptions"])
 					{
@@ -1080,7 +1082,13 @@ namespace Vortex {
 				auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
 
 				if (audioSourceComponent["AudioSourcePath"])
-					asc.Source = AudioSource::Create(Project::GetAssetFileSystemPath(audioSourceComponent["AudioSourcePath"].as<std::string>()).string());
+				{
+					std::string audioSourcePath= audioSourceComponent["AudioSourcePath"].as<std::string>();
+					if (FileSystem::Exists(audioSourcePath))
+					{
+						asc.Source = AudioSource::Create(audioSourcePath);
+					}
+				}
 
 				auto soundProps = audioSourceComponent["SoundSettings"];
 
