@@ -608,12 +608,12 @@ namespace Vortex {
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return SharedRef<Model>::Create(defaultMesh, transform, importOptions, entityID);
+		return SharedRef<Model>::Create(defaultMesh, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return SharedRef<Model>::Create(filepath, transform, importOptions, entityID);
+		return SharedRef<Model>::Create(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)
