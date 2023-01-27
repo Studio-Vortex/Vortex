@@ -37,7 +37,7 @@ namespace Vortex {
 		UniqueRef<DirectXMappedSubresource> mappedSubresource = CreateUnique<DirectXMappedSubresource>();
 		D3D11_MAP mapType = Utils::VortexResourceMapTypeToDXMapType(type);
 		HRESULT result = m_DeviceContext->Map(resource, 0, mapType, 0, mappedSubresource->GetAddressOf());
-		return std::make_pair(mappedSubresource, result);
+		return std::make_pair(std::move(mappedSubresource), result);
 	}
 
 	void DirectXDeviceContext::UnmapResource(ID3D11Resource* resource)
