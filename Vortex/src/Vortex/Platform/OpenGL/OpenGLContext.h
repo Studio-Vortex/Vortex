@@ -10,12 +10,13 @@ namespace Vortex {
 	{
 	public:
 		OpenGLContext(GLFWwindow* windowHandle);
+		~OpenGLContext() override = default;
 
 		void Init() override;
 		void SwapFrameBuffers() override;
 
 	private:
-		GLFWwindow* m_WindowHandle;
+		GLFWwindow* m_WindowHandle = nullptr;
 	};
 
 }

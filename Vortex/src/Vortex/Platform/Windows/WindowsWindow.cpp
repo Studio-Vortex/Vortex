@@ -62,9 +62,30 @@ namespace Vortex {
 			VX_PROFILE_SCOPE("glfwCreateWindow");
 
 #ifdef VX_DEBUG
-			if (Renderer::GetGraphicsAPI() == RendererAPI::API::OpenGL)
-				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			RendererAPI::API api = Renderer::GetGraphicsAPI();
+			switch (api)
+			{
+				case RendererAPI::API::OpenGL:
+					glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+					break;
+				case RendererAPI::API::Direct3D:
+					break;
+				case RendererAPI::API::Vulkan:
+					break;
+			}
 #endif // VX_DEBUG
+
+			RendererAPI::API rendererAPI = Renderer::GetGraphicsAPI();
+			switch (rendererAPI)
+			{
+				case Vortex::RendererAPI::API::OpenGL:
+					break;
+				case Vortex::RendererAPI::API::Direct3D:
+					glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+					break;
+				case Vortex::RendererAPI::API::Vulkan:
+					break;
+			}
 
 			if (!m_Properties.Decorated)
 			{
@@ -214,6 +235,7 @@ namespace Vortex {
 		image.height = height;
 		image.pixels = textureData;
 		glfwSetWindowIcon(m_Window, 1, &image);
+
 		stbi_image_free(textureData);
 	}
 

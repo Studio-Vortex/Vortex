@@ -42,6 +42,9 @@
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
+#define VX_VERIFY(x) { if(!(x)) { VX_DEBUGBREAK(); } }
+#define VX_CORE_VERIFY(x) { if (!(x)) { VX_DEBUGBREAK(); } }
+
 #define VX_FORCE_INLINE inline
 
 #define VX_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
