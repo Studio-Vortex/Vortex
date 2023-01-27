@@ -393,11 +393,8 @@ namespace Vortex {
 
 				SharedRef<Material> material = model->GetMaterial();
 
-				SharedRef<Texture2D> normalMap = material->GetNormalMap();
-				if (normalMap)
-					out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
-
 				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+				SharedRef<Texture2D> normalMap = material->GetNormalMap();
 				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
 				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
 				SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
@@ -408,6 +405,8 @@ namespace Vortex {
 					out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
 				else
 					out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
+				if (normalMap)
+					out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
 				if (metallicMap)
 					out << YAML::Key << "MetallicMapPath" << YAML::Value << std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string();
 				else
@@ -577,6 +576,7 @@ namespace Vortex {
 			out << YAML::Key << "RigidbodyComponent" << YAML::BeginMap; // RigidbodyComponent
 
 			const auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
+			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
 			out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type);
 			out << YAML::Key << "AngularDrag" << YAML::Value << rigidbodyComponent.AngularDrag;
 			out << YAML::Key << "AngularVelocity" << YAML::Value << rigidbodyComponent.AngularVelocity;
@@ -584,14 +584,8 @@ namespace Vortex {
 			out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
 			out << YAML::Key << "LinearDrag" << YAML::Value << rigidbodyComponent.LinearDrag;
 			out << YAML::Key << "LinearVelocity" << YAML::Value << rigidbodyComponent.LinearVelocity;
-			out << YAML::Key << "LockPositionX" << YAML::Value << rigidbodyComponent.LockPositionX;
-			out << YAML::Key << "LockPositionY" << YAML::Value << rigidbodyComponent.LockPositionY;
-			out << YAML::Key << "LockPositionZ" << YAML::Value << rigidbodyComponent.LockPositionZ;
-			out << YAML::Key << "LockRotationX" << YAML::Value << rigidbodyComponent.LockRotationX;
-			out << YAML::Key << "LockRotationY" << YAML::Value << rigidbodyComponent.LockRotationY;
-			out << YAML::Key << "LockRotationZ" << YAML::Value << rigidbodyComponent.LockRotationZ;
 			out << YAML::Key << "CollisionDetectionType" << YAML::Value << Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection);
-			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
+			out << YAML::Key << "ActorLockFlags" << YAML::Value << (uint32_t)rigidbodyComponent.LockFlags;
 
 			out << YAML::EndMap; // RigidbodyComponent
 		}
@@ -921,7 +915,6 @@ namespace Vortex {
 
 				meshRendererComponent.Type = Utils::MeshTypeFromString(meshComponent["MeshType"].as<std::string>());
 
-
 				if (meshComponent["MeshSource"])
 				{
 					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
@@ -952,13 +945,13 @@ namespace Vortex {
 				}
 
 				SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial() ? meshRendererComponent.Mesh->GetMaterial() : Material::Create(MaterialProperties());
-				if (meshComponent["NormalMapPath"])
-					material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
 
 				if (meshComponent["AlbedoMapPath"])
 					material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AlbedoMapPath"].as<std::string>()).string()));
 				if (meshComponent["Albedo"])
 					material->SetAlbedo(meshComponent["Albedo"].as<Math::vec3>());
+				if (meshComponent["NormalMapPath"])
+					material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
 				if (meshComponent["MetallicMapPath"])
 					material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["MetallicMapPath"].as<std::string>()).string()));
 				if (meshComponent["Metallic"])
@@ -1141,6 +1134,8 @@ namespace Vortex {
 				auto& rigidbody = deserializedEntity.AddComponent<RigidBodyComponent>();
 
 				rigidbody.Type = Utils::RigidBodyBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
+				if (rigidbodyComponent["Mass"])
+					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 				if (rigidbodyComponent["AngularDrag"])
 					rigidbody.AngularDrag = rigidbodyComponent["AngularDrag"].as<float>();
 				if (rigidbodyComponent["AngularVelocity"])
@@ -1153,22 +1148,10 @@ namespace Vortex {
 					rigidbody.LinearDrag = rigidbodyComponent["LinearDrag"].as<float>();
 				if (rigidbodyComponent["LinearVelocity"])
 					rigidbody.LinearVelocity = rigidbodyComponent["LinearVelocity"].as<Math::vec3>();
-				if (rigidbodyComponent["LockPositionX"])
-					rigidbody.LockPositionX = rigidbodyComponent["LockPositionX"].as<bool>();
-				if (rigidbodyComponent["LockPositionY"])
-					rigidbody.LockPositionY = rigidbodyComponent["LockPositionY"].as<bool>();
-				if (rigidbodyComponent["LockPositionZ"])
-					rigidbody.LockPositionZ = rigidbodyComponent["LockPositionZ"].as<bool>();
-				if (rigidbodyComponent["LockRotationX"])
-					rigidbody.LockRotationX = rigidbodyComponent["LockRotationX"].as<bool>();
-				if (rigidbodyComponent["LockRotationY"])
-					rigidbody.LockRotationY = rigidbodyComponent["LockRotationY"].as<bool>();
-				if (rigidbodyComponent["LockRotationZ"])
-					rigidbody.LockRotationZ = rigidbodyComponent["LockRotationZ"].as<bool>();
 				if (rigidbodyComponent["CollisionDetectionType"])
 					rigidbody.CollisionDetection = Utils::CollisionDetectionTypeFromString(rigidbodyComponent["CollisionDetectionType"].as<std::string>());
-				if (rigidbodyComponent["Mass"])
-					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
+				if (rigidbodyComponent["ActorLockFlags"])
+					rigidbody.LockFlags = rigidbodyComponent["ActorLockFlags"].as<uint32_t>(0);
 			}
 
 			auto characterControllerComponent = entity["CharacterControllerComponent"];

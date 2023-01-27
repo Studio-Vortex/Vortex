@@ -591,12 +591,14 @@ namespace Vortex {
 
 		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
 
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X,  rigidbody.LockPositionX);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y,  rigidbody.LockPositionY);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z,  rigidbody.LockPositionZ);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidbody.LockRotationX);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidbody.LockRotationY);
-		dynamicActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidbody.LockRotationZ);
+		uint8_t lockFlags = rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationX |
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationY |
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationZ |
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationX | 
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationY |
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationZ;
+
+		dynamicActor->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)lockFlags);
 
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::Continuous);
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);

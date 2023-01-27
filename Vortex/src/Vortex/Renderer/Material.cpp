@@ -99,6 +99,16 @@ namespace Vortex {
 
 	void Material::Unbind() const { }
 
+    const std::string& Material::GetName() const
+    {
+		return m_Properties.Name;
+    }
+
+    void Material::SetName(const std::string& name)
+    {
+		m_Properties.Name = name;
+    }
+
 	const SharedRef<Texture2D>& Material::GetNormalMap() const
 	{
 		return m_Properties.NormalMap;

@@ -1579,21 +1579,77 @@ namespace Vortex {
 
 				UI::EndPropertyGrid();
 
-				if (UI::TreeNode("Constraints", false))
+				if (UI::PropertyGridHeader("Constraints", false))
 				{
 					UI::BeginPropertyGrid();
 
-					UI::Property("Position X", component.LockPositionX);
-					UI::Property("Position Y", component.LockPositionY);
-					UI::Property("Position Z", component.LockPositionZ);
+					bool translationX = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationX);
+					bool translationY = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationY);
+					bool translationZ = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationZ);
+					bool rotationX = (component.LockFlags & (uint8_t)ActorLockFlag::RotationX);
+					bool rotationY = (component.LockFlags & (uint8_t)ActorLockFlag::RotationY);
+					bool rotationZ = (component.LockFlags & (uint8_t)ActorLockFlag::RotationZ);
 
-					UI::Property("Rotation X", component.LockRotationX);
-					UI::Property("Rotation Y", component.LockRotationY);
-					UI::Property("Rotation Z", component.LockRotationZ);
+					Gui::Text("Lock Position");
+					Gui::NextColumn();
+					Gui::PushItemWidth(-1);
+
+					Gui::Text("X");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationX", &translationX))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationX;
+
+					Gui::SameLine();
+
+					Gui::Text("Y");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationY", &translationY))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationY;
+
+					Gui::SameLine();
+
+					Gui::Text("Z");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationZ", &translationZ))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationZ;
+
+					Gui::PopItemWidth();
+					Gui::NextColumn();
+
+					Gui::Text("Lock Rotation");
+					Gui::NextColumn();
+					Gui::PushItemWidth(-1);
+
+					Gui::Text("X");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationX", &rotationX))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationX;
+
+					Gui::SameLine();
+
+					Gui::Text("Y");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationY", &rotationY))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationY;
+
+					Gui::SameLine();
+
+					Gui::Text("Z");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationZ", &rotationZ))
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationZ;
+
+					Gui::PopItemWidth();
+					Gui::NextColumn();
 
 					UI::EndPropertyGrid();
-
-					Gui::TreePop();
+					UI::EndTreeNode();
 				}
 			}
 		});

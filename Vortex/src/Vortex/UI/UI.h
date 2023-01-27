@@ -9,7 +9,10 @@ namespace Vortex::UI {
 
 	namespace Gui = ImGui;
 
-	static uint32_t s_UIContextID = 0;
+	static int s_UIContextID = 0;
+	static uint32_t s_Counter = 0;
+	static uint32_t s_CheckboxCount = 0;
+	static char s_IDBuffer[16] = "##";
 
 	class ScopedStyle
 	{
@@ -25,6 +28,12 @@ namespace Vortex::UI {
 		ScopedColor(ImGuiCol col, ImVec4 color);
 		~ScopedColor();
 	};
+
+	inline static const char* GenerateID()
+	{
+		_itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
+		return s_IDBuffer;
+	}
 
 	inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
 	{
@@ -225,6 +234,36 @@ namespace Vortex::UI {
 	inline static void EndTreeNode()
 	{
 		Gui::TreePop();
+	}
+
+	inline static void BeginCheckboxGroup(const char* label)
+	{
+		Gui::Text(label);
+		Gui::NextColumn();
+		Gui::PushItemWidth(-1);
+	}
+
+	inline static void EndCheckboxGroup()
+	{
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+		s_CheckboxCount = 0;
+	}
+
+	inline static bool PropertyCheckboxGroup(const char* label, bool& value)
+	{
+		bool modified = false;
+
+		if (++s_CheckboxCount > 1)
+			Gui::SameLine();
+
+		Gui::Text(label);
+		Gui::SameLine();
+
+		if (Gui::Checkbox(GenerateID(), &value))
+			modified = true;
+
+		return modified;
 	}
 
 	inline static bool Property(const char* label, bool& value)

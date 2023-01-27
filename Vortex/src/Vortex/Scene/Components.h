@@ -310,7 +310,6 @@ namespace Vortex {
 	struct RigidBodyComponent
 	{
 		RigidBodyType Type = RigidBodyType::Static;
-
 		uint32_t LayerID = 0;
 
 		float Mass = 1.0f;
@@ -323,12 +322,7 @@ namespace Vortex {
 
 		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
 
-		bool LockPositionX = false;
-		bool LockPositionY = false;
-		bool LockPositionZ = false;
-		bool LockRotationX = false;
-		bool LockRotationY = false;
-		bool LockRotationZ = false;
+		uint8_t LockFlags = 0;
 
 		void* RuntimeActor = nullptr;
 

@@ -15,6 +15,7 @@ namespace Vortex {
 
 	struct VORTEX_API MaterialProperties
 	{
+		std::string Name = "Unnamed";
 		Math::vec3 Albedo = Math::vec3(1.0f);
 		SharedRef<Texture2D> AlbedoMap = nullptr;
 
@@ -48,6 +49,9 @@ namespace Vortex {
 
 		void Bind() const;
 		void Unbind() const;
+
+		const std::string& GetName() const;
+		void SetName(const std::string& name);
 
 		const Math::vec3& GetAlbedo() const;
 		void SetAlbedo(const Math::vec3& albedo);

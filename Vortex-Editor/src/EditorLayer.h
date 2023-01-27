@@ -3,6 +3,7 @@
 #include <Vortex.h>
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/SceneRendererPanel.h"
 #include "Panels/PanelManager.h"
 
 namespace Vortex {
@@ -119,8 +120,9 @@ namespace Vortex {
 		std::string m_ModelFilepath = "";
 		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 
-		PanelManager m_PanelManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		SceneRendererPanel m_SceneRendererPanel;
+		PanelManager m_PanelManager;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

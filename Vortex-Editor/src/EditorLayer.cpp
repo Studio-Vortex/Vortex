@@ -69,7 +69,6 @@ namespace Vortex {
 		REGISTER_EDITOR_PANEL("Material Editor", MaterialEditorPanel);
 		REGISTER_EDITOR_PANEL("Asset Registry", AssetRegistryPanel);
 		REGISTER_EDITOR_PANEL("Build Settings", BuildSettingsPanel, VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
-		REGISTER_EDITOR_PANEL("Scene Renderer", SceneRendererPanel);
 		REGISTER_EDITOR_PANEL("Shader Editor", ShaderEditorPanel);
 		REGISTER_EDITOR_PANEL("Performance", PerformancePanel);
 		REGISTER_EDITOR_PANEL("Console", ConsolePanel);
@@ -266,6 +265,7 @@ namespace Vortex {
 		if (!m_SceneViewportMaximized)
 		{
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_SceneRendererPanel.OnGuiRender();
 
 			PanelData data;
 			data.SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -468,6 +468,8 @@ namespace Vortex {
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				Gui::Separator();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
+				Gui::Separator();
+				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
 				Gui::Separator();
 				m_PanelManager.RenderMenuButtons(m_ShowScenePanel);
 
@@ -1606,6 +1608,7 @@ namespace Vortex {
 
 		m_ActiveScene = Scene::Create(m_Framebuffer);
 		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
+		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
 		m_PanelManager.SetSceneContext(m_ActiveScene);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
@@ -1651,6 +1654,7 @@ namespace Vortex {
 		{
 			m_EditorScene = newScene;
 			m_SceneHierarchyPanel.SetSceneContext(m_EditorScene);
+			m_SceneRendererPanel.SetSceneContext(m_EditorScene);
 			m_PanelManager.SetSceneContext(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
@@ -1713,6 +1717,7 @@ namespace Vortex {
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 
 		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
+		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
 		m_PanelManager.SetSceneContext(m_ActiveScene);
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -1755,6 +1760,7 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{};
 		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
+		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
 		m_PanelManager.SetSceneContext(m_ActiveScene);
 
 		// Reset the mouse cursor in case a script turned it off
@@ -1780,6 +1786,7 @@ namespace Vortex {
 		m_ActiveScene->OnPhysicsSimulationStart();
 
 		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
+		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
 		m_PanelManager.SetSceneContext(m_ActiveScene);
 	}
 

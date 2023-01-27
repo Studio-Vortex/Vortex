@@ -28,6 +28,19 @@
 		Acceleration    // A constant force, not accounting for mass, e.g Force = distance / time^2
 	}
 
+	public enum ActorLockFlag : uint
+	{
+		TranslationX = 1 << 0,
+		TranslationY = 1 << 1,
+		TranslationZ = 1 << 2,
+		Translation = TranslationX | TranslationY | TranslationZ,
+
+		RotationX = 1 << 3,
+		RotationY = 1 << 4,
+		RotationZ = 1 << 5,
+		Rotation = RotationX | RotationY | RotationZ,
+	}
+
 	public enum CollisionDetectionType
 	{
 		Discrete,

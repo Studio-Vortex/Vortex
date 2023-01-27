@@ -225,7 +225,12 @@ namespace Vortex {
 			return;
 		}
 
-		Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
+		const std::string& materialName = material->GetName();
+		if (UI::PropertyGridHeader(materialName.c_str()))
+		{
+			Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
+			UI::EndTreeNode();
+		}
 
 		Gui::End();
 	}

@@ -8,7 +8,6 @@
 #include "Panels/MaterialEditorPanel.h"
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
-#include "Panels/SceneRendererPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 #include "Panels/ConsolePanel.h"
@@ -60,7 +59,6 @@ namespace Vortex {
 			m_Panels.find("Content Browser")->second.As<ContentBrowserPanel>()->OnGuiRender();
 			m_Panels.find("Material Editor")->second.As<MaterialEditorPanel>()->OnGuiRender(data.SelectedEntity);
 			m_Panels.find("Performance")->second.As<PerformancePanel>()->OnGuiRender(data.EntityCount);
-			m_Panels.find("Scene Renderer")->second.As<SceneRendererPanel>()->OnGuiRender();
 			m_Panels.find("Script Registry")->second.As<ScriptRegistryPanel>()->OnGuiRender();
 			m_Panels.find("Shader Editor")->second.As<ShaderEditorPanel>()->OnGuiRender();
 			m_Panels.find("Build Settings")->second.As<BuildSettingsPanel>()->OnGuiRender();
@@ -89,7 +87,6 @@ namespace Vortex {
 			Gui::MenuItem(scenePanelID, nullptr, &scenePanelOpen);
 			Gui::Separator();
 
-			RenderMenuItem<SceneRendererPanel>("Scene Renderer");
 			RenderMenuItem<ScriptRegistryPanel>("Script Registry");
 			RenderMenuItem<ShaderEditorPanel>("Shader Editor");
 			RenderMenuItem<BuildSettingsPanel>("Build Settings");
