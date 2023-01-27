@@ -112,7 +112,7 @@ namespace Vortex {
 		RenderCommand::SetViewport(viewport);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, const SharedRef<Framebuffer>& targetFramebuffer)
+	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -126,7 +126,7 @@ namespace Vortex {
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
-	void Renderer::BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer)
+	void Renderer::BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -933,7 +933,7 @@ namespace Vortex {
 		s_Data.BlurFramebuffer = GaussianBlurFramebuffer::Create(props);
 	}
 
-	void Renderer::BlurAndSubmitFinalSceneComposite(const SharedRef<Framebuffer>& sceneFramebuffer)
+	void Renderer::BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer)
 	{
 		if (!s_Data.BlurFramebuffer)
 		{

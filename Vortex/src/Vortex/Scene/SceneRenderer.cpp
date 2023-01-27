@@ -302,7 +302,7 @@ namespace Vortex {
 					SharedRef<Material> material = model->GetMaterial();
 					if (!material)
 						continue;
-					SetMaterialFlags(material, renderPacket.TargetFramebuffer);
+					SetMaterialFlags(material);
 
 					if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
 						model->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
@@ -339,7 +339,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::SetMaterialFlags(const SharedRef<Material>& material, const SharedRef<Framebuffer>& framebuffer)
+	void SceneRenderer::SetMaterialFlags(const SharedRef<Material>& material)
 	{
 		if (material->HasFlag(MaterialFlag::NoDepthTest))
 		{

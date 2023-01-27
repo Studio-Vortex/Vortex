@@ -123,7 +123,7 @@ namespace Vortex {
 
 	static SceneRenderer s_SceneRenderer;
 
-	Scene::Scene(const SharedRef<Framebuffer>& targetFramebuffer)
+	Scene::Scene(SharedRef<Framebuffer> targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer) { }
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
@@ -983,7 +983,7 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
-	SharedRef<Scene> Scene::Create(const SharedRef<Framebuffer>& targetFramebuffer)
+	SharedRef<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
 	{
 		return SharedRef<Scene>::Create(targetFramebuffer);
 	}

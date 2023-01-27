@@ -61,8 +61,8 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const TransformComponent& transform, const SharedRef<Framebuffer>& targetFramebuffer);
-		static void BeginScene(const EditorCamera* camera, const SharedRef<Framebuffer>& targetFramebuffer);
+		static void BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer);
+		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
 		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
@@ -145,7 +145,7 @@ namespace Vortex {
 		static uint32_t GetPostProcessStageScore(PostProcessStage stage);
 		static PostProcessStage FindHighestPriortyStage(PostProcessStage* stages, uint32_t count);
 		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
-		static void BlurAndSubmitFinalSceneComposite(const SharedRef<Framebuffer>& sceneFramebuffer);
+		static void BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer);
 	};
 
 }

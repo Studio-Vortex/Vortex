@@ -182,7 +182,7 @@ namespace Vortex {
 			m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
 		m_EditorCameraFOVLastFrame = projectProps.EditorProps.EditorCameraFOV;
 
-		auto [mx, my] = ImGui::GetMousePos();
+		auto [mx, my] = Gui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
 		Math::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
@@ -194,7 +194,6 @@ namespace Vortex {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			VX_CORE_INFO("{}, {}, {}", pixelData, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
@@ -215,11 +214,6 @@ namespace Vortex {
 	void EditorLayer::OnGuiRender()
 	{
 		VX_PROFILE_FUNCTION();
-
-		SharedRef<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
-		
-		static bool scenePanelOpen = true;
 
 		// Dockspace
 		static bool dockspaceOpen = true;
@@ -260,11 +254,41 @@ namespace Vortex {
 		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGuiID dockspace_id = Gui::GetID("MyDockSpace");
+			ImGuiID dockspace_id = Gui::GetID("Engine Dockspace");
 			Gui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		} // End Dockspace
 
 		style.WindowMinSize.x = minWinSizeX;
+
+		OnMainMenuBarRender();
+
+		// Render Panels if the scene isn't maximized
+		if (!m_SceneViewportMaximized)
+		{
+			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
+
+			PanelData data;
+			data.SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+			data.EntityCount = m_ActiveScene->GetEntityCount();
+			m_PanelManager.RenderPanels(data);
+		}
+
+		// Update C# Entity.OnGui()
+		m_ActiveScene->OnUpdateEntityGui();
+
+		if (m_ShowScenePanel)
+			OnScenePanelRender();
+
+		if (m_ShowSecondViewport)
+			OnSecondViewportRender();
+
+		Gui::End();
+	}
+
+	void EditorLayer::OnMainMenuBarRender()
+	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (Gui::BeginMenuBar())
 		{
@@ -307,7 +331,7 @@ namespace Vortex {
 
 				Gui::EndMenu();
 			}
-			
+
 			if (Gui::BeginMenu("Edit"))
 			{
 				if (inEditMode)
@@ -401,6 +425,9 @@ namespace Vortex {
 						m_SceneViewportMaximized = true;
 				}
 
+				Gui::Separator();
+				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
+
 				if (inEditMode)
 					Gui::Separator();
 
@@ -440,7 +467,9 @@ namespace Vortex {
 				Gui::Separator();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				Gui::Separator();
-				m_PanelManager.RenderMenuButtons(scenePanelOpen);
+				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
+				Gui::Separator();
+				m_PanelManager.RenderMenuButtons(m_ShowScenePanel);
 
 				Gui::EndMenu();
 			}
@@ -455,29 +484,21 @@ namespace Vortex {
 
 			Gui::EndMenuBar();
 		}
+	}
 
-		// Render Panels if the scene isn't maximized
-		if (!m_SceneViewportMaximized)
-		{
-			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
+	void EditorLayer::OnScenePanelRender()
+	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
 
-			PanelData data;
-			data.SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			data.EntityCount = m_ActiveScene->GetEntityCount();
-			m_PanelManager.RenderPanels(data);
-		}
-
-		// Update C# Entity.OnGui()
-		m_ActiveScene->OnUpdateEntityGui();
-
-		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 5.0f, 5.0f });
-		Gui::Begin("Scene", &scenePanelOpen, ImGuiWindowFlags_NoCollapse);
-		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		auto viewportOffset = ImGui::GetWindowPos();
+		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		Gui::Begin("Scene", &m_ShowScenePanel, ImGuiWindowFlags_NoCollapse);
+		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		auto viewportOffset = Gui::GetWindowPos();
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-		
+
 		m_SceneViewportFocused = Gui::IsWindowFocused();
 		m_SceneViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
@@ -490,6 +511,42 @@ namespace Vortex {
 		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 
+		OnAssetDropped(meshImportPopupOpen);
+
+		OnMeshImportPopupOpened(meshImportPopupOpen);
+
+		if (m_ShowSceneCreateEntityMenu)
+		{
+			Gui::OpenPopup("SceneCreateEntityMenu");
+			m_ShowSceneCreateEntityMenu = false;
+		}
+
+		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
+			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+
+		if (Gui::BeginPopup("SceneCreateEntityMenu"))
+		{
+			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
+
+			Gui::PopStyleVar();
+			Gui::EndPopup();
+		}
+
+		if (Gui::IsItemVisible())
+		{
+			UI_GizmosModeToolbar();
+			UI_GizmosToolbar();
+			UI_CentralToolbar();
+			UI_SceneSettingsToolbar();
+		}
+
+		OnGizmosRender();
+
+		Gui::End();
+	}
+
+	void EditorLayer::OnAssetDropped(bool& meshImportPopupOpen)
+	{
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
 		{
@@ -549,7 +606,10 @@ namespace Vortex {
 
 			Gui::EndDragDropTarget();
 		}
+	}
 
+	void EditorLayer::OnMeshImportPopupOpened(bool& meshImportPopupOpen)
+	{
 		if (meshImportPopupOpen)
 		{
 			Gui::OpenPopup("Mesh Import Options");
@@ -580,7 +640,7 @@ namespace Vortex {
 			UI::ShiftCursorY(20.0f);
 
 			UI::BeginPropertyGrid();
-			
+
 			std::string assetDir = Project::GetAssetDirectory().string();
 			size_t assetDirPos = m_ModelFilepath.find(assetDir);
 			std::string filepath = m_ModelFilepath.substr(assetDirPos + assetDir.size() + 1);
@@ -615,31 +675,12 @@ namespace Vortex {
 
 			Gui::EndPopup();
 		}
+	}
 
-		if (m_ShowSceneCreateEntityMenu)
-		{
-			Gui::OpenPopup("SceneCreateEntityMenu");
-			m_ShowSceneCreateEntityMenu = false;
-		}
-
-		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
-			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
-
-		if (Gui::BeginPopup("SceneCreateEntityMenu"))
-		{
-			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
-
-			Gui::PopStyleVar();
-			Gui::EndPopup();
-		}
-
-		if (Gui::IsItemVisible())
-		{
-			UI_GizmosModeToolbar();
-			UI_GizmosToolbar();
-			UI_CentralToolbar();
-			UI_SceneSettingsToolbar();
-		}
+	void EditorLayer::OnGizmosRender()
+	{
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		// Render Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -735,8 +776,17 @@ namespace Vortex {
 				}
 			}
 		}
+	}
 
-		Gui::End();
+	void EditorLayer::OnSecondViewportRender()
+	{
+		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		Gui::Begin("Second Viewport", &m_ShowSecondViewport, ImGuiWindowFlags_NoCollapse);
+
+		ImVec2 windowSize = Gui::GetWindowSize();
+
+		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
+		UI::ImageEx(sceneTextureID, windowSize);
 
 		Gui::End();
 	}
@@ -760,7 +810,7 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Gizmos Mode Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -811,7 +861,7 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		ImGui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Gizmos Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -1031,12 +1081,12 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& path)
+	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
 	{
 		SaveScene();
-		Project::SaveActive(path);
-		std::string runtimePath = Application::Get().GetRuntimeBinaryPath();
-		FileSystem::LaunchApplication(runtimePath.c_str(), path.string().c_str());
+		Project::SaveActive(filepath);
+		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
+		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender()
@@ -1174,8 +1224,6 @@ namespace Vortex {
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
-			const auto& entityTransform = selectedEntity.GetTransform();
-
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();

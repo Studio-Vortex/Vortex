@@ -17,7 +17,7 @@ namespace Vortex {
 	{
 	public:
 		Scene() = default;
-		Scene(const SharedRef<Framebuffer>& targetFramebuffer);
+		Scene(SharedRef<Framebuffer> targetFramebuffer);
 		~Scene() override = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
@@ -49,8 +49,8 @@ namespace Vortex {
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		inline const SharedRef<Framebuffer>& GetTargetFramebuffer() const { return m_TargetFramebuffer; }
-		inline void SetTargetFramebuffer(const SharedRef<Framebuffer>& target) { m_TargetFramebuffer = target; }
+		inline SharedRef<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
+		inline void SetTargetFramebuffer(SharedRef<Framebuffer> target) { m_TargetFramebuffer = target; }
 
 		inline bool IsRunning() const { return m_IsRunning; }
 		inline bool IsPaused() const { return m_IsPaused; }
@@ -99,7 +99,7 @@ namespace Vortex {
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		AssetType GetAssetType() const override { return AssetType::Scene; }
 
-		static SharedRef<Scene> Create(const SharedRef<Framebuffer>& targetFramebuffer);
+		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
 		static SharedRef<Scene> Create();
 
 	private:

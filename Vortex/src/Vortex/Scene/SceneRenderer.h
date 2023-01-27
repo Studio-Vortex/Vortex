@@ -33,7 +33,7 @@ namespace Vortex {
 
 	private:
 		static void RenderSkybox(const Math::mat4& view, const Math::mat4& projection, Scene* scene);
-		static void SetMaterialFlags(const SharedRef<Material>& material, const SharedRef<Framebuffer>& framebuffer);
+		static void SetMaterialFlags(const SharedRef<Material>& material);
 		static void ResetAllMaterialFlags();
 	};
 

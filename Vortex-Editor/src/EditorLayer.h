@@ -20,6 +20,12 @@ namespace Vortex {
 
 		void OnUpdate(TimeStep ts) override;
 		void OnGuiRender() override;
+		void OnMainMenuBarRender();
+		void OnScenePanelRender();
+		void OnAssetDropped(bool& meshImportPopupOpen);
+		void OnMeshImportPopupOpened(bool& meshImportPopupOpen);
+		void OnGizmosRender();
+		void OnSecondViewportRender();
 		void OnEvent(Event& e) override;
 
 	private:
@@ -73,7 +79,7 @@ namespace Vortex {
 
 		// Editor Callbacks
 
-		void OnLaunchRuntime(const std::filesystem::path& path);
+		void OnLaunchRuntime(const std::filesystem::path& filepath);
 
 		// Helper
 
@@ -98,6 +104,8 @@ namespace Vortex {
 		float m_EditorCameraFOVLastFrame = 0.0f;
 		int32_t m_GizmoType = -1;
 
+		bool m_ShowScenePanel = true;
+		bool m_ShowSecondViewport = false;
 		bool m_ShowSceneCreateEntityMenu = false;
 		bool m_EditorDebugViewEnabled = false;
 		bool m_SceneViewportFocused = false;

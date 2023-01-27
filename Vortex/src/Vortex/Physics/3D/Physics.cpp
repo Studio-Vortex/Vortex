@@ -414,7 +414,7 @@ namespace Vortex {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
+				characterController.RuntimeController = (void*)s_Data->ControllerManager->createController(desc);
 			}
 			else if (entity.HasComponent<BoxColliderComponent>())
 			{
@@ -445,7 +445,7 @@ namespace Vortex {
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
-				characterController.RuntimeController = s_Data->ControllerManager->createController(desc);
+				characterController.RuntimeController = (void*)s_Data->ControllerManager->createController(desc);
 			}
 		}
 		else
