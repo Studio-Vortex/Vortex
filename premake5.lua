@@ -34,8 +34,6 @@ IncludeDir["msdfgen"] = "Vortex/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "Vortex/vendor/PhysX/include"
 IncludeDir["spdlog"] = "Vortex/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Vortex/vendor/stb_image"
-IncludeDir["tinygltf"] = "Vortex/vendor/tinygltf"
-IncludeDir["tinyobjloader"] = "Vortex/vendor/tinyobjloader"
 IncludeDir["yaml_cpp"] = "Vortex/vendor/yaml-cpp/include"
 
 LibraryDir = {}
@@ -91,11 +89,11 @@ project "Vortex"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
+
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
+
 		"%{prj.name}/vendor/miniaudio/miniaudio/miniaudio.h",
-		"%{prj.name}/vendor/tinygltf/**.h",
-		"%{prj.name}/vendor/tinygltf/**.hpp",
-		"%{prj.name}/vendor/tinygltf/**.cpp",
-		"%{prj.name}/vendor/tinyobjloader/tiny_obj_loader.h",
 
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
@@ -131,8 +129,6 @@ project "Vortex"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
-		"%{IncludeDir.tinygltf}",
-		"%{IncludeDir.tinyobjloader}",
 		"%{IncludeDir.yaml_cpp}",
 	}
 
@@ -152,6 +148,7 @@ project "Vortex"
 		"%{Library.PhysXFoundation}",
 		"%{Library.PhysXPvd}",
 		"opengl32.lib",
+		"d3d11.lib",
 		"Ws2_32.lib",
 		"yaml-cpp",
 	}
@@ -256,8 +253,6 @@ project "Vortex-Editor"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.tinygltf}",
-		"%{IncludeDir.tinyobjloader}",
 	}
 	
 	defines
@@ -455,8 +450,6 @@ project "Vortex-Runtime"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.tinygltf}",
-		"%{IncludeDir.tinyobjloader}",
 	}
 
 	defines
