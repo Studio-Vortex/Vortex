@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Scene/SceneCamera.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
@@ -332,9 +333,13 @@ namespace Vortex {
 
 	struct CharacterControllerComponent
 	{
+		NonWalkableMode NonWalkMode = NonWalkableMode::PreventClimbing;
+		CapsuleClimbMode ClimbMode = CapsuleClimbMode::Constrained;
+
 		float SpeedDown = 0.0f;
 		float SlopeLimitDegrees = 45.0f;
 		float StepOffset = 1.0f;
+		float ContactOffset = 0.01f;
 		uint32_t LayerID = 0;
 		bool DisableGravity = false;
 

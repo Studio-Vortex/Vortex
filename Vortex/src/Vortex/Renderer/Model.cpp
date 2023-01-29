@@ -236,6 +236,62 @@ namespace Vortex {
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
 	}
 
+	Model::Model(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform)
+	{
+		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
+		
+		std::vector<ModelVertex> verts = { ModelVertex{} };
+		std::vector<uint32_t> inds = { 0 };
+		std::vector<SharedRef<Material>> mats = { nullptr };
+
+		auto TransformVerticesAndGetIndicesAndCreateMesh =
+		[
+			&collectionOfMeshes = m_Meshes,
+			transform,
+			vertices,
+			indices,
+			&verts,
+			&inds,
+			mats
+		]()
+		{
+			auto TransformVertices = [&verts, transform, vertices]()
+			{
+				auto TransformVertexFunc = [&verts, transform](auto vertex)
+				{
+					ModelVertex transformedVertex = vertex;
+					Math::vec4 transformedPositionAttribute = Math::vec4(transformedVertex.Position, 1.0) * transform;
+					transformedVertex.Position = Math::vec3(transformedPositionAttribute);
+					verts.push_back(transformedVertex);
+				};
+
+				for (const auto& vertex : vertices) TransformVertexFunc(vertex);
+			};
+
+			auto GetIndices = [&inds, indices]()
+			{
+				auto GetIndexFunc = [&inds](auto index)
+				{
+					uint32_t theIndices[3] = { index.i0, index.i1, index.i2 };
+					for (uint32_t i = 0; i < VX_ARRAYCOUNT(theIndices); i++) inds.push_back(theIndices[i]);
+				};
+
+				for (const auto& index : indices) GetIndexFunc(index);
+			};
+
+			TransformVertices();
+			GetIndices();
+
+			Mesh mesh(verts, inds, mats);
+			collectionOfMeshes.push_back(mesh);
+		};
+
+		if (vertices.size() > 1 && indices.size() > 1)
+		{
+			TransformVerticesAndGetIndicesAndCreateMesh();
+		}
+	}
+
 	Model::Model(MeshType meshType)
 	{
 		m_Meshes.push_back(Mesh(true));
@@ -614,6 +670,11 @@ namespace Vortex {
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
 		return SharedRef<Model>::Create(filepath, transform, importOptions, (int)(entt::entity)entityID);
+	}
+
+	SharedRef<Model> Model::Create(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform)
+	{
+		return SharedRef<Model>::Create(vertices, indices, transform);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)

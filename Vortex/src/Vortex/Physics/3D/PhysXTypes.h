@@ -60,4 +60,16 @@ namespace Vortex {
 		Rotation = RotationX | RotationY | RotationZ
 	};
 
+	enum class NonWalkableMode : uint8_t
+	{
+		PreventClimbing = 0,
+		PreventClimbingAndForceSliding = 1,
+	};
+
+	enum class CapsuleClimbMode : uint8_t
+	{
+		Easy = 0,
+		Constrained = 1,
+	};
+
 }

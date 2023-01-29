@@ -14,6 +14,4 @@ public:
 	void OnUpdate(Vortex::TimeStep ts) override;
 	void OnGuiRender() override;
 	void OnEvent(Vortex::Event &e) override;
-
-private:
 };

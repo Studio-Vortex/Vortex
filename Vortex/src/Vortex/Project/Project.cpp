@@ -3,6 +3,7 @@
 
 #include "Vortex/Project/ProjectSerializer.h"
 #include "Vortex/Utils/FileSystem.h"
+#include "Vortex/Renderer/MeshFactory.h"
 
 namespace Vortex {
 

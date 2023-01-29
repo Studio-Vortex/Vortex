@@ -29,6 +29,14 @@ namespace Vortex {
 
 	void EditorAssetManager::AddMemoryOnlyAsset(SharedRef<Asset> asset)
 	{
+		AssetMetadata metadata;
+		metadata.Handle = asset->Handle;
+		metadata.IsDataLoaded = true;
+		metadata.IsMemoryOnly = true;
+		metadata.Type = asset->GetAssetType();
+		m_AssetRegistry[asset->Handle] = metadata;
+
+		m_MemoryOnlyAssets[asset->Handle] = asset;
 	}
 
 	bool EditorAssetManager::ReloadData(AssetHandle handle)

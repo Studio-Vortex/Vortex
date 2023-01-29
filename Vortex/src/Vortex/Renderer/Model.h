@@ -57,6 +57,11 @@ namespace Vortex {
 		int EntityID;
 	};
 
+	struct VORTEX_API ModelIndex
+	{
+		uint32_t i0, i1, i2;
+	};
+
 	class VORTEX_API Mesh
 	{
 	public:
@@ -125,6 +130,7 @@ namespace Vortex {
 		Model() = default;
 		Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
+		Model(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform = Math::Identity());
 		Model(MeshType meshType);
 		~Model() override = default;
 
@@ -152,11 +158,12 @@ namespace Vortex {
 		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
 
-		static AssetType GetStaticType() { return AssetType::Mesh; }
-		AssetType GetAssetType() const override { return AssetType::Mesh; }
+		static AssetType GetStaticType() { return AssetType::Model; }
+		AssetType GetAssetType() const override { return AssetType::Model; }
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
+		static SharedRef<Model> Create(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform = Math::Identity());
 		static SharedRef<Model> Create(MeshType meshType);
 
 	private:

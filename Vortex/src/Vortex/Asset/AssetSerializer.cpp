@@ -3,11 +3,11 @@
 
 namespace Vortex {
 
-	void MeshSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
+	void ModelSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
 	{
 	}
 
-	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
+	bool ModelSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
 	{
 		return false;
 	}

@@ -5,7 +5,7 @@ namespace Vortex {
 
 	void AssetImporter::Init()
 	{
-		s_Serializers[AssetType::Mesh] = CreateUnique<MeshSerializer>();
+		s_Serializers[AssetType::Model] = CreateUnique<ModelSerializer>();
 		s_Serializers[AssetType::Font] = CreateUnique<FontSerializer>();
 		s_Serializers[AssetType::Audio] = CreateUnique<AudioSerializer>();
 		s_Serializers[AssetType::Script] = CreateUnique<ScriptSerializer>();

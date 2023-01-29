@@ -160,6 +160,48 @@ namespace Vortex {
 			return CollisionDetectionType::None;
 		}
 
+		static std::string NonWalkableModeToString(NonWalkableMode mode)
+		{
+			switch (mode)
+			{
+				case Vortex::NonWalkableMode::PreventClimbing:                return "PreventClimbing";
+				case Vortex::NonWalkableMode::PreventClimbingAndForceSliding: return "PreventClimbingAndForceSliding";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Non Walkable Mode!");
+			return "";
+		}
+
+		static NonWalkableMode NonWalkableModeFromString(const std::string& walkableMode)
+		{
+			if (walkableMode == "PreventClimbing") return NonWalkableMode::PreventClimbing;
+			if (walkableMode == "PreventClimbingAndForceSliding") return NonWalkableMode::PreventClimbingAndForceSliding;
+
+			VX_CORE_ASSERT(false, "Unknown Non Walkable Mode!");
+			return NonWalkableMode::PreventClimbing;
+		}
+
+		static std::string CapsuleClimbModeToString(CapsuleClimbMode mode)
+		{
+			switch (mode)
+			{
+				case CapsuleClimbMode::Easy:        return "Easy";
+				case CapsuleClimbMode::Constrained: return "Constrained";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Capsule Climb Mode!");
+			return "";
+		}
+
+		static CapsuleClimbMode CapsuleClimbModeFromString(const std::string& climbMode)
+		{
+			if (climbMode == "Easy")        return CapsuleClimbMode::Easy;
+			if (climbMode == "Constrained") return CapsuleClimbMode::Constrained;
+
+			VX_CORE_ASSERT(false, "Unknown Capsule Climb Mode!");
+			return CapsuleClimbMode::Easy;
+		}
+
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
@@ -595,10 +637,13 @@ namespace Vortex {
 			out << YAML::Key << "CharacterControllerComponent" << YAML::BeginMap; // CharacterControllerComponent
 
 			const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+			out << YAML::Key << "NonWalkableMode" << Utils::NonWalkableModeToString(characterController.NonWalkMode);
+			out << YAML::Key << "CapsuleClimbMode" << Utils::CapsuleClimbModeToString(characterController.ClimbMode);
 			out << YAML::Key << "DisableGravity" << YAML::Key << characterController.DisableGravity;
 			out << YAML::Key << "LayerID" << YAML::Key << characterController.LayerID;
 			out << YAML::Key << "SlopeLimitDegrees" << YAML::Key << characterController.SlopeLimitDegrees;
 			out << YAML::Key << "StepOffset" << YAML::Key << characterController.StepOffset;
+			out << YAML::Key << "ContactOffset" << YAML::Key << characterController.ContactOffset;
 
 			out << YAML::EndMap; // CharacterControllerComponent
 		}
@@ -1159,10 +1204,16 @@ namespace Vortex {
 			{
 				auto& characterController = deserializedEntity.AddComponent<CharacterControllerComponent>();
 
+				if (characterControllerComponent["NonWalkableMode"])
+					characterController.NonWalkMode = Utils::NonWalkableModeFromString(characterControllerComponent["NonWalkableMode"].as<std::string>());
+				if (characterControllerComponent["CapsuleClimbMode"])
+					characterController.ClimbMode = Utils::CapsuleClimbModeFromString(characterControllerComponent["CapsuleClimbMode"].as<std::string>());
 				characterController.DisableGravity = characterControllerComponent["DisableGravity"].as<bool>();
 				characterController.LayerID = characterControllerComponent["LayerID"].as<uint32_t>();
 				characterController.SlopeLimitDegrees = characterControllerComponent["SlopeLimitDegrees"].as<float>();
 				characterController.StepOffset = characterControllerComponent["StepOffset"].as<float>();
+				if (characterControllerComponent["ContactOffset"])
+					characterController.ContactOffset = characterControllerComponent["ContactOffset"].as<float>();
 			}
 
 			auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];

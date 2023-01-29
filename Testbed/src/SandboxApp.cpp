@@ -23,7 +23,7 @@ Vortex::Application* Vortex::CreateApplication(ApplicationCommandLineArgs args)
 	props.WindowDecorated = true;
 	props.VSync = true;
 	props.EnableGUI = true;
-	props.GraphicsAPI = RendererAPI::API::Direct3D;
+	props.GraphicsAPI = RendererAPI::API::OpenGL;
 
 	props.WorkingDirectory = "C:/dev/Vortex Engine";
 	props.CommandLineArgs = args;

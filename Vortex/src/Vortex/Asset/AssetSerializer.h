@@ -12,7 +12,7 @@ namespace Vortex {
 		virtual bool TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset) = 0;
 	};
 
-	class MeshSerializer : public AssetSerializer
+	class ModelSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset) override;

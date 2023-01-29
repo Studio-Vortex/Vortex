@@ -406,11 +406,11 @@ namespace Vortex {
 				desc.position = ToPhysxExtendedVector(transform.Translation + capsuleCollider.Offset);
 				desc.height = capsuleCollider.Height * transform.Scale.y;
 				desc.radius = capsuleCollider.Radius * radiusScale;
-				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
-				desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
-				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
+				desc.climbingMode = (physx::PxCapsuleClimbingMode::Enum)characterController.ClimbMode;
+				desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
 				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.contactOffset = characterController.ContactOffset;
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
@@ -438,10 +438,10 @@ namespace Vortex {
 				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
 				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
 				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
-				desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING; // TODO: get from component
-				desc.slopeLimit = Math::Max(0.0f, Math::Cos(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+				desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
+				desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
 				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = 0.01f; // TODO: get from component
+				desc.contactOffset = characterController.ContactOffset;
 				desc.material = material;
 				desc.upDirection = { 0.0f, 1.0f, 0.0f };
 
@@ -481,7 +481,8 @@ namespace Vortex {
 				auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
 
 				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-				physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius);
+				float largestComponent = Math::Max(transform.Scale.x, Math::Max(transform.Scale.y, transform.Scale.z));
+				physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius * largestComponent);
 				physx::PxMaterial* material = nullptr;
 
 				if (entity.HasComponent<PhysicsMaterialComponent>())

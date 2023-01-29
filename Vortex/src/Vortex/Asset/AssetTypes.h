@@ -10,7 +10,7 @@ namespace Vortex {
 	enum class AssetType : uint16_t
 	{
 		None = 0,
-		Mesh,
+		Model,
 		Font,
 		Audio,
 		Scene,
@@ -30,7 +30,7 @@ namespace Vortex {
 			switch (type)
 			{
 				case AssetType::None:        return "None";
-				case AssetType::Mesh:        return "Mesh";
+				case AssetType::Model:       return "Model";
 				case AssetType::Font:        return "Font";
 				case AssetType::Audio:       return "Audio";
 				case AssetType::Scene:       return "Scene";
@@ -50,7 +50,7 @@ namespace Vortex {
 		static AssetType AssetTypeFromString(const std::string& type)
 		{
 			if (type == "None")        return AssetType::None;
-			if (type == "Mesh")        return AssetType::Mesh;
+			if (type == "Model")       return AssetType::Model;
 			if (type == "Font")        return AssetType::Font;
 			if (type == "Audio")       return AssetType::Audio;
 			if (type == "Scene")       return AssetType::Scene;

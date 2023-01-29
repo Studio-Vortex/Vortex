@@ -1657,7 +1657,7 @@ namespace Vortex {
 		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
-
+			
 			UI::Property("Slope Limit", component.SlopeLimitDegrees);
 			UI::Property("Step Offset", component.StepOffset);
 			UI::Property("Disable Gravity", component.DisableGravity);
