@@ -354,6 +354,8 @@ namespace Vortex {
 		float StaticFriction = 1.0F;
 		float DynamicFriction = 1.0F;
 		float Bounciness = 1.0F;
+		CombineMode FrictionCombineMode = CombineMode::Average;
+		CombineMode RestitutionCombineMode = CombineMode::Average;
 
 		PhysicsMaterialComponent() = default;
 		PhysicsMaterialComponent(const PhysicsMaterialComponent&) = default;

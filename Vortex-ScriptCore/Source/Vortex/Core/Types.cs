@@ -48,4 +48,24 @@
 		ContinuousSpeculative
 	}
 
+	public enum NonWalkableMode
+	{
+		PreventClimbing,
+		PreventClimbingAndForceSliding
+	}
+
+	public enum CapsuleClimbMode
+	{
+		Easy,
+		Constrained
+	}
+
+	public enum CombineMode
+	{
+		Average,
+		Max,
+		Min,
+		Multiply
+	}
+
 }

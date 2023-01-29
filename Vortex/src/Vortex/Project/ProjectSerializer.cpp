@@ -11,6 +11,56 @@
 
 namespace Vortex {
 
+	namespace Utils {
+
+		static std::string BroadphaseTypeToString(BroadphaseType broadphaseModel)
+		{
+			switch (broadphaseModel)
+			{
+				case BroadphaseType::SweepAndPrune:     return "SweepAndPrune";
+				case BroadphaseType::MultiBoxPrune:     return "MultiBoxPrune";
+				case BroadphaseType::AutomaticBoxPrune: return "AutomaticBoxPrune";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
+			return {};
+		}
+
+		static BroadphaseType BroadphaseTypeFromString(const std::string& broadphaseModel)
+		{
+			if (broadphaseModel == "SweepAndPrune")     return BroadphaseType::SweepAndPrune;
+			if (broadphaseModel == "MultiBoxPrune")     return BroadphaseType::MultiBoxPrune;
+			if (broadphaseModel == "AutomaticBoxPrune") return BroadphaseType::AutomaticBoxPrune;
+
+			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
+			return BroadphaseType::SweepAndPrune;
+		}
+
+		static std::string FrictionTypeToString(FrictionType frictionModel)
+		{
+			switch (frictionModel)
+			{
+				case FrictionType::OneDirectional: return "OneDirectional";
+				case FrictionType::Patch:          return "Patch";
+				case FrictionType::TwoDirectional: return "TwoDirectional";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Friction Type!");
+			return {};
+		}
+
+		static FrictionType FrictionTypeFromString(const std::string& frictionModel)
+		{
+			if (frictionModel == "OneDirectional") return FrictionType::OneDirectional;
+			if (frictionModel == "Patch")          return FrictionType::Patch;
+			if (frictionModel == "TwoDirectional") return FrictionType::TwoDirectional;
+
+			VX_CORE_ASSERT(false, "Unknown Friction Type!");
+			return FrictionType::OneDirectional;
+		}
+
+	}
+
 	ProjectSerializer::ProjectSerializer(const SharedRef<Project>& project)
 		: m_Project(project) { }
 

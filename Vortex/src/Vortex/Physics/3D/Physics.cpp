@@ -2,7 +2,6 @@
 #include "Physics.h"
 
 #include "Vortex/Utils/PlatformUtils.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Project/Project.h"
@@ -392,12 +391,12 @@ namespace Vortex {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = CreatePhysicsMaterial(physicsMaterial);
 				}
 				else
 				{
 					// Create a default material
-					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
 				}
 
 				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
@@ -425,12 +424,12 @@ namespace Vortex {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = CreatePhysicsMaterial(physicsMaterial);
 				}
 				else
 				{
 					// Create a default material
-					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
 				}
 
 				physx::PxBoxControllerDesc desc;
@@ -462,12 +461,12 @@ namespace Vortex {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = CreatePhysicsMaterial(physicsMaterial);
 				}
 				else
 				{
 					// Create a default material
-					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
@@ -488,12 +487,12 @@ namespace Vortex {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = CreatePhysicsMaterial(physicsMaterial);
 				}
 				else
 				{
 					// Create a default material
-					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
@@ -512,12 +511,12 @@ namespace Vortex {
 				if (entity.HasComponent<PhysicsMaterialComponent>())
 				{
 					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = Physics::GetPhysicsFactory()->createMaterial(physicsMaterial.StaticFriction, physicsMaterial.DynamicFriction, physicsMaterial.Bounciness);
+					material = CreatePhysicsMaterial(physicsMaterial);
 				}
 				else
 				{
 					// Create a default material
-					material = Physics::GetPhysicsFactory()->createMaterial(1.0f, 1.0f, 1.0f);
+					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
 				}
 
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
@@ -536,6 +535,14 @@ namespace Vortex {
 			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
+	}
+
+	physx::PxMaterial* Physics::CreatePhysicsMaterial(const PhysicsMaterialComponent& component)
+	{
+		physx::PxMaterial* material = Physics::GetPhysicsFactory()->createMaterial(component.StaticFriction, component.DynamicFriction, component.Bounciness);
+		material->setFrictionCombineMode((physx::PxCombineMode::Enum)component.FrictionCombineMode);
+		material->setRestitutionCombineMode((physx::PxCombineMode::Enum)component.RestitutionCombineMode);
+		return material;
 	}
 
 	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)

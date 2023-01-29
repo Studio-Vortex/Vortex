@@ -2134,6 +2134,106 @@ namespace Vortex {
 		return false;
 	}
 
+	static float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees;
+	}
+
+	static void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees = slopeLimit;
+	}
+
+	static float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().StepOffset;
+	}
+
+	static void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
+	}
+
+	static float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().ContactOffset;
+	}
+
+	static void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().ContactOffset = contactOffset;
+	}
+
+	static NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().NonWalkMode;
+	}
+
+	static void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().NonWalkMode = mode;
+	}
+
+	static CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().ClimbMode;
+	}
+
+	static void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		entity.GetComponent<CharacterControllerComponent>().ClimbMode = mode;
+	}
+
 	static bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -3489,6 +3589,18 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+		
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetSlopeLimit);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetSlopeLimit);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetStepOffset);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetStepOffset);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetContactOffset);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetContactOffset);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetNonWalkableMode);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetNonWalkableMode);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetClimbMode);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetClimbMode);
+		
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
 

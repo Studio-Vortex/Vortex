@@ -596,6 +596,36 @@ namespace Vortex {
 		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetSlopeLimit(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetSlopeLimit(ulong entityID, float slopeLimit);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetStepOffset(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetStepOffset(ulong entityID, float stepOffset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetContactOffset(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetContactOffset(ulong entityID, float contactOffset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetNonWalkableMode(ulong entityID, NonWalkableMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern CapsuleClimbMode CharacterControllerComponent_GetClimbMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetClimbMode(ulong entityID, CapsuleClimbMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool CharacterControllerComponent_GetDisableGravity(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

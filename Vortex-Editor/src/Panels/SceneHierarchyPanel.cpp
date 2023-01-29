@@ -1654,13 +1654,27 @@ namespace Vortex {
 			}
 		});
 
-		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
+		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [entity](auto& component)
 		{
 			UI::BeginPropertyGrid();
 			
 			UI::Property("Slope Limit", component.SlopeLimitDegrees);
 			UI::Property("Step Offset", component.StepOffset);
+			UI::Property("Contact Offset", component.ContactOffset);
 			UI::Property("Disable Gravity", component.DisableGravity);
+
+			const char* nonWalkableModes[] = { "Prevent Climbing", "Prevent Climbing and Force Sliding" };
+			int32_t currentNonWalkableMode = (uint32_t)component.NonWalkMode;
+			if (UI::PropertyDropdown("Non Walkable Mode", nonWalkableModes, VX_ARRAYCOUNT(nonWalkableModes), currentNonWalkableMode))
+				component.NonWalkMode = (NonWalkableMode)currentNonWalkableMode;
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				const char* climbModes[] = { "East", "Constrained" };
+				int32_t currentClimbMode = (uint32_t)component.ClimbMode;
+				if (UI::PropertyDropdown("Capsule Climb Mode", climbModes, VX_ARRAYCOUNT(climbModes), currentClimbMode))
+					component.ClimbMode = (CapsuleClimbMode)currentClimbMode;
+			}
 
 			UI::EndPropertyGrid();
 		});
@@ -1672,6 +1686,15 @@ namespace Vortex {
 			UI::Property("Static Friction", component.StaticFriction, 0.01f, 0.01f, 1.0f);
 			UI::Property("Dynamic Friction", component.DynamicFriction, 0.01f, 0.01f, 1.0f);
 			UI::Property("Bounciness", component.Bounciness, 0.01f, 0.01f, 1.0f);
+
+			const char* combineModes[] = { "Average", "Maximum", "Minimum", "Multiply" };
+			int32_t currentFrictionCombineMode = (uint32_t)component.FrictionCombineMode;
+			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentFrictionCombineMode))
+				component.FrictionCombineMode = (CombineMode)currentFrictionCombineMode;
+
+			int32_t currentRestitutionCombineMode = (uint32_t)component.RestitutionCombineMode;
+			if (UI::PropertyDropdown("Restitution Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentRestitutionCombineMode))
+				component.RestitutionCombineMode = (CombineMode)currentRestitutionCombineMode;
 
 			UI::EndPropertyGrid();
 		});

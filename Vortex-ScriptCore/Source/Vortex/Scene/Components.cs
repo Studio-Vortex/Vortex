@@ -562,12 +562,42 @@
 
 	public class CharacterController : Component
 	{
+		public float SlopeLimit
+		{
+			get => InternalCalls.CharacterControllerComponent_GetSlopeLimit(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetSlopeLimit(Entity.ID, value);
+		}
+
+		public float StepOffset
+		{
+			get => InternalCalls.CharacterControllerComponent_GetStepOffset(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetStepOffset(Entity.ID, value);
+		}
+
+		public float ContactOffset
+		{
+			get => InternalCalls.CharacterControllerComponent_GetContactOffset(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetContactOffset(Entity.ID, value);
+		}
+
 		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
 
 		public bool DisableGravity
 		{
 			get => InternalCalls.CharacterControllerComponent_GetDisableGravity(Entity.ID);
 			set => InternalCalls.CharacterControllerComponent_SetDisableGravity(Entity.ID, value);
+		}
+
+		public NonWalkableMode NonWalkMode
+		{
+			get => InternalCalls.CharacterControllerComponent_GetNonWalkableMode(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetNonWalkableMode(Entity.ID, value);
+		}
+
+		public CapsuleClimbMode ClimbMode
+		{
+			get => InternalCalls.CharacterControllerComponent_GetClimbMode(Entity.ID);
+			set => InternalCalls.CharacterControllerComponent_SetClimbMode(Entity.ID, value);
 		}
 
 		public void Move(Vector3 displacement)

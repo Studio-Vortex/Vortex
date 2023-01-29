@@ -202,6 +202,31 @@ namespace Vortex {
 			return CapsuleClimbMode::Easy;
 		}
 
+		static std::string CombineModeToString(CombineMode mode)
+		{
+			switch (mode)
+			{
+				case CombineMode::Average:  return "Average";
+				case CombineMode::Max:      return "Max";
+				case CombineMode::Min:      return "Min";
+				case CombineMode::Mulitply: return "Multiply";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
+			return "";
+		}
+
+		static CombineMode CombineModeFromString(const std::string& mode)
+		{
+			if (mode == "Average")  return CombineMode::Average;
+			if (mode == "Max")     	return CombineMode::Average;
+			if (mode == "Min")     	return CombineMode::Average;
+			if (mode == "Multiply") return CombineMode::Average;
+
+			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
+			return CombineMode::Average;
+		}
+
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
@@ -656,6 +681,8 @@ namespace Vortex {
 			out << YAML::Key << "StaticFriction" << YAML::Key << physicsMaterial.StaticFriction;
 			out << YAML::Key << "DynamicFriction" << YAML::Key << physicsMaterial.DynamicFriction;
 			out << YAML::Key << "Bounciness" << YAML::Key << physicsMaterial.Bounciness;
+			out << YAML::Key << "FrictionCombineMode" << YAML::Key << Utils::CombineModeToString(physicsMaterial.FrictionCombineMode);
+			out << YAML::Key << "RestitutionCombineMode" << YAML::Key << Utils::CombineModeToString(physicsMaterial.RestitutionCombineMode);
 
 			out << YAML::EndMap; // PhysicsMaterialComponent
 		}
@@ -1224,6 +1251,10 @@ namespace Vortex {
 				physicsMaterial.StaticFriction = physicsMaterialComponent["StaticFriction"].as<float>();
 				physicsMaterial.DynamicFriction = physicsMaterialComponent["DynamicFriction"].as<float>();
 				physicsMaterial.Bounciness = physicsMaterialComponent["Bounciness"].as<float>();
+				if (physicsMaterialComponent["FrictionCombineMode"])
+					physicsMaterial.FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialComponent["FrictionCombineMode"].as<std::string>());
+				if (physicsMaterialComponent["RestitutionCombineMode"])
+					physicsMaterial.RestitutionCombineMode = Utils::CombineModeFromString(physicsMaterialComponent["RestitutionCombineMode"].as<std::string>());
 			}
 
 			auto boxColliderComponent = entity["BoxColliderComponent"];

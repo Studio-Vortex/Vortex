@@ -28,15 +28,23 @@ namespace Vortex {
 		TwoDirectional
 	};
 
+	enum class CombineMode : uint8_t
+	{
+		Average,
+		Max,
+		Min,
+		Mulitply
+	};
+
 	enum class CookingResult
 	{
+		None,
 		Success,
 		ZeroAreaTestFailed,
 		PolygonLimitReached,
 		LargeTriangle,
 		InvalidMesh,
-		Failure,
-		None
+		Failure
 	};
 
 	enum class ForceMode : uint8_t

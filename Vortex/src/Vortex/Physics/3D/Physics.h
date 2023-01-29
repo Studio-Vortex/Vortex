@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/TimeStep.h"
+#include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Core/TimeStep.h"
 
 namespace physx {
 
 	class PxScene;
 	class PxPhysics;
+	class PxMaterial;
 	class PxRigidActor;
 	class PxRigidDynamic;
 	class PxControllerManager;
@@ -63,6 +65,7 @@ namespace Vortex {
 
 		static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
 		static void SetPhysicsSceneGravity(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
+		static physx::PxMaterial* CreatePhysicsMaterial(const PhysicsMaterialComponent& material);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 
