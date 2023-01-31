@@ -53,7 +53,10 @@ namespace Vortex {
 
 					Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
 					if (UI::Property("Gravity", gravity3D))
+					{
 						Physics::SetPhysicsSceneGravity(gravity3D);
+						Physics::WakeUpActors();
+					}
 
 					static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
 					int32_t currentBroadphaseType = (int32_t)m_Properties.PhysicsProps.BroadphaseModel;

@@ -36,6 +36,12 @@ namespace Vortex {
 		internal extern static void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawCircleVec2(ref Vector2 translation, ref Vector2 size, ref Vector4 color, float thickness, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawCircleVec3(ref Vector3 translation, ref Vector3 size, ref Vector4 color, float thickness, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_DrawBoundingBox(ref Vector3 worldPosition, ref Vector3 size, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -763,6 +769,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_SetFixedRotation(ulong entityID, bool freeze);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetGravityScale(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetGravityScale(ulong entityID, float gravityScale);
 
 		#endregion
 

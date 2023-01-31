@@ -144,6 +144,16 @@ namespace Vortex {
 		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 	}
 
+	static void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
+	{
+		Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
+	}
+
+	static void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade)
+	{
+		Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
+	}
+
 	static void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
 	{
 		Math::AABB aabb{
@@ -2039,6 +2049,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
 		Physics::SetPhysicsSceneGravity(*gravity);
+		Physics::WakeUpActors();
 	}
 
 	static uint32_t Physics_GetScenePositionIterations()
@@ -2669,6 +2680,33 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
+	}
+
+	static float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+
+		return body->GetGravityScale();
+	}
+
+	static void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+
+		entity.GetComponent<RigidBody2DComponent>().GravityScale = gravityScale;
+		body->SetGravityScale(gravityScale);
 	}
 
 #pragma endregion
@@ -3504,6 +3542,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		VX_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
 		VX_ADD_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
+		VX_ADD_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
+		VX_ADD_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);
 		VX_ADD_INTERNAL_CALL(DebugRenderer_DrawBoundingBox);
 		VX_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
@@ -3717,6 +3757,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetDrag);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetGravityScale);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetGravityScale);
 
 		VX_ADD_INTERNAL_CALL(Physics2D_Raycast);
 		VX_ADD_INTERNAL_CALL(Physics2D_GetWorldGravity);

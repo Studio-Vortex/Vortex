@@ -1011,6 +1011,18 @@ namespace Vortex
 			DrawQuad(transform, sprite.SpriteColor, entityID);
 	}
 
+	void Renderer2D::DrawCircle(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID)
+	{
+		Math::mat4 transform = Math::Translate({ position.x, position.y, 0.0f }) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
+		DrawCircle(transform, color, thickness, fade, entityID);
+	}
+
+	void Renderer2D::DrawCircle(const Math::vec3& position, const Math::vec3& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID)
+	{
+		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale(size);
+		DrawCircle(transform, color, thickness, fade, entityID);
+	}
+
 	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID)
 	{
 		VX_PROFILE_FUNCTION();

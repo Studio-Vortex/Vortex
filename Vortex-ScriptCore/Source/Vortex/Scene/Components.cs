@@ -758,6 +758,12 @@
 			set => InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
 		}
 
+		public float GravityScale
+		{
+			get => InternalCalls.RigidBody2DComponent_GetGravityScale(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetGravityScale(Entity.ID, value);
+		}
+
 		public bool FreezeRotation
 		{
 			get => InternalCalls.RigidBody2DComponent_GetFixedRotation(Entity.ID);

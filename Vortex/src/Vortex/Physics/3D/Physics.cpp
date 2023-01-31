@@ -234,6 +234,33 @@ namespace Vortex {
 		return s_Data->ControllerManager;
 	}
 
+	void Physics::WakeUpActors()
+	{
+		VX_PROFILE_FUNCTION();
+
+		physx::PxActorTypeFlags flags = physx::PxActorTypeFlag::eRIGID_DYNAMIC;
+		uint32_t count = s_Data->PhysicsScene->getNbActors(flags);
+
+		physx::PxActor** buffer = new physx::PxActor*[count];
+		s_Data->PhysicsScene->getActors(flags, buffer, count);
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			if (physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>())
+			{
+				bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
+				bool isAwake = !actor->isSleeping();
+
+				if (gravityDisabled || isAwake)
+					continue;
+
+				actor->wakeUp();
+			}
+		}
+
+		delete[] buffer;
+	}
+
 	void Physics::OnSimulationStart(Scene* contextScene)
 	{
 		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
