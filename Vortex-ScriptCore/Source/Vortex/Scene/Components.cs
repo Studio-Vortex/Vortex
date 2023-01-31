@@ -173,13 +173,18 @@
 			}
 		}
 
+		public void SetParent(Entity parent) => InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
+		public void Unparent() => InternalCalls.TransformComponent_Unparent(Entity.ID);
+
+		public void SetTranslationAndRotation(Vector3 translation, Vector3 rotation)
+		{
+			InternalCalls.TransformComponent_SetTranslationAndRotation(Entity.ID, ref translation, ref rotation);
+		}
+
 		public void LookAt(Vector3 worldPoint)
 		{
 			InternalCalls.TransformComponent_LookAt(Entity.ID, ref worldPoint);
 		}
-
-		public void SetParent(Entity parent) => InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
-		public void Unparent() => InternalCalls.TransformComponent_Unparent(Entity.ID);
 
 		public static Transform operator *(Transform a, Transform b)
 		{
@@ -714,6 +719,23 @@
 
 	public class RigidBody2D : Component
 	{
+		public Vector2 Translation
+		{
+			get
+			{
+				InternalCalls.RigidBody2DComponent_GetTranslation(Entity.ID, out Vector2 result);
+				return result;
+			}
+
+			set => InternalCalls.RigidBody2DComponent_SetTranslation(Entity.ID, ref value);
+		}
+
+		public float Angle
+		{
+			get => InternalCalls.RigidBody2DComponent_GetAngle(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetAngle(Entity.ID, value);
+		}
+
 		public RigidBody2DType BodyType
 		{
 			get => InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);

@@ -517,6 +517,18 @@ namespace Vortex {
 		entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
 	}
 
+	static void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		TransformComponent& transform = entity.GetTransform();
+		transform.Translation = *translation;
+		transform.SetRotationEuler(*rotation);
+	}
+
 	static void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -2470,6 +2482,59 @@ namespace Vortex {
 
 #pragma region RigidBody2D Component
 
+	static void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+		const auto& position = body->GetPosition();
+		*outTranslation = Math::vec2{ position.x, position.y };
+	}
+
+	static void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+		body->SetTransform({ translation->x, translation->y }, body->GetAngle());
+	}
+
+	static float RigidBody2DComponent_GetAngle(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+		return Math::Rad2Deg(body->GetAngle());
+	}
+
+	static void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+		body->SetTransform(body->GetPosition(), Math::Deg2Rad(angle));
+	}
+
 	static RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -3471,6 +3536,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+		VX_ADD_INTERNAL_CALL(TransformComponent_SetTranslationAndRotation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetRotationQuaternion);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotationQuaternion);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetScale);
@@ -3635,6 +3701,10 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
 		VX_ADD_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
 
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetTranslation);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetTranslation);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetAngle);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetAngle);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);

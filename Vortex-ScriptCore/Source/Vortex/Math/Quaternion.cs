@@ -6,10 +6,10 @@ namespace Vortex
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Quaternion : IEquatable<Quaternion>
 	{
+		public float W;
 		public float X;
 		public float Y;
 		public float Z;
-		public float W;
 
 		public Quaternion(float x, float y, float z, float w)
 		{

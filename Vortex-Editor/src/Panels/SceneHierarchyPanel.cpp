@@ -1569,7 +1569,7 @@ namespace Vortex {
 				UI::Property("Angular Velocity", component.AngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
-				UI::Property("DisableGravity", component.DisableGravity);
+				UI::Property("Disable Gravity", component.DisableGravity);
 				UI::Property("IsKinematic", component.IsKinematic);
 
 				const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
