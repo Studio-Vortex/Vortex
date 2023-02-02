@@ -238,6 +238,9 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		if (!s_Data->PhysicsScene)
+			return;
+
 		physx::PxActorTypeFlags flags = physx::PxActorTypeFlag::eRIGID_DYNAMIC;
 		uint32_t count = s_Data->PhysicsScene->getNbActors(flags);
 
