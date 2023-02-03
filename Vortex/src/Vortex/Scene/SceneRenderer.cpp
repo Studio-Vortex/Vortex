@@ -302,6 +302,7 @@ namespace Vortex {
 					SharedRef<Material> material = model->GetMaterial();
 					if (!material)
 						continue;
+
 					SetMaterialFlags(material);
 
 					if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())

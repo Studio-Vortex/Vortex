@@ -646,9 +646,7 @@ namespace Vortex {
 		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
 		Math::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		transform.Translation = translation;
 		transform.SetRotationEuler(rotation);
-		transform.Scale = scale;
 	}
 	
 	static uint64_t TransformComponent_GetParent(UUID entityUUID)
@@ -1699,7 +1697,7 @@ namespace Vortex {
 		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
 		physxTransform.q = ToPhysXQuat(Math::quaternion(rotation));
 
-		actor->setGlobalPose(ToPhysXTransform(transform));
+		actor->setGlobalPose(physxTransform);
 	}
 
 	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
