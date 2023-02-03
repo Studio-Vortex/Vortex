@@ -2155,6 +2155,16 @@ namespace Vortex {
 		return false;
 	}
 
+	static float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		return entity.GetComponent<CharacterControllerComponent>().SpeedDown;
+	}
+
 	static float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -3203,6 +3213,15 @@ namespace Vortex {
 	{
 		*outResult = Math::Rad2Deg(*value);
 	}
+	
+	static void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation)
+	{
+		Math::vec3 up{ 0.0f, 1.0f, 0.0f };
+		Math::mat4 transform = Math::LookAt(*eyePos, *worldPoint, up);
+		Math::vec3 translation, rotation, scale;
+		Math::DecomposeTransform(transform, translation, rotation, scale);
+		*outRotation = rotation;
+	}
 
 #pragma endregion
 
@@ -3693,7 +3712,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
-		
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetSpeedDown);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetSlopeLimit);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetSlopeLimit);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetStepOffset);
@@ -3704,7 +3723,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetNonWalkableMode);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetClimbMode);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetClimbMode);
-		
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
 
@@ -3832,6 +3850,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Mathf_Rad2Deg);
 		VX_ADD_INTERNAL_CALL(Mathf_Deg2RadVector3);
 		VX_ADD_INTERNAL_CALL(Mathf_Rad2DegVector3);
+		VX_ADD_INTERNAL_CALL(Mathf_LookAt);
 
 		VX_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
 		VX_ADD_INTERNAL_CALL(Vector3_DotProductVec3);

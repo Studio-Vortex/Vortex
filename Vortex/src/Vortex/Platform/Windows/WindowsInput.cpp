@@ -95,7 +95,7 @@ namespace Vortex {
 		return GetMousePosition().y;
 	}
 
-	void Input::SetCursorPosition(const Math::vec2& position)
+	void Input::SetMousePosition(const Math::vec2& position)
 	{
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
 		glfwSetCursorPos(window, position.x, position.y);

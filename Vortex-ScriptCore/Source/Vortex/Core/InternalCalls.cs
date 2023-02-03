@@ -605,6 +605,9 @@ namespace Vortex {
 		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetSpeedDown(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern float CharacterControllerComponent_GetSlopeLimit(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -936,6 +939,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_Rad2DegVector3(ref Vector3 value, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, out Vector3 result);
 
 		#endregion
 

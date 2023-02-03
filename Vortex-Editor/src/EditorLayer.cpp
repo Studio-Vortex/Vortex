@@ -150,12 +150,12 @@ namespace Vortex {
 
 				m_ActiveScene->OnUpdateRuntime(delta);
 
-				if (Input::IsKeyPressed(KeyCode::F6))
+				if (Input::IsKeyPressed(KeyCode::Escape))
 				{
 					Input::SetCursorMode(CursorMode::Normal);
 					m_ActiveScene->SetShouldUpdateScripts(false);
 				}
-				else if (Input::IsKeyPressed(KeyCode::Escape))
+				else if (Input::IsKeyPressed(KeyCode::F6))
 				{
 					Input::SetCursorMode(CursorMode::Locked);
 					m_ActiveScene->SetShouldUpdateScripts(true);

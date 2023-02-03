@@ -31,7 +31,7 @@ namespace Vortex {
 		static float GetMouseX();
 		static float GetMouseY();
 
-		static void SetCursorPosition(const Math::vec2& position);
+		static void SetMousePosition(const Math::vec2& position);
 
 		static CursorMode GetCursorMode();
 		static void SetCursorMode(CursorMode cursorMode);

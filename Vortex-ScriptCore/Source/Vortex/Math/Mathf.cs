@@ -1,14 +1,18 @@
-﻿namespace Vortex {
+﻿using System;
+
+namespace Vortex {
 
 	public static class Mathf
 	{
-		public static float PI { get => InternalCalls.Mathf_GetPI(); }
-		public static double PI_D { get => InternalCalls.Mathf_GetPI_D(); }
+		public static float PI => InternalCalls.Mathf_GetPI();
+		public static float TwoPI => PI * 2;
+		public static double PI_D => InternalCalls.Mathf_GetPI_D();
 
 		public static float Clamp(float value, float min, float max)
 		{
 			if (value < min)
 				return min;
+
 			return value > max ? max : value;
 		}
 
@@ -16,6 +20,11 @@
 		{
 			return a + (1.0f - t) + (b * t);
 		}
+
+		public static float Floor(float value) => (float)Math.Floor(value);
+
+		// not the same as a%b
+		public static float Modulo(float a, float b) => a - b * (float)Math.Floor(a / b);
 
 		public static float Abs(float value) => InternalCalls.Mathf_Abs(value);
 		public static float Sqrt(float value) => InternalCalls.Mathf_Sqrt(value);
@@ -38,6 +47,18 @@
 		public static Vector3 Rad2Deg(Vector3 radians)
 		{
 			InternalCalls.Mathf_Rad2DegVector3(ref radians, out Vector3 result);
+			return result;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="eyePos"></param>
+		/// <param name="worldPoint"></param>
+		/// <returns>The final Rotation of the computed transform</returns>
+		public static Vector3 LookAt(Vector3 eyePos, Vector3 worldPoint)
+		{
+			InternalCalls.Mathf_LookAt(ref eyePos, ref worldPoint, out Vector3 result);
 			return result;
 		}
 	}

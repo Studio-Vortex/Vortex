@@ -567,6 +567,8 @@
 
 	public class CharacterController : Component
 	{
+		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Entity.ID);
+
 		public float SlopeLimit
 		{
 			get => InternalCalls.CharacterControllerComponent_GetSlopeLimit(Entity.ID);
