@@ -2,14 +2,13 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
-#include "Vortex/Asset/Asset.h"
 
 namespace Vortex {
 
 	class Animation;
 	struct AssimpNodeData;
 
-	class VORTEX_API Animator : public Asset
+	class VORTEX_API Animator
 	{
 	public:
 		Animator() = default;
@@ -25,9 +24,6 @@ namespace Vortex {
 		inline const std::vector<Math::mat4>& GetFinalBoneMatrices() const { return m_FinalBoneMatrices; }
 
 		bool IsPlaying() const { return m_IsPlaying; }
-
-		static AssetType GetStaticType() { return AssetType::Animator; }
-		AssetType GetAssetType() const override { return AssetType::Animator; }
 
 		static SharedRef<Animator> Create(const SharedRef<Animation>& animation);
 

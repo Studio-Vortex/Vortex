@@ -1,19 +1,18 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class ScriptRegistryPanel : public EditorPanel
+	class ScriptRegistryPanel
 	{
 	public:
 		ScriptRegistryPanel() = default;
-		~ScriptRegistryPanel() override = default;
+		~ScriptRegistryPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedRef<Project> project) {}
+		void SetSceneContext(SharedRef<Scene> scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

@@ -556,7 +556,7 @@ namespace Vortex {
 				{
 					if (!lightSourceComponent.Source->GetCastShadows())
 					{
-						s_Data.SkylightDepthMapFramebuffer.Reset();
+						s_Data.SkylightDepthMapFramebuffer.reset();
 						continue;
 					}
 

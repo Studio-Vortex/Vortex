@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	class DirectXInputLayout : public RefCounted
+	class DirectXInputLayout
 	{
 	public:
 		DirectXInputLayout() = default;

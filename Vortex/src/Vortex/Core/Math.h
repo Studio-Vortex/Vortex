@@ -123,6 +123,18 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Clamp(T v, T min, T max)
+	{
+		return glm::clamp(v, min, max);
+	}
+
+	template <typename T>
+	static auto Log(T v)
+	{
+		return glm::log(v);
+	}
+
+	template <typename T>
 	static auto Abs(T v)
 	{
 		return glm::abs(v);

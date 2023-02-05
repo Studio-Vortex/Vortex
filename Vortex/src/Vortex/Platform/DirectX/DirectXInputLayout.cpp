@@ -5,7 +5,7 @@ namespace Vortex {
 
 	SharedRef<DirectXInputLayout> DirectXInputLayout::Create()
 	{
-		return SharedRef<DirectXInputLayout>::Create();
+		return CreateShared<DirectXInputLayout>();
 	}
 
 }

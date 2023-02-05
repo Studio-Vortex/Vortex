@@ -13,8 +13,6 @@
 
 namespace Vortex {
 
-#define REGISTER_EDITOR_PANEL(id, type, ...) m_PanelManager.RegisterPanel<type>(id, __VA_ARGS__)
-
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer") { }
 
@@ -61,20 +59,13 @@ namespace Vortex {
 			}
 		}
 
-		// Init Panels
-		SharedRef<Project> activeProject = Project::GetActive();
-		REGISTER_EDITOR_PANEL("Project Settings", ProjectSettingsPanel, activeProject);
-		REGISTER_EDITOR_PANEL("Content Browser", ContentBrowserPanel);
-		REGISTER_EDITOR_PANEL("Script Registry", ScriptRegistryPanel);
-		REGISTER_EDITOR_PANEL("Material Editor", MaterialEditorPanel);
-		REGISTER_EDITOR_PANEL("Asset Registry", AssetRegistryPanel);
-		REGISTER_EDITOR_PANEL("Build Settings", BuildSettingsPanel, VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
-		REGISTER_EDITOR_PANEL("Shader Editor", ShaderEditorPanel);
-		REGISTER_EDITOR_PANEL("Performance", PerformancePanel);
-		REGISTER_EDITOR_PANEL("Console", ConsolePanel);
-		REGISTER_EDITOR_PANEL("About", AboutPanel);
-
-		m_EditorCamera = new EditorCamera(Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV, 0.1778f, 0.1f, 1000.0f);
+		m_EditorCamera = new EditorCamera(
+			Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV,
+			m_ViewportSize.x,
+			m_ViewportSize.y,
+			0.1f,
+			1000.0f
+		);
 	}
 
 	void EditorLayer::OnDetach()
@@ -90,7 +81,7 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene.Raw());
+		Renderer::RenderToDepthMap(m_ActiveScene.get());
 		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
 		SharedRef<Project> activeProject = Project::GetActive();
@@ -150,17 +141,6 @@ namespace Vortex {
 
 				m_ActiveScene->OnUpdateRuntime(delta);
 
-				if (Input::IsKeyPressed(KeyCode::Escape))
-				{
-					Input::SetCursorMode(CursorMode::Normal);
-					m_ActiveScene->SetShouldUpdateScripts(false);
-				}
-				else if (Input::IsKeyPressed(KeyCode::F6))
-				{
-					Input::SetCursorMode(CursorMode::Locked);
-					m_ActiveScene->SetShouldUpdateScripts(true);
-				}
-
 				break;
 			}
 			case SceneState::Simulate:
@@ -176,11 +156,6 @@ namespace Vortex {
 
 		m_MousePosLastFrame = Input::GetMousePosition();
 
-		float editorCameraFOV = m_EditorCamera->GetFOV();
-		if (editorCameraFOV != m_EditorCameraFOVLastFrame)
-			m_EditorCamera->SetFOV(projectProps.EditorProps.EditorCameraFOV);
-		m_EditorCameraFOVLastFrame = projectProps.EditorProps.EditorCameraFOV;
-
 		auto [mx, my] = Gui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
@@ -193,7 +168,7 @@ namespace Vortex {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
 			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 		}
 
@@ -264,14 +239,21 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
+			m_ProjectSettingsPanel->OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_ContentBrowserPanel->OnGuiRender();
+			m_ScriptRegistryPanel.OnGuiRender();
+			m_MaterialEditorPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
+			m_BuildSettingsPanel->OnGuiRender();
+			m_AssetRegistryPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
-
-			PanelData data;
-			data.SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			data.EntityCount = m_ActiveScene->GetEntityCount();
-			m_PanelManager.RenderPanels(data);
+			m_ShaderEditorPanel.OnGuiRender();
+			m_ConsolePanel.OnGuiRender();
+			m_AboutPanel.OnGuiRender();
 		}
+
+		// Always render if open
+		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();
@@ -434,7 +416,7 @@ namespace Vortex {
 				if (inEditMode)
 				{
 					if (Gui::MenuItem("Center Editor Camera"))
-						m_EditorCamera->ResetCameraPositionToWorldOrigin();
+						m_EditorCamera->Focus({0, 0, 0});
 				}
 
 				Gui::EndMenu();
@@ -462,24 +444,38 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Window"))
 			{
-				const char* sceneHierarchyPanelID = "Scene Hierarchy";
-				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
+				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				Gui::Separator();
+				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+				Gui::Separator();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
+				Gui::Separator();
+				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
 				Gui::Separator();
 				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
 				Gui::Separator();
-				m_PanelManager.RenderMenuButtons(m_ShowScenePanel);
+				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Build Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
+				Gui::Separator();
+				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
 
 				Gui::EndMenu();
 			}
 
 			if (Gui::BeginMenu("Help"))
 			{
-				bool* aboutPanelOpen = &m_PanelManager.GetPanel<AboutPanel>("About")->IsOpen();
-				Gui::MenuItem("About", nullptr, aboutPanelOpen);
+				Gui::MenuItem("About", nullptr, &m_AboutPanel.IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -1065,7 +1061,7 @@ namespace Vortex {
 			projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
 		UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
 
-		bool isIn2DView = m_EditorCamera->IsIn2DView();
+		/*bool isIn2DView = m_EditorCamera->IsIn2DView();
 		if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
 			m_EditorCamera->LockTo2DView(!isIn2DView);
 		UI::SetTooltip("2D View");
@@ -1073,7 +1069,7 @@ namespace Vortex {
 		bool isInTopDownView = m_EditorCamera->IsInTopDownView();
 		if (UI::ImageButtonEx(EditorResources::TopDownViewIcon, textureSize, isInTopDownView ? bgColor : normalColor, tintColor))
 			m_EditorCamera->LockToTopDownView(!isInTopDownView);
-		UI::SetTooltip("Top Down View");
+		UI::SetTooltip("Top Down View");*/
 
 		Gui::Spring();
 		Gui::EndHorizontal();
@@ -1165,7 +1161,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
+						Entity entity{ e, m_ActiveScene.get() };
 
 						Math::AABB aabb = {
 							- Math::vec3(0.5f),
@@ -1192,7 +1188,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
+						Entity entity{ e, m_ActiveScene.get() };
 
 						Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
@@ -1209,7 +1205,7 @@ namespace Vortex {
 					for (auto e : view)
 					{
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
+						Entity entity{ e, m_ActiveScene.get() };
 
 						Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
@@ -1373,7 +1369,7 @@ namespace Vortex {
 				if (selectedEntity && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-					m_EditorCamera->MoveToPosition(selectedEntity.GetTransform().Translation);
+					m_EditorCamera->Focus(selectedEntity.GetTransform().Translation);
 				}
 
 				break;
@@ -1589,6 +1585,11 @@ namespace Vortex {
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
 			OpenScene(startScenePath.string());
 
+			SharedRef<Project> activeProject = Project::GetActive();
+			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
+			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
+			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+
 			TagComponent::ResetAddedMarkers();
 		}
 	}
@@ -1607,9 +1608,8 @@ namespace Vortex {
 			return;
 
 		m_ActiveScene = Scene::Create(m_Framebuffer);
-		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
-		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
-		m_PanelManager.SetSceneContext(m_ActiveScene);
+
+		SetSceneContext(m_ActiveScene);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
@@ -1653,9 +1653,7 @@ namespace Vortex {
 		if (serializer.Deserialize(path.string()))
 		{
 			m_EditorScene = newScene;
-			m_SceneHierarchyPanel.SetSceneContext(m_EditorScene);
-			m_SceneRendererPanel.SetSceneContext(m_EditorScene);
-			m_PanelManager.SetSceneContext(m_EditorScene);
+			SetSceneContext(m_EditorScene);
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
@@ -1716,9 +1714,7 @@ namespace Vortex {
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 
-		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
-		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
-		m_PanelManager.SetSceneContext(m_ActiveScene);
+		SetSceneContext(m_ActiveScene);
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
@@ -1756,12 +1752,10 @@ namespace Vortex {
 		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = false;
 
-		m_ActiveScene = m_EditorScene;
-
 		m_HoveredEntity = Entity{};
-		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
-		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
-		m_PanelManager.SetSceneContext(m_ActiveScene);
+
+		m_ActiveScene = m_EditorScene;
+		SetSceneContext(m_ActiveScene);
 
 		// Reset the mouse cursor in case a script turned it off
 		Input::SetCursorMode(CursorMode::Normal);
@@ -1785,9 +1779,7 @@ namespace Vortex {
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnPhysicsSimulationStart();
 
-		m_SceneHierarchyPanel.SetSceneContext(m_ActiveScene);
-		m_SceneRendererPanel.SetSceneContext(m_ActiveScene);
-		m_PanelManager.SetSceneContext(m_ActiveScene);
+		SetSceneContext(m_ActiveScene);
 	}
 
 	void EditorLayer::RestartSceneSimulation()
@@ -1803,7 +1795,7 @@ namespace Vortex {
 
 			for (auto& e : view)
 			{
-				Entity entity{ e, m_ActiveScene.Raw() };
+				Entity entity{ e, m_ActiveScene.get() };
 
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
@@ -1839,7 +1831,7 @@ namespace Vortex {
 
 		for (auto& e : view)
 		{
-			Entity entity{ e, m_ActiveScene.Raw() };
+			Entity entity{ e, m_ActiveScene.get() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 			if (!audioSource->IsPlaying())
@@ -1862,6 +1854,12 @@ namespace Vortex {
 			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
 			m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
 		}
+	}
+
+	void EditorLayer::SetSceneContext(const SharedRef<Scene>& scene)
+	{
+		m_SceneHierarchyPanel.SetSceneContext(scene);
+		m_SceneRendererPanel.SetSceneContext(scene);
 	}
 
 	void EditorLayer::OnNoGizmoSelected()

@@ -83,7 +83,7 @@ namespace Vortex {
 
 	SharedRef<ParticleEmitter> ParticleEmitter::Create(const ParticleEmitterProperties& props)
 	{
-		return SharedRef<ParticleEmitter>::Create(props);
+		return CreateShared<ParticleEmitter>(props);
 	}
 
 }

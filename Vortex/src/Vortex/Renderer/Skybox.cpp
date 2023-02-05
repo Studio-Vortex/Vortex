@@ -23,7 +23,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLSkybox>::Create();
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLSkybox>();
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -39,7 +39,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLSkybox>::Create(filepath);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLSkybox>(filepath);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

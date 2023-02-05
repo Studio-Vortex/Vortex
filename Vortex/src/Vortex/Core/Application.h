@@ -30,11 +30,11 @@ namespace Vortex {
 		std::string Name = "Vortex Application";
 		uint16_t WindowWidth = 1600;
 		uint16_t WindowHeight = 900;
-		uint32_t SampleCount = 4;
+		uint32_t SampleCount = 1;
 		bool MaximizeWindow = false;
 		bool WindowDecorated = true;
 		bool VSync = true;
-		bool EnableGUI = false;
+		bool EnableGUI = true;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
 		std::string WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Asset/Asset.h"
 
 #include <string>
 
@@ -14,10 +13,10 @@ namespace Vortex {
 		Repeat,
 	};
 
-	class VORTEX_API Texture : public Asset
+	class VORTEX_API Texture
 	{
 	public:
-		virtual ~Texture() override = default;
+		virtual ~Texture() = default;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
@@ -35,9 +34,6 @@ namespace Vortex {
 		virtual uint32_t GetRendererID() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
-
-		static AssetType GetStaticType() { return AssetType::Texture; }
-		AssetType GetAssetType() const override { return AssetType::Texture; }
 	};
 
 	class VORTEX_API Texture2D : public Texture

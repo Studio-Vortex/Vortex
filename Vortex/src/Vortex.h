@@ -85,7 +85,6 @@ namespace Gui = ImGui;
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Model.h"
 #include "Vortex/Renderer/Material.h"
-#include "Vortex/Renderer/MaterialAsset.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/Skybox.h"

@@ -986,8 +986,11 @@ namespace Vortex {
 		internal extern static bool Input_IsMouseButtonUp(MouseButton mouseButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Input_GetMousePosition(out Vector2 position);
-		
+		internal extern static void Input_GetMousePosition(out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Input_SetMousePosition(ref Vector2 position);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Input_GetMouseScrollOffset(out Vector2 position);
 

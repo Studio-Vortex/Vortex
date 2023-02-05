@@ -1,20 +1,19 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 	
-	class SceneHierarchyPanel : public EditorPanel
+	class SceneHierarchyPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const SharedRef<Scene>& context);
-		~SceneHierarchyPanel() override = default;
+		~SceneHierarchyPanel() = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override;
+		void SetProjectContext(SharedRef<Project> project) {}
+		void SetSceneContext(SharedRef<Scene> scene);
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }

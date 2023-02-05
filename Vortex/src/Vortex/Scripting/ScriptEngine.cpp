@@ -237,7 +237,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 		s_ScriptEngineInitialized = true;
 	}
@@ -339,7 +339,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
@@ -368,7 +368,7 @@ namespace Vortex {
 		{
 			UUID uuid = entity.GetUUID();
 
-			SharedRef<ScriptInstance> instance = SharedRef<ScriptInstance>::Create(s_Data->EntityClasses[scriptComponent.ClassName], entity);
+			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
 			s_Data->EntityInstances[uuid] = instance;
 
 			// Copy field values
@@ -560,7 +560,7 @@ namespace Vortex {
 		{
 			auto entityClasses = ScriptEngine::GetClasses();
 
-			
+
 		}
 	}
 
@@ -595,7 +595,7 @@ namespace Vortex {
 			if (!isEntityClass)
 				continue;
 
-			SharedRef<ScriptClass> scriptClass = SharedRef<ScriptClass>::Create(nameSpace, className);
+			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);

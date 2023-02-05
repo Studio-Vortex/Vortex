@@ -276,12 +276,13 @@ namespace Vortex {
 		else
 		{
 			Entity previousParent = TryGetEntityWithUUID(entity.GetParentUUID());
-
 			if (previousParent)
+			{
 				UnparentEntity(entity);
+			}
 		}
 
-		entity.SetParent(parent.GetUUID());
+		entity.SetParentUUID(parent.GetUUID());
 		parent.Children().push_back(entity.GetUUID());
 
 		ConvertToLocalSpace(entity);
@@ -291,7 +292,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		Entity parent = entity.GetParent();
 		if (!parent)
 			return;
 
@@ -301,7 +302,7 @@ namespace Vortex {
 		if (convertToWorldSpace)
 			ConvertToWorldSpace(entity);
 
-		entity.SetParent(0);
+		entity.SetParentUUID(0);
 	}
 
     void Scene::ActiveateChildren(Entity entity)
@@ -373,13 +374,26 @@ namespace Vortex {
 
 		// Create Script Instances
 		{
-			ScriptEngine::OnRuntimeStart(this);
-
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto e : view)
+			// C# Entity OnCreate
 			{
-				Entity entity{ e, this };
-				ScriptEngine::OnCreateEntity(entity);
+				ScriptEngine::OnRuntimeStart(this);
+
+				auto view = m_Registry.view<ScriptComponent>();
+				for (const auto e : view)
+				{
+					Entity entity{ e, this };
+					ScriptEngine::OnCreateEntity(entity);
+				}
+			}
+
+			// C++ Entity OnCreate
+			{
+				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				});
 			}
 		}
 	}
@@ -472,35 +486,23 @@ namespace Vortex {
 
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			// Update Scripts
-			if (m_ShouldUpdateScripts)
+			// C# Entity OnUpdate
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto entityID : view)
 			{
-				// C# Entity OnUpdate
-				auto view = m_Registry.view<ScriptComponent>();
-				for (auto entityID : view)
-				{
-					Entity entity{ entityID, this };
+				Entity entity{ entityID, this };
 
-					if (!entity.IsActive())
-						continue;
+				if (!entity.IsActive())
+					continue;
 
-					ScriptEngine::OnUpdateEntity(entity, delta);
-				}
-
-				// C++ Entity OnUpdate
-				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-				{
-					// TODO: Move to Scene::OnScenePlay
-					if (!nsc.Instance)
-					{
-						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{ entity, this };
-						nsc.Instance->OnCreate();
-					}
-
-					nsc.Instance->OnUpdate(delta);
-				});
+				ScriptEngine::OnUpdateEntity(entity, delta);
 			}
+
+			// C++ Entity OnUpdate
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				nsc.Instance->OnUpdate(delta);
+			});
 
 			// Update Physics Bodies
 			Physics::OnSimulationUpdate(delta, this);
@@ -510,7 +512,9 @@ namespace Vortex {
 			OnAnimatorUpdate(delta);
 
 			if (m_StepFrames)
+			{
 				m_StepFrames--;
+			}
 		}
 
 		// Locate the scene's primary camera
@@ -528,17 +532,17 @@ namespace Vortex {
 
 				// Set clear color
 				RenderCommand::SetClearColor(cameraComponent.ClearColor);
-			}
 
-			if (primarySceneCamera != nullptr)
-			{
-				SceneRenderPacket renderPacket{};
-				renderPacket.MainCamera = primarySceneCamera;
-				renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
-				renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-				renderPacket.Scene = this;
-				renderPacket.EditorScene = false;
-				s_SceneRenderer.RenderScene(renderPacket);
+				if (primarySceneCamera)
+				{
+					SceneRenderPacket renderPacket{};
+					renderPacket.MainCamera = primarySceneCamera;
+					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
+					renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+					renderPacket.Scene = this;
+					renderPacket.EditorScene = false;
+					s_SceneRenderer.RenderScene(renderPacket);
+				}
 			}
 		}
 
@@ -652,16 +656,20 @@ namespace Vortex {
 		return TryGetTopEntityInHierarchy(parent);
 	}
 
-	Entity Scene::DuplicateEntity(Entity src)
+	Entity Scene::DuplicateEntity(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto ParentNewEntityFunc = [&src](Entity newEntity)
+		if (!entity)
+			return {};
+
+		auto ParentNewEntityFunc = [&entity, scene = this](Entity newEntity)
 		{
-			if (auto parent = src.GetParent(); parent)
+			if (auto parent = entity.GetParent(); parent)
 			{
-				newEntity.SetParent(parent.GetUUID());
-				parent.AddChild(newEntity.GetUUID());
+				scene->ParentEntity(newEntity, entity);
+				/*newEntity.SetParentUUID(parent.GetUUID());
+				parent.AddChild(newEntity.GetUUID());*/
 			}
 		};
 
@@ -670,26 +678,34 @@ namespace Vortex {
 		{
 			auto prefabID = src.GetComponent<PrefabComponent>().PrefabUUID;
 		}*/
+		
+		Entity newEntity;
 
-		std::string name = src.GetName();
-		std::string marker = src.GetMarker();
-		Entity newEntity = CreateEntity(name, marker);
+		if (entity.HasComponent<TagComponent>())
+		{
+			newEntity = CreateEntity(entity.GetName(), entity.GetMarker());
+		}
+		else
+		{
+			newEntity = CreateEntity();
+			TagComponent& tagComponent = newEntity.GetComponent<TagComponent>();
+			tagComponent.Tag = entity.GetName();
+			tagComponent.Marker = entity.GetMarker();
+		}
 
 		// Copy components (except IDComponent and TagComponent)
-		Utils::CopyComponentIfExists(AllComponents{}, newEntity, src);
+		Utils::CopyComponentIfExists(AllComponents{}, newEntity, entity);
 
 		// We need to make a copy here because we modify it below
-		auto childIDs = src.Children();
+		auto childIDs = entity.Children();
 
 		for (auto childID : childIDs)
 		{
 			Entity childDuplicate = DuplicateEntity(TryGetEntityWithUUID(childID));
 
 			// at this point childDuplicate is a child of src, we need to remove it from src
-			UnparentEntity(childDuplicate);
-
-			childDuplicate.SetParent(newEntity.GetUUID());
-			newEntity.AddChild(childDuplicate.GetUUID());
+			UnparentEntity(childDuplicate, false);
+			ParentEntity(childDuplicate, newEntity);
 		}
 
 		ParentNewEntityFunc(newEntity);
@@ -719,6 +735,17 @@ namespace Vortex {
 		}
 
 		return Entity{};
+	}
+
+	Entity Scene::FindEntityWithID(entt::entity entity)
+	{
+		m_Registry.each([&](auto e)
+		{
+			if (e == entity)
+				return Entity{ e, this };
+		});
+
+		return {};
 	}
 
 	void Scene::ConvertToLocalSpace(Entity entity)
@@ -815,7 +842,7 @@ namespace Vortex {
 			if (!model)
 				continue;
 
-			model->OnUpdate((int)entity, meshRendererComponent.Scale);
+			model->OnUpdate((int)(entt::entity)entity, meshRendererComponent.Scale);
 		}
 	}
 
@@ -900,18 +927,22 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
 	{
-		Model::Default defaultModel;
+		Model::Default defaultModel = Model::Default::Cube;
 		ModelImportOptions importOptions = ModelImportOptions();
 
 		if (component.Type == MeshType::Custom)
+		{
 			defaultModel = Model::Default::Cube;
+		}
 		else if (component.Type == MeshType::Capsule)
 		{
 			ModelImportOptions importOptions = ModelImportOptions();
 			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
 		}
 		else
+		{
 			defaultModel = (Model::Default)component.Type;
+		}
 
 		component.Mesh = Model::Create(defaultModel, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 	}
@@ -985,12 +1016,12 @@ namespace Vortex {
 
 	SharedRef<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
 	{
-		return SharedRef<Scene>::Create(targetFramebuffer);
+		return CreateShared<Scene>(targetFramebuffer);
 	}
 
 	SharedRef<Scene> Scene::Create()
 	{
-		return SharedRef<Scene>::Create();
+		return CreateShared<Scene>();
 	}
 
 }

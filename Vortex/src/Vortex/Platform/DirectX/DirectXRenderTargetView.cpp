@@ -5,7 +5,7 @@ namespace Vortex {
 
 	SharedRef<DirectXRenderTargetView> DirectXRenderTargetView::Create()
 	{
-		return SharedRef<DirectXRenderTargetView>::Create();
+		return CreateShared<DirectXRenderTargetView>();
 	}
 
 }

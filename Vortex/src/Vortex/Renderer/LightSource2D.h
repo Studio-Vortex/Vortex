@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -11,7 +10,7 @@ namespace Vortex {
 		float Intensity = 1.0f;
 	};
 	
-	class VORTEX_API LightSource2D : public RefCounted
+	class VORTEX_API LightSource2D
 	{
 	public:
 		LightSource2D() = default;

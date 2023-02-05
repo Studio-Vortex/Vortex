@@ -4,7 +4,6 @@
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Editor/EditorCamera.h"
-#include "Vortex/Asset/Asset.h"
 #include "Vortex/Renderer/Framebuffer.h"
 
 #include <entt/entt.hpp>
@@ -13,12 +12,12 @@ namespace Vortex {
 
 	class Entity;
 
-	class Scene : public Asset
+	class Scene
 	{
 	public:
 		Scene() = default;
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
-		~Scene() override = default;
+		~Scene() = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
 		static void CreateDefaultEntities(SharedRef<Scene>& context);
@@ -59,7 +58,6 @@ namespace Vortex {
 		// -------- Editor Only ---------
 		inline bool IsInDebugMode() const { return m_DebugMode; }
 		inline void SetDebugMode(bool mode) { m_DebugMode = mode; }
-		inline void SetShouldUpdateScripts(bool shouldUpdate) { m_ShouldUpdateScripts = shouldUpdate; }
 		// ------------------------------
 
 		inline const Math::ivec2& GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
@@ -70,6 +68,8 @@ namespace Vortex {
 
 		Entity TryGetEntityWithUUID(UUID uuid);
 		Entity FindEntityByName(std::string_view name);
+
+		Entity FindEntityWithID(entt::entity entity);
 
 		Entity GetPrimaryCameraEntity();
 
@@ -96,9 +96,6 @@ namespace Vortex {
 			return m_Registry.view<TComponent...>();
 		}
 
-		static AssetType GetStaticType() { return AssetType::Scene; }
-		AssetType GetAssetType() const override { return AssetType::Scene; }
-
 		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
 		static SharedRef<Scene> Create();
 
@@ -121,7 +118,6 @@ namespace Vortex {
 		bool m_IsPaused = false;
 
 		// ------ Editor-only ------
-		bool m_ShouldUpdateScripts = true;
 		bool m_DebugMode = false;
 		// -------------------------
 

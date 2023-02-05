@@ -1,16 +1,15 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Asset/Asset.h"
 
 #include <string>
 
 namespace Vortex {
 
-	class VORTEX_API Skybox : public Asset
+	class VORTEX_API Skybox
 	{
 	public:
-		virtual ~Skybox() override = default;
+		virtual ~Skybox() = default;
 
 		virtual void SetFilepath(const std::string& filepath) = 0;
 		virtual const std::string& GetFilepath() const = 0;
@@ -31,9 +30,6 @@ namespace Vortex {
 		virtual uint32_t GetRendererID() const = 0;
 
 		static void Copy(SharedRef<Skybox> dstSkybox, const SharedRef<Skybox>& srcSkybox);
-
-		static AssetType GetStaticType() { return AssetType::Environment; }
-		AssetType GetAssetType() const override { return AssetType::Environment; }
 
 		static SharedRef<Skybox> Create();
 		static SharedRef<Skybox> Create(const std::string& filepath);

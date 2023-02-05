@@ -3,7 +3,6 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Texture.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -40,7 +39,7 @@ namespace Vortex {
 		uint32_t Flags = 0;
 	};
 
-	class VORTEX_API Material : public RefCounted
+	class VORTEX_API Material
 	{
 	public:
 		Material() = default;

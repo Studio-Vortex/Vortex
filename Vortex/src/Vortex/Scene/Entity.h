@@ -77,7 +77,7 @@ namespace Vortex {
 		Entity GetParent() const { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 
 		UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
-		void SetParent(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
+		void SetParentUUID(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 
 		std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
 		const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }

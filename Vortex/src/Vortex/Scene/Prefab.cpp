@@ -65,7 +65,7 @@ namespace Vortex {
 			VX_CORE_ASSERT(sourceChild, "Child ID Invalid --- This should never happen");
 			Entity childDuplicate = CreatePrefabFromEntity(sourceChild);
 
-			childDuplicate.SetParent(newEntity.GetUUID());
+			childDuplicate.SetParentUUID(newEntity.GetUUID());
 			newEntity.Children().push_back(childDuplicate.GetUUID());
 		}
 
@@ -79,12 +79,12 @@ namespace Vortex {
 
 	SharedRef<Prefab> Prefab::Create(const std::filesystem::path& filepath)
 	{
-		return SharedRef<Prefab>::Create(filepath);
+		return CreateShared<Prefab>(filepath);
 	}
 
 	SharedRef<Prefab> Prefab::Create(Entity entity)
 	{
-		return SharedRef<Prefab>::Create(entity);
+		return CreateShared<Prefab>(entity);
 	}
 
 }

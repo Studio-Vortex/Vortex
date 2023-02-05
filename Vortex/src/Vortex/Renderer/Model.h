@@ -6,7 +6,6 @@
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Buffer.h"
-#include "Vortex/Asset/Asset.h"
 
 #include <vector>
 #include <unordered_map>
@@ -45,6 +44,7 @@ namespace Vortex {
 	struct VORTEX_API ModelVertex
 	{
 		Math::vec3 Position;
+		Math::vec4 Color;
 		Math::vec3 Normal;
 		Math::vec3 Tangent;
 		Math::vec3 BiTangent;
@@ -100,7 +100,7 @@ namespace Vortex {
 		SharedRef<IndexBuffer> m_ShadowMapIndexBuffer = nullptr;
 	};
 
-	class VORTEX_API Model : public Asset
+	class VORTEX_API Model
 	{
 	public:
 		enum class Default
@@ -132,7 +132,7 @@ namespace Vortex {
 		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform = Math::Identity());
 		Model(MeshType meshType);
-		~Model() override = default;
+		~Model() = default;
 
 		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
 		void Render(const Math::mat4& worldSpaceTransform);
@@ -157,9 +157,6 @@ namespace Vortex {
 
 		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
-
-		static AssetType GetStaticType() { return AssetType::Model; }
-		AssetType GetAssetType() const override { return AssetType::Model; }
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);

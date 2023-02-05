@@ -71,7 +71,7 @@ namespace Vortex {
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
-	class VORTEX_API ScriptClass : public RefCounted
+	class VORTEX_API ScriptClass
 	{
 	public:
 		ScriptClass() = default;
@@ -98,7 +98,7 @@ namespace Vortex {
 		friend class ScriptEngine;
 	};
 
-	class VORTEX_API ScriptInstance : public RefCounted
+	class VORTEX_API ScriptInstance
 	{
 	public:
 		ScriptInstance() = default;

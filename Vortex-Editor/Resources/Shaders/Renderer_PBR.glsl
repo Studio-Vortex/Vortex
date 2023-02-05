@@ -18,19 +18,21 @@
 #type vertex
 #version 460 core
 
-layout (location = 0) in vec3  a_Position; // Vertex position
-layout (location = 1) in vec3  a_Normal;   // Vertex normal
-layout (location = 2) in vec3  a_Tangent;  // Vertex tangent
-layout (location = 3) in vec3  a_BiTangent;  // Vertex bitangent
-layout (location = 4) in vec2  a_TexCoord; // Vertex texture coordinate
-layout (location = 5) in vec2  a_TexScale; // Texture scale
-layout (location = 6) in ivec4 a_BoneIDs; // Vertex bone IDs
-layout (location = 7) in vec4  a_BoneWeights; // Vertex bone weights
-layout (location = 8) in int   a_EntityID; // Vertex Entity ID
+layout (location = 0) in vec3  a_Position;
+layout (location = 1) in vec4  a_Color;
+layout (location = 2) in vec3  a_Normal;
+layout (location = 3) in vec3  a_Tangent;
+layout (location = 4) in vec3  a_BiTangent;
+layout (location = 5) in vec2  a_TexCoord;
+layout (location = 6) in vec2  a_TexScale;
+layout (location = 7) in ivec4 a_BoneIDs;
+layout (location = 8) in vec4  a_BoneWeights;
+layout (location = 9) in int   a_EntityID;
 
 out DATA
 {
 	vec3       Position;
+	vec4       Color;
 	vec3       Normal;
 	vec2       TexCoord;
 	vec2       TexScale;
@@ -82,6 +84,8 @@ void main()
 
 	gl_Position = u_ViewProjection * vec4(vertexOut.Position, 1.0);
 
+	vertexOut.Color = a_Color;
+
 	mat3 model = mat3(u_Model);
 	vertexOut.Normal = normalize(model * a_Normal);
 	vertexOut.TexCoord = a_TexCoord;
@@ -108,6 +112,7 @@ layout (location = 2) out vec4 o_BrightColor;
 in DATA
 {
 	vec3       Position;
+	vec4       Color;
 	vec3       Normal;
 	vec2       TexCoord;
 	vec2       TexScale;
@@ -181,6 +186,7 @@ struct SpotLight
 struct FragmentProperties
 {
 	vec3 Albedo;
+	vec4 Color;
 	vec3 Normal;
 	float Metallic;
 	float Roughness;
@@ -240,6 +246,7 @@ void main()
 
 	FragmentProperties properties;
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureCoords).rgb, vec3(u_SceneProperties.Gamma)) : u_Material.Albedo);
+	properties.Color = fragmentIn.Color;
 	properties.Normal = ((u_Material.HasNormalMap) ? normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureCoords).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureCoords).r : u_Material.Metallic);
 	properties.Roughness = ((u_Material.HasRoughnessMap) ? texture(u_Material.RoughnessMap, textureCoords).r : u_Material.Roughness);
@@ -420,7 +427,8 @@ void main()
 	if (alpha == 0.0)
 		discard;
 
-	vec4 result = vec4(mapped, alpha);
+	vec4 result = vec4(mapped, alpha) * properties.Color;
+	
 	if (u_Material.HasEmissionMap)
 		result += vec4(properties.EmissionMap, 0.0);
 	else

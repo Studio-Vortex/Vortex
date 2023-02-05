@@ -24,7 +24,7 @@ namespace Vortex {
 			((coords.y + spriteSize.y) * cellSize.y) / texture->GetHeight()
 		};
 
-		return SharedRef<SubTexture2D>::Create(texture, min, max);
+		return CreateShared<SubTexture2D>(texture, min, max);
 	}
 
 }

@@ -4,7 +4,6 @@
 #include "Vortex/Core/Math.h"
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 #include "Vortex/Asset/AssetManager/EditorAssetManager.h"
 
 #include <filesystem>
@@ -71,15 +70,12 @@ namespace Vortex {
 		} GizmoProps;
 	};
 
-	class VORTEX_API Project : public RefCounted
+	class VORTEX_API Project
 	{
 	public:
 		inline ProjectProperties& GetProperties() { return m_Properties; }
 		inline const ProjectProperties& GetProperties() const { return m_Properties; }
 		inline const std::string& GetName() const { return m_Properties.General.Name; }
-
-		inline static SharedRef<IAssetManager> GetAssetManager() { return s_AssetManager; }
-		inline static SharedRef<EditorAssetManager> GetEditorAssetManager() { return s_AssetManager.As<EditorAssetManager>(); }
 
 		inline static SharedRef<Project> GetActive()
 		{

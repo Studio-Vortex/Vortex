@@ -202,12 +202,12 @@ namespace Vortex {
 
 	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
 	{
-		return SharedRef<AudioSource>::Create(filepath);
+		return CreateShared<AudioSource>(filepath);
 	}
 
-    SharedRef<AudioSource> AudioSource::Create()
-    {
-        return SharedRef<AudioSource>::Create();
+	SharedRef<AudioSource> AudioSource::Create()
+	{
+		return CreateShared<AudioSource>();
     }
 
 }

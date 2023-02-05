@@ -2,7 +2,6 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/TimeStep.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -21,7 +20,7 @@ namespace Vortex {
 		float LifeTime = 1.0f;
 	};
 
-	class VORTEX_API ParticleEmitter : public RefCounted
+	class VORTEX_API ParticleEmitter
 	{
 	public:
 		struct VORTEX_API Particle

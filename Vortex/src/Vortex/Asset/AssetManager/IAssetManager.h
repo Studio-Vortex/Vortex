@@ -8,7 +8,7 @@
 
 namespace Vortex {
 
-	class IAssetManager : public RefCounted
+	class IAssetManager
 	{
 	public:
 		IAssetManager() = default;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -104,7 +103,7 @@ namespace Vortex {
 		uint32_t m_Stride = 0;
 	};
 
-	class VORTEX_API VertexBuffer : public RefCounted
+	class VORTEX_API VertexBuffer
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -123,7 +122,7 @@ namespace Vortex {
 	};
 
 	// Only supports 32 bit unsigned integers
-	class VORTEX_API IndexBuffer : public RefCounted
+	class VORTEX_API IndexBuffer
 	{
 	public:
 		virtual ~IndexBuffer() = default;

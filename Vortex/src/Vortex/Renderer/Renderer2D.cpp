@@ -538,7 +538,7 @@ namespace Vortex
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -642,7 +642,7 @@ namespace Vortex
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -756,7 +756,7 @@ namespace Vortex
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -853,7 +853,7 @@ namespace Vortex
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -960,7 +960,7 @@ namespace Vortex
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
-			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
+			if (*s_Data.TextureSlots[i].get() == *texture.get())
 			{
 				textureIndex = (float)i;
 				break;
@@ -1131,7 +1131,7 @@ namespace Vortex
 
 		for (uint32_t i = 0; i < s_Data.FontTextureSlotIndex; i++)
 		{
-			if (*s_Data.FontTextureSlots[i].Raw() == *fontAtlas.Raw())
+			if (*s_Data.FontTextureSlots[i].get() == *fontAtlas.get())
 			{
 				textureIndex = (float)i;
 				break;

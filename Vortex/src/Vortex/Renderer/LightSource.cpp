@@ -110,7 +110,7 @@ namespace Vortex {
 
 	SharedRef<LightSource> LightSource::Create(const LightSourceProperties& props)
 	{
-		return SharedRef<LightSource>::Create(props);
+		return CreateShared<LightSource>(props);
 	}
 
 }

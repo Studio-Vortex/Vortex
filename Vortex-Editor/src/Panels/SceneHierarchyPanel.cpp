@@ -62,7 +62,7 @@ namespace Vortex {
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					Entity entity{ entityID, m_ContextScene.Raw() };
+					Entity entity{ entityID, m_ContextScene.get() };
 
 					if (entity)
 					{
@@ -387,15 +387,12 @@ namespace Vortex {
 		{
 			const char* name = "None";
 
-			if (hoveredEntity && m_ContextScene)
+			if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
 			{
-				if (hoveredEntity.HasComponent<TagComponent>())
-				{
-					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
 
-					if (!tag.empty())
-						name = tag.c_str();
-				}
+				if (!tag.empty())
+					name = tag.c_str();
 			}
 
 			Gui::SetCursorPosX(10.0f);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -21,7 +20,7 @@ namespace Vortex {
 		bool SoftShadows = true;
 	};
 
-	class VORTEX_API LightSource : public RefCounted
+	class VORTEX_API LightSource
 	{
 	public:
 		LightSource() = default;

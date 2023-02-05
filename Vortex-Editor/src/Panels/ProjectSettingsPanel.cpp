@@ -163,20 +163,6 @@ namespace Vortex {
 					UI::EndTreeNode();
 				}
 
-				if (UI::PropertyGridHeader("Editor Camera", false))
-				{
-					UI::BeginPropertyGrid();
-
-					Math::vec3 moveSpeed = EditorCamera::GetMoveSpeed();
-					if (UI::Property("Move Speed", moveSpeed))
-						EditorCamera::SetMoveSpeed(moveSpeed);
-
-					UI::Property("Camera FOV", m_Properties.EditorProps.EditorCameraFOV, 0.25f, 4.0f, 120.0f);
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
-
 				if (UI::PropertyGridHeader("Gizmos", false))
 				{
 					UI::BeginPropertyGrid();

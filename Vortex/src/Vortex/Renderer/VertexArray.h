@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Vortex/Renderer/Buffer.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	class VORTEX_API VertexArray : public RefCounted
+	class VORTEX_API VertexArray
 	{
 	public:
 		virtual ~VertexArray() = default;

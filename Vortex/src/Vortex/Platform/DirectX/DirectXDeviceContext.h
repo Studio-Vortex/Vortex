@@ -16,7 +16,7 @@ namespace Vortex {
 		WriteNoOverWrite,
 	};
 
-	class DirectXDeviceContext : public RefCounted
+	class DirectXDeviceContext
 	{
 	public:
 		DirectXDeviceContext() = default;

@@ -9,7 +9,7 @@ namespace Vortex {
 
 	SharedRef<Project> Project::New()
 	{
-		s_ActiveProject = SharedRef<Project>::Create();
+		s_ActiveProject = CreateShared<Project>();
 		return s_ActiveProject;
 	}
 
@@ -21,7 +21,7 @@ namespace Vortex {
 		if (serializer.Deserialize(filepath))
 		{
 			s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(filepath);
-			s_AssetManager = SharedRef<EditorAssetManager>::Create();
+			s_AssetManager = CreateShared<EditorAssetManager>();
 			return s_ActiveProject;
 		}
 		

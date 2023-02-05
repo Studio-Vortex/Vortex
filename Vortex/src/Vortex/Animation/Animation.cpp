@@ -96,7 +96,7 @@ namespace Vortex {
 
 	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Model>& model)
 	{
-		return SharedRef<Animation>::Create(animationPath, model);
+		return CreateShared<Animation>(animationPath, model);
 	}
 
 }

@@ -28,7 +28,7 @@ namespace Vortex {
 			static_assert(std::is_base_of<Asset, TAsset>::value, "GetAsset only works with types derived from Asset!");
 
 			SharedRef<Asset> asset = Project::GetAssetManager()->GetAsset(handle);
-			return asset.As<TAsset>();
+			return (TAsset)asset;
 		}
 
 		template <typename TAsset>

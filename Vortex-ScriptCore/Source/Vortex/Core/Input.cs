@@ -10,10 +10,15 @@
 
 		public static bool IsMouseButtonUp(MouseButton mouseButton) => InternalCalls.Input_IsMouseButtonUp(mouseButton);
 
-		public static Vector2 GetMousePosition()
+		public static Vector2 MousePosition
 		{
-			InternalCalls.Input_GetMousePosition(out Vector2 position);
-			return position;
+			get
+			{
+				InternalCalls.Input_GetMousePosition(out Vector2 result);
+				return result;
+			}
+
+			set => InternalCalls.Input_SetMousePosition(ref value);
 		}
 
 		public static Vector2 GetMouseScrollDelta()

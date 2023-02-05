@@ -17,7 +17,7 @@ namespace Vortex {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLShader>::Create(filepath);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLShader>(filepath);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -32,12 +32,12 @@ namespace Vortex {
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
-			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLShader>::Create(name, vertexSrc, fragmentSrc, geometrySrc);
+		case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
+		case RendererAPI::API::OpenGL:   return CreateShared<OpenGLShader>(name, vertexSrc, fragmentSrc, geometrySrc);
 #ifdef VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Direct3D: return nullptr;
+		case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Vulkan:   return nullptr;
+		case RendererAPI::API::Vulkan:   return nullptr;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown Renderer API!");
@@ -73,7 +73,7 @@ namespace Vortex {
 	SharedRef<Shader> ShaderLibrary::Get(const std::string& name)
 	{
 		VX_CORE_ASSERT(Exists(name), "Shader not found!")
-		return m_Shaders[name];
+			return m_Shaders[name];
 	}
 
 	bool ShaderLibrary::Exists(const std::string& name) const
@@ -83,7 +83,7 @@ namespace Vortex {
 
 	SharedRef<ShaderLibrary> ShaderLibrary::Create()
 	{
-		return SharedRef<ShaderLibrary>::Create();
+		return CreateShared<ShaderLibrary>();
 	}
 
 }

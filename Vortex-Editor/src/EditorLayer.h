@@ -2,9 +2,18 @@
 
 #include <Vortex.h>
 
+#include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+#include "Panels/ScriptRegistryPanel.h"
+#include "Panels/MaterialEditorPanel.h"
 #include "Panels/SceneRendererPanel.h"
-#include "Panels/PanelManager.h"
+#include "Panels/AssetRegistryPanel.h"
+#include "Panels/BuildSettingsPanel.h"
+#include "Panels/ShaderEditorPanel.h"
+#include "Panels/PerformancePanel.h"
+#include "Panels/ConsolePanel.h"
+#include "Panels/AboutPanel.h"
 
 namespace Vortex {
 
@@ -85,6 +94,7 @@ namespace Vortex {
 		// Helper
 
 		void DuplicateSelectedEntity();
+		void SetSceneContext(const SharedRef<Scene>& scene);
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
@@ -102,7 +112,6 @@ namespace Vortex {
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 
-		float m_EditorCameraFOVLastFrame = 0.0f;
 		int32_t m_GizmoType = -1;
 
 		bool m_ShowScenePanel = true;
@@ -120,9 +129,18 @@ namespace Vortex {
 		std::string m_ModelFilepath = "";
 		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 
+		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
+		ScriptRegistryPanel m_ScriptRegistryPanel;
+		MaterialEditorPanel m_MaterialEditorPanel;
 		SceneRendererPanel m_SceneRendererPanel;
-		PanelManager m_PanelManager;
+		AssetRegistryPanel m_AssetRegistryPanel;
+		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
+		ShaderEditorPanel m_ShaderEditorPanel;
+		PerformancePanel m_PerformancePanel;
+		ConsolePanel m_ConsolePanel;
+		AboutPanel m_AboutPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

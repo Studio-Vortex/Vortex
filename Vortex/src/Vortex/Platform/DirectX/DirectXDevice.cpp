@@ -5,7 +5,7 @@ namespace Vortex {
 	
 	SharedRef<DirectXDevice> DirectXDevice::Create()
 	{
-		return SharedRef<DirectXDevice>::Create();
+		return CreateShared<DirectXDevice>();
 	}
 
 }

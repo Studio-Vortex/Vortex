@@ -326,12 +326,12 @@ namespace Vortex {
 
 	SharedRef<Material> Material::Create(const MaterialProperties& props)
 	{
-		return SharedRef<Material>::Create(props);
+		return CreateShared<Material>(props);
 	}
 
 	SharedRef<Material> Material::Create(const SharedRef<Shader>& shader, const MaterialProperties& props)
 	{
-		return SharedRef<Material>::Create(shader, props);
+		return CreateShared<Material>(shader, props);
 	}
 
 }

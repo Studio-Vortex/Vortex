@@ -36,12 +36,12 @@ namespace Vortex {
 
 	SharedRef<AudioListener> AudioListener::Create(const ListenerProperties& props)
 	{
-		return SharedRef<AudioListener>::Create(props);
+		return CreateShared<AudioListener>(props);
 	}
 
 	SharedRef<AudioListener> AudioListener::Create()
 	{
-		return SharedRef<AudioListener>::Create();
+		return CreateShared<AudioListener>();
 	}
 
 }

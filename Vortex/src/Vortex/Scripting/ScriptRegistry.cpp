@@ -3288,6 +3288,11 @@ namespace Vortex {
 		*outPosition = mousePos;
 	}
 
+	static void Input_SetMousePosition(Math::vec2* position)
+	{
+		Input::SetMousePosition(*position);
+	}
+
 	static void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset)
 	{
 		*outMouseScrollOffset = Input::GetMouseScrollOffset();
@@ -3863,6 +3868,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonDown);
 		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonUp);
 		VX_ADD_INTERNAL_CALL(Input_GetMousePosition);
+		VX_ADD_INTERNAL_CALL(Input_SetMousePosition);
 		VX_ADD_INTERNAL_CALL(Input_GetMouseScrollOffset);
 		VX_ADD_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		VX_ADD_INTERNAL_CALL(Input_IsGamepadButtonUp);

@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <miniaudio/miniaudio.h>
 
 namespace Vortex {
 
-	class VORTEX_API AudioListener : public RefCounted
+	class VORTEX_API AudioListener
 	{
 	public:
 		struct VORTEX_API ListenerProperties

@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	class DirectXDevice : public RefCounted
+	class DirectXDevice
 	{
 	public:
 		DirectXDevice() = default;

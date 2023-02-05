@@ -121,6 +121,7 @@ namespace Vortex {
 
 		m_VertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"    },
+			{ ShaderDataType::Float4, "a_Color"       },
 			{ ShaderDataType::Float3, "a_Normal"      },
 			{ ShaderDataType::Float3, "a_Tangent"     },
 			{ ShaderDataType::Float3, "a_BiTangent"   },
@@ -273,7 +274,8 @@ namespace Vortex {
 				auto GetIndexFunc = [&inds](auto index)
 				{
 					uint32_t theIndices[3] = { index.i0, index.i1, index.i2 };
-					for (uint32_t i = 0; i < VX_ARRAYCOUNT(theIndices); i++) inds.push_back(theIndices[i]);
+					for (uint32_t i = 0; i < VX_ARRAYCOUNT(theIndices); i++)
+						inds.push_back(theIndices[i]);
 				};
 
 				for (const auto& index : indices) GetIndexFunc(index);
@@ -338,8 +340,20 @@ namespace Vortex {
 			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
 
 			vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z }, 1.0f)) * 0.5f;
-			vertex.Normal = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }, 1.0f));
 
+			for (uint32_t j = 0; j < AI_MAX_NUMBER_OF_COLOR_SETS; j++)
+			{
+				if (mesh->HasVertexColors(j))
+				{
+					vertex.Color = { mesh->mColors[j][0].r, mesh->mColors[j][1].g, mesh->mColors[j][2].b, mesh->mColors[j][3].a };
+				}
+				else
+				{
+					vertex.Color = Math::vec4(1.0f);
+				}
+			}
+
+ 			vertex.Normal = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }, 1.0f));
 			vertex.Tangent = Math::vec3(0.0f);
 			vertex.BiTangent = Math::vec3(0.0f);
 			if (mesh->HasTangentsAndBitangents())
@@ -375,46 +389,7 @@ namespace Vortex {
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			std::vector<SharedRef<Texture2D>> albedoMaps = LoadMaterialTextures(material, aiTextureType_BASE_COLOR);
-			std::vector<SharedRef<Texture2D>> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS);
-			std::vector<SharedRef<Texture2D>> metallicMaps = LoadMaterialTextures(material, aiTextureType_METALNESS);
-			std::vector<SharedRef<Texture2D>> roughnessMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS);
-			std::vector<SharedRef<Texture2D>> aoMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION);
-
-			size_t maxTextures = std::max({ albedoMaps.size(), normalMaps.size(), metallicMaps.size(), roughnessMaps.size(), aoMaps.size() });
-
-			for (uint32_t i = 0; i < maxTextures; i++)
-			{
-				SharedRef<Material> materialInstance = Material::Create(MaterialProperties());
-
-				if (albedoMaps.size() - 1 > i)
-				{
-					SharedRef<Texture2D> albedoMap = albedoMaps.at(i);
-					materialInstance->SetAlbedoMap(albedoMap);
-				}
-				if (normalMaps.size() - 1 > i)
-				{
-					SharedRef<Texture2D> normalMap = normalMaps.at(i);
-					materialInstance->SetNormalMap(normalMap);
-				}
-				if (metallicMaps.size() - 1 > i)
-				{
-					SharedRef<Texture2D> metallicMap = metallicMaps.at(i);
-					materialInstance->SetMetallicMap(metallicMap);
-				}
-				if (roughnessMaps.size() - 1 > i)
-				{
-					SharedRef<Texture2D> roughnessMap = roughnessMaps.at(i);
-					materialInstance->SetRoughnessMap(roughnessMap);
-				}
-				if (aoMaps.size() - 1 > i)
-				{
-					SharedRef<Texture2D> ambientOcclusionMap = aoMaps.at(i);
-					materialInstance->SetAmbientOcclusionMap(ambientOcclusionMap);
-				}
-
-				materials.push_back(materialInstance);
-			}
+			// TODO load materials
 		}
 
 		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
@@ -664,22 +639,22 @@ namespace Vortex {
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return SharedRef<Model>::Create(defaultMesh, transform, importOptions, (int)(entt::entity)entityID);
+		return CreateShared<Model>(defaultMesh, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
 	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
 	{
-		return SharedRef<Model>::Create(filepath, transform, importOptions, (int)(entt::entity)entityID);
+		return CreateShared<Model>(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
 	SharedRef<Model> Model::Create(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform)
 	{
-		return SharedRef<Model>::Create(vertices, indices, transform);
+		return CreateShared<Model>(vertices, indices, transform);
 	}
 
 	SharedRef<Model> Model::Create(MeshType meshType)
 	{
-		return SharedRef<Model>::Create(meshType);
+		return CreateShared<Model>(meshType);
 	}
 
 }

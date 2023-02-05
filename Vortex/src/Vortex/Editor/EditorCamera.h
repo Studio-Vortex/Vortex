@@ -9,83 +9,100 @@
 
 namespace Vortex {
 
+	enum class CameraMode
+	{
+		NONE, FLYCAM, ARCBALL
+	};
+
 	class EditorCamera : public Camera
 	{
 	public:
-		EditorCamera() = default;
-		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
-		~EditorCamera() override = default;
+		EditorCamera(const float degFov, const float width, const float height, const float nearP, const float farP);
+		void Init();
 
-		void OnUpdate(TimeStep delta);
+		void Focus(const Math::vec3& focusPoint);
+		void OnUpdate(TimeStep ts);
 		void OnEvent(Event& e);
+
+		bool IsActive() const { return m_IsActive; }
+		void SetActive(bool active) { m_IsActive = active; }
+
+		CameraMode GetCurrentMode() const { return m_CameraMode; }
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 
-		inline float GetFOV() const { return m_FOV; }
-		inline void SetFOV(float fov) { m_FOV = fov; UpdateProjection(); }
+		const Math::vec3& GetFocalPoint() const { return m_FocalPoint; }
 
-		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
+		inline void SetViewportSize(uint32_t width, uint32_t height)
+		{
+			if (m_ViewportWidth == width && m_ViewportHeight == height)
+				return;
+			SetPerspectiveProjectionMatrix(m_VerticalFOV, (float)width, (float)height, m_NearClip, m_FarClip);
+			m_ViewportWidth = width;
+			m_ViewportHeight = height;
+		}
 
-		inline const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		inline Math::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		Math::mat4 GetViewProjection() const { return GetProjectionMatrix() * m_ViewMatrix; }
 
 		Math::vec3 GetUpDirection() const;
 		Math::vec3 GetRightDirection() const;
 		Math::vec3 GetForwardDirection() const;
-		inline const Math::vec3& GetPosition() const { return m_Position; }
 
-		inline float GetPitch() const { return m_Pitch; }
-		inline float GetYaw() const { return m_Yaw; }
+		const Math::vec3& GetPosition() const { return m_Position; }
 
-		void ResetCameraPositionToWorldOrigin();
-		void MoveToPosition(const Math::vec3& translation);
+		Math::quaternion GetOrientation() const;
 
-		inline static bool IsIn2DView() { return s_LockForward; }
-		inline static bool IsInTopDownView() { return s_LockDown; }
-		inline static void LockTo2DView(bool lockRotation) { s_LockForward = lockRotation; }
-		inline static void LockToTopDownView(bool lockRotation) { s_LockDown = lockRotation; }
-		inline static Math::vec3 GetMoveSpeed() { return s_MoveSpeed; }
-		inline static void SetMoveSpeed(const Math::vec3 moveSpeed) { s_MoveSpeed = moveSpeed; }
-
+		[[nodiscard]] float GetVerticalFOV() const { return m_VerticalFOV; }
+		[[nodiscard]] float GetAspectRatio() const { return m_AspectRatio; }
+		[[nodiscard]] float GetNearClip() const { return m_NearClip; }
+		[[nodiscard]] float GetFarClip() const { return m_FarClip; }
+		[[nodiscard]] float GetPitch() const { return m_Pitch; }
+		[[nodiscard]] float GetYaw() const { return m_Yaw; }
+		[[nodiscard]] float GetCameraSpeed() const;
 	private:
-		void UpdateProjection();
-		void UpdateView();
+		void UpdateCameraView();
 
-		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
+		bool OnMouseScroll(MouseScrolledEvent& e);
 
 		void MousePan(const Math::vec2& delta);
-		void MousePanHorizontal(float delta);
 		void MouseRotate(const Math::vec2& delta);
 		void MouseZoom(float delta);
 
-		Math::vec3 CalcualtePosition() const;
+		Math::vec3 CalculatePosition() const;
 
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
 		float ZoomSpeed() const;
-
 	private:
-		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
+		Math::mat4 m_ViewMatrix;
+		Math::vec3 m_Position, m_Direction, m_FocalPoint;
 
-		float m_MouseXDelta = 0.0f, m_MouseYDelta = 0.0f;
-		float m_ShiftModifer = 3.0f;
+		// Perspective projection params
+		float m_VerticalFOV, m_AspectRatio, m_NearClip, m_FarClip;
 
-		Math::mat4 m_ViewMatrix = Math::Identity();
-		Math::vec3 m_Position = Math::vec3(0.0f);
-		Math::vec3 m_FocalPoint = Math::vec3(0.0f, 5.0f, 10.0f);
+		bool m_IsActive = false;
+		bool m_Panning, m_Rotating;
+		Math::vec2 m_InitialMousePosition{};
+		Math::vec3 m_InitialFocalPoint, m_InitialRotation;
 
-		Math::vec2 m_InitialMousePosition = Math::vec2(0.0f);
+		float m_Distance;
+		float m_NormalSpeed{ 0.002f };
 
-		float m_Distance = 0.0f;
-		float m_Pitch = Math::Deg2Rad(25.0f), m_Yaw = 0.0f;
+		float m_Pitch, m_Yaw;
+		float m_PitchDelta{}, m_YawDelta{};
+		Math::vec3 m_PositionDelta{};
+		Math::vec3 m_RightDirection{};
 
-		float m_ViewportWidth = 1600.0f, m_ViewportHeight = 900.0f;
+		CameraMode m_CameraMode{ CameraMode::ARCBALL };
 
-		inline static bool s_LockForward = false;
-		inline static bool s_LockDown = false;
-		inline static Math::vec3 s_MoveSpeed = { 5.0f, 5.0f, 5.0f };
+		float m_MinFocusDistance{ 100.0f };
 
+		uint32_t m_ViewportWidth{ 1280 }, m_ViewportHeight{ 720 };
+
+		constexpr static float MIN_SPEED{ 0.0005f }, MAX_SPEED{ 2.0f };
+		friend class EditorLayer;
 	};
 
 }

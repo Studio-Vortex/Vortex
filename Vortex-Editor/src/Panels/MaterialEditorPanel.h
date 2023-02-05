@@ -1,19 +1,18 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class MaterialEditorPanel : public EditorPanel
+	class MaterialEditorPanel
 	{
 	public:
 		MaterialEditorPanel() = default;
-		~MaterialEditorPanel() override = default;
+		~MaterialEditorPanel() = default;
 
 		void OnGuiRender(Entity selectedEntity);
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void SetProjectContext(SharedRef<Project> project) {}
+		void SetSceneContext(SharedRef<Scene> scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

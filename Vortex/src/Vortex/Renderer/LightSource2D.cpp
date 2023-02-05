@@ -34,7 +34,7 @@ namespace Vortex {
 
 	SharedRef<LightSource2D> LightSource2D::Create(const LightSource2DProperties& props)
 	{
-		return SharedRef<LightSource2D>::Create(props);
+		return CreateShared<LightSource2D>(props);
 	}
 
 }

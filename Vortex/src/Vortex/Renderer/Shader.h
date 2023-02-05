@@ -2,14 +2,13 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 #include <string>
 
 namespace Vortex {
 
-	class VORTEX_API Shader : public RefCounted
+	class VORTEX_API Shader
 	{
 	public:
 		Shader() = default;
@@ -40,7 +39,7 @@ namespace Vortex {
 	};
 
 
-	class VORTEX_API ShaderLibrary : public RefCounted
+	class VORTEX_API ShaderLibrary
 	{
 	public:
 		ShaderLibrary() = default;

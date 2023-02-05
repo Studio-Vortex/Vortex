@@ -248,7 +248,7 @@ namespace Vortex {
 
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.Raw() };
+			Entity entity = { entityID, m_Scene.get() };
 			if (!entity)
 				return;
 
@@ -872,7 +872,7 @@ namespace Vortex {
 			deserializedEntity.SetActive(isActive);
 
 			uint64_t parentHandle = entity["Parent"] ? entity["Parent"].as<uint64_t>() : 0;
-			deserializedEntity.SetParent(static_cast<UUID>(parentHandle));
+			deserializedEntity.SetParentUUID(static_cast<UUID>(parentHandle));
 
 			const auto children = entity["Children"];
 
@@ -1002,8 +1002,6 @@ namespace Vortex {
 					{
 						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
 					}
-
-					VX_CORE_INFO("Mesh Deserialized Path: '{}'", assetPath);
 
 					if (meshComponent["ModelImportOptions"])
 					{

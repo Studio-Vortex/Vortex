@@ -16,16 +16,7 @@ namespace Vortex {
 
 	void AssetRegistryPanel::RenderLoadedAssets()
 	{
-		SharedRef<EditorAssetManager> assetManager = Project::GetEditorAssetManager();
-		const AssetRegistry& assetRegistry = assetManager->GetAssetRegistry();
-
-		for (auto& [handle, metadata] : assetRegistry)
-		{
-			Gui::Text("Handle: %u", metadata.Handle);
-			Gui::Text("Filepath: %s", metadata.Filepath);
-			Gui::Text("Asset Type: %s", Utils::AssetTypeToString(metadata.Type).c_str());
-			Gui::Separator();
-		}
+		
 	}
 
 }

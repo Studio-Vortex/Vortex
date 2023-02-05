@@ -3,14 +3,13 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Asset/Asset.h"
 
 namespace Vortex {
 
 	// Forward declaration
 	struct MSDFData;
 
-	class VORTEX_API Font : public Asset
+	class VORTEX_API Font
 	{
 	public:
 		Font() = default;
@@ -22,9 +21,6 @@ namespace Vortex {
 
 		static void Init();
 		static void Shutdown();
-
-		static AssetType GetStaticType() { return AssetType::Font; }
-		AssetType GetAssetType() const override { return AssetType::Font; }
 
 		static SharedRef<Font> GetDefaultFont();
 		static SharedRef<Font> Create(const std::filesystem::path& filepath);

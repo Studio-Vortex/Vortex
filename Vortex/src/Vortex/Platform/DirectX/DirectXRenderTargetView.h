@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	class DirectXRenderTargetView : public RefCounted
+	class DirectXRenderTargetView
 	{
 	public:
 		DirectXRenderTargetView() = default;

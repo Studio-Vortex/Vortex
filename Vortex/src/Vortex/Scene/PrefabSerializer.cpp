@@ -22,7 +22,7 @@ namespace Vortex {
 
 		scene->m_Registry.each([&](auto& entityID)
 		{
-			Entity entity{ entityID, scene.Raw() };
+			Entity entity{ entityID, scene.get() };
 
 			if (!entity || !entity.HasComponent<IDComponent>())
 			{

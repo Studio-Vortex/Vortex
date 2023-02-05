@@ -47,7 +47,7 @@ namespace Vortex {
 
 	SharedRef<DirectXDeviceContext> DirectXDeviceContext::Create()
 	{
-		return SharedRef<DirectXDeviceContext>::Create();
+		return CreateShared<DirectXDeviceContext>();
 	}
 
 }
