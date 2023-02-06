@@ -28,6 +28,7 @@
 
 #include "Vortex/Utils/PlatformUtils.h"
 #include "Vortex/Core/Log.h"
+#include "Vortex/UI/UI.h"
 
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>
@@ -3351,7 +3352,7 @@ namespace Vortex {
 		Gui::PushFont(largeFont);
 		Gui::TextCentered(text);
 		Gui::PopFont();
-		Gui::Separator();
+		UI::Draw::Underline();
 		Gui::Spacing();
 	}
 
@@ -3402,7 +3403,7 @@ namespace Vortex {
 
 	static void Gui_Separator()
 	{
-		Gui::Separator();
+		UI::Draw::Underline();
 	}
 
 	static void Gui_Spacing()

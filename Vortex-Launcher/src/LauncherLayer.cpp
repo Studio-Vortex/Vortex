@@ -82,7 +82,7 @@ namespace Vortex {
 			selectedProject = 0;
 		}
 
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		i = 1;
 
@@ -119,7 +119,7 @@ namespace Vortex {
 		Gui::PopFont();
 		Gui::Spacing();
 		Gui::Spacing();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
 		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
@@ -191,7 +191,7 @@ namespace Vortex {
 			Gui::Columns(1);
 
 			Gui::Spacing();
-			Gui::Separator();
+			UI::Draw::Underline();
 			Gui::Spacing();
 
 			ImVec2 buttonSize = { Gui::GetContentRegionAvail().x / 4.0f, 50.0f };

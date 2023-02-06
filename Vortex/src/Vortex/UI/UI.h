@@ -36,6 +36,34 @@ namespace Vortex::UI {
 		return s_IDBuffer;
 	}
 
+	namespace Draw {
+
+		static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
+		{
+			if (fullWidth)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PushColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePushBackgroundChannel();
+			}
+
+			const float width = fullWidth ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
+			const ImVec2 cursor = ImGui::GetCursorScreenPos();
+			ImGui::GetWindowDrawList()->AddLine(ImVec2(cursor.x + offsetX, cursor.y + offsetY),
+				ImVec2(cursor.x + width, cursor.y + offsetY),
+				Colors::Theme::backgroundDark, 1.0f);
+
+			if (fullWidth)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PopColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePopBackgroundChannel();
+			}
+		}
+	}
+
 	inline static void SetTooltip(const char* message)
 	{
 		if (!Gui::IsItemHovered())
@@ -274,6 +302,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -295,6 +324,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -316,6 +346,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -337,6 +368,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -358,6 +390,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -379,6 +412,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -400,6 +434,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -421,6 +456,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -442,6 +478,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -463,6 +500,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -485,6 +523,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -506,6 +545,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -527,6 +567,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -548,6 +589,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -569,6 +611,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -590,6 +633,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -617,6 +661,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -644,6 +689,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -684,6 +730,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -707,7 +754,7 @@ namespace Vortex::UI {
 			if (isSearching)
 				textFilter.Build();
 
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			for (uint32_t i = 0; i < count; i++)
 			{
@@ -735,6 +782,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -775,6 +823,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -806,6 +855,7 @@ namespace Vortex::UI {
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
+		Draw::Underline();
 
 		return modified;
 	}
@@ -883,34 +933,6 @@ namespace Vortex::UI {
 		}
 
 		return opened;
-	}
-
-	namespace Draw {
-		
-		static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
-		{
-			if (fullWidth)
-			{
-				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
-					ImGui::PushColumnsBackground();
-				else if (ImGui::GetCurrentTable() != nullptr)
-					ImGui::TablePushBackgroundChannel();
-			}
-
-			const float width = fullWidth ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
-			const ImVec2 cursor = ImGui::GetCursorScreenPos();
-			ImGui::GetWindowDrawList()->AddLine(ImVec2(cursor.x + offsetX, cursor.y + offsetY),
-				ImVec2(cursor.x + width, cursor.y + offsetY),
-				Colors::Theme::backgroundDark, 1.0f);
-
-			if (fullWidth)
-			{
-				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
-					ImGui::PopColumnsBackground();
-				else if (ImGui::GetCurrentTable() != nullptr)
-					ImGui::TablePopBackgroundChannel();
-			}
-		}
 	}
 
 	static inline ImRect GetItemRect()

@@ -168,7 +168,7 @@ namespace Vortex {
 							Gui::CloseCurrentPopup();
 						}
 
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						std::string openInExplorer = fmt::format("Open in Explorer##{}##{}", texture->GetPath(), i);
 						if (Gui::MenuItem(openInExplorer.c_str()))

@@ -42,7 +42,7 @@ namespace Vortex {
 			}
 
 			Gui::Spacing();
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (m_ContextScene)
 			{
@@ -406,7 +406,7 @@ namespace Vortex {
 	{
 		Gui::Spacing();
 		Gui::TextCentered("New Marker", 5.0f);
-		Gui::Separator();
+		UI::Draw::Underline();
 		Gui::Spacing();
 
 		std::string buffer;
@@ -477,7 +477,7 @@ namespace Vortex {
 				m_EntityShouldBeRenamed = true;
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Add Empty Child"))
 			{
@@ -488,21 +488,21 @@ namespace Vortex {
 				SetSelectedEntity(childEntity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Unparent Entity"))
 			{
 				m_ContextScene->UnparentEntity(entity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
 			{
 				m_ContextScene->DuplicateEntity(entity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Delete Entity", "Del") && m_SelectedEntity)
 				m_EntityShouldBeDestroyed = true;
@@ -562,7 +562,7 @@ namespace Vortex {
 
 			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			Gui::Separator();
+			UI::Draw::Underline();
 			bool open = UI::PropertyGridHeader(name.c_str());
 			Gui::PopStyleVar();
 			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
@@ -583,7 +583,7 @@ namespace Vortex {
 				}
 				Gui::EndDisabled();
 
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				Gui::BeginDisabled(pasteCallback == nullptr);
 				if (Gui::MenuItem("Paste Component"))
@@ -595,7 +595,7 @@ namespace Vortex {
 				}
 				Gui::EndDisabled();
 
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Reset Component"))
 				{
@@ -649,7 +649,7 @@ namespace Vortex {
 				}
 
 				if (removeable)
-					Gui::Separator();
+					UI::Draw::Underline();
 
 				if (removeable && Gui::MenuItem("Remove Component"))
 					componentShouldBeRemoved = true;
@@ -767,10 +767,10 @@ namespace Vortex {
 							Gui::SetItemDefaultFocus();
 
 						if (i != arraySize - 1)
-							Gui::Separator();
+							UI::Draw::Underline();
 						else // The last marker in the markers vector
 						{
-							Gui::Separator();
+							UI::Draw::Underline();
 
 							const char* addMarkerButtonText = "Add Marker";
 							if (Gui::Button(addMarkerButtonText, { Gui::GetContentRegionAvail().x, Gui::CalcTextSize(addMarkerButtonText).y * 1.5f }))
@@ -811,7 +811,7 @@ namespace Vortex {
 				m_ComponentSearchInputTextFilter.Build();
 
 			Gui::Spacing();
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
 				DisplayAddComponentPopup<CameraComponent>(name);
@@ -1613,6 +1613,7 @@ namespace Vortex {
 
 					Gui::PopItemWidth();
 					Gui::NextColumn();
+					UI::Draw::Underline();
 
 					Gui::Text("Lock Rotation");
 					Gui::NextColumn();
@@ -1642,6 +1643,7 @@ namespace Vortex {
 
 					Gui::PopItemWidth();
 					Gui::NextColumn();
+					UI::Draw::Underline();
 
 					UI::EndPropertyGrid();
 					UI::EndTreeNode();

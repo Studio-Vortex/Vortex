@@ -85,7 +85,7 @@ namespace Vortex {
 					std::filesystem::create_directory(m_PathToBeRenamed);
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Scene"))
 				{
@@ -96,7 +96,7 @@ namespace Vortex {
 
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("C# Script"))
 				{
@@ -183,7 +183,7 @@ public class Untitled : Entity
 			m_SearchInputTextFilter.Build();
 
 		Gui::Spacing();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		static float padding = 16.0f;
 		static float thumbnailSize = 96.0f;
@@ -258,7 +258,7 @@ public class Untitled : Entity
 					m_PathToBeRenamed = currentPath;
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				bool isCSharpFile = currentPath.filename().extension() == ".cs";
 
@@ -268,14 +268,14 @@ public class Untitled : Entity
 					Gui::CloseCurrentPopup();
 				}
 				if (isCSharpFile)
-					Gui::Separator();
+					UI::Draw::Underline();
 
 				if (Gui::MenuItem("Open in Explorer"))
 				{
 					FileDialogue::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Delete"))
 				{
@@ -294,7 +294,7 @@ public class Untitled : Entity
 			
 			if (UI::ShowMessageBox("Confirm", { 500, 200 }))
 			{
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::Spacing();
 
 				ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
@@ -484,7 +484,7 @@ public class Untitled : Entity
 		}
 
 		Gui::Spacing();
-		Gui::Separator();
+		UI::Draw::Underline();
 		Gui::Spacing();
 
 		RenderSlider(thumbnailSize, padding);

@@ -19,14 +19,14 @@ namespace Vortex {
 		Gui::PushFont(boldFont);
 		Gui::Text("Scene");
 		Gui::PopFont();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		Gui::Text("Entity Count: %u", entityCount);
 
 		Gui::PushFont(boldFont);
 		Gui::Text("Renderer");
 		Gui::PopFont();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		Gui::Text("Geometry Pass: %.4fms", renderTime.GeometryPassRenderTime);
@@ -69,7 +69,7 @@ namespace Vortex {
 		Gui::PushFont(boldFont);
 		Gui::Text("Frame Time");
 		Gui::PopFont();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
 		Gui::Text("FPS:  %.0f", io.Framerate);
@@ -78,7 +78,7 @@ namespace Vortex {
 		Gui::PushFont(boldFont);
 		Gui::Text("Graphics API");
 		Gui::PopFont();
-		Gui::Separator();
+		UI::Draw::Underline();
 
 		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
 		Gui::Text("API:     %s", rendererInfo.API);

@@ -39,7 +39,6 @@ namespace Vortex {
 		void OnEvent(Event& e) override;
 
 	private:
-		void UI_GizmosModeToolbar();
 		void UI_GizmosToolbar();
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();

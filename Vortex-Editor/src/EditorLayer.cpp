@@ -288,31 +288,31 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("New Project"))
 					CreateNewProject();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Open Project...", "Ctrl+O"))
 					OpenExistingProject();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save Project"))
 					SaveProject();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("New Scene", "Ctrl+N"))
 					CreateNewScene();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Open Scene..."))
 					OpenExistingScene();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save", "Ctrl+S"))
 					SaveScene();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
 					SaveSceneAs();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Exit", "Alt+F4"))
 					Application::Get().Quit();
@@ -335,27 +335,27 @@ namespace Vortex {
 							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
 						}
 
-						Gui::Separator();
+						UI::Draw::Underline();
 					}
 
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
 						OnScenePlay();
-					Gui::Separator();
+					UI::Draw::Underline();
 
 					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
 						OnSceneSimulate();
 
 					if (selectedEntity)
 					{
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
 							m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
 							DuplicateSelectedEntity();
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Delete Entity", "Del"))
 							m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
@@ -367,7 +367,7 @@ namespace Vortex {
 					{
 						if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
 							OnSceneStop();
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
 							RestartScene();
@@ -376,7 +376,7 @@ namespace Vortex {
 					{
 						if (Gui::MenuItem("Stop Simulation", "Ctrl+X"))
 							OnSceneStop();
-						Gui::Separator();
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Restart Simulation", "Ctrl+Shift+X"))
 							RestartSceneSimulation();
@@ -400,7 +400,7 @@ namespace Vortex {
 			if (Gui::BeginMenu("View"))
 			{
 				Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay);
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (m_SceneViewportMaximized)
 				{
@@ -413,11 +413,11 @@ namespace Vortex {
 						m_SceneViewportMaximized = true;
 				}
 
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 
 				if (inEditMode)
-					Gui::Separator();
+					UI::Draw::Underline();
 
 				if (inEditMode)
 				{
@@ -432,15 +432,15 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("No Selection", "Q"))
 					OnNoGizmoSelected();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Translation Tool", "W"))
 					OnTranslationToolSelected();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Rotation Tool", "E"))
 					OnRotationToolSelected();
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Scale Tool", "R"))
 					OnScaleToolSelected();
@@ -451,29 +451,29 @@ namespace Vortex {
 			if (Gui::BeginMenu("Window"))
 			{
 				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Build Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
-				Gui::Separator();
+				UI::Draw::Underline();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
 
 				Gui::EndMenu();
@@ -538,7 +538,6 @@ namespace Vortex {
 
 		if (Gui::IsItemVisible())
 		{
-			UI_GizmosModeToolbar();
 			UI_GizmosToolbar();
 			UI_CentralToolbar();
 			UI_SceneSettingsToolbar();
@@ -622,7 +621,7 @@ namespace Vortex {
 
 		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))
 		{
-			Gui::Separator();
+			UI::Draw::Underline();
 			Gui::Spacing();
 
 			ImVec2 button_size(Gui::GetFontSize() * 13.27f, 0.0f);
@@ -631,7 +630,7 @@ namespace Vortex {
 			Gui::TextCentered("Import options can be selected below", 60.0f);
 
 			Gui::Spacing();
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			UI::DrawVec3Controls("Translation", m_ModelImportOptions.MeshTransformation.Translation);
 			Math::vec3 rotationEuler = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
@@ -795,57 +794,6 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::UI_GizmosModeToolbar()
-	{
-		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
-		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-
-		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
-		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
-		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
-
-		const float buttonSize = 18.0f + 5.0f;
-		const float edgeOffset = 4.0f;
-		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
-		const float numberOfButtons = 2.0f;
-		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
-		const ImVec2 textureSize = { buttonSize, buttonSize };
-
-		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
-		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
-		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("Gizmos Mode Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
-
-		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
-		// Filling the background for the desired 26px height
-		const float desiredHeight = 26.0f + 5.0f;
-		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
-		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
-
-		Gui::BeginVertical("##viewport_gizmos_modeV", { backgroundWidth, Gui::GetContentRegionAvail().y });
-		Gui::Spring();
-		Gui::BeginHorizontal("##viewport_gizmos_modeH", { backgroundWidth, Gui::GetContentRegionAvail().y });
-		Gui::Spring();
-
-		if (UI::ImageButtonEx(EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
-			m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
-		UI::SetTooltip("Local Mode");
-
-		if (UI::ImageButtonEx(EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
-			m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
-		UI::SetTooltip("World Mode");
-
-		Gui::Spring();
-		Gui::EndHorizontal();
-		Gui::Spring();
-		Gui::EndVertical();
-
-		Gui::End();
-	}
-
 	void EditorLayer::UI_GizmosToolbar()
 	{
 		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -856,29 +804,27 @@ namespace Vortex {
 
 		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
-		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		const float buttonSize = 18.0f + 5.0f;
+		const float buttonSize = 18.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 4.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 128, m_ViewportBounds[0].y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[0].x + 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Gizmos Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
-		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
-		// Filling the background for the desired 26px height
-		const float desiredHeight = 26.0f + 5.0f;
+		const float desiredHeight = 26.0f;
 		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
 
-		Gui::BeginVertical("##viewport_gizmos_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::BeginVertical("##viewportGizmosToolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
-		Gui::BeginHorizontal("##viewport_gizmos_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::BeginHorizontal("##viewportGizmosToolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
 		if (UI::ImageButtonEx(EditorResources::SelectToolIcon, textureSize, m_GizmoType == -1 ? bgColor : normalColor, tintColor))
@@ -916,10 +862,11 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
-		const ImVec4 bgColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0 };
+		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		const float buttonSize = 18.0f + 5.0f;
+		const float buttonSize = 18.0f;
 		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 3.0f;
@@ -932,15 +879,13 @@ namespace Vortex {
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Central Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
-		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
-		// Filling the background for the desired 26px height
-		const float desiredHeight = 26.0f + 5.0f;
+		const float desiredHeight = 26.0f;
 		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
 
-		Gui::BeginVertical("##viewport_central_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::BeginVertical("##viewportCentralToolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
-		Gui::BeginHorizontal("##viewport_central_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::BeginHorizontal("##viewportCentralToolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
 		bool hasPlayButton = m_SceneState != SceneState::Simulate;
@@ -951,7 +896,7 @@ namespace Vortex {
 		if (hasPlayButton)
 		{
 			SharedRef<Texture2D> icon = (hasSimulateButton) ? EditorResources::PlayIcon : EditorResources::StopIcon;
-			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
+			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasSimulateButton)
 					OnScenePlay();
@@ -965,7 +910,7 @@ namespace Vortex {
 		if (hasSimulateButton)
 		{
 			SharedRef<Texture2D> icon = (hasPlayButton) ? EditorResources::SimulateIcon : EditorResources::StopIcon;
-			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
+			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasPlayButton)
 					OnSceneSimulate();
@@ -979,7 +924,7 @@ namespace Vortex {
 		if (hasPauseButton)
 		{
 			SharedRef<Texture2D> icon = EditorResources::PauseIcon;
-			if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
+			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				bool paused = !scenePaused;
 
@@ -994,7 +939,7 @@ namespace Vortex {
 			if (scenePaused)
 			{
 				SharedRef<Texture2D> icon = EditorResources::StepIcon;
-				if (UI::ImageButtonEx(icon, textureSize, bgColor, tintColor))
+				if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
 
 				UI::SetTooltip("Next Frame");
@@ -1022,7 +967,7 @@ namespace Vortex {
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 		const float buttonSize = 18.0f;
-		const float edgeOffset = 3.0f;
+		const float edgeOffset = 2.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 1.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
@@ -1038,9 +983,7 @@ namespace Vortex {
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("##viewport_settings", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
-		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
-		// Filling the background for the desired 26px height
-		const float desiredHeight = 26.0f + 5.0f;
+		const float desiredHeight = 26.0f;
 		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
 
@@ -1052,25 +995,8 @@ namespace Vortex {
 		Gui::Spring();
 		{
 			UI::ScopedStyle enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset * 2.0f, 0));
-			
-			const ImColor c_SelectedGizmoButtonColor = Colors::Theme::accent;
-			const ImColor c_UnselectedGizmoButtonColor = Colors::Theme::textBrighter;
 
-			auto imageButton = [&](const SharedRef<Texture2D>& icon, const ImColor& tint, float paddingY = 0.0f)
-			{
-				const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
-				const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
-				const bool clicked = ImGui::InvisibleButton(UI::GenerateID(), ImVec2(width, height));
-				UI::DrawButtonImage(icon,
-					tint,
-					tint,
-					tint,
-					UI::RectOffset(UI::GetItemRect(), 0.0f, paddingY));
-
-				return clicked;
-			};
-
-			if (imageButton(EditorResources::SettingsIcon, c_UnselectedGizmoButtonColor))
+			if (UI::ImageButtonEx(EditorResources::SettingsIcon, textureSize, normalColor, tintColor))
 				openSettingsPopup = true;
 			UI::SetTooltip("Viewport Settings");
 		}
@@ -1084,96 +1010,6 @@ namespace Vortex {
 			int32_t sectionIdx = 0;
 			static float popupWidth = 300.0f;
 
-			auto beginSection = [&sectionIdx](const char* name)
-			{
-				if (sectionIdx > 0)
-					UI::ShiftCursorY(5.5f);
-
-				ImGui::TextUnformatted(name);
-				UI::Draw::Underline(Colors::Theme::backgroundDark);
-				UI::ShiftCursorY(3.5f);
-
-				bool result = ImGui::BeginTable("##section_table", 2, ImGuiTableFlags_SizingStretchSame);
-				if (result)
-				{
-					ImGui::TableSetupColumn("Labels", ImGuiTableColumnFlags_WidthFixed, popupWidth * 0.5f);
-					ImGui::TableSetupColumn("Widgets", ImGuiTableColumnFlags_WidthFixed, popupWidth * 0.5f);
-				}
-
-				sectionIdx++;
-				return result;
-			};
-
-			auto endSection = []()
-			{
-				ImGui::EndTable();
-			};
-
-			auto slider = [](const char* label, float& value, float min = 0.0f, float max = 0.0f)
-			{
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::TextUnformatted(label);
-				ImGui::TableSetColumnIndex(1);
-				ImGui::SetNextItemWidth(-1);
-				return ImGui::SliderFloat(UI::GenerateID(), &value, min, max);
-			};
-
-			auto drag = [](const char* label, float& value, float delta = 1.0f, float min = 0.0f, float max = 0.0f)
-			{
-				ImGui::TableNextRow();
-				ImGui::TableSetColumnIndex(0);
-				ImGui::TextUnformatted(label);
-				ImGui::TableSetColumnIndex(1);
-				ImGui::SetNextItemWidth(-1);
-				return ImGui::DragFloat(UI::GenerateID(), &value, delta, min, max);
-			};
-
-			auto checkbox = [](const char* label, bool& value)
-			{
-				Gui::TableNextRow();
-				Gui::TableSetColumnIndex(0);
-				Gui::TextUnformatted(label);
-				Gui::TableSetColumnIndex(1);
-				auto table = ImGui::GetCurrentTable();
-				float columnWidth = ImGui::TableGetMaxColumnWidth(table, 1);
-				UI::ShiftCursorX(columnWidth - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemInnerSpacing.x);
-				return ImGui::Checkbox(UI::GenerateID(), &value);
-			};
-
-			auto dropdown = [](const char* label, const char** options, int32_t optionCount, int32_t* selected)
-			{
-				const char* current = options[*selected];
-				Gui::TableNextRow();
-				Gui::TableSetColumnIndex(0);
-				Gui::TextUnformatted(label);
-				Gui::TableSetColumnIndex(1);
-				Gui::PushItemWidth(-1);
-
-				bool result = false;
-				if (Gui::BeginCombo(UI::GenerateID(), current))
-				{
-					for (int i = 0; i < optionCount; i++)
-					{
-						const bool is_selected = (current == options[i]);
-						if (ImGui::Selectable(options[i], is_selected))
-						{
-							current = options[i];
-							*selected = i;
-							result = true;
-						}
-
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				ImGui::PopItemWidth();
-
-				return result;
-			};
-
 			UI::ScopedStyle itemSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5.5f));
 			UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
 			UI::ScopedStyle windowRounding(ImGuiStyleVar_PopupRounding, 4.0f);
@@ -1182,38 +1018,53 @@ namespace Vortex {
 			if (openSettingsPopup)
 				Gui::OpenPopup("ViewportSettingsPanel");
 
-			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 34, m_ViewportBounds[0].y + edgeOffset + windowHeight });
+			Gui::SetNextWindowSize({ popupWidth, 0 });
+			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 17, m_ViewportBounds[0].y + edgeOffset + windowHeight });
 			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
 			{
-				if (beginSection("Scene"))
 				{
-					checkbox("Maximize On Play", projectProps.EditorProps.MaximizeOnPlay);
+					Gui::Text("Display");
+					UI::Draw::Underline();
+					UI::BeginPropertyGrid();
 
-					if (UI::ImageButtonEx(EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
 						projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
-					UI::SetTooltip("Maximize On Play");
 
-					if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
+					if (UI::ImageButton(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid", EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
 						projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
-					UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
 
-					if (UI::ImageButtonEx(EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
 						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
-					UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
 
-					if (UI::ImageButtonEx(EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
-						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
-					UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
 
-					if (UI::ImageButtonEx(EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
-					UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
 
-					endSection();
+					UI::EndPropertyGrid();
 				}
 
-				if (beginSection("Camera"))
 				{
+					Gui::Text("Gizmos");
+					UI::Draw::Underline();
+					UI::BeginPropertyGrid();
+
+					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
+						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
+
+					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
+						m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+
+					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
+						m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
+
+					UI::EndPropertyGrid();
+				}
+
+				{
+					Gui::Text("Editor Camera");
+					UI::Draw::Underline();
+					UI::BeginPropertyGrid();
+
 					/*bool isIn2DView = m_EditorCamera->IsIn2DView();
 					if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
 						m_EditorCamera->LockTo2DView(!isIn2DView);
@@ -1224,9 +1075,9 @@ namespace Vortex {
 						m_EditorCamera->LockToTopDownView(!isInTopDownView);
 					UI::SetTooltip("Top Down View");*/
 
-					endSection();
+					UI::EndPropertyGrid();
 				}
-
+				
 				Gui::EndPopup();
 			}
 		}
