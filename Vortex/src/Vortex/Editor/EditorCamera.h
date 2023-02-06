@@ -11,13 +11,13 @@ namespace Vortex {
 
 	enum class CameraMode
 	{
-		NONE, FLYCAM, ARCBALL
+		None, FlyCam, ArcBall
 	};
 
 	class EditorCamera : public Camera
 	{
 	public:
-		EditorCamera(const float degFov, const float width, const float height, const float nearP, const float farP);
+		EditorCamera(const float degFOV, const float width, const float height, const float nearP, const float farP);
 		void Init();
 
 		void Focus(const Math::vec3& focusPoint);
@@ -26,6 +26,12 @@ namespace Vortex {
 
 		bool IsActive() const { return m_IsActive; }
 		void SetActive(bool active) { m_IsActive = active; }
+
+		bool IsUsing2DView() const { return m_Use2DView; }
+		void SetUse2DView(bool use) { m_Use2DView = use; }
+
+		bool IsUsingTopDownView() const { return m_UseTopDownView; }
+		void SetUseTopDownView(bool use) { m_UseTopDownView = use; }
 
 		CameraMode GetCurrentMode() const { return m_CameraMode; }
 
@@ -38,7 +44,9 @@ namespace Vortex {
 		{
 			if (m_ViewportWidth == width && m_ViewportHeight == height)
 				return;
+
 			SetPerspectiveProjectionMatrix(m_VerticalFOV, (float)width, (float)height, m_NearClip, m_FarClip);
+
 			m_ViewportWidth = width;
 			m_ViewportHeight = height;
 		}
@@ -55,6 +63,8 @@ namespace Vortex {
 		Math::quaternion GetOrientation() const;
 
 		[[nodiscard]] float GetVerticalFOV() const { return m_VerticalFOV; }
+		void SetVerticalFOV(float degFOV);
+
 		[[nodiscard]] float GetAspectRatio() const { return m_AspectRatio; }
 		[[nodiscard]] float GetNearClip() const { return m_NearClip; }
 		[[nodiscard]] float GetFarClip() const { return m_FarClip; }
@@ -83,6 +93,8 @@ namespace Vortex {
 		float m_VerticalFOV, m_AspectRatio, m_NearClip, m_FarClip;
 
 		bool m_IsActive = false;
+		bool m_Use2DView = false;
+		bool m_UseTopDownView = false;
 		bool m_Panning, m_Rotating;
 		Math::vec2 m_InitialMousePosition{};
 		Math::vec3 m_InitialFocalPoint, m_InitialRotation;
@@ -95,7 +107,7 @@ namespace Vortex {
 		Math::vec3 m_PositionDelta{};
 		Math::vec3 m_RightDirection{};
 
-		CameraMode m_CameraMode{ CameraMode::ARCBALL };
+		CameraMode m_CameraMode{ CameraMode::ArcBall };
 
 		float m_MinFocusDistance{ 100.0f };
 

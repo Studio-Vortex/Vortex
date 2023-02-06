@@ -101,7 +101,7 @@ namespace Vortex {
 			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		// Render
@@ -1018,14 +1018,15 @@ namespace Vortex {
 			if (openSettingsPopup)
 				Gui::OpenPopup("ViewportSettingsPanel");
 
-			Gui::SetNextWindowSize({ popupWidth, 0 });
+			float columnWidth = 165.0f;
+			Gui::SetNextWindowSize({ popupWidth, 350.0f });
 			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 17, m_ViewportBounds[0].y + edgeOffset + windowHeight });
 			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
 			{
 				{
 					Gui::Text("Display");
 					UI::Draw::Underline();
-					UI::BeginPropertyGrid();
+					UI::BeginPropertyGrid(columnWidth);
 
 					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
 						projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
@@ -1046,7 +1047,7 @@ namespace Vortex {
 				{
 					Gui::Text("Gizmos");
 					UI::Draw::Underline();
-					UI::BeginPropertyGrid();
+					UI::BeginPropertyGrid(columnWidth);
 
 					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
 						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
@@ -1063,17 +1064,30 @@ namespace Vortex {
 				{
 					Gui::Text("Editor Camera");
 					UI::Draw::Underline();
-					UI::BeginPropertyGrid();
+					UI::BeginPropertyGrid(columnWidth);
 
-					/*bool isIn2DView = m_EditorCamera->IsIn2DView();
-					if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
-						m_EditorCamera->LockTo2DView(!isIn2DView);
-					UI::SetTooltip("2D View");
+					float degFOV = Math::Rad2Deg(m_EditorCamera->m_VerticalFOV);
+					if (UI::Property("Field of View", degFOV))
+					{
+						m_EditorCamera->SetVerticalFOV(degFOV);
+						projectProps.EditorProps.EditorCameraFOV = degFOV;
+					}
 
-					bool isInTopDownView = m_EditorCamera->IsInTopDownView();
-					if (UI::ImageButtonEx(EditorResources::TopDownViewIcon, textureSize, isInTopDownView ? bgColor : normalColor, tintColor))
-						m_EditorCamera->LockToTopDownView(!isInTopDownView);
-					UI::SetTooltip("Top Down View");*/
+					UI::Property("Camera Speed", m_EditorCamera->m_NormalSpeed, 0.001f, 0.0002f, 0.5f, "%.4f");
+
+					bool isUsing2DView = m_EditorCamera->IsUsing2DView();
+					if (UI::ImageButton("2D View", EditorResources::TwoDViewIcon, textureSize, isUsing2DView ? bgColor : normalColor, tintColor))
+					{
+						m_EditorCamera->SetUse2DView(!isUsing2DView);
+						m_EditorCamera->SetUseTopDownView(false);
+					}
+
+					bool isUsingTopDownView = m_EditorCamera->IsUsingTopDownView();
+					if (UI::ImageButton("Top Down View", EditorResources::TopDownViewIcon, textureSize, isUsingTopDownView ? bgColor : normalColor, tintColor))
+					{
+						m_EditorCamera->SetUseTopDownView(!isUsingTopDownView);
+						m_EditorCamera->SetUse2DView(false);
+					}
 
 					UI::EndPropertyGrid();
 				}
@@ -1384,14 +1398,14 @@ namespace Vortex {
 
 			case Key::A:
 			{
-				if (controlPressed)
+				if (controlPressed && !rightMouseButtonPressed)
 					m_ShowSceneCreateEntityMenu = true;
 
 				break;
 			}
 			case Key::D:
 			{
-				if (controlPressed)
+				if (controlPressed && !rightMouseButtonPressed)
 					DuplicateSelectedEntity();
 
 				break;

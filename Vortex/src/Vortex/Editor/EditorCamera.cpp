@@ -7,8 +7,8 @@
 
 namespace Vortex {
 
-	EditorCamera::EditorCamera(const float degFov, const float width, const float height, const float nearP, const float farP)
-		: Camera(Math::PerspectiveFOV(Math::Deg2Rad(degFov), width, height, farP, nearP), Math::PerspectiveFOV(Math::Deg2Rad(degFov), width, height, nearP, farP)), m_FocalPoint(0.0f), m_VerticalFOV(Math::Deg2Rad(degFov)), m_NearClip(nearP), m_FarClip(farP)
+	EditorCamera::EditorCamera(const float degFOV, const float width, const float height, const float nearP, const float farP)
+		: Camera(Math::PerspectiveFOV(Math::Deg2Rad(degFOV), width, height, farP, nearP), Math::PerspectiveFOV(Math::Deg2Rad(degFOV), width, height, nearP, farP)), m_FocalPoint(0.0f), m_VerticalFOV(Math::Deg2Rad(degFOV)), m_NearClip(nearP), m_FarClip(farP)
 	{
 		Init();
 	}
@@ -45,7 +45,7 @@ namespace Vortex {
 
 		if (Input::IsMouseButtonPressed(MouseButton::Right) && !Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
-			m_CameraMode = CameraMode::FLYCAM;
+			m_CameraMode = CameraMode::FlyCam;
 			DisableMouse();
 			const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 
@@ -81,7 +81,7 @@ namespace Vortex {
 		}
 		else if (Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
-			m_CameraMode = CameraMode::ARCBALL;
+			m_CameraMode = CameraMode::ArcBall;
 
 			if (Input::IsMouseButtonPressed(MouseButton::Middle))
 			{
@@ -113,7 +113,17 @@ namespace Vortex {
 		m_Yaw += m_YawDelta;
 		m_Pitch += m_PitchDelta;
 
-		if (m_CameraMode == CameraMode::ARCBALL)
+		if (m_Use2DView)
+		{
+			m_Yaw = m_Pitch = 0.0f;
+		}
+		else if (m_UseTopDownView)
+		{
+			m_Yaw = 0.0f;
+			m_Pitch = Math::Deg2Rad(90.0f);
+		}
+
+		if (m_CameraMode == CameraMode::ArcBall)
 			m_Position = CalculatePosition();
 
 		UpdateCameraView();
@@ -153,7 +163,7 @@ namespace Vortex {
 	void EditorCamera::Focus(const Math::vec3& focusPoint)
 	{
 		m_FocalPoint = focusPoint;
-		m_CameraMode = CameraMode::FLYCAM;
+		m_CameraMode = CameraMode::FlyCam;
 
 		if (m_Distance > m_MinFocusDistance)
 		{
@@ -266,6 +276,12 @@ namespace Vortex {
 	Math::quaternion EditorCamera::GetOrientation() const
 	{
 		return Math::quaternion(Math::vec3(-m_Pitch - m_PitchDelta, -m_Yaw - m_YawDelta, 0.0f));
+	}
+
+	void EditorCamera::SetVerticalFOV(float degFOV)
+	{
+		m_VerticalFOV = Math::Deg2Rad(degFOV);
+		SetPerspectiveProjectionMatrix(m_VerticalFOV, m_ViewportWidth, m_ViewportHeight, m_NearClip, m_FarClip);
 	}
 
 }
