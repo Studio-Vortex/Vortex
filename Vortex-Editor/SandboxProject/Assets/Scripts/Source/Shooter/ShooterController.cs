@@ -34,7 +34,7 @@ namespace Sandbox.Shooter {
 			controller = GetComponent<CharacterController>();
 			capsuleCollider = GetComponent<CapsuleCollider>();
 			eyes = FindEntityByName("Eyes");
-			Input.ShowMouseCursor = false;
+			Input.SetCursorMode(CursorMode.Locked);
 			rigidbody.Rotation = Vector3.Zero;
 			eyes.transform.Rotation = Vector3.Zero;
 			footstepSounds = new AudioSource[2];
@@ -64,7 +64,7 @@ namespace Sandbox.Shooter {
 
 		void RotatePlayer()
 		{
-			mousePosThisFrame = Input.GetMousePosition();
+			mousePosThisFrame = Input.MousePosition;
 			Vector2 mouseDelta = mousePosThisFrame - mousePosLastFrame;
 			mousePosLastFrame = mousePosThisFrame;
 

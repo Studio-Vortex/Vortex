@@ -66,7 +66,7 @@ namespace Vortex {
 
 	static bool TryReadFontAtlasFromCache(const std::string& fontName, float fontSize, AtlasHeader& header, void*& pixels, Buffer& storageBuffer)
 	{
-		std::string filename = fmt::format("{}-{}.sfa", fontName, fontSize);
+		std::string filename = fmt::format("{}-{}.vfa", fontName, fontSize);
 		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
 
 		if (std::filesystem::exists(filepath))
@@ -84,7 +84,7 @@ namespace Vortex {
 	{
 		Utils::CreateCacheDirectoryIfNeeded();
 
-		std::string filename = fmt::format("{}-{}.sfa", fontName, fontSize);
+		std::string filename = fmt::format("{}-{}.vfa", fontName, fontSize);
 		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
 
 		std::ofstream stream(filepath, std::ios::binary | std::ios::trunc);

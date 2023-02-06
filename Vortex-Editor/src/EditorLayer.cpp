@@ -8,6 +8,7 @@
 #include <Vortex/Audio/AudioEngine.h>
 #include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
+#include <Vortex/Gui/Colors.h>
 
 #include <ImGuizmo.h>
 
@@ -1005,6 +1006,8 @@ namespace Vortex {
 
 	void EditorLayer::UI_SceneSettingsToolbar()
 	{
+		UI::PushID();
+
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -1012,23 +1015,23 @@ namespace Vortex {
 		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
 		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		const float buttonSize = 18.0f;
+		const float edgeOffset = 3.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 1.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		ImVec2 textureSize = { buttonSize, buttonSize };
 
 		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
 		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		const float buttonSize = 18.0f + 5.0f;
-		const float edgeOffset = 4.0f;
-		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
-		const float numberOfButtons = 7.0f;
-		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
-		const ImVec2 textureSize = { buttonSize, buttonSize };
-
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("Scene Settings Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("##viewport_settings", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		// A hack to make icon panel appear smaller than minimum allowed by ImGui size
 		// Filling the background for the desired 26px height
@@ -1036,47 +1039,196 @@ namespace Vortex {
 		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
 
-		Gui::BeginVertical("##scene_settings_toolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		bool openSettingsPopup = false;
+
+		Gui::BeginVertical("##viewportSettingsV", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
-		Gui::BeginHorizontal("##scene_settings_toolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::BeginHorizontal("##viewportSettingsH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
+		{
+			UI::ScopedStyle enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset * 2.0f, 0));
+			
+			const ImColor c_SelectedGizmoButtonColor = Colors::Theme::accent;
+			const ImColor c_UnselectedGizmoButtonColor = Colors::Theme::textBrighter;
 
-		if (UI::ImageButtonEx(EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
-			projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
-		UI::SetTooltip("Maximize On Play");
+			auto imageButton = [&](const SharedRef<Texture2D>& icon, const ImColor& tint, float paddingY = 0.0f)
+			{
+				const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
+				const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
+				const bool clicked = ImGui::InvisibleButton(UI::GenerateID(), ImVec2(width, height));
+				UI::DrawButtonImage(icon,
+					tint,
+					tint,
+					tint,
+					UI::RectOffset(UI::GetItemRect(), 0.0f, paddingY));
 
-		if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
-			projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
-		UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
+				return clicked;
+			};
 
-		if (UI::ImageButtonEx(EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
-			projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
-		UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
-
-		if (UI::ImageButtonEx(EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
-			projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
-		UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
-
-		if (UI::ImageButtonEx(EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
-			projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
-		UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
-
-		/*bool isIn2DView = m_EditorCamera->IsIn2DView();
-		if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
-			m_EditorCamera->LockTo2DView(!isIn2DView);
-		UI::SetTooltip("2D View");
-
-		bool isInTopDownView = m_EditorCamera->IsInTopDownView();
-		if (UI::ImageButtonEx(EditorResources::TopDownViewIcon, textureSize, isInTopDownView ? bgColor : normalColor, tintColor))
-			m_EditorCamera->LockToTopDownView(!isInTopDownView);
-		UI::SetTooltip("Top Down View");*/
-
+			if (imageButton(EditorResources::SettingsIcon, c_UnselectedGizmoButtonColor))
+				openSettingsPopup = true;
+			UI::SetTooltip("Viewport Settings");
+		}
 		Gui::Spring();
 		Gui::EndHorizontal();
 		Gui::Spring();
 		Gui::EndVertical();
 
+		// Draw the settings popup
+		{
+			int32_t sectionIdx = 0;
+			static float popupWidth = 300.0f;
+
+			auto beginSection = [&sectionIdx](const char* name)
+			{
+				if (sectionIdx > 0)
+					UI::ShiftCursorY(5.5f);
+
+				ImGui::TextUnformatted(name);
+				UI::Draw::Underline(Colors::Theme::backgroundDark);
+				UI::ShiftCursorY(3.5f);
+
+				bool result = ImGui::BeginTable("##section_table", 2, ImGuiTableFlags_SizingStretchSame);
+				if (result)
+				{
+					ImGui::TableSetupColumn("Labels", ImGuiTableColumnFlags_WidthFixed, popupWidth * 0.5f);
+					ImGui::TableSetupColumn("Widgets", ImGuiTableColumnFlags_WidthFixed, popupWidth * 0.5f);
+				}
+
+				sectionIdx++;
+				return result;
+			};
+
+			auto endSection = []()
+			{
+				ImGui::EndTable();
+			};
+
+			auto slider = [](const char* label, float& value, float min = 0.0f, float max = 0.0f)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::TextUnformatted(label);
+				ImGui::TableSetColumnIndex(1);
+				ImGui::SetNextItemWidth(-1);
+				return ImGui::SliderFloat(UI::GenerateID(), &value, min, max);
+			};
+
+			auto drag = [](const char* label, float& value, float delta = 1.0f, float min = 0.0f, float max = 0.0f)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::TextUnformatted(label);
+				ImGui::TableSetColumnIndex(1);
+				ImGui::SetNextItemWidth(-1);
+				return ImGui::DragFloat(UI::GenerateID(), &value, delta, min, max);
+			};
+
+			auto checkbox = [](const char* label, bool& value)
+			{
+				Gui::TableNextRow();
+				Gui::TableSetColumnIndex(0);
+				Gui::TextUnformatted(label);
+				Gui::TableSetColumnIndex(1);
+				auto table = ImGui::GetCurrentTable();
+				float columnWidth = ImGui::TableGetMaxColumnWidth(table, 1);
+				UI::ShiftCursorX(columnWidth - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemInnerSpacing.x);
+				return ImGui::Checkbox(UI::GenerateID(), &value);
+			};
+
+			auto dropdown = [](const char* label, const char** options, int32_t optionCount, int32_t* selected)
+			{
+				const char* current = options[*selected];
+				Gui::TableNextRow();
+				Gui::TableSetColumnIndex(0);
+				Gui::TextUnformatted(label);
+				Gui::TableSetColumnIndex(1);
+				Gui::PushItemWidth(-1);
+
+				bool result = false;
+				if (Gui::BeginCombo(UI::GenerateID(), current))
+				{
+					for (int i = 0; i < optionCount; i++)
+					{
+						const bool is_selected = (current == options[i]);
+						if (ImGui::Selectable(options[i], is_selected))
+						{
+							current = options[i];
+							*selected = i;
+							result = true;
+						}
+
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::PopItemWidth();
+
+				return result;
+			};
+
+			UI::ScopedStyle itemSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5.5f));
+			UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+			UI::ScopedStyle windowRounding(ImGuiStyleVar_PopupRounding, 4.0f);
+			UI::ScopedStyle cellPadding(ImGuiStyleVar_CellPadding, ImVec2(0.0f, 5.5f));
+
+			if (openSettingsPopup)
+				Gui::OpenPopup("ViewportSettingsPanel");
+
+			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 34, m_ViewportBounds[0].y + edgeOffset + windowHeight });
+			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
+			{
+				if (beginSection("Scene"))
+				{
+					checkbox("Maximize On Play", projectProps.EditorProps.MaximizeOnPlay);
+
+					if (UI::ImageButtonEx(EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
+						projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
+					UI::SetTooltip("Maximize On Play");
+
+					if (UI::ImageButtonEx(EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
+						projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
+					UI::SetTooltip(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid");
+
+					if (UI::ImageButtonEx(EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
+						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
+					UI::SetTooltip(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders");
+
+					if (UI::ImageButtonEx(EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
+						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
+					UI::SetTooltip(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos");
+
+					if (UI::ImageButtonEx(EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
+						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
+					UI::SetTooltip(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio");
+
+					endSection();
+				}
+
+				if (beginSection("Camera"))
+				{
+					/*bool isIn2DView = m_EditorCamera->IsIn2DView();
+					if (UI::ImageButtonEx(EditorResources::TwoDViewIcon, textureSize, isIn2DView ? bgColor : normalColor, tintColor))
+						m_EditorCamera->LockTo2DView(!isIn2DView);
+					UI::SetTooltip("2D View");
+
+					bool isInTopDownView = m_EditorCamera->IsInTopDownView();
+					if (UI::ImageButtonEx(EditorResources::TopDownViewIcon, textureSize, isInTopDownView ? bgColor : normalColor, tintColor))
+						m_EditorCamera->LockToTopDownView(!isInTopDownView);
+					UI::SetTooltip("Top Down View");*/
+
+					endSection();
+				}
+
+				Gui::EndPopup();
+			}
+		}
+
 		Gui::End();
+
+		UI::PopID();
 	}
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
@@ -1611,6 +1763,9 @@ namespace Vortex {
 
 		SetSceneContext(m_ActiveScene);
 
+		m_EditorCamera->Focus({ 0, 0, 0 });
+		m_EditorCamera->SetDistance(10);
+
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
 
@@ -1654,6 +1809,12 @@ namespace Vortex {
 		{
 			m_EditorScene = newScene;
 			SetSceneContext(m_EditorScene);
+
+			if (m_EditorCamera)
+			{
+				m_EditorCamera->Focus({ 0, 0, 0 });
+				m_EditorCamera->SetDistance(10);
+			}
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;

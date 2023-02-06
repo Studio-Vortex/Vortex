@@ -23,7 +23,7 @@ namespace Sandbox.DarkRoom {
 			controller = GetComponent<CharacterController>();
 			rigidbody = GetComponent<RigidBody>();
 			eyes = FindEntityByName("Eyes");
-			Input.ShowMouseCursor = false;
+			Input.SetCursorMode(CursorMode.Locked);
 			footstepSounds = new AudioSource[2];
 			footstepSounds[0] = FindEntityByName("Footstep1").GetComponent<AudioSource>();
 			footstepSounds[1] = FindEntityByName("Footstep2").GetComponent<AudioSource>();
@@ -83,7 +83,7 @@ namespace Sandbox.DarkRoom {
 
 		void RotatePlayer()
 		{
-			mousePosThisFrame = Input.GetMousePosition();
+			mousePosThisFrame = Input.MousePosition;
 			Vector2 mouseDelta = mousePosThisFrame - mousePosLastFrame;
 			mousePosLastFrame = mousePosThisFrame;
 

@@ -25,7 +25,7 @@ namespace Sandbox
 
 		protected override void OnCreate()
 		{
-			Input.ShowMouseCursor = false;
+			Input.SetCursorMode(CursorMode.Locked);
 			m_TimeBetweenShot = timeBetweenShots;
 			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
 			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();

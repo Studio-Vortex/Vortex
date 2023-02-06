@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/Math.h"
 #include "Vortex/Renderer/Texture.h"
+#include "Vortex/Gui/Colors.h"
 
 #include <imgui_internal.h>
 
@@ -33,16 +34,6 @@ namespace Vortex::UI {
 	{
 		_itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
 		return s_IDBuffer;
-	}
-
-	inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
-	{
-		ImRect result = rect;
-		result.Min.x -= x;
-		result.Min.y -= y;
-		result.Max.x += x;
-		result.Max.y += y;
-		return result;
 	}
 
 	inline static void SetTooltip(const char* message)
@@ -831,6 +822,53 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
+		ImVec2 rectMin, ImVec2 rectMax)
+	{
+		auto* drawList = ImGui::GetWindowDrawList();
+		if (ImGui::IsItemActive())
+			drawList->AddImage((ImTextureID)imagePressed->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintPressed);
+		else if (ImGui::IsItemHovered())
+			drawList->AddImage((ImTextureID)imageHovered->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintHovered);
+		else
+			drawList->AddImage((ImTextureID)imageNormal->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
+	};
+
+	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
+		ImRect rectangle)
+	{
+		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
+	};
+
+	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
+		ImVec2 rectMin, ImVec2 rectMax)
+	{
+		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectMin, rectMax);
+	};
+
+	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
+		ImRect rectangle)
+	{
+		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
+	};
+
+
+	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
+	{
+		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+	};
+
+	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
+	{
+		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+	};
+
 	inline static bool TreeNode(const char* label, bool defaultOpen = true)
 	{
 		bool opened = false;
@@ -846,6 +884,65 @@ namespace Vortex::UI {
 
 		return opened;
 	}
+
+	namespace Draw {
+		
+		static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
+		{
+			if (fullWidth)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PushColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePushBackgroundChannel();
+			}
+
+			const float width = fullWidth ? ImGui::GetWindowWidth() : ImGui::GetContentRegionAvail().x;
+			const ImVec2 cursor = ImGui::GetCursorScreenPos();
+			ImGui::GetWindowDrawList()->AddLine(ImVec2(cursor.x + offsetX, cursor.y + offsetY),
+				ImVec2(cursor.x + width, cursor.y + offsetY),
+				Colors::Theme::backgroundDark, 1.0f);
+
+			if (fullWidth)
+			{
+				if (ImGui::GetCurrentWindow()->DC.CurrentColumns != nullptr)
+					ImGui::PopColumnsBackground();
+				else if (ImGui::GetCurrentTable() != nullptr)
+					ImGui::TablePopBackgroundChannel();
+			}
+		}
+	}
+
+	static inline ImRect GetItemRect()
+	{
+		return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+	}
+
+	static inline ImRect RectExpanded(const ImRect& rect, float x, float y)
+	{
+		ImRect result = rect;
+		result.Min.x -= x;
+		result.Min.y -= y;
+		result.Max.x += x;
+		result.Max.y += y;
+		return result;
+	}
+
+	static inline ImRect RectOffset(const ImRect& rect, float x, float y)
+	{
+		ImRect result = rect;
+		result.Min.x += x;
+		result.Min.y += y;
+		result.Max.x += x;
+		result.Max.y += y;
+		return result;
+	}
+
+	static inline ImRect RectOffset(const ImRect& rect, ImVec2 xy)
+	{
+		return RectOffset(rect, xy.x, xy.y);
+	}
+
 
 	inline static bool ShowMessageBox(const char* title, const ImVec2& size)
 	{
