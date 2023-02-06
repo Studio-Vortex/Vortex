@@ -494,10 +494,10 @@ namespace Vortex {
 				if (ambientOcclusionMap)
 					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
 
+				out << YAML::Key << "UV" << YAML::Value << material->GetUV();
 				out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
 				out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
 			}
-			out << YAML::Key << "TextureScale" << YAML::Value << meshRendererComponent.Scale;
 
 			out << YAML::EndMap; // MeshRendererComponent
 		}
@@ -1041,14 +1041,14 @@ namespace Vortex {
 				if (meshComponent["AmbientOcclusionMapPath"])
 					material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
 
+				if (meshComponent["UV"])
+					material->SetUV(meshComponent["UV"].as<Math::vec2>());
+
 				if (meshComponent["Opacity"])
 					material->SetOpacity(meshComponent["Opacity"].as<float>());
 
 				if (meshComponent["MaterialFlags"])
 					material->SetFlags(meshComponent["MaterialFlags"].as<uint32_t>());
-
-				if (meshComponent["TextureScale"])
-					meshRendererComponent.Scale = meshComponent["TextureScale"].as<Math::vec2>();
 			}
 
 			auto spriteComponent = entity["SpriteRendererComponent"];

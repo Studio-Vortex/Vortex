@@ -842,7 +842,7 @@ namespace Vortex {
 			if (!model)
 				continue;
 
-			model->OnUpdate((int)(entt::entity)entity, meshRendererComponent.Scale);
+			model->OnUpdate((int)(entt::entity)entity);
 		}
 	}
 

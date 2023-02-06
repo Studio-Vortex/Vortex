@@ -1157,8 +1157,6 @@ namespace Vortex {
 					component.Mesh = Model::Create(meshSourcePath, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 			}
 
-			UI::Property("UV", component.Scale, 0.05f);
-
 			UI::EndPropertyGrid();
 
 			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////

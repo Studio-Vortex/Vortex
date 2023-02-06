@@ -101,10 +101,10 @@ namespace Vortex {
 		VX_CORE_INFO("Font Atlas successfully cached: {}", filepath.string());
 	}
 
-	template <typename T, typename S, int N, GeneratorFunction<S, N> GEN_FN>
+	template <typename T, typename S, int N, GeneratorFunction<S, N> GenFunc>
 	static SharedRef<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<GlyphGeometry>& glyphs, const FontGeometry& fontGeometry, const Configuration& config)
 	{
-		ImmediateAtlasGenerator<S, N, GEN_FN, BitmapAtlasStorage<T, N>> generator(config.width, config.height);
+		ImmediateAtlasGenerator<S, N, GenFunc, BitmapAtlasStorage<T, N>> generator(config.width, config.height);
 		generator.setAttributes(config.generatorAttributes);
 		generator.setThreadCount(THREADS);
 		generator.generate(glyphs.data(), (int)glyphs.size());

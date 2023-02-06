@@ -34,6 +34,8 @@ namespace Vortex {
 
 		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
 
+		Math::vec2 UV = Math::vec2(1.0f);
+
 		float Opacity = 1.0f;
 
 		uint32_t Flags = 0;
@@ -87,6 +89,9 @@ namespace Vortex {
 
 		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
 		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);
+
+		const Math::vec2& GetUV() const;
+		void SetUV(const Math::vec2& uv);
 
 		float GetOpacity() const;
 		void SetOpacity(float opacity);

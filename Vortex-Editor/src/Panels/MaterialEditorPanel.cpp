@@ -55,6 +55,10 @@ namespace Vortex {
 
 		static void RenderMaterialProperties(SharedRef<Material>& material)
 		{
+			Math::vec2 uv = material->GetUV();
+			if (UI::Property("UV", uv, 0.05f))
+				material->SetUV(uv);
+
 			float opacity = material->GetOpacity();
 			if (UI::Property("Opacity", opacity, 0.01f, 0.01f, 1.0f))
 				material->SetOpacity(opacity);

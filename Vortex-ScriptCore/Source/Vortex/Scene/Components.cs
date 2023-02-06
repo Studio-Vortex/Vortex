@@ -333,16 +333,6 @@
 			set => InternalCalls.MeshRendererComponent_SetMeshType(Entity.ID, value);
 		}
 
-		public Vector2 Scale
-		{
-			get
-			{
-				InternalCalls.MeshRendererComponent_GetScale(Entity.ID, out Vector2 scale);
-				return scale;
-			}
-			set => InternalCalls.MeshRendererComponent_SetScale(Entity.ID, ref value);
-		}
-
 		public Material GetMaterial()
 		{
 			InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 albedo);

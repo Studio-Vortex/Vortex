@@ -305,12 +305,6 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out Vector2 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
-
 		#endregion
 
 		#region Material
@@ -338,6 +332,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetEmission(ulong entityID, float emission);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_GetUV(ulong entityID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetUV(ulong entityID, ref Vector2 uv);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Material_GetOpacity(ulong entityID);

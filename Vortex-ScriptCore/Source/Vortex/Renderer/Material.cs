@@ -33,6 +33,17 @@
 			set => InternalCalls.Material_SetEmission(Entity.ID, value);
 		}
 
+		public Vector2 UV
+		{
+			get
+			{
+				InternalCalls.Material_GetUV(Entity.ID, out Vector2 result);
+				return result;
+			}
+
+			set => InternalCalls.Material_SetUV(Entity.ID, ref value);
+		}
+
 		public float Opacity
 		{
 			get => InternalCalls.Material_GetOpacity(Entity.ID);

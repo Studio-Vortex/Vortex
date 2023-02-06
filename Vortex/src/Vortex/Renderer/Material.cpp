@@ -229,6 +229,16 @@ namespace Vortex {
 		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
 	}
 
+    const Math::vec2& Material::GetUV() const
+    {
+		return m_Properties.UV;
+    }
+
+    void Material::SetUV(const Math::vec2& uv)
+    {
+		m_Properties.UV = uv;
+    }
+
     float Material::GetOpacity() const
     {
         return m_Properties.Opacity;

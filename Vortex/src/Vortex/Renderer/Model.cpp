@@ -484,13 +484,13 @@ namespace Vortex {
 		return true;
 	}
 
-	void Model::OnUpdate(int entityID, const Math::vec2& textureScale)
+	void Model::OnUpdate(int entityID)
 	{
-		if (m_EntityID == entityID && m_TextureScale == textureScale)
+		if (m_EntityID == entityID && m_UV == m_Material->GetUV())
 			return;
 
 		m_EntityID = entityID;
-		m_TextureScale = textureScale;
+		m_UV = m_Material->GetUV();
 
 		for (auto& mesh : m_Meshes)
 		{
@@ -500,7 +500,7 @@ namespace Vortex {
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
 				ModelVertex& vertex = vertices[i];
-				vertex.TexScale = m_TextureScale;
+				vertex.TexScale = m_UV;
 				vertex.EntityID = m_EntityID;
 			}
 

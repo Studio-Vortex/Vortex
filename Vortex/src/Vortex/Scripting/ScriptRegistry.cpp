@@ -1076,26 +1076,6 @@ namespace Vortex {
 		}
 	}
 
-	static void MeshRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outScale = entity.GetComponent<MeshRendererComponent>().Scale;
-	}
-
-	static void MeshRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Scale = *scale;
-	}
-
 #pragma endregion
 
 #pragma region Material
@@ -1178,6 +1158,30 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(emission);
+	}
+
+	static void Material_GetUV(UUID entityUUID, Math::vec2* outUV)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		SharedRef<Material> material = model->GetMaterial();
+		*outUV = material->GetUV();
+	}
+
+	static void Material_SetUV(UUID entityUUID, Math::vec2* uv)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		SharedRef<Material> material = model->GetMaterial();
+		material->SetUV(*uv);
 	}
 
 	static float Material_GetOpacity(UUID entityUUID)
@@ -3651,8 +3655,6 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(MeshRendererComponent_GetMeshType);
 		VX_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
-		VX_ADD_INTERNAL_CALL(MeshRendererComponent_GetScale);
-		VX_ADD_INTERNAL_CALL(MeshRendererComponent_SetScale);
 
 		VX_ADD_INTERNAL_CALL(Material_GetAlbedo);
 		VX_ADD_INTERNAL_CALL(Material_SetAlbedo);
@@ -3662,6 +3664,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Material_SetRoughness);
 		VX_ADD_INTERNAL_CALL(Material_GetEmission);
 		VX_ADD_INTERNAL_CALL(Material_SetEmission);
+		VX_ADD_INTERNAL_CALL(Material_GetUV);
+		VX_ADD_INTERNAL_CALL(Material_SetUV);
 		VX_ADD_INTERNAL_CALL(Material_GetOpacity);
 		VX_ADD_INTERNAL_CALL(Material_SetOpacity);
 

@@ -24,12 +24,14 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps;
+		
 		framebufferProps.Attachments = {
 			FramebufferTextureFormat::RGBA16F,
 			FramebufferTextureFormat::RED_INTEGER,
 			FramebufferTextureFormat::RGBA16F,
 			FramebufferTextureFormat::Depth
 		};
+
 		framebufferProps.Width = 1600;
 		framebufferProps.Height = 900;
 		framebufferProps.Samples = appProps.SampleCount;
@@ -60,8 +62,11 @@ namespace Vortex {
 			}
 		}
 
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
 		m_EditorCamera = new EditorCamera(
-			Project::GetActive()->GetProperties().EditorProps.EditorCameraFOV,
+			projectProps.EditorProps.EditorCameraFOV,
 			m_ViewportSize.x,
 			m_ViewportSize.y,
 			0.1f,

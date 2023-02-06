@@ -134,7 +134,7 @@ namespace Vortex {
 		Model(MeshType meshType);
 		~Model() = default;
 
-		void OnUpdate(int entityID = -1, const Math::vec2& textureScale = Math::vec2(1.0f));
+		void OnUpdate(int entityID = -1);
 		void Render(const Math::mat4& worldSpaceTransform);
 		void Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
 		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
@@ -180,7 +180,7 @@ namespace Vortex {
 		std::string m_Filepath;
 		const aiScene* m_Scene;
 		int m_EntityID = -1;
-		Math::vec2 m_TextureScale = Math::vec2(1.0f);
+		Math::vec2 m_UV = Math::vec2(1.0f);
 
 		std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;
 		uint32_t m_BoneCounter = 0;
