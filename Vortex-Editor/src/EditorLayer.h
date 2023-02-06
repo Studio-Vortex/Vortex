@@ -46,7 +46,6 @@ namespace Vortex {
 		void OnOverlayRender();
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
-		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
 
 		// Project
 

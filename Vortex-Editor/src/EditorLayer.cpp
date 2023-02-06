@@ -1428,7 +1428,6 @@ namespace Vortex {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonReleasedEvent));
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
@@ -1666,30 +1665,6 @@ namespace Vortex {
 					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
 						m_SceneHierarchyPanel.SetEntityShouldBeRenamed(false);
 				}
-
-				break;
-			}
-
-			case MouseButton::Right:
-			{
-				if (m_SceneViewportHovered && m_SceneState != SceneState::Play)
-					Input::SetCursorMode(CursorMode::Locked);
-
-				break;
-			}
-		}
-
-		return false;
-	}
-
-	bool EditorLayer::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e)
-	{
-		switch (e.GetMouseButton())
-		{
-			case MouseButton::Right:
-			{
-				if (m_SceneState != SceneState::Play)
-					Input::SetCursorMode(CursorMode::Normal);
 
 				break;
 			}

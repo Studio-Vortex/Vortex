@@ -70,8 +70,10 @@ namespace Vortex {
 
 			m_RightDirection = Math::Cross(m_Direction, Math::vec3{ 0.f, yawSign, 0.f });
 
-			m_Direction = Math::Rotate(Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
-				Math::AngleAxis(-m_YawDelta, Math::vec3{ 0.f, yawSign, 0.f }))), m_Direction);
+			m_Direction = Math::Rotate(
+				Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
+				Math::AngleAxis(-m_YawDelta, Math::vec3{ 0.f, yawSign, 0.f }))), m_Direction
+			);
 
 			const float distance = Math::Distance(m_FocalPoint, m_Position);
 			m_FocalPoint = m_Position + GetForwardDirection() * distance;
@@ -97,7 +99,9 @@ namespace Vortex {
 				MouseZoom((delta.x + delta.y) * 0.1f);
 			}
 			else
+			{
 				EnableMouse();
+			}
 		}
 		else
 		{
@@ -150,12 +154,15 @@ namespace Vortex {
 	{
 		m_FocalPoint = focusPoint;
 		m_CameraMode = CameraMode::FLYCAM;
+
 		if (m_Distance > m_MinFocusDistance)
 		{
 			m_Distance -= m_Distance - m_MinFocusDistance;
 			m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
 		}
+
 		m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+
 		UpdateCameraView();
 	}
 
@@ -181,6 +188,7 @@ namespace Vortex {
 		distance = Math::Max(distance, 0.0f);
 		float speed = distance * distance;
 		speed = Math::Min(speed, 50.0f); // max speed = 50
+
 		return speed;
 	}
 
@@ -225,11 +233,13 @@ namespace Vortex {
 		m_Distance -= delta * ZoomSpeed();
 		const Math::vec3 forwardDir = GetForwardDirection();
 		m_Position = m_FocalPoint - forwardDir * m_Distance;
+
 		if (m_Distance < 1.0f)
 		{
 			m_FocalPoint += forwardDir * m_Distance;
 			m_Distance = 1.0f;
 		}
+
 		m_PositionDelta += delta * ZoomSpeed() * forwardDir;
 	}
 
