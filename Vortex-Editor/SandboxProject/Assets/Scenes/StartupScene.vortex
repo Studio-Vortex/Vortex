@@ -1,0 +1,298 @@
+Scene: StartupScene
+Entities:
+  - Entity: 10370266192851982428
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.0008039, 8.81515884, 4.2356391]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+      ShadowBias: 0
+      CastShadows: true
+  - Entity: 9018750963675064155
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.199396908, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\dancing_vampire.dae
+      NormalMapPath: Textures\PBR\Vampire\Vampire_normal.png
+      AlbedoMapPath: Textures\PBR\Vampire\Vampire_diffuse.png
+      MetallicMapPath: Textures\PBR\Vampire\Vampire_specular.png
+      Roughness: 0.5
+      EmissionMapPath: Textures\PBR\Vampire\Vampire_emission.png
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 1, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 3602375961810799775
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 5.54902744, 18.0911388]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\solitude_night_4k.hdr
+      Rotation: 0
+  - Entity: 5835066898071840442
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 36.6599998, 52.7000008]
+      Rotation: [0, -0.0174532924, -0.00872664619]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 0
+      CastShadows: true
+  - Entity: 2530656767783596310
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plane
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.119999997, 0]
+      Rotation: [0, 0, 0]
+      Scale: [50, 1, 50]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\PBR\LavaRock1\columned-lava-rock_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\LavaRock1\columned-lava-rock_albedo.png
+      MetallicMapPath: Textures\PBR\LavaRock1\columned-lava-rock_metallic.png
+      RoughnessMapPath: Textures\PBR\LavaRock1\columned-lava-rock_roughness.png
+      EmissionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_emissive.png
+      ParallaxOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_height.png
+      ParallaxHeightScale: 0.100000001
+      AmbientOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_ao.png
+      TextureScale: [3, 3]
+  - Entity: 9153935612955659977
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plane
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 25.1199989, -25]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [50, 1, 50]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\PBR\LavaRock1\columned-lava-rock_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\LavaRock1\columned-lava-rock_albedo.png
+      MetallicMapPath: Textures\PBR\LavaRock1\columned-lava-rock_metallic.png
+      RoughnessMapPath: Textures\PBR\LavaRock1\columned-lava-rock_roughness.png
+      EmissionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_emissive.png
+      ParallaxOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_height.png
+      ParallaxHeightScale: 0.100000001
+      AmbientOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_ao.png
+      TextureScale: [3, 3]
+  - Entity: 4939055658389022203
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plane
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25, 25.1199989, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [50, 1, 50]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\PBR\LavaRock1\columned-lava-rock_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\LavaRock1\columned-lava-rock_albedo.png
+      MetallicMapPath: Textures\PBR\LavaRock1\columned-lava-rock_metallic.png
+      RoughnessMapPath: Textures\PBR\LavaRock1\columned-lava-rock_roughness.png
+      EmissionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_emissive.png
+      ParallaxOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_height.png
+      ParallaxHeightScale: 0.100000001
+      AmbientOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_ao.png
+      TextureScale: [3, 3]
+  - Entity: 7696679420584723828
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plane
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-25, 25.1199932, 0]
+      Rotation: [1.57079637, 1.57079637, 0]
+      Scale: [50, 1, 50]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\PBR\LavaRock1\columned-lava-rock_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\LavaRock1\columned-lava-rock_albedo.png
+      MetallicMapPath: Textures\PBR\LavaRock1\columned-lava-rock_metallic.png
+      RoughnessMapPath: Textures\PBR\LavaRock1\columned-lava-rock_roughness.png
+      EmissionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_emissive.png
+      ParallaxOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_height.png
+      ParallaxHeightScale: 0.100000001
+      AmbientOcclusionMapPath: Textures\PBR\LavaRock1\columned-lava-rock_ao.png
+      TextureScale: [3, 3]
+  - Entity: 16730641940912932218
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.2636929, 8.56944656, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 3]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Suzzane\Suzanne.gltf
+      AlbedoMapPath: Meshes\Suzzane\Suzanne_BaseColor.png
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 1, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 13337336596179511861
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.56999969, 8.64000034, 0]
+      Rotation: [0, 3.14159274, 0]
+      Scale: [3, 3, 3]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\DamagedHelmet\DamagedHelmet.gltf
+      NormalMapPath: Meshes\DamagedHelmet\Default_normal.jpg
+      AlbedoMapPath: Meshes\DamagedHelmet\Default_albedo.jpg
+      MetallicMapPath: Meshes\DamagedHelmet\Default_metalRoughness.jpg
+      Roughness: 0.209999993
+      EmissionMapPath: Meshes\DamagedHelmet\Default_emissive.jpg
+      AmbientOcclusionMapPath: Meshes\DamagedHelmet\Default_AO.jpg
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 1, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 11377087911160508580
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.57489777, 8.96255779, 5.2966218]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+      ShadowBias: 0
+      CastShadows: true

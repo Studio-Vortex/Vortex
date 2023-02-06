@@ -1,0 +1,1774 @@
+Scene: DeliveryDriver
+Entities:
+  - Entity: 16213116334316073882
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Customer
+      Marker: Customer
+    TransformComponent:
+      Translation: [-8.97840977, 12.1607637, 0.25]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.423439503, 0.482488275, 1, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 11092247814179622031
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 18298505185793148981
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 20
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.172311693, 0.432941794, 0.167153925]
+      Primary: true
+      FixedAspectRatio: false
+    AudioSourceComponent:
+      AudioSourcePath: SFX\CalmMusic.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+    ScriptComponent:
+      ClassName: Sandbox.TopDownCamera
+  - Entity: 252858923576183723
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Driver
+      Marker: Player
+    TransformComponent:
+      Translation: [0.659103394, 19.2185249, 0.270000011]
+      Rotation: [0, 0, 0]
+      Scale: [1, 2, 1]
+    SpriteRendererComponent:
+      Color: [0.999942303, 1, 0.999899983, 1]
+      TexturePath: Textures\Delivery Driver\Car 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.Driver
+      ScriptFields:
+        - Name: boostSpeed
+          Type: Float
+          Data: 8
+        - Name: moveSpeed
+          Type: Float
+          Data: 5
+        - Name: slowSpeed
+          Type: Float
+          Data: 3
+        - Name: steerSpeed
+          Type: Float
+          Data: 125
+  - Entity: 10244559225593827209
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Package
+      Marker: "Package\x00"
+    TransformComponent:
+      Translation: [2.86921358, 26.1410465, 0.238581181]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.254901975, 0.87843138, 0.325490206, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 8203790865649753165
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.61217642, 19.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 12213445989404844176
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5113554, 19.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 7652939763684069765
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0118284822, -0.287902355, 4.66335905e-07]
+      Rotation: [0, 0, 0]
+      Scale: [3, 10, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 13015015495225771059
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0118284225, 12.2120972, 4.66335905e-07]
+      Rotation: [0, 0, 0]
+      Scale: [15, 15, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Intersection 2.png
+      TextureScale: [1, 1]
+  - Entity: 6390333048403602688
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.79953623, 8.12628174, 0]
+      Rotation: [0, 0, 0.362850785]
+      Scale: [3.00000072, 3.00000072, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8953220135993564145
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.70046377, 8.62628174, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13267074078149596041
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0118291378, 27.2120972, 4.66335905e-07]
+      Rotation: [0, 0, 0]
+      Scale: [15, 15, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Intersection 2.png
+      TextureScale: [1, 1]
+  - Entity: 2620579728145703894
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.79953623, 15.6262817, 0]
+      Rotation: [0, 0, 0.341132551]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14905620403833097792
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.20046377, 15.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 881471139003418504
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.20046377, 24.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 3796655601317861233
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.79953623, 24.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 12477753606568335777
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.4881716, 12.2120972, 4.66335905e-07]
+      Rotation: [0, 0, 1.57079625]
+      Scale: [2.99999976, 9.99999905, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 7160373845333152010
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.4881725, 27.2120972, 4.66335905e-07]
+      Rotation: [0, 0, 1.57079625]
+      Scale: [2.99999976, 9.99999905, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 12185198832606443488
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.5118275, 27.2120991, 4.66335905e-07]
+      Rotation: [0, 0, 1.57079625]
+      Scale: [2.99999976, 9.99999905, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 10071489761153606483
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.5118284, 12.2120991, 4.66335905e-07]
+      Rotation: [0, 0, 1.57079625]
+      Scale: [2.99999976, 9.99999905, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 11012304246116861380
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20.0118256, 12.9613857, 4.66335905e-07]
+      Rotation: [0, 0, -3.14159226]
+      Scale: [5, 4.5, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Corner 3.png
+      TextureScale: [1, 1]
+  - Entity: 17765239272874160583
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20.0118313, 26.4613857, 4.66335905e-07]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [4.5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Corner 3.png
+      TextureScale: [1, 1]
+  - Entity: 2141005725835984871
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [19.9881687, 26.4668064, 4.66335933e-07]
+      Rotation: [0, 0, 0]
+      Scale: [5, 4.5, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Corner 3.png
+      TextureScale: [1, 1]
+  - Entity: 14721505794653647680
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [19.9881744, 12.961401, 4.66335905e-07]
+      Rotation: [0, 0, -1.57079637]
+      Scale: [4.5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Corner 3.png
+      TextureScale: [1, 1]
+  - Entity: 8552435730168945564
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20.8542576, 19.711647, 4.66335905e-07]
+      Rotation: [0, 0, 0]
+      Scale: [3.3499999, 9, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 2127413143014550752
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Road
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20.8247032, 19.711647, 4.66335905e-07]
+      Rotation: [0, 0, 0]
+      Scale: [3.3499999, 9, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.999899983, 0.999976695, 1]
+      TexturePath: Textures\Delivery Driver\Road 3.png
+      TextureScale: [1, 1]
+  - Entity: 12544864915799208934
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.2004642, 19.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 9882374847503759828
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.7995358, 19.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 3102781722071045061
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.7004642, 7.62628174, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13821644095997278330
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.7995358, 7.12628174, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 2087380619830197722
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [26.2995358, 19.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 10326907738879247702
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [13.3415489, 31.7680054, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13426882768426643930
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-13.2004642, 32.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13285261143026202624
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: House
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-25.7004642, 19.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\House 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8176487253944310539
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.7004642, 24.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 4.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8686426379817719377
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-23.2004642, 29.1262817, 0]
+      Rotation: [0, 0, -0.24720709]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14517723626917190255
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.70046425, 30.6262817, 0]
+      Rotation: [0, 0, -0.332806319]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5654252375907392730
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.29953575, 31.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 4.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 2573345164045982011
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.7995358, 24.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 1725670776253181425
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [16.2995358, 15.6262817, 0]
+      Rotation: [0, 0, 0.456704259]
+      Scale: [3.00000167, 3.00000167, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14231836774450409034
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.2004642, 15.6262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 587703011028729084
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-22.7004642, 9.62628174, 0]
+      Rotation: [0, 0, -0.675564706]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 4.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 4332896013909808343
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [22.7995358, 10.1262817, 0]
+      Rotation: [0, 0, 0.816412866]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 581210507031605494
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [22.7995358, 29.6262817, 0]
+      Rotation: [0, 0, 0.284175217]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 9035023486866721235
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Rock
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.9712324, 16.7592125, 0]
+      Rotation: [0, 0, 0.253956258]
+      Scale: [3.87243533, 4.07206249, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Rocks 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 16849325095768191451
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Rock
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [11.2995358, 17.6262817, 0]
+      Rotation: [0, 0, 0.7443856]
+      Scale: [3.00000048, 3.00000048, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Rocks 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 575737766064231740
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Rock
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.64900398, 20.7595119, 0]
+      Rotation: [0, 0, -0.229052156]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Rocks 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 12936087235262926525
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Rock
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.2004642, 21.1262817, 0]
+      Rotation: [0, 0, -1.06546938]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Rocks 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 15670060574591104382
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-18.9652557, 30.5568581, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 6034600464482367051
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-24.434185, 25.2332478, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 15537170310462643147
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-18.8934422, 8.36463165, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 1.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 11040972251288781280
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-24.9465485, 12.9863091, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 162478967825682484
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [18.57687, 7.67479229, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 10739995443237958688
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [24.2904949, 13.9680023, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 4.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14367964491784646118
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [24.318058, 26.3372879, 0]
+      Rotation: [0, 0, -0.24720706]
+      Scale: [2.99999976, 2.99999976, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13935935963301233288
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [18.7389946, 31.044735, 0]
+      Rotation: [0, 0, 0.284175217]
+      Scale: [3.00000024, 3.00000024, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13246685085000097609
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.917448, 24.1411724, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 2.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5136341253507174354
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.78510475, 15.5027237, 0]
+      Rotation: [0, 0, 0.341132551]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 4.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14155832774672875769
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tree
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [11.0565825, 24.1262817, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Delivery Driver\Tree 3.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8393328608238082618
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Package
+      Marker: "Package\x00"
+    TransformComponent:
+      Translation: [-20.1307869, 26.6410465, 0.238581181]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.253634423, 0.880386293, 0.325396478, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 2275552353687187441
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Package
+      Marker: "Package\x00"
+    TransformComponent:
+      Translation: [20.3692131, 12.6410465, 0.238581181]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.254901975, 0.87843138, 0.325490206, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 3803680409828041869
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Speed Up
+      Marker: Boost
+    TransformComponent:
+      Translation: [-7.72201586, 27.741703, 0.100000001]
+      Rotation: [0, 0, 0]
+      Scale: [1.10000002, 1.10000002, 1]
+    CircleRendererComponent:
+      Color: [0.865336478, 0.868783712, 0.207720995, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 902964679817926265
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Speed Up
+      Marker: Boost
+    TransformComponent:
+      Translation: [20.2779846, 21.741703, 0.100000001]
+      Rotation: [0, 0, 0]
+      Scale: [1.10000002, 1.10000002, 1]
+    CircleRendererComponent:
+      Color: [0.865336478, 0.868783712, 0.207720995, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: true
+  - Entity: 18298505185793148981
+    Active: true
+    Parent: 11092247814179622031
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.226468593, 1.40698481, 0.533520818]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 12638136623020744290
+      TextString: 3

@@ -1,0 +1,191 @@
+Scene: Cyborg
+Entities:
+  - Entity: 13745268754965268770
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cyborg
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Cyborg.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\Meshes\Cyborg\cyborg_normal.png
+      Shininess: 32
+      AlbedoMapPath: Textures\Meshes\Cyborg\cyborg_diffuse.png
+      MetallicMapPath: Textures\Meshes\Cyborg\cyborg_specular.png
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.5
+      AngularVelocity: [1, 1, 1]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [1.63, 1.86000001, 0.5]
+      Offset: [0, 1.88999999, 0]
+      IsTrigger: false
+  - Entity: 73758428054046152
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.07951283, -13.0900002, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 0, 0]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-2.07951283, -13.0900002, 2]
+      Attenuation: [-0, -0]
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [0, 10, 0]
+        - Name: Period
+          Type: Float
+          Data: 10
+  - Entity: 9669011683513608105
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, -3, 1.89999998]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [5, 6, 10]
+        - Name: Period
+          Type: Float
+          Data: 9
+  - Entity: 6353350679125654250
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.00583910942, 13.0699997, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [0, 1, 0]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [0.00583910942, 13.0699997, 2]
+      Attenuation: [-0, -0]
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [0, -10, 0]
+        - Name: Period
+          Type: Float
+          Data: 10
+  - Entity: 18346166211156551000
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.77240968, -13.1000004, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [0, 0, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [2.77240968, -13.1000004, 2]
+      Attenuation: [-0, -0]
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [0, 10, 0]
+        - Name: Period
+          Type: Float
+          Data: 10
+  - Entity: 8680911409854177143
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plane
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20.8997059, -8.81421954e-07, -14.7878056]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [100, 1, 100]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Default/Plane.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\WhiteBricks\Bricks066_4K_Color.png
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [3, 3]
+      Reflective: false
+      Refractive: false

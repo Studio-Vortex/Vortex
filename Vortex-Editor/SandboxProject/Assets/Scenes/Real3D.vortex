@@ -1,0 +1,1591 @@
+Scene: Real3D
+Entities:
+  - Entity: 1613350301407569503
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0343250036, 36.1727486, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-0.0343250036, 36.1727486, 0]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 12942675722810706391
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0343250036, 26.1758156, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-0.0343250036, 26.1758156, 0]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 6253543367637350506
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0343250036, 13.6758156, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-0.0343250036, 13.6758156, 0]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 6370788535255790361
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 30, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 3938354541001845633
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.5, 30.004858, -3.98354244]
+      Rotation: [0, 0, 0]
+      Scale: [2, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\Cpp20.png
+      TextureScale: [1, 1]
+  - Entity: 4132772249019345067
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.75904608, 1.74497771, -8.08208942]
+      Rotation: [0, 0.219404101, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 15151686957814661918
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.29216766, 0.744368494, -8.41449928]
+      Rotation: [0, 0.219404101, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 8492998394137366496
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.2532902, 0.744368434, -8.08970261]
+      Rotation: [0, -1.04397154, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 13654699974773879018
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-17.4389687, 0.744368434, -8.6928215]
+      Rotation: [0, -0.470558494, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 15507528329730142221
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.09765911, 0.744368434, -7.33185291]
+      Rotation: [0, -0.470558494, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 2322584206312259213
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.5, 30, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14380687993236364410
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.161773741, 31.0156269, -4.26853466]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Default/Sphere.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Checkerboard.png
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.289999992
+      Restitution: 0.769999981
+      RestitutionThreshold: 0.300000012
+  - Entity: 9934840723110039452
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.67849922, 58.6454887, -86.1039581]
+      Rotation: [0, 0, 0]
+      Scale: [40.0000076, 40.0000076, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\MonoRuntime.png
+      TextureScale: [1, 1]
+  - Entity: 9760674827190538765
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-36.5183372, 58.6454887, -90]
+      Rotation: [0, 0, 0]
+      Scale: [40.0000076, 40.0000076, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\Box2D.png
+      TextureScale: [1, 1]
+  - Entity: 14431162765307594237
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-36.2461815, 23.6591415, -92.2880249]
+      Rotation: [0, 0, 0]
+      Scale: [60, 30, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\Entt.png
+      TextureScale: [1, 1]
+  - Entity: 12494196025661969520
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.93893242, -88.8376083]
+      Rotation: [0, 0, 0]
+      Scale: [80, 25, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\Miniaudio.png
+      TextureScale: [1, 1]
+  - Entity: 6577829566501013677
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [39.6112175, 30.9939899, -85.7833633]
+      Rotation: [0, 0, 0]
+      Scale: [44.1957893, 40, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\glm.png
+      TextureScale: [1, 1]
+  - Entity: 17171133323237632333
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.5, 30, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 10801079925149078867
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 30, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 13592034561418212799
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.5, 30, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 12020111451677993696
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.79938602, 20, -4.49515533]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\wood.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.Elevator
+      ScriptFields:
+        - Name: ShowRaycast
+          Type: Bool
+          Data: false
+        - Name: Speed
+          Type: Float
+          Data: 1.5
+        - Name: StopPoint
+          Type: Float
+          Data: 30
+  - Entity: 14313985173029295005
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2, 20, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 1962177015011433324
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1, 20, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 18429627076846031428
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 20, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 236985137513352346
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 40, 0]
+      Rotation: [0, 0, 0]
+      Scale: [40, 0.5, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Floor.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8553758660162646745
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20, 20, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [40, 0.5, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Floor.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 14641357931700275425
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20, 20, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [40, 0.5, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Floor.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 2251997306837290036
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.62323761, 7.08469582, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\wood.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.Elevator
+      ScriptFields:
+        - Name: ShowRaycast
+          Type: Bool
+          Data: false
+        - Name: Speed
+          Type: Float
+          Data: 1.5
+        - Name: StopPoint
+          Type: Float
+          Data: 20
+  - Entity: 15489803679548123474
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.76036787, 7.1191287, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 1951291176454279901
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.76026869, 7.11792755, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 854866634571948859
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.5448408, 6.30556393, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5612385656897002078
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.5448408, 6.30556393, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 11057511285861204709
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.5448408, 6.30556393, -4.49515724]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 12791313166201535728
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15.4871578, 4.53564787, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 4976495329372373852
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-14.4871578, 4.03564787, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 17833070124877338213
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-13.4871578, 3.3499999, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 2753574616366641039
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.488802, 3.35375142, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 11087349555738018668
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-9.37614059, 2.25, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 9716501138674917960
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.37614059, 2.25396538, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 6813826416180774949
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.37614059, 0.744368434, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 1227021401128710090
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.37614059, 0.744368434, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 6939633756600433795
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.37614059, 0.744368434, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 745776164084428434
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 30.3811073, -90]
+      Rotation: [0, 0, 0]
+      Scale: [38, 38, 1]
+    SpriteRendererComponent:
+      Color: [0.826254845, 0.826254845, 0.826254845, 1]
+      TexturePath: Assets\Textures\OpenGL.png
+      TextureScale: [1, 1]
+  - Entity: 15282671237726279294
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.0776272, 2.1140182, -4.46919489]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\game\Platformer\Characters\character_0000.png
+      TextureScale: [1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\Jump.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        Spacialized: true
+        Loop: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.PlatformerPlayer
+      ScriptFields:
+        - Name: AnimationWaitTime
+          Type: Float
+          Data: 1
+        - Name: FinishPoint
+          Type: Float
+          Data: 32
+        - Name: GameOver
+          Type: Bool
+          Data: false
+        - Name: HorizontalFriction
+          Type: Float
+          Data: 2
+        - Name: JumpForce
+          Type: Float
+          Data: 92
+        - Name: PlayerResetYAxis
+          Type: Float
+          Data: -25
+        - Name: Speed
+          Type: Float
+          Data: 10
+  - Entity: 3370563960161701707
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [40, 0.5, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Floor.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    AudioSourceComponent:
+      AudioSourcePath: Assets\SFX\Children.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        Spacialized: true
+        Loop: true
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.A1_OpeningScene
+  - Entity: 9763493949582430598
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2, 5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.999999702, 0.999999702]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 8
+  - Entity: 10170060150573181126
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.19861507, 0.744368434, -7.86044216]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 14730604144796024215
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.3431921, 0.744368434, -6.62743759]
+      Rotation: [0, -0.401655138, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 15294755781352888051
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.81377316, 1.74436843, -7.28343678]
+      Rotation: [0, 0.372755319, 0]
+      Scale: [0.999999762, 1, 0.999999762]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 12519485323795780916
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.45000648, 0.744368494, -8.29029751]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 13210999323968046894
+    TagComponent:
+      Tag: Sprite
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.45000648, 0.744368494, -7.78166723]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Assets\Textures\AwesomeFace.png
+      TextureScale: [1, 1]
+  - Entity: 12811812974782270612
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.45858192, 0.744368494, -7.29685736]
+      Rotation: [0, 0.390286118, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 18011673496505819617
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.62385941, 0.744368434, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 10073090935218684973
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.12385941, 2.24436855, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 266925247925364816
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.12385941, 3.24436855, -4.4951582]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5982434010380647817
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2, 30.5, -4.51999998]
+      Rotation: [0, 0, -0.785398245]
+      Scale: [0.999999881, 0.49999994, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5071340306950926412
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 30.5, -4.51763487]
+      Rotation: [0, 0, 0.785398245]
+      Scale: [0.999999881, 0.49999994, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Assets\Textures\Other\blue.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false

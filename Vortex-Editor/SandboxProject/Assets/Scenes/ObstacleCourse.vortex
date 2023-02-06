@@ -1,0 +1,2100 @@
+Scene: ObstacleCourse
+Entities:
+  - Entity: 7814190201573941561
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Pickup Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.49371055e-06, 16.6552753, 40.6041832]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Jump.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: true
+        Spacialized: true
+        Loop: false
+  - Entity: 9816844811492302677
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-17.7847271, 0.999999821, -6.41674614]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 9669720011783608634
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [17.1419506, 0.999999821, -2.02042103]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 7436112087763942179
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.791926384, 0.999999821, -14.8283615]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 8509478141100458675
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-17.2919273, 0.999999821, -14.3283615]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 10504980845984383376
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [16.2080727, 0.999999821, -16.1565571]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 15139834826334997072
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.2080727, 0.999999821, 5.67163849]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 6062263940513134969
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.7919273, 0.999999821, 5.17163849]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 12438597387276654329
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.07226944, 0.999999821, -2.49407601]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 8832382547706989474
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.20807362, 0.999999821, 5.17163849]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 8355637816113274149
+    Active: true
+    Parent: 5192899785303975095
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.20807362, 0.999999821, 15.6716385]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.986517906, 0, 1]
+      Thickness: 1
+      Fade: 0.00499999989
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: true
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Coin
+  - Entity: 5192899785303975095
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 8355637816113274149
+      - Handle: 8832382547706989474
+      - Handle: 12438597387276654329
+      - Handle: 6062263940513134969
+      - Handle: 15139834826334997072
+      - Handle: 10504980845984383376
+      - Handle: 8509478141100458675
+      - Handle: 7436112087763942179
+      - Handle: 9669720011783608634
+      - Handle: 9816844811492302677
+    TagComponent:
+      Tag: Pickups
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 6526689762493228269
+    Active: true
+    Parent: 12617868040466734564
+    Children:
+      []
+    TagComponent:
+      Tag: Score Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.649999976, 1.35000002, -3.29999995]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 1.0000006]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 7778341915388530709
+      TextString: "Score: 0"
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.ScoreText
+  - Entity: 15395718172120680004
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.4776716, 100, 11.8645592]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 4390432143422895327
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.02232838, 75, 15.6084805]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 2896858867092672158
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.477671623, 50, 16.3645592]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 3719116295165608176
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.52232838, 300, -5.63544083]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 2551066798194445765
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.97767186, 75, 2.36455894]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 868858572949837817
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 19.7467709, 1.49442959]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7358565759540580790
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 17.7467709, 15.4944296]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 11317000844195746009
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30.4118042, 19.7720966, 3.7082777]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 14438671650523654136
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30.4118042, 16.7720966, 11.2082777]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 4086256365437213265
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.5, 1, -3.072052]
+      Rotation: [0, -0, 0]
+      Scale: [7, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 17493852654186639132
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Coin
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [16.5, 1, 1.427948]
+      Rotation: [0, -0, 0]
+      Scale: [7, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7188058115863211467
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.43166256, 0.999999046, 11.8795748]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 6
+  - Entity: 760916965867484108
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.06833744, 0.999999046, -1.62042522]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 2.5
+  - Entity: 15482053689936874033
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.0683374405, 0.999999046, -7.12042522]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 2.5
+  - Entity: 6251945295733215377
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10.4316626, 0.999999046, 4.87957478]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 5
+  - Entity: 4671658281679243702
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-13.9316626, 0.999999046, -8.62042522]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 4
+  - Entity: 2495893777925413356
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Spinner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.76753235, 1, 8.8025589]
+      Rotation: [0, -0, 0]
+      Scale: [2.87212944, 1, 0.190545797]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Spinner
+      ScriptFields:
+        - Name: spinSpeed
+          Type: Float
+          Data: 3
+  - Entity: 1896702565799967553
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Audio Source
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 9.01000023, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\IntroMusic.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 4527681992107846885
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Directional Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 96.3499985, 7.69999981]
+      Rotation: [0, -0.0174532924, -0.00872664619]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [3, 3, 3]
+      Intensity: 1
+      ShadowBias: 5
+      CastShadows: true
+  - Entity: 3814122543240132457
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 0, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16750315602230794644
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-17.5338497, 0.75, 16.8416233]
+      Rotation: [0, 0, 0]
+      Scale: [1.5, 0.5, 1.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.719642282, 0.60822469, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    ParticleEmitterComponent:
+      ColorBegin: [0.116633356, 0.103167713, 1, 1]
+      ColorEnd: [1, 0, 0, 1]
+      LifeTime: 1
+      Position: [-17.5338497, 0.75, 16.8416233]
+      Offset: [0, 1, 0]
+      Rotation: 0.100000001
+      SizeBegin: [0.5, 0.5]
+      SizeEnd: [0, 0]
+      SizeVariation: [1, 1]
+      Velocity: [0, 1, 0]
+      VelocityVariation: [1, 1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.699999988
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: true
+      LockPositionZ: false
+      LockRotationX: true
+      LockRotationY: false
+      LockRotationZ: true
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.00999999978
+      DynamicFriction: 0.00999999978
+      Bounciness: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Mover
+      ScriptFields:
+        - Name: cameraOffset
+          Type: Vector3
+          Data: [0, 4, 7]
+        - Name: moveSpeed
+          Type: Float
+          Data: 5000
+  - Entity: 12617868040466734564
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 6526689762493228269
+      - Handle: 3220458231518093601
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 18.030899, 35.1639862]
+      Rotation: [-0.486732602, 0, 0]
+      Scale: [0.999997377, 0.999998808, 0.999999583]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\PaperMill_E_3k.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 7937393053363745465
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.76837158e-07, 1, 20.5]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12319003239638057459
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.76837158e-07, 1, -20.5]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 11018392032323100973
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20.5, 1, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 4411724794286487301
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20.5, 1, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12434924566287133349
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30, 5.25, 0]
+      Rotation: [0, -0, -0.436332345]
+      Scale: [20, 0.99999994, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.637174547, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7307246555379556495
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 15.7467709, 9.49442959]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 15983560673658817431
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30.4118042, 14.2720966, 3.7082777]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 453598881670817655
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30.3383389, 12.5675316, 16.4118767]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 3547810686918241162
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 453598881670817655
+      - Handle: 15983560673658817431
+      - Handle: 14118534003168517808
+      - Handle: 12838725333584679752
+      - Handle: 11480332603208812066
+      - Handle: 7307246555379556495
+      - Handle: 15049741420455282673
+      - Handle: 2207341524387474801
+      - Handle: 2495893777925413356
+      - Handle: 4671658281679243702
+      - Handle: 6251945295733215377
+      - Handle: 15482053689936874033
+      - Handle: 760916965867484108
+      - Handle: 7188058115863211467
+      - Handle: 14438671650523654136
+      - Handle: 11317000844195746009
+      - Handle: 7358565759540580790
+      - Handle: 868858572949837817
+      - Handle: 2551066798194445765
+      - Handle: 3719116295165608176
+      - Handle: 2896858867092672158
+      - Handle: 4390432143422895327
+      - Handle: 15395718172120680004
+      - Handle: 206563452077984658
+    TagComponent:
+      Tag: Obstacles
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.RandomColors
+  - Entity: 2813336735172934339
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [30, 5.25, 0]
+      Rotation: [0, -0, 0.436332345]
+      Scale: [20, 0.99999994, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.637174547, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 14118534003168517808
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-30.3383389, 15.4341059, -3.29059315]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 11480332603208812066
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 18.448616, -5.99856567]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12838725333584679752
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-32.6025391, 18.448616, -5.99856567]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 15049741420455282673
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 16.455183, 2.8075614]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 2207341524387474801
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Ball
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [25.8974609, 14.7861662, 19.0014343]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.5
+      DynamicFriction: 0.5
+      Bounciness: 1
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 14002620400357251765
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 12434924566287133349
+      - Handle: 4411724794286487301
+      - Handle: 11018392032323100973
+      - Handle: 12319003239638057459
+      - Handle: 7937393053363745465
+      - Handle: 3814122543240132457
+      - Handle: 2813336735172934339
+      - Handle: 12924003797018552998
+      - Handle: 17493852654186639132
+      - Handle: 4086256365437213265
+    TagComponent:
+      Tag: Environment
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 12924003797018552998
+    Active: true
+    Parent: 14002620400357251765
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-16.5, 1, 12.927948]
+      Rotation: [0, -0, 0]
+      Scale: [7, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [2.21729279e-05, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 3220458231518093601
+    Active: true
+    Parent: 12617868040466734564
+    Children:
+      []
+    TagComponent:
+      Tag: Score Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2, 1.34999943, -3.29999924]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 1.0000006]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 576317848889066838
+      TextString: 30
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.TimerText
+  - Entity: 206563452077984658
+    Active: true
+    Parent: 3547810686918241162
+    Children:
+      []
+    TagComponent:
+      Tag: Falling Box
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.4581594, 25.5484333, 4.37141895]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false

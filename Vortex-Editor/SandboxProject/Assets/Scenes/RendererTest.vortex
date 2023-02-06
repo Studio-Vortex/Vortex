@@ -1,0 +1,500 @@
+Scene: RendererTest
+Entities:
+  - Entity: 15081914642628051734
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Sphere
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.1220355, 0.741123199, 5.30798197]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_basecolor.png
+      MetallicMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Gold\ao.png
+      TextureScale: [1, 1]
+  - Entity: 5380173238612056947
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-14.7538214, 4, 8]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 7.5, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0]
+      Metallic: 0.00999999978
+      Roughness: 1
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      CollisionDetectionType: Discrete
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16932033598112852942
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.09497118, 2.50457144, 18.7668037]
+      Rotation: [0, -0, 0]
+      Scale: [1, 4.53487396, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 18409333661699983819
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Cylinder
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.46764517, 9.30772305, 13.0524769]
+      Rotation: [0, -0, -0.57318145]
+      Scale: [3, 3, 3]
+    MeshRendererComponent:
+      MeshType: Cylinder
+      MeshSource: Resources/Meshes/Cylinder.fbx
+      Albedo: [0.888755918, 1, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      CollisionDetectionType: Discrete
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 8925558245110069465
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Torus
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.0321016796, 0.597804427, 10.7942085]
+      Rotation: [0.427975804, 0.189930022, -0.374483168]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Torus
+      MeshSource: Resources/Meshes/Torus.fbx
+      Albedo: [0, 0.568719149, 1]
+      Metallic: 1
+      Roughness: 0.310000002
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 11513309257745834294
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5949713, 2.50457144, 19.2668037]
+      Rotation: [0, -0, 0]
+      Scale: [1, 4.53487396, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0]
+      Metallic: 1
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 11974532013977246137
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.66799855, 2.51516795, 19.7083626]
+      Rotation: [0, -0, 0]
+      Scale: [1, 4.53487396, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 0, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 17794089029378312938
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.25, 15.4860353]
+      Rotation: [0, -0, 0]
+      Scale: [30, 1, 15]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.00999999978
+      Roughness: 1
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      CollisionDetectionType: Discrete
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.00999999978, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 14931755934853687745
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Torus
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.2390449, 1.29312563, -1.23049748]
+      Rotation: [1.57079637, 0.318894863, 0]
+      Scale: [4, 4, 4]
+    MeshRendererComponent:
+      MeshType: Torus
+      MeshSource: Resources/Meshes/Torus.fbx
+      NormalMapPath: Textures\PBR\Iron\Iron-Scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Iron\Iron-Scuffed_basecolor.png
+      MetallicMapPath: Textures\PBR\Iron\Iron-Scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Iron\Iron-Scuffed_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 9470346269233617246
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 7907125957532996251
+      - Handle: 4414815128525414799
+      - Handle: 17794089029378312938
+      - Handle: 11513309257745834294
+      - Handle: 11974532013977246137
+      - Handle: 14931755934853687745
+      - Handle: 8925558245110069465
+      - Handle: 16389765963395738710
+      - Handle: 17691964467199760490
+      - Handle: 16932033598112852942
+      - Handle: 4361195703250338019
+      - Handle: 12348096752654528515
+      - Handle: 5380173238612056947
+      - Handle: 18409333661699983819
+      - Handle: 15081914642628051734
+    TagComponent:
+      Tag: Environment
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 17691964467199760490
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Capsule
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.983706, 1.25000024, 2.18376946]
+      Rotation: [0, -0, 1.57079625]
+      Scale: [0.99999994, 0.99999994, 1]
+    MeshRendererComponent:
+      MeshType: Capsule
+      MeshSource: Resources/Meshes/Capsule.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 7907125957532996251
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.49011612e-07, 4, -7.25]
+      Rotation: [0, -0, 0]
+      Scale: [30, 7.5, 0.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0]
+      Metallic: 0.00999999978
+      Roughness: 1
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      CollisionDetectionType: Discrete
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 4414815128525414799
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.25, 0.488404393]
+      Rotation: [0, -0, 0]
+      Scale: [30, 1, 15]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      Albedo: [0, 0, 1]
+      Metallic: 0.00999999978
+      Roughness: 1
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      CollisionDetectionType: Discrete
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.00999999978, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 5914546411866487454
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [21.7753582, 18.1594906, 27.1750088]
+      Rotation: [0, -0.0174532924, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+  - Entity: 14976661932865456769
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.37988496, 2, 3.08684802]
+      Rotation: [0, -0.662229836, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\pink_sunrise_4k.hdr
+      Rotation: 0
+      Intensity: 1
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        []
+  - Entity: 16389765963395738710
+    Active: true
+    Parent: 9470346269233617246
+    Children:
+      []
+    TagComponent:
+      Tag: Sphere
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.6220355, 0.741123199, 3.30798197]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Gold\normal.png
+      AlbedoMapPath: Textures\PBR\Gold\albedo.png
+      MetallicMapPath: Textures\PBR\Gold\metallic.png
+      RoughnessMapPath: Textures\PBR\Gold\roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Gold\ao.png
+      TextureScale: [1, 1]
+  - Entity: 3254861547136746954
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.47930527, 5.16369486, -6.92876577]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 3413143470836764702
+      TextString: Realtime Shadow Mapping
+  - Entity: 11731480667818247186
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sphere
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.70131969, 1.32127702, 6.88841009]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Wall\normal.png
+      AlbedoMapPath: Textures\PBR\Wall\albedo.png
+      MetallicMapPath: Textures\PBR\Wall\metallic.png
+      RoughnessMapPath: Textures\PBR\Wall\roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Wall\ao.png
+      TextureScale: [1, 1]

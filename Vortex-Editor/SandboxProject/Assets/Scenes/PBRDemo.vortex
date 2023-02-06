@@ -1,0 +1,563 @@
+Scene: PBRDemo
+Entities:
+  - Entity: 18193320212406416019
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Ambience Music
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.11070925, 4.36587238, -2.80052137]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\CafeAmbience.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: true
+        Spacialized: false
+        Loop: true
+  - Entity: 7568847871477803990
+    Parent: 3656983379592261596
+    Children:
+      - Handle: 15463651133874800615
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10, 7.25, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.25, 1.5, 0.25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [9, 0, 0]
+        - Name: Period
+          Type: Float
+          Data: 7
+  - Entity: 2842911959806266499
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Vase
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.111456349, -0.811154962, -0.429396152]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\BrassVase.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\Meshes\BrassVase\NormalMap.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\Meshes\BrassVase\BrassVase.jpg
+      Metallic: 1
+      Roughness: 0.5
+      AmbientOcclusionMapPath: Textures\Meshes\BrassVase\AmbientOcclusionMap.jpg
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 12277084024220148879
+    Parent: 0
+    Children:
+      - Handle: 9869350952842981678
+      - Handle: 6598528924840953885
+      - Handle: 485169276249909263
+      - Handle: 2842911959806266499
+      - Handle: 15229297724110960037
+      - Handle: 3612101198334567729
+      - Handle: 7597277759868989363
+      - Handle: 2351492168156865085
+      - Handle: 16621363892661492711
+      - Handle: 10409778047907026196
+      - Handle: 18193320212406416019
+    TagComponent:
+      Tag: Environment
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.11070925, 1.69326305, 2.80052137]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 3656983379592261596
+    Parent: 0
+    Children:
+      - Handle: 16583559046691162503
+      - Handle: 8963358892082049122
+      - Handle: 2150787944593671807
+      - Handle: 17167727917074808098
+      - Handle: 9585111384718756287
+      - Handle: 9628929485536512026
+      - Handle: 9936256061665253268
+      - Handle: 11818530804547149654
+      - Handle: 16621745862315152814
+      - Handle: 11011204557205401290
+      - Handle: 7568847871477803990
+    TagComponent:
+      Tag: Light Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 15265151898593756295
+    Parent: 0
+    Children:
+      - Handle: 4061207651043441138
+      - Handle: 5316936752264604051
+      - Handle: 4066365257164917519
+    TagComponent:
+      Tag: Gun Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 4061207651043441138
+    Parent: 15265151898593756295
+    Children:
+      []
+    TagComponent:
+      Tag: Revolver
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.5, 1.61899018, 6.26877403]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\ColtRevolver.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\Meshes\WesternRevolver\Colt SAA HP_Colt SAA_Normal_GL.png
+      Shininess: 32
+      AlbedoMapPath: Textures\Meshes\WesternRevolver\Colt SAA HP_Colt SAA_BaseColor.png
+      Metallic: 1
+      Roughness: 0.379999995
+      AmbientOcclusionMapPath: Textures\Meshes\WesternRevolver\AmbientOcclusionMap.png
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Rotate
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 5
+  - Entity: 5316936752264604051
+    Parent: 15265151898593756295
+    Children:
+      []
+    TagComponent:
+      Tag: Flintlock
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.5, 1.61899018, 5.9980793]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [0.999994874, 0.999985218, 0.999996424]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\FlintlockPistol.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\FlintlockPistol\fa_flintlockPistolX_nrm.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\FlintlockPistol\fa_flintlockPistolX_albedo.jpg
+      Metallic: 0.00999999978
+      Roughness: 0.400000006
+      AmbientOcclusionMapPath: Textures\PBR\FlintlockPistol\fa_flintlockPistolX_ao.jpg
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Rotate
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 5
+  - Entity: 4066365257164917519
+    Parent: 15265151898593756295
+    Children:
+      []
+    TagComponent:
+      Tag: Cerebrus
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0468837768, 1.61899018, 5.76877403]
+      Rotation: [0, -0, 0]
+      Scale: [0.999995053, 0.999985218, 0.999996603]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Cerebrus.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Cerebrus\Cerberus_N.tga
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Cerebrus\Cerberus_A.tga
+      MetallicMapPath: Textures\PBR\Cerebrus\Cerberus_M.tga
+      RoughnessMapPath: Textures\PBR\Cerebrus\Cerberus_R.tga
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Rotate
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: -5
+  - Entity: 6598528924840953885
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Watch
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.10930115, -0.767481208, -0.0029604435]
+      Rotation: [1.79183686, 1.01134539, -3.12249398]
+      Scale: [1.19999957, 1.20000017, 1.19999981]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Watch.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Watch\Clock_default_Normal.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Watch\Clock_default_BaseColor.png
+      Metallic: 1
+      Roughness: 0.419999987
+      AmbientOcclusionMapPath: Textures\PBR\Watch\Clock_default_BaseColor.png
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 9869350952842981678
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Table
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.11070925, -1.69326305, -0.403866768]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Table.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Table\TableType_A_Normal.tga
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Table\TableType_A_BaseColor.tga
+      MetallicMapPath: Textures\PBR\Table\TableType_A_Metallic.tga
+      RoughnessMapPath: Textures\PBR\Table\TableType_A_Roughness.tga
+      AmbientOcclusionMapPath: Textures\PBR\Table\TableType_A_AO.tga
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 13163087789632786028
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.42682481, 1.99999917, 14.0845537]
+      Rotation: [0, -0.295348495, 1.05367135e-07]
+      Scale: [0.999999881, 0.999999583, 0.999999881]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        []
+  - Entity: 485169276249909263
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Sofa
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.11070925, -1.69326305, -2.80052137]
+      Rotation: [0, -0, 0]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Sofa.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Sofa\sofa_Normal.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Sofa\sofa_Diffuse.jpg
+      MetallicMapPath: Textures\PBR\Sofa\sofa_Glossiness.jpg
+      RoughnessMapPath: Textures\PBR\Sofa\sofa_Height.jpg
+      AmbientOcclusionMapPath: Textures\PBR\Sofa\sofa_Reflection.jpg
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 16621363892661492711
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -1.69000006, 1.80905056]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 40]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\Maps\Brickwall_normal.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\Maps\Brickwall_Diff.jpg
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [5, 5]
+      Reflective: false
+      Refractive: false
+  - Entity: 15463651133874800615
+    Parent: 7568847871477803990
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.666666508, 0]
+      Rotation: [0, -0, 0]
+      Scale: [2, 0.333333343, 2]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 0.31926018, 0]
+      Ambient: [1, 0.337254912, 0]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 0.337254912, 0]
+      Position: [-10, 6.25, 0]
+      Attenuation: [-0, -0]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 3612101198334567729
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.30333447, -17.6720066]
+      Rotation: [0, -0, 0]
+      Scale: [40, 8, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [6, 3]
+      Reflective: false
+      Refractive: false
+  - Entity: 7597277759868989363
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.30333447, 21.3279934]
+      Rotation: [0, -0, 0]
+      Scale: [40, 8, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [6, 3]
+      Reflective: false
+      Refractive: false
+  - Entity: 2351492168156865085
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-19.5, 2.30333447, 1.82799387]
+      Rotation: [0, -0, 0]
+      Scale: [1, 8, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [6, 3]
+      Reflective: false
+      Refractive: false
+  - Entity: 15229297724110960037
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [19.5, 2.30333447, 1.82799387]
+      Rotation: [0, -0, 0]
+      Scale: [1, 8, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [6, 3]
+      Reflective: false
+      Refractive: false
+  - Entity: 10409778047907026196
+    Parent: 12277084024220148879
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 6.80000019, 1.80905056]
+      Rotation: [0, 0, 0]
+      Scale: [40, 1, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 0.999899983, 0.999899983]
+      Metallic: 1
+      Roughness: 1
+      TextureScale: [5, 5]
+      Reflective: false
+      Refractive: false
+  - Entity: 11011204557205401290
+    Parent: 3656983379592261596
+    Children:
+      - Handle: 12317310003674559892
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [10, 7.25, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.25, 1.5, 0.25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [-9, 0, 0]
+        - Name: Period
+          Type: Float
+          Data: 7
+  - Entity: 12317310003674559892
+    Parent: 11011204557205401290
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.666666508, 0]
+      Rotation: [0, -0, 0]
+      Scale: [2, 0.330000013, 2]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 0.31764707, 0]
+      Ambient: [1, 0.337254912, 0]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 0.337254912, 0]
+      Position: [10, 6.25, 0]
+      Attenuation: [-0, -0]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false

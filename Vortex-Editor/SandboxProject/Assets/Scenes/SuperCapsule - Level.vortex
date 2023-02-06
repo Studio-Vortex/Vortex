@@ -1,0 +1,232 @@
+Scene: SuperCapsule - Level
+Entities:
+  - Entity: 12999419307727334617
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 17146592531137725060
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3.11363745, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Capsule
+      MeshSource: Resources/Meshes/Capsule.fbx
+      ModelImportOptions:
+        Translation: [0, 0, 0]
+        Rotation: [0, 0, 90]
+        Scale: [1, 1, 1]
+      Albedo: [0, 0.188235298, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 1
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: true
+      LockRotationY: true
+      LockRotationZ: true
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.00999999978
+      DynamicFriction: 0.00999999978
+      Bounciness: 0.00999999978
+    CapsuleColliderComponent:
+      Radius: 0.5
+      Height: 1
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.SuperCapsule.CapsuleController
+      ScriptFields:
+        - Name: jumpForce
+          Type: Float
+          Data: 20
+        - Name: moveSpeed
+          Type: Float
+          Data: 750
+        - Name: resetPoint
+          Type: Float
+          Data: -7
+  - Entity: 5523968580119069447
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [7, 1, 7]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0.0160624981]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.00999999978
+      DynamicFriction: 0.00999999978
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 17146592531137725060
+    Active: true
+    Parent: 12999419307727334617
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3.51477385, 8.251194]
+      Rotation: [-0.311004102, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 75
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 3696520191246500853
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, -10]
+      Rotation: [0, 0, 0]
+      Scale: [7, 1, 7]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0.0160624981]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.00999999978
+      DynamicFriction: 0.00999999978
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 11313665466394739196
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, -20]
+      Rotation: [0, 0, 0]
+      Scale: [7, 1, 7]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0.0160624981]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 0.00999999978
+      DynamicFriction: 0.00999999978
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 8423963308024548441
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Directional Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 9.34282017, 0]
+      Rotation: [-0.00349065848, -0.0174532924, -0.00349065848]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 0
+      CastShadows: true

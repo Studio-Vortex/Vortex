@@ -1,0 +1,1037 @@
+Scene: ShawnScene
+Entities:
+  - Entity: 16160799842560326477
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.14974642, -2.21018839, -15.0217848]
+      Rotation: [-3.1415925, -8.74227766e-08, -3.1415925]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 9241429057419764674
+      TextString: Shawn is a good boy
+  - Entity: 7168999707145777451
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [11.5641279, -2.21018839, -15.0217867]
+      Rotation: [-3.1415925, -8.74227766e-08, -3.1415925]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 10399412502475604288
+      TextString: This is Shawn
+  - Entity: 5117023825275668836
+    Parent: 0
+    Children:
+      - Handle: 8663351267760226691
+      - Handle: 3719763698403415442
+    TagComponent:
+      Tag: Light Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 163809422618834774
+    Parent: 0
+    Children:
+      - Handle: 11022057184427826527
+      - Handle: 610465375924079861
+      - Handle: 15346768335806980478
+      - Handle: 11637157729086009967
+      - Handle: 10360928567936502819
+      - Handle: 8979682953223822376
+      - Handle: 13563620352720788320
+      - Handle: 15580036536962080154
+      - Handle: 16539471845452048877
+      - Handle: 13314154941646148803
+      - Handle: 9428068541018271585
+      - Handle: 9882156585222821317
+      - Handle: 4442265412268408688
+      - Handle: 13433524093796689811
+      - Handle: 16814097676382012400
+      - Handle: 3265642486940015494
+      - Handle: 12500489238410509122
+      - Handle: 11922301292536089024
+      - Handle: 1442064695184392604
+      - Handle: 17411119356335989129
+      - Handle: 12203353731547809384
+      - Handle: 16771871323697545717
+      - Handle: 10979268923613723867
+      - Handle: 3595857843733065218
+      - Handle: 12695346280655060362
+      - Handle: 1497077094255837486
+      - Handle: 3127092491974662784
+      - Handle: 3737315805751857442
+      - Handle: 11310440172590609485
+      - Handle: 9877398207365800879
+      - Handle: 13466472008640886397
+      - Handle: 8899026784796974534
+      - Handle: 13379850710425556943
+      - Handle: 6550522526454473535
+      - Handle: 10801644474773246805
+      - Handle: 17473160336394363675
+      - Handle: 1455431635273936739
+      - Handle: 17994718396331423145
+      - Handle: 6082851487787691474
+      - Handle: 17593536354058450071
+      - Handle: 10336005176151312800
+      - Handle: 4526310078429830445
+      - Handle: 17308322078944251873
+      - Handle: 15628683134130694622
+      - Handle: 13575087412817755848
+      - Handle: 11071084271897629045
+      - Handle: 16912364276377257424
+      - Handle: 7049490770703247820
+      - Handle: 7168999707145777451
+      - Handle: 16160799842560326477
+      - Handle: 3811300977632448272
+      - Handle: 4999088170359851204
+      - Handle: 11842337086880304669
+    TagComponent:
+      Tag: Environment
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 8663351267760226691
+    Parent: 5117023825275668836
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [11.6576176, 1.50790238, -41.4841537]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [11.6576176, 1.50790238, -41.4841537]
+      Attenuation: [0.0450000018, 0.00749999983]
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [-21, 0, 0]
+        - Name: Period
+          Type: Float
+          Data: 12
+  - Entity: 3719763698403415442
+    Parent: 5117023825275668836
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.363136292, 1.88397431, -28.6745148]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-0.363136292, 1.88397431, -28.6745148]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 610465375924079861
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Sphere
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.38364553, -1.99197614, -40.6127548]
+      Rotation: [0, 0.235057041, 0]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Default/Sphere.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 11022057184427826527
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [10.5084801, -1.99197626, -41.8667374]
+      Rotation: [0, 0.494867533, 0]
+      Scale: [2, 2, 2]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Plastic\normal.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Plastic\albedo.png
+      MetallicMapPath: Textures\PBR\Plastic\metallic.png
+      RoughnessMapPath: Textures\PBR\Plastic\roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Plastic\ao.png
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 15346768335806980478
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.4727287, -2.50897408, -43.5844612]
+      Rotation: [0, 0.235057041, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0.80831331, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 11637157729086009967
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-13.6994867, -2.50897408, -42.9234009]
+      Rotation: [0, -0.449932814, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Gold\albedo.png
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 14356298707090224840
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Music
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Impaled Nazarene.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        Spacialized: true
+        Loop: true
+    ScriptComponent:
+      ClassName: Sandbox.A1_OpeningScene
+  - Entity: 10360928567936502819
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.99999952, 0, 12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904299, 6, 0.999880314]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 8979682953223822376
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.00000048, 0, 12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99912214, 6, 0.999890208]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 13563620352720788320
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -2.99999905, 12]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99959326, 0.999949157]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Floor.jpg
+      TextureScale: [1, 1]
+  - Entity: 15580036536962080154
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99812174, 6, 0.999765217]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 16539471845452048877
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99822474, 6, 0.999778092]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 13314154941646148803
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99834394, 6, 0.999792993]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 9428068541018271585
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99844837, 6, 0.999806046]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 9882156585222821317
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-14.999999, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99865532, 6, 0.999831915]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 4442265412268408688
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.000001, 0, -42]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99879408, 6, 0.99984926]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 13433524093796689811
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.000001, 0, -36]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99891043, 6, 0.999863803]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 16814097676382012400
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.000001, 0, -30]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904394, 6, 0.999880493]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 3265642486940015494
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.000001, 0, -24]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99918318, 6, 0.999897897]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 12500489238410509122
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15.000001, 0, -18]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99930668, 6, 0.999913335]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 11922301292536089024
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.000001, 0, -15]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 1442064695184392604
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.000001, 0, -45]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 17411119356335989129
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.00000095, 0, -45]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 12203353731547809384
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, -45]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 16771871323697545717
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.99999905, 0, -45]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 10979268923613723867
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99999857, 6, 0.999999821]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 3595857843733065218
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 0, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99999857, 6, 0.999999821]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 11761243949373089932
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 7]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: MaxRoll_Down
+          Type: Float
+          Data: -70
+        - Name: MaxRoll_Up
+          Type: Float
+          Data: 70
+        - Name: RotationSpeed
+          Type: Vector3
+          Data: [100, 100, 0]
+  - Entity: 12695346280655060362
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99999952, 0.99999994]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Floor.jpg
+      TextureScale: [1, 1]
+  - Entity: 1497077094255837486
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -3, -5.99773979]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99974155, 0.999967694]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Floor.jpg
+      TextureScale: [1, 1]
+  - Entity: 3127092491974662784
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.00000048, 0, -6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99979877, 6, 0.999974847]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 3737315805751857442
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.99999952, 0, -6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99923801, 6, 0.999904752]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 11310440172590609485
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.99999905, 0, -12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99942875, 6, 0.999928594]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 9877398207365800879
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.00000095, 0, -12]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99927235, 6, 0.999909043]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 13466472008640886397
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.999999, 0, -15]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 8899026784796974534
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11.999999, 0, -45]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 11842337086880304669
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -3.00000143, -29.9984627]
+      Rotation: [0, -0, 0]
+      Scale: [30, 0.99999994, 29.9999981]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Default/Plane.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [10, 10]
+      Reflective: false
+      Refractive: false
+  - Entity: 13379850710425556943
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -3.00000048, -11.9977398]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99960804, 0.999951005]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Floor.jpg
+      TextureScale: [1, 1]
+  - Entity: 6550522526454473535
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.99999905, 0, -15]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 10801644474773246805
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.00000095, 0, -15]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 17473160336394363675
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Decoration
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6, 0, -15.0500002]
+      Rotation: [0, -0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Shawn\Shawn2.jpg
+      TextureScale: [1, 1]
+  - Entity: 1455431635273936739
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Decoration
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12, 0, -15.0500002]
+      Rotation: [0, -0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Shawn\Shawn4.jpg
+      TextureScale: [1, 1]
+  - Entity: 17994718396331423145
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Decoration
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 0, -15.0500002]
+      Rotation: [0, -0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Shawn\Shawn.png
+      TextureScale: [1, 1]
+  - Entity: 6082851487787691474
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Decoration
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12, 0, -15.0500002]
+      Rotation: [0, -0, 0]
+      Scale: [3, 3, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Shawn\Shawn.jpg
+      TextureScale: [1, 1]
+  - Entity: 17593536354058450071
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -2.99999952, 6]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99985933, 0.999982417]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Floor.jpg
+      TextureScale: [1, 1]
+  - Entity: 10336005176151312800
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.53674316e-07, 0, 15]
+      Rotation: [0, -0, 0]
+      Scale: [5.99943018, 6, 0.999928772]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 4526310078429830445
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.00000095, 0, 6]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.9992137, 6, 0.999901652]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 17308322078944251873
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.99999905, 0, 5.99999952]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [5.99904156, 6, 0.999880135]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate.png
+      TextureScale: [1, 1]
+  - Entity: 15628683134130694622
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3.00000095, 12]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99959278, 0.999949098]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 13575087412817755848
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.96046448e-08, 3.00000048, 6]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99944687, 0.999930859]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 11071084271897629045
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 0]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99999952, 0.999915719]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 16912364276377257424
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.99999952, -6]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99999952, 0.999895632]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 7049490770703247820
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.99999785, -30]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [30, 29.9999981, 0.999850512]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 4999088170359851204
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.99999905, -12]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [6, 5.99916506, 0.999895692]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\Crate_1.png
+      TextureScale: [1, 1]
+  - Entity: 3811300977632448272
+    Parent: 163809422618834774
+    Children:
+      []
+    TagComponent:
+      Tag: Multiline text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-14.9592247, 2.01921988, -26.7740593]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [0.99999994, 1, 0.99999994]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 15103946643457393973
+      TextString: "This is some multiline text...\nPretty cool.\nMore text\nlowercase | UPPERCASE\n"

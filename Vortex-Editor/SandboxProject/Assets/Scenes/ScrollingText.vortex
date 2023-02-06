@@ -1,0 +1,69 @@
+Scene: ScrollingText
+Entities:
+  - Entity: 5973432137495970440
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.4505806e-09, 0, 9.27404499]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 2121363747897836075
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2, 4, 4]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-2, 4, 4]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 11537970722264046465
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5, -3.31467295, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 171414007757517346
+      TextString: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque viverra ex non imperdiet aliquam. Aenean consectetur faucibus tempus. Vivamus interdum dui in nulla pretium, ut tristique ligula varius. Vestibulum nibh nisl, gravida ut suscipit id, dapibus vulputate eros. Praesent libero nisi, vestibulum non molestie ut, condimentum vel ex. Etiam et mattis risus. Donec et fringilla arcu. Quisque sed tristique sapien.\nIn sollicitudin velit tellus, hendrerit pretium massa dapibus a. Donec volutpat euismod maximus. In vitae nulla justo. Quisque viverra magna id dolor interdum, sed efficitur dui finibus. Quisque eleifend, dui nec malesuada rhoncus, libero dui iaculis sem, quis facilisis justo purus et orci. Nunc sagittis erat a lorem commodo, ac interdum tortor mollis. Donec a placerat tellus, sed facilisis ligula. Etiam sollicitudin justo sed nulla molestie tristique.\nProin lacinia nunc vel mi tincidunt, sit amet feugiat ex interdum. Donec egestas tempus metus, ac convallis urna molestie ut. Quisque at lectus vitae nisl blandit pharetra et ac quam. Nam laoreet nisl in aliquet rutrum. Cras hendrerit risus ut purus viverra finibus. Vivamus at arcu egestas sapien porta euismod et non odio. Nulla pellentesque malesuada magna, ut semper enim feugiat id. Donec leo urna, iaculis id pretium in, ullamcorper auctor purus. Quisque lacinia lacus metus, vitae posuere magna auctor eget. Integer sit amet augue accumsan, dignissim quam at, volutpat metus.\nIn sollicitudin velit tellus, hendrerit pretium massa dapibus a. Donec volutpat euismod maximus. In vitae nulla justo. Quisque viverra magna id dolor interdum, sed efficitur dui finibus. Quisque eleifend, dui nec malesuada rhoncus, libero dui iaculis sem, quis facilisis justo purus et orci. Nunc sagittis erat a lorem commodo, ac interdum tortor mollis. Donec a placerat tellus, sed facilisis ligula. Etiam sollicitudin justo sed nulla molestie tristique.\n"
+    ScriptComponent:
+      ClassName: Sandbox.ScrollingText
+      ScriptFields:
+        - Name: speed
+          Type: Float
+          Data: 1

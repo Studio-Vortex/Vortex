@@ -1,6 +1,6 @@
-Scene: TestScene
+Scene: RayTracingTest
 Entities:
-  - Entity: 11319143211367438798
+  - Entity: 17886716211545958530
     Parent: 0
     Children:
       []
@@ -8,22 +8,31 @@ Entities:
       Tag: Camera
       Marker: UnTagged
     TransformComponent:
-      Translation: [-4, 3, 4]
-      Rotation: [-0.436332315, -0.785398185, 0]
+      Translation: [0, 0, 4]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
         ProjectionType: 0
-        PerspectiveFOV: 0.785398185
+        PerspectiveFOV: 1000
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 1000
         OrthographicSize: 10
         OrthographicNear: -1
         OrthographicFar: 1
-      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      ClearColor: [0.419607848, 0.498039216, 0.549019635]
       Primary: true
       FixedAspectRatio: false
-  - Entity: 9959079268116580181
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: RunSpeed
+          Type: Vector3
+          Data: [2, 2, 2]
+        - Name: WalkSpeed
+          Type: Vector3
+          Data: [1, 1, 1]
+  - Entity: 2993274219781711751
     Parent: 0
     Children:
       []
@@ -31,7 +40,7 @@ Entities:
       Tag: Point Light
       Marker: UnTagged
     TransformComponent:
-      Translation: [-2, 4, 4]
+      Translation: [0, 5, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     LightSourceComponent:
@@ -41,27 +50,18 @@ Entities:
       Diffuse: [0.5, 0.5, 0.5]
       Specular: [0.5, 0.5, 0.5]
       Color: [1, 1, 1]
-      Position: [-2, 4, 4]
+      Position: [0, 5, 0]
       Attenuation: [0.0450000018, 0.00749999983]
-  - Entity: 16658707295825405519
+  - Entity: 11270240472885084578
     Parent: 0
     Children:
       []
     TagComponent:
-      Tag: Cube
+      Tag: Entity
       Marker: UnTagged
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    MeshRendererComponent:
-      MeshType: Cube
-      MeshSource: ..\..\..\Resources\Meshes\Default\Cube.obj
-      Ambient: [1, 1, 1]
-      Shininess: 32
-      Albedo: [1, 1, 1]
-      Metallic: 0.5
-      Roughness: 0.5
-      TextureScale: [1, 1]
-      Reflective: false
-      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.RayTracingTest

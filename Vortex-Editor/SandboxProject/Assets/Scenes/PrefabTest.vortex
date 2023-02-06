@@ -1,0 +1,401 @@
+Scene: PrefabTest
+Entities:
+  - Entity: 2753543990353856556
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Background Music
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3.80827856, 7.05374908, -2.14256001]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: ""
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 0.5
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: true
+  - Entity: 11835115026041815
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20.0594158, 4.99605417, -7.10593796]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 10153284459253093981
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.02070928, 4.99605417, -26.9987755]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 2347970436905221565
+    Active: true
+    Parent: 7763862817220428396
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.99999988, 1, -0.50000006]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [1, 1, 1]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12485147048262469238
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.61996412, 10.9663553, -11.483779]
+      Rotation: [0, -1.129228, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 0.616479456, 0]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 10093026289930888
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.0219059, 1.60000002, 4.55898905]
+      Rotation: [0, 0.267754614, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\venice_dawn_1_4k.hdr
+      Rotation: 0
+      Intensity: 1
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        []
+  - Entity: 14598556935784146684
+    Active: true
+    Parent: 7763862817220428396
+    Children:
+      []
+    TagComponent:
+      Tag: Cone
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 1, -0.5]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cone
+      MeshSource: Resources/Meshes/Cone.fbx
+      Albedo: [0, 0, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [1, 1, 1]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12522089656771591662
+    Active: true
+    Parent: 7763862817220428396
+    Children:
+      []
+    TagComponent:
+      Tag: Sphere
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.99999976, 1, -0.50000006]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 2101104262608654085
+    Active: true
+    Parent: 7763862817220428396
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.38418579e-07, -0.5, 2.5]
+      Rotation: [0, -0, 0]
+      Scale: [15, 1, 15]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.00999999978, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 1118734616042175111
+    Active: true
+    Parent: 7763862817220428396
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.38418579e-07, 3.5, -5]
+      Rotation: [0, -0, 0]
+      Scale: [15.1999998, 10, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      MetallicMapPath: Textures\PBR\MetalWall\modern-metal-wall_metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      Emission: 0
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [4, 6]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7763862817220428396
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 1118734616042175111
+      - Handle: 2101104262608654085
+      - Handle: 12522089656771591662
+      - Handle: 14598556935784146684
+      - Handle: 2347970436905221565
+    TagComponent:
+      Tag: Props
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 2.3561945, 0]
+      Scale: [1, 1, 1]
+  - Entity: 10784857098474171532
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Gun
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.74164391, 0.492398769, -2.00714397]
+      Rotation: [6.28318501, -0.131797075, 6.28318501]
+      Scale: [7, 7, 7]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\m1911.gltf
+      AlbedoMapPath: Textures\PBR\m1911\m1911_color.png
+      NormalMapPath: Textures\PBR\m1911\m1911_normal.png
+      Metallic: 1
+      Roughness: 0.25
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    AnimatorComponent:
+      {}
+    AnimationComponent:
+      AnimationSourcePath: Projects\SandboxProject\Assets\Meshes\m1911.gltf
+    ScriptComponent:
+      ClassName: Sandbox.AnimatorTest
+  - Entity: 2254528346936990927
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Storm Trooper
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.17518687, -0.499346346, -8.6820612]
+      Rotation: [6.28318501, -0.131797075, 6.28318501]
+      Scale: [1.10000002, 1.10000002, 1.10000002]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\StormTrooper.fbx
+      AlbedoMapPath: Textures\Meshes\Stormtrooper_D.png
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    AnimationComponent:
+      AnimationSourcePath: Projects\SandboxProject\Assets\Meshes\StormTrooper.fbx
+  - Entity: 7226220145763796486
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Pilot
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.93435353, -0.485195518, -5.72842693]
+      Rotation: [6.28318501, 0.730648339, 6.28318501]
+      Scale: [0.25, 0.25, 0.25]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Pilot.fbx
+      AlbedoMapPath: Textures\Meshes\Pilot\Material.002_Base_Color.png
+      NormalMapPath: Textures\Meshes\Pilot\Material.002_Normal_OpenGL.png
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]

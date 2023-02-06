@@ -1,0 +1,80 @@
+Scene: SplashScreen
+Entities:
+  - Entity: 16627271282600504827
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Foreground
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 3]
+      Rotation: [0, 0, 0]
+      Scale: [125, 75, 1]
+    SpriteRendererComponent:
+      Color: [0, 0, 0, 1]
+      TextureScale: [1, 1]
+    ScriptComponent:
+      ClassName: Sandbox.FadeOut
+      ScriptFields:
+        - Name: DelayEnd
+          Type: Float
+          Data: 1.25
+        - Name: DelayStart
+          Type: Float
+          Data: 1.25
+        - Name: DisplayTime
+          Type: Float
+          Data: 4
+  - Entity: 7454118509567107328
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Splash Screen
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [21.6700001, 20, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures\SparkyLogo.jpg
+      TextureScale: [1, 1]
+  - Entity: 8365784739310955474
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.0733757, 50]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 9798451775505342340
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Background
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [125, 75, 1]
+    SpriteRendererComponent:
+      Color: [0, 0, 0, 1]
+      TextureScale: [1, 1]

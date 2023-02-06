@@ -1,0 +1,1573 @@
+Scene: PBRSpheres
+Entities:
+  - Entity: 9896780475257247536
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 8955385719760421019
+      - Handle: 10967739114131146865
+      - Handle: 7376602248142222472
+      - Handle: 14018331815154103066
+      - Handle: 5265119627220672504
+      - Handle: 3827316943141638197
+      - Handle: 5114868229705686574
+      - Handle: 12571783964485639254
+      - Handle: 14346541814443005351
+      - Handle: 9797595923323957848
+      - Handle: 16402877602072110908
+      - Handle: 15822149177300936643
+      - Handle: 14437986931191657838
+      - Handle: 10776325538564224861
+      - Handle: 4208639167951854734
+      - Handle: 10798239623606581179
+      - Handle: 12550134393971594496
+      - Handle: 9780984147044500738
+      - Handle: 9252230220300927569
+      - Handle: 3580378072072456351
+      - Handle: 6244325763540093144
+      - Handle: 1625171213112623690
+      - Handle: 13546109260142225699
+      - Handle: 10407662811031077648
+      - Handle: 4395794955178381484
+      - Handle: 3747152045355340120
+      - Handle: 4003177407642085624
+      - Handle: 8310428869443428305
+      - Handle: 6508119601738632132
+      - Handle: 2525160714913370215
+      - Handle: 1712781206657256816
+      - Handle: 4718965706834593851
+      - Handle: 4020774226857316829
+      - Handle: 9860757126900156957
+      - Handle: 4790937274880122307
+      - Handle: 10907819153042754088
+      - Handle: 3009002485715999956
+      - Handle: 13670838099821291466
+      - Handle: 3538315987124770512
+      - Handle: 3731664472728216024
+      - Handle: 16667276841164354237
+      - Handle: 12770891078233248180
+      - Handle: 16700294263339407002
+      - Handle: 17313866993329055328
+      - Handle: 18009282292457436932
+      - Handle: 11528910036716925178
+      - Handle: 11911972920073261444
+      - Handle: 1468069423025435403
+      - Handle: 1497525777128920073
+      - Handle: 5859609145053387043
+      - Handle: 10619011224006016066
+      - Handle: 3091676305450759085
+      - Handle: 17782698424311969676
+      - Handle: 10039508533021712169
+      - Handle: 17212524320257005862
+      - Handle: 3202732306484592842
+      - Handle: 9396502488119934466
+      - Handle: 12337959759552224885
+      - Handle: 6277641837224387922
+      - Handle: 13927285491264651800
+      - Handle: 10284087481343539942
+      - Handle: 15152356731050236651
+      - Handle: 17938808692893390984
+      - Handle: 17140574931202417633
+    TagComponent:
+      Tag: Sphere Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.75, -0.75, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ScriptComponent:
+      ClassName: Sandbox.RigidbodySpawner
+  - Entity: 8955385719760421019
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10967739114131146865
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 7376602248142222472
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 14018331815154103066
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 5265119627220672504
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3827316943141638197
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 5114868229705686574
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 12571783964485639254
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 14346541814443005351
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 9797595923323957848
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 16402877602072110908
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 15822149177300936643
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 14437986931191657838
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10776325538564224861
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4208639167951854734
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 1
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10798239623606581179
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 12550134393971594496
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 9780984147044500738
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 9252230220300927569
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3580378072072456351
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 6244325763540093144
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 1625171213112623690
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, -4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 13546109260142225699
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10407662811031077648
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4395794955178381484
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3747152045355340120
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4003177407642085624
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 8310428869443428305
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 6508119601738632132
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, 4.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.839999974
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 2525160714913370215
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 1712781206657256816
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4718965706834593851
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0.00400000019]
+      Metallic: 0.419999987
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4020774226857316829
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 9860757126900156957
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [4.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.839999974
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10907819153042754088
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3009002485715999956
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, -1.5, -9.31322575e-10]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 13670838099821291466
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3538315987124770512
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3731664472728216024
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.0500000007
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 4790937274880122307
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 16667276841164354237
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 12770891078233248180
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 16700294263339407002
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 17313866993329055328
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.140000001
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 18009282292457436932
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 11528910036716925178
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 11911972920073261444
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 1468069423025435403
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 1497525777128920073
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.699999988
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 5859609145053387043
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10619011224006016066
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3091676305450759085
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 17782698424311969676
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10039508533021712169
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, -1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.280000001
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 17212524320257005862
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 3202732306484592842
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 9396502488119934466
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 12337959759552224885
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 6277641837224387922
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.560000002
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 13927285491264651800
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.140000001
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10284087481343539942
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.200000003
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 15152356731050236651
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.699999988
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 17938808692893390984
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.560000002
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 15522864495604921190
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.71151624e-08, 8.12836361, 12.0319014]
+      Rotation: [-0.436332524, 0, 5.20437524e-08]
+      Scale: [0.99999994, 0.999999583, 0.999999821]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\pink_sunrise_4k.hdr
+      Rotation: 0
+      Intensity: 1
+    ScriptComponent:
+      ClassName: Sandbox.CameraController
+  - Entity: 17140574931202417633
+    Active: true
+    Parent: 9896780475257247536
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.419999987
+      Roughness: 0.239999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 10138416524284796712
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-34.8025513, 50.3037262, 53.349102]
+      Rotation: [0, -1.16064394, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 888538882184146398
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -6.94548798, -6]
+      Rotation: [0, 0, 0]
+      Scale: [50, 1, 30]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false

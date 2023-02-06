@@ -1,0 +1,211 @@
+Scene: TestScene2
+Entities:
+  - Entity: 2423479201628561148
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [15, 1, 11.7758036]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 1
+      Roughness: 0.379999995
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 17954735449349438122
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: Untagged
+    TransformComponent:
+      Translation: [22.9381771, 40.3533669, 70.6355667]
+      Rotation: [0, -1.11352003, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 2
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 16920823796362299461
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-3.65994096, 2.96119809, 4.2398324]
+      Rotation: [-0.361283153, -0.895353913, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\newport_loft.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 8504314007876102631
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 13704996582694848518
+    TagComponent:
+      Tag: Cube
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 1, 0]
+      Rotation: [0, -0.73434031, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.25
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 1, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 13704996582694848518
+    Active: true
+    Parent: 8504314007876102631
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-0.0377742052, -0.0819487572, 1.58459973]
+      Rotation: [0, 0.73434031, 0]
+      Scale: [0.25, 0.25, 0.25]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 0.354955912, 0]
+      Intensity: 11.0500002
+      ShadowBias: 0.200000003
+      CastShadows: true
+      SoftShadows: true
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      AlbedoMapPath: Textures\PBR\Copper\Copper-scuffed_basecolor-boosted.png
+      NormalMapPath: Textures\PBR\Copper\Copper-scuffed_normal.png
+      Metallic: 1
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 13414420887880927201
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Spot Light
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0.941295028, 4.98956203, 0.0218484178]
+      Rotation: [0, -1.46607661, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Spot
+      Radiance: [0, 0.0986804962, 1]
+      CutOff: 45.5
+      OuterCutOff: 52.5
+      Intensity: 158.449997
+      ShadowBias: 0.200000003
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 10982361962612597418
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: F22
+      Marker: Untagged
+    TransformComponent:
+      Translation: [3.02388263, 0.77110672, 0.709172845]
+      Rotation: [3.14159274, 0.669757664, 3.14159274]
+      Scale: [3, 3, 3]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\F22.obj
+      AlbedoMapPath: Textures\Meshes\F22.png
+      Metallic: 1
+      Roughness: 0.319999993
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false

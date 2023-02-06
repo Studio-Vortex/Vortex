@@ -1,0 +1,243 @@
+Scene: RollingCircle
+Entities:
+  - Entity: 17949475389044620620
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad Copy
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.5609169, -4.38782263, 0]
+      Rotation: [0, 0, -0.637011826]
+      Scale: [8.82629871, 0.434776217, 1]
+    SpriteRendererComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 3175000352247353765
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.58354211, -10.5305405, 0.00999999978]
+      Rotation: [0, 0, 0]
+      Scale: [9.61999989, 9.61999989, 9.61999989]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\Crate.png
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8153005416412897779
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Orthographic Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10, 15, 5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 12
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.Camera2D
+      ScriptFields:
+        - Name: DistanceToPlayer
+          Type: Float
+          Data: 10
+  - Entity: 9109015351923922035
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad Copy
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.35454178, -3.47677612, 0]
+      Rotation: [0, 0, 0.680270255]
+      Scale: [8.82630634, 0.434776098, 1]
+    SpriteRendererComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 4783997698825489462
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.93226814, 9.92407799, 0]
+      Rotation: [0, 0, -0.216810092]
+      Scale: [8.82630157, 0.434776336, 1]
+    SpriteRendererComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 11392921505039630826
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad Copy
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.58161259, 7.01038218, -1.86264515e-09]
+      Rotation: [0, 0, 0.399862528]
+      Scale: [8.82629013, 0.434776217, 1]
+    SpriteRendererComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 5704309532960651157
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Quad Copy Copy
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.02444267, 3.11482453, 0]
+      Rotation: [0, 0, -0.335401803]
+      Scale: [8.82630348, 0.434776098, 1]
+    SpriteRendererComponent:
+      Color: [0.231660247, 0.492717624, 1, 1]
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 7803932296406148519
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10, 14.3675585, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 0.274131298, 0.274131298, 1]
+      Thickness: 0.224999994
+      Fade: 0.114
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0
+      Restitution: 0.400000006
+      RestitutionThreshold: 0.699999988

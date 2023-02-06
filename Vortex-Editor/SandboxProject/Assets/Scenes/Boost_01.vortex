@@ -1,0 +1,520 @@
+Scene: Boost_01
+Entities:
+  - Entity: 5083911747368003800
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Obstacle
+      Marker: Obstacle
+    TransformComponent:
+      Translation: [0, 1.12968338, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 2, 5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.Oscillator
+      ScriptFields:
+        - Name: Movement
+          Type: Vector3
+          Data: [0, 10, 0]
+        - Name: Period
+          Type: Float
+          Data: 5
+  - Entity: 9120073771262193892
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Rocket
+      Marker: Player
+    TransformComponent:
+      Translation: [-10, 3, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 2.5, 0.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    ParticleEmitterComponent:
+      ColorBegin: [0.853494883, 0.698237836, 0, 1]
+      ColorEnd: [0.842937827, 0.306285709, 0, 1]
+      LifeTime: 1
+      Position: [-10, 3, 0]
+      Offset: [0, -1.5, 0]
+      Rotation: 0.100000001
+      SizeBegin: [1, 1]
+      SizeEnd: [0, 0]
+      SizeVariation: [1, 1]
+      Velocity: [-0.00151293899, -0.999998868, -0]
+      VelocityVariation: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Projects\SandboxProject\Assets\SFX\RocketThrust2.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: false
+        Loop: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Velocity: [0, 0]
+      Drag: 0.5
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.RocketController
+      ScriptFields:
+        - Name: mainThrust
+          Type: Float
+          Data: 2500
+        - Name: rotationThrust
+          Type: Float
+          Data: 100
+  - Entity: 3631288399117504247
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Landing Pad
+      Marker: Finish
+    TransformComponent:
+      Translation: [10, 0.25, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 0.5, 3]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Projects\SandboxProject\Assets\SFX\Applause.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: false
+        Loop: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 11612758453038676269
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Launch Pad
+      Marker: Start
+    TransformComponent:
+      Translation: [-10, 0.25, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 0.5, 3]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 0, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 10720206094160567048
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Directional Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [14.2445068, 35.6389427, 39.3781548]
+      Rotation: [0, -0.0174532924, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 13700473646815708975
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 9.06519032, 21.6093082]
+      Rotation: [-0.10285823, 0, 0]
+      Scale: [1, 0.999999166, 0.999999166]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\MonValley_G_DirtRoad_3k.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 456657027726728286
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Ground
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.4505806e-09, -15, -9.31322575e-10]
+      Rotation: [0, 0, 0]
+      Scale: [100, 30, 20]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.916369498, 0.39945057, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: Projects\SandboxProject\Assets\SFX\GameOver.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: false
+        Loop: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 16841747836140519069
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20, 10, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 20, 20]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.917647064, 0.400000006, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 8645349515173990481
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20, 10, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 20, 20]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.917647064, 0.400000006, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 2853697667031463779
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Roof
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 20, 0]
+      Rotation: [0, 0, 0]
+      Scale: [40, 1, 20]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.917647064, 0.400000006, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Velocity: [0, 0]
+      Drag: 0
+      AngularDrag: 0.0500000007
+      GravityScale: 1
+      FreezeRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+      IsTrigger: false
+  - Entity: 4744968914722961108
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-14.3877993, 2.21491861, -14.4000282]
+      Rotation: [0.499693781, 0.401028931, 0.595217586]
+      Scale: [24.1127434, 2.20863152, 1.58655167]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 1, 0.995999992]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 12247856350110095772
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-17.221302, 7.90311956, -14.3312073]
+      Rotation: [0.342526644, -0.411709815, -0.80162245]
+      Scale: [23.6865444, 2.20862794, 1.58654988]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.184, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 929231770461181290
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [14.7402124, 8.34527874, -8.13953686]
+      Rotation: [-0.0461662225, -0.011599415, -0.355141371]
+      Scale: [23.6865768, 2.20863152, 1.58655012]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.310000002, 0.141000003]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
+  - Entity: 17750244534234681122
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [13.033864, 6.63197803, -11.4100342]
+      Rotation: [-0.0312961116, 0.0358711518, 0.743980408]
+      Scale: [23.686573, 2.20863032, 1.58655012]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0, 0.340999991, 0.940999985]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      Opacity: 1
+      MaterialFlags: 0
+      TextureScale: [1, 1]
