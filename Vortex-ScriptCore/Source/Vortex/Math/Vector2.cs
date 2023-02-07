@@ -77,6 +77,8 @@
 		{
 			return !(vector == other);
 		}
+
+		public static implicit operator Color2(Vector2 vector) => new Color2(vector.X, vector.Y);
 	}
 
 }
