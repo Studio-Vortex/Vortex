@@ -458,13 +458,14 @@ namespace Vortex {
 					out << YAML::EndMap; // ModelImportOptions
 				}
 
-				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq; // Submeshes
-				out << YAML::BeginMap;
+				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
 
 				const auto& submeshes = model->GetSubmeshes();
 
 				for (const auto& submesh : submeshes)
 				{
+					out << YAML::BeginMap; // Submesh
+
 					out << YAML::Key << "Name" << YAML::Value << submesh.GetName();
 
 					SharedRef<Material> material = submesh.GetMaterial();
@@ -506,9 +507,10 @@ namespace Vortex {
 					out << YAML::Key << "UV" << YAML::Value << material->GetUV();
 					out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
 					out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
+
+					out << YAML::EndMap; // Submesh
 				}
 
-				out << YAML::EndMap;
 				out << YAML::EndSeq; // Submeshes
 			}
 
@@ -1030,13 +1032,14 @@ namespace Vortex {
 				auto submeshesData = meshComponent["Submeshes"];
 				if (submeshesData)
 				{
-					auto& submeshes = meshRendererComponent.Mesh->GetSubmeshes();
-
 					uint32_t i = 0;
+
+					VX_CORE_INFO("Deserializing {} Submeshes", submeshesData.size());
+
 					for (auto submeshData : submeshesData)
 					{
-						Submesh submesh = submeshes[i++];
-						SharedRef<Material> material = submesh.GetMaterial() ? submesh.GetMaterial() : Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), MaterialProperties());
+						Submesh submesh = meshRendererComponent.Mesh->GetSubmesh(i++);
+						SharedRef<Material> material = submesh.GetMaterial();
 
 						if (submeshData["AlbedoMapPath"])
 							material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AlbedoMapPath"].as<std::string>()).string()));
@@ -1375,8 +1378,6 @@ namespace Vortex {
 						for (auto scriptField : scriptFields)
 						{
 							std::string name = scriptField["Name"].as<std::string>();
-							std::string typeString = scriptField["Type"].as<std::string>();
-							ScriptFieldType type = Utils::StringToScriptFieldType(typeString);
 
 							ScriptFieldInstance& fieldInstance = entityFields[name];
 
@@ -1388,6 +1389,9 @@ namespace Vortex {
 
 							fieldInstance.Field = fields.at(name);
 
+							std::string typeString = scriptField["Type"].as<std::string>();
+							ScriptFieldType type = Utils::StringToScriptFieldType(typeString);
+							
 							switch (type)
 							{
 								READ_SCRIPT_FIELD(Float, float)

@@ -41,7 +41,7 @@ namespace Vortex {
 		Math::mat4 OffsetMatrix;
 	};
 
-	struct VORTEX_API ModelVertex
+	struct VORTEX_API Vertex
 	{
 		Math::vec3 Position;
 		Math::vec4 Color;
@@ -57,7 +57,7 @@ namespace Vortex {
 		int EntityID;
 	};
 
-	struct VORTEX_API ModelIndex
+	struct VORTEX_API Index
 	{
 		uint32_t i0, i1, i2;
 	};
@@ -66,7 +66,7 @@ namespace Vortex {
 	{
 	public:
 		Submesh() = default;
-		Submesh(const std::string& name, const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material);
+		Submesh(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material);
 		Submesh(bool skybox = true);
 		~Submesh() = default;
 
@@ -81,15 +81,15 @@ namespace Vortex {
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }
 		void SetMaterial(const SharedRef<Material>& material);
-		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
-		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
+		const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+		std::vector<Vertex>& GetVertices() { return m_Vertices; }
 
 	private:
 		void CreateAndUploadMesh();
 
 	private:
 		std::string m_MeshName;
-		std::vector<ModelVertex> m_Vertices;
+		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 		SharedRef<Material> m_Material;
 
@@ -132,7 +132,7 @@ namespace Vortex {
 		Model() = default;
 		Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
 		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
-		Model(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform = Math::Identity());
+		Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 		Model(MeshType meshType);
 		~Model() = default;
 
@@ -153,7 +153,7 @@ namespace Vortex {
 
 		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
 		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
-		static SharedRef<Model> Create(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform = Math::Identity());
+		static SharedRef<Model> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 		static SharedRef<Model> Create(MeshType meshType);
 
 	private:
@@ -161,9 +161,9 @@ namespace Vortex {
 		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
-		void SetVertexBoneDataToDefault(ModelVertex& vertex) const;
-		void SetVertexBoneData(ModelVertex& vertex, int boneID, float weight) const;
-		bool ExtractBoneWeightsForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, const aiScene* scene);
+		void SetVertexBoneDataToDefault(Vertex& vertex) const;
+		void SetVertexBoneData(Vertex& vertex, int boneID, float weight) const;
+		bool ExtractBoneWeightsForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
 	private:
 		std::vector<Submesh> m_Submeshes;

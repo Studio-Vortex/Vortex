@@ -43,7 +43,7 @@ namespace Vortex {
 		}
 	};
 
-	Submesh::Submesh(const std::string& name, const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material)
+	Submesh::Submesh(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material)
 		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
 	{
 		CreateAndUploadMesh();
@@ -114,7 +114,7 @@ namespace Vortex {
 	{
 		m_VertexArray = VertexArray::Create();
 
-		uint32_t dataSize = m_Vertices.size() * sizeof(ModelVertex);
+		uint32_t dataSize = m_Vertices.size() * sizeof(Vertex);
 		m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), dataSize);
 
 		m_VertexBuffer->SetLayout({
@@ -253,11 +253,11 @@ namespace Vortex {
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
 	}
 
-	Model::Model(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform)
+	Model::Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
 	{
 		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
 		
-		std::vector<ModelVertex> verts = { ModelVertex{} };
+		std::vector<Vertex> verts = { Vertex{} };
 		std::vector<uint32_t> inds = { 0 };
 		SharedRef<Material> mat = nullptr;
 
@@ -276,7 +276,7 @@ namespace Vortex {
 			{
 				auto TransformVertexFunc = [&verts, transform](auto vertex)
 				{
-					ModelVertex transformedVertex = vertex;
+					Vertex transformedVertex = vertex;
 					Math::vec4 transformedPositionAttribute = Math::vec4(transformedVertex.Position, 1.0) * transform;
 					transformedVertex.Position = Math::vec3(transformedPositionAttribute);
 					verts.push_back(transformedVertex);
@@ -335,7 +335,7 @@ namespace Vortex {
 
 	Submesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
 	{
-		std::vector<ModelVertex> vertices;
+		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		SharedRef<Material> material = nullptr;
 
@@ -353,7 +353,7 @@ namespace Vortex {
 		// process vertices
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
 		{
-			ModelVertex vertex;
+			Vertex vertex;
 
 			SetVertexBoneDataToDefault(vertex);
 
@@ -443,7 +443,7 @@ namespace Vortex {
 		return textures;
 	}
 
-	void Model::SetVertexBoneDataToDefault(ModelVertex& vertex) const
+	void Model::SetVertexBoneDataToDefault(Vertex& vertex) const
 	{
 		for (uint32_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 		{
@@ -452,7 +452,7 @@ namespace Vortex {
 		}
 	}
 
-	void Model::SetVertexBoneData(ModelVertex& vertex, int boneID, float weight) const
+	void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight) const
 	{
 		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 		{
@@ -465,7 +465,7 @@ namespace Vortex {
 		}
 	}
 
-	bool Model::ExtractBoneWeightsForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, const aiScene* scene)
+	bool Model::ExtractBoneWeightsForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
 	{
 		if (!scene->HasAnimations())
 			return false;
@@ -516,18 +516,18 @@ namespace Vortex {
 
 		for (auto& mesh : m_Submeshes)
 		{
-			std::vector<ModelVertex>& vertices = mesh.GetVertices();
+			std::vector<Vertex>& vertices = mesh.GetVertices();
 			
 			size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
-				ModelVertex& vertex = vertices[i];
+				Vertex& vertex = vertices[i];
 				vertex.TexScale = m_UV;
 				vertex.EntityID = m_EntityID;
 			}
 
 			SharedRef<VertexBuffer> vertexBuffer = mesh.GetVertexBuffer();
-			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(ModelVertex));
+			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
 		}
 	}
 
@@ -553,7 +553,7 @@ namespace Vortex {
 		return CreateShared<Model>(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
-	SharedRef<Model> Model::Create(const std::vector<ModelVertex>& vertices, const std::vector<ModelIndex>& indices, const Math::mat4& transform)
+	SharedRef<Model> Model::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
 	{
 		return CreateShared<Model>(vertices, indices, transform);
 	}
