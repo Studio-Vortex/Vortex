@@ -1081,87 +1081,7 @@ namespace Vortex {
 
 #pragma region Material
 	
-	static void Material_GetAlbedo(UUID entityUUID, Math::vec3* outAlbedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outAlbedo = entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetAlbedo();
-	}
-
-	static void Material_SetAlbedo(UUID entityUUID, Math::vec3* albedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetAlbedo(*albedo);
-	}
-
-	static float Material_GetMetallic(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetMetallic();
-	}
-
-	static void Material_SetMetallic(UUID entityUUID, float metallic)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetMetallic(metallic);
-	}
-
-	static float Material_GetRoughness(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetRoughness();
-	}
-
-	static void Material_SetRoughness(UUID entityUUID, float roughness)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetRoughness(roughness);
-	}
-
-	static float Material_GetEmission(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetEmission();
-	}
-
-	static void Material_SetEmission(UUID entityUUID, float emission)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetEmission(emission);
-	}
-
-	static void Material_GetUV(UUID entityUUID, Math::vec2* outUV)
+	static void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1169,11 +1089,13 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		SharedRef<Material> material = model->GetMaterial();
-		*outUV = material->GetUV();
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
 	}
 
-	static void Material_SetUV(UUID entityUUID, Math::vec2* uv)
+	static void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1181,28 +1103,150 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		SharedRef<Material> material = model->GetMaterial();
-		material->SetUV(*uv);
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
 	}
 
-	static float Material_GetOpacity(UUID entityUUID)
+	static float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->GetOpacity();
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		return submeshes[submeshIndex].GetMaterial()->GetMetallic();
 	}
 
-	static void Material_SetOpacity(UUID entityUUID, float opacity)
+	static void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<MeshRendererComponent>().Mesh->GetMaterial()->SetOpacity(opacity);
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+	}
+
+	static float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+	}
+
+	static void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+	}
+
+	static float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		return submeshes[submeshIndex].GetMaterial()->GetEmission();
+	}
+
+	static void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+	}
+
+	static void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+	}
+
+	static void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+	}
+
+	static float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+	}
+
+	static void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+		const auto& submeshes = model->GetSubmeshes();
+		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+
+		submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
 	}
 
 #pragma endregion

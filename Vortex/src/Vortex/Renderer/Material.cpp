@@ -3,9 +3,6 @@
 
 namespace Vortex {
 
-	Material::Material(const MaterialProperties& props)
-		: m_Properties(props) { }
-
 	Material::Material(const SharedRef<Shader>& shader, const MaterialProperties& props)
 		: m_Shader(shader), m_Properties(props) { }
 
@@ -98,6 +95,16 @@ namespace Vortex {
 	}
 
 	void Material::Unbind() const { }
+
+	const SharedRef<Shader>& Material::GetShader() const
+	{
+		return m_Shader;
+	}
+
+	void Material::SetShader(const SharedRef<Shader>& shader)
+	{
+		m_Shader = shader;
+	}
 
     const std::string& Material::GetName() const
     {
@@ -330,13 +337,10 @@ namespace Vortex {
 		dest->SetParallaxHeightScale(src->GetParallaxHeightScale());
 		dest->SetParallaxOcclusionMap(src->GetParallaxOcclusionMap());
 		dest->SetAmbientOcclusionMap(src->GetAmbientOcclusionMap());
+		dest->SetUV(src->GetUV());
 		dest->SetOpacity(src->GetOpacity());
 		dest->ClearFlags();
-	}
-
-	SharedRef<Material> Material::Create(const MaterialProperties& props)
-	{
-		return CreateShared<Material>(props);
+		dest->SetFlags(src->GetFlags());
 	}
 
 	SharedRef<Material> Material::Create(const SharedRef<Shader>& shader, const MaterialProperties& props)

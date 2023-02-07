@@ -572,20 +572,22 @@ namespace Vortex {
 							SharedRef<Model> model = m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh;
 							std::string filename = texturePath.filename().string();
 
-							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-								model->GetMaterial()->SetAlbedoMap(texture);
+							// TODO rework implementation to get a submesh and set the material texture
+
+							/*if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+								//model->GetMaterial()->SetAlbedoMap(texture);
 							if (filename.find("normal") != std::string::npos)
-								model->GetMaterial()->SetNormalMap(texture);
+								//model->GetMaterial()->SetNormalMap(texture);
 							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-								model->GetMaterial()->SetMetallicMap(texture);
+								//model->GetMaterial()->SetMetallicMap(texture);
 							if (filename.find("roughness") != std::string::npos)
-								model->GetMaterial()->SetRoughnessMap(texture);
+								//model->GetMaterial()->SetRoughnessMap(texture);
 							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-								model->GetMaterial()->SetEmissionMap(texture);
+								//model->GetMaterial()->SetEmissionMap(texture);
 							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-								model->GetMaterial()->SetParallaxOcclusionMap(texture);
+								//model->GetMaterial()->SetParallaxOcclusionMap(texture);
 							if (filename.find("ao") != std::string::npos)
-								model->GetMaterial()->SetAmbientOcclusionMap(texture);
+								//model->GetMaterial()->SetAmbientOcclusionMap(texture);*/
 						}
 					}
 					else

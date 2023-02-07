@@ -221,19 +221,26 @@ namespace Vortex {
 			return;
 		}
 
-		SharedRef<Material> material = model->GetMaterial();
+		const auto& submeshes = model->GetSubmeshes();
 
-		if (!material)
+		for (const auto& submesh : submeshes)
 		{
-			Gui::End();
-			return;
-		}
+			SharedRef<Material> material = submesh.GetMaterial();
 
-		const std::string& materialName = material->GetName();
-		if (UI::PropertyGridHeader(materialName.c_str()))
-		{
-			Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
-			UI::EndTreeNode();
+			if (!material)
+			{
+				Gui::End();
+				return;
+			}
+
+			const std::string& name = material->GetName() + " / " + submesh.GetName();
+
+			if (UI::PropertyGridHeader(name.c_str()))
+			{
+				Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
+
+				UI::EndTreeNode();
+			}
 		}
 
 		Gui::End();
@@ -248,6 +255,7 @@ namespace Vortex {
 				Math::vec3 albedo = material->GetAlbedo();
 				if (UI::Property("Albedo", &albedo))
 					material->SetAlbedo(albedo);
+
 				break;
 			}
 			case 1:
@@ -259,6 +267,7 @@ namespace Vortex {
 				float metallic = material->GetMetallic();
 				if (UI::Property("Metallic", metallic, 0.01f, 0.01f, 1.0f))
 					material->SetMetallic(metallic);
+
 				break;
 			}
 			case 3:
@@ -266,6 +275,7 @@ namespace Vortex {
 				float roughness = material->GetRoughness();
 				if (UI::Property("Roughness", roughness, 0.01f, 0.01f, 1.0f))
 					material->SetRoughness(roughness);
+
 				break;
 			}
 			case 4:
@@ -273,6 +283,7 @@ namespace Vortex {
 				float emission = material->GetEmission();
 				if (UI::Property("Emission", emission))
 					material->SetEmission(emission);
+
 				break;
 			}
 			case 5:
@@ -280,6 +291,7 @@ namespace Vortex {
 				float parallaxHeightScale = material->GetParallaxHeightScale();
 				if (UI::Property("Height Scale", parallaxHeightScale, 0.01f, 0.01f, 1.0f))
 					material->SetParallaxHeightScale(parallaxHeightScale);
+
 				break;
 			}
 			case 6:

@@ -62,34 +62,36 @@ namespace Vortex {
 		uint32_t i0, i1, i2;
 	};
 
-	class VORTEX_API Mesh
+	class VORTEX_API Submesh
 	{
 	public:
-		Mesh() = default;
-		Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<Material>>& materials);
-		Mesh(bool skybox = true);
-		~Mesh() = default;
+		Submesh() = default;
+		Submesh(const std::string& name, const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material);
+		Submesh(bool skybox = true);
+		~Submesh() = default;
 
-		void Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
-		void RenderToShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material);
+		void Render() const;
+
+		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
+		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
+
+		const std::string& GetName() const { return m_MeshName; }
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
-		const std::vector<SharedRef<Material>>& GetMaterials() const { return m_Materials; }
+		const SharedRef<Material>& GetMaterial() const { return m_Material; }
 		void SetMaterial(const SharedRef<Material>& material);
 		const std::vector<ModelVertex>& GetVertices() const { return m_Vertices; }
 		std::vector<ModelVertex>& GetVertices() { return m_Vertices; }
-
-		const SharedRef<VertexArray>& GetShadowMapVertexArray() const { return m_ShadowMapVertexArray; }
-		const SharedRef<VertexBuffer>& GetShadowMapVertexBuffer() const { return m_ShadowMapVertexBuffer; }
 
 	private:
 		void CreateAndUploadMesh();
 
 	private:
+		std::string m_MeshName;
 		std::vector<ModelVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		std::vector<SharedRef<Material>> m_Materials;
+		SharedRef<Material> m_Material;
 
 		SharedRef<VertexArray> m_VertexArray = nullptr;
 		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
@@ -135,22 +137,13 @@ namespace Vortex {
 		~Model() = default;
 
 		void OnUpdate(int entityID = -1);
-		void Render(const Math::mat4& worldSpaceTransform);
-		void Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
-		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
-		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
-		void RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform);
-		void RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
 
 		const std::string& GetPath() const { return m_Filepath; }
 
-		const SharedRef<VertexArray>& GetVertexArray() const { return m_Meshes[0].GetVertexArray(); }
-		const SharedRef<Material>& GetMaterial() const { return m_Material; }
-		SharedRef<Material> GetMaterial() { return m_Material; }
-		void SetMaterial(const SharedRef<Material>& material);
-
-		const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
-		std::vector<Mesh>& GetMeshes() { return m_Meshes; }
+		const Submesh& GetSubmesh(uint32_t index) const;
+		Submesh& GetSubmesh(uint32_t index);
+		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
+		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 
 		std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() { return m_BoneInfoMap; }
 		uint32_t& GetBoneCount() { return m_BoneCounter; }
@@ -165,7 +158,7 @@ namespace Vortex {
 
 	private:
 		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions);
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
+		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
 		void SetVertexBoneDataToDefault(ModelVertex& vertex) const;
@@ -173,7 +166,7 @@ namespace Vortex {
 		bool ExtractBoneWeightsForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
 	private:
-		std::vector<Mesh> m_Meshes;
+		std::vector<Submesh> m_Submeshes;
 		SharedRef<Shader> m_MeshShader = nullptr;
 		SharedRef<Material> m_Material = nullptr;
 		ModelImportOptions m_ImportOptions;

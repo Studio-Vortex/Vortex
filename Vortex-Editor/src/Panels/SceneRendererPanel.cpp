@@ -69,7 +69,7 @@ namespace Vortex {
 			Gui::PushFont(boldFont);
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
 			Gui::PopFont();
-
+			
 			Gui::SameLine();
 			const char* buttonText = "Recompile All";
 			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + (Gui::CalcTextSize(buttonText).x * 0.5f));
@@ -82,9 +82,11 @@ namespace Vortex {
 			for (auto& shader : shaders)
 			{
 				Gui::Columns(2);
+				Gui::SetColumnWidth(0, 250.0f);
 
 				const std::string& shaderName = shader->GetName();
 				Gui::Text(shaderName.c_str());
+				UI::Draw::Underline();
 				Gui::NextColumn();
 				std::string buttonName = "Reload##" + shaderName;
 

@@ -73,7 +73,7 @@ namespace Vortex {
 							{
 								const auto& sourceMesh = src.GetComponent<MeshRendererComponent>().Mesh;
 								const auto& destinationMesh = dst.GetComponent<MeshRendererComponent>().Mesh;
-								Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
+								//Material::Copy(destinationMesh->GetMaterial(), sourceMesh->GetMaterial());
 							}
 
 							if constexpr (std::is_same<TComponent, LightSourceComponent>())

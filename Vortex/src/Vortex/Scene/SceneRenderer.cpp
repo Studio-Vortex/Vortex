@@ -299,18 +299,53 @@ namespace Vortex {
 					SharedRef<Model> model = meshRendererComponent.Mesh;
 					if (!model)
 						continue;
-					SharedRef<Material> material = model->GetMaterial();
-					if (!material)
-						continue;
 
-					SetMaterialFlags(material);
+					auto& submeshes = model->GetSubmeshes();
 
-					if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
-						model->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-					else
-						model->Render(worldSpaceTransform);
+					// render each submesh
+					for (auto& submesh : submeshes)
+					{
+						SharedRef<Material> material = submesh.GetMaterial();
 
-					ResetAllMaterialFlags();
+						if (!material)
+							continue;
+
+						SetMaterialFlags(material);
+
+						SharedRef<Shader> shader = material->GetShader();
+						shader->Enable();
+
+						SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
+						shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
+						shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+						shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+						shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+						Renderer::BindSkyLightDepthMap();
+						Renderer::BindPointLightDepthMaps();
+						Renderer::BindSpotLightDepthMaps();
+
+						if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+						{
+							shader->SetBool("u_HasAnimations", true);
+
+							const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+							const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+							for (uint32_t i = 0; i < transforms.size(); i++)
+								shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+
+							submesh.Render();
+						}
+						else
+						{
+							shader->SetBool("u_HasAnimations", false);
+
+							submesh.Render();
+						}
+
+						ResetAllMaterialFlags();
+					}
 				}
 			}
 

@@ -43,14 +43,13 @@ namespace Vortex {
 		}
 	};
 
-	Mesh::Mesh(const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SharedRef<Material>>& materials)
-		: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
+	Submesh::Submesh(const std::string& name, const std::vector<ModelVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material)
+		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
 	{
 		CreateAndUploadMesh();
-		m_Materials.insert(m_Materials.end(), Material::Create(MaterialProperties()));
 	}
 
-	Mesh::Mesh(bool skybox)
+	Submesh::Submesh(bool skybox)
 	{
 		m_VertexArray = VertexArray::Create();
 
@@ -106,13 +105,12 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void Mesh::SetMaterial(const SharedRef<Material>& material)
+	void Submesh::SetMaterial(const SharedRef<Material>& material)
 	{
-		m_Materials.clear();
-		m_Materials.push_back(material);
+		m_Material = material;
 	}
 
-	void Mesh::CreateAndUploadMesh()
+	void Submesh::CreateAndUploadMesh()
 	{
 		m_VertexArray = VertexArray::Create();
 
@@ -173,17 +171,35 @@ namespace Vortex {
 		}
 	}
 
-	void Mesh::Render(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	void Submesh::Render() const
 	{
+		SharedRef<Shader> shader = m_Material->GetShader();
 		shader->Enable();
-		material->Bind();
+		m_Material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 		Renderer::AddToDrawCallCountStats(1);
 	}
 
-	void Mesh::RenderToShadowMap(const SharedRef<Shader>& shader, const SharedRef<Material>& material)
+	void Submesh::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform)
 	{
+		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
+		shader->Enable();
+		shader->SetBool("u_HasAnimations", false);
+
+		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
+	}
+	
+	void Submesh::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	{
+		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
+		shader->Enable();
+		shader->SetBool("u_HasAnimations", true);
+
+		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+		for (uint32_t i = 0; i < transforms.size(); i++)
+			shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+
 		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
 	}
 
@@ -243,17 +259,17 @@ namespace Vortex {
 		
 		std::vector<ModelVertex> verts = { ModelVertex{} };
 		std::vector<uint32_t> inds = { 0 };
-		std::vector<SharedRef<Material>> mats = { nullptr };
+		SharedRef<Material> mat = nullptr;
 
 		auto TransformVerticesAndGetIndicesAndCreateMesh =
 		[
-			&collectionOfMeshes = m_Meshes,
+			&collectionOfMeshes = m_Submeshes,
 			transform,
 			vertices,
 			indices,
 			&verts,
 			&inds,
-			mats
+			mat
 		]()
 		{
 			auto TransformVertices = [&verts, transform, vertices]()
@@ -266,7 +282,8 @@ namespace Vortex {
 					verts.push_back(transformedVertex);
 				};
 
-				for (const auto& vertex : vertices) TransformVertexFunc(vertex);
+				for (const auto& vertex : vertices)
+					TransformVertexFunc(vertex);
 			};
 
 			auto GetIndices = [&inds, indices]()
@@ -278,13 +295,14 @@ namespace Vortex {
 						inds.push_back(theIndices[i]);
 				};
 
-				for (const auto& index : indices) GetIndexFunc(index);
+				for (const auto& index : indices)
+					GetIndexFunc(index);
 			};
 
 			TransformVertices();
 			GetIndices();
 
-			Mesh mesh(verts, inds, mats);
+			Submesh mesh("UnNamed", verts, inds, mat);
 			collectionOfMeshes.push_back(mesh);
 		};
 
@@ -296,7 +314,7 @@ namespace Vortex {
 
 	Model::Model(MeshType meshType)
 	{
-		m_Meshes.push_back(Mesh(true));
+		m_Submeshes.push_back(Submesh(true));
 	}
 
 	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions)
@@ -305,7 +323,7 @@ namespace Vortex {
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Meshes.push_back(ProcessMesh(mesh, scene, importOptions, m_EntityID));
+			m_Submeshes.push_back(ProcessMesh(mesh, scene, importOptions, m_EntityID));
 		}
 
 		// do the same for children nodes
@@ -315,11 +333,11 @@ namespace Vortex {
 		}
 	}
 
-	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
+	Submesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
 	{
 		std::vector<ModelVertex> vertices;
 		std::vector<uint32_t> indices;
-		std::vector<SharedRef<Material>> materials;
+		SharedRef<Material> material = nullptr;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -328,6 +346,9 @@ namespace Vortex {
 			Math::Rotate(Math::Deg2Rad(rotation.y), { 0.0f, 1.0f, 0.0f }) *
 			Math::Rotate(Math::Deg2Rad(rotation.z), { 0.0f, 0.0f, 1.0f }) *
 			Math::Scale(importTransform.Scale);
+
+		const char* nameCStr = mesh->mName.C_Str();
+		std::string meshName = std::string(nameCStr);
 
 		// process vertices
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -388,13 +409,14 @@ namespace Vortex {
 		// process materials
 		if (mesh->mMaterialIndex >= 0)
 		{
-			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
+			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), MaterialProperties());
 			// TODO load materials
 		}
 
 		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
 
-		return { vertices, indices, materials };
+		return { meshName, vertices, indices, material };
 	}
 
 	std::vector<SharedRef<Texture2D>> Model::LoadMaterialTextures(aiMaterial* material, uint32_t textureType)
@@ -492,7 +514,7 @@ namespace Vortex {
 		m_EntityID = entityID;
 		m_UV = m_Material->GetUV();
 
-		for (auto& mesh : m_Meshes)
+		for (auto& mesh : m_Submeshes)
 		{
 			std::vector<ModelVertex>& vertices = mesh.GetVertices();
 			
@@ -509,132 +531,16 @@ namespace Vortex {
 		}
 	}
 
-	void Model::Render(const Math::mat4& worldSpaceTransform)
+	const Submesh& Model::GetSubmesh(uint32_t index) const
 	{
-		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-
-		m_MeshShader->Enable();
-
-		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
-
-		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-		m_MeshShader->SetBool("u_HasAnimations", false);
-
-		Renderer::BindSkyLightDepthMap();
-		Renderer::BindPointLightDepthMaps();
-		Renderer::BindSpotLightDepthMaps();
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.Render(m_MeshShader, m_Material);
-		}
+		VX_CORE_ASSERT(index <= m_Submeshes.size() - 1, "Index out of bounds!");
+		return m_Submeshes[index];
 	}
 
-	void Model::Render(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
+	Submesh& Model::GetSubmesh(uint32_t index)
 	{
-		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-
-		m_MeshShader->Enable();
-
-		SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-		m_MeshShader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-		m_MeshShader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-		m_MeshShader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
-
-		m_MeshShader->SetMat4("u_Model", worldSpaceTransform);
-		m_MeshShader->SetBool("u_HasAnimations", true);
-
-		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < transforms.size(); i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-
-		Renderer::BindSkyLightDepthMap();
-		Renderer::BindPointLightDepthMaps();
-		Renderer::BindSpotLightDepthMaps();
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.Render(m_MeshShader, m_Material);
-		}
-	}
-
-	void Model::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform)
-	{
-		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
-
-		m_MeshShader->SetBool("u_HasAnimations", false);
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.RenderToShadowMap(m_MeshShader, m_Material);
-		}
-	}
-
-	void Model::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
-	{
-		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
-
-		m_MeshShader->SetBool("u_HasAnimations", true);
-
-		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < transforms.size(); i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.RenderToShadowMap(m_MeshShader, m_Material);
-		}
-	}
-
-	void Model::RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform)
-	{
-		VX_CORE_ASSERT(!HasAnimations(), "Mesh has animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PointLightShadowMap");
-
-		m_MeshShader->SetBool("u_HasAnimations", false);
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.RenderToShadowMap(m_MeshShader, m_Material);
-		}
-	}
-
-	void Model::RenderToPointLightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
-	{
-		VX_CORE_ASSERT(HasAnimations(), "Mesh doesn't have animations!");
-
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PointLightShadowMap");
-
-		m_MeshShader->SetBool("u_HasAnimations", true);
-
-		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < transforms.size(); i++)
-			m_MeshShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-
-		for (auto& mesh : m_Meshes)
-		{
-			mesh.RenderToShadowMap(m_MeshShader, m_Material);
-		}
-	}
-
-	void Model::SetMaterial(const SharedRef<Material>& material)
-	{
-		for (auto& mesh : m_Meshes)
-			mesh.SetMaterial(material);
-
-		m_Material = material;
+		VX_CORE_ASSERT(index < m_Submeshes.size() - 1, "Index out of bounds!");
+		return m_Submeshes[index];
 	}
 
 	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)

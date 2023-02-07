@@ -45,11 +45,13 @@ namespace Vortex {
 	{
 	public:
 		Material() = default;
-		Material(const MaterialProperties& props);
 		Material(const SharedRef<Shader>& shader, const MaterialProperties& props);
 
 		void Bind() const;
 		void Unbind() const;
+
+		const SharedRef<Shader>& GetShader() const;
+		void SetShader(const SharedRef<Shader>& shader);
 
 		const std::string& GetName() const;
 		void SetName(const std::string& name);
@@ -110,7 +112,6 @@ namespace Vortex {
 
 		static void Copy(SharedRef<Material> dest, const SharedRef<Material>& src);
 
-		static SharedRef<Material> Create(const MaterialProperties& props);
 		static SharedRef<Material> Create(const SharedRef<Shader>& shader, const MaterialProperties& props);
 
 	protected:

@@ -286,7 +286,7 @@ namespace Vortex {
 			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
 
 			skyboxMeshVA->Bind();
 			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
@@ -368,7 +368,7 @@ namespace Vortex {
 		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
 		skybox->Bind();
 
-		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
 
 		{
 			// don't forget to configure the viewport to the capture dimensions.
@@ -599,20 +599,25 @@ namespace Vortex {
 							continue;
 
 						MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
-						Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
+						Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity); // should be the world transform of the submesh
 						shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
 
 						SharedRef<Model> model = meshRendererComponent.Mesh;
 						if (!model)
 							continue;
 
-						if (model->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
-						{
-							model->RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
-							continue;
-						}
+						auto& submeshes = model->GetSubmeshes();
 
-						model->RenderToSkylightShadowMap(worldSpaceTransform);
+						for (auto& submesh : submeshes)
+						{
+							if (model->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+							{
+								submesh.RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+								continue;
+							}
+
+							submesh.RenderToSkylightShadowMap(worldSpaceTransform);
+						}
 					}
 
 					s_Data.SkylightDepthMapFramebuffer->Unbind();

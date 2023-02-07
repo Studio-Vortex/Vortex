@@ -333,19 +333,9 @@
 			set => InternalCalls.MeshRendererComponent_SetMeshType(Entity.ID, value);
 		}
 
-		public Material GetMaterial()
+		public Submesh GetSubmesh(uint index)
 		{
-			InternalCalls.Material_GetAlbedo(Entity.ID, out Vector3 albedo);
-
-			return new Material
-			{
-				Entity = Entity,
-				Albedo = albedo,
-				Metallic = InternalCalls.Material_GetRoughness(Entity.ID),
-				Roughness = InternalCalls.Material_GetRoughness(Entity.ID),
-				Emission = InternalCalls.Material_GetEmission(Entity.ID),
-				Opacity = InternalCalls.Material_GetOpacity(Entity.ID),
-			};
+			return new Submesh(index, Entity);
 		}
 	}
 

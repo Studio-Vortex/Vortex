@@ -458,45 +458,58 @@ namespace Vortex {
 					out << YAML::EndMap; // ModelImportOptions
 				}
 
-				SharedRef<Material> material = model->GetMaterial();
+				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq; // Submeshes
+				out << YAML::BeginMap;
 
-				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
-				SharedRef<Texture2D> normalMap = material->GetNormalMap();
-				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
-				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
-				SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
-				SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
-				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+				const auto& submeshes = model->GetSubmeshes();
 
-				if (albedoMap)
-					out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
-				else
-					out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
-				if (normalMap)
-					out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
-				if (metallicMap)
-					out << YAML::Key << "MetallicMapPath" << YAML::Value << std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string();
-				else
-					out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
-				if (roughnessMap)
-					out << YAML::Key << "RoughnessMapPath" << YAML::Value << std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string();
-				else
-					out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
-				if (emissionMap)
-					out << YAML::Key << "EmissionMapPath" << YAML::Value << std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string();
-				else
-					out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
-				if (parallaxOcclusionMap)
+				for (const auto& submesh : submeshes)
 				{
-					out << YAML::Key << "ParallaxOcclusionMapPath" << YAML::Value << std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string();
-					out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
-				}
-				if (ambientOcclusionMap)
-					out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
+					out << YAML::Key << "Name" << YAML::Value << submesh.GetName();
 
-				out << YAML::Key << "UV" << YAML::Value << material->GetUV();
-				out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
-				out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
+					SharedRef<Material> material = submesh.GetMaterial();
+
+					SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+					SharedRef<Texture2D> normalMap = material->GetNormalMap();
+					SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+					SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+					SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
+					SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
+					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+
+					if (albedoMap)
+						out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
+					else
+						out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
+					if (normalMap)
+						out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
+					if (metallicMap)
+						out << YAML::Key << "MetallicMapPath" << YAML::Value << std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string();
+					else
+						out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
+					if (roughnessMap)
+						out << YAML::Key << "RoughnessMapPath" << YAML::Value << std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string();
+					else
+						out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
+					if (emissionMap)
+						out << YAML::Key << "EmissionMapPath" << YAML::Value << std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string();
+					else
+						out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
+					if (parallaxOcclusionMap)
+					{
+						out << YAML::Key << "ParallaxOcclusionMapPath" << YAML::Value << std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string();
+						out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
+					}
+					if (ambientOcclusionMap)
+						out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
+
+					out << YAML::Key << "UV" << YAML::Value << material->GetUV();
+					out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
+					out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
+				}
+
+				out << YAML::EndMap;
+				out << YAML::EndSeq; // Submeshes
 			}
 
 			out << YAML::EndMap; // MeshRendererComponent
@@ -1014,41 +1027,52 @@ namespace Vortex {
 					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
 				}
 
-				SharedRef<Material> material = meshRendererComponent.Mesh->GetMaterial() ? meshRendererComponent.Mesh->GetMaterial() : Material::Create(MaterialProperties());
+				auto submeshesData = meshComponent["Submeshes"];
+				if (submeshesData)
+				{
+					auto& submeshes = meshRendererComponent.Mesh->GetSubmeshes();
 
-				if (meshComponent["AlbedoMapPath"])
-					material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AlbedoMapPath"].as<std::string>()).string()));
-				if (meshComponent["Albedo"])
-					material->SetAlbedo(meshComponent["Albedo"].as<Math::vec3>());
-				if (meshComponent["NormalMapPath"])
-					material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["NormalMapPath"].as<std::string>()).string()));
-				if (meshComponent["MetallicMapPath"])
-					material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["MetallicMapPath"].as<std::string>()).string()));
-				if (meshComponent["Metallic"])
-					material->SetMetallic(meshComponent["Metallic"].as<float>());
-				if (meshComponent["RoughnessMapPath"])
-					material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["RoughnessMapPath"].as<std::string>()).string()));
-				if (meshComponent["Roughness"])
-					material->SetRoughness(meshComponent["Roughness"].as<float>());
-				if (meshComponent["EmissionMapPath"])
-					material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["EmissionMapPath"].as<std::string>()).string()));
-				if (meshComponent["Emission"])
-					material->SetEmission(meshComponent["Emission"].as<float>());
-				if (meshComponent["ParallaxOcclusionMapPath"])
-					material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["ParallaxOcclusionMapPath"].as<std::string>()).string()));
-				if (meshComponent["ParallaxHeightScale"])
-					material->SetParallaxHeightScale(meshComponent["ParallaxHeightScale"].as<float>());
-				if (meshComponent["AmbientOcclusionMapPath"])
-					material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(meshComponent["AmbientOcclusionMapPath"].as<std::string>()).string()));
+					uint32_t i = 0;
+					for (auto submeshData : submeshesData)
+					{
+						Submesh submesh = submeshes[i++];
+						SharedRef<Material> material = submesh.GetMaterial() ? submesh.GetMaterial() : Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), MaterialProperties());
 
-				if (meshComponent["UV"])
-					material->SetUV(meshComponent["UV"].as<Math::vec2>());
+						if (submeshData["AlbedoMapPath"])
+							material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AlbedoMapPath"].as<std::string>()).string()));
+						if (submeshData["Albedo"])
+							material->SetAlbedo(submeshData["Albedo"].as<Math::vec3>());
+						if (submeshData["NormalMapPath"])
+							material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["NormalMapPath"].as<std::string>()).string()));
+						if (submeshData["MetallicMapPath"])
+							material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["MetallicMapPath"].as<std::string>()).string()));
+						if (submeshData["Metallic"])
+							material->SetMetallic(submeshData["Metallic"].as<float>());
+						if (submeshData["RoughnessMapPath"])
+							material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["RoughnessMapPath"].as<std::string>()).string()));
+						if (submeshData["Roughness"])
+							material->SetRoughness(submeshData["Roughness"].as<float>());
+						if (submeshData["EmissionMapPath"])
+							material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["EmissionMapPath"].as<std::string>()).string()));
+						if (submeshData["Emission"])
+							material->SetEmission(submeshData["Emission"].as<float>());
+						if (submeshData["ParallaxOcclusionMapPath"])
+							material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["ParallaxOcclusionMapPath"].as<std::string>()).string()));
+						if (submeshData["ParallaxHeightScale"])
+							material->SetParallaxHeightScale(submeshData["ParallaxHeightScale"].as<float>());
+						if (submeshData["AmbientOcclusionMapPath"])
+							material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AmbientOcclusionMapPath"].as<std::string>()).string()));
 
-				if (meshComponent["Opacity"])
-					material->SetOpacity(meshComponent["Opacity"].as<float>());
+						if (submeshData["UV"])
+							material->SetUV(submeshData["UV"].as<Math::vec2>());
 
-				if (meshComponent["MaterialFlags"])
-					material->SetFlags(meshComponent["MaterialFlags"].as<uint32_t>());
+						if (submeshData["Opacity"])
+							material->SetOpacity(submeshData["Opacity"].as<float>());
+
+						if (submeshData["MaterialFlags"])
+							material->SetFlags(submeshData["MaterialFlags"].as<uint32_t>());
+					}
+				}
 			}
 
 			auto spriteComponent = entity["SpriteRendererComponent"];
