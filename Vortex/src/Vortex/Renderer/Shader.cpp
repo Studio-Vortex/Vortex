@@ -73,7 +73,7 @@ namespace Vortex {
 	SharedRef<Shader> ShaderLibrary::Get(const std::string& name)
 	{
 		VX_CORE_ASSERT(Exists(name), "Shader not found!")
-			return m_Shaders[name];
+		return m_Shaders[name];
 	}
 
 	bool ShaderLibrary::Exists(const std::string& name) const

@@ -178,8 +178,8 @@ namespace Sandbox.Shooter.Weapons {
 
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetMaterial();
-			material.Albedo = Color.Red.XYZ;
+			Material material = meshRenderer.GetSubmesh(0).GetMaterial();
+			material.Albedo = Color.Red;
 
 			bullet.AddComponent<SphereCollider>();
 			RigidBody rb = bullet.AddComponent<RigidBody>();

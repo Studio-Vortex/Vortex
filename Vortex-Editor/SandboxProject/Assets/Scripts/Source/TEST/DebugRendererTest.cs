@@ -17,8 +17,8 @@ namespace Sandbox {
 					for (int x = -size; x < size; x += 2)
 					{
 						Vector3 point = new Vector3(x, y, z) + (size * 0.25f);
-						DebugRenderer.DrawLine(Vector3.Zero, point, Color.Yellow);
-						DebugRenderer.DrawQuadBillboard(point, new Vector2(1), Color.Blue);
+						DebugRenderer.DrawLine(Vector3.Zero, point, Color.Yellow4);
+						DebugRenderer.DrawQuadBillboard(point, new Vector2(1), Color.Blue4);
 					}
 				}
 			}

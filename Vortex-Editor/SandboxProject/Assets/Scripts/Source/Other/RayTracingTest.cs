@@ -16,7 +16,7 @@ namespace Sandbox {
 			float radius = 0.5f;
 			Vector3 sphereOrigin = Vector3.Zero;
 			Vector2 quadSize = new Vector2(0.05f);
-			Vector4 quadColor = Color.Green;
+			Vector4 quadColor = Color.Green4;
 
 			DebugRenderer.BeginScene();
 

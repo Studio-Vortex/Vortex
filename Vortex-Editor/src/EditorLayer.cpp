@@ -104,7 +104,7 @@ namespace Vortex {
 			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		// Render
+		// Bind Render Target and Clear Attachments
 		Renderer::ResetStats();
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
@@ -114,13 +114,18 @@ namespace Vortex {
 		m_Framebuffer->ClearAttachment(1, -1);
 
 		const Math::vec2& mousePos = Input::GetMousePosition();
+		const bool mousePosChanged = mousePos != m_MousePosLastFrame;
+		const bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
+		const bool updateEditorCamera = (m_SceneViewportHovered || mousePosChanged || rightMouseButtonPressed);
+
+		m_MousePosLastFrame = Input::GetMousePosition();
 
 		// Update Scene
 		switch (m_SceneState)
 		{
 			case SceneState::Edit:
 			{
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(MouseButton::Right))
+				if (updateEditorCamera && !ImGuizmo::IsUsing())
 					m_EditorCamera->OnUpdate(delta);
 
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
@@ -151,16 +156,13 @@ namespace Vortex {
 			}
 			case SceneState::Simulate:
 			{
-				const Math::vec2& mousePos = Input::GetMousePosition();
-				if (m_SceneViewportHovered || mousePos != m_MousePosLastFrame || Input::IsMouseButtonPressed(MouseButton::Right))
+				if (updateEditorCamera && !ImGuizmo::IsUsing())
 					m_EditorCamera->OnUpdate(delta);
 
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
 			}
 		}
-
-		m_MousePosLastFrame = Input::GetMousePosition();
 
 		auto [mx, my] = Gui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -170,7 +172,7 @@ namespace Vortex {
 
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
-		
+
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
@@ -691,9 +693,9 @@ namespace Vortex {
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 
 		bool notInPlayMode = m_SceneState != SceneState::Play;
-		bool currentGizmoToolIsValid = m_GizmoType != -1;
+		bool validGizmoTool = m_GizmoType != -1;
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		bool showGizmos = (selectedEntity && currentGizmoToolIsValid && notInPlayMode && !altPressed);
+		bool showGizmos = (selectedEntity && notInPlayMode && validGizmoTool && !altPressed);
 
 		if (showGizmos)
 		{
@@ -1329,7 +1331,7 @@ namespace Vortex {
 			}
 			case Key::S:
 			{
-				if (controlPressed && m_SceneState == SceneState::Edit)
+				if (controlPressed && m_SceneState == SceneState::Edit && !rightMouseButtonPressed)
 				{
 					if (shiftPressed)
 						SaveSceneAs();

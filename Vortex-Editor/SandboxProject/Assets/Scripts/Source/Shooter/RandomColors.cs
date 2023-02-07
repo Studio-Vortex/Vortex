@@ -21,7 +21,7 @@ namespace Sandbox.Shooter {
 					break;
 
 				MeshRenderer meshRenderer = child.GetComponent<MeshRenderer>();
-				Material material = meshRenderer.GetMaterial();
+				Material material = meshRenderer.GetSubmesh(0).GetMaterial();
 				float[] colors = new float[3] { RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1) };
 				material.Albedo = new Vector3(colors[0], colors[1], colors[2]);
 				material.Metallic = 0;
@@ -42,8 +42,8 @@ namespace Sandbox.Shooter {
 			{
 				if (entity.TryGetComponent(out MeshRenderer meshRenderer))
 				{
-					Material material = meshRenderer.GetMaterial();
-					material.Albedo = Color.White.XYZ;
+					Material material = meshRenderer.GetSubmesh(0).GetMaterial();
+					material.Albedo = Color.White;
 					material.Metallic = 0.5f;
 					material.Roughness = 0.5f;
 				}

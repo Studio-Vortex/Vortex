@@ -17,23 +17,38 @@ namespace Sandbox.DarkRoom {
 		AudioSource[] footstepSounds;
 		RigidBody rigidbody;
 		Entity eyes;
+		bool inputEnabled = true;
 
 		protected override void OnCreate()
 		{
 			controller = GetComponent<CharacterController>();
 			rigidbody = GetComponent<RigidBody>();
 			eyes = FindEntityByName("Eyes");
-			Input.SetCursorMode(CursorMode.Locked);
 			footstepSounds = new AudioSource[2];
 			footstepSounds[0] = FindEntityByName("Footstep1").GetComponent<AudioSource>();
 			footstepSounds[1] = FindEntityByName("Footstep2").GetComponent<AudioSource>();
+			Input.SetCursorMode(CursorMode.Locked);
 		}
 
 		protected override void OnUpdate(float delta)
 		{
-			MovePlayer();
-			RotatePlayer();
-			Jump();
+			if (inputEnabled)
+			{
+				MovePlayer();
+				RotatePlayer();
+				Jump();
+			}
+
+			if (Input.IsKeyDown(KeyCode.Escape))
+			{
+				inputEnabled = false;
+				Input.SetCursorMode(CursorMode.Normal);
+			}
+			else if (Input.IsKeyDown(KeyCode.F6))
+			{
+				inputEnabled = true;
+				Input.SetCursorMode(CursorMode.Locked);
+			}
 		}
 
 		bool FootstepSoundIsPlaying()
