@@ -163,6 +163,7 @@ namespace Vortex {
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
 				Utils::BindTexture(multisample, m_ColorAttachments[i]);
+
 				switch (m_ColorAttachmentProperties[i].TextureFormat)
 				{
 					case FramebufferTextureFormat::RGBA8:
@@ -187,6 +188,7 @@ namespace Vortex {
 			{
 				case FramebufferTextureFormat::DEPTH24STENCIL8:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Properties.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Properties.Width, m_Properties.Height);
+					break;
 			}
 		}
 

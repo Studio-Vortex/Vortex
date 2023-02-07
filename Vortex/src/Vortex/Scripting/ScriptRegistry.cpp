@@ -1090,7 +1090,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
 	}
@@ -1104,7 +1104,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
 	}
@@ -1118,7 +1118,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		return submeshes[submeshIndex].GetMaterial()->GetMetallic();
 	}
@@ -1132,7 +1132,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
 	}
@@ -1146,7 +1146,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		return submeshes[submeshIndex].GetMaterial()->GetRoughness();
 	}
@@ -1160,7 +1160,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
 	}
@@ -1174,7 +1174,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		return submeshes[submeshIndex].GetMaterial()->GetEmission();
 	}
@@ -1188,7 +1188,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
 	}
@@ -1202,7 +1202,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
 	}
@@ -1216,7 +1216,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
 	}
@@ -1230,7 +1230,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		return submeshes[submeshIndex].GetMaterial()->GetOpacity();
 	}
@@ -1244,7 +1244,7 @@ namespace Vortex {
 
 		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex <= submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
 		submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
 	}

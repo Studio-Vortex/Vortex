@@ -353,6 +353,8 @@ namespace Vortex {
 			renderTime.GeometryPassRenderTime += timer.ElapsedMS();
 
 			Renderer::EndScene();
+
+			renderPacket.TargetFramebuffer->Bind();
 		}
 	}
 

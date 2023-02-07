@@ -91,7 +91,7 @@ namespace Vortex {
 		std::string m_MeshName;
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		SharedRef<Material> m_Material;
+		SharedRef<Material> m_Material = nullptr;
 
 		SharedRef<VertexArray> m_VertexArray = nullptr;
 		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;

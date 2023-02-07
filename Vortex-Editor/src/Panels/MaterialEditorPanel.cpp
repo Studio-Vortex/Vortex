@@ -114,7 +114,8 @@ namespace Vortex {
 				bool leftMouseButtonClicked = false;
 				bool rightMouseButtonClicked = false;
 
-				if (Gui::CollapsingHeader(displayNames[i]))
+				std::string headerName = std::string(displayNames[i]) + "##" + material->GetName() + std::to_string(i);
+				if (Gui::CollapsingHeader(headerName.c_str()))
 				{
 					UI::BeginPropertyGrid();
 

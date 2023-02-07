@@ -6,6 +6,7 @@
 #include "Vortex/Project/Project.h"
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/AssimpAPIHelpers.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -402,8 +403,34 @@ namespace Vortex {
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
-			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), MaterialProperties());
-			// TODO load materials
+
+			// TODO load material textures
+			MaterialProperties materialProps;
+			materialProps.Name = std::string(mat->GetName().C_Str());
+
+			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
+			{
+				SharedRef<Texture2D> result = nullptr;
+
+				aiString path;
+				if (mat->GetTexture(textureType, index, &path) == AI_SUCCESS)
+				{
+					const char* pathCStr = path.C_Str();
+					if (FileSystem::Exists(Project::GetAssetDirectory() / std::filesystem::path(pathCStr)))
+					{
+						result = Texture2D::Create(pathCStr);
+						return result;
+					}
+				}
+
+				return result;
+			};
+
+			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
+			if (!materialProps.AlbedoMap)
+				materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+			
+			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), materialProps);
 		}
 
 		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
@@ -530,13 +557,13 @@ namespace Vortex {
 
 	const Submesh& Model::GetSubmesh(uint32_t index) const
 	{
-		VX_CORE_ASSERT(index <= m_Submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
 		return m_Submeshes[index];
 	}
 
 	Submesh& Model::GetSubmesh(uint32_t index)
 	{
-		VX_CORE_ASSERT(index < m_Submeshes.size() - 1, "Index out of bounds!");
+		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
 		return m_Submeshes[index];
 	}
 
