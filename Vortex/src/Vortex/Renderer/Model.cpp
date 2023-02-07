@@ -222,11 +222,8 @@ namespace Vortex {
 		}
 
 		m_Scene = scene;
-		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
 
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
+		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
 	}
 
 	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
@@ -246,17 +243,12 @@ namespace Vortex {
 		}
 
 		m_Scene = scene;
-		m_EntityID = entityID;
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		m_Material = Material::Create(m_MeshShader, MaterialProperties());
 
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions);
+		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
 	}
 
 	Model::Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
 	{
-		m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR");
-		
 		std::vector<Vertex> verts = { Vertex{} };
 		std::vector<uint32_t> inds = { 0 };
 		SharedRef<Material> mat = nullptr;
@@ -317,19 +309,19 @@ namespace Vortex {
 		m_Submeshes.push_back(Submesh(true));
 	}
 
-	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions)
+	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Submeshes.push_back(ProcessMesh(mesh, scene, importOptions, m_EntityID));
+			m_Submeshes.push_back(ProcessMesh(mesh, scene, importOptions, entityID));
 		}
 
 		// do the same for children nodes
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], scene, importOptions);
+			ProcessNode(node->mChildren[i], scene, importOptions, entityID);
 		}
 	}
 
@@ -508,25 +500,30 @@ namespace Vortex {
 
 	void Model::OnUpdate(int entityID)
 	{
-		if (m_EntityID == entityID && m_UV == m_Material->GetUV())
-			return;
+		bool isDirty = false;
 
-		m_EntityID = entityID;
-		m_UV = m_Material->GetUV();
-
-		for (auto& mesh : m_Submeshes)
+		for (auto& submesh : m_Submeshes)
 		{
-			std::vector<Vertex>& vertices = mesh.GetVertices();
+			std::vector<Vertex>& vertices = submesh.GetVertices();
 			
 			size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
 				Vertex& vertex = vertices[i];
-				vertex.TexScale = m_UV;
-				vertex.EntityID = m_EntityID;
+				SharedRef<Material> material = submesh.GetMaterial();
+
+				isDirty = Math::vec3(vertex.Color) != material->GetAlbedo() || vertex.TexScale != material->GetUV();
+				if (!isDirty)
+					break;
+
+				vertex.Color = Math::vec4(material->GetAlbedo(), 1.0f);
+				vertex.TexScale = material->GetUV();
 			}
 
-			SharedRef<VertexBuffer> vertexBuffer = mesh.GetVertexBuffer();
+			if (!isDirty)
+				break;
+
+			SharedRef<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
 			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
 		}
 	}

@@ -93,15 +93,22 @@ namespace Vortex {
 			ImVec2 textureSize = { 64, 64 };
 			ImVec4 bgColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+			Math::vec3 albedo = material->GetAlbedo();
+			ImVec4 albedoTint = { albedo.r, albedo.g, albedo.b, 1.0f };
+
 			uint32_t count = VX_ARRAYCOUNT(displayNames);
 
 			for (uint32_t i = 0; i < count; i++)
 			{
 				SharedRef<Texture2D> texture = nullptr;
 				if (SharedRef<Texture2D> entry = GetMaterialTexture(material, i))
+				{
 					texture = entry;
+				}
 				else
+				{
 					texture = EditorResources::CheckerboardIcon;
+				}
 
 				bool hovered = false;
 				bool leftMouseButtonClicked = false;
@@ -110,7 +117,9 @@ namespace Vortex {
 				if (Gui::CollapsingHeader(displayNames[i]))
 				{
 					UI::BeginPropertyGrid();
-					UI::ImageEx(texture, textureSize, bgColor, tintColor);
+
+					ImVec4 backgroundColor = (i == 0) ? albedoTint : bgColor;
+					UI::ImageEx(texture, textureSize, backgroundColor, tintColor);
 
 					if (MaterialTextureHasProperties(i))
 						Gui::SameLine();
@@ -136,10 +145,14 @@ namespace Vortex {
 								if (newTexture->IsLoaded())
 									SetMaterialTexture(material, newTexture, i);
 								else
+								{
 									VX_WARN("Could not load texture {}", texturePath.filename().string());
+								}
 							}
 							else
+							{
 								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							}
 						}
 
 						Gui::EndDragDropTarget();

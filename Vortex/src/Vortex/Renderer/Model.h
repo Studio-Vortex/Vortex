@@ -157,7 +157,7 @@ namespace Vortex {
 		static SharedRef<Model> Create(MeshType meshType);
 
 	private:
-		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions);
+		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
@@ -167,13 +167,9 @@ namespace Vortex {
 
 	private:
 		std::vector<Submesh> m_Submeshes;
-		SharedRef<Shader> m_MeshShader = nullptr;
-		SharedRef<Material> m_Material = nullptr;
 		ModelImportOptions m_ImportOptions;
 		std::string m_Filepath;
 		const aiScene* m_Scene;
-		int m_EntityID = -1;
-		Math::vec2 m_UV = Math::vec2(1.0f);
 
 		std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;
 		uint32_t m_BoneCounter = 0;
