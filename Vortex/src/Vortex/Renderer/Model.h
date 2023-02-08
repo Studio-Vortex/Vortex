@@ -70,12 +70,10 @@ namespace Vortex {
 		Submesh(bool skybox = true);
 		~Submesh() = default;
 
+		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
+
 		void Render() const;
-
 		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
-		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent);
-
-		const std::string& GetName() const { return m_MeshName; }
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
@@ -96,10 +94,6 @@ namespace Vortex {
 		SharedRef<VertexArray> m_VertexArray = nullptr;
 		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
 		SharedRef<IndexBuffer> m_IndexBuffer = nullptr;
-
-		SharedRef<VertexArray> m_ShadowMapVertexArray = nullptr;
-		SharedRef<VertexBuffer> m_ShadowMapVertexBuffer = nullptr;
-		SharedRef<IndexBuffer> m_ShadowMapIndexBuffer = nullptr;
 	};
 
 	class VORTEX_API Model
@@ -159,7 +153,6 @@ namespace Vortex {
 	private:
 		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
 		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
-		std::vector<SharedRef<Texture2D>> LoadMaterialTextures(aiMaterial* material, uint32_t textureType);
 
 		void SetVertexBoneDataToDefault(Vertex& vertex) const;
 		void SetVertexBoneData(Vertex& vertex, int boneID, float weight) const;

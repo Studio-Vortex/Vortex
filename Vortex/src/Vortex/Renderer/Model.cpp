@@ -138,38 +138,6 @@ namespace Vortex {
 
 		uint32_t triangleCount = m_IndexBuffer->GetCount() / 3;
 		Renderer::AddToQuadCountStats(triangleCount / 2);
-
-		{
-			struct ShadowMapVertex
-			{
-				Math::vec3 Position;
-				Math::ivec4 BoneIDs;
-				Math::vec4 BoneWeights;
-			};
-
-			std::vector<ShadowMapVertex> shadowMapVertices;
-
-			for (auto& vertex : m_Vertices)
-			{
-				shadowMapVertices.push_back(ShadowMapVertex{ vertex.Position, vertex.BoneIDs, vertex.BoneWeights });
-			}
-
-			m_ShadowMapVertexArray = VertexArray::Create();
-
-			uint32_t dataSize = shadowMapVertices.size() * sizeof(ShadowMapVertex);
-			m_ShadowMapVertexBuffer = VertexBuffer::Create(shadowMapVertices.data(), dataSize);
-
-			m_ShadowMapVertexBuffer->SetLayout({
-				{ ShaderDataType::Float3, "a_Position"    },
-				{ ShaderDataType::Int4,   "a_BoneIDs"     },
-				{ ShaderDataType::Float4, "a_BoneWeights" },
-			});
-
-			m_ShadowMapVertexArray->AddVertexBuffer(m_ShadowMapVertexBuffer);
-
-			m_ShadowMapIndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
-			m_ShadowMapVertexArray->SetIndexBuffer(m_ShadowMapIndexBuffer);
-		}
 	}
 
 	void Submesh::Render() const
@@ -185,23 +153,8 @@ namespace Vortex {
 	void Submesh::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform)
 	{
 		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
-		shader->Enable();
-		shader->SetBool("u_HasAnimations", false);
 
-		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
-	}
-	
-	void Submesh::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform, const AnimatorComponent& animatorComponent)
-	{
-		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
-		shader->Enable();
-		shader->SetBool("u_HasAnimations", true);
-
-		const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < transforms.size(); i++)
-			shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-
-		Renderer::DrawIndexed(shader, m_ShadowMapVertexArray);
+		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
 
 	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
@@ -447,30 +400,6 @@ namespace Vortex {
 		return { meshName, vertices, indices, material };
 	}
 
-	std::vector<SharedRef<Texture2D>> Model::LoadMaterialTextures(aiMaterial* material, uint32_t textureType)
-	{
-		aiTextureType type = static_cast<aiTextureType>(textureType);
-		std::vector<SharedRef<Texture2D>> textures;
-
-		for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
-		{
-			aiString str;
-			material->GetTexture(type, i, &str);
-
-			const char* cStr = str.C_Str();
-			if (!std::filesystem::exists(Project::GetAssetDirectory() / cStr))
-			{
-				VX_CORE_WARN("Skipping texture, not found {}");
-				continue;
-			}
-
-			SharedRef<Texture2D> texture = Texture2D::Create(cStr);
-			textures.push_back(texture);
-		}
-
-		return textures;
-	}
-
 	void Model::SetVertexBoneDataToDefault(Vertex& vertex) const
 	{
 		for (uint32_t i = 0; i < MAX_BONE_INFLUENCE; i++)
@@ -518,6 +447,7 @@ namespace Vortex {
 			{
 				boneID = boneInfoMap[boneName].ID;
 			}
+
 			assert(boneID != -1);
 			auto weights = mesh->mBones[boneIndex]->mWeights;
 			int numWeights = mesh->mBones[boneIndex]->mNumWeights;
@@ -548,11 +478,10 @@ namespace Vortex {
 				Vertex& vertex = vertices[i];
 				SharedRef<Material> material = submesh.GetMaterial();
 
-				isDirty = Math::vec3(vertex.Color) != material->GetAlbedo() || vertex.TexScale != material->GetUV();
+				isDirty = vertex.TexScale != material->GetUV();
 				if (!isDirty)
 					break;
 
-				vertex.Color = Math::vec4(material->GetAlbedo(), 1.0f);
 				vertex.TexScale = material->GetUV();
 			}
 

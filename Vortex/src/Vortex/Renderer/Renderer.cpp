@@ -537,7 +537,6 @@ namespace Vortex {
 					TransformComponent& transform = lightSourceEntity.GetTransform();
 					Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
 					Math::mat4 lightProjection = orthogonalProjection * lightView;
-					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SkyLightShadowMap");
 
 					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
 
@@ -556,6 +555,8 @@ namespace Vortex {
 						CreateShadowMap(LightType::Directional, lightSourceComponent.Source);
 
 					s_Data.SkylightDepthMapFramebuffer->Bind();
+
+					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SkyLightShadowMap");
 					shadowMapShader->Enable();
 					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
 					s_Data.SkylightDepthMapFramebuffer->ClearDepth(1.0f);
@@ -584,8 +585,19 @@ namespace Vortex {
 						{
 							if (model->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
 							{
-								submesh.RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
-								continue;
+								shadowMapShader->SetBool("u_HasAnimations", true);
+
+								const AnimatorComponent& animatorComponent = meshRendererEntity.GetComponent<AnimatorComponent>();
+								const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+								for (uint32_t i = 0; i < transforms.size(); i++)
+								{
+									shadowMapShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+								}
+							}
+							else
+							{
+								shadowMapShader->SetBool("u_HasAnimations", false);
 							}
 
 							submesh.RenderToSkylightShadowMap(worldSpaceTransform);

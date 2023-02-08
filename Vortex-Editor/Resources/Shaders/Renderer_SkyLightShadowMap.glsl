@@ -5,9 +5,16 @@
 #type vertex
 #version 460 core
 
-layout (location = 0) in vec3 a_Position;
-layout (location = 1) in ivec4 a_BoneIDs;
-layout (location = 2) in vec4 a_BoneWeights;
+layout (location = 0) in vec3  a_Position;
+layout (location = 1) in vec4  a_Color;
+layout (location = 2) in vec3  a_Normal;
+layout (location = 3) in vec3  a_Tangent;
+layout (location = 4) in vec3  a_BiTangent;
+layout (location = 5) in vec2  a_TexCoord;
+layout (location = 6) in vec2  a_TexScale;
+layout (location = 7) in ivec4 a_BoneIDs;
+layout (location = 8) in vec4  a_BoneWeights;
+layout (location = 9) in int   a_EntityID;
 
 uniform mat4 u_LightProjection;
 uniform mat4 u_Model;

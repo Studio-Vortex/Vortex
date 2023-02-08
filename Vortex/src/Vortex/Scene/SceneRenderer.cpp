@@ -407,16 +407,16 @@ namespace Vortex {
 							const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
 
 							for (uint32_t i = 0; i < transforms.size(); i++)
+							{
 								shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-
-							submesh.Render();
+							}
 						}
 						else
 						{
 							shader->SetBool("u_HasAnimations", false);
-
-							submesh.Render();
 						}
+
+						submesh.Render();
 
 						ResetAllMaterialFlags();
 					}
