@@ -73,7 +73,7 @@ namespace Vortex {
 		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
 
 		void Render() const;
-		void RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform);
+		void RenderToSkylightShadowMap();
 
 		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }

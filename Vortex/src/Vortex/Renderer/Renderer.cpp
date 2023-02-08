@@ -601,7 +601,7 @@ namespace Vortex {
 								shadowMapShader->SetBool("u_HasAnimations", false);
 							}
 
-							submesh.RenderToSkylightShadowMap(worldSpaceTransform);
+							submesh.RenderToSkylightShadowMap();
 						}
 					}
 

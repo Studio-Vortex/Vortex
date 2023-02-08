@@ -135,22 +135,20 @@ namespace Vortex {
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
 		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
-
-		uint32_t triangleCount = m_IndexBuffer->GetCount() / 3;
-		Renderer::AddToQuadCountStats(triangleCount / 2);
 	}
 
 	void Submesh::Render() const
 	{
 		SharedRef<Shader> shader = m_Material->GetShader();
-		shader->Enable();
 		m_Material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
-		Renderer::AddToDrawCallCountStats(1);
+
+		uint32_t triangleCount = m_IndexBuffer->GetCount() / 3;
+		Renderer::AddToQuadCountStats(triangleCount / 2);
 	}
 
-	void Submesh::RenderToSkylightShadowMap(const Math::mat4& worldSpaceTransform)
+	void Submesh::RenderToSkylightShadowMap()
 	{
 		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
 
