@@ -4,6 +4,8 @@
 
 namespace Vortex {
 
+	static ImGuiTextFilter s_ShaderDropdownTextFilter;
+
 	namespace Utils {
 
 		static SharedRef<Texture2D> GetMaterialTexture(const SharedRef<Material>& material, uint32_t index)
@@ -38,7 +40,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialFlags(SharedRef<Material>& material)
+		static void RenderMaterialFlags(const SharedRef<Material>& material)
 		{
 			static const char* displayNames[] = { "No Depth Test" };
 			static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
@@ -53,7 +55,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialProperties(SharedRef<Material>& material)
+		static void RenderMaterialProperties(const SharedRef<Material>& material)
 		{
 			Math::vec2 uv = material->GetUV();
 			if (UI::Property("UV", uv, 0.05f))
@@ -83,8 +85,8 @@ namespace Vortex {
 			return -1;
 		}
 
-		using MaterialParameterCallbackFunc = const std::function<void(SharedRef<Material>, uint32_t)>&;
-		static void RenderMaterialTexturesAndProperties(SharedRef<Material> material, MaterialParameterCallbackFunc parameterCallback)
+		using MaterialParameterCallbackFunc = const std::function<void(const SharedRef<Material>&, uint32_t)>&;
+		static void RenderMaterialTexturesAndProperties(const SharedRef<Material>& material, MaterialParameterCallbackFunc parameterCallback)
 		{
 			static const char* displayNames[] = {
 				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
@@ -235,6 +237,14 @@ namespace Vortex {
 			return;
 		}
 
+		const auto& shaderLibrary = *Renderer::GetShaderLibrary();
+		std::vector<const char*> shaderNames;
+
+		for (const auto& [name, shader] : shaderLibrary)
+		{
+			shaderNames.emplace_back(name.c_str());
+		}
+
 		const auto& submeshes = model->GetSubmeshes();
 
 		for (const auto& submesh : submeshes)
@@ -251,7 +261,21 @@ namespace Vortex {
 
 			if (UI::PropertyGridHeader(name.c_str()))
 			{
-				Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::MaterialParameterCallback));
+				UI::BeginPropertyGrid();
+
+				std::string currentShaderName = material->GetShader()->GetName();
+				if (UI::PropertyDropdownSearch("Shader", shaderNames.data(), shaderNames.size(), currentShaderName, s_ShaderDropdownTextFilter))
+				{
+					if (shaderLibrary.Exists(currentShaderName))
+					{
+						SharedRef<Shader> shader = shaderLibrary.Get(currentShaderName);
+						material->SetShader(shader);
+					}
+				}
+
+				UI::EndPropertyGrid();
+
+				Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::ParameterCallback));
 
 				UI::EndTreeNode();
 			}
@@ -260,7 +284,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void MaterialEditorPanel::MaterialParameterCallback(SharedRef<Material> material, uint32_t materialIndex)
+	void MaterialEditorPanel::ParameterCallback(SharedRef<Material> material, uint32_t materialIndex)
 	{
 		switch (materialIndex)
 		{

@@ -750,7 +750,7 @@ namespace Vortex::UI {
 		const std::string id = "##" + std::string(label);
 		if (Gui::BeginCombo(id.c_str(), current))
 		{
-			bool isSearching = Gui::InputTextWithHint("##ClassNameSearch", "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
+			bool isSearching = Gui::InputTextWithHint(id.c_str(), "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
 			if (isSearching)
 				textFilter.Build();
 

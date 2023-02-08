@@ -2,14 +2,12 @@
 
 namespace Vortex {
 
-	BuildSettingsPanel::BuildSettingsPanel(const LaunchRuntimeFn& callback)
+	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& callback)
+		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeCallback(callback)
 	{
-		m_LaunchRuntimeCallback = callback;
-		const auto& projectProps = Project::GetActive()->GetProperties();
-		auto projectFilename = projectProps.General.Name + ".vxproject";
-		const auto& dirPath = Project::GetProjectDirectory();
-		m_ProjectPath = dirPath / std::filesystem::path(projectFilename);
-		m_StartupScene = projectProps.General.StartScene;
+		auto projectFilename = m_ProjectProperties.General.Name + ".vxproject";
+		m_ProjectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);
+		m_StartupScene = m_ProjectProperties.General.StartScene;
 	}
 
 	void BuildSettingsPanel::OnGuiRender()
@@ -43,9 +41,8 @@ namespace Vortex {
 
 				if (filePath.extension().string() == ".vortex")
 				{
-					auto& projectProps = Project::GetActive()->GetProperties();
 					auto relativePath = std::filesystem::relative(filePath, Project::GetAssetDirectory());
-					projectProps.General.StartScene = relativePath;
+					m_ProjectProperties.General.StartScene = relativePath;
 					m_StartupScene = relativePath;
 				}
 			}
@@ -53,10 +50,28 @@ namespace Vortex {
 			Gui::EndDragDropTarget();
 		}
 
-		if (Gui::Button("Build and Run"))
+		if (UI::PropertyGridHeader("Window", false))
+		{
+			UI::BeginPropertyGrid();
+
+			if (!m_ProjectProperties.BuildProps.Window.Maximized)
+				UI::Property("Size", m_ProjectProperties.BuildProps.Window.Size);
+			UI::Property("Maximized", m_ProjectProperties.BuildProps.Window.Maximized);
+			UI::Property("Decorated", m_ProjectProperties.BuildProps.Window.Decorated);
+			UI::Property("Resizeable", m_ProjectProperties.BuildProps.Window.Resizeable);
+
+			UI::EndPropertyGrid();
+			UI::EndTreeNode();
+		}
+
+		UI::ShiftCursorY(10.0f);
+
+		if (Gui::Button("Run Detached Process"))
 		{
 			if (m_LaunchRuntimeCallback && !m_ProjectPath.empty())
+			{
 				m_LaunchRuntimeCallback(m_ProjectPath);
+			}
 		}
 
 		Gui::End();

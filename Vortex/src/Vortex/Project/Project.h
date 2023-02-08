@@ -13,14 +13,27 @@ namespace Vortex {
 
 	struct VORTEX_API ProjectProperties
 	{
-		struct VORTEX_API GeneralProperties {
+		struct VORTEX_API GeneralProperties
+		{
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
 			std::filesystem::path AssetRegistryPath = "";
 			std::filesystem::path StartScene = "";
 		} General;
 
-		struct VORTEX_API RendererProperties {
+		struct VORTEX_API BuildProperties
+		{
+			struct VORTEX_API WindowSettings
+			{
+				Math::vec2 Size = Math::vec2(1600.0f, 900.0f);
+				bool Maximized = false;
+				bool Decorated = true;
+				bool Resizeable = true;
+			} Window;
+		} BuildProps;
+
+		struct VORTEX_API RendererProperties
+		{
 			std::string TriangleCullMode = "";
 			float LineWidth = 1.5f;
 			float EnvironmentMapResolution = 512.0f;

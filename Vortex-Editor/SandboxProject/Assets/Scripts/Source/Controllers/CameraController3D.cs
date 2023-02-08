@@ -17,12 +17,7 @@ namespace Sandbox {
 		private Vector3 m_Velocity;
 		private Vector3 m_Rotation;
 
-		protected override void OnCreate()
-		{
-			Input.SetCursorMode(CursorMode.Locked);
-		}
-
-		protected override void OnUpdate(float delta)
+		void OnUpdate(float delta)
 		{
 			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
 

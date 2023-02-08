@@ -82,6 +82,19 @@ namespace Vortex {
 			}
 			out << YAML::EndMap; // General
 
+			out << YAML::Key << "BuildProperties" << YAML::BeginMap; // BuildProperties
+			{
+				out << YAML::Key << "Window" << YAML::BeginMap; // Window
+				{
+					out << YAML::Key << "Size" << YAML::Value << props.BuildProps.Window.Size;
+					out << YAML::Key << "Maximized" << YAML::Value << props.BuildProps.Window.Maximized;
+					out << YAML::Key << "Decorated" << YAML::Value << props.BuildProps.Window.Decorated;
+					out << YAML::Key << "Resizeable" << YAML::Value << props.BuildProps.Window.Resizeable;
+				}
+				out << YAML::EndMap; // Window
+			}
+			out << YAML::EndMap; // BuildProperties
+
 			out << YAML::Key << "RendererProperties" << YAML::BeginMap; // RendererProperties
 			{
 				out << YAML::Key << "TriangleCullMode" << YAML::Value << props.RendererProps.TriangleCullMode;
@@ -175,6 +188,33 @@ namespace Vortex {
 			props.General.AssetDirectory = generalData["AssetDirectory"].as<std::string>();
 			props.General.Name = generalData["Name"].as<std::string>();
 			props.General.StartScene = generalData["StartScene"].as<std::string>();
+		}
+
+		{
+			auto buildData = projectData["BuildProperties"];
+
+			auto windowData = buildData["Window"];
+			props.BuildProps.Window.Size = windowData["Size"].as<Math::vec2>();
+			props.BuildProps.Window.Maximized = windowData["Maximized"].as<bool>();
+			props.BuildProps.Window.Decorated = windowData["Decorated"].as<bool>();
+			props.BuildProps.Window.Resizeable = windowData["Resizeable"].as<bool>();
+
+			if (Application::Get().IsRuntime())
+			{
+				Window& window = Application::Get().GetWindow();
+				if (props.BuildProps.Window.Maximized)
+				{
+					window.SetMaximized(props.BuildProps.Window.Maximized);
+				}
+				else
+				{
+					window.SetSize(props.BuildProps.Window.Size);
+					window.CenterWindow();
+				}
+
+				window.SetDecorated(props.BuildProps.Window.Decorated);
+				window.SetResizeable(props.BuildProps.Window.Resizeable);
+			}
 		}
 
 		{

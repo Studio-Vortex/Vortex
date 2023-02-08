@@ -16,7 +16,7 @@ namespace Vortex {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		void MaterialParameterCallback(SharedRef<Material> material, uint32_t materialIndex);
+		void ParameterCallback(SharedRef<Material> material, uint32_t materialIndex);
 
 	private:
 		inline static bool s_ShowPanel = true;

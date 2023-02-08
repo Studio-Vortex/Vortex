@@ -35,8 +35,9 @@ namespace Vortex {
 		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
 		windowProps.Title = m_Properties.Name;
 		windowProps.Maximized = m_Properties.MaximizeWindow;
-		windowProps.VSync = m_Properties.VSync;
 		windowProps.Decorated = m_Properties.WindowDecorated;
+		windowProps.Resizeable = m_Properties.WindowResizable;
+		windowProps.VSync = m_Properties.VSync;
 
 		m_Window = Window::Create(windowProps);
 

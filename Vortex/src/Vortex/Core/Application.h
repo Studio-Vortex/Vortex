@@ -33,8 +33,10 @@ namespace Vortex {
 		uint32_t SampleCount = 1;
 		bool MaximizeWindow = false;
 		bool WindowDecorated = true;
+		bool WindowResizable = true;
 		bool VSync = true;
 		bool EnableGUI = true;
+		bool IsRuntime = false;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
 		std::string WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
@@ -57,6 +59,8 @@ namespace Vortex {
 		inline Window& GetWindow() { return *m_Window; }
 
 		const ApplicationProperties& GetProperties() const { return m_Properties; }
+
+		inline bool IsRuntime() { return m_Properties.IsRuntime; }
 
 		void Quit();
 

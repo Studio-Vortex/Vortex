@@ -51,8 +51,11 @@ namespace Vortex {
 		SharedRef<Shader> Load(const std::string& name, const std::string& filepath);
 
 		SharedRef<Shader> Get(const std::string& name);
+		const SharedRef<Shader>& Get(const std::string& name) const;
 
 		bool Exists(const std::string& name) const;
+
+		size_t Size() const;
 
 		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator begin() { return m_Shaders.begin(); }
 		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator end() { return m_Shaders.end(); }

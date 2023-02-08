@@ -1352,8 +1352,14 @@ namespace Vortex {
 			}
 			case Key::F11:
 			{
-				auto& window = Application::Get().GetWindow();
+				Window& window = Application::Get().GetWindow();
 				window.SetMaximized(!window.IsMaximized());
+
+				if (!window.IsMaximized())
+				{
+					window.CenterWindow();
+				}
+
 				break;
 			}
 
@@ -1565,7 +1571,7 @@ namespace Vortex {
 			SharedRef<Project> activeProject = Project::GetActive();
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
 			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
 
 			TagComponent::ResetAddedMarkers();
 		}

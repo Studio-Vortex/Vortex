@@ -19,7 +19,7 @@ namespace Vortex {
 		inline static bool s_ShowPanel = false;
 
 	private:
-		ProjectProperties& m_Properties;
+		ProjectProperties& m_ProjectProperties;
 	};
 
 }

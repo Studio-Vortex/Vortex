@@ -40,6 +40,7 @@ namespace Vortex {
 		props.WindowDecorated = false;
 		props.VSync = true;
 		props.EnableGUI = true;
+		props.IsRuntime = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
 		props.WorkingDirectory = "C:/dev/Vortex Engine";

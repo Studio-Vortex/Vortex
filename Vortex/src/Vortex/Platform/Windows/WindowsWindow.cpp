@@ -247,45 +247,45 @@ namespace Vortex {
 		m_Context->SwapFrameBuffers();
 	}
 
-	void WindowsWindow::SetMaximized(bool maximized)
-	{
-		auto getWindowSizeFunc = [&]() {
-			int width;
-			int height;
-			glfwGetWindowSize(m_Window, &width, &height);
-			m_Properties.Size = Math::vec2((float)width, (float)height);
-		};
-
-		m_Properties.Maximized = maximized;
-
-		if (maximized)
-		{
-			glfwMaximizeWindow(m_Window);
-			getWindowSizeFunc();
-		}
-		else
-		{
-			glfwRestoreWindow(m_Window);
-			getWindowSizeFunc();
-		}
-	}
-
 	void WindowsWindow::SetTitle(const std::string& title)
 	{
-		m_Properties.Title = title;
 		glfwSetWindowTitle(m_Window, title.c_str());
+		m_Properties.Title = title;
 	}
+
+	void WindowsWindow::SetSize(const Math::vec2& size)
+	{
+		glfwSetWindowSize(m_Window, (int)size.x, (int)size.y);
+		m_Properties.Size = size;
+	}
+
+	void WindowsWindow::SetMaximized(bool maximized)
+	{
+		if (maximized)
+			glfwMaximizeWindow(m_Window);
+		else
+			glfwRestoreWindow(m_Window);
+
+		m_Properties.Maximized = maximized;
+	}
+
+    void WindowsWindow::SetDecorated(bool decorated)
+    {
+		glfwSetWindowAttrib(m_Window, GLFW_DECORATED, (int)decorated);
+		m_Properties.Decorated = decorated;
+    }
+
+    void WindowsWindow::SetResizeable(bool resizeable)
+    {
+		glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, (int)resizeable);
+		m_Properties.Resizeable = resizeable;
+    }
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		VX_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);
 		m_Properties.VSync = enabled;
-	}
-
-	bool WindowsWindow::IsVSyncEnabled() const
-	{
-		return m_Properties.VSync;
 	}
 
 	void WindowsWindow::CenterWindow() const

@@ -5,7 +5,7 @@
 namespace Vortex {
 
 	ProjectSettingsPanel::ProjectSettingsPanel(SharedRef<Project> project)
-		: m_Properties(project->GetProperties()) { }
+		: m_ProjectProperties(project->GetProperties()) { }
 
 	void ProjectSettingsPanel::OnGuiRender()
 	{
@@ -26,17 +26,17 @@ namespace Vortex {
 			{
 				UI::BeginPropertyGrid();
 
-				std::string& projectName = m_Properties.General.Name;
+				std::string& projectName = m_ProjectProperties.General.Name;
 				UI::Property("Project Name", projectName);
 
-				std::filesystem::path& assetDirectory = m_Properties.General.AssetDirectory;
+				std::filesystem::path& assetDirectory = m_ProjectProperties.General.AssetDirectory;
 				std::string assetDirectoryStr = assetDirectory.string();
 				UI::Property("Asset Directory", assetDirectoryStr, true);
 
-				std::filesystem::path& startScene = m_Properties.General.StartScene;
+				std::filesystem::path& startScene = m_ProjectProperties.General.StartScene;
 				std::string startSceneStr = startScene.string();
 				if (UI::Property("Start Scene", startSceneStr, true))
-					m_Properties.General.StartScene = startSceneStr;
+					m_ProjectProperties.General.StartScene = startSceneStr;
 
 				UI::EndPropertyGrid();
 
@@ -49,7 +49,7 @@ namespace Vortex {
 				{
 					UI::BeginPropertyGrid();
 
-					UI::Property("Collider Color", &m_Properties.PhysicsProps.Physics3DColliderColor);
+					UI::Property("Collider Color", &m_ProjectProperties.PhysicsProps.Physics3DColliderColor);
 
 					Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
 					if (UI::Property("Gravity", gravity3D))
@@ -59,14 +59,14 @@ namespace Vortex {
 					}
 
 					static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
-					int32_t currentBroadphaseType = (int32_t)m_Properties.PhysicsProps.BroadphaseModel;
+					int32_t currentBroadphaseType = (int32_t)m_ProjectProperties.PhysicsProps.BroadphaseModel;
 					if (UI::PropertyDropdown("Broadphase Model", broadphaseTypes, VX_ARRAYCOUNT(broadphaseTypes), currentBroadphaseType))
-						m_Properties.PhysicsProps.BroadphaseModel = (BroadphaseType)currentBroadphaseType;
+						m_ProjectProperties.PhysicsProps.BroadphaseModel = (BroadphaseType)currentBroadphaseType;
 
 					static const char* frictionTypes[3] = { "Patch", "One Directional", "Two Directional" };
-					int32_t currentFrictionType = (int32_t)m_Properties.PhysicsProps.FrictionModel;
+					int32_t currentFrictionType = (int32_t)m_ProjectProperties.PhysicsProps.FrictionModel;
 					if (UI::PropertyDropdown("Friction Model", frictionTypes, VX_ARRAYCOUNT(frictionTypes), currentFrictionType))
-						m_Properties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
+						m_ProjectProperties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
 
 					int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
 					if (UI::Property("Position Iterations", positionIterations3D, 1.0f, 1, 100))
@@ -84,7 +84,7 @@ namespace Vortex {
 				{
 					UI::BeginPropertyGrid();
 
-					UI::Property("Collider Color", &m_Properties.PhysicsProps.Physics2DColliderColor);
+					UI::Property("Collider Color", &m_ProjectProperties.PhysicsProps.Physics2DColliderColor);
 
 					Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
 					if (UI::Property("Gravity", gravity2D))
@@ -110,12 +110,12 @@ namespace Vortex {
 			{
 				UI::BeginPropertyGrid();
 
-				std::filesystem::path& scriptBinaryPath = m_Properties.ScriptingProps.ScriptBinaryPath;
+				std::filesystem::path& scriptBinaryPath = m_ProjectProperties.ScriptingProps.ScriptBinaryPath;
 				std::string scriptBinaryPathStr = scriptBinaryPath.string();
 				UI::Property("Script Binary Path", scriptBinaryPathStr, true);
 
-				UI::Property("Enable Debugging", m_Properties.ScriptingProps.EnableMonoDebugging);
-				UI::Property("Reload Assembly On Play", m_Properties.ScriptingProps.ReloadAssemblyOnPlay);
+				UI::Property("Enable Debugging", m_ProjectProperties.ScriptingProps.EnableMonoDebugging);
+				UI::Property("Reload Assembly On Play", m_ProjectProperties.ScriptingProps.ReloadAssemblyOnPlay);
 
 				UI::EndPropertyGrid();
 
@@ -155,9 +155,9 @@ namespace Vortex {
 					ImFont* currentFont = Gui::GetFont();
 					UI::FontSelector("Editor Font", buffer.data(), count, currentFont);
 
-					UI::Property("Frame Step Count", m_Properties.EditorProps.FrameStepCount);
-					UI::Property("Draw Editor Grid", m_Properties.EditorProps.DrawEditorGrid);
-					UI::Property("Draw Editor Axes", m_Properties.EditorProps.DrawEditorAxes);
+					UI::Property("Frame Step Count", m_ProjectProperties.EditorProps.FrameStepCount);
+					UI::Property("Draw Editor Grid", m_ProjectProperties.EditorProps.DrawEditorGrid);
+					UI::Property("Draw Editor Axes", m_ProjectProperties.EditorProps.DrawEditorAxes);
 
 					UI::EndPropertyGrid();
 					UI::EndTreeNode();
@@ -168,15 +168,15 @@ namespace Vortex {
 					UI::BeginPropertyGrid();
 
 					// Minimums don't work here for some reason
-					UI::Property("Enabled", m_Properties.GizmoProps.Enabled);
-					UI::Property("Orthographic Gizmos", m_Properties.GizmoProps.IsOrthographic);
-					UI::Property("Snap", m_Properties.GizmoProps.SnapEnabled);
-					UI::Property("Snap Value", m_Properties.GizmoProps.SnapValue, 0.05f, 0.05f);
-					UI::Property("Rotation Snap Value", m_Properties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
-					UI::Property("Gizmo Size", m_Properties.GizmoProps.GizmoSize, 0.05f, 0.05f);
-					UI::Property("Draw Grid", m_Properties.GizmoProps.DrawGrid);
-					if (m_Properties.GizmoProps.DrawGrid)
-						UI::Property("Grid Size", m_Properties.GizmoProps.GridSize, 0.5f, 0.5f);
+					UI::Property("Enabled", m_ProjectProperties.GizmoProps.Enabled);
+					UI::Property("Orthographic Gizmos", m_ProjectProperties.GizmoProps.IsOrthographic);
+					UI::Property("Snap", m_ProjectProperties.GizmoProps.SnapEnabled);
+					UI::Property("Snap Value", m_ProjectProperties.GizmoProps.SnapValue, 0.05f, 0.05f);
+					UI::Property("Rotation Snap Value", m_ProjectProperties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
+					UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, 0.05f);
+					UI::Property("Draw Grid", m_ProjectProperties.GizmoProps.DrawGrid);
+					if (m_ProjectProperties.GizmoProps.DrawGrid)
+						UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, 0.5f);
 
 					UI::EndPropertyGrid();
 					UI::EndTreeNode();
@@ -193,7 +193,7 @@ namespace Vortex {
 
     void ProjectSettingsPanel::SetProjectContext(SharedRef<Project> project)
     {
-		m_Properties = project->GetProperties();
+		m_ProjectProperties = project->GetProperties();
     }
 
 }
