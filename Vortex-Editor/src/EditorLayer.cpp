@@ -115,21 +115,22 @@ namespace Vortex {
 
 		const Math::vec2& mousePos = Input::GetMousePosition();
 		const bool mousePosChanged = mousePos != m_MousePosLastFrame;
+		const bool leftMoustButtonPressed = Input::IsMouseButtonPressed(MouseButton::Left);
 		const bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
-		const bool updateEditorCamera = (m_SceneViewportHovered || mousePosChanged || rightMouseButtonPressed);
+		const bool isUsingGizmo = ImGuizmo::IsUsing();
+		const bool updateEditorCamera = (m_SceneViewportHovered || mousePosChanged || leftMoustButtonPressed || rightMouseButtonPressed) && !isUsingGizmo;
 
 		m_MousePosLastFrame = Input::GetMousePosition();
+
+		if (updateEditorCamera && m_SceneState != SceneState::Play)
+			m_EditorCamera->OnUpdate(delta);
 
 		// Update Scene
 		switch (m_SceneState)
 		{
 			case SceneState::Edit:
 			{
-				if (updateEditorCamera && !ImGuizmo::IsUsing())
-					m_EditorCamera->OnUpdate(delta);
-
 				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
-
 				break;
 			}
 			case SceneState::Play:
@@ -156,9 +157,6 @@ namespace Vortex {
 			}
 			case SceneState::Simulate:
 			{
-				if (updateEditorCamera && !ImGuizmo::IsUsing())
-					m_EditorCamera->OnUpdate(delta);
-
 				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
 				break;
 			}
@@ -1023,7 +1021,7 @@ namespace Vortex {
 				Gui::OpenPopup("ViewportSettingsPanel");
 
 			float columnWidth = 165.0f;
-			Gui::SetNextWindowSize({ popupWidth, 350.0f });
+			Gui::SetNextWindowSize({ popupWidth, 375.0f });
 			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 17, m_ViewportBounds[0].y + edgeOffset + windowHeight });
 			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
 			{
@@ -1053,14 +1051,16 @@ namespace Vortex {
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 
-					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
-						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
+					UI::Property("Gimzo Size", projectProps.GizmoProps.GizmoSize, 0.05f, 0.05f);
 
 					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
 						m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
 
 					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
 						m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
+
+					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
+						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
 
 					UI::EndPropertyGrid();
 				}
@@ -1133,7 +1133,7 @@ namespace Vortex {
 		}
 
 		// Render Editor Grid
-		if ((m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid) || m_EditorDebugViewEnabled)
+		if ((m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid))
 		{
 			float axisLineLength = 1'000.0f;
 			float gridLineLength = 750.0f;
@@ -1306,11 +1306,11 @@ namespace Vortex {
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
-		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 
 		switch (e.GetKeyCode())
 		{
@@ -1343,34 +1343,10 @@ namespace Vortex {
 			}
 
 			// Tools
-			case Key::F1:
-			{
-				if (m_SceneState != SceneState::Play)
-				{
-					float editorCameraDistance = m_EditorCamera->GetDistance();
-
-					if (editorCameraDistance <= 2.0f)
-						m_EditorCamera->SetDistance(100.0f);
-					else
-						m_EditorCamera->SetDistance(1.0f);
-				}
-
-				break;
-			}
 			case Key::F2:
 			{
 				if (selectedEntity)
 					m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
-
-				break;
-			}
-			case Key::F3:
-			{
-				if (m_SceneState == SceneState::Play)
-				{
-					m_ActiveScene->SetDebugMode(!m_EditorDebugViewEnabled);
-					m_EditorDebugViewEnabled = !m_EditorDebugViewEnabled;
-				}
 
 				break;
 			}
@@ -1707,9 +1683,6 @@ namespace Vortex {
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
-		// Disable the debug view when starting a scene
-		m_EditorDebugViewEnabled = false;
-
 		m_SceneState = SceneState::Play;
 
 		SharedRef<Project> activeProject = Project::GetActive();
@@ -1879,19 +1852,19 @@ namespace Vortex {
 
 	void EditorLayer::OnTranslationToolSelected()
 	{
-		if (m_SceneState == SceneState::Edit)
+		if (m_SceneState != SceneState::Play)
 			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	void EditorLayer::OnRotationToolSelected()
 	{
-		if (m_SceneState == SceneState::Edit)
+		if (m_SceneState != SceneState::Play)
 			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 	}
 
 	void EditorLayer::OnScaleToolSelected()
 	{
-		if (m_SceneState == SceneState::Edit)
+		if (m_SceneState != SceneState::Play)
 			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
 

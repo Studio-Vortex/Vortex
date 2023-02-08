@@ -129,6 +129,7 @@ namespace Vortex {
 				out << YAML::Key << "DrawGrid" << YAML::Value << props.GizmoProps.DrawGrid;
 				out << YAML::Key << "Enabled" << YAML::Value << props.GizmoProps.Enabled;
 				out << YAML::Key << "GridSize" << YAML::Value << props.GizmoProps.GridSize;
+				out << YAML::Key << "GizmoSize" << YAML::Value << props.GizmoProps.GizmoSize;
 				out << YAML::Key << "IsOrthographic" << YAML::Value << props.GizmoProps.IsOrthographic;
 				out << YAML::Key << "RotationSnapValue" << YAML::Value << props.GizmoProps.RotationSnapValue;
 				out << YAML::Key << "SnapEnabled" << YAML::Value << props.GizmoProps.SnapEnabled;
@@ -225,6 +226,7 @@ namespace Vortex {
 			props.GizmoProps.DrawGrid = gizmoData["DrawGrid"].as<bool>();
 			props.GizmoProps.Enabled = gizmoData["Enabled"].as<bool>();
 			props.GizmoProps.GridSize = gizmoData["GridSize"].as<float>();
+			props.GizmoProps.GizmoSize = gizmoData["GizmoSize"].as<float>();
 			props.GizmoProps.IsOrthographic = gizmoData["IsOrthographic"].as<bool>();
 			props.GizmoProps.RotationSnapValue = gizmoData["RotationSnapValue"].as<float>();
 			props.GizmoProps.SnapEnabled = gizmoData["SnapEnabled"].as<bool>();

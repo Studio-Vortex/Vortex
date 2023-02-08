@@ -174,6 +174,7 @@ namespace Vortex {
 					UI::Property("Snap Value", m_Properties.GizmoProps.SnapValue, 0.05f, 0.05f);
 					UI::Property("Rotation Snap Value", m_Properties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
 					UI::Property("Draw Grid", m_Properties.GizmoProps.DrawGrid);
+					UI::Property("Gizmo Size", m_Properties.GizmoProps.GizmoSize, 0.05f, 0.05f);
 					if (m_Properties.GizmoProps.DrawGrid)
 						UI::Property("Grid Size", m_Properties.GizmoProps.GridSize, 0.5f, 0.5f);
 

@@ -346,7 +346,6 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		m_IsRunning = true;
-		m_DebugMode = false;
 
 		OnPhysicsSimulationStart();
 

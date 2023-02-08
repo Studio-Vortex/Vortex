@@ -115,7 +115,6 @@ namespace Vortex {
 		bool m_ShowScenePanel = true;
 		bool m_ShowSecondViewport = false;
 		bool m_ShowSceneCreateEntityMenu = false;
-		bool m_EditorDebugViewEnabled = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportMaximized = false;

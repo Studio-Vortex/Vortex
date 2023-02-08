@@ -55,11 +55,6 @@ namespace Vortex {
 		inline bool IsPaused() const { return m_IsPaused; }
 		inline void SetPaused(bool paused) { m_IsPaused = paused; }
 
-		// -------- Editor Only ---------
-		inline bool IsInDebugMode() const { return m_DebugMode; }
-		inline void SetDebugMode(bool mode) { m_DebugMode = mode; }
-		// ------------------------------
-
 		inline const Math::ivec2& GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
 		inline size_t GetEntityCount() const { return m_Registry.alive(); }
 
@@ -116,10 +111,6 @@ namespace Vortex {
 
 		bool m_IsRunning = false;
 		bool m_IsPaused = false;
-
-		// ------ Editor-only ------
-		bool m_DebugMode = false;
-		// -------------------------
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;

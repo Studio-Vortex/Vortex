@@ -67,6 +67,7 @@ namespace Vortex {
 			float RotationSnapValue = 45.0f;
 			bool DrawGrid = false;
 			float GridSize = 1.0f;
+			float GizmoSize = 1.0f;
 		} GizmoProps;
 	};
 

@@ -14,6 +14,7 @@
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/SceneCamera.h"
 #include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Editor/EditorResources.h"
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Scene.h"
@@ -71,7 +72,11 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(entity), spriteRendererComponent, (int)(entt::entity)e);
+					Renderer2D::DrawSprite(
+						scene->GetWorldSpaceTransformMatrix(entity),
+						spriteRendererComponent,
+						(int)(entt::entity)e
+					);
 				}
 			}
 
@@ -87,7 +92,13 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(entity), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)e);
+					Renderer2D::DrawCircle(
+						scene->GetWorldSpaceTransformMatrix(entity),
+						circleRendererComponent.Color,
+						circleRendererComponent.Thickness,
+						circleRendererComponent.Fade,
+						(int)(entt::entity)e
+					);
 				}
 			}
 
@@ -167,7 +178,14 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
+						Renderer2D::DrawQuadBillboard(
+							cameraView,
+							scene->GetWorldSpaceTransform(entity).Translation,
+							EditorResources::CameraIcon,
+							Math::vec2(projectProps.GizmoProps.GizmoSize),
+							ColorToVec4(Color::White),
+							(int)(entt::entity)e
+						);
 					}
 				}
 
@@ -182,7 +200,50 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView, (int)(entt::entity)e);
+						const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
+						switch (lightSourceComponent.Type)
+						{
+							case LightType::Directional:
+							{
+								Renderer2D::DrawQuadBillboard(
+									cameraView,
+									transform.Translation,
+									EditorResources::SkyLightIcon,
+									Math::vec2(projectProps.GizmoProps.GizmoSize),
+									ColorToVec4(Color::White),
+									(int)(entt::entity)e
+								);
+
+								break;
+							}
+							case LightType::Point:
+							{
+								Renderer2D::DrawQuadBillboard(
+									cameraView,
+									transform.Translation,
+									EditorResources::PointLightIcon,
+									Math::vec2(projectProps.GizmoProps.GizmoSize),
+									ColorToVec4(Color::White),
+									(int)(entt::entity)e
+								);
+
+								break;
+							}
+							case LightType::Spot:
+							{
+								Renderer2D::DrawQuadBillboard(
+									cameraView,
+									transform.Translation,
+									EditorResources::SpotLightIcon,
+									Math::vec2(projectProps.GizmoProps.GizmoSize),
+									ColorToVec4(Color::White),
+									(int)(entt::entity)e
+								);
+
+								break;
+							}
+						}
 					}
 				}
 
@@ -197,7 +258,14 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
-						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
+						Renderer2D::DrawQuadBillboard(
+							cameraView,
+							scene->GetWorldSpaceTransform(entity).Translation,
+							EditorResources::AudioSourceIcon,
+							Math::vec2(projectProps.GizmoProps.GizmoSize),
+							ColorToVec4(Color::White),
+							(int)(entt::entity)e
+						);
 					}
 				}
 			}
@@ -353,8 +421,6 @@ namespace Vortex {
 			renderTime.GeometryPassRenderTime += timer.ElapsedMS();
 
 			Renderer::EndScene();
-
-			renderPacket.TargetFramebuffer->Bind();
 		}
 	}
 

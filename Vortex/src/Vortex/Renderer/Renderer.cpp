@@ -142,8 +142,6 @@ namespace Vortex {
 
 	void Renderer::EndScene()
 	{
-		if (s_Data.TargetFramebuffer)
-			s_Data.TargetFramebuffer->Unbind();
 		s_Data.TargetFramebuffer = nullptr;
 	}
 
@@ -165,32 +163,6 @@ namespace Vortex {
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 		s_Data.RendererStatistics.DrawCalls++;
-	}
-
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
-	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-	}
-
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID)
-	{
-		switch (lightSource.Type)
-		{
-			case LightType::Directional:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SkyLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-			case LightType::Point:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-			case LightType::Spot:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-		}
-	}
-
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
-	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
