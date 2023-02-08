@@ -243,6 +243,7 @@ namespace Vortex {
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
+		
 		out << YAML::Key << "Scene" << YAML::Value << sceneName;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
@@ -308,21 +309,21 @@ namespace Vortex {
 		const std::filesystem::path projectAssetDirectory = Project::GetAssetDirectory();
 
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
+		VX_SERIALIZE_PROPERTY(Entity, entity.GetUUID(), out);
 
-		out << YAML::Key << "Active" << YAML::Value << entity.IsActive();
+		VX_SERIALIZE_PROPERTY(Active, entity.IsActive(), out);
 
 		if (entity.HasComponent<HierarchyComponent>())
 		{
 			const auto& hierarchyComponent = entity.GetComponent<HierarchyComponent>();
-			out << YAML::Key << "Parent" << YAML::Value << hierarchyComponent.ParentUUID;
+			VX_SERIALIZE_PROPERTY(Parent, hierarchyComponent.ParentUUID, out);
 
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
 
 			for (auto& child : hierarchyComponent.Children)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Handle" << YAML::Value << child;
+				VX_SERIALIZE_PROPERTY(Handle, child, out);
 				out << YAML::EndMap;
 			}
 
@@ -335,8 +336,8 @@ namespace Vortex {
 
 			const auto& tagComponent = entity.GetComponent<TagComponent>();
 
-			out << YAML::Key << "Tag" << YAML::Value << tagComponent.Tag;
-			out << YAML::Key << "Marker" << YAML::Value << tagComponent.Marker;
+			VX_SERIALIZE_PROPERTY(Tag, tagComponent.Tag, out);
+			VX_SERIALIZE_PROPERTY(Marker, tagComponent.Marker, out);
 
 			out << YAML::EndMap; // TagComponent
 		}
@@ -347,9 +348,9 @@ namespace Vortex {
 
 			const auto& transform = entity.GetComponent<TransformComponent>();
 
-			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-			out << YAML::Key << "Rotation" << YAML::Value << transform.GetRotationEuler();
-			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
+			VX_SERIALIZE_PROPERTY(Translation, transform.Translation, out);
+			VX_SERIALIZE_PROPERTY(Rotation, transform.GetRotationEuler(), out);
+			VX_SERIALIZE_PROPERTY(Scale, transform.Scale, out);
 
 			out << YAML::EndMap; // TransformComponent
 		}
@@ -363,18 +364,18 @@ namespace Vortex {
 
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
-			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOVRad();
-			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
-			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
-			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
-			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+			VX_SERIALIZE_PROPERTY(ProjectionType, (int)camera.GetProjectionType(), out);
+			VX_SERIALIZE_PROPERTY(PerspectiveFOV, camera.GetPerspectiveVerticalFOVRad(), out);
+			VX_SERIALIZE_PROPERTY(PerspectiveNear, camera.GetPerspectiveNearClip(), out);
+			VX_SERIALIZE_PROPERTY(PerspectiveFar, camera.GetPerspectiveFarClip(), out);
+			VX_SERIALIZE_PROPERTY(OrthographicSize, camera.GetOrthographicSize(), out);
+			VX_SERIALIZE_PROPERTY(OrthographicNear, camera.GetOrthographicNearClip(), out);
+			VX_SERIALIZE_PROPERTY(OrthographicFar, camera.GetOrthographicFarClip(), out);
 			out << YAML::EndMap; // Camera
 
-			out << YAML::Key << "ClearColor" << YAML::Value << cameraComponent.ClearColor;
-			out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
-			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
+			VX_SERIALIZE_PROPERTY(ClearColor, cameraComponent.ClearColor, out);
+			VX_SERIALIZE_PROPERTY(Primary, cameraComponent.Primary, out);
+			VX_SERIALIZE_PROPERTY(FixedAspectRatio, cameraComponent.FixedAspectRatio, out);
 
 			out << YAML::EndMap; // CameraComponent
 		}
@@ -387,9 +388,9 @@ namespace Vortex {
 			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 
 			SharedRef<Skybox> skybox = skyboxComponent.Source;
-			out << YAML::Key << "SourcePath" << std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string();
-			out << YAML::Key << "Rotation" << skyboxComponent.Rotation;
-			out << YAML::Key << "Intensity" << skyboxComponent.Intensity;
+			VX_SERIALIZE_PROPERTY(SourcePath, std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string(), out);
+			VX_SERIALIZE_PROPERTY(Rotation, skyboxComponent.Rotation, out);
+			VX_SERIALIZE_PROPERTY(Intensity, skyboxComponent.Intensity, out);
 
 			out << YAML::EndMap; // SkyboxComponent
 		}
@@ -401,10 +402,10 @@ namespace Vortex {
 
 			const auto& lightComponent = entity.GetComponent<LightSourceComponent>();
 
-			out << YAML::Key << "LightType" << YAML::Value << Utils::LightTypeToString(lightComponent.Type);
+			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightComponent.Type), out);
 
 			SharedRef<LightSource> lightSource = lightComponent.Source;
-			out << YAML::Key << "Radiance" << YAML::Value << lightSource->GetRadiance();
+			VX_SERIALIZE_PROPERTY(Radiance, lightSource->GetRadiance(), out);
 
 			switch (lightComponent.Type)
 			{
@@ -418,17 +419,17 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					out << YAML::Key << "CutOff" << YAML::Value << lightSource->GetCutOff();
-					out << YAML::Key << "OuterCutOff" << YAML::Value << lightSource->GetOuterCutOff();
+					VX_SERIALIZE_PROPERTY(CutOff, lightSource->GetCutOff(),  out);
+					VX_SERIALIZE_PROPERTY(OuterCutOff, lightSource->GetOuterCutOff(), out);
 
 					break;
 				}
 			}
 
-			out << YAML::Key << "Intensity" << YAML::Value << lightSource->GetIntensity();
-			out << YAML::Key << "ShadowBias" << YAML::Value << lightSource->GetShadowBias();
-			out << YAML::Key << "CastShadows" << YAML::Value << lightSource->GetCastShadows();
-			out << YAML::Key << "SoftShadows" << YAML::Value << lightSource->GetSoftShadows();
+			VX_SERIALIZE_PROPERTY(Intensity, lightSource->GetIntensity(), out);
+			VX_SERIALIZE_PROPERTY(ShadowBias, lightSource->GetShadowBias(), out);
+			VX_SERIALIZE_PROPERTY(CastShadows, lightSource->GetCastShadows(), out);
+			VX_SERIALIZE_PROPERTY(SoftShadows, lightSource->GetSoftShadows(), out);
 
 			out << YAML::EndMap; // LightSourceComponent
 		}
@@ -439,21 +440,22 @@ namespace Vortex {
 
 			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-			out << YAML::Key << "MeshType" << YAML::Value << Utils::MeshTypeToString(meshRendererComponent.Type);
+			VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(meshRendererComponent.Type), out);
 
 			if (meshRendererComponent.Mesh)
 			{
 				SharedRef<Model> model = meshRendererComponent.Mesh;
 				const auto& meshSourcePath = model->GetPath();
-				out << YAML::Key << "MeshSource" << YAML::Value << (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
+				std::string relativePath = (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
+				VX_SERIALIZE_PROPERTY(MeshSource, relativePath, out);
 
 				if (ModelImportOptions importOptions = model->GetImportOptions(); importOptions != ModelImportOptions{})
 				{
 					out << YAML::Key << "ModelImportOptions" << YAML::Value << YAML::BeginMap; // ModelImportOptions
 
-					out << YAML::Key << "Translation" << YAML::Value << importOptions.MeshTransformation.Translation;
-					out << YAML::Key << "Rotation" << YAML::Value << importOptions.MeshTransformation.GetRotationEuler();
-					out << YAML::Key << "Scale" << YAML::Value << importOptions.MeshTransformation.Scale;
+					VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
+					VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
+					VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
 
 					out << YAML::EndMap; // ModelImportOptions
 				}
@@ -466,7 +468,7 @@ namespace Vortex {
 				{
 					out << YAML::BeginMap; // Submesh
 
-					out << YAML::Key << "Name" << YAML::Value << submesh.GetName();
+					VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
 					SharedRef<Material> material = submesh.GetMaterial();
 
@@ -479,34 +481,34 @@ namespace Vortex {
 					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
 
 					if (albedoMap)
-						out << YAML::Key << "AlbedoMapPath" << YAML::Value << std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(AlbedoMapPath, std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string(), out);
 					else
-						out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
+						VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
 					if (normalMap)
-						out << YAML::Key << "NormalMapPath" << YAML::Value << std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(NormalMapPath, std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string(), out);
 					if (metallicMap)
-						out << YAML::Key << "MetallicMapPath" << YAML::Value << std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(MetallicMapPath, std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string(), out);
 					else
-						out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
+						VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
 					if (roughnessMap)
-						out << YAML::Key << "RoughnessMapPath" << YAML::Value << std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(RoughnessMapPath, std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string(), out);
 					else
-						out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
+						VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
 					if (emissionMap)
-						out << YAML::Key << "EmissionMapPath" << YAML::Value << std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(EmissionMapPath, std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string(), out);
 					else
-						out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
+						VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
 					if (parallaxOcclusionMap)
 					{
-						out << YAML::Key << "ParallaxOcclusionMapPath" << YAML::Value << std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string();
-						out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
+						VX_SERIALIZE_PROPERTY(ParallaxOcclusionMapPath, std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
+						VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
 					}
 					if (ambientOcclusionMap)
-						out << YAML::Key << "AmbientOcclusionMapPath" << YAML::Value << std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string();
+						VX_SERIALIZE_PROPERTY(AmbientOcclusionMapPath, std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
 
-					out << YAML::Key << "UV" << YAML::Value << material->GetUV();
-					out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
-					out << YAML::Key << "MaterialFlags" << YAML::Value << material->GetFlags();
+					VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
+					VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
+					VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
 
 					out << YAML::EndMap; // Submesh
 				}
@@ -523,10 +525,11 @@ namespace Vortex {
 
 			const auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
 
-			out << YAML::Key << "Color" << YAML::Value << spriteComponent.SpriteColor;
+			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
+
 			if (spriteComponent.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << std::filesystem::relative(spriteComponent.Texture->GetPath(), projectAssetDirectory).string();
-			out << YAML::Key << "TextureScale" << YAML::Value << spriteComponent.Scale;
+				VX_SERIALIZE_PROPERTY(TexturePath, std::filesystem::relative(spriteComponent.Texture->GetPath(), projectAssetDirectory).string(), out);
+			VX_SERIALIZE_PROPERTY(TextureScale, spriteComponent.Scale, out);
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -537,9 +540,9 @@ namespace Vortex {
 
 			const auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
 
-			out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
-			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
-			out << YAML::Key << "Fade" << YAML::Value << circleComponent.Fade;
+			VX_SERIALIZE_PROPERTY(Color, circleComponent.Color, out);
+			VX_SERIALIZE_PROPERTY(Thickness, circleComponent.Thickness, out);
+			VX_SERIALIZE_PROPERTY(Fade, circleComponent.Fade, out);
 
 			out << YAML::EndMap; // CircleRendererComponent
 		}
@@ -553,17 +556,17 @@ namespace Vortex {
 
 			const ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
 
-			out << YAML::Key << "ColorBegin" << YAML::Value << emitterProperties.ColorBegin;
-			out << YAML::Key << "ColorEnd" << YAML::Value << emitterProperties.ColorEnd;
-			out << YAML::Key << "LifeTime" << YAML::Value << emitterProperties.LifeTime;
-			out << YAML::Key << "Position" << YAML::Value << emitterProperties.Position;
-			out << YAML::Key << "Offset" << YAML::Value << emitterProperties.Offset;
-			out << YAML::Key << "Rotation" << YAML::Value << emitterProperties.Rotation;
-			out << YAML::Key << "SizeBegin" << YAML::Value << emitterProperties.SizeBegin;
-			out << YAML::Key << "SizeEnd" << YAML::Value << emitterProperties.SizeEnd;
-			out << YAML::Key << "SizeVariation" << YAML::Value << emitterProperties.SizeVariation;
-			out << YAML::Key << "Velocity" << YAML::Value << emitterProperties.Velocity;
-			out << YAML::Key << "VelocityVariation" << YAML::Value << emitterProperties.VelocityVariation;
+			VX_SERIALIZE_PROPERTY(ColorBegin, emitterProperties.ColorBegin, out);
+			VX_SERIALIZE_PROPERTY(ColorEnd, emitterProperties.ColorEnd, out);
+			VX_SERIALIZE_PROPERTY(LifeTime, emitterProperties.LifeTime, out);
+			VX_SERIALIZE_PROPERTY(Position, emitterProperties.Position, out);
+			VX_SERIALIZE_PROPERTY(Offset, emitterProperties.Offset, out);
+			VX_SERIALIZE_PROPERTY(Rotation, emitterProperties.Rotation, out);
+			VX_SERIALIZE_PROPERTY(SizeBegin, emitterProperties.SizeBegin, out);
+			VX_SERIALIZE_PROPERTY(SizeEnd, emitterProperties.SizeEnd, out);
+			VX_SERIALIZE_PROPERTY(SizeVariation, emitterProperties.SizeVariation, out);
+			VX_SERIALIZE_PROPERTY(Velocity, emitterProperties.Velocity, out);
+			VX_SERIALIZE_PROPERTY(VelocityVariation, emitterProperties.VelocityVariation, out);
 
 			out << YAML::EndMap; // ParticleEmitterComponent
 		}
@@ -576,12 +579,12 @@ namespace Vortex {
 
 			// TODO come back to this
 			//out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
-			out << YAML::Key << "Color" << YAML::Value << textMeshComponent.Color;
-			out << YAML::Key << "Kerning" << YAML::Value << textMeshComponent.Kerning;
-			out << YAML::Key << "LineSpacing" << YAML::Value << textMeshComponent.LineSpacing;
-			out << YAML::Key << "MaxWidth" << YAML::Value << textMeshComponent.MaxWidth;
-			out << YAML::Key << "TextHash" << YAML::Value << textMeshComponent.TextHash;
-			out << YAML::Key << "TextString" << YAML::Value << textMeshComponent.TextString;
+			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
+			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
+			VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
+			VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
+			VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
+			VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
 
 			out << YAML::EndMap; // TextMeshComponent
 		}
@@ -606,7 +609,7 @@ namespace Vortex {
 			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
 			SharedRef<Animation> animation = animationComponent.Animation;
 
-			out << YAML::Key << "AnimationSourcePath" << YAML::Value << animation->GetPath();
+			VX_SERIALIZE_PROPERTY(AnimationSourcePath, animation->GetPath(), out);
 
 			out << YAML::EndMap; // AnimationComponent
 		}
@@ -622,31 +625,31 @@ namespace Vortex {
 				const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
 				
 				const std::string& audioSourcePath = audioSourceComponent.Source->GetPath();
-				out << YAML::Key << "AudioSourcePath" << YAML::Value << audioSourcePath;
+				VX_SERIALIZE_PROPERTY(AudioSourcePath, audioSourcePath, out);
 
 				out << YAML::Key << "SoundSettings" << YAML::Value;
 				out << YAML::BeginMap; // SoundSettings
-				out << YAML::Key << "Position" << YAML::Value << soundProperties.Position;
-				out << YAML::Key << "Direction" << YAML::Value << soundProperties.Direction;
-				out << YAML::Key << "Veloctiy" << YAML::Value << soundProperties.Veloctiy;
+				VX_SERIALIZE_PROPERTY(Position, soundProperties.Position, out);
+				VX_SERIALIZE_PROPERTY(Direction, soundProperties.Direction, out);
+				VX_SERIALIZE_PROPERTY(Veloctiy, soundProperties.Veloctiy, out);
 
 				out << YAML::Key << "Cone" << YAML::Value;
 				out << YAML::BeginMap; // Cone
-				out << YAML::Key << "InnerAngle" << YAML::Value << soundProperties.Cone.InnerAngle;
-				out << YAML::Key << "OuterAngle" << YAML::Value << soundProperties.Cone.OuterAngle;
-				out << YAML::Key << "OuterGain" << YAML::Value << soundProperties.Cone.OuterGain;
+				VX_SERIALIZE_PROPERTY(InnerAngle, soundProperties.Cone.InnerAngle, out);
+				VX_SERIALIZE_PROPERTY(OuterAngle, soundProperties.Cone.OuterAngle, out);
+				VX_SERIALIZE_PROPERTY(OuterGain, soundProperties.Cone.OuterGain, out);
 				out << YAML::EndMap; // Cone
 
-				out << YAML::Key << "MinDistance" << YAML::Value << soundProperties.MinDistance;
-				out << YAML::Key << "MaxDistance" << YAML::Value << soundProperties.MaxDistance;
-				out << YAML::Key << "Pitch" << YAML::Value << soundProperties.Pitch;
-				out << YAML::Key << "DopplerFactor" << YAML::Value << soundProperties.DopplerFactor;
-				out << YAML::Key << "Volume" << YAML::Value << soundProperties.Volume;
+				VX_SERIALIZE_PROPERTY(MinDistance, soundProperties.MinDistance, out);
+				VX_SERIALIZE_PROPERTY(MaxDistance, soundProperties.MaxDistance, out);
+				VX_SERIALIZE_PROPERTY(Pitch, soundProperties.Pitch, out);
+				VX_SERIALIZE_PROPERTY(DopplerFactor, soundProperties.DopplerFactor, out);
+				VX_SERIALIZE_PROPERTY(Volume, soundProperties.Volume, out);
 
-				out << YAML::Key << "PlayOnStart" << YAML::Value << soundProperties.PlayOnStart;
-				out << YAML::Key << "PlayOneShot" << YAML::Value << soundProperties.PlayOneShot;
-				out << YAML::Key << "Spacialized" << YAML::Value << soundProperties.Spacialized;
-				out << YAML::Key << "Loop" << YAML::Value << soundProperties.Loop;
+				VX_SERIALIZE_PROPERTY(PlayOnStart, soundProperties.PlayOnStart, out);
+				VX_SERIALIZE_PROPERTY(PlayOneShot, soundProperties.PlayOneShot, out);
+				VX_SERIALIZE_PROPERTY(Spacialized, soundProperties.Spacialized, out);
+				VX_SERIALIZE_PROPERTY(Loop, soundProperties.Loop, out);
 				out << YAML::EndMap; // SoundSettings
 			}
 
@@ -658,16 +661,16 @@ namespace Vortex {
 			out << YAML::Key << "RigidbodyComponent" << YAML::BeginMap; // RigidbodyComponent
 
 			const auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
-			out << YAML::Key << "Mass" << YAML::Value << rigidbodyComponent.Mass;
-			out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type);
-			out << YAML::Key << "AngularDrag" << YAML::Value << rigidbodyComponent.AngularDrag;
-			out << YAML::Key << "AngularVelocity" << YAML::Value << rigidbodyComponent.AngularVelocity;
-			out << YAML::Key << "DisableGravity" << YAML::Value << rigidbodyComponent.DisableGravity;
-			out << YAML::Key << "IsKinematic" << YAML::Value << rigidbodyComponent.IsKinematic;
-			out << YAML::Key << "LinearDrag" << YAML::Value << rigidbodyComponent.LinearDrag;
-			out << YAML::Key << "LinearVelocity" << YAML::Value << rigidbodyComponent.LinearVelocity;
-			out << YAML::Key << "CollisionDetectionType" << YAML::Value << Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection);
-			out << YAML::Key << "ActorLockFlags" << YAML::Value << (uint32_t)rigidbodyComponent.LockFlags;
+			VX_SERIALIZE_PROPERTY(Mass, rigidbodyComponent.Mass, out);
+			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(AngularDrag, rigidbodyComponent.AngularDrag, out);
+			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidbodyComponent.AngularVelocity, out);
+			VX_SERIALIZE_PROPERTY(DisableGravity, rigidbodyComponent.DisableGravity, out);
+			VX_SERIALIZE_PROPERTY(IsKinematic, rigidbodyComponent.IsKinematic, out);
+			VX_SERIALIZE_PROPERTY(LinearDrag, rigidbodyComponent.LinearDrag, out);
+			VX_SERIALIZE_PROPERTY(LinearVelocity, rigidbodyComponent.LinearVelocity, out);
+			VX_SERIALIZE_PROPERTY(CollisionDetectionType, Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection), out);
+			VX_SERIALIZE_PROPERTY(ActorLockFlags, (uint32_t)rigidbodyComponent.LockFlags, out);
 
 			out << YAML::EndMap; // RigidbodyComponent
 		}
@@ -677,13 +680,13 @@ namespace Vortex {
 			out << YAML::Key << "CharacterControllerComponent" << YAML::BeginMap; // CharacterControllerComponent
 
 			const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
-			out << YAML::Key << "NonWalkableMode" << Utils::NonWalkableModeToString(characterController.NonWalkMode);
-			out << YAML::Key << "CapsuleClimbMode" << Utils::CapsuleClimbModeToString(characterController.ClimbMode);
-			out << YAML::Key << "DisableGravity" << YAML::Key << characterController.DisableGravity;
-			out << YAML::Key << "LayerID" << YAML::Key << characterController.LayerID;
-			out << YAML::Key << "SlopeLimitDegrees" << YAML::Key << characterController.SlopeLimitDegrees;
-			out << YAML::Key << "StepOffset" << YAML::Key << characterController.StepOffset;
-			out << YAML::Key << "ContactOffset" << YAML::Key << characterController.ContactOffset;
+			VX_SERIALIZE_PROPERTY(NonWalkableMode, Utils::NonWalkableModeToString(characterController.NonWalkMode), out);
+			VX_SERIALIZE_PROPERTY(CapsuleClimbMode, Utils::CapsuleClimbModeToString(characterController.ClimbMode), out);
+			VX_SERIALIZE_PROPERTY(DisableGravity, characterController.DisableGravity, out);
+			VX_SERIALIZE_PROPERTY(LayerID, characterController.LayerID, out);
+			VX_SERIALIZE_PROPERTY(SlopeLimitDegrees, characterController.SlopeLimitDegrees, out);
+			VX_SERIALIZE_PROPERTY(StepOffset, characterController.StepOffset, out);
+			VX_SERIALIZE_PROPERTY(ContactOffset, characterController.ContactOffset, out);
 
 			out << YAML::EndMap; // CharacterControllerComponent
 		}
@@ -693,11 +696,11 @@ namespace Vortex {
 			out << YAML::Key << "PhysicsMaterialComponent" << YAML::BeginMap; // PhysicsMaterialComponent
 
 			const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-			out << YAML::Key << "StaticFriction" << YAML::Key << physicsMaterial.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Key << physicsMaterial.DynamicFriction;
-			out << YAML::Key << "Bounciness" << YAML::Key << physicsMaterial.Bounciness;
-			out << YAML::Key << "FrictionCombineMode" << YAML::Key << Utils::CombineModeToString(physicsMaterial.FrictionCombineMode);
-			out << YAML::Key << "RestitutionCombineMode" << YAML::Key << Utils::CombineModeToString(physicsMaterial.RestitutionCombineMode);
+			VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial.StaticFriction, out);
+			VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial.DynamicFriction, out);
+			VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial.Bounciness, out);
+			VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial.FrictionCombineMode), out);
+			VX_SERIALIZE_PROPERTY(RestitutionCombineMode, Utils::CombineModeToString(physicsMaterial.RestitutionCombineMode), out);
 
 			out << YAML::EndMap; // PhysicsMaterialComponent
 		}
@@ -707,9 +710,9 @@ namespace Vortex {
 			out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
 
 			const auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
-			out << YAML::Key << "HalfSize" << YAML::Value << boxColliderComponent.HalfSize;
-			out << YAML::Key << "Offset" << YAML::Value << boxColliderComponent.Offset;
-			out << YAML::Key << "IsTrigger" << YAML::Value << boxColliderComponent.IsTrigger;
+			VX_SERIALIZE_PROPERTY(HalfSize, boxColliderComponent.HalfSize, out);
+			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
 
 			out << YAML::EndMap; // BoxColliderComponent
 		}
@@ -719,9 +722,9 @@ namespace Vortex {
 			out << YAML::Key << "SphereColliderComponent" << YAML::BeginMap; // SphereColliderComponent
 
 			const auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
-			out << YAML::Key << "Radius" << YAML::Value << sphereColliderComponent.Radius;
-			out << YAML::Key << "Offset" << YAML::Value << sphereColliderComponent.Offset;
-			out << YAML::Key << "IsTrigger" << YAML::Value << sphereColliderComponent.IsTrigger;
+			VX_SERIALIZE_PROPERTY(Radius, sphereColliderComponent.Radius, out);
+			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
 
 			out << YAML::EndMap; // SphereColliderComponent
 		}
@@ -731,10 +734,10 @@ namespace Vortex {
 			out << YAML::Key << "CapsuleColliderComponent" << YAML::BeginMap; // CapsuleColliderComponent
 
 			const auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
-			out << YAML::Key << "Radius" << YAML::Value << capsuleColliderComponent.Radius;
-			out << YAML::Key << "Height" << YAML::Value << capsuleColliderComponent.Height;
-			out << YAML::Key << "Offset" << YAML::Value << capsuleColliderComponent.Offset;
-			out << YAML::Key << "IsTrigger" << YAML::Value << capsuleColliderComponent.IsTrigger;
+			VX_SERIALIZE_PROPERTY(Radius, capsuleColliderComponent.Radius, out);
+			VX_SERIALIZE_PROPERTY(Height, capsuleColliderComponent.Height, out);
+			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(IsTrigger, capsuleColliderComponent.IsTrigger, out);
 
 			out << YAML::EndMap; // CapsuleColliderComponent
 		}
@@ -744,12 +747,12 @@ namespace Vortex {
 			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
 
 			const auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
-			out << YAML::Key << "BodyType" << YAML::Value << Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type);
-			out << YAML::Key << "Velocity" << YAML::Value << rb2dComponent.Velocity;
-			out << YAML::Key << "Drag" << YAML::Value << rb2dComponent.Drag;
-			out << YAML::Key << "AngularDrag" << YAML::Value << rb2dComponent.AngularDrag;
-			out << YAML::Key << "GravityScale" << YAML::Value << rb2dComponent.GravityScale;
-			out << YAML::Key << "FreezeRotation" << YAML::Value << rb2dComponent.FixedRotation;
+			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(Velocity, rb2dComponent.Velocity, out);
+			VX_SERIALIZE_PROPERTY(Drag, rb2dComponent.Drag, out);
+			VX_SERIALIZE_PROPERTY(AngularDrag, rb2dComponent.AngularDrag, out);
+			VX_SERIALIZE_PROPERTY(GravityScale, rb2dComponent.GravityScale, out);
+			VX_SERIALIZE_PROPERTY(FreezeRotation, rb2dComponent.FixedRotation, out);
 
 			out << YAML::EndMap; // Rigidbody2DComponent
 		}
@@ -759,13 +762,13 @@ namespace Vortex {
 			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
 
 			const auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
-			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
-			out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
-			out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
-			out << YAML::Key << "Friction" << YAML::Value << bc2dComponent.Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << bc2dComponent.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2dComponent.RestitutionThreshold;
-			out << YAML::Key << "IsTrigger" << YAML::Value << bc2dComponent.IsTrigger;
+			VX_SERIALIZE_PROPERTY(Offset, bc2dComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(Size, bc2dComponent.Size, out);
+			VX_SERIALIZE_PROPERTY(Density, bc2dComponent.Density, out);
+			VX_SERIALIZE_PROPERTY(Friction, bc2dComponent.Friction, out);
+			VX_SERIALIZE_PROPERTY(Restitution, bc2dComponent.Restitution, out);
+			VX_SERIALIZE_PROPERTY(RestitutionThreshold, bc2dComponent.RestitutionThreshold, out);
+			VX_SERIALIZE_PROPERTY(IsTrigger, bc2dComponent.IsTrigger, out);
 
 			out << YAML::EndMap; // BoxCollider2DComponent
 		}
@@ -775,12 +778,12 @@ namespace Vortex {
 			out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
 
 			const auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
-			out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
-			out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
-			out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
-			out << YAML::Key << "Friction" << YAML::Value << cc2dComponent.Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << cc2dComponent.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2dComponent.RestitutionThreshold;
+			VX_SERIALIZE_PROPERTY(Offset, cc2dComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(Radius, cc2dComponent.Radius, out);
+			VX_SERIALIZE_PROPERTY(Density, cc2dComponent.Density, out);
+			VX_SERIALIZE_PROPERTY(Friction, cc2dComponent.Friction, out);
+			VX_SERIALIZE_PROPERTY(Restitution, cc2dComponent.Restitution, out);
+			VX_SERIALIZE_PROPERTY(RestitutionThreshold, cc2dComponent.RestitutionThreshold, out);
 
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
@@ -801,7 +804,7 @@ namespace Vortex {
 			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 
 			const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-			out << YAML::Key << "ClassName" << YAML::Value << scriptComponent.ClassName;
+			VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 
 			// Fields
 			SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
@@ -821,8 +824,8 @@ namespace Vortex {
 
 					out << YAML::BeginMap; // ScriptFields
 
-					out << YAML::Key << "Name" << YAML::Value << name;
-					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+					VX_SERIALIZE_PROPERTY(Name, name, out);
+					VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
 					out << YAML::Key << "Data" << YAML::Value;
 
 					ScriptFieldInstance& scriptField = entityFields.at(name);
@@ -868,7 +871,7 @@ namespace Vortex {
 
 			bool isActive = true;
 			if (entity["Active"])
-				isActive = entity["Active"].as<bool>();
+				VX_DESERIALIZE_PROPERTY(Active, bool, isActive, entity);
 
 			std::string name;
 			std::string marker;

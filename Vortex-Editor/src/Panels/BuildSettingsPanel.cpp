@@ -66,7 +66,7 @@ namespace Vortex {
 
 		UI::ShiftCursorY(10.0f);
 
-		if (Gui::Button("Run Detached Process"))
+		if (Gui::Button("Launch Detached Process"))
 		{
 			if (m_LaunchRuntimeCallback && !m_ProjectPath.empty())
 			{
