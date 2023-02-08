@@ -18,7 +18,7 @@ namespace Vortex {
 
 		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
 		{
-			glCreateTextures(TextureTarget(multisampled), count, outID);
+			glGenTextures(count, outID);
 		}
 
 		static void BindTexture(bool multisampled, uint32_t id)

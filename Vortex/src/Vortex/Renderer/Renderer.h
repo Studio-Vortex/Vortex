@@ -120,17 +120,19 @@ namespace Vortex {
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
 
-		static void SetFlag(RenderFlag flag);
-		static void ToggleFlag(RenderFlag flag);
-		static void DisableFlag(RenderFlag flag);
-		static bool IsFlagSet(RenderFlag flag);
-		static void ClearFlags();
-
 		static Math::vec3 GetBloomThreshold();
 		static void SetBloomThreshold(const Math::vec3& threshold);
 
 		static uint32_t GetBloomSampleSize();
 		static void SetBloomSampleSize(uint32_t samples);
+
+		static uint32_t GetFlags();
+		static void SetFlags(uint32_t flags);
+		static void SetFlag(RenderFlag flag);
+		static void ToggleFlag(RenderFlag flag);
+		static void DisableFlag(RenderFlag flag);
+		static bool IsFlagSet(RenderFlag flag);
+		static void ClearFlags();
 
 		static SharedRef<ShaderLibrary> GetShaderLibrary();
 

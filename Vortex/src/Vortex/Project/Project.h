@@ -28,6 +28,9 @@ namespace Vortex {
 			float ShadowMapResolution = 1024.0f;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;
+			Math::vec3 BloomThreshold = Math::vec3(0.2126f, 0.7152f, 0.0722f);
+			uint32_t BloomSampleSize = 5;
+			uint32_t RenderFlags = 0;
 			bool UseVSync = true;
 			bool DisplaySceneIconsInEditor = true;
 		} RendererProps;

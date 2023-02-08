@@ -506,6 +506,7 @@ namespace Vortex {
 				{
 					if (IsFlagSet(RenderFlag::EnableBloom))
 						BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
+
 					break;
 				}
 			}
@@ -930,17 +931,17 @@ namespace Vortex {
 			CreateBlurFramebuffer(props.Width, props.Height);
 		}
 
+		sceneFramebuffer->Unbind();
+
 		bool horizontal = true;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
 		blurShader->Enable();
-		glActiveTexture(GL_TEXTURE0);
-		sceneFramebuffer->BindColorTexture(2);
 		blurShader->SetInt("u_Texture", 0);
 
 		for (uint32_t i = 0; i < s_Data.BloomSampleSize; i++)
 		{
-			s_Data.BlurFramebuffer->Bind(!horizontal);
-			blurShader->SetBool("u_Horizontal", !horizontal);
+			s_Data.BlurFramebuffer->Bind(horizontal);
+			blurShader->SetBool("u_Horizontal", horizontal);
 
 			s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
 
@@ -954,11 +955,11 @@ namespace Vortex {
 		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary->Get("BloomFinalComposite");
 		bloomFinalCompositeShader->Enable();
 
-		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 		sceneFramebuffer->BindColorTexture(0);
 		bloomFinalCompositeShader->SetInt("u_SceneTexture", 0);
 
-		glActiveTexture(GL_TEXTURE1);
+		//glActiveTexture(GL_TEXTURE1);
 		s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
 		bloomFinalCompositeShader->SetInt("u_BloomTexture", 1);
 
@@ -1016,10 +1017,18 @@ namespace Vortex {
 		s_Data.ShadowMapResolution = props.ShadowMapResolution;
 		s_Data.SceneExposure = props.Exposure;
 		s_Data.SceneGamma = props.Gamma;
+		s_Data.BloomThreshold = props.BloomThreshold;
+		s_Data.BloomSampleSize = props.BloomSampleSize;
+
+		ClearFlags();
+		s_Data.RenderFlags = props.RenderFlags;
+
 		Application::Get().GetWindow().SetVSync(props.UseVSync);
 
 		if (!props.TriangleCullMode.empty())
+		{
 			s_Data.CullMode = Utils::TriangleCullModeFromString(props.TriangleCullMode);
+		}
 	}
 
 	float Renderer::GetEnvironmentMapResolution()
@@ -1072,6 +1081,37 @@ namespace Vortex {
 		s_Data.SceneGamma = gamma;
 	}
 
+	Math::vec3 Renderer::GetBloomThreshold()
+	{
+		return s_Data.BloomThreshold;
+	}
+
+	void Renderer::SetBloomThreshold(const Math::vec3& threshold)
+	{
+		s_Data.BloomThreshold = threshold;
+	}
+
+	uint32_t Renderer::GetBloomSampleSize()
+	{
+		return s_Data.BloomSampleSize;
+	}
+
+	void Renderer::SetBloomSampleSize(uint32_t samples)
+	{
+		s_Data.BloomSampleSize = samples;
+	}
+
+	uint32_t Renderer::GetFlags()
+	{
+		return s_Data.RenderFlags;
+	}
+
+	void Renderer::SetFlags(uint32_t flags)
+	{
+		ClearFlags();
+		s_Data.RenderFlags = flags;
+	}
+
 	void Renderer::SetFlag(RenderFlag flag)
 	{
 		s_Data.RenderFlags |= (uint32_t)flag;
@@ -1095,26 +1135,6 @@ namespace Vortex {
 	void Renderer::ClearFlags()
 	{
 		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
-	}
-
-	Math::vec3 Renderer::GetBloomThreshold()
-	{
-		return s_Data.BloomThreshold;
-	}
-
-	void Renderer::SetBloomThreshold(const Math::vec3& threshold)
-	{
-		s_Data.BloomThreshold = threshold;
-	}
-
-	uint32_t Renderer::GetBloomSampleSize()
-	{
-		return s_Data.BloomSampleSize;
-	}
-
-	void Renderer::SetBloomSampleSize(uint32_t samples)
-	{
-		s_Data.BloomSampleSize = samples;
 	}
 
 	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()
