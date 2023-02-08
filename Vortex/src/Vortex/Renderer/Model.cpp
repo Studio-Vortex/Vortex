@@ -404,9 +404,10 @@ namespace Vortex {
 		{
 			aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
 
-			// TODO load material textures
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
+
+			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(m_Filepath));
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
@@ -416,9 +417,11 @@ namespace Vortex {
 				if (mat->GetTexture(textureType, index, &path) == AI_SUCCESS)
 				{
 					const char* pathCStr = path.C_Str();
-					if (FileSystem::Exists(Project::GetAssetDirectory() / std::filesystem::path(pathCStr)))
+					std::filesystem::path filepath = std::filesystem::path(pathCStr);
+					std::filesystem::path relativePath = directoryPath / filepath;
+					if (FileSystem::Exists(relativePath))
 					{
-						result = Texture2D::Create(pathCStr);
+						result = Texture2D::Create(relativePath.string());
 						return result;
 					}
 				}
@@ -429,6 +432,12 @@ namespace Vortex {
 			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
 			if (!materialProps.AlbedoMap)
 				materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+
+			materialProps.NormalMap = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
+			materialProps.MetallicMap = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
+			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
+			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
+			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 			
 			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), materialProps);
 		}
