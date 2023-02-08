@@ -49,8 +49,8 @@ If you make changes to the engine, or if you want to regenerate project files, r
 - Imported 3D model with skybox
 ![3D model with skybox](Vortex-Editor/Resources/Images/Engine/3DModel.png)
 
-- Sponza model in full chrome
-![Sponza in chrome](Vortex-Editor/Resources/Images/Engine/SponzaChrome.png)
+- Sponza Scene
+![Textured Sponza Scene](Vortex-Editor/Resources/Images/Engine/SponzaScene.png)
 
 - FPS Demo with Nvidia PhysX
 ![FPS Demo game](Vortex-Editor/Resources/Images/Engine/FPSDemo.png)
