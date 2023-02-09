@@ -4,6 +4,7 @@
 #include "Vortex/Core/Input.h"
 #include "Vortex/Core/KeyCodes.h"
 #include "Vortex/Core/MouseCodes.h"
+#include "Vortex/UI/UI.h"
 
 namespace Vortex {
 
@@ -31,17 +32,27 @@ namespace Vortex {
 	static void DisableMouse()
 	{
 		Input::SetCursorMode(CursorMode::Locked);
+		UI::SetInputEnabled(false);
 	}
 
 	static void EnableMouse()
 	{
 		Input::SetCursorMode(CursorMode::Normal);
+		UI::SetInputEnabled(true);
 	}
 
 	void EditorCamera::OnUpdate(TimeStep ts)
 	{
 		const Math::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 		const Math::vec2 delta = (mouse - m_InitialMousePosition) * 0.002f;
+
+		if (!m_IsActive)
+		{
+			/*if (!UI::IsInputEnabled())
+				UI::SetInputEnabled(true);*/
+
+			return;
+		}
 
 		if (Input::IsMouseButtonPressed(MouseButton::Right) && !Input::IsKeyPressed(KeyCode::LeftAlt))
 		{
@@ -147,7 +158,7 @@ namespace Vortex {
 		// Extra step to handle the problem when the camera direction is the same as the up vector
 		const float cosAngle = Math::Dot(GetForwardDirection(), GetUpDirection());
 		if (cosAngle * yawSign > 0.99f)
-			m_PitchDelta = 0.f;
+			m_PitchDelta = 0.0f;
 
 		const Math::vec3 lookAt = m_Position + GetForwardDirection();
 		m_Direction = Math::Normalize(lookAt - m_Position);

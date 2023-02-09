@@ -2,23 +2,23 @@
 #include "Scene.h"
 
 #include "Vortex/Core/Math.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Project/Project.h"
 #include "Vortex/Audio/AudioEngine.h"
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/Animation.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Scene/ScriptableEntity.h"
-#include "Vortex/Scene/Prefab.h"
-#include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Animation/Animator.h"
-#include "Vortex/Animation/Animation.h"
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Prefab.h"
+#include "Vortex/Scene/SceneRenderer.h"
+#include "Vortex/Scene/ScriptableEntity.h"
+#include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
-#include "Vortex/Project/Project.h"
 
 namespace Vortex {
 
@@ -592,7 +592,6 @@ namespace Vortex {
 		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
-
 		s_SceneRenderer.RenderScene(renderPacket);
 
 		Entity primaryCameraEntity = GetPrimaryCameraEntity();

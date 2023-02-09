@@ -37,6 +37,7 @@ namespace Vortex {
 		framebufferProps.Samples = appProps.SampleCount;
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
+		m_SecondViewportFramebuffer = Framebuffer::Create(framebufferProps);
 
 		EditorResources::Init();
 
@@ -44,6 +45,7 @@ namespace Vortex {
 		m_ActiveScene = m_EditorScene;
 
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
+		m_SecondViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
 
 		auto commandLineArgs = appProps.CommandLineArgs;
 		if (commandLineArgs.Count > 1)
@@ -72,11 +74,20 @@ namespace Vortex {
 			0.1f,
 			1000.0f
 		);
+
+		m_SecondEditorCamera = new EditorCamera(
+			projectProps.EditorProps.EditorCameraFOV,
+			m_SecondViewportSize.x,
+			m_SecondViewportSize.y,
+			0.1f,
+			1000.0f
+		);
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		delete m_EditorCamera;
+		delete m_SecondEditorCamera;
 	}
 
 	void EditorLayer::OnUpdate(TimeStep delta)
@@ -104,6 +115,14 @@ namespace Vortex {
 			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
+		if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
+			m_SecondViewportSize.x > 0.0f && m_SecondViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+			(props.Width != m_SecondViewportSize.x || props.Height != m_SecondViewportSize.y))
+		{
+			m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+			m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+		}
+
 		// Bind Render Target and Clear Attachments
 		Renderer::ResetStats();
 		Renderer2D::ResetStats();
@@ -118,12 +137,14 @@ namespace Vortex {
 		const bool leftMoustButtonPressed = Input::IsMouseButtonPressed(MouseButton::Left);
 		const bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
 		const bool isUsingGizmo = ImGuizmo::IsUsing();
-		const bool updateEditorCamera = (m_SceneViewportHovered || mousePosChanged || leftMoustButtonPressed || rightMouseButtonPressed) && !isUsingGizmo;
 
 		m_MousePosLastFrame = Input::GetMousePosition();
 
-		if (updateEditorCamera && m_SceneState != SceneState::Play)
-			m_EditorCamera->OnUpdate(delta);
+		m_EditorCamera->SetActive(m_AllowViewportCameraEvents);
+		m_EditorCamera->OnUpdate(delta);
+
+		m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
+		m_SecondEditorCamera->OnUpdate(delta);
 
 		// Update Scene
 		switch (m_SceneState)
@@ -162,23 +183,26 @@ namespace Vortex {
 			}
 		}
 
-		auto [mx, my] = Gui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-		Math::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		my = viewportSize.y - my;
-
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
-
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		// Scene Viewport Entity Selection
 		{
-			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
-			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+			auto [mx, my] = Gui::GetMousePos();
+			mx -= m_ViewportBounds[0].x;
+			my -= m_ViewportBounds[0].y;
+			Math::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+			my = viewportSize.y - my;
+
+			int mouseX = (int)mx;
+			int mouseY = (int)my;
+
+			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+			{
+				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+			}
 		}
 
-		OnOverlayRender();
+		OnOverlayRender(m_EditorCamera);
 
 		m_Framebuffer->Unbind();
 
@@ -189,6 +213,58 @@ namespace Vortex {
 		postProcessProps.Stages = stages;
 		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
 		Renderer::BeginPostProcessingStages(postProcessProps);
+
+		if (m_ShowSecondViewport)
+		{
+			// Second Viewport
+			m_SecondViewportFramebuffer->Bind();
+			RenderCommand::Clear();
+
+			// Clear entityID attachment to -1
+			m_SecondViewportFramebuffer->ClearAttachment(1, -1);
+
+			SceneRenderPacket renderPacket{};
+			renderPacket.MainCamera = m_SecondEditorCamera;
+			renderPacket.TargetFramebuffer = m_SecondViewportFramebuffer;
+			renderPacket.Scene = m_ActiveScene.get();
+			renderPacket.EditorScene = true;
+			m_SecondViewportRenderer.RenderScene(renderPacket);
+
+			// Scene Viewport Entity Selection
+			{
+				auto [mx, my] = Gui::GetMousePos();
+				mx -= m_SecondViewportBounds[0].x;
+				my -= m_SecondViewportBounds[0].y;
+				Math::vec2 viewportSize = m_SecondViewportBounds[1] - m_SecondViewportBounds[0];
+				my = viewportSize.y - my;
+
+				int mouseX = (int)mx;
+				int mouseY = (int)my;
+
+				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+				{
+					int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
+					m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+					ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+				}
+			}
+
+			OnOverlayRender(m_SecondEditorCamera);
+
+			m_SecondViewportFramebuffer->Unbind();
+		}
+
+		if (((Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))) || Input::IsMouseButtonPressed(MouseButton::Right)) && !m_StartedClickInViewport && m_SceneViewportFocused && m_SceneViewportHovered)
+			m_StartedClickInViewport = true;
+
+		if (!Input::IsMouseButtonPressed(MouseButton::Right) && !(Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))))
+			m_StartedClickInViewport = false;
+
+		if (((Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))) || Input::IsMouseButtonPressed(MouseButton::Right)) && !m_StartedClickInSecondViewport && m_SecondViewportFocused && m_SecondViewportHovered)
+			m_StartedClickInSecondViewport = true;
+
+		if (!Input::IsMouseButtonPressed(MouseButton::Right) && !(Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))))
+			m_StartedClickInSecondViewport = false;
 	}
 
 	void EditorLayer::OnGuiRender()
@@ -239,6 +315,15 @@ namespace Vortex {
 		} // End Dockspace
 
 		style.WindowMinSize.x = minWinSizeX;
+
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport)))
+		{
+			if (m_SceneState != SceneState::Play)
+			{
+				ImGui::FocusWindow(GImGui->HoveredWindow);
+				Input::SetCursorMode(CursorMode::Normal);
+			}
+		}
 
 		OnMainMenuBarRender();
 
@@ -416,15 +501,6 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 
-				if (inEditMode)
-					UI::Draw::Underline();
-
-				if (inEditMode)
-				{
-					if (Gui::MenuItem("Center Editor Camera"))
-						m_EditorCamera->Focus({0, 0, 0});
-				}
-
 				Gui::EndMenu();
 			}
 
@@ -492,9 +568,6 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePanelRender()
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
-
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene", &m_ShowScenePanel, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
@@ -502,6 +575,11 @@ namespace Vortex {
 		auto viewportOffset = Gui::GetWindowPos();
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+		ImVec2 minBound = { m_ViewportBounds[0].x, m_ViewportBounds[0].y };
+		ImVec2 maxBound = { m_ViewportBounds[1].x, m_ViewportBounds[1].y };
+
+		m_AllowViewportCameraEvents = (ImGui::IsMouseHoveringRect(minBound, maxBound) && m_SceneViewportFocused) || m_StartedClickInViewport;
 
 		m_SceneViewportFocused = Gui::IsWindowFocused();
 		m_SceneViewportHovered = Gui::IsWindowHovered();
@@ -543,7 +621,8 @@ namespace Vortex {
 			UI_SceneSettingsToolbar();
 		}
 
-		OnGizmosRender();
+		if (m_SceneViewportHovered)
+			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
 
 		Gui::End();
 	}
@@ -682,7 +761,7 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OnGizmosRender()
+	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode)
 	{
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
@@ -693,7 +772,12 @@ namespace Vortex {
 		bool notInPlayMode = m_SceneState != SceneState::Play;
 		bool validGizmoTool = m_GizmoType != -1;
 		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		bool showGizmos = (selectedEntity && notInPlayMode && validGizmoTool && !altPressed);
+		bool showGizmos = false;
+
+		if (allowInPlayMode)
+			showGizmos = (selectedEntity && validGizmoTool && !altPressed);
+		else
+			showGizmos = (selectedEntity && notInPlayMode && validGizmoTool && !altPressed);
 
 		if (showGizmos)
 		{
@@ -701,11 +785,11 @@ namespace Vortex {
 			ImGuizmo::SetOrthographic(projectProps.GizmoProps.IsOrthographic);
 			ImGuizmo::SetDrawlist();
 
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+			ImGuizmo::SetRect(viewportBounds[0].x, viewportBounds[0].y, viewportBounds[1].x - viewportBounds[0].x, viewportBounds[1].y - viewportBounds[0].y);
 
 			// Editor camera
-			const Math::mat4& cameraProjection = m_EditorCamera->GetProjectionMatrix();
-			Math::mat4 cameraView = m_EditorCamera->GetViewMatrix();
+			const Math::mat4& cameraProjection = editorCamera->GetProjectionMatrix();
+			Math::mat4 cameraView = editorCamera->GetViewMatrix();
 
 			// Entity transform
 			TransformComponent& entityTransform = selectedEntity.GetTransform();
@@ -787,11 +871,29 @@ namespace Vortex {
 	{
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Second Viewport", &m_ShowSecondViewport, ImGuiWindowFlags_NoCollapse);
+		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		auto viewportOffset = Gui::GetWindowPos();
+		m_SecondViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_SecondViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-		ImVec2 windowSize = Gui::GetWindowSize();
+		ImVec2 minBound = { m_SecondViewportBounds[0].x, m_SecondViewportBounds[0].y };
+		ImVec2 maxBound = { m_SecondViewportBounds[1].x, m_SecondViewportBounds[1].y };
 
-		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
-		UI::ImageEx(sceneTextureID, windowSize);
+		m_AllowSecondViewportCameraEvents = (ImGui::IsMouseHoveringRect(minBound, maxBound) && m_SecondViewportFocused) || m_StartedClickInSecondViewport;
+
+		m_SecondViewportFocused = Gui::IsWindowFocused();
+		m_SecondViewportHovered = Gui::IsWindowHovered();
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SecondViewportHovered);
+
+		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
+		m_SecondViewportSize = { scenePanelSize.x, scenePanelSize.y };
+
+		uint32_t sceneTextureID = m_SecondViewportFramebuffer->GetColorAttachmentRendererID();
+		UI::ImageEx(sceneTextureID, ImVec2{ m_SecondViewportSize.x, m_SecondViewportSize.y });
+
+		if (m_SecondViewportHovered)
+			OnGizmosRender(m_SecondEditorCamera, m_SecondViewportBounds, true);
 
 		Gui::End();
 	}
@@ -1113,7 +1215,7 @@ namespace Vortex {
 		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
 
-	void EditorLayer::OnOverlayRender()
+	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera)
 	{
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
@@ -1129,7 +1231,7 @@ namespace Vortex {
 		}
 		else
 		{
-			Renderer2D::BeginScene(m_EditorCamera);
+			Renderer2D::BeginScene(editorCamera);
 		}
 
 		// Render Editor Grid
@@ -1206,7 +1308,7 @@ namespace Vortex {
 			// Render 2D Colliders
 			{
 				float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
-				if (m_EditorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
+				if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
 					colliderDistance = -colliderDistance;
 
 				{
@@ -1297,7 +1399,10 @@ namespace Vortex {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		m_EditorCamera->OnEvent(e);
+		if (m_AllowViewportCameraEvents)
+			m_EditorCamera->OnEvent(e);
+		if (m_AllowSecondViewportCameraEvents)
+			m_SecondEditorCamera->OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
@@ -1342,41 +1447,73 @@ namespace Vortex {
 				break;
 			}
 
-			// Tools
-			case Key::F2:
+			case Key::Q:
 			{
-				if (selectedEntity)
-					m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+					OnNoGizmoSelected();
 
 				break;
 			}
-			case Key::F11:
+			case Key::W:
 			{
-				Window& window = Application::Get().GetWindow();
-				window.SetMaximized(!window.IsMaximized());
-
-				if (!window.IsMaximized())
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					window.CenterWindow();
+					if (altPressed && selectedEntity)
+					{
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.Translation = Math::vec3(0.0f);
+					}
+
+					OnTranslationToolSelected();
 				}
 
 				break;
 			}
-
-			case Key::Delete:
+			case Key::E:
 			{
-				if (selectedEntity)
-					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					if (altPressed && selectedEntity)
+					{
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.SetRotationEuler(Math::vec3(0.0f));
+					}
+
+					OnRotationToolSelected();
+				}
+
+				break;
+			}
+			case Key::R:
+			{
+				if (controlPressed)
+					ScriptEngine::ReloadAssembly();
+
+				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					if (altPressed && selectedEntity)
+					{
+						TransformComponent& transformComponent = selectedEntity.GetTransform();
+						transformComponent.Scale = Math::vec3(1.0f);
+					}
+
+					OnScaleToolSelected();
+				}
 
 				break;
 			}
 
 			case Key::F:
 			{
-				if (selectedEntity && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				if (selectedEntity && m_SceneViewportHovered && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 					m_EditorCamera->Focus(selectedEntity.GetTransform().Translation);
+					m_EditorCamera->SetDistance(10);
+				}
+				else if (selectedEntity && m_SecondViewportHovered && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				{
+					m_SecondEditorCamera->Focus(selectedEntity.GetTransform().Translation);
+					m_SecondEditorCamera->SetDistance(10);
 				}
 
 				break;
@@ -1437,66 +1574,39 @@ namespace Vortex {
 				}
 			}
 
+			// Tools
+			case Key::F2:
+			{
+				if (selectedEntity)
+					m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
+
+				break;
+			}
+			case Key::F11:
+			{
+				Window& window = Application::Get().GetWindow();
+				window.SetMaximized(!window.IsMaximized());
+
+				if (!window.IsMaximized())
+				{
+					window.CenterWindow();
+				}
+
+				break;
+			}
+
+			case Key::Delete:
+			{
+				if (selectedEntity)
+					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+
+				break;
+			}
+
 			case Key::Space:
 			{
 				if (controlPressed)
 					m_SceneViewportMaximized = !m_SceneViewportMaximized;
-
-				break;
-			}
-
-			case Key::Q:
-			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
-					OnNoGizmoSelected();
-
-				break;
-			}
-			case Key::W:
-			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
-				{
-					if (altPressed && selectedEntity)
-					{
-						TransformComponent& transformComponent = selectedEntity.GetTransform();
-						transformComponent.Translation = Math::vec3(0.0f);
-					}
-
-					OnTranslationToolSelected();
-				}
-
-				break;
-			}
-			case Key::E:
-			{
-				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
-				{
-					if (altPressed && selectedEntity)
-					{
-						TransformComponent& transformComponent = selectedEntity.GetTransform();
-						transformComponent.SetRotationEuler(Math::vec3(0.0f));
-					}
-
-					OnRotationToolSelected();
-				}
-
-				break;
-			}
-			case Key::R:
-			{
-				if (controlPressed)
-					ScriptEngine::ReloadAssembly();
-
-				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
-				{
-					if (altPressed && selectedEntity)
-					{
-						TransformComponent& transformComponent = selectedEntity.GetTransform();
-						transformComponent.Scale = Math::vec3(1.0f);
-					}
-
-					OnScaleToolSelected();
-				}
 
 				break;
 			}
@@ -1514,7 +1624,9 @@ namespace Vortex {
 		{
 			case MouseButton::Left:
 			{
-				if (m_SceneViewportHovered && !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed)
+				bool allowedToClick = !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed;
+
+				if ((m_SceneViewportHovered || m_SecondViewportHovered) && allowedToClick)
 				{
 					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 
@@ -1596,6 +1708,8 @@ namespace Vortex {
 
 		m_EditorCamera->Focus({ 0, 0, 0 });
 		m_EditorCamera->SetDistance(10);
+		m_SecondEditorCamera->Focus({ 0, 0, 0 });
+		m_SecondEditorCamera->SetDistance(10);
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
@@ -1641,11 +1755,7 @@ namespace Vortex {
 			m_EditorScene = newScene;
 			SetSceneContext(m_EditorScene);
 
-			if (m_EditorCamera)
-			{
-				m_EditorCamera->Focus({ 0, 0, 0 });
-				m_EditorCamera->SetDistance(10);
-			}
+			ResetEditorCameras();
 
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
@@ -1851,6 +1961,20 @@ namespace Vortex {
 		m_SceneRendererPanel.SetSceneContext(scene);
 	}
 
+	void EditorLayer::ResetEditorCameras()
+	{
+		if (m_EditorCamera)
+		{
+			m_EditorCamera->Focus({ 0, 0, 0 });
+			m_EditorCamera->SetDistance(10);
+		}
+		if (m_SecondEditorCamera)
+		{
+			m_EditorCamera->Focus({ 0, 0, 0 });
+			m_EditorCamera->SetDistance(10);
+		}
+	}
+
 	void EditorLayer::OnNoGizmoSelected()
 	{
 		m_GizmoType = -1; // Invalid gizmo
@@ -1858,20 +1982,17 @@ namespace Vortex {
 
 	void EditorLayer::OnTranslationToolSelected()
 	{
-		if (m_SceneState != SceneState::Play)
-			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	void EditorLayer::OnRotationToolSelected()
 	{
-		if (m_SceneState != SceneState::Play)
-			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 	}
 
 	void EditorLayer::OnScaleToolSelected()
 	{
-		if (m_SceneState != SceneState::Play)
-			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+		m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
 
 }

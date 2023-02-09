@@ -15,6 +15,8 @@
 #include "Panels/ConsolePanel.h"
 #include "Panels/AboutPanel.h"
 
+#include <Vortex/Scene/SceneRenderer.h>
+
 namespace Vortex {
 
 	class EditorCamera;
@@ -34,7 +36,7 @@ namespace Vortex {
 		void OnScenePanelRender();
 		void OnAssetDropped(bool& meshImportPopupOpen);
 		void OnMeshImportPopupOpened(bool& meshImportPopupOpen);
-		void OnGizmosRender();
+		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
 		void OnSecondViewportRender();
 		void OnEvent(Event& e) override;
 
@@ -42,7 +44,7 @@ namespace Vortex {
 		void UI_GizmosToolbar();
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();
-		void OnOverlayRender();
+		void OnOverlayRender(EditorCamera* editorCamera);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 
@@ -93,10 +95,14 @@ namespace Vortex {
 
 		void DuplicateSelectedEntity();
 		void SetSceneContext(const SharedRef<Scene>& scene);
+		void ResetEditorCameras();
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
+		EditorCamera* m_SecondEditorCamera = nullptr;
 		SharedRef<Framebuffer> m_Framebuffer = nullptr;
+		SharedRef<Framebuffer> m_SecondViewportFramebuffer = nullptr;
+		SceneRenderer m_SecondViewportRenderer;
 
 		SharedRef<Scene> m_ActiveScene = nullptr;
 		SharedRef<Scene> m_EditorScene = nullptr;
@@ -108,6 +114,8 @@ namespace Vortex {
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
+		Math::vec2 m_SecondViewportSize{};
+		Math::vec2 m_SecondViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_MousePosLastFrame = Math::vec2();
 
 		int32_t m_GizmoType = -1;
@@ -117,7 +125,13 @@ namespace Vortex {
 		bool m_ShowSceneCreateEntityMenu = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
+		bool m_SecondViewportFocused = false;
+		bool m_SecondViewportHovered = false;
 		bool m_SceneViewportMaximized = false;
+		bool m_AllowViewportCameraEvents = false;
+		bool m_AllowSecondViewportCameraEvents = false;
+		bool m_StartedClickInViewport = false;
+		bool m_StartedClickInSecondViewport = false;
 
 		uint32_t m_TranslationMode = 0; // Local mode
 

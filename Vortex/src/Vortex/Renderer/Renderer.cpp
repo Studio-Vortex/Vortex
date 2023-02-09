@@ -891,7 +891,7 @@ namespace Vortex {
 	{
 		switch (stage)
 		{
-			case Vortex::PostProcessStage::Bloom: return 1;
+			case PostProcessStage::Bloom: return 1;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown post process stage!");
@@ -931,8 +931,6 @@ namespace Vortex {
 			const FramebufferProperties& props = sceneFramebuffer->GetProperties();
 			CreateBlurFramebuffer(props.Width, props.Height);
 		}
-
-		sceneFramebuffer->Unbind();
 
 		bool horizontal = true;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
