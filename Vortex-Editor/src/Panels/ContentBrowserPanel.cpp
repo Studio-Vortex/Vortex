@@ -272,7 +272,16 @@ public class Untitled : Entity
 
 				if (Gui::MenuItem("Open in Explorer"))
 				{
-					FileDialogue::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
+					if (std::filesystem::is_directory(currentPath))
+					{
+						FileDialogue::OpenInFileExplorer(currentPath.string().c_str());
+					}
+					else
+					{
+						std::filesystem::path parentDirectory = FileSystem::GetParentDirectory(currentPath);
+						FileDialogue::OpenInFileExplorer(parentDirectory.string().c_str());
+					}
+
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
@@ -438,16 +447,19 @@ public class Untitled : Entity
 				Gui::EndDragDropSource();
 			}
 
-			// Double click to enter into a directory
+			// Double click to enter into a directory or open the file
 			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				if (directoryEntry.is_directory())
 				{
 					m_CurrentDirectory /= currentPath.filename();
 
-					// We also need to reset the search input text here
 					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-					m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+					m_SearchInputTextFilter.Build();
+				}
+				else
+				{
+					FileDialogue::OpenInFileExplorer(currentPath.string().c_str());
 				}
 			}
 

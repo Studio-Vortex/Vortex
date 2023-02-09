@@ -318,9 +318,13 @@ namespace Vortex {
 				}
 			}
 
- 			vertex.Normal = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }, 1.0f));
-			vertex.Tangent = Math::vec3(0.0f);
-			vertex.BiTangent = Math::vec3(0.0f);
+			if (mesh->HasNormals())
+			{
+				Math::vec3 normal(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+				Math::vec4 normalXYZW(normal, 1.0f);
+ 				vertex.Normal = Math::vec3(transform * normalXYZW);
+			}
+
 			if (mesh->HasTangentsAndBitangents())
 			{
 				vertex.Tangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z}, 1.0f));
