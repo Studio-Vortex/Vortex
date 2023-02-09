@@ -990,7 +990,7 @@ namespace Vortex {
 
 					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
 					if (std::filesystem::is_directory(skyboxPath) || std::filesystem::path(skyboxPath).filename().extension() == ".hdr")
-						skybox->SetFilepath(skyboxPath.string());
+						skybox->LoadFromFilepath(skyboxPath.string());
 					else
 						VX_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxPath.filename().string());
 				}

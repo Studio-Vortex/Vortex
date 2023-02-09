@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/Texture.h"
 
 namespace Vortex {
 
@@ -11,8 +12,8 @@ namespace Vortex {
 		OpenGLSkybox(const std::string& filepath);
 		~OpenGLSkybox() override;
 
-		inline void SetFilepath(const std::string& filepath) override;
-		inline const std::string& GetFilepath() const override { return m_Filepath; }
+		void LoadFromFilepath(const std::string& filepath) override;
+		inline const std::string& GetFilepath() const override { return m_HDREnvironmentMap->GetPath(); }
 
 		void Bind() const override;
 		void Unbind() const override;
@@ -25,18 +26,16 @@ namespace Vortex {
 
 		void Reload() override;
 
-		uint32_t GetRendererID() const override { return m_RendererID; }
+		inline uint32_t GetRendererID() const override { return m_HDREnvironmentMap->GetRendererID(); }
 
-		inline bool IsLoaded() const override { return m_IsLoaded; }
+		inline bool IsLoaded() const override { return m_HDREnvironmentMap->IsLoaded(); }
 
 	private:
 		void LoadEquirectangularMapFromPath(const std::string& path);
 		void LoadSkybox(const std::string& filepath);
 
 	private:
-		uint32_t m_RendererID = 0;
-		std::string m_Filepath;
-		bool m_IsLoaded = false;
+		SharedRef<Texture2D> m_HDREnvironmentMap = nullptr;
 		bool m_PathChanged = false;
 		bool m_IsDirty = false;
 	};

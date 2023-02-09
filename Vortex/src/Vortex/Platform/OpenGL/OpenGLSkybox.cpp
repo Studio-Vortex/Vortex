@@ -9,84 +9,47 @@
 namespace Vortex {
 
 	OpenGLSkybox::OpenGLSkybox(const std::string& filepath)
-		: m_Filepath(filepath)
 	{
-		VX_PROFILE_FUNCTION();
-
 		LoadSkybox(filepath);
 	}
 
-	OpenGLSkybox::~OpenGLSkybox()
-	{
-		VX_PROFILE_FUNCTION();
+	OpenGLSkybox::~OpenGLSkybox() { }
 
-		if (m_RendererID)
-			glDeleteTextures(1, &m_RendererID);
-	}
-
-	inline void OpenGLSkybox::SetFilepath(const std::string& filepath)
+	void OpenGLSkybox::LoadFromFilepath(const std::string& filepath)
 	{
-		m_Filepath = filepath;
-		LoadSkybox(m_Filepath);
-		m_PathChanged = true;
+		LoadSkybox(filepath);
 	}
 
 	void OpenGLSkybox::Bind() const
 	{
 		VX_PROFILE_FUNCTION();
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		m_HDREnvironmentMap->Bind();
 	}
 
 	void OpenGLSkybox::Unbind() const
 	{
 		VX_PROFILE_FUNCTION();
 
-		glBindTexture(GL_TEXTURE_2D, 0);
+		m_HDREnvironmentMap->Unbind();
 	}
 
 	void OpenGLSkybox::Reload()
 	{
-		if (m_RendererID)
-			glDeleteTextures(1, &m_RendererID);
+		VX_PROFILE_FUNCTION();
 
-		LoadSkybox(m_Filepath);
+		LoadSkybox(m_HDREnvironmentMap->GetPath());
 	}
 
-	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::string& path)
+	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::string& filepath)
 	{
-		// Load HDR EquirectangularMap
-		stbi_set_flip_vertically_on_load(true);
+		VX_PROFILE_FUNCTION();
 
-		int width, height, channels;
-		float* data = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
-
-		if (!data)
-		{
-			VX_CORE_ASSERT(false, "Failed to load HDR Environment Map from path: {}", path.c_str());
-			return;
-		}
-
-		glGenTextures(1, &m_RendererID);
-		glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-
-		m_IsLoaded = true;
+		m_HDREnvironmentMap = Texture2D::Create(filepath, TextureWrap::Clamp);
 	}
 
 	void OpenGLSkybox::LoadSkybox(const std::string& filepath)
 	{
-		if (m_RendererID)
-			glDeleteTextures(1, &m_RendererID);
-
 		if (std::filesystem::path(filepath).filename().extension() == ".hdr")
 		{
 			LoadEquirectangularMapFromPath(filepath);

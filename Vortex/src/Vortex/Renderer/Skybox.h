@@ -11,7 +11,7 @@ namespace Vortex {
 	public:
 		virtual ~Skybox() = default;
 
-		virtual void SetFilepath(const std::string& filepath) = 0;
+		virtual void LoadFromFilepath(const std::string& filepath) = 0;
 		virtual const std::string& GetFilepath() const = 0;
 
 		virtual void Bind() const = 0;

@@ -52,57 +52,89 @@ namespace Vortex {
 			stbi_set_flip_vertically_on_load(false);
 
 		int width, height, channels;
-		stbi_uc* data = nullptr;
-		{
-			VX_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)")
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		}
-		VX_CORE_ASSERT(data, "Failed to load Image!");
 
-		if (data)
+		float* dataF32 = nullptr;
+		stbi_uc* data = nullptr;
+
+		if (stbi_is_hdr(path.c_str()))
 		{
+			{
+				VX_PROFILE_SCOPE("stbi_loadf - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)")
+				dataF32 = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+			}
+			VX_CORE_ASSERT(dataF32, "Failed to load HDR Image!");
+
 			m_Width = width;
 			m_Height = height;
 
-			GLenum internalFormat = 0, dataFormat = 0;
-			if (channels == 4)
-			{
-				internalFormat = GL_RGBA8;
-				dataFormat = GL_RGBA;
-			}
-			else if (channels == 3)
-			{
-				internalFormat = GL_RGB8;
-				dataFormat = GL_RGB;
-			}
-			else if (channels == 1)
-			{
-				internalFormat = GL_R8;
-				dataFormat = GL_RED;
-			}
-
-			m_InternalFormat = internalFormat;
-			m_DataFormat = dataFormat;
-
-			VX_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
-
-			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-			glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
-
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glGenTextures(1, &m_RendererID);
+			glBindTexture(GL_TEXTURE_2D, m_RendererID);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_Width, m_Height, 0, GL_RGB, GL_FLOAT, dataF32);
 
 			int wrap = Utils::VortexTextureWrapModeToGL(wrapMode);
 
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, wrap);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
-			glGenerateTextureMipmap(m_RendererID);
-
-			stbi_image_free(data);
+			stbi_image_free(dataF32);
 
 			m_IsLoaded = true;
+		}
+		else
+		{
+			{
+				VX_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)")
+					data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			}
+			VX_CORE_ASSERT(data, "Failed to load Image!");
+
+			if (data)
+			{
+				m_Width = width;
+				m_Height = height;
+
+				GLenum internalFormat = 0, dataFormat = 0;
+				if (channels == 4)
+				{
+					internalFormat = GL_RGBA8;
+					dataFormat = GL_RGBA;
+				}
+				else if (channels == 3)
+				{
+					internalFormat = GL_RGB8;
+					dataFormat = GL_RGB;
+				}
+				else if (channels == 1)
+				{
+					internalFormat = GL_R8;
+					dataFormat = GL_RED;
+				}
+
+				m_InternalFormat = internalFormat;
+				m_DataFormat = dataFormat;
+
+				VX_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
+
+				glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+				glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
+
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+				int wrap = Utils::VortexTextureWrapModeToGL(wrapMode);
+
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, wrap);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
+
+				glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+				glGenerateTextureMipmap(m_RendererID);
+
+				stbi_image_free(data);
+
+				m_IsLoaded = true;
+			}
 		}
 	}
 
