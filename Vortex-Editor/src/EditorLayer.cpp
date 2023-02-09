@@ -115,12 +115,15 @@ namespace Vortex {
 			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
-			m_SecondViewportSize.x > 0.0f && m_SecondViewportSize.y > 0.0f && // zero sized framebuffer is invalid
-			(props.Width != m_SecondViewportSize.x || props.Height != m_SecondViewportSize.y))
+		if (m_ShowSecondViewport)
 		{
-			m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
-			m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+			if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
+				m_SecondViewportSize.x > 0.0f && m_SecondViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+				(props.Width != m_SecondViewportSize.x || props.Height != m_SecondViewportSize.y))
+			{
+				m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+				m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+			}
 		}
 
 		// Bind Render Target and Clear Attachments
@@ -354,6 +357,23 @@ namespace Vortex {
 
 		if (m_ShowSecondViewport)
 			OnSecondViewportRender();
+
+		if (m_ShowSceneCreateEntityMenu)
+		{
+			Gui::OpenPopup("SceneCreateEntityMenu");
+			m_ShowSceneCreateEntityMenu = false;
+		}
+
+		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
+			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+
+		if (Gui::BeginPopup("SceneCreateEntityMenu"))
+		{
+			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
+
+			Gui::PopStyleVar();
+			Gui::EndPopup();
+		}
 
 		Gui::End();
 	}
@@ -596,23 +616,6 @@ namespace Vortex {
 		OnAssetDropped(meshImportPopupOpen);
 
 		OnMeshImportPopupOpened(meshImportPopupOpen);
-
-		if (m_ShowSceneCreateEntityMenu)
-		{
-			Gui::OpenPopup("SceneCreateEntityMenu");
-			m_ShowSceneCreateEntityMenu = false;
-		}
-
-		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
-			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
-
-		if (Gui::BeginPopup("SceneCreateEntityMenu"))
-		{
-			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
-
-			Gui::PopStyleVar();
-			Gui::EndPopup();
-		}
 
 		if (Gui::IsItemVisible())
 		{
@@ -1505,12 +1508,12 @@ namespace Vortex {
 
 			case Key::F:
 			{
-				if (selectedEntity && m_SceneViewportHovered && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				if (selectedEntity && m_AllowViewportCameraEvents && !ImGuizmo::IsUsing() && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					m_EditorCamera->Focus(selectedEntity.GetTransform().Translation);
 					m_EditorCamera->SetDistance(10);
 				}
-				else if (selectedEntity && m_SecondViewportHovered && !ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				else if (selectedEntity && m_AllowSecondViewportCameraEvents && !ImGuizmo::IsUsing() && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					m_SecondEditorCamera->Focus(selectedEntity.GetTransform().Translation);
 					m_SecondEditorCamera->SetDistance(10);

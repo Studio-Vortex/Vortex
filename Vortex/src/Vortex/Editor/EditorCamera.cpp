@@ -48,8 +48,8 @@ namespace Vortex {
 
 		if (!m_IsActive)
 		{
-			/*if (!UI::IsInputEnabled())
-				UI::SetInputEnabled(true);*/
+			if (!UI::IsInputEnabled())
+				UI::SetInputEnabled(true);
 
 			return;
 		}
