@@ -20,6 +20,14 @@ namespace Vortex {
 		LoadSkybox(filepath);
 	}
 
+    const std::string& OpenGLSkybox::GetFilepath() const
+    {
+		if (m_HDREnvironmentMap)
+			return m_HDREnvironmentMap->GetPath();
+
+		return "";
+    }
+
 	void OpenGLSkybox::Bind() const
 	{
 		VX_PROFILE_FUNCTION();
@@ -39,6 +47,22 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		LoadSkybox(m_HDREnvironmentMap->GetPath());
+	}
+
+	uint32_t OpenGLSkybox::GetRendererID() const
+	{
+		if (m_HDREnvironmentMap)
+			return m_HDREnvironmentMap->GetRendererID();
+
+		return 0;
+	}
+
+	bool OpenGLSkybox::IsLoaded() const
+	{
+		if (m_HDREnvironmentMap)
+			return m_HDREnvironmentMap->IsLoaded();
+
+		return false;
 	}
 
 	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::string& filepath)

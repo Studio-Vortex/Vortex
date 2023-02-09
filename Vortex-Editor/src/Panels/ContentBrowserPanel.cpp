@@ -458,12 +458,15 @@ public class Untitled : Entity
 					icon = EditorResources::FontIcon;
 				else if (extension == ".wav" || extension == ".mp3")
 					icon = EditorResources::AudioFileIcon;
-				else if (extension == ".hdr")
-					icon = EditorResources::HDRImageIcon;
-				else if (extension == ".png" || extension == ".jpg" || extension == ".tga")
+				else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".hdr")
 				{
 					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
-						m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
+					{
+						if (extension == ".hdr")
+							m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string(), TextureWrap::Clamp);
+						else
+							m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
+					}
 
 					icon = m_TextureMap[currentPath.string()];
 				}

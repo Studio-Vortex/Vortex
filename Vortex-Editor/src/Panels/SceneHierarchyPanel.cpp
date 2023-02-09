@@ -974,11 +974,19 @@ namespace Vortex {
 			
 			UI::BeginPropertyGrid();
 
-			std::string skyboxSourcePath = skybox->GetFilepath();
-			std::string relativeSkyboxPath = FileSystem::Relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
-			UI::Property("Source", relativeSkyboxPath, true);
+			std::string relativeSkyboxPath;
 
-			UI::EndPropertyGrid();
+			if (skybox->IsLoaded())
+			{
+				std::string skyboxSourcePath = skybox->GetFilepath();
+				relativeSkyboxPath = FileSystem::Relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
+			}
+			else
+			{
+				relativeSkyboxPath = "";
+			}
+
+			UI::Property("Source", relativeSkyboxPath, true);
 
 			// Accept a Skybox Directory from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -989,34 +997,40 @@ namespace Vortex {
 					std::filesystem::path skyboxPath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
-					if (std::filesystem::is_directory(skyboxPath) || std::filesystem::path(skyboxPath).filename().extension() == ".hdr")
+					if (skyboxPath.filename().extension() == ".hdr")
 						skybox->LoadFromFilepath(skyboxPath.string());
 					else
-						VX_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxPath.filename().string());
+						VX_CORE_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
-			if (component.Source->IsDirty())
+			UI::EndPropertyGrid();
+
+			if (skybox->IsLoaded())
 			{
-				if (Gui::Button("Regenerate Environment Map"))
+				if (skybox->IsDirty())
 				{
-					component.Source->Reload();
-					component.Source->SetIsDirty(false);
+					if (Gui::Button("Regenerate Environment Map"))
+					{
+						skybox->Reload();
+						skybox->SetIsDirty(false);
+					}
+
+					Gui::SameLine();
+					UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
 				}
 
-				Gui::SameLine();
-				UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
+				UI::BeginPropertyGrid();
+
+				if (UI::Property("Rotation", component.Rotation))
+					skybox->SetIsDirty(true);
+
+				UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+
+				UI::EndPropertyGrid();
 			}
-
-			UI::BeginPropertyGrid();
-
-			if (UI::Property("Rotation", component.Rotation))
-				component.Source->SetIsDirty(true);
-
-			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
-
-			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)

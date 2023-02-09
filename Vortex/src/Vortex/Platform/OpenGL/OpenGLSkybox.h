@@ -13,22 +13,22 @@ namespace Vortex {
 		~OpenGLSkybox() override;
 
 		void LoadFromFilepath(const std::string& filepath) override;
-		inline const std::string& GetFilepath() const override { return m_HDREnvironmentMap->GetPath(); }
+		const std::string& GetFilepath() const override;
 
 		void Bind() const override;
 		void Unbind() const override;
 
-		bool PathChanged() const override { return m_PathChanged; }
-		void SetPathChanged(bool changed) override { m_PathChanged = changed; }
+		inline bool PathChanged() const override { return m_PathChanged; }
+		inline void SetPathChanged(bool changed) override { m_PathChanged = changed; }
 
-		bool IsDirty() const override { return m_IsDirty; }
-		void SetIsDirty(bool dirty) override { m_IsDirty = dirty; }
+		inline bool IsDirty() const override { return m_IsDirty; }
+		inline void SetIsDirty(bool dirty) override { m_IsDirty = dirty; }
 
 		void Reload() override;
 
-		inline uint32_t GetRendererID() const override { return m_HDREnvironmentMap->GetRendererID(); }
+		uint32_t GetRendererID() const override;
 
-		inline bool IsLoaded() const override { return m_HDREnvironmentMap->IsLoaded(); }
+		bool IsLoaded() const override;
 
 	private:
 		void LoadEquirectangularMapFromPath(const std::string& path);
