@@ -26,8 +26,11 @@ namespace Vortex {
 		std::string projectPath = m_ProjectPath.string();
 		UI::Property("Project Location", projectPath, true);
 
-		std::string startupScene = m_StartupScene.string();
-		UI::Property("Startup Scene", startupScene, true);
+		std::string startupSceneFullPath = m_StartupScene.string();
+		size_t lastSlashPos = startupSceneFullPath.find_last_of("/\\");
+		std::string filepathWithExtension = startupSceneFullPath.substr(lastSlashPos);
+		std::string startupSceneFilename = FileSystem::RemoveFileExtension(filepathWithExtension);
+		UI::Property("Startup Scene", startupSceneFilename, true);
 
 		UI::EndPropertyGrid();
 

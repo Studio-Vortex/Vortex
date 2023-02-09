@@ -3,6 +3,7 @@
 #include "Vortex/Core/Math.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Gui/Colors.h"
+#include "Vortex/Editor/FontAwesome.h"
 
 #include <imgui_internal.h>
 
@@ -183,6 +184,19 @@ namespace Vortex::UI {
 	{
 		Gui::PopID();
 		s_UIContextID--;
+	}
+
+	inline void PushFont(const char* fontName)
+	{
+		if (fontName == "Bold")
+			Gui::PushFont(Gui::GetIO().Fonts->Fonts[0]);
+		else if (fontName == "Large")
+			Gui::PushFont(Gui::GetIO().Fonts->Fonts[1]);
+	}
+
+	inline void PopFont()
+	{
+		Gui::PopFont();
 	}
 
 	inline void ShiftCursorX(float distance)

@@ -440,9 +440,43 @@ public class Untitled : Entity
 				const wchar_t* itemPath = relativePath.c_str();
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
 				Gui::BeginTooltip();
-				std::string path = directoryEntry.path().relative_path().string();
-				size_t lastSlash = path.find_last_of("/\\") + 1;
-				Gui::Text("%s", path.substr(lastSlash).c_str());
+
+				SharedRef<Texture2D> icon = nullptr;
+
+				if (extension == ".vortex")
+					icon = EditorResources::SceneIcon;
+				else if (extension == ".cs")
+					icon = EditorResources::CodeFileIcon;
+				else if (extension == ".obj")
+					icon = EditorResources::OBJIcon;
+				else if (extension == ".fbx")
+					icon = EditorResources::FBXIcon;
+				else if (extension == ".ttf" || extension == ".TTF")
+					icon = EditorResources::FontIcon;
+				else if (extension == ".wav" || extension == ".mp3")
+					icon = EditorResources::AudioFileIcon;
+				else if (extension == ".hdr")
+					icon = EditorResources::HDRImageIcon;
+				else if (extension == ".png" || extension == ".jpg" || extension == ".tga")
+				{
+					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
+						m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
+
+					icon = m_TextureMap[currentPath.string()];
+				}
+
+				if (icon != nullptr)
+				{
+					UI::ImageEx(icon, { 12.0f, 12.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+					Gui::SameLine();
+				}
+
+				std::string fullPath = directoryEntry.path().relative_path().string();
+				size_t lastSlashPos = fullPath.find_last_of("/\\") + 1;
+				std::string filenameWithExtension = fullPath.substr(lastSlashPos);
+				std::string filename = FileSystem::RemoveFileExtension(filenameWithExtension);
+				Gui::Text("%s", filename.c_str());
+
 				Gui::EndTooltip();
 				Gui::EndDragDropSource();
 			}

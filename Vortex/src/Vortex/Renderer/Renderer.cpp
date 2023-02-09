@@ -895,6 +895,7 @@ namespace Vortex {
 		}
 
 		VX_CORE_ASSERT(false, "Unknown post process stage!");
+		return 0;
 	}
 
 	PostProcessStage Renderer::FindHighestPriortyStage(PostProcessStage* stages, uint32_t count)

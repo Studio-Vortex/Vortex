@@ -120,6 +120,12 @@ namespace Vortex {
 		return std::filesystem::relative(path, base);
 	}
 
+    std::string FileSystem::RemoveFileExtension(const std::filesystem::path& filepath)
+    {
+		std::string filename = filepath.stem().string();
+        return filename;
+    }
+
 	std::filesystem::path FileSystem::GetCurrentPath()
 	{
 		return std::filesystem::current_path();

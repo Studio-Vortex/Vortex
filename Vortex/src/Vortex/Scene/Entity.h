@@ -61,28 +61,28 @@ namespace Vortex {
 			return m_Scene->m_Registry.all_of<TComponent...>(m_EntityID);
 		}
 
-		UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
+		inline UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
 
-		Scene* GetContextScene() { return m_Scene; }
+		inline Scene* GetContextScene() { return m_Scene; }
 		
-		const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
-		const std::string& GetMarker() { return GetComponent<TagComponent>().Marker; }
+		inline const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
+		inline const std::string& GetMarker() { return GetComponent<TagComponent>().Marker; }
 		
-		void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
-		TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
+		inline void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
+		inline TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
-		bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
-		void SetActive(bool active) { GetComponent<TagComponent>().IsActive = active; }
+		inline bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
+		inline void SetActive(bool active) { GetComponent<TagComponent>().IsActive = active; }
 
-		Entity GetParent() const { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
+		inline Entity GetParent() const { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 
-		UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
-		void SetParentUUID(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
+		inline UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
+		inline void SetParentUUID(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 
-		std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
-		const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
-		void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
-		void RemoveChild(UUID childUUID)
+		inline std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
+		inline const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
+		inline void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
+		inline void RemoveChild(UUID childUUID)
 		{
 			auto& children = GetComponent<HierarchyComponent>().Children;
 			auto it = std::find(children.begin(), children.end(), childUUID);
@@ -90,9 +90,9 @@ namespace Vortex {
 			children.erase(it);
 		}
 
-		bool HasParent() { return (bool)m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
+		inline bool HasParent() { return (bool)m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 
-		bool IsAncesterOf(Entity entity)
+		inline bool IsAncesterOf(Entity entity)
 		{
 			const auto& children = GetComponent<HierarchyComponent>().Children;
 
@@ -114,7 +114,7 @@ namespace Vortex {
 			return false;
 		}
 
-		bool IsDescendantOf(Entity entity)
+		inline bool IsDescendantOf(Entity entity)
 		{
 			return entity.IsAncesterOf(*this);
 		}

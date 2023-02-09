@@ -397,6 +397,8 @@ namespace Vortex {
 
 			Gui::SetCursorPosX(10.0f);
 			Gui::Text("Hovered Entity: %s", name);
+
+			Gui::Text("Icon Test: %s", VX_ICON_CLOUD);
 		}
 
 		Gui::End();
