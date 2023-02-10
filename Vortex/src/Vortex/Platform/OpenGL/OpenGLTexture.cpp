@@ -59,7 +59,7 @@ namespace Vortex {
 		if (stbi_is_hdr(path.c_str()))
 		{
 			{
-				VX_PROFILE_SCOPE("stbi_loadf - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)")
+				VX_PROFILE_SCOPE("stbi_loadf - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)");
 				dataF32 = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 			}
 			VX_CORE_ASSERT(dataF32, "Failed to load HDR Image!");
@@ -85,8 +85,8 @@ namespace Vortex {
 		else
 		{
 			{
-				VX_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)")
-					data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+				VX_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&, bool)");
+				data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 			}
 			VX_CORE_ASSERT(data, "Failed to load Image!");
 
