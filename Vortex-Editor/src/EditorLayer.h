@@ -110,15 +110,18 @@ namespace Vortex {
 		std::filesystem::path m_EditorScenePath;
 
 		Entity m_HoveredEntity;
+
+		std::string m_ModelFilepath = "";
+		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 		Entity m_ModelEntityToEdit;
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
 		Math::vec2 m_SecondViewportSize{};
 		Math::vec2 m_SecondViewportBounds[2] = { Math::vec2() };
-		Math::vec2 m_MousePosLastFrame = Math::vec2();
 
 		int32_t m_GizmoType = -1;
+		uint32_t m_TranslationMode = 0; // Local mode
 
 		bool m_ShowScenePanel = true;
 		bool m_ShowSecondViewport = false;
@@ -133,12 +136,7 @@ namespace Vortex {
 		bool m_StartedClickInViewport = false;
 		bool m_StartedClickInSecondViewport = false;
 
-		uint32_t m_TranslationMode = 0; // Local mode
-
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
-
-		std::string m_ModelFilepath = "";
-		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
 
 		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;

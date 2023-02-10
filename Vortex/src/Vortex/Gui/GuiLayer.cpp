@@ -61,6 +61,8 @@ namespace Vortex {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+
 		style.WindowTitleAlign = { 0.5f, 0.5f };
 		style.WindowMenuButtonPosition = ImGuiDir_Right;
 		style.GrabRounding = 2.5f;

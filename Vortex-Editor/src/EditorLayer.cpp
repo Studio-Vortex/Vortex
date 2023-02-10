@@ -135,14 +135,6 @@ namespace Vortex {
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
-		const Math::vec2& mousePos = Input::GetMousePosition();
-		const bool mousePosChanged = mousePos != m_MousePosLastFrame;
-		const bool leftMoustButtonPressed = Input::IsMouseButtonPressed(MouseButton::Left);
-		const bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
-		const bool isUsingGizmo = ImGuizmo::IsUsing();
-
-		m_MousePosLastFrame = Input::GetMousePosition();
-
 		m_EditorCamera->SetActive(m_AllowViewportCameraEvents);
 		m_EditorCamera->OnUpdate(delta);
 
@@ -319,12 +311,16 @@ namespace Vortex {
 
 		style.WindowMinSize.x = minWinSizeX;
 
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport)))
+		if (Gui::IsMouseClicked(ImGuiMouseButton_Right) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport))
 		{
-			if (m_SceneState != SceneState::Play)
+			ImGuiWindow* hoveredWindow = GImGui->HoveredWindow;
+			if (hoveredWindow)
 			{
-				ImGui::FocusWindow(GImGui->HoveredWindow);
-				Input::SetCursorMode(CursorMode::Normal);
+				std::string name = hoveredWindow->Name;
+				if (name == "Scene" || name == "Second Viewport")
+				{
+					Gui::FocusWindow(hoveredWindow);
+				}
 			}
 		}
 
