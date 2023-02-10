@@ -311,7 +311,7 @@ namespace Vortex {
 
 		style.WindowMinSize.x = minWinSizeX;
 
-		if (Gui::IsMouseClicked(ImGuiMouseButton_Right) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport))
+		if ((Gui::IsMouseClicked(ImGuiMouseButton_Left) || Gui::IsMouseClicked(ImGuiMouseButton_Right)) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport))
 		{
 			ImGuiWindow* hoveredWindow = GImGui->HoveredWindow;
 			if (hoveredWindow)
