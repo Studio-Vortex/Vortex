@@ -886,13 +886,16 @@ namespace Vortex {
 
 		#endregion
 
-		#region RandomDevice
+		#region Random
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static int RandomDevice_RangedInt32(int min, int max);
+		internal extern static int Random_RangedInt32(int min, int max);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float RandomDevice_RangedFloat(float min, float max);
+		internal extern static float Random_RangedFloat(float min, float max);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Random_Float();
 
 		#endregion
 
@@ -1042,22 +1045,22 @@ namespace Vortex {
 
 		#endregion
 
-		#region Debug
+		#region Log
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Log(string message);
+		internal extern static void Log_Print(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Info(string message);
+		internal extern static void Log_Info(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Warn(string message);
+		internal extern static void Log_Warn(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Error(string message);
+		internal extern static void Log_Error(string message);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Critical(string message);
+		internal extern static void Log_Fatal(string message);
 
 		#endregion
 	}

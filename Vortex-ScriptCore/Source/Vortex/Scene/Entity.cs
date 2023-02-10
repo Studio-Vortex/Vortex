@@ -7,15 +7,10 @@ namespace Vortex {
 		public readonly ulong ID;
 		public Transform transform;
 
-		public string Tag
-		{
-			get => InternalCalls.Entity_GetTag(ID);
-		}
+		public string Tag => InternalCalls.Entity_GetTag(ID);
+		public string Marker => InternalCalls.Entity_GetMarker(ID);
 
-		public string Marker
-		{
-			get => InternalCalls.Entity_GetMarker(ID);
-		}
+		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
 		protected Entity() { ID = 0; }
 
@@ -105,8 +100,6 @@ namespace Vortex {
 
 			return new Entity(entityID);
 		}
-
-		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
 		public Entity GetChild(uint index)
 		{

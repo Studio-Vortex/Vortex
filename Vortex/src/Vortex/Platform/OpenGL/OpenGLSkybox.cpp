@@ -32,14 +32,16 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_HDREnvironmentMap->Bind();
+		if (m_HDREnvironmentMap)
+			m_HDREnvironmentMap->Bind();
 	}
 
 	void OpenGLSkybox::Unbind() const
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_HDREnvironmentMap->Unbind();
+		if (m_HDREnvironmentMap)
+			m_HDREnvironmentMap->Unbind();
 	}
 
 	void OpenGLSkybox::Reload()

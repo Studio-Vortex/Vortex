@@ -3154,11 +3154,8 @@ namespace Vortex {
 
 #pragma region Random
 
-	static int RandomDevice_RangedInt32(int min, int max)
+	static int Random_RangedInt32(int min, int max)
 	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
 		std::random_device randomDevice;
 		std::mt19937 engine(randomDevice());
 		std::uniform_int_distribution<int> uniformDistribution(min, max);
@@ -3166,27 +3163,18 @@ namespace Vortex {
 		return uniformDistribution(engine);
 	}
 
-	static float RandomDevice_RangedFloat(float min, float max)
+	static float Random_RangedFloat(float min, float max)
 	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		std::random_device randomDevice;
+		std::mt19937 engine(randomDevice());
+		std::uniform_real_distribution<float> uniformDistribution(min, max);
 
-		static bool seedGenerated = false;
+		return uniformDistribution(engine);
+	}
 
-		if (!seedGenerated)
-		{
-			srand((uint32_t)time(0));
-			seedGenerated = true;
-		}
-
-		auto createRandomFloat = [max]() { return (float)rand() / (float)RAND_MAX * (max); };
-
-		float randomValue = createRandomFloat();
-
-		while (randomValue < min)
-			randomValue = createRandomFloat();
-
-		return randomValue;
+	static float Random_Float()
+	{
+		return (float)(rand() / (float)rand());
 	}
 
 #pragma endregion
@@ -3477,49 +3465,40 @@ namespace Vortex {
 
 #pragma endregion
 
-#pragma region Debug
+#pragma region Log
 
-	static void Debug_Log(MonoString* message)
+	static void Log_Print(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		VX_CONSOLE_LOG_TRACE("{}", managedString);
-
 		mono_free(managedString);
 	}
 	
-	static void Debug_Info(MonoString* message)
+	static void Log_Info(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		VX_CONSOLE_LOG_INFO("{}", managedString);
-
 		mono_free(managedString);
 	}
 	
-	static void Debug_Warn(MonoString* message)
+	static void Log_Warn(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		VX_CONSOLE_LOG_WARN("{}", managedString);
-
 		mono_free(managedString);
 	}
 	
-	static void Debug_Error(MonoString* message)
+	static void Log_Error(MonoString* message)
 	{
 		char* managedString = mono_string_to_utf8(message);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		VX_CONSOLE_LOG_ERROR("{}", managedString);
+		mono_free(managedString);
+	}
 
+	static void Log_Fatal(MonoString* message)
+	{
+		char* managedString = mono_string_to_utf8(message);
+		VX_CONSOLE_LOG_FATAL("{}", managedString);
 		mono_free(managedString);
 	}
 
@@ -3593,6 +3572,9 @@ namespace Vortex {
 
 	void ScriptRegistry::RegisterMethods()
 	{
+		// For Random
+		srand(time(0));
+
 		VX_ADD_INTERNAL_CALL(Application_Quit);
 		VX_ADD_INTERNAL_CALL(Application_GetSize);
 		VX_ADD_INTERNAL_CALL(Application_GetPosition);
@@ -3876,8 +3858,9 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(ParticleEmitterComponent_Start);
 		VX_ADD_INTERNAL_CALL(ParticleEmitterComponent_Stop);
 
-		VX_ADD_INTERNAL_CALL(RandomDevice_RangedInt32);
-		VX_ADD_INTERNAL_CALL(RandomDevice_RangedFloat);
+		VX_ADD_INTERNAL_CALL(Random_RangedInt32);
+		VX_ADD_INTERNAL_CALL(Random_RangedFloat);
+		VX_ADD_INTERNAL_CALL(Random_Float);
 
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI);
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI_D);
@@ -3924,10 +3907,11 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Gui_Text);
 		VX_ADD_INTERNAL_CALL(Gui_Button);
 
-		VX_ADD_INTERNAL_CALL(Debug_Log);
-		VX_ADD_INTERNAL_CALL(Debug_Info);
-		VX_ADD_INTERNAL_CALL(Debug_Warn);
-		VX_ADD_INTERNAL_CALL(Debug_Error);
+		VX_ADD_INTERNAL_CALL(Log_Print);
+		VX_ADD_INTERNAL_CALL(Log_Info);
+		VX_ADD_INTERNAL_CALL(Log_Warn);
+		VX_ADD_INTERNAL_CALL(Log_Error);
+		VX_ADD_INTERNAL_CALL(Log_Fatal);
 	}
 
 }
