@@ -74,7 +74,7 @@ namespace Vortex {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_CORE_TRACE(Application::Get().GetWindow().GetSize());
+
 		*outSize = Application::Get().GetWindow().GetSize();
 	}
 
@@ -107,7 +107,7 @@ namespace Vortex {
 
 		if (!primaryCameraEntity)
 		{
-			VX_CORE_WARN("Scene must include a primary camera to call debug render functions!");
+			VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
 			return;
 		}
 
@@ -136,7 +136,7 @@ namespace Vortex {
 
 		if (!primaryCameraEntity)
 		{
-			VX_CORE_WARN("Scene must include a primary camera to call debug render functions!");
+			VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
 			return;
 		}
 
@@ -202,7 +202,7 @@ namespace Vortex {
 
 		if (!entity)
 		{
-			VX_CORE_WARN("Scene.Instantiate called with Invalid Entity UUID!");
+			VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
 			return 0;
 		}
 
@@ -1040,7 +1040,7 @@ namespace Vortex {
 
 		if (!animation)
 		{
-			VX_CORE_WARN("Animation was invalid! exiting early");
+			VX_CORE_WARN_TAG("Scripting", "Animation was invalid! exiting early");
 			return;
 		}
 
@@ -2144,7 +2144,7 @@ namespace Vortex {
 
 		if (!entity.HasComponent<CharacterControllerComponent>())
 		{
-			VX_CORE_WARN("Trying to move entity without Character Controller!");
+			VX_CORE_WARN_TAG("Scripting", "Trying to move entity without Character Controller!");
 			return;
 		}
 
@@ -3485,7 +3485,7 @@ namespace Vortex {
 
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_TRACE("{}", managedString);
+		VX_CONSOLE_LOG_TRACE("{}", managedString);
 
 		mono_free(managedString);
 	}
@@ -3496,7 +3496,7 @@ namespace Vortex {
 
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_INFO("{}", managedString);
+		VX_CONSOLE_LOG_INFO("{}", managedString);
 
 		mono_free(managedString);
 	}
@@ -3507,7 +3507,7 @@ namespace Vortex {
 
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_WARN("{}", managedString);
+		VX_CONSOLE_LOG_WARN("{}", managedString);
 
 		mono_free(managedString);
 	}
@@ -3518,18 +3518,7 @@ namespace Vortex {
 
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_ERROR("{}", managedString);
-
-		mono_free(managedString);
-	}
-	
-	static void Debug_Critical(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		VX_CRITICAL("{}", managedString);
+		VX_CONSOLE_LOG_ERROR("{}", managedString);
 
 		mono_free(managedString);
 	}
@@ -3551,7 +3540,7 @@ namespace Vortex {
 
 			if (!managedType)
 			{
-				VX_CORE_ERROR("Could not find Component type {}", managedTypename);
+				VX_CORE_ERROR_TAG("Scripting", "Could not find Component type {}", managedTypename);
 				return;
 			}
 
@@ -3939,7 +3928,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Debug_Info);
 		VX_ADD_INTERNAL_CALL(Debug_Warn);
 		VX_ADD_INTERNAL_CALL(Debug_Error);
-		VX_ADD_INTERNAL_CALL(Debug_Critical);
 	}
 
 }

@@ -91,14 +91,14 @@ namespace Vortex {
 		if (!stream)
 		{
 			stream.close();
-			VX_CORE_ERROR("Failed to cache font atlas to {0}", filepath.string());
+			VX_CORE_ERROR_TAG("Font", "Failed to cache font atlas to {0}", filepath.string());
 			return;
 		}
 
 		stream.write((char*)&header, sizeof(AtlasHeader));
 		stream.write((char*)pixels, header.Width * header.Height * sizeof(float) * 4);
 
-		VX_CORE_INFO("Font Atlas successfully cached: {}", filepath.string());
+		VX_CORE_INFO_TAG("Font", "Font Atlas successfully cached: {}", filepath.string());
 	}
 
 	template <typename T, typename S, int N, GeneratorFunction<S, N> GenFunc>
@@ -237,12 +237,12 @@ namespace Vortex {
 		}
 
 		VX_CORE_ASSERT(glyphsLoaded >= 0, "No geometry glyphs were loaded!");
-		VX_CORE_TRACE("Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
+		VX_CORE_TRACE_TAG("Font", "Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
 
 		// List missing glyphs
 		if (glyphsLoaded < (int)charset.size())
 		{
-			VX_CORE_WARN("Missing {} {}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
+			VX_CORE_WARN_TAG("Font", "Missing {} {}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
 		}
 
 		if (fontInput.fontName)
@@ -274,7 +274,7 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CORE_ERROR("Error: Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->Glyphs.size());
+				VX_CORE_ERROR_TAG("Font", "Error: Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->Glyphs.size());
 				VX_CORE_ASSERT(false,  "");
 			}
 		}
@@ -284,9 +284,9 @@ namespace Vortex {
 		config.emSize = atlasPacker.getScale();
 		config.pxRange = atlasPacker.getPixelRange();
 		if (!fixedScale)
-			VX_CORE_TRACE("Glyph size: {0} pixels/EM", config.emSize);
+			VX_CORE_TRACE_TAG("Font", "Glyph size: {0} pixels/EM", config.emSize);
 		if (!fixedDimensions)
-			VX_CORE_TRACE("Atlas dimensions: {0} x {1}", config.width, config.height);
+			VX_CORE_TRACE_TAG("Font", "Atlas dimensions: {0} x {1}", config.width, config.height);
 
 
 		// Edge coloring

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Vortex.h>
+#include <Vortex/Editor/ConsolePanel.h>
 
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
@@ -12,7 +13,6 @@
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
-#include "Panels/ConsolePanel.h"
 #include "Panels/AboutPanel.h"
 
 #include <Vortex/Scene/SceneRenderer.h>

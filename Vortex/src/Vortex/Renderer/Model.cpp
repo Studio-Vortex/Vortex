@@ -40,7 +40,7 @@ namespace Vortex {
 
 		virtual void write(const char* message) override
 		{
-			VX_CORE_ERROR("Assimp error: {0}", message);
+			VX_CORE_ERROR_TAG("Mesh", "Assimp error: {0}", message);
 		}
 	};
 
@@ -162,14 +162,14 @@ namespace Vortex {
 
 		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
 
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
 
 		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
 		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
 			return;
 		}
 
@@ -183,14 +183,14 @@ namespace Vortex {
 	{
 		LogStream::Initialize();
 
-		VX_CORE_INFO("Loading Mesh: {}", m_Filepath.c_str());
+		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
 
 		Assimp::Importer importer;
 
 		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
 		{
-			VX_CORE_ERROR("Failed to load Mesh from: {}", m_Filepath.c_str());
+			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
 			return;
 		}
 

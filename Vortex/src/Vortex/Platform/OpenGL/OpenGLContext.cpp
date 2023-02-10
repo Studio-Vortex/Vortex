@@ -31,11 +31,11 @@ namespace Vortex {
 		});
 
 #ifdef VX_DEBUG
-		VX_CORE_INFO("OpenGL Info:");
-		VX_CORE_INFO("  Hardware:     {}", glGetString(GL_RENDERER));
-		VX_CORE_INFO("  Vendor:       {}", glGetString(GL_VENDOR));
-		VX_CORE_INFO("  Version:      {}", glGetString(GL_VERSION));
-		VX_CORE_INFO("  GLSL Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+		VX_CORE_INFO_TAG("RendererAPI", "OpenGL Info:");
+		VX_CORE_INFO_TAG("RendererAPI", "  Hardware:     {}", glGetString(GL_RENDERER));
+		VX_CORE_INFO_TAG("RendererAPI", "  Vendor:       {}", glGetString(GL_VENDOR));
+		VX_CORE_INFO_TAG("RendererAPI", "  Version:      {}", glGetString(GL_VERSION));
+		VX_CORE_INFO_TAG("RendererAPI", "  GLSL Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 		int major, minor;
 		glGetIntegerv(GL_MAJOR_VERSION, &major);

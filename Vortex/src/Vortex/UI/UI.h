@@ -37,6 +37,115 @@ namespace Vortex::UI {
 		return s_IDBuffer;
 	}
 
+	class ScopedColour
+	{
+	public:
+		ScopedColour(const ScopedColour&) = delete;
+		ScopedColour& operator=(const ScopedColour&) = delete;
+		template<typename T>
+		ScopedColour(ImGuiCol colourId, T colour) { ImGui::PushStyleColor(colourId, ImColor(colour).Value); }
+		~ScopedColour() { ImGui::PopStyleColor(); }
+	};
+
+	class ScopedFont
+	{
+	public:
+		ScopedFont(const ScopedFont&) = delete;
+		ScopedFont& operator=(const ScopedFont&) = delete;
+		ScopedFont(ImFont* font) { ImGui::PushFont(font); }
+		~ScopedFont() { ImGui::PopFont(); }
+	};
+
+	class ScopedID
+	{
+	public:
+		ScopedID(const ScopedID&) = delete;
+		ScopedID& operator=(const ScopedID&) = delete;
+		template<typename T>
+		ScopedID(T id) { ImGui::PushID(id); }
+		~ScopedID() { ImGui::PopID(); }
+	};
+
+	class ScopedColourStack
+	{
+	public:
+		ScopedColourStack(const ScopedColourStack&) = delete;
+		ScopedColourStack& operator=(const ScopedColourStack&) = delete;
+
+		template <typename ColourType, typename... OtherColours>
+		ScopedColourStack(ImGuiCol firstColourID, ColourType firstColour, OtherColours&& ... otherColourPairs)
+			: m_Count((sizeof... (otherColourPairs) / 2) + 1)
+		{
+			static_assert ((sizeof... (otherColourPairs) & 1u) == 0,
+				"ScopedColourStack constructor expects a list of pairs of colour IDs and colours as its arguments");
+
+			PushColour(firstColourID, firstColour, std::forward<OtherColours>(otherColourPairs)...);
+		}
+
+		~ScopedColourStack() { ImGui::PopStyleColor(m_Count); }
+
+	private:
+		int m_Count;
+
+		template <typename ColourType, typename... OtherColours>
+		void PushColour(ImGuiCol colourID, ColourType colour, OtherColours&& ... otherColourPairs)
+		{
+			if constexpr (sizeof... (otherColourPairs) == 0)
+			{
+				ImGui::PushStyleColor(colourID, ImColor(colour).Value);
+			}
+			else
+			{
+				ImGui::PushStyleColor(colourID, ImColor(colour).Value);
+				PushColour(std::forward<OtherColours>(otherColourPairs)...);
+			}
+		}
+	};
+
+	class ScopedStyleStack
+	{
+	public:
+		ScopedStyleStack(const ScopedStyleStack&) = delete;
+		ScopedStyleStack& operator=(const ScopedStyleStack&) = delete;
+
+		template <typename ValueType, typename... OtherStylePairs>
+		ScopedStyleStack(ImGuiStyleVar firstStyleVar, ValueType firstValue, OtherStylePairs&& ... otherStylePairs)
+			: m_Count((sizeof... (otherStylePairs) / 2) + 1)
+		{
+			static_assert ((sizeof... (otherStylePairs) & 1u) == 0,
+				"ScopedStyleStack constructor expects a list of pairs of colour IDs and colours as its arguments");
+
+			PushStyle(firstStyleVar, firstValue, std::forward<OtherStylePairs>(otherStylePairs)...);
+		}
+
+		~ScopedStyleStack() { ImGui::PopStyleVar(m_Count); }
+
+	private:
+		int m_Count;
+
+		template <typename ValueType, typename... OtherStylePairs>
+		void PushStyle(ImGuiStyleVar styleVar, ValueType value, OtherStylePairs&& ... otherStylePairs)
+		{
+			if constexpr (sizeof... (otherStylePairs) == 0)
+			{
+				ImGui::PushStyleVar(styleVar, value);
+			}
+			else
+			{
+				ImGui::PushStyleVar(styleVar, value);
+				PushStyle(std::forward<OtherStylePairs>(otherStylePairs)...);
+			}
+		}
+	};
+
+	inline static ImColor ColorWithMultipliedValue(const ImColor& color, float multiplier)
+	{
+		const ImVec4& colRaw = color.Value;
+		float hue, sat, val;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
+		return ImColor::HSV(hue, sat, std::min(val * multiplier, 1.0f));
+	}
+
 	namespace Draw {
 
 		static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
@@ -730,6 +839,13 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	inline bool ColoredButton(const char* label, const ImVec4& backgroundColor, const ImVec4& foregroundColor, ImVec2 buttonSize)
+	{
+		ScopedColour textColor(ImGuiCol_Text, foregroundColor);
+		ScopedColour buttonColor(ImGuiCol_Button, backgroundColor);
+		return ImGui::Button(label, buttonSize);
+	}
+
 	template <typename TEnum, typename TUnderlying = int32_t>
 	inline static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected)
 	{
@@ -1019,6 +1135,93 @@ namespace Vortex::UI {
 		}
 
 		return opened;
+	}
+
+	template<typename T>
+	inline static void Table(const char* tableName, const char** columns, uint32_t columnCount, const ImVec2& size, T callback)
+	{
+		if (size.x <= 0.0f || size.y <= 0.0f)
+			return;
+
+		float edgeOffset = 4.0f;
+
+		ScopedStyle cellPadding(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 0.0f));
+		ImColor backgroundColor = ImColor(Colors::Theme::background);
+		const ImColor colRowAlt = ColorWithMultipliedValue(backgroundColor, 1.2f);
+		ScopedColour rowColor(ImGuiCol_TableRowBg, backgroundColor);
+		ScopedColour rowAltColor(ImGuiCol_TableRowBgAlt, colRowAlt);
+		ScopedColour tableColor(ImGuiCol_ChildBg, backgroundColor);
+
+		ImGuiTableFlags flags = ImGuiTableFlags_NoPadInnerX
+			| ImGuiTableFlags_Resizable
+			| ImGuiTableFlags_Reorderable
+			| ImGuiTableFlags_ScrollY
+			| ImGuiTableFlags_RowBg;
+
+		if (!ImGui::BeginTable(tableName, columnCount, flags, size))
+			return;
+
+		const float cursorX = ImGui::GetCursorScreenPos().x;
+
+		for (uint32_t i = 0; i < columnCount; i++)
+			ImGui::TableSetupColumn(columns[i]);
+
+		// Headers
+		{
+			const ImColor activeColor = ColorWithMultipliedValue(backgroundColor, 1.3f);
+			ScopedColourStack headerCol(ImGuiCol_HeaderHovered, activeColor, ImGuiCol_HeaderActive, activeColor);
+
+			ImGui::TableSetupScrollFreeze(ImGui::TableGetColumnCount(), 1);
+			ImGui::TableNextRow(ImGuiTableRowFlags_Headers, 22.0f);
+
+			for (uint32_t i = 0; i < columnCount; i++)
+			{
+				ImGui::TableSetColumnIndex(i);
+				const char* columnName = ImGui::TableGetColumnName(i);
+				ImGui::PushID(columnName);
+				ShiftCursor(edgeOffset * 3.0f, edgeOffset * 2.0f);
+				ImGui::TableHeader(columnName);
+				ShiftCursor(-edgeOffset * 3.0f, -edgeOffset * 2.0f);
+				ImGui::PopID();
+			}
+			ImGui::SetCursorScreenPos(ImVec2(cursorX, ImGui::GetCursorScreenPos().y));
+			Draw::Underline(true, 0.0f, 5.0f);
+		}
+
+		callback();
+		ImGui::EndTable();
+	}
+
+	inline bool TableRowClickable(const char* id, float rowHeight)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		window->DC.CurrLineSize.y = rowHeight;
+
+		ImGui::TableNextRow(0, rowHeight);
+		ImGui::TableNextColumn();
+
+		window->DC.CurrLineTextBaseOffset = 3.0f;
+		const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
+		const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight };
+
+		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
+
+		bool isRowHovered, held;
+		bool isRowClicked = ImGui::ButtonBehavior(ImRect(rowAreaMin, rowAreaMax), ImGui::GetID(id),
+			&isRowHovered, &held, ImGuiButtonFlags_AllowItemOverlap);
+
+		ImGui::SetItemAllowOverlap();
+		ImGui::PopClipRect();
+
+		return isRowClicked;
+	}
+
+	inline void Separator(ImVec2 size, ImVec4 color)
+	{
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, color);
+		ImGui::BeginChild("sep", size);
+		ImGui::EndChild();
+		ImGui::PopStyleColor();
 	}
 
 }

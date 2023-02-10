@@ -42,7 +42,7 @@ namespace Vortex {
 				// profiling output.
 				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					VX_CORE_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
+					VX_CORE_ERROR_TAG("Timer", "Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
 				}
 				InternalEndSession();
 			}
@@ -57,7 +57,7 @@ namespace Vortex {
 			{
 				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
 				{
-					VX_CORE_ERROR("Instrumentor could not open results file '{0}'.", filepath);
+					VX_CORE_ERROR_TAG("Timer", "Instrumentor could not open results file '{0}'.", filepath);
 				}
 			}
 		}
@@ -171,7 +171,7 @@ namespace Vortex {
 			auto elapsedTime = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch();
 
 			Instrumentor::Get().WriteProfile({ m_Name, highResStart, elapsedTime, std::this_thread::get_id() });
-			VX_CORE_INFO("{} - {} ms ({} us)", m_Name, elapsedTime.count() / 1000.0f, elapsedTime.count());
+			VX_CORE_INFO_TAG("Timer", "{} - {} ms ({} us)", m_Name, elapsedTime.count() / 1000.0f, elapsedTime.count());
 
 			m_Stopped = true;
 		}

@@ -1,41 +1,77 @@
 #include "vxpch.h"
 
+#include "Vortex/Editor/EditorConsoleSink.h"
+
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
+#include <filesystem>
+
 namespace Vortex {
+
+#define VX_HAS_CONSOLE 1
 
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
-	std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> Log::s_RingbufferSink;
+	std::shared_ptr<spdlog::logger> Log::s_EditorConsoleLogger;
 
 	void Log::Init(bool enableFileOutput)
 	{
-		spdlog::set_pattern("%^[%r] %n: %v%$");
+		// Create "logs" directory if doesn't exist
+		std::string logsDirectory = "logs";
+		if (!std::filesystem::exists(logsDirectory))
+			std::filesystem::create_directories(logsDirectory);
 
-		s_CoreLogger = spdlog::stdout_color_mt("VORTEX");
+		std::vector<spdlog::sink_ptr> vortexSinks =
+		{
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/VORTEX.log", true),
+#if VX_HAS_CONSOLE
+			std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+#endif
+		};
+
+		std::vector<spdlog::sink_ptr> appSinks =
+		{
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/APP.log", true),
+#if VX_HAS_CONSOLE
+			std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+#endif
+		};
+
+		std::vector<spdlog::sink_ptr> editorConsoleSinks =
+		{
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/APP.log", true),
+#if VX_HAS_CONSOLE
+			std::make_shared<EditorConsoleSink>(1)
+#endif
+		};
+
+		vortexSinks[0]->set_pattern("[%T] [%l] %n: %v");
+		appSinks[0]->set_pattern("[%T] [%l] %n: %v");
+
+#if VX_HAS_CONSOLE
+		vortexSinks[1]->set_pattern("%^[%T] %n: %v%$");
+		appSinks[1]->set_pattern("%^[%T] %n: %v%$");
+		for (auto sink : editorConsoleSinks)
+			sink->set_pattern("%^%v%$");
+#endif
+
+		s_CoreLogger = std::make_shared<spdlog::logger>("VORTEX", vortexSinks.begin(), vortexSinks.end());
 		s_CoreLogger->set_level(spdlog::level::trace);
-		
-		s_ClientLogger = spdlog::stdout_color_mt("APP");
+
+		s_ClientLogger = std::make_shared<spdlog::logger>("APP", appSinks.begin(), appSinks.end());
 		s_ClientLogger->set_level(spdlog::level::trace);
 
-		// Ringbuffer sink allows us to retrives a certain number of logged messages
-		s_RingbufferSink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(128);
-		s_RingbufferSink->set_pattern("%^[%r] [%l] %n: %v%$");
-
-		// Add the sink to both loggers to retrive messages later on
-		s_CoreLogger->sinks().push_back(s_RingbufferSink);
-		s_ClientLogger->sinks().push_back(s_RingbufferSink);
-
-		if (enableFileOutput)
-		{
-			auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/Log.txt");
-
-			s_CoreLogger->sinks().push_back(fileSink);
-			s_ClientLogger->sinks().push_back(fileSink);
-		}
+		s_EditorConsoleLogger = std::make_shared<spdlog::logger>("Console", editorConsoleSinks.begin(), editorConsoleSinks.end());
+		s_EditorConsoleLogger->set_level(spdlog::level::trace);
 	}
 
-	std::vector<std::string> Log::GetMessages(size_t messageCount)
-	{
-		return s_RingbufferSink->last_formatted(messageCount);
-	}
+    void Log::Shutdown()
+    {
+		s_EditorConsoleLogger.reset();
+		s_ClientLogger.reset();
+		s_CoreLogger.reset();
+		spdlog::drop_all();
+    }
 
 }

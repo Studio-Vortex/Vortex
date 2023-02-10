@@ -624,7 +624,7 @@ namespace Vortex {
 			UI_SceneSettingsToolbar();
 		}
 
-		if (m_SceneViewportHovered)
+		if (m_SceneViewportHovered || !m_ShowSecondViewport)
 			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
 
 		Gui::End();
@@ -1985,16 +1985,25 @@ namespace Vortex {
 
 	void EditorLayer::OnTranslationToolSelected()
 	{
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+			return;
+
 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	void EditorLayer::OnRotationToolSelected()
 	{
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+			return;
+
 		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 	}
 
 	void EditorLayer::OnScaleToolSelected()
 	{
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+			return;
+
 		m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
 

@@ -24,9 +24,9 @@ namespace Vortex {
 		s_Data.Result = ma_context_get_devices(&s_Data.Context, &s_Data.pPlaybackDeviceInfos, &s_Data.PlaybackDeviceCount, nullptr, nullptr);
 		VX_CORE_ASSERT(s_Data.Result == MA_SUCCESS, "Failed to retrieve Audio Device Information!");
 
-		VX_CORE_INFO("Audio Engine Located {} device(s)", s_Data.PlaybackDeviceCount);
+		VX_CORE_INFO_TAG("Audio", "Audio Engine Located {} device(s)", s_Data.PlaybackDeviceCount);
 		for (uint32_t i = 0; i < s_Data.PlaybackDeviceCount; ++i)
-			VX_CORE_INFO("  {}: {}", i + 1, s_Data.pPlaybackDeviceInfos[i].name);
+			VX_CORE_INFO_TAG("Audio","  {}: {}", i + 1, s_Data.pPlaybackDeviceInfos[i].name);
 	}
 
 	void AudioEngine::Shutdown()
