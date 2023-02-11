@@ -5,17 +5,44 @@
 		public static Entity FindEntityByID(ulong entityID)
 		{
 			bool found = InternalCalls.Scene_FindEntityByID(entityID);
-			if (found)
-				return new Entity(entityID);
 
-			return null;
+			if (!found)
+				return null;
+
+			return new Entity(entityID);
+		}
+
+		public static Entity FindEntityByName(string name)
+		{
+			ulong entityID = InternalCalls.Scene_FindEntityByName(name);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
+
+		public static Entity FindChildByName(string name)
+		{
+			ulong entityID = InternalCalls.Scene_FindChildByName(name);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
+
+		public static Entity CreateEntity(string name = "")
+		{
+			ulong entityID = InternalCalls.Scene_CreateEntity(name);
+			return new Entity(entityID);
 		}
 
 		// Clones the entity and returns it
 		public static Entity Instantiate(Entity entity)
 		{
-			ulong clonedEntityID = InternalCalls.Scene_Instantiate(entity.ID);
-			return new Entity(clonedEntityID);
+			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+			return new Entity(entityID);
 		}
 
 		public static bool IsPaused()

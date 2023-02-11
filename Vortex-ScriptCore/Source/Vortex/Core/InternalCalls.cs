@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using System;
 
 namespace Vortex {
 
@@ -55,6 +55,15 @@ namespace Vortex {
 		internal extern static bool Scene_FindEntityByID(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_FindEntityByName(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_FindChildByName(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_CreateEntity(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_Instantiate(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -103,12 +112,6 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetMarker(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_CreateWithName(string name);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_FindEntityByName(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_AddChild(ulong parentEntityID, ulong childEntityID);

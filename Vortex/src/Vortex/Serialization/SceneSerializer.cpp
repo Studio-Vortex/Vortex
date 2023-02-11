@@ -1037,8 +1037,6 @@ namespace Vortex {
 				{
 					uint32_t i = 0;
 
-					VX_CONSOLE_LOG_INFO("Deserializing {} Submeshes", submeshesData.size());
-
 					for (auto submeshData : submeshesData)
 					{
 						Submesh submesh = meshRendererComponent.Mesh->GetSubmesh(i++);

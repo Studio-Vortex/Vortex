@@ -20,12 +20,6 @@ namespace Vortex {
 			transform = GetComponent<Transform>();
 		}
 
-		public Entity(string name)
-		{
-			ID = InternalCalls.Entity_CreateWithName(name);
-			transform = GetComponent<Transform>();
-		}
-
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
 		protected virtual void OnDestroy() { }
@@ -89,16 +83,6 @@ namespace Vortex {
 				Type componentType = typeof(T);
 				InternalCalls.Entity_RemoveComponent(ID, componentType);
 			}
-		}
-
-		public Entity FindEntityByName(string name)
-		{
-			ulong entityID = InternalCalls.Entity_FindEntityByName(name);
-
-			if (entityID == 0)
-				return null;
-
-			return new Entity(entityID);
 		}
 
 		public Entity GetChild(uint index)

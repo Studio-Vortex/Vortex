@@ -185,12 +185,58 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		if (entity)
+		return (bool)entity;
+	}
+
+	static uint64_t Scene_FindEntityByName(MonoString* name)
+	{
+		char* managedString = mono_string_to_utf8(name);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->FindEntityByName(managedString);
+		mono_free(managedString);
+
+		if (!entity)
+			return 0;
+
+		return entity.GetUUID();
+	}
+
+	static uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName)
+	{
+		char* managedString = mono_string_to_utf8(childName);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const auto& children = entity.Children();
+
+		for (const auto& child : children)
 		{
-			return true;
+			Entity childEntity = contextScene->TryGetEntityWithUUID(child);
+
+			if (childEntity && childEntity.GetName() == managedString)
+			{
+				return childEntity.GetUUID();
+			}
 		}
 
-		return false;
+		return 0;
+	}
+
+	static uint64_t Scene_CreateEntity(MonoString* name)
+	{
+		char* managedString = mono_string_to_utf8(name);
+
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->CreateEntity(managedString);
+		mono_free(managedString);
+
+		return entity.GetUUID();
 	}
 
 	static uint64_t Scene_Instantiate(UUID entityUUID)
@@ -384,33 +430,6 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
-	}
-
-	static uint64_t Entity_CreateWithName(MonoString* name)
-	{
-		char* nameCStr = mono_string_to_utf8(name);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->CreateEntity(nameCStr);
-		mono_free(nameCStr);
-
-		return entity.GetUUID();
-	}
-
-	static uint64_t Entity_FindEntityByName(MonoString* name)
-	{
-		char* nameCStr = mono_string_to_utf8(name);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->FindEntityByName(nameCStr);
-		mono_free(nameCStr);
-
-		if (!entity)
-			return 0;
-
-		return entity.GetUUID();
 	}
 
 	static bool Entity_AddChild(UUID parentUUID, UUID childUUID)
@@ -3590,6 +3609,9 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(DebugRenderer_Flush);
 
 		VX_ADD_INTERNAL_CALL(Scene_FindEntityByID);
+		VX_ADD_INTERNAL_CALL(Scene_FindEntityByName);
+		VX_ADD_INTERNAL_CALL(Scene_FindChildByName);
+		VX_ADD_INTERNAL_CALL(Scene_CreateEntity);
 		VX_ADD_INTERNAL_CALL(Scene_Instantiate);
 		VX_ADD_INTERNAL_CALL(Scene_IsPaused);
 		VX_ADD_INTERNAL_CALL(Scene_Pause);
@@ -3606,8 +3628,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Entity_GetChild);
 		VX_ADD_INTERNAL_CALL(Entity_GetTag);
 		VX_ADD_INTERNAL_CALL(Entity_GetMarker);
-		VX_ADD_INTERNAL_CALL(Entity_CreateWithName);
-		VX_ADD_INTERNAL_CALL(Entity_FindEntityByName);
 		VX_ADD_INTERNAL_CALL(Entity_AddChild);
 		VX_ADD_INTERNAL_CALL(Entity_RemoveChild);
 		VX_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
