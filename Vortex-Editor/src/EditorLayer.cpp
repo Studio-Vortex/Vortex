@@ -1809,6 +1809,9 @@ namespace Vortex {
 		if (projectProps.EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
+		if (m_ConsolePanel.ClearOnPlay())
+			m_ConsolePanel.ClearConsole();
+
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 

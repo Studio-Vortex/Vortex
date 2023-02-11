@@ -47,16 +47,19 @@ namespace Vortex {
 		Gui::End();
 	}
 
+	void ConsolePanel::ClearConsole()
+	{
+		std::scoped_lock<std::mutex> lock(m_MessageBufferMutex);
+		m_MessageBuffer.clear();
+	}
+
 	void ConsolePanel::RenderMenu(const ImVec2& size)
 	{
 		UI::ScopedStyleStack frame(ImGuiStyleVar_FrameBorderSize, 0.0f, ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		Gui::BeginChild("Toolbar", size);
 
 		if (Gui::Button("Clear", { 75.0f, 28.0f }))
-		{
-			std::scoped_lock<std::mutex> lock(m_MessageBufferMutex);
-			m_MessageBuffer.clear();
-		}
+			ClearConsole();
 
 		Gui::SameLine();
 

@@ -16,6 +16,9 @@ namespace Vortex {
 
 		bool& IsOpen() { return s_ShowPanel; }
 
+		bool ClearOnPlay() const { return m_ClearOnPlay; }
+		void ClearConsole();
+
 	private:
 		void RenderMenu(const ImVec2& size);
 		void RenderConsole(const ImVec2& size);
