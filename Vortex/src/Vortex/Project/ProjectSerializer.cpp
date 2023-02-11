@@ -174,7 +174,7 @@ namespace Vortex {
 		}
 		catch (YAML::ParserException& e)
 		{
-			VX_CORE_ERROR("Failed to load project file '{}'\n     {}", path, e.what());
+			VX_CONSOLE_LOG_ERROR("Failed to load project file '{}'\n     {}", path, e.what());
 			return false;
 		}
 

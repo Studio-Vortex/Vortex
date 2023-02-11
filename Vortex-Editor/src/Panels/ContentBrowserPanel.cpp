@@ -527,7 +527,7 @@ public class Untitled : Entity
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
 				Entity& droppedEntity = *(Entity*)payload->Data;
-				VX_CORE_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
+				VX_CONSOLE_LOG_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
 				// Todo Create a new prefab here from the entity's uuid
 				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
 				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);

@@ -132,7 +132,7 @@ namespace Vortex {
 				ScriptEngine::OnCollisionEndEntity(entityB, entityA, collisionB);
 			}
 
-			VX_CORE_INFO("Physics::OnCollision, A: {}, B: {}", entityA.GetName(), entityB.GetName());
+			VX_CONSOLE_LOG_INFO("Physics::OnCollision, A: {}, B: {}", entityA.GetName(), entityB.GetName());
 		}
 
 		void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) override
@@ -171,7 +171,7 @@ namespace Vortex {
 					ScriptEngine::OnTriggerEndEntity(otherEntity, triggerEntity);
 				}
 
-				VX_CORE_INFO("Physics::OnTrigger, trigger: {}, other: {}", triggerEntity.GetName(), otherEntity.GetName());
+				VX_CONSOLE_LOG_INFO("Physics::OnTrigger, trigger: {}, other: {}", triggerEntity.GetName(), otherEntity.GetName());
 			}
 		}
 
@@ -653,7 +653,7 @@ namespace Vortex {
 
 		if (actor == nullptr)
 		{
-			VX_CORE_WARN("Trying to delete Physics Actor that doesn't exist!");
+			VX_CONSOLE_LOG_WARN("Trying to delete Physics Actor that doesn't exist!");
 			return;
 		}
 

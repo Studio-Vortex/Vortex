@@ -669,7 +669,7 @@ namespace Vortex {
 						}
 					}
 					else
-						VX_CORE_WARN("Could not load texture - {}", texturePath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load texture - {}", texturePath.filename().string());
 				}
 				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf" || filePath.extension().string() == ".dae" || filePath.extension().string() == ".glb")
 				{

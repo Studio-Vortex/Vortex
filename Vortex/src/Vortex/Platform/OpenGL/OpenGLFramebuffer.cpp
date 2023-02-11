@@ -213,7 +213,7 @@ namespace Vortex {
 	{
 		if (width == 0 || height == 0 || width > MAX_FRAME_BUFFER_SIZE || height > MAX_FRAME_BUFFER_SIZE)
 		{
-			VX_CORE_WARN("Attempted to resize Framebuffer to {}, {}", width, height);
+			VX_CONSOLE_LOG_WARN("Attempted to resize Framebuffer to {}, {}", width, height);
 			return;
 		}
 

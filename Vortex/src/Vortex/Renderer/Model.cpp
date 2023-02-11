@@ -40,7 +40,7 @@ namespace Vortex {
 
 		virtual void write(const char* message) override
 		{
-			VX_CORE_ERROR_TAG("Mesh", "Assimp error: {0}", message);
+			VX_CONSOLE_LOG_ERROR("Mesh", "Assimp error: {0}", message);
 		}
 	};
 

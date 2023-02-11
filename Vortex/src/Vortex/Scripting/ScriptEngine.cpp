@@ -67,7 +67,7 @@ namespace Vortex {
 			if (status != MONO_IMAGE_OK)
 			{
 				const char* errorMessage = mono_image_strerror(status);
-				VX_CORE_ERROR("Mono Assembly Error: {}", errorMessage);
+				VX_CONSOLE_LOG_ERROR("Mono Assembly Error: {}", errorMessage);
 				return nullptr;
 			}
 
@@ -82,7 +82,7 @@ namespace Vortex {
 
 					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
 
-					VX_CORE_INFO("PDB Loaded : {}", pdbPath);
+					VX_CONSOLE_LOG_INFO("PDB Loaded : {}", pdbPath);
 				}
 			}
 
@@ -106,7 +106,7 @@ namespace Vortex {
 
 				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-				VX_CORE_TRACE("{}.{}", nameSpace, name);
+				VX_CONSOLE_LOG_TRACE("{}.{}", nameSpace, name);
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace Vortex {
 
 		if (!status)
 		{
-			VX_CORE_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
 			return;
 		}
 
@@ -229,7 +229,7 @@ namespace Vortex {
 		
 		if (!status)
 		{
-			VX_CORE_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
 			return;
 		}
 
@@ -395,7 +395,7 @@ namespace Vortex {
 		}
 		else
 		{
-			VX_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 		}
 	}
 
@@ -528,7 +528,7 @@ namespace Vortex {
 		else
 		{
 			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
-			VX_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 			return nullptr;
 		}
 	}
@@ -601,7 +601,7 @@ namespace Vortex {
 			int fieldCount = mono_class_num_fields(monoClass);
 
 			if (displayClassNames)
-				VX_CORE_WARN("{} has {} fields: ", className, fieldCount);
+				VX_CONSOLE_LOG_INFO("{} has {} fields: ", className, fieldCount);
 
 			void* iterator = nullptr;
 
@@ -616,7 +616,7 @@ namespace Vortex {
 					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
 
 					if (displayClassNames)
-						VX_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
 
 					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
 				}

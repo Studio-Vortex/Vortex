@@ -84,7 +84,7 @@ namespace Vortex {
 		}
 		else
 		{
-			VX_CORE_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
+			VX_CONSOLE_LOG_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
 		}
 
 		m_IsDirty = false;

@@ -20,7 +20,7 @@ namespace Vortex {
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
-		VX_CORE_ERROR("GLFW Error: ({}): {}", error, description);
+		VX_CONSOLE_LOG_ERROR("GLFW Error: ({}): {}", error, description);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProperties& props)
@@ -47,7 +47,7 @@ namespace Vortex {
 		m_Properties.VSync = props.VSync;
 		m_Properties.Decorated = props.Decorated;
 
-		VX_CORE_INFO("Creating window '{}' {}", props.Title, props.Size);
+		VX_CONSOLE_LOG_INFO("Creating window '{}' {}", props.Title, props.Size);
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -217,9 +217,9 @@ namespace Vortex {
 		glfwSetJoystickCallback([](int jid, int event)
 		{
 			if (event == GLFW_CONNECTED)
-				VX_CORE_INFO("Joystick: {} Connected", jid);
+				VX_CONSOLE_LOG_INFO("Joystick: {} Connected", jid);
 			else if (event == GLFW_DISCONNECTED)
-				VX_CORE_INFO("Joystick: {} Disconnected", jid);
+				VX_CONSOLE_LOG_INFO("Joystick: {} Disconnected", jid);
 		});
 
 		LoadWindowIcon();

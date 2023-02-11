@@ -661,7 +661,7 @@ namespace Vortex {
 		
 		if (!parent)
 		{
-			VX_CORE_WARN("Invalid Parent UUID!");
+			VX_CONSOLE_LOG_WARN("Invalid Parent UUID!");
 			return 0;
 		}
 
@@ -1952,7 +1952,7 @@ namespace Vortex {
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
-			VX_CORE_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
+			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
 			return;
 		}
 
@@ -1971,7 +1971,7 @@ namespace Vortex {
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
-			VX_CORE_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
+			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
 			return;
 		}
 
@@ -1990,7 +1990,7 @@ namespace Vortex {
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
-			VX_CORE_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
+			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
 			return;
 		}
 
@@ -2028,7 +2028,7 @@ namespace Vortex {
 
 		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 		{
-			VX_CORE_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
+			VX_CONSOLE_LOG_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
 			return;
 		}
 

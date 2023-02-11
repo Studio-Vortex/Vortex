@@ -14,13 +14,13 @@ namespace Vortex {
 
 		Log::Init();
 
-		VX_CORE_TRACE("Vortex Engine {}", VORTEX_BUILD_ID);
-		VX_CORE_TRACE("Initalizing...");
+		VX_CONSOLE_LOG_TRACE("Vortex Engine {}", VORTEX_BUILD_ID);
+		VX_CONSOLE_LOG_TRACE("Initalizing...");
 	}
 
 	void ShutdownEngine()
 	{
-		VX_CORE_TRACE("Shutting down...");
+		VX_CONSOLE_LOG_TRACE("Shutting down...");
 	}
 
 }

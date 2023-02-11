@@ -1000,7 +1000,7 @@ namespace Vortex {
 					if (skyboxPath.filename().extension() == ".hdr")
 						skybox->LoadFromFilepath(skyboxPath.string());
 					else
-						VX_CORE_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
 				}
 
 				Gui::EndDragDropTarget();
@@ -1150,7 +1150,7 @@ namespace Vortex {
 						}
 					}
 					else
-						VX_CORE_WARN("Could not load model file - {}", modelFilepath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
@@ -1215,10 +1215,10 @@ namespace Vortex {
 							if (texture->IsLoaded())
 								component.Texture = texture;
 							else
-								VX_CORE_WARN("Could not load texture {}", texturePath.filename().string());
+								VX_CONSOLE_LOG_WARN("Could not load texture {}", texturePath.filename().string());
 						}
 						else
-							VX_CORE_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							VX_CONSOLE_LOG_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
 					}
 					Gui::EndDragDropTarget();
 				}
@@ -1300,10 +1300,10 @@ namespace Vortex {
 						if (font->GetFontAtlas()->IsLoaded())
 							component.FontAsset = font;
 						else
-							VX_CORE_WARN("Could not load font {}", fontPath.filename().string());
+							VX_CONSOLE_LOG_WARN("Could not load font {}", fontPath.filename().string());
 					}
 					else
-						VX_CORE_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}
@@ -1415,7 +1415,7 @@ namespace Vortex {
 						audioSource->Reload();
 					}
 					else
-						VX_CORE_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
 				}
 				Gui::EndDragDropTarget();
 			}

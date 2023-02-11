@@ -277,7 +277,7 @@ namespace Vortex {
 		}
 		catch (YAML::ParserException e)
 		{
-			VX_CORE_ERROR("Failed to load .vortex file '{}'\n     {}", filepath, e.what());
+			VX_CONSOLE_LOG_ERROR("Failed to load .vortex file '{}'\n     {}", filepath, e.what());
 			return false;
 		}
 
@@ -285,7 +285,7 @@ namespace Vortex {
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		VX_CORE_TRACE("Deserializing Scene '{}'", sceneName);
+		VX_CONSOLE_LOG_TRACE("Deserializing Scene '{}'", sceneName);
 
 		auto entities = data["Entities"];
 		if (entities)
@@ -1037,7 +1037,7 @@ namespace Vortex {
 				{
 					uint32_t i = 0;
 
-					VX_CORE_INFO("Deserializing {} Submeshes", submeshesData.size());
+					VX_CONSOLE_LOG_INFO("Deserializing {} Submeshes", submeshesData.size());
 
 					for (auto submeshData : submeshesData)
 					{
@@ -1146,7 +1146,7 @@ namespace Vortex {
 			{
 				if (!deserializedEntity.HasComponent<MeshRendererComponent>())
 				{
-					VX_CORE_WARN("Trying to add Animation Component without Mesh Renderer Component!");
+					VX_CONSOLE_LOG_WARN("Trying to add Animation Component without Mesh Renderer Component!");
 					return;
 				}
 
@@ -1161,7 +1161,7 @@ namespace Vortex {
 			{
 				if (!deserializedEntity.HasComponent<AnimationComponent>())
 				{
-					VX_CORE_WARN("Trying to add Animator Component without Animation Component!");
+					VX_CONSOLE_LOG_WARN("Trying to add Animator Component without Animation Component!");
 					return;
 				}
 
@@ -1386,7 +1386,7 @@ namespace Vortex {
 
 							if (fields.find(name) == fields.end())
 							{
-								VX_CORE_WARN("Script Field '{}' was not found in Field Map!", name);
+								VX_CONSOLE_LOG_WARN("Script Field '{}' was not found in Field Map!", name);
 								continue;
 							}
 
