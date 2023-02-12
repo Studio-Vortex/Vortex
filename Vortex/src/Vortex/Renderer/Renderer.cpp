@@ -55,7 +55,7 @@ namespace Vortex {
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
-		Math::vec3 BloomThreshold = Math::vec3(0.2126f, 0.7152f, 0.0722f);
+		Math::vec3 BloomSettings = Math::vec3(0.2126f /* Threshold */, 0.7152f /* Soft Knee */, 0.0722f /* Unknown */);
 		uint32_t BloomSampleSize = 5;
 
 		RenderStatistics RendererStatistics;
@@ -854,7 +854,7 @@ namespace Vortex {
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomThreshold);
+		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomSettings);
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
 		s_Data.SceneLightDesc.PointLightIndex = 0;
@@ -1016,7 +1016,7 @@ namespace Vortex {
 		s_Data.ShadowMapResolution = props.ShadowMapResolution;
 		s_Data.SceneExposure = props.Exposure;
 		s_Data.SceneGamma = props.Gamma;
-		s_Data.BloomThreshold = props.BloomThreshold;
+		s_Data.BloomSettings = props.BloomThreshold;
 		s_Data.BloomSampleSize = props.BloomSampleSize;
 
 		ClearFlags();
@@ -1082,12 +1082,27 @@ namespace Vortex {
 
 	Math::vec3 Renderer::GetBloomSettings()
 	{
-		return s_Data.BloomThreshold;
+		return s_Data.BloomSettings;
 	}
 
-	void Renderer::SetBloomSettings(const Math::vec3& threshold)
+	void Renderer::SetBloomSettings(const Math::vec3& bloomSettings)
 	{
-		s_Data.BloomThreshold = threshold;
+		s_Data.BloomSettings = bloomSettings;
+	}
+
+	void Renderer::SetBloomThreshold(float threshold)
+	{
+		s_Data.BloomSettings.x = threshold;
+	}
+
+	void Renderer::SetBloomSoftKnee(float softKnee)
+	{
+		s_Data.BloomSettings.y = softKnee;
+	}
+
+	void Renderer::SetBloomUnknown(float unknown)
+	{
+		s_Data.BloomSettings.z = unknown;
 	}
 
 	uint32_t Renderer::GetBloomSampleSize()

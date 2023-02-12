@@ -21,6 +21,40 @@ namespace Vortex {
 
 		#endregion
 
+		#region SceneRenderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomThreshold();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomThreshold(float threshold);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomSoftKnee();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomSoftKnee(float softKnee);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomUnknown();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomUnknown(float unknown);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetExposure();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetExposure(float exposure);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetGamma();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetGamma(float gamma);
+
+		#endregion
+
 		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

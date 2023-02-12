@@ -99,7 +99,55 @@ namespace Vortex {
 
 #pragma region SceneRenderer
 
-	
+	static float SceneRenderer_GetBloomThreshold()
+	{
+		return Renderer::GetBloomSettings().x;
+	}
+
+	static void SceneRenderer_SetBloomThreshold(float threshold)
+	{
+		Renderer::SetBloomThreshold(threshold);
+	}
+
+	static float SceneRenderer_GetBloomSoftKnee()
+	{
+		return Renderer::GetBloomSettings().y;
+	}
+
+	static void SceneRenderer_SetBloomSoftKnee(float softKnee)
+	{
+		Renderer::SetBloomSoftKnee(softKnee);
+	}
+
+	static float SceneRenderer_GetBloomUnknown()
+	{
+		return Renderer::GetBloomSettings().z;
+	}
+
+	static void SceneRenderer_SetBloomUnknown(float unknown)
+	{
+		Renderer::SetBloomUnknown(unknown);
+	}
+
+	static float SceneRenderer_GetExposure()
+	{
+		return Renderer::GetSceneExposure();
+	}
+
+	static void SceneRenderer_SetExposure(float exposure)
+	{
+		Renderer::SetSceneExposure(exposure);
+	}
+
+	static float SceneRenderer_GetGamma()
+	{
+		return Renderer::GetSceneGamma();
+	}
+
+	static void SceneRenderer_SetGamma(float gamma)
+	{
+		Renderer::SetSceneGamma(gamma);
+	}
 
 #pragma endregion
 
@@ -3758,6 +3806,17 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Application_GetSize);
 		VX_ADD_INTERNAL_CALL(Application_GetPosition);
 		VX_ADD_INTERNAL_CALL(Application_IsMaximized);
+
+		VX_ADD_INTERNAL_CALL(SceneRenderer_GetBloomThreshold);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_SetBloomThreshold);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_GetBloomSoftKnee);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_SetBloomSoftKnee);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_GetBloomUnknown);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_SetBloomUnknown);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_GetExposure);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_SetExposure);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_GetGamma);
+		VX_ADD_INTERNAL_CALL(SceneRenderer_SetGamma);
 
 		VX_ADD_INTERNAL_CALL(DebugRenderer_BeginScene);
 		VX_ADD_INTERNAL_CALL(DebugRenderer_SetClearColor);
