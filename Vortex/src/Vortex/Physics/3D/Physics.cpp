@@ -59,6 +59,7 @@ namespace Vortex {
 		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale TolerancesScale;
+		physx::PxSimulationStatistics SimulationStats;
 
 		Scene* ContextScene = nullptr;
 	};
@@ -311,7 +312,6 @@ namespace Vortex {
 		{
 			Entity entity{ e, contextScene };
 			auto& transform = entity.GetTransform();
-			const auto trx = transform.GetTransform();
 			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.RuntimeActor)
@@ -320,13 +320,13 @@ namespace Vortex {
 			}
 
 			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-			auto [t, r, scale] = GetTransformDecomposition(trx);
 
 			if (rigidbody.Type == RigidBodyType::Dynamic)
 			{
 				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
 
-				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(scale));
+				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
+
 				if (actor->is<physx::PxRigidDynamic>())
 				{
 					UpdateDynamicActorFlags(rigidbody, dynamicActor);
@@ -334,8 +334,10 @@ namespace Vortex {
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
 			{
-				// If the rigidbody is static, make sure the actor is at the entitys position
-				actor->setGlobalPose(ToPhysXTransform(trx));
+				// Synchronize Transform
+				auto actorPose = actor->getGlobalPose();
+				transform.Translation = FromPhysXVector(actorPose.p);
+				transform.SetRotation(FromPhysXQuat(actorPose.q));
 			}
 
 			// Synchronize controller transform
@@ -363,6 +365,10 @@ namespace Vortex {
 				transform.Translation = position;
 			}
 		}
+
+#ifndef VX_DIST
+		s_Data->PhysicsScene->getSimulationStatistics(s_Data->SimulationStats);
+#endif
 	}
 
 	void Physics::OnSimulationStop(Scene* contextScene)
@@ -392,6 +398,9 @@ namespace Vortex {
 		if (rigidbody.Type == RigidBodyType::Static)
 		{
 			actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(entityTransform));
+			auto actorPose = actor->getGlobalPose();
+			entity.GetTransform().Translation = FromPhysXVector(actorPose.p);
+			entity.GetTransform().SetRotation(FromPhysXQuat(actorPose.q));
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
@@ -432,7 +441,7 @@ namespace Vortex {
 				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
 
 				physx::PxCapsuleControllerDesc desc;
-				desc.position = ToPhysxExtendedVector(transform.Translation + capsuleCollider.Offset);
+				desc.position = ToPhysXExtendedVector(transform.Translation + capsuleCollider.Offset);
 				desc.height = capsuleCollider.Height * transform.Scale.y;
 				desc.radius = capsuleCollider.Radius * radiusScale;
 				desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
@@ -463,7 +472,7 @@ namespace Vortex {
 				}
 
 				physx::PxBoxControllerDesc desc;
-				desc.position = ToPhysxExtendedVector(transform.Translation + boxCollider.Offset);
+				desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
 				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
 				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
 				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
@@ -528,6 +537,7 @@ namespace Vortex {
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
 				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !sphereCollider.IsTrigger);
 				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
+				shape->setLocalPose(ToPhysXTransform(Math::Translate(sphereCollider.Offset)));
 			}
 
 			if (entity.HasComponent<CapsuleColliderComponent>())
@@ -552,6 +562,7 @@ namespace Vortex {
 				physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
 				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !capsuleCollider.IsTrigger);
 				shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
+				shape->setLocalPose(ToPhysXTransform(Math::Translate(capsuleCollider.Offset)));
 
 				// Make sure that the capsule is facing up (+Y)
 				shape->setLocalPose(physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1))));
@@ -668,6 +679,11 @@ namespace Vortex {
 		delete physicsBodyData;
 
 		s_Data->PhysicsScene->removeActor(*actor);
+	}
+
+	physx::PxSimulationStatistics* Physics::GetSimulationStatistics()
+	{
+		return &s_Data->SimulationStats;
 	}
 
 }

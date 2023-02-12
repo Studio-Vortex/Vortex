@@ -1671,7 +1671,18 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outTranslation = FromPhysXVector(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose().p);
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot get translation of Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
+
+		*outTranslation = translation;
 	}
 
 	static void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
@@ -1681,12 +1692,22 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot set translation of Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+
 		const auto& transformComponent = entity.GetTransform();
 		Math::vec3 rotation = transformComponent.GetRotationEuler();
 		auto entityTransform = TransformComponent{ *translation, rotation, transformComponent.Scale }.GetTransform();
 		auto physxTransform = ToPhysXTransform(entityTransform);
 
-		((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->setGlobalPose(physxTransform);
+		actor->setGlobalPose(physxTransform);
 	}
 
 	static void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
@@ -1696,7 +1717,18 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRotation = Math::EulerAngles(FromPhysXQuat(((physx::PxRigidDynamic*)entity.GetComponent<RigidBodyComponent>().RuntimeActor)->getGlobalPose().q));
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot get rotation of Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
+
+		*outRotation = Math::EulerAngles(orientation);
 	}
 
 	static void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
@@ -1706,10 +1738,17 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot set rotation of Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
 		physx::PxTransform physxTransform = actor->getGlobalPose();
-		physxTransform.q = ToPhysXQuat(Math::quaternion(*rotation));
+		physxTransform.q = ToPhysXQuat(*rotation);
 
 		actor->setGlobalPose(physxTransform);
 	}
@@ -1721,8 +1760,15 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+		
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot translate Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
 		physx::PxTransform physxTransform = actor->getGlobalPose();
 		physxTransform.p += ToPhysXVector(*translation);
 
@@ -1736,12 +1782,17 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot rotate Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
 		physx::PxTransform physxTransform = actor->getGlobalPose();
-		physxTransform.q *= physx::PxQuat(Math::Deg2Rad(rotation->x), { 1.0f, 0.0f, 0.0f })
-			* physx::PxQuat(Math::Deg2Rad(rotation->y), { 0.0f, 1.0f, 0.0f })
-			* physx::PxQuat(Math::Deg2Rad(rotation->z), { 0.0f, 0.0f, 1.0f });
+		physxTransform.q *= ToPhysXQuat(*rotation);
 
 		actor->setGlobalPose(physxTransform);
 	}

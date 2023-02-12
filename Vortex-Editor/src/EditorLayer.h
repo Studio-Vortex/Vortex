@@ -3,6 +3,7 @@
 #include <Vortex.h>
 #include <Vortex/Editor/ConsolePanel.h>
 
+#include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
@@ -138,6 +139,7 @@ namespace Vortex {
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 
+		PhysicsStatisticsPanel m_PhysicsStatsPanel;
 		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;

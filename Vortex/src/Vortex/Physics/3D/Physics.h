@@ -15,6 +15,7 @@ namespace physx {
 	class PxRigidActor;
 	class PxRigidDynamic;
 	class PxControllerManager;
+	class PxSimulationStatistics;
 
 }
 
@@ -70,6 +71,8 @@ namespace Vortex {
 		static physx::PxMaterial* CreatePhysicsMaterial(const PhysicsMaterialComponent& material);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
+
+		static physx::PxSimulationStatistics* GetSimulationStatistics();
 
 	private:
 		inline constexpr static float s_FixedTimeStep = 1.0f / 100.0f;

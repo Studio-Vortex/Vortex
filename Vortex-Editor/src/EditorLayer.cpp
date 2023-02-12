@@ -329,6 +329,7 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
+			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
@@ -553,6 +554,8 @@ namespace Vortex {
 				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();

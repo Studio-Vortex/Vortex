@@ -4,53 +4,38 @@
 
 #include <PhysX/PxPhysicsAPI.h>
 
+#include <string>
+
 namespace Vortex {
 
-	static inline std::tuple<Math::vec3, Math::quaternion, Math::vec3> GetTransformDecomposition(const Math::mat4& transform)
-	{
-		Math::vec3 scale, translation, skew;
-		Math::vec4 perspective;
-		Math::quaternion orientation;
-		Math::Decompose(transform, scale, orientation, translation, skew, perspective);
+	static inline physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix) { return *(physx::PxMat44*)&matrix; }
+	static inline const physx::PxVec3& ToPhysXVector(const Math::vec3& vector) { return *(physx::PxVec3*)&vector; }
+	static inline const physx::PxVec4& ToPhysXVector(const Math::vec4& vector) { return *(physx::PxVec4*)&vector; }
+	static inline physx::PxExtendedVec3 ToPhysXExtendedVector(const Math::vec3& vector) { return physx::PxExtendedVec3(vector.x, vector.y, vector.z); }
+	static inline physx::PxQuat ToPhysXQuat(const Math::quaternion& quat) { return physx::PxQuat(quat.x, quat.y, quat.z, quat.w); }
 
-		return { translation, orientation, scale };
-	}
-
-	static inline physx::PxQuat ToPhysXQuat(const Math::quaternion& quat)
+	static inline physx::PxTransform ToPhysXTransform(const TransformComponent& transform)
 	{
-		return physx::PxQuat(quat.x, quat.y, quat.z, quat.w);
-	}
-
-	static inline physx::PxVec3 ToPhysXVector(const Math::vec3& vector)
-	{
-		return physx::PxVec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline physx::PxVec4 ToPhysXVector(const Math::vec4& vector)
-	{
-		return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
-	}
-
-	static inline physx::PxExtendedVec3 ToPhysxExtendedVector(const Math::vec3& vector)
-	{
-		return physx::PxExtendedVec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline physx::PxTransform ToPhysXTransform(const Math::mat4& matrix)
-	{
-		physx::PxQuat r = ToPhysXQuat(Math::Normalize(Math::ToQuaternion(matrix)));
-		physx::PxVec3 p = ToPhysXVector(Math::vec3(matrix[3]));
+		physx::PxQuat r = ToPhysXQuat(transform.GetRotation());
+		physx::PxVec3 p = ToPhysXVector(transform.Translation);
 		return physx::PxTransform(p, r);
 	}
 
-	static inline physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix)
+	static inline physx::PxTransform ToPhysXTransform(const Math::mat4& transform)
 	{
-		return *(physx::PxMat44*)&matrix;
+		Math::vec3 translation;
+		Math::quaternion rotation;
+		Math::vec3 scale;
+		Math::DecomposeTransform(transform, translation, rotation, scale);
+
+		physx::PxQuat r = ToPhysXQuat(rotation);
+		physx::PxVec3 p = ToPhysXVector(translation);
+		return physx::PxTransform(p, r);
 	}
 
-	static inline Math::quaternion FromPhysXQuat(const physx::PxQuat& quat)
+	static inline physx::PxTransform ToPhysXTransform(const Math::vec3& translation, const Math::quaternion& rotation)
 	{
-		return Math::quaternion(quat.w, quat.x, quat.y, quat.z);
+		return physx::PxTransform(ToPhysXVector(translation), ToPhysXQuat(rotation));
 	}
 
 	static inline Math::vec3 FromPhysXExtendedVector(const physx::PxExtendedVec3& vector)
@@ -58,15 +43,10 @@ namespace Vortex {
 		return Math::vec3(vector.x, vector.y, vector.z);
 	}
 
-	static inline Math::vec3 FromPhysXVector(const physx::PxVec3& vector)
-	{
-		return Math::vec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline Math::vec4 FromPhysXVector(const physx::PxVec4& vector)
-	{
-		return Math::vec4(vector.x, vector.y, vector.z, vector.w);
-	}
+	static inline Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix) { return *(Math::mat4*)&matrix; }
+	static inline Math::vec3 FromPhysXVector(const physx::PxVec3& vector) { return *(Math::vec3*)&vector; }
+	static inline Math::vec4 FromPhysXVector(const physx::PxVec4& vector) { return *(Math::vec4*)&vector; }
+	static inline Math::quaternion FromPhysXQuat(const physx::PxQuat& quat) { return Math::quaternion(quat.w, quat.x, quat.y, quat.z); }
 
 	static inline Math::mat4 FromPhysXTransform(const physx::PxTransform& transform)
 	{
@@ -75,9 +55,21 @@ namespace Vortex {
 		return Math::Translate(position) * Math::ToMat4(rotation);
 	}
 
-	static inline Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
+	static inline std::string PhysXGeometryTypeToString(physx::PxGeometryType::Enum type)
 	{
-		return *(Math::mat4*)&matrix;
+		switch (type)
+		{
+			case physx::PxGeometryType::eSPHERE:       return "Sphere";
+			case physx::PxGeometryType::ePLANE:        return "Plane";
+			case physx::PxGeometryType::eCAPSULE:      return "Capsule";
+			case physx::PxGeometryType::eBOX:          return "Box";
+			case physx::PxGeometryType::eCONVEXMESH:   return "Convex Mesh";
+			case physx::PxGeometryType::eTRIANGLEMESH: return "Triangle Mesh";
+			case physx::PxGeometryType::eHEIGHTFIELD:  return "Height Field";
+		}
+
+		VX_CORE_ASSERT(false, "Unknown Geometry Type!");
+		return "";
 	}
 
 }
