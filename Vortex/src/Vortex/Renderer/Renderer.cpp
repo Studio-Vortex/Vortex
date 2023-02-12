@@ -1080,12 +1080,12 @@ namespace Vortex {
 		s_Data.SceneGamma = gamma;
 	}
 
-	Math::vec3 Renderer::GetBloomThreshold()
+	Math::vec3 Renderer::GetBloomSettings()
 	{
 		return s_Data.BloomThreshold;
 	}
 
-	void Renderer::SetBloomThreshold(const Math::vec3& threshold)
+	void Renderer::SetBloomSettings(const Math::vec3& threshold)
 	{
 		s_Data.BloomThreshold = threshold;
 	}

@@ -32,6 +32,7 @@ namespace Vortex {
 	{
 		float ShadowMapRenderTime = 0.0f;
 		float GeometryPassRenderTime = 0.0f;
+		float BloomPassRenderTime = 0.0f;
 	};
 
 	enum class PostProcessStage
@@ -120,8 +121,8 @@ namespace Vortex {
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
 
-		static Math::vec3 GetBloomThreshold();
-		static void SetBloomThreshold(const Math::vec3& threshold);
+		static Math::vec3 GetBloomSettings();
+		static void SetBloomSettings(const Math::vec3& threshold);
 
 		static uint32_t GetBloomSampleSize();
 		static void SetBloomSampleSize(uint32_t samples);

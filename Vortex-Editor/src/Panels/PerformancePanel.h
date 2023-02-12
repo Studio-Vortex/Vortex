@@ -16,6 +16,9 @@ namespace Vortex {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
+		void DrawHeading(const char* title);
+
+	private:
 		inline static bool s_ShowPanel = false;
 	};
 

@@ -4,7 +4,7 @@ namespace Vortex {
 
 	void PerformancePanel::OnGuiRender(size_t entityCount)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = Gui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
@@ -16,69 +16,44 @@ namespace Vortex {
 		uint32_t activeID = Application::Get().GetGuiLayer()->GetActiveLayerID();
 		Gui::Text("Active Panel ID: %u", activeID);
 
-		Gui::PushFont(boldFont);
-		Gui::Text("Scene");
-		Gui::PopFont();
-		UI::Draw::Underline();
+		DrawHeading("Scene");
 
 		Gui::Text("Entity Count: %u", entityCount);
 
-		Gui::PushFont(boldFont);
-		Gui::Text("Renderer");
-		Gui::PopFont();
-		UI::Draw::Underline();
+		DrawHeading("Renderer Frame Time");
+
+		Gui::Text("Average Frame Time: %.3fms", 1000.0f / io.Framerate);
+		Gui::Text("FPS:  %.0f", io.Framerate);
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		Gui::Text("Geometry Pass: %.4fms", renderTime.GeometryPassRenderTime);
 		Gui::Text("Shadow Pass: %.4fms", renderTime.ShadowMapRenderTime);
+		Gui::Text("Bloom Pass: %.4fms", renderTime.BloomPassRenderTime);
 
-		if (Gui::BeginTable("Renderer", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+		static const char* columns[] = {"Renderer", "Renderer2D"};
+
+		UI::Table("Input Assembly Info", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), []()
 		{
-			Gui::TableSetupColumn("3D Renderer");
-			Gui::TableSetupColumn("2D Renderer");
-			Gui::TableHeadersRow();
-				
-			// Renderer Stats
-			{
-				Gui::TableNextColumn();
-				auto stats = Renderer::GetStats();
-				Gui::Text("Draw Calls: %i", stats.DrawCalls);
-				Gui::Text("Quads:      %i", stats.QuadCount);
-				Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-				Gui::Text("Lines:      %i", stats.LineCount);
-				Gui::Text("Vertices:   %i", stats.GetVertexCount());
-				Gui::Text("Indices:    %i", stats.GetIndexCount());
-			}
+			Gui::TableNextColumn();
+			auto stats = Renderer::GetStats();
+			Gui::Text("Draw Calls: %i", stats.DrawCalls);
+			Gui::Text("Quads:      %i", stats.QuadCount);
+			Gui::Text("Triangles:  %i", stats.GetTriangleCount());
+			Gui::Text("Lines:      %i", stats.LineCount);
+			Gui::Text("Vertices:   %i", stats.GetVertexCount());
+			Gui::Text("Indices:    %i", stats.GetIndexCount());
 
-			// Renderer 2D Stats
-			{
-				Gui::TableNextColumn();
-				auto stats = Renderer2D::GetStats();
-				Gui::Text("Draw Calls: %i", stats.DrawCalls);
-				Gui::Text("Quads:      %i", stats.QuadCount);
-				Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-				Gui::Text("Lines:      %i", stats.LineCount);
-				Gui::Text("Vertices:   %i", stats.GetVertexCount());
-				Gui::Text("Indices:    %i", stats.GetIndexCount());
-			}
+			Gui::TableNextColumn();
+			stats = Renderer2D::GetStats();
+			Gui::Text("Draw Calls: %i", stats.DrawCalls);
+			Gui::Text("Quads:      %i", stats.QuadCount);
+			Gui::Text("Triangles:  %i", stats.GetTriangleCount());
+			Gui::Text("Lines:      %i", stats.LineCount);
+			Gui::Text("Vertices:   %i", stats.GetVertexCount());
+			Gui::Text("Indices:    %i", stats.GetIndexCount());
+		});
 
-			Gui::EndTable();
-		}
-
-		Gui::Spacing();
-		Gui::PushFont(boldFont);
-		Gui::Text("Frame Time");
-		Gui::PopFont();
-		UI::Draw::Underline();
-
-		Gui::Text("Average frame time: %.3fms", 1000.0f / io.Framerate);
-		Gui::Text("FPS:  %.0f", io.Framerate);
-
-		Gui::Spacing();
-		Gui::PushFont(boldFont);
-		Gui::Text("Graphics API");
-		Gui::PopFont();
-		UI::Draw::Underline();
+		DrawHeading("Graphics API");
 
 		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
 		Gui::Text("API:     %s", rendererInfo.API);
@@ -88,6 +63,17 @@ namespace Vortex {
 		Gui::Text("GLSL:    %s", rendererInfo.ShadingLanguageVersion);
 
 		Gui::End();
+	}
+
+	void PerformancePanel::DrawHeading(const char* title)
+	{
+		auto boldFont = Gui::GetIO().Fonts->Fonts[0];
+
+		Gui::Spacing();
+		Gui::PushFont(boldFont);
+		Gui::Text(title);
+		Gui::PopFont();
+		UI::Draw::Underline();
 	}
 
 }

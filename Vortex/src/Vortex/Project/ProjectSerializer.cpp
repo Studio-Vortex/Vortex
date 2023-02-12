@@ -103,7 +103,7 @@ namespace Vortex {
 				out << YAML::Key << "ShadowMapResolution" << YAML::Value << Renderer::GetShadowMapResolution();
 				out << YAML::Key << "Exposure" << YAML::Value << Renderer::GetSceneExposure();
 				out << YAML::Key << "Gamma" << YAML::Value << Renderer::GetSceneGamma();
-				out << YAML::Key << "BloomThreshold" << YAML::Value << Renderer::GetBloomThreshold();
+				out << YAML::Key << "BloomThreshold" << YAML::Value << Renderer::GetBloomSettings();
 				out << YAML::Key << "BloomSampleSize" << YAML::Value << Renderer::GetBloomSampleSize();
 				out << YAML::Key << "RenderFlags" << YAML::Value << Renderer::GetFlags();
 				out << YAML::Key << "UseVSync" << YAML::Value << Application::Get().GetWindow().IsVSyncEnabled();

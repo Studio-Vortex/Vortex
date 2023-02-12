@@ -197,7 +197,7 @@ namespace Vortex {
 			}
 		}
 
-		OnOverlayRender(m_EditorCamera);
+		OnOverlayRender(m_EditorCamera, false);
 
 		m_Framebuffer->Unbind();
 
@@ -207,7 +207,9 @@ namespace Vortex {
 		PostProcessStage stages[] = { PostProcessStage::Bloom };
 		postProcessProps.Stages = stages;
 		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+		timer = InstrumentationTimer("Bloom Pass");
 		Renderer::BeginPostProcessingStages(postProcessProps);
+		renderTime.BloomPassRenderTime += timer.ElapsedMS();
 
 		if (m_ShowSecondViewport)
 		{
@@ -244,7 +246,7 @@ namespace Vortex {
 				}
 			}
 
-			OnOverlayRender(m_SecondEditorCamera);
+			OnOverlayRender(m_SecondEditorCamera, true);
 
 			m_SecondViewportFramebuffer->Unbind();
 		}
@@ -1217,14 +1219,14 @@ namespace Vortex {
 		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
 
-	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera)
+	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
 	{
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		Math::mat4 cameraView;
 
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play && !renderInPlayMode)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 

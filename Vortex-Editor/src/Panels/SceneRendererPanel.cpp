@@ -237,9 +237,17 @@ namespace Vortex {
 
 				if (bloomEnabled)
 				{
-					Math::vec3 bloomThreshold = Renderer::GetBloomThreshold();
-					if (UI::Property("Bloom Threshold", bloomThreshold))
-						Renderer::SetBloomThreshold(bloomThreshold);
+					Math::vec3 bloomSettings = Renderer::GetBloomSettings();
+					bool modified = false;
+					if (UI::Property("Threshold", bloomSettings.x))
+						modified = true;
+					if (UI::Property("Soft Knee", bloomSettings.y))
+						modified = true;
+					if (UI::Property("Unknown", bloomSettings.z))
+						modified = true;
+
+					if (modified)
+						Renderer::SetBloomSettings(bloomSettings);
 
 					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
 					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();

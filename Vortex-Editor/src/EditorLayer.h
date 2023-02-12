@@ -45,7 +45,7 @@ namespace Vortex {
 		void UI_GizmosToolbar();
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();
-		void OnOverlayRender(EditorCamera* editorCamera);
+		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 

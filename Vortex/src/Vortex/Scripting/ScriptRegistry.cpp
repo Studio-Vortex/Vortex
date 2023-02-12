@@ -16,10 +16,11 @@
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/2D/Physics2D.h"
 
-#include "Vortex/Renderer/RenderCommand.h"
+#include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/LightSource.h"
+#include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Model.h"
 
@@ -93,6 +94,12 @@ namespace Vortex {
 
 		return Application::Get().GetWindow().IsMaximized();
 	}
+
+#pragma endregion
+
+#pragma region SceneRenderer
+
+	
 
 #pragma endregion
 

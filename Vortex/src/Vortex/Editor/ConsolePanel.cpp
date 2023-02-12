@@ -173,6 +173,7 @@ namespace Vortex {
 		if (message.Flags & (int16_t)ConsoleMessageFlags::Info) return "Info";
 		if (message.Flags & (int16_t)ConsoleMessageFlags::Warning) return "Warning";
 		if (message.Flags & (int16_t)ConsoleMessageFlags::Error) return "Error";
+
 		return "Unknown";
 	}
 
@@ -181,6 +182,7 @@ namespace Vortex {
 		//if (message.Flags & (int16_t)ConsoleMessageFlags::Info) return s_InfoButtonOnTint;
 		if (message.Flags & (int16_t)ConsoleMessageFlags::Warning) return s_WarningTint;
 		if (message.Flags & (int16_t)ConsoleMessageFlags::Error) return s_ErrorTint;
+
 		return s_InfoTint;
 	}
 
