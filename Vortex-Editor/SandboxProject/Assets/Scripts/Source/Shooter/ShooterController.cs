@@ -33,13 +33,13 @@ namespace Sandbox.Shooter {
 			rigidbody = GetComponent<RigidBody>();
 			controller = GetComponent<CharacterController>();
 			capsuleCollider = GetComponent<CapsuleCollider>();
-			eyes = FindEntityByName("Eyes");
+			eyes = Scene.FindEntityByName("Eyes");
 			Input.SetCursorMode(CursorMode.Locked);
 			rigidbody.Rotation = Vector3.Zero;
 			eyes.transform.Rotation = Vector3.Zero;
 			footstepSounds = new AudioSource[2];
-			footstepSounds[0] = FindEntityByName("Footstep 1").GetComponent<AudioSource>();
-			footstepSounds[1] = FindEntityByName("Footstep 2").GetComponent<AudioSource>();
+			footstepSounds[0] = Scene.FindEntityByName("Footstep 1").GetComponent<AudioSource>();
+			footstepSounds[1] = Scene.FindEntityByName("Footstep 2").GetComponent<AudioSource>();
 		}
 
 		protected override void OnUpdate(float deltaTime)
@@ -116,7 +116,7 @@ namespace Sandbox.Shooter {
 			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
 			Vector3 speed = Vector3.Zero;
 
-			int randomInt = RandomDevice.RangedInt(0, 1);
+			int randomInt = Random.Int(0, 1);
 
 			if (Input.IsKeyDown(KeyCode.W) || axisLeftY < -controllerDeadzone)
 			{
@@ -145,7 +145,7 @@ namespace Sandbox.Shooter {
 			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
 			Vector3 speed = Vector3.Zero;
 
-			int randomInt = RandomDevice.RangedInt(0, 1);
+			int randomInt = Random.Int(0, 1);
 
 			if (Input.IsKeyDown(KeyCode.A) || axisLeftX < -controllerDeadzone)
 			{

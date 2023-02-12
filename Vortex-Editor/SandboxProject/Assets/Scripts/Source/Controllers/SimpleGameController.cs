@@ -16,7 +16,7 @@ namespace Sandbox {
 		{
 			m_Controller = GetComponent<CharacterController>();
 			m_JumpSound = GetComponent<AudioSource>();
-			m_CameraEntity = FindEntityByName("Camera");
+			m_CameraEntity = Scene.FindEntityByName("Camera");
 		}
 
 		protected override void OnUpdate(float delta)
@@ -28,7 +28,7 @@ namespace Sandbox {
 
 		protected override void OnCollisionBegin()
 		{
-			Debug.Info("Collision Occurred!");
+			Log.Info("Collision Occurred!");
 		}
 
 		void ProcessInput(float delta)

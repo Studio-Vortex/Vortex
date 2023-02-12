@@ -1,4 +1,3 @@
-using System;
 using Vortex;
 
 namespace Sandbox {
@@ -17,12 +16,12 @@ namespace Sandbox {
 			{
 				for (float x = 0; x < Columns; x += Step)
 				{
-					Entity entity = new Entity($"{x}, {y}");
+					Entity entity = Scene.CreateEntity($"{x}, {y}");
 					entity.transform.Translation = new Vector3(x + Offset, y + Offset, 0.0f);
 					
 					SpriteRenderer spriteRenderer = entity.AddComponent<SpriteRenderer>();
 					spriteRenderer.Color = new Vector4(
-						RandomDevice.RangedFloat(0.0f, 1.0f), RandomDevice.RangedFloat(0.0f, 1.0f), RandomDevice.RangedFloat(0.0f, 1.0f), 1.0f
+						Random.Float(0.0f, 1.0f), Random.Float(0.0f, 1.0f), Random.Float(0.0f, 1.0f), 1.0f
 					);
 
 					RigidBody2D rigidBody = entity.AddComponent<RigidBody2D>();

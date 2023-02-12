@@ -39,12 +39,12 @@ namespace Sandbox.Shooter.Weapons {
 
 		protected override void OnCreate()
 		{
-			camera = FindEntityByName("Camera").GetComponent<Camera>();
-			player = FindEntityByName("Player");
-			eyes = FindEntityByName("Eyes");
-			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
-			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
-			ammoTextEntity = FindEntityByName("Ammo Text");
+			camera = Scene.FindEntityByName("Camera").GetComponent<Camera>();
+			player = Scene.FindEntityByName("Player");
+			eyes = Scene.FindEntityByName("Eyes");
+			emptyGunSound = Scene.FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
+			reloadSound = Scene.FindEntityByName("Reload Sound").GetComponent<AudioSource>();
+			ammoTextEntity = Scene.FindEntityByName("Ammo Text");
 			ammoText = ammoTextEntity.GetComponent<TextMesh>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
@@ -54,8 +54,8 @@ namespace Sandbox.Shooter.Weapons {
 
 			switch (weapon)
 			{
-				case WeaponType.Pistol: zoomedTransform = FindEntityByName("Pistol Zoomed Transform").transform; break;
-				case WeaponType.Rifle:  zoomedTransform = FindEntityByName("Rifle Zoomed Transform").transform;  break;
+				case WeaponType.Pistol: zoomedTransform = Scene.FindEntityByName("Pistol Zoomed Transform").transform; break;
+				case WeaponType.Rifle:  zoomedTransform = Scene.FindEntityByName("Rifle Zoomed Transform").transform;  break;
 			}
 
 			startPosition = transform.Translation;
@@ -166,7 +166,7 @@ namespace Sandbox.Shooter.Weapons {
 			}
 			else
 			{
-				Entity bullet = new Entity("Bullet");
+				Entity bullet = Scene.CreateEntity("Bullet");
 				CreateBullet(bullet);
 			}
 		}
@@ -178,7 +178,7 @@ namespace Sandbox.Shooter.Weapons {
 
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetSubmesh(0).GetMaterial();
+			Material material = meshRenderer.GetSubmesh(0).Material;
 			material.Albedo = Color.Red;
 
 			bullet.AddComponent<SphereCollider>();

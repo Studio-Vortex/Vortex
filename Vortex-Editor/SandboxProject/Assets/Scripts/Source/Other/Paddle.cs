@@ -10,7 +10,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			Debug.Log("Welcome to Vortex!");
+			Log.Print("Welcome to Vortex!");
 		}
 
 		protected override void OnUpdate(float delta)

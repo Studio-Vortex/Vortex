@@ -13,8 +13,8 @@ namespace Sandbox.DarkRoom {
 
 		protected override void OnCreate()
 		{
-			player = FindEntityByName("Player");
-			helpText = FindEntityByName("Help Text");
+			player = Scene.FindEntityByName("Player");
+			helpText = Scene.FindEntityByName("Help Text");
 		}
 
 		protected override void OnUpdate(float delta)
@@ -28,7 +28,7 @@ namespace Sandbox.DarkRoom {
 				{
 					m_ShouldOpen = true;
 					GetComponent<AudioSource>().Play();
-					FindEntityByName("Flashbang Sound").GetComponent<AudioSource>().Play();
+					Scene.FindEntityByName("Flashbang Sound").GetComponent<AudioSource>().Play();
 				}
 
 				helpText.SetActive(true);

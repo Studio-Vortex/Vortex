@@ -1,5 +1,4 @@
 ﻿using Vortex;
-using System;
 
 namespace Sandbox {
 
@@ -10,22 +9,27 @@ namespace Sandbox {
 		public float slowSpeed;
 		public float boostSpeed;
 		public bool hasPackage;
+		public Color4 hasPackageColor = new Color4(0.2f, 0.8f, 0.2f, 1.0f);
+		public Color4 noPackageColor = new Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		Vector4 hasPackageColor = new Vector4(0.2f, 0.8f, 0.2f, 1.0f);
-		Vector4 noPackageColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		Entity camera;
 		SpriteRenderer spriteRenderer;
 		TextMesh packagesLeftText;
 
 		protected override void OnCreate()
 		{
 			spriteRenderer = GetComponent<SpriteRenderer>();
-			packagesLeftText = FindEntityByName("Text").GetComponent<TextMesh>();
+			packagesLeftText = Scene.FindEntityByName("Text").GetComponent<TextMesh>();
+			camera = Scene.FindEntityByName("Camera");
 		}
 
 		protected override void OnUpdate(float delta)
 		{
 			ProcessRotation();
 			ProcessMovement();
+			
+			UpdateCamera();
+
 			ProcessDelivery();
 		}
 
@@ -34,9 +38,9 @@ namespace Sandbox {
 			float steerAmount = 0.0f;
 
 			if (Input.IsKeyDown(KeyCode.A))
-				steerAmount = -Math.Abs(steerSpeed);
+				steerAmount = -Mathf.Abs(steerSpeed);
 			else if (Input.IsKeyDown(KeyCode.D))
-				steerAmount = Math.Abs(steerSpeed);
+				steerAmount = Mathf.Abs(steerSpeed);
 
 			transform.Rotate(Vector3.Forward * steerAmount * Time.DeltaTime);
 		}
@@ -67,7 +71,7 @@ namespace Sandbox {
 			{
 				hasPackage = false;
 				spriteRenderer.Color = noPackageColor;
-				int packagesLeft = Convert.ToInt32(packagesLeftText.Text);
+				int packagesLeft = int.Parse(packagesLeftText.Text);
 				packagesLeftText.Text = (--packagesLeft).ToString();
 			}
 			else if (other.Marker == "Boost")
@@ -79,6 +83,11 @@ namespace Sandbox {
 			{
 				moveSpeed = slowSpeed;
 			}
+		}
+
+		void UpdateCamera()
+		{
+			camera.transform.Translation = transform.Translation;
 		}
 
 	}

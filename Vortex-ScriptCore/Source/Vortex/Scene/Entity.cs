@@ -95,6 +95,16 @@ namespace Vortex {
 			return new Entity(entityID);
 		}
 
+		public Entity FindChildByName(string name)
+		{
+			ulong entityID = InternalCalls.Entity_FindChildByName(ID, name);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
+
 		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
 
 		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);

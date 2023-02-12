@@ -12,7 +12,7 @@ namespace Sandbox.Shooter {
 
 		protected override void OnCreate()
 		{
-			weaponManager = FindEntityByName("Weapon Manager").As<WeaponManager>();
+			weaponManager = Scene.FindEntityByName("Weapon Manager").As<WeaponManager>();
 		}
 
 		protected override void OnUpdate(float deltaTime)

@@ -41,8 +41,8 @@ namespace Sandbox {
 
 			StartPosition = transform.Translation;
 
-			m_CameraEntity = FindEntityByName("Camera").As<Camera2D>();
-			Debug.Info("Platformer Player is loose!");
+			m_CameraEntity = Scene.FindEntityByName("Camera").As<Camera2D>();
+			Log.Info("Platformer Player is loose!");
 		}
 
 		protected override void OnUpdate(float delta)
@@ -138,7 +138,7 @@ namespace Sandbox {
 			if (m_Sprite.Texture == m_NormalTextureString)
 			{
 				m_Sprite.Texture = m_JumpTextureString;
-				Debug.Log("setting texture");
+				Log.Print("setting texture");
 			}
 			else
 				m_Sprite.Texture = m_NormalTextureString;
@@ -148,7 +148,7 @@ namespace Sandbox {
 
 		protected override void OnDestroy()
 		{
-			Debug.Info("Sandbox.PlatformerPlayer::OnDestroy()");
+			Log.Info("Sandbox.PlatformerPlayer::OnDestroy()");
 		}
 	}
 

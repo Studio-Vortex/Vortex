@@ -10,7 +10,7 @@ namespace Sandbox.Shooter.Weapons {
 		{
 			if (Physics.Raycast(transform.Translation + transform.Up, transform.Up, 5f, out RaycastHit hitInfo))
 			{
-				Gun gun = FindEntityByName("Pistol").As<Gun>();
+				Gun gun = Scene.FindEntityByName("Pistol").As<Gun>();
 
 				if (hitInfo.Entity.HasComponent<RigidBody>())
 				{

@@ -1,0 +1,22 @@
+Vortex Engine v0.1a
+Initalizing...
+Creating window 'BallRoller' (1600.000, 900.000)
+Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
+Shader Loaded: 'Equirectangular_to_Cubemap' - path /Resources/Shaders/Equirectangular_to_Cubemap.glsl
+Shader Loaded: 'Irradiance_Convolution' - path /Resources/Shaders/Irradiance_Convolution.glsl
+Shader Loaded: 'IBL_Prefilter' - path /Resources/Shaders/IBL_Prefilter.glsl
+Shader Loaded: 'Renderer_BRDF_LUT' - path /Resources/Shaders/Renderer_BRDF_LUT.glsl
+Shader Loaded: 'Renderer_Environment' - path /Resources/Shaders/Renderer_Environment.glsl
+Shader Loaded: 'Renderer_SkyLightShadowMap' - path /Resources/Shaders/Renderer_SkyLightShadowMap.glsl
+Shader Loaded: 'Renderer_PointLightShadowMap' - path /Resources/Shaders/Renderer_PointLightShadowMap.glsl
+Shader Loaded: 'Renderer_SpotLightShadowMap' - path /Resources/Shaders/Renderer_SpotLightShadowMap.glsl
+Shader Loaded: 'GaussianBlur' - path /Resources/Shaders/GaussianBlur.glsl
+Shader Loaded: 'BloomFinalComposite' - path /Resources/Shaders/BloomFinalComposite.glsl
+Shader Loaded: 'Renderer_Stencil' - path /Resources/Shaders/Renderer_Stencil.glsl
+Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
+Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
+Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
+Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
+Deserializing Scene 'MenuScene'
+Deserializing Scene 'SampleScene'
+Shutting down...

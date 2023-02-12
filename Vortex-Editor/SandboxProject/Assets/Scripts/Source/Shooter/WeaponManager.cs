@@ -24,9 +24,9 @@ namespace Sandbox.Shooter.Weapons {
 
 		protected override void OnCreate()
 		{
-			ammoText = FindEntityByName("Ammo Text");
-			rifle = FindEntityByName("Rifle");
-			pistol = FindEntityByName("Pistol");
+			ammoText = Scene.FindEntityByName("Ammo Text");
+			rifle = Scene.FindEntityByName("Rifle");
+			pistol = Scene.FindEntityByName("Pistol");
 			weaponSwitchedSound = GetComponent<AudioSource>();
 
 			currentWeapon = (int)startingWeapon;

@@ -11,16 +11,8 @@ namespace Sandbox {
 		public Vector3 Velocity;
 		public Vector3 Rotation;
 
-		protected override void OnCreate()
-		{
-
-		}
-
 		protected override void OnUpdate(float delta)
 		{
-			Debug.Log($"Forward: {transform.Forward}");
-			Debug.Log($"Right:   {transform.Right}");
-			Debug.Log($"Up:      {transform.Up}");
 			Velocity = Vector3.Zero;
 			Rotation = Vector3.Zero;
 

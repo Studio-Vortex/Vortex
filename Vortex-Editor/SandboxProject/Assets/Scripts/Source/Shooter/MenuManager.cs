@@ -13,7 +13,7 @@ namespace Sandbox.Shooter.Menu {
 
 		protected override void OnCreate()
 		{
-			camera = FindEntityByName("Camera");
+			camera = Scene.FindEntityByName("Camera");
 			clickedSound = GetComponent<AudioSource>();
 		}
 

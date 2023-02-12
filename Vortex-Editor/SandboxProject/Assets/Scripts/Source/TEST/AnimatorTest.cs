@@ -11,7 +11,7 @@ namespace Sandbox {
 				animator.Play();
 			}
 
-			Debug.Log(animator.IsPlaying);
+			Log.Print(animator.IsPlaying);
 		}
 	}
 

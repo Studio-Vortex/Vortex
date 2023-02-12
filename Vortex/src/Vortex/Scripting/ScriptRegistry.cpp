@@ -1960,6 +1960,108 @@ namespace Vortex {
 		entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
 	}
 
+	static uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+			return 0;
+		}
+
+		return (uint32_t)rb.LockFlags;
+	}
+
+	static void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot set actor lock flag on a Static actor");
+			return;
+		}
+
+		if (value)
+			rb.LockFlags |= (uint8_t)flag;
+		else
+			rb.LockFlags &= (uint8_t)flag;
+
+		if (forceWake)
+		{
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+			actor->wakeUp();
+		}
+	}
+
+	static bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot access actor lock flags of a Static actor");
+			return false;
+		}
+
+		uint8_t lockFlags = rb.LockFlags;
+
+		return lockFlags & (uint8_t)flag;
+	}
+
+	static bool RigidBodyComponent_IsSleeping(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Static actors are always sleeping");
+			return false;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		return actor->isSleeping();
+	}
+
+	static void RigidBodyComponent_WakeUp(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		actor->wakeUp();
+	}
+
 	static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -3748,6 +3850,11 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLockFlags);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetLockFlag);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_IsLockFlagSet);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_IsSleeping);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_WakeUp);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddForce);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddForceAtPosition);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_AddTorque);

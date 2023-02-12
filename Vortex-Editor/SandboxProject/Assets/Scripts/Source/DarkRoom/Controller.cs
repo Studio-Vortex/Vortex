@@ -23,10 +23,10 @@ namespace Sandbox.DarkRoom {
 		{
 			controller = GetComponent<CharacterController>();
 			rigidbody = GetComponent<RigidBody>();
-			eyes = FindEntityByName("Eyes");
+			eyes = Scene.FindEntityByName("Eyes");
 			footstepSounds = new AudioSource[2];
-			footstepSounds[0] = FindEntityByName("Footstep1").GetComponent<AudioSource>();
-			footstepSounds[1] = FindEntityByName("Footstep2").GetComponent<AudioSource>();
+			footstepSounds[0] = Scene.FindEntityByName("Footstep1").GetComponent<AudioSource>();
+			footstepSounds[1] = Scene.FindEntityByName("Footstep2").GetComponent<AudioSource>();
 			Input.SetCursorMode(CursorMode.Locked);
 		}
 
@@ -60,8 +60,8 @@ namespace Sandbox.DarkRoom {
 		{
 			Vector3 displacement = Vector3.Zero;
 
-			int rand0 = RandomDevice.RangedInt(0, 1);
-			int rand1 = RandomDevice.RangedInt(0, 1);
+			int rand0 = Random.Int(0, 1);
+			int rand1 = Random.Int(0, 1);
 
 			if (Input.IsKeyDown(KeyCode.W))
 			{

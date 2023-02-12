@@ -10,7 +10,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			m_player = FindEntityByName("Rocket");
+			m_player = Scene.FindEntityByName("Rocket");
 		}
 
 		protected override void OnUpdate(float deltaTime)

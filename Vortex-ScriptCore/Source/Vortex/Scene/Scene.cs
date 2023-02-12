@@ -22,16 +22,6 @@
 			return new Entity(entityID);
 		}
 
-		public static Entity FindChildByName(string name)
-		{
-			ulong entityID = InternalCalls.Scene_FindChildByName(name);
-
-			if (entityID == 0)
-				return null;
-
-			return new Entity(entityID);
-		}
-
 		public static Entity CreateEntity(string name = "")
 		{
 			ulong entityID = InternalCalls.Scene_CreateEntity(name);

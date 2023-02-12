@@ -38,7 +38,7 @@ namespace Sandbox {
 
 		protected override void OnDestroy()
 		{
-			Debug.Log("MovingWall OnDestroy() Called!");
+			Log.Print("MovingWall OnDestroy() Called!");
 		}
 	}
 

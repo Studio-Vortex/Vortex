@@ -13,7 +13,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			m_Target = FindEntityByName("Player");
+			m_Target = Scene.FindEntityByName("Player");
 			m_TargetTransform = m_Target.GetComponent<Transform>();
 			m_RigidBody = GetComponent<RigidBody2D>();
 		}
@@ -37,7 +37,7 @@ namespace Sandbox {
 
 		protected override void OnDestroy()
 		{
-			Debug.Log("Enemy Killed");
+			Log.Print("Enemy Killed");
 		}
 	}
 

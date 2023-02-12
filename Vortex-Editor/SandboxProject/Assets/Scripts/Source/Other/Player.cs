@@ -17,7 +17,7 @@ namespace Sandbox {
 		{
 			Time = 0.0f;
 			rb = GetComponent<RigidBody2D>();
-			m_Camera = FindEntityByName("Camera").As<Camera2D>();
+			m_Camera = Scene.FindEntityByName("Camera").As<Camera2D>();
 			m_SpriteRenderer = GetComponent<SpriteRenderer>();
 
 			Speed *= 1.5f;
@@ -55,7 +55,7 @@ namespace Sandbox {
 			{
 				m_SpriteRenderer.Color = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 				if (hit.Tag == "Floor")
-					Debug.Log("Floor Hit");
+					Log.Print("Floor Hit");
 			}
 			else
 				m_SpriteRenderer.Color = new Vector4(1.0f);

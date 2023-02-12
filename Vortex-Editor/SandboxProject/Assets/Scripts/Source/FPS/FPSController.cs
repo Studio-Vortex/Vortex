@@ -27,8 +27,8 @@ namespace Sandbox
 		{
 			Input.SetCursorMode(CursorMode.Locked);
 			m_TimeBetweenShot = timeBetweenShots;
-			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
-			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
+			gunshotSound = Scene.FindEntityByName("Camera").GetComponent<AudioSource>();
+			muzzleBlast = Scene.FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 
 			/*Entity container = FindEntityByName("Container");
 
@@ -124,13 +124,13 @@ namespace Sandbox
 
 		void FireBullet()
 		{
-			Entity bullet = new Entity("Bullet");
+			Entity bullet = Scene.CreateEntity("Bullet");
 			bullet.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
 			bullet.transform.Scale = new Vector3(0.5f);
 
 			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
 			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetSubmesh(0).GetMaterial();
+			Material material = meshRenderer.GetSubmesh(0).Material;
 			material.Albedo = Color.Red;
 			bullet.AddComponent<SphereCollider>();
 

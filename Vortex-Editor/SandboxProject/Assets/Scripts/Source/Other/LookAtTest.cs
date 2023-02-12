@@ -8,7 +8,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			player = FindEntityByName("Player");
+			player = Scene.FindEntityByName("Player");
 		}
 
 		protected override void OnUpdate(float delta)

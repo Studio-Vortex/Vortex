@@ -58,7 +58,7 @@ namespace Vortex {
 		internal extern static ulong Scene_FindEntityByName(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_FindChildByName(string name);
+		internal extern static ulong Scene_FindChildByName(ulong entityID, string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_CreateEntity(string name);
@@ -100,6 +100,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_RemoveComponent(ulong entityID, Type componentType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_FindChildByName(ulong entityID, string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static Entity[] Entity_GetChildren(ulong entityID);
@@ -553,6 +556,21 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID, bool isKinematic);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint RigidBodyComponent_GetLockFlags(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetLockFlag(ulong entityID, ActorLockFlag flag, bool value, bool forceWake);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_IsLockFlagSet(ulong entityID, ActorLockFlag flag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_IsSleeping(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_WakeUp(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);

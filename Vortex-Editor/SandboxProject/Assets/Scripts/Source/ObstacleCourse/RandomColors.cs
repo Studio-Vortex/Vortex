@@ -22,8 +22,8 @@ namespace Sandbox.ObstacleCourse {
 
 				if (child.TryGetComponent(out MeshRenderer meshRenderer))
 				{
-					Material material = meshRenderer.GetSubmesh(0).GetMaterial();
-					float[] colors = new float[3] { RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1), RandomDevice.RangedFloat(0, 1) };
+					Material material = meshRenderer.GetSubmesh(0).Material;
+					float[] colors = new float[3] { Random.Float(0, 1), Random.Float(0, 1), Random.Float(0, 1) };
 					material.Albedo = new Vector3(colors[0], colors[1], colors[2]);
 
 					children.Add(child);
@@ -36,7 +36,7 @@ namespace Sandbox.ObstacleCourse {
 			foreach (Entity child in children)
 			{
 				Submesh submesh = child.GetComponent<MeshRenderer>().GetSubmesh(0);
-				Material material = submesh.GetMaterial();
+				Material material = submesh.Material;
 				material.Albedo = Color.White;
 			}
 		}

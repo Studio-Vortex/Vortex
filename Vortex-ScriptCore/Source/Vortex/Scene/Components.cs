@@ -503,6 +503,15 @@
 			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
 		}
 
+		public uint GetLockFlags() => InternalCalls.RigidBodyComponent_GetLockFlags(Entity.ID);
+		public void SetLockFlag(ActorLockFlag flag, bool value, bool forceWake = false)
+			=> InternalCalls.RigidBodyComponent_SetLockFlag(Entity.ID, flag, value, forceWake);
+		public bool IsLockFlagSet(ActorLockFlag flag)
+			=> InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
+
+		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Entity.ID);
+		public void WakeUp() => InternalCalls.RigidBodyComponent_WakeUp(Entity.ID);
+
 		public void Translate(Vector3 translation)
 		{
 			InternalCalls.RigidBodyComponent_Translate(Entity.ID, ref translation);

@@ -160,7 +160,7 @@ namespace Sandbox {
 
 		void ReloadLevel()
 		{
-			Entity ground = FindEntityByName("Ground");
+			Entity ground = Scene.FindEntityByName("Ground");
 			AudioSource audioSource = ground.GetComponent<AudioSource>();
 
 			if (!audioSource.IsPlaying)

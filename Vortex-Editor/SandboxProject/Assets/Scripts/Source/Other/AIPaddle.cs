@@ -13,7 +13,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			m_Ball = FindEntityByName("Ball");
+			m_Ball = Scene.FindEntityByName("Ball");
 			m_BallTransform = m_Ball.GetComponent<Transform>();
 		}
 
