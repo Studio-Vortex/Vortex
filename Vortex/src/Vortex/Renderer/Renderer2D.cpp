@@ -1034,6 +1034,34 @@ namespace Vortex
 		AddToCircleVertexBuffer(transform, color, thickness, fade, entityID);
 	}
 
+	void Renderer2D::DrawCircle(const Math::vec3& position, const Math::vec3& rotation, float radius, const Math::vec4& color)
+	{
+		const Math::mat4 transform = Math::Translate(position) *
+			Math::Rotate(rotation.x, { 1.0f, 0.0f, 0.0f }) *
+			Math::Rotate(rotation.y, { 0.0f, 1.0f, 0.0f }) *
+			Math::Rotate(rotation.z, { 0.0f, 0.0f, 1.0f }) *
+			Math::Scale(Math::vec3(radius));
+
+		DrawCircle(transform, color);
+	}
+
+	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color)
+	{
+		uint32_t segments = 32;
+
+		for (uint32_t i = 0; i < segments; i++)
+		{
+			float angle = Math::TWO_PI * (float)i / segments;
+			Math::vec4 startPosition = { Math::Cos(angle), Math::Sin(angle), 0.0f, 1.0f };
+			angle = Math::TWO_PI * (float)((i + 1) % segments) / segments;
+			Math::vec4 endPosition = { Math::Cos(angle), Math::Sin(angle), 0.0f, 1.0f };
+
+			Math::vec3 p0 = transform * startPosition;
+			Math::vec3 p1 = transform * endPosition;
+			DrawLine(p0, p1, color);
+		}
+	}
+
 	void Renderer2D::DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID)
 	{
 		for (size_t i = 0; i < 2; i++)

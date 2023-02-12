@@ -47,7 +47,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void ConsolePanel::ClearConsole()
+	void ConsolePanel::ClearMessages()
 	{
 		std::scoped_lock<std::mutex> lock(m_MessageBufferMutex);
 		m_MessageBuffer.clear();
@@ -59,7 +59,7 @@ namespace Vortex {
 		Gui::BeginChild("Toolbar", size);
 
 		if (Gui::Button("Clear", { 75.0f, 28.0f }))
-			ClearConsole();
+			ClearMessages();
 
 		Gui::SameLine();
 

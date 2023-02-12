@@ -170,7 +170,7 @@ namespace Vortex {
 				Renderer2D::SetCullMode(cullMode);
 			}
 
-			// Render Scene Icons
+			// Scene Icons
 			if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
 			{
 				{
@@ -184,9 +184,11 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
+						const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
 						Renderer2D::DrawQuadBillboard(
 							cameraView,
-							scene->GetWorldSpaceTransform(entity).Translation,
+							transform.Translation,
 							EditorResources::CameraIcon,
 							Math::vec2(projectProps.GizmoProps.GizmoSize),
 							ColorToVec4(Color::White),
@@ -264,9 +266,11 @@ namespace Vortex {
 						if (!entity.IsActive())
 							continue;
 
+						const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
 						Renderer2D::DrawQuadBillboard(
 							cameraView,
-							scene->GetWorldSpaceTransform(entity).Translation,
+							transform.Translation,
 							EditorResources::AudioSourceIcon,
 							Math::vec2(projectProps.GizmoProps.GizmoSize),
 							ColorToVec4(Color::White),
@@ -339,7 +343,7 @@ namespace Vortex {
 				Entity entity{ e, scene };
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
-				if (renderPacket.EditorScene)
+				if (!renderPacket.Scene->IsRunning())
 				{
 					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 					Math::vec3 cameraPosition = editorCamera->GetPosition();

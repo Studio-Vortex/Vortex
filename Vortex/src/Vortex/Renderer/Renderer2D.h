@@ -103,9 +103,11 @@ namespace Vortex {
 
 		static void DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, int entityID = -1);
 
-		static void DrawCircle(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
-		static void DrawCircle(const Math::vec3& position, const Math::vec3& size, float rotation, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
-		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
+		static void DrawCircle(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID = -1);
+		static void DrawCircle(const Math::vec3& position, const Math::vec3& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID = -1);
+		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade = 0.005f, int entityID = -1);
+		static void DrawCircle(const Math::vec3& position, const Math::vec3& rotation, float radius, const Math::vec4& color);
+		static void DrawCircle(const Math::mat4& transform, const Math::vec4& color);
 
 		static void DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID = -1);
 

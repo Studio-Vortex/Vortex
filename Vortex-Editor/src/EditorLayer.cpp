@@ -1222,22 +1222,28 @@ namespace Vortex {
 		SharedRef<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
+		Math::mat4 cameraView;
+
 		if (m_SceneState == SceneState::Play)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			Math::mat4 transform = cameraEntity.GetComponent<TransformComponent>().GetTransform();
-			SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 
 			if (cameraEntity)
+			{
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(cameraEntity);
+				SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 				Renderer2D::BeginScene(camera, transform);
+				cameraView = Math::Inverse(transform);
+			}
 		}
 		else
 		{
 			Renderer2D::BeginScene(editorCamera);
+			cameraView = editorCamera->GetViewMatrix();
 		}
 
 		// Render Editor Grid
-		if ((m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid))
+		if (m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid)
 		{
 			float axisLineLength = 1'000.0f;
 			float gridLineLength = 750.0f;
@@ -1282,12 +1288,13 @@ namespace Vortex {
 			Renderer2D::Flush();
 		}
 		
+		// Render Physics Colliders
 		if (projectProps.PhysicsProps.ShowColliders)
 		{
-			// Render 3D Colliders
 			{
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
+
 					for (auto e : view)
 					{
 						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
@@ -1307,7 +1314,6 @@ namespace Vortex {
 				}
 			}
 
-			// Render 2D Colliders
 			{
 				float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
 				if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
@@ -1315,6 +1321,7 @@ namespace Vortex {
 
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+
 					for (auto e : view)
 					{
 						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
@@ -1332,6 +1339,7 @@ namespace Vortex {
 
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+
 					for (auto e : view)
 					{
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
@@ -1352,11 +1360,11 @@ namespace Vortex {
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
-
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 				Math::AABB aabb = {
 					- Math::vec3(0.5f),
@@ -1365,7 +1373,21 @@ namespace Vortex {
 
 				Renderer2D::DrawAABB(aabb, transform, ColorToVec4(Color::Orange));
 			}
-			else if (selectedEntity.HasComponent<TextMeshComponent>())
+			if (selectedEntity.HasComponent<SpriteRendererComponent>())
+			{
+				const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
+
+				Renderer2D::DrawRect(transform, ColorToVec4(Color::Orange));
+			}
+			if (selectedEntity.HasComponent<CircleRendererComponent>())
+			{
+				const auto& circleRenderer = selectedEntity.GetComponent<CircleRendererComponent>();
+
+				Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
+
+				Renderer2D::DrawCircle(scaledTransform, ColorToVec4(Color::Orange));
+			}
+			if (selectedEntity.HasComponent<TextMeshComponent>())
 			{
 				const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
 
@@ -1374,25 +1396,35 @@ namespace Vortex {
 
 				Renderer2D::DrawRect(transform, ColorToVec4(Color::Orange));
 			}
-			else if (selectedEntity.HasComponent<CameraComponent>())
+			if (selectedEntity.HasComponent<CameraComponent>())
 			{
 				const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 				if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				{
 					// TODO fix this
 					//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
-					// Remove this
-					Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
+					Renderer2D::DrawRect(transform, ColorToVec4(Color::Orange));
 				}
 				else
 				{
-					Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
+					Renderer2D::DrawRect(transform, ColorToVec4(Color::Orange));
 				}
 			}
-			else
+			if (selectedEntity.HasComponent<LightSourceComponent>())
 			{
-				//Orange
-				Renderer2D::DrawRect(m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity), ColorToVec4(Color::Orange));
+				const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
+
+				if (lightSourceComponent.Type == LightType::Point)
+				{
+					Math::vec4 color = { lightSourceComponent.Source->GetRadiance(), 1.0f };
+
+					Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+					const float intensity = lightSourceComponent.Source->GetIntensity();
+
+					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, intensity, color);
+					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, intensity, color);
+					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, intensity, color);
+				}
 			}
 		}
 
@@ -1516,6 +1548,17 @@ namespace Vortex {
 				{
 					m_SecondEditorCamera->Focus(selectedEntity.GetTransform().Translation);
 					m_SecondEditorCamera->SetDistance(10);
+				}
+
+				break;
+			}
+			case Key::G:
+			{
+				if (m_SceneState == SceneState::Edit)
+				{
+					SharedRef<Project> activeProject = Project::GetActive();
+					ProjectProperties& projectProps = activeProject->GetProperties();
+					projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 				}
 
 				break;
@@ -1798,13 +1841,13 @@ namespace Vortex {
 	{
 		StopAudioSources();
 
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
 		m_SceneState = SceneState::Play;
-
-		SharedRef<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
 
 		if (projectProps.ScriptingProps.ReloadAssemblyOnPlay)
 			ScriptEngine::ReloadAssembly();
@@ -1813,7 +1856,7 @@ namespace Vortex {
 			m_SceneViewportMaximized = true;
 
 		if (m_ConsolePanel.ClearOnPlay())
-			m_ConsolePanel.ClearConsole();
+			m_ConsolePanel.ClearMessages();
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
@@ -1846,6 +1889,9 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
 
+		SharedRef<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
+
 		if (m_SceneState == SceneState::Play)
 			m_ActiveScene->OnRuntimeStop();
 		else if (m_SceneState == SceneState::Simulate)
@@ -1853,7 +1899,7 @@ namespace Vortex {
 
 		m_SceneState = SceneState::Edit;
 
-		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
+		if (projectProps.EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = false;
 
 		m_HoveredEntity = Entity{};
