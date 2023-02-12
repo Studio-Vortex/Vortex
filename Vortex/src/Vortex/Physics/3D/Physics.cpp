@@ -334,10 +334,8 @@ namespace Vortex {
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
 			{
-				// Synchronize Transform
-				auto actorPose = actor->getGlobalPose();
-				transform.Translation = FromPhysXVector(actorPose.p);
-				transform.SetRotation(FromPhysXQuat(actorPose.q));
+				// Synchronize with entity Transform
+				actor->setGlobalPose(ToPhysXTransform(transform));
 			}
 
 			// Synchronize controller transform
@@ -397,10 +395,7 @@ namespace Vortex {
 
 		if (rigidbody.Type == RigidBodyType::Static)
 		{
-			actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(entityTransform));
-			auto actorPose = actor->getGlobalPose();
-			entity.GetTransform().Translation = FromPhysXVector(actorPose.p);
-			entity.GetTransform().SetRotation(FromPhysXQuat(actorPose.q));
+			actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(transform));
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
