@@ -1385,7 +1385,6 @@ namespace Vortex {
 						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
 					}
 				}
-
 			}
 			if (selectedEntity.HasComponent<SpriteRendererComponent>())
 			{

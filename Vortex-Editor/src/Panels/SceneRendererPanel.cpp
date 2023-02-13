@@ -69,7 +69,7 @@ namespace Vortex {
 			Gui::PushFont(boldFont);
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
 			Gui::PopFont();
-			
+
 			Gui::SameLine();
 			const char* buttonText = "Recompile All";
 			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + (Gui::CalcTextSize(buttonText).x * 0.5f));
@@ -79,24 +79,26 @@ namespace Vortex {
 					shader->Reload();
 			}
 
-			for (auto& shader : shaders)
+			static const char* columns[] = { "Name", "" };
+
+			UI::Table("Loaded Shaders", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
 			{
-				Gui::Columns(2);
-				Gui::SetColumnWidth(0, 250.0f);
-
-				const std::string& shaderName = shader->GetName();
-				Gui::Text(shaderName.c_str());
-				UI::Draw::Underline();
-				Gui::NextColumn();
-				std::string buttonName = "Reload##" + shaderName;
-
-				if (Gui::Button(buttonName.c_str()))
+				for (auto& shader : shaders)
 				{
-					shader->Reload();
-				}
+					Gui::TableNextColumn();
+					const std::string& shaderName = shader->GetName();
+					Gui::Text(shaderName.c_str());
+					UI::Draw::Underline();
 
-				Gui::Columns(1);
-			}
+					Gui::TableNextColumn();
+					std::string buttonName = "Reload##" + shaderName;
+
+					if (Gui::Button(buttonName.c_str()))
+					{
+						shader->Reload();
+					}
+				}
+			});
 
 			UI::EndTreeNode();
 		}

@@ -260,8 +260,13 @@ namespace Vortex {
 
 		if (s_Data->DebuggingEnabled)
 		{
+			SharedRef<Project> activeProject = Project::GetActive();
+			const ProjectProperties& projectProps = activeProject->GetProperties();
+
+			uint32_t debugListenerPort = projectProps.ScriptingProps.DebugListenerPort;
+
 			const char* argv[2] = {
-				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=Resources/Logs/MonoDebugger.txt",
+				fmt::format("--debugger-agent=transport=dt_socket,address=127.0.0.1:{0},server=y,suspend=n,loglevel=3,logfile=Resources/Logs/MonoDebugger.txt", debugListenerPort).c_str(),
 				"--soft-breakpoints"
 			};
 

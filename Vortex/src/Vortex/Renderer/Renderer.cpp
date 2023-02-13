@@ -932,7 +932,7 @@ namespace Vortex {
 		bool horizontal = true;
 		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
 		blurShader->Enable();
-		blurShader->SetInt("u_Texture", 0);
+		blurShader->SetInt("u_Texture", 5);
 
 		for (uint32_t i = 0; i < s_Data.BloomSampleSize; i++)
 		{
@@ -951,11 +951,9 @@ namespace Vortex {
 		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary->Get("BloomFinalComposite");
 		bloomFinalCompositeShader->Enable();
 
-		//glActiveTexture(GL_TEXTURE0);
 		sceneFramebuffer->BindColorTexture(0);
 		bloomFinalCompositeShader->SetInt("u_SceneTexture", 0);
 
-		//glActiveTexture(GL_TEXTURE1);
 		s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
 		bloomFinalCompositeShader->SetInt("u_BloomTexture", 1);
 

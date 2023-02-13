@@ -60,6 +60,7 @@ namespace Vortex {
 		struct VORTEX_API ScriptingProperties
 		{
 			std::filesystem::path ScriptBinaryPath = "";
+			uint32_t DebugListenerPort = 2550;
 			bool EnableMonoDebugging = false;
 			bool ReloadAssemblyOnPlay = false;
 		} ScriptingProps;

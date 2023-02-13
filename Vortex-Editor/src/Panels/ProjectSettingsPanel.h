@@ -16,10 +16,17 @@ namespace Vortex {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
+		void RenderGeneralSettingsPanel();
+		void RenderPhysicsSettingsPanel();
+		void RenderScriptingSettingsPanel();
+		void RenderEditorSettingsPanel();
+
+	private:
 		inline static bool s_ShowPanel = false;
 
 	private:
 		ProjectProperties& m_ProjectProperties;
+		std::vector<std::function<void()>> m_CallbackPanels;
 	};
 
 }

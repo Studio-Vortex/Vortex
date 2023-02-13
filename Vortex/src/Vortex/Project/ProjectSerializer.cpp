@@ -124,6 +124,7 @@ namespace Vortex {
 			out << YAML::Key << "ScriptingProperties" << YAML::BeginMap; // Scripting Properties
 			{
 				out << YAML::Key << "ScriptBinaryPath" << YAML::Value << props.ScriptingProps.ScriptBinaryPath.string();
+				out << YAML::Key << "DebugListenerPort" << YAML::Value << props.ScriptingProps.DebugListenerPort;
 				out << YAML::Key << "EnableMonoDebugging" << YAML::Value << props.ScriptingProps.EnableMonoDebugging;
 				out << YAML::Key << "ReloadAssemblyOnPlay" << YAML::Value << props.ScriptingProps.ReloadAssemblyOnPlay;
 			}
@@ -254,6 +255,7 @@ namespace Vortex {
 		{
 			auto scriptingData = projectData["ScriptingProperties"];
 			props.ScriptingProps.ScriptBinaryPath = scriptingData["ScriptBinaryPath"].as<std::string>();
+			props.ScriptingProps.DebugListenerPort = scriptingData["DebugListenerPort"].as<uint32_t>();
 			props.ScriptingProps.EnableMonoDebugging = scriptingData["EnableMonoDebugging"].as<bool>();
 			props.ScriptingProps.ReloadAssemblyOnPlay = scriptingData["ReloadAssemblyOnPlay"].as<bool>();
 		}
