@@ -1145,6 +1145,10 @@ namespace Vortex {
 					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
 						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
 
+					static const char* selectionModes[] = { "Entity", "Submesh" };
+					uint32_t currentSelectionMode = (uint32_t)m_SelectionMode;
+					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYCOUNT(selectionModes), currentSelectionMode))
+						m_SelectionMode = (SelectionMode)currentSelectionMode;
 
 					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
@@ -1368,12 +1372,20 @@ namespace Vortex {
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				Math::AABB aabb = {
-					- Math::vec3(0.5f),
-					+ Math::vec3(0.5f)
-				};
+				SharedRef<Model> model = meshRenderer.Mesh;
 
-				Renderer2D::DrawAABB(aabb, transform, ColorToVec4(Color::Orange));
+				if (m_SelectionMode == SelectionMode::Entity)
+				{
+					Renderer2D::DrawAABB(model->GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+				}
+				else if (m_SelectionMode == SelectionMode::Submesh)
+				{
+					for (const auto& submesh : model->GetSubmeshes())
+					{
+						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+					}
+				}
+
 			}
 			if (selectedEntity.HasComponent<SpriteRendererComponent>())
 			{
@@ -1421,7 +1433,7 @@ namespace Vortex {
 					Math::vec4 color = { lightSourceComponent.Source->GetRadiance(), 1.0f };
 
 					Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-					const float intensity = lightSourceComponent.Source->GetIntensity();
+					const float intensity = lightSourceComponent.Source->GetIntensity() * 0.5f;
 
 					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, intensity, color);
 					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, intensity, color);

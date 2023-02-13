@@ -683,15 +683,15 @@ namespace Vortex
 
 		Math::vec4 corners[8] =
 		{
-			transform * Math::vec4 { min.x, min.y, max.z, 1.0f },
-			transform * Math::vec4 { min.x, max.y, max.z, 1.0f },
-			transform * Math::vec4 { max.x, max.y, max.z, 1.0f },
-			transform * Math::vec4 { max.x, min.y, max.z, 1.0f },
+			transform * Math::vec4{ min.x, min.y, max.z, 1.0f },
+			transform * Math::vec4{ min.x, max.y, max.z, 1.0f },
+			transform * Math::vec4{ max.x, max.y, max.z, 1.0f },
+			transform * Math::vec4{ max.x, min.y, max.z, 1.0f },
 
-			transform * Math::vec4 { min.x, min.y, min.z, 1.0f },
-			transform * Math::vec4 { min.x, max.y, min.z, 1.0f },
-			transform * Math::vec4 { max.x, max.y, min.z, 1.0f },
-			transform * Math::vec4 { max.x, min.y, min.z, 1.0f }
+			transform * Math::vec4{ min.x, min.y, min.z, 1.0f },
+			transform * Math::vec4{ min.x, max.y, min.z, 1.0f },
+			transform * Math::vec4{ max.x, max.y, min.z, 1.0f },
+			transform * Math::vec4{ max.x, min.y, min.z, 1.0f }
 		};
 
 		for (uint32_t i = 0; i < 4; i++)

@@ -155,6 +155,9 @@ namespace Vortex {
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;
+
+		enum class SelectionMode { Entity, Submesh };
+		SelectionMode m_SelectionMode = SelectionMode::Entity;
 	};
 
 }

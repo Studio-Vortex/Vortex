@@ -85,8 +85,11 @@ namespace Vortex {
 
 		const std::vector<uint32_t> GetIndices() const { return m_Indices; }
 
+		const Math::AABB& GetBoundingBox() const { return m_BoundingBox; }
+
 	private:
 		void CreateAndUploadMesh();
+		void CreateBoundingBoxFromVertices();
 
 	private:
 		std::string m_MeshName;
@@ -97,6 +100,8 @@ namespace Vortex {
 		SharedRef<VertexArray> m_VertexArray = nullptr;
 		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
 		SharedRef<IndexBuffer> m_IndexBuffer = nullptr;
+
+		Math::AABB m_BoundingBox;
 	};
 
 	class VORTEX_API Model
@@ -145,6 +150,8 @@ namespace Vortex {
 		std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() { return m_BoneInfoMap; }
 		uint32_t& GetBoneCount() { return m_BoneCounter; }
 
+		const Math::AABB& GetBoundingBox() const { return m_BoundingBox; }
+
 		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
 
@@ -161,6 +168,8 @@ namespace Vortex {
 		void SetVertexBoneData(Vertex& vertex, int boneID, float weight) const;
 		bool ExtractBoneWeightsForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
+		void CreateBoundingBoxFromSubmeshes();
+
 	private:
 		std::vector<Submesh> m_Submeshes;
 		ModelImportOptions m_ImportOptions;
@@ -169,6 +178,9 @@ namespace Vortex {
 
 		std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;
 		uint32_t m_BoneCounter = 0;
+
+		Math::AABB m_BoundingBox;
+
 		bool m_HasAnimations = false;
 	};
 

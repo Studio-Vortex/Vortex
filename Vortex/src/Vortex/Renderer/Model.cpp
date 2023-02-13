@@ -135,6 +135,27 @@ namespace Vortex {
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
 		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+
+		CreateBoundingBoxFromVertices();
+	}
+
+	void Submesh::CreateBoundingBoxFromVertices()
+	{
+		// initialize bounding box to default
+		m_BoundingBox.Min = m_Vertices.at(0).Position;
+		m_BoundingBox.Max = m_Vertices.at(0).Position;
+
+		for (auto& vertex : m_Vertices)
+		{
+			for (uint32_t i = 0; i < 3; i++)
+			{
+				if (vertex.Position[i] < m_BoundingBox.Min[i])
+					m_BoundingBox.Min[i] = vertex.Position[i];
+
+				if (vertex.Position[i] > m_BoundingBox.Max[i])
+					m_BoundingBox.Max[i] = vertex.Position[i];
+			}
+		}
 	}
 
 	void Submesh::Render() const
@@ -176,6 +197,8 @@ namespace Vortex {
 		m_Scene = scene;
 
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
+
+		CreateBoundingBoxFromSubmeshes();
 	}
 
 	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
@@ -197,6 +220,8 @@ namespace Vortex {
 		m_Scene = scene;
 
 		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
+
+		CreateBoundingBoxFromSubmeshes();
 	}
 
 	Model::Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
@@ -254,6 +279,8 @@ namespace Vortex {
 		{
 			TransformVerticesAndGetIndicesAndCreateMesh();
 		}
+
+		CreateBoundingBoxFromSubmeshes();
 	}
 
 	Model::Model(MeshType meshType)
@@ -400,6 +427,27 @@ namespace Vortex {
 		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
 
 		return { meshName, vertices, indices, material };
+	}
+
+	void Model::CreateBoundingBoxFromSubmeshes()
+	{
+		// initialize bounding box to default
+		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
+		m_BoundingBox = firstBoundingBox;
+
+		for (const auto& submesh : m_Submeshes)
+		{
+			const Math::AABB& boundingBox = submesh.GetBoundingBox();
+
+			for (uint32_t i = 0; i < 3; i++)
+			{
+				if (boundingBox.Min[i] < m_BoundingBox.Min[i])
+					m_BoundingBox.Min[i] = boundingBox.Min[i];
+
+				if (boundingBox.Max[i] > m_BoundingBox.Max[i])
+					m_BoundingBox.Max[i] = boundingBox.Max[i];
+			}
+		}
 	}
 
 	void Model::SetVertexBoneDataToDefault(Vertex& vertex) const

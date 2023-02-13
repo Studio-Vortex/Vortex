@@ -10,9 +10,6 @@
 
 #include "Vortex/Editor/EditorResources.h"
 
-// Temporary
-#include <Glad/glad.h>
-
 namespace Vortex {
 
 	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
