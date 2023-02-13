@@ -208,7 +208,8 @@ namespace Vortex {
 
 	void Physics2D::DestroyPhysicsBody(Entity entity)
 	{
-		// Destroy the physics body and fixture if they exist
+		if (!entity.HasComponent<RigidBody2DComponent>())
+			return;
 
 		b2Body* entityRuntimePhysicsBody = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
 

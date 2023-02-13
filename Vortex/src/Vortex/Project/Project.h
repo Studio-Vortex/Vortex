@@ -72,6 +72,7 @@ namespace Vortex {
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;
+			bool ShowBoundingBoxes = false;
 			bool MuteAudioSources = false;
 		} EditorProps;
 

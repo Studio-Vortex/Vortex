@@ -42,7 +42,7 @@ namespace Vortex {
 			Gui::Text("Partitions: %u", simulationStats->nbPartitions);
 
 			for (uint32_t i = 0; i < physx::PxGeometryType::eGEOMETRY_COUNT; i++)
-				Gui::Text("%s Shapes: %u", PhysXGeometryTypeToString((physx::PxGeometryType::Enum)i), simulationStats->nbShapes[i]);
+				Gui::Text("%s Shapes: %u", PhysXGeometryTypeToString((physx::PxGeometryType::Enum)i).c_str(), simulationStats->nbShapes[i]);
 		
 			Gui::Text("Compressed Contact Size (Bytes): %u", simulationStats->compressedContactSize);
 			Gui::Text("Peak Constraint Size (Bytes): %u", simulationStats->peakConstraintMemory);

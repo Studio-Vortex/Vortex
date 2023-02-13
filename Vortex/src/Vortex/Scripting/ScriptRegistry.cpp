@@ -1902,7 +1902,7 @@ namespace Vortex {
 
 			rigidbody.Type = bodyType;
 			rigidbody.RuntimeActor = nullptr;
-			Physics::CreatePhysicsActor(entity, entity.GetTransform(), rigidbody);
+			Physics::CreatePhysicsActor(entity);
 		}
 	}
 

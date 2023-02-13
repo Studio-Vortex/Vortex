@@ -137,6 +137,7 @@ namespace Vortex {
 				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
 				out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
 				out << YAML::Key << "MaximizeOnPlay" << YAML::Value << props.EditorProps.MaximizeOnPlay;
+				out << YAML::Key << "ShowBoundingBoxes" << YAML::Value << props.EditorProps.ShowBoundingBoxes;
 				out << YAML::Key << "MuteAudioSources" << YAML::Value << props.EditorProps.MuteAudioSources;
 			}
 			out << YAML::EndMap; // Editior Properties
@@ -267,6 +268,7 @@ namespace Vortex {
 			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
 			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
 			props.EditorProps.MaximizeOnPlay = editorData["MaximizeOnPlay"].as<bool>();
+			props.EditorProps.ShowBoundingBoxes = editorData["ShowBoundingBoxes"].as<bool>();
 			props.EditorProps.MuteAudioSources = editorData["MuteAudioSources"].as<bool>();
 		}
 

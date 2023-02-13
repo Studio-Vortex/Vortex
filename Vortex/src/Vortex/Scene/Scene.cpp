@@ -231,11 +231,11 @@ namespace Vortex {
 				ScriptEngine::OnDestroyEntity(entity);
 		}
 
-		if (entity.HasComponent<RigidBodyComponent>() && m_IsRunning)
+		if (m_IsRunning)
+		{
 			Physics::DestroyPhysicsBody(entity);
-
-		if (entity.HasComponent<RigidBody2DComponent>() && m_IsRunning)
 			Physics2D::DestroyPhysicsBody(entity);
+		}
 
 		if (!excludeChildren)
 		{

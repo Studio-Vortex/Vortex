@@ -22,7 +22,8 @@ namespace Vortex {
 		MaximizeOnPlayIcon = Texture2D::Create("Resources/Icons/Scene/MaximizeIcon.png");
 		TopDownViewIcon = Texture2D::Create("Resources/Icons/Scene/TopDownCameraIcon.png");
 		TwoDViewIcon = Texture2D::Create("Resources/Icons/Scene/2DViewIcon.png");
-		DisplayPhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
+		PhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/PhysicsCollidersIcon.png");
+		BoundingBoxesIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
 		DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
 		MuteAudioSourcesIcons = Texture2D::Create("Resources/Icons/Scene/MuteAudioIcon.png");
 

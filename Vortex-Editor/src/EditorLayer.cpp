@@ -1142,8 +1142,11 @@ namespace Vortex {
 					if (UI::ImageButton(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid", EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
 						projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 
-					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::DisplayPhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::PhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
 						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
+
+					if (UI::ImageButton(projectProps.EditorProps.ShowBoundingBoxes ? "Hide Bounding Boxes" : "Show Bounding Boxes", EditorResources::BoundingBoxesIcon, textureSize, projectProps.EditorProps.ShowBoundingBoxes ? bgColor : normalColor, tintColor))
+						projectProps.EditorProps.ShowBoundingBoxes = !projectProps.EditorProps.ShowBoundingBoxes;
 
 					static const char* selectionModes[] = { "Entity", "Submesh" };
 					uint32_t currentSelectionMode = (uint32_t)m_SelectionMode;
@@ -1359,6 +1362,25 @@ namespace Vortex {
 
 						Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
 					}
+				}
+			}
+		}
+
+		if (projectProps.EditorProps.ShowBoundingBoxes)
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, m_ActiveScene.get() };
+				const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+				SharedRef<Model> model = meshRenderer.Mesh;
+				
+				const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+
+				for (const auto& submesh : model->GetSubmeshes())
+				{
+					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
 				}
 			}
 		}

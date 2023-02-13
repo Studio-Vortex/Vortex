@@ -45,7 +45,8 @@ namespace Vortex {
 		static void Init();
 		static void Shutdown();
 
-		static void CreatePhysicsActor(Entity entity, const TransformComponent& transform, RigidBodyComponent& rigidbody);
+		static void CreatePhysicsActor(Entity entity);
+		static void CreatePhysicsActorFromMesh(Entity entity);
 		static void DestroyPhysicsBody(Entity entity);
 
 		static void OnSimulationStart(Scene* contextScene);
@@ -79,6 +80,7 @@ namespace Vortex {
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);
 		inline static uint32_t s_PhysicsSolverIterations = 8;
 		inline static uint32_t s_PhysicsSolverVelocityIterations = 2;
+		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_StaticActorsFromMeshes;
 	};
 
 }
