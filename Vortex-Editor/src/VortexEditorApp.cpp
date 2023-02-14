@@ -20,11 +20,11 @@ namespace Vortex {
 		ApplicationProperties props;
 		// TODO: Remove this, just for convenience
 #ifdef VX_DEBUG
-		props.Name = "Vortex Editor - (Debug devel x64)";
+		props.Name = fmt::format("Vortex Editor - (Debug devel - {})", VORTEX_BUILD_ID);
 #elif VX_RELEASE
-		props.Name = "Vortex Editor - (Release x64)";
+		props.Name = fmt::format("Vortex Editor - (Release - {0})", VORTEX_BUILD_ID);
 #elif VX_DIST
-		props.Name = "Vortex Editor";
+		props.Name = fmt::format("Vortex Editor ({0})", VORTEX_BUILD_ID);
 #endif
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;

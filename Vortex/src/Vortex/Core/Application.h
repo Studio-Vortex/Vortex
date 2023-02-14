@@ -67,6 +67,7 @@ namespace Vortex {
 		void SubmitToMainThread(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
+		std::string GetPlatformName() const;
 		std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
 		std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
 

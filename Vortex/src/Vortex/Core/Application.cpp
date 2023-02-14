@@ -102,6 +102,15 @@ namespace Vortex {
 		m_MainThreadQueue.emplace_back(func);
 	}
 
+    std::string Application::GetPlatformName() const
+    {
+#ifdef VX_PLATFORM_WINDOWS
+		return "Windows x64";
+#else
+	#error "Vortex only supports Windows!"
+#endif
+    }
+
 	void Application::OnEvent(Event& e)
 	{
 		VX_PROFILE_FUNCTION();

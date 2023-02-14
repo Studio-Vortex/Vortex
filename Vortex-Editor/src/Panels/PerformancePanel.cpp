@@ -56,7 +56,7 @@ namespace Vortex {
 		DrawHeading("Graphics API");
 
 		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
-		Gui::Text("API:     %s", rendererInfo.API);
+		Gui::Text("API:     %s", rendererInfo.Name);
 		Gui::Text("GPU:     %s", rendererInfo.GPU);
 		Gui::Text("Vendor:  %s", rendererInfo.Vendor);
 		Gui::Text("Version: %s", rendererInfo.Version);

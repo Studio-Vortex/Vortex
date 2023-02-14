@@ -417,10 +417,9 @@ namespace Vortex {
 		s_Data->EntityInstances.erase(it);
 	}
 
-	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Entity other, const Collision& collision)
+	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
-		UUID otherUUID = other.GetUUID();
 
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
@@ -429,10 +428,9 @@ namespace Vortex {
 		it->second->InvokeOnCollisionBegin(collision);
 	}
 
-	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other, const Collision& collision)
+	void ScriptEngine::OnCollisionEndEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
-		UUID otherUUID = other.GetUUID();
 
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
@@ -441,10 +439,9 @@ namespace Vortex {
 		it->second->InvokeOnCollisionEnd(collision);
 	}
 
-	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Entity otherEntity, const Collision& collision)
+	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
-		UUID otherUUID = otherEntity.GetUUID();
 
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
@@ -453,10 +450,9 @@ namespace Vortex {
 		it->second->InvokeOnTriggerBegin(collision);
 	}
 
-	void ScriptEngine::OnTriggerEndEntity(Entity entity, Entity otherEntity, const Collision& collision)
+	void ScriptEngine::OnTriggerEndEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
-		UUID otherUUID = otherEntity.GetUUID();
 
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
@@ -671,7 +667,7 @@ namespace Vortex {
 		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 1);
 		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 1);
 		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 1);
-		m_OnCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
+		m_OnRaycastCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
 		m_OnGuiFunc            = m_ScriptClass->GetMethod("OnGui", 0);
 
 		// Call Entity constructor
@@ -703,46 +699,46 @@ namespace Vortex {
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
-	void ScriptInstance::InvokeOnCollisionBegin(const Collision& collision)
+	void ScriptInstance::InvokeOnCollisionBegin(Collision& collision)
 	{
 		if (m_OnCollisionBeginFunc)
 		{
-			void* param = (void*)&collision;
+			void* param = &collision;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc, &param);
 		}
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnd(const Collision& collision)
+	void ScriptInstance::InvokeOnCollisionEnd(Collision& collision)
 	{
 		if (m_OnCollisionEndFunc)
 		{
-			void* param = (void*)&collision;
+			void* param = &collision;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEndFunc, &param);
 		}
 	}
 
-	void ScriptInstance::InvokeOnTriggerBegin(const Collision& collision)
+	void ScriptInstance::InvokeOnTriggerBegin(Collision& collision)
 	{
 		if (m_OnTriggerBeginFunc)
 		{
-			void* param = (void*)&collision;
+			void* param = &collision;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerBeginFunc, &param);
 		}
 	}
 
-	void ScriptInstance::InvokeOnTriggerEnd(const Collision& collision)
+	void ScriptInstance::InvokeOnTriggerEnd(Collision& collision)
 	{
 		if (m_OnTriggerEndFunc)
 		{
-			void* param = (void*)&collision;
+			void* param = &collision;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEndFunc, &param);
 		}
 	}
 
 	void ScriptInstance::InvokeOnRaycastCollision()
 	{
-		if (m_OnCollisionFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionFunc);
+		if (m_OnRaycastCollisionFunc)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnRaycastCollisionFunc);
 	}
 
 	void ScriptInstance::InvokeOnGui()

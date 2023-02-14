@@ -1,6 +1,6 @@
 Vortex Engine v0.1a
 Initalizing...
-Creating window 'Vortex Editor - (Release x64)' (1600.000, 900.000)
+Creating window 'Vortex Editor - (Release - v0.1a)' (1600.000, 900.000)
 Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
 Shader Loaded: 'Renderer_PBR_Static' - path /Resources/Shaders/Renderer_PBR_Static.glsl
 Shader Loaded: 'Equirectangular_to_Cubemap' - path /Resources/Shaders/Equirectangular_to_Cubemap.glsl
@@ -19,20 +19,5 @@ Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.g
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
 Deserializing Scene 'SampleScene'
-Welcome to the game!
-Use WASD to move the Player (Dodgy)!
-Don't hit the walls!
-You have bumped into something this many times: 1
-You have bumped into something this many times: 2
-You have bumped into something this many times: 3
-You have bumped into something this many times: 4
-You have bumped into something this many times: 5
-You have bumped into something this many times: 6
-You have bumped into something this many times: 7
-Welcome to the game!
-Use WASD to move the Player (Dodgy)!
-Don't hit the walls!
-You have bumped into something this many times: 1
-You have bumped into something this many times: 2
-You have bumped into something this many times: 3
+Deserializing Scene 'SampleScene'
 Shutting down...

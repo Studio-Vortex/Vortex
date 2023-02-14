@@ -24,6 +24,7 @@ namespace Vortex {
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Properties.EventCallback = callback; }
 
 		// Window Attributes
+		inline const std::string& GetTitle() const override { return m_Properties.Title; }
 		void SetTitle(const std::string& title) override;
 
 		inline const Math::vec2& GetSize() const override { return m_Properties.Size; }

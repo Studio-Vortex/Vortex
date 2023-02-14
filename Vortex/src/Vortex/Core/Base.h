@@ -55,6 +55,8 @@
 
 namespace Vortex {
 
+#define VORTEX_BUILD_ID "v0.1a"
+
 	void InitalizeEngine();
 	void ShutdownEngine();
 

@@ -43,24 +43,24 @@ namespace Vortex {
 			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
 		};
 
-		enum class TriangleCullMode
+		enum class VORTEX_API TriangleCullMode
 		{
 			None = 0, Front, Back, FrontAndBack
 		};
 
-		enum class StencilOperation
+		enum class VORTEX_API StencilOperation
 		{
 			None = 0, Keep, Always, NotEqual, Replace
 		};
 
-		enum class BlendMode
+		enum class VORTEX_API BlendMode
 		{
 			None = 0, SrcAlphaOneMinusSrcAlpha, ZeroSrcColor
 		};
 
 		struct VORTEX_API RendererInfo
 		{
-			const char* API;
+			const char* Name;
 			const unsigned char* GPU;
 			const unsigned char* Vendor;
 			const unsigned char* Version;

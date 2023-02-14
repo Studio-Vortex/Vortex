@@ -32,6 +32,7 @@ namespace Vortex {
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 
+		virtual const std::string& GetTitle() const = 0;
 		virtual void SetTitle(const std::string& title) = 0;
 
 		virtual const Math::vec2& GetSize() const = 0;

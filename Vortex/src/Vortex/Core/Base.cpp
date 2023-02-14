@@ -3,8 +3,6 @@
 
 #include "Vortex/Core/Log.h"
 
-#define VORTEX_BUILD_ID "v0.1a"
-
 namespace Vortex {
 
 	void InitalizeEngine()
