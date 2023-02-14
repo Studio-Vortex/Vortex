@@ -50,10 +50,16 @@ namespace Vortex {
 
 		struct VORTEX_API PhysicsProperties
 		{
-			Math::vec4 Physics3DColliderColor = ColorToVec4(Color::Green);
 			BroadphaseType BroadphaseModel = BroadphaseType::AutomaticBoxPrune;
 			FrictionType FrictionModel = FrictionType::Patch;
+			Math::vec4 Physics3DColliderColor = ColorToVec4(Color::Green);
+			Math::vec3 Physics3DGravity = Math::vec3(0.0f, -9.81f, 0.0f);
+			uint32_t Physics3DPositionIterations = 8;
+			uint32_t Physics3DVelocityIterations = 2;
 			Math::vec4 Physics2DColliderColor = Math::vec4{ (44.0f / 255.0f), (151.0f / 255.0f), (167.0f / 255.0f), 1.0f };
+			Math::vec2 Physics2DGravity = Math::vec2(0.0f, -9.81f);
+			uint32_t Physics2DPositionIterations = 2;
+			uint32_t Physics2DVelocityIterations = 6;
 			bool ShowColliders = false;
 		} PhysicsProps;
 

@@ -5,6 +5,8 @@
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/Renderer.h"
+#include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/2D/Physics2D.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 
 #include <fstream>
@@ -113,11 +115,23 @@ namespace Vortex {
 
 			out << YAML::Key << "PhysicsProperties" << YAML::BeginMap; // Physics Properties
 			{
-				out << YAML::Key << "Physics3DColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
+				out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
+
+				out << YAML::Key << "Physics3D" << YAML::BeginMap; // Physics3D
 				out << YAML::Key << "BroadphaseModel" << YAML::Value << Utils::BroadphaseTypeToString(props.PhysicsProps.BroadphaseModel);
 				out << YAML::Key << "FrictionModel" << YAML::Value << Utils::FrictionTypeToString(props.PhysicsProps.FrictionModel);
-				out << YAML::Key << "Physics2DColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
-				out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
+				out << YAML::Key << "ColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
+				out << YAML::Key << "Gravity" << YAML::Value << Physics::GetPhysicsSceneGravity();
+				out << YAML::Key << "SolverPositionIterations" << YAML::Value << Physics::GetPhysicsScenePositionIterations();
+				out << YAML::Key << "SolverVelocityIterations" << YAML::Value << Physics::GetPhysicsSceneVelocityIterations();
+				out << YAML::Key << YAML::EndMap; // Physics3D
+
+				out << YAML::Key << "Physics2D" << YAML::BeginMap; // Physics2D
+				out << YAML::Key << "ColliderColor" << YAML::Value << props.PhysicsProps.Physics2DColliderColor;
+				out << YAML::Key << "Gravity" << YAML::Value << Physics2D::GetPhysicsWorldGravity();
+				out << YAML::Key << "PositionIterations" << YAML::Value << Physics2D::GetPhysicsWorldPositionIterations();
+				out << YAML::Key << "VelocityIterations" << YAML::Value << Physics2D::GetPhysicsWorldVelocityIterations();
+				out << YAML::Key << YAML::EndMap; // Physics2D
 			}
 			out << YAML::EndMap; // Physics Properties
 
@@ -246,11 +260,30 @@ namespace Vortex {
 
 		{
 			auto physicsData = projectData["PhysicsProperties"];
-			props.PhysicsProps.Physics3DColliderColor = physicsData["Physics3DColliderColor"].as<Math::vec4>();
-			props.PhysicsProps.BroadphaseModel = Utils::BroadphaseTypeFromString(physicsData["BroadphaseModel"].as<std::string>());
-			props.PhysicsProps.FrictionModel = Utils::FrictionTypeFromString(physicsData["FrictionModel"].as<std::string>());
-			props.PhysicsProps.Physics2DColliderColor = physicsData["Physics2DColliderColor"].as<Math::vec4>();
+
 			props.PhysicsProps.ShowColliders = physicsData["ShowPhysicsColliders"].as<bool>();
+
+			auto physics3DData = physicsData["Physics3D"];
+			props.PhysicsProps.BroadphaseModel = Utils::BroadphaseTypeFromString(physics3DData["BroadphaseModel"].as<std::string>());
+			props.PhysicsProps.FrictionModel = Utils::FrictionTypeFromString(physics3DData["FrictionModel"].as<std::string>());
+			props.PhysicsProps.Physics3DColliderColor = physics3DData["ColliderColor"].as<Math::vec4>();
+			props.PhysicsProps.Physics3DGravity = physics3DData["Gravity"].as<Math::vec3>();
+			props.PhysicsProps.Physics3DPositionIterations = physics3DData["SolverPositionIterations"].as<uint32_t>();
+			props.PhysicsProps.Physics3DVelocityIterations = physics3DData["SolverVelocityIterations"].as<uint32_t>();
+
+			Physics::SetPhysicsSceneGravity(props.PhysicsProps.Physics3DGravity);
+			Physics::SetPhysicsScenePositionIterations(props.PhysicsProps.Physics3DPositionIterations);
+			Physics::SetPhysicsSceneVelocityIterations(props.PhysicsProps.Physics3DVelocityIterations);
+
+			auto physics2DData = physicsData["Physics2D"];
+			props.PhysicsProps.Physics2DColliderColor = physics2DData["ColliderColor"].as<Math::vec4>();
+			props.PhysicsProps.Physics2DGravity = physics2DData["Gravity"].as<Math::vec2>();
+			props.PhysicsProps.Physics2DPositionIterations = physics2DData["PositionIterations"].as<uint32_t>();
+			props.PhysicsProps.Physics2DVelocityIterations = physics2DData["VelocityIterations"].as<uint32_t>();
+
+			Physics2D::SetPhysicsWorldGravitty(props.PhysicsProps.Physics2DGravity);
+			Physics2D::SetPhysicsWorldPositionIterations(props.PhysicsProps.Physics2DPositionIterations);
+			Physics2D::SetPhysicsWorldVelocityIterations(props.PhysicsProps.Physics2DVelocityIterations);
 		}
 
 		{
