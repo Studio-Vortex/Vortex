@@ -352,7 +352,7 @@ namespace Vortex {
 			case 2:
 			{
 				float metallic = material->GetMetallic();
-				if (UI::Property("Metallic", metallic, 0.01f, 0.01f, 1.0f))
+				if (UI::PropertySlider("Metallic", metallic, 0.01f, 1.0f))
 					material->SetMetallic(metallic);
 
 				break;
@@ -360,7 +360,7 @@ namespace Vortex {
 			case 3:
 			{
 				float roughness = material->GetRoughness();
-				if (UI::Property("Roughness", roughness, 0.01f, 0.01f, 1.0f))
+				if (UI::PropertySlider("Roughness", roughness, 0.01f, 1.0f))
 					material->SetRoughness(roughness);
 
 				break;

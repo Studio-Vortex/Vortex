@@ -650,7 +650,6 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-
 	inline static bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0)
 	{
 		bool modified = false;
@@ -801,6 +800,28 @@ namespace Vortex::UI {
 		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, inputTextFlags))
 		{
 			value = buffer;
+			modified = true;
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+		Draw::Underline();
+
+		return modified;
+	}
+
+	inline static bool PropertySlider(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		if (Gui::SliderFloat(fmt::format("##{}", label).c_str(), &value, min, max, format))
+		{
 			modified = true;
 		}
 
