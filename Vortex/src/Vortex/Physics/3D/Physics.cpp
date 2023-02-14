@@ -301,7 +301,7 @@ namespace Vortex {
 			}
 		}
 
-		/*{
+		{
 			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
 			for (const auto& e : view)
@@ -313,7 +313,7 @@ namespace Vortex {
 					CreatePhysicsActorFromMesh(entity);
 				}
 			}
-		}*/
+		}
 
 		s_Data->ContextScene = contextScene;
 	}
@@ -389,28 +389,28 @@ namespace Vortex {
 			}
 		}
 
-		//{
-		//	auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+		{
+			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
-		//	for (const auto& e : view)
-		//	{
-		//		Entity entity{ e, contextScene };
-		//		Math::mat4 transform = entity.GetTransform().GetTransform();
+			for (const auto& e : view)
+			{
+				Entity entity{ e, contextScene };
+				Math::mat4 transform = entity.GetTransform().GetTransform();
 
-		//		if (entity.HasComponent<RigidBodyComponent>())
-		//			continue;
+				if (entity.HasComponent<RigidBodyComponent>())
+					continue;
 
-		//		if (!s_StaticActorsFromMeshes.contains(entity.GetUUID()))
-		//		{
-		//			CreatePhysicsActorFromMesh(entity);
-		//		}
-		//		else
-		//		{
-		//			// Synchronize with entity Transform
-		//			s_StaticActorsFromMeshes[entity.GetUUID()]->setGlobalPose(ToPhysXTransform(transform));
-		//		}
-		//	}
-		//}
+				if (!s_StaticActorsFromMeshes.contains(entity.GetUUID()))
+				{
+					CreatePhysicsActorFromMesh(entity);
+				}
+				else
+				{
+					// Synchronize with entity Transform
+					s_StaticActorsFromMeshes[entity.GetUUID()]->setGlobalPose(ToPhysXTransform(transform));
+				}
+			}
+		}
 
 #ifndef VX_DIST
 		s_Data->PhysicsScene->getSimulationStatistics(s_Data->SimulationStats);
@@ -419,25 +419,32 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
+		std::unordered_map<UUID, Entity> rigidBodiesToDestroy;
+
 		{
 			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
 			for (const auto& e : view)
 			{
 				Entity entity{ e, contextScene };
-				DestroyPhysicsBody(entity);
+				rigidBodiesToDestroy[entity.GetUUID()] = entity;
 			}
 		}
 
-		/*{
+		{
 			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
 			for (const auto& e : view)
 			{
 				Entity entity{ e, contextScene };
-				DestroyPhysicsBody(entity);
+				rigidBodiesToDestroy[entity.GetUUID()] = entity;
 			}
-		}*/
+		}
+
+		for (auto& [uuid, entity] : rigidBodiesToDestroy)
+		{
+			DestroyPhysicsActor(entity);
+		}
 
 		s_Data->ControllerManager->release();
 		s_Data->ControllerManager = nullptr;
@@ -745,7 +752,7 @@ namespace Vortex {
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 	}
 
-	void Physics::DestroyPhysicsBody(Entity entity)
+	void Physics::DestroyPhysicsActor(Entity entity)
 	{
 		physx::PxActor* actor = nullptr;
 
@@ -772,18 +779,19 @@ namespace Vortex {
 
 			s_Data->PhysicsScene->removeActor(*actor);
 		}
-		/*else if (entity.HasComponent<StaticMeshRendererComponent>())
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
 		{
-			if (s_StaticActorsFromMeshes.contains(entity.GetUUID()))
-			{
-				actor = s_StaticActorsFromMeshes[entity.GetUUID()];
+			VX_CORE_ASSERT(s_StaticActorsFromMeshes.contains(entity.GetUUID()), "Entity was not found in Static Actor map!");
 
-				PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
-				delete physicsBodyData;
+			actor = s_StaticActorsFromMeshes[entity.GetUUID()];
 
-				s_Data->PhysicsScene->removeActor(*actor);
-			}
-		}*/
+			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
+			delete physicsBodyData;
+
+			s_Data->PhysicsScene->removeActor(*actor);
+
+			s_StaticActorsFromMeshes.erase(entity.GetUUID());
+		}
 	}
 
 	physx::PxSimulationStatistics* Physics::GetSimulationStatistics()

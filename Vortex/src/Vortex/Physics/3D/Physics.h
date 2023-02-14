@@ -47,7 +47,7 @@ namespace Vortex {
 
 		static void CreatePhysicsActor(Entity entity);
 		static void CreatePhysicsActorFromMesh(Entity entity);
-		static void DestroyPhysicsBody(Entity entity);
+		static void DestroyPhysicsActor(Entity entity);
 
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);

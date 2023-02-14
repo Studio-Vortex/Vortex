@@ -2012,7 +2012,7 @@ namespace Vortex {
 		{
 			if (rigidbody.RuntimeActor)
 			{
-				Physics::DestroyPhysicsBody(entity);
+				Physics::DestroyPhysicsActor(entity);
 			}
 
 			rigidbody.Type = bodyType;

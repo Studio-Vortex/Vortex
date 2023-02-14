@@ -235,7 +235,7 @@ namespace Vortex {
 
 		if (m_IsRunning)
 		{
-			Physics::DestroyPhysicsBody(entity);
+			Physics::DestroyPhysicsActor(entity);
 			Physics2D::DestroyPhysicsBody(entity);
 		}
 
