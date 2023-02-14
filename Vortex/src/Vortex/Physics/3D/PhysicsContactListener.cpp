@@ -34,44 +34,48 @@ namespace Vortex {
 		bool removedActorA = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_0;
 		bool removedActorB = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_1;
 
-		PhysicsBodyData* entityDataA = (PhysicsBodyData*)pairHeader.actors[0]->userData;
-		PhysicsBodyData* entityDataB = (PhysicsBodyData*)pairHeader.actors[1]->userData;
+		PhysicsBodyData* entityA_UserData = (PhysicsBodyData*)pairHeader.actors[0]->userData;
+		PhysicsBodyData* entityB_UserData = (PhysicsBodyData*)pairHeader.actors[1]->userData;
 
-		if (!entityDataA || !entityDataB)
+		if (!entityA_UserData || !entityB_UserData)
 			return;
 
-		Entity entityA = contextScene->TryGetEntityWithUUID(entityDataA->EntityUUID);
-		Entity entityB = contextScene->TryGetEntityWithUUID(entityDataB->EntityUUID);
+		Entity entityA = contextScene->TryGetEntityWithUUID(entityA_UserData->EntityUUID);
+		Entity entityB = contextScene->TryGetEntityWithUUID(entityB_UserData->EntityUUID);
 
 		if (!entityA || !entityB)
 			return;
 
 		if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
 		{
+			Collision collision{};
+
 			if (entityA.HasComponent<ScriptComponent>())
 			{
-				Collision collision{};
 				collision.EntityID = entityB.GetUUID();
 				ScriptEngine::OnCollisionBeginEntity(entityA, entityB, collision);
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
-				Collision collision{};
 				collision.EntityID = entityA.GetUUID();
 				ScriptEngine::OnCollisionBeginEntity(entityB, entityA, collision);
 			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
+			Collision collision{};
+
 			if (entityA.HasComponent<ScriptComponent>())
 			{
-				ScriptEngine::OnCollisionEndEntity(entityA, entityB);
+				collision.EntityID = entityB.GetUUID();
+				ScriptEngine::OnCollisionEndEntity(entityA, entityB, collision);
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
-				ScriptEngine::OnCollisionEndEntity(entityB, entityA);
+				collision.EntityID = entityA.GetUUID();
+				ScriptEngine::OnCollisionEndEntity(entityB, entityA, collision);
 			}
 		}
 	}
@@ -102,26 +106,34 @@ namespace Vortex {
 
 			if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_CCD)
 			{
+				Collision collision{};
+
 				if (triggerEntity.HasComponent<ScriptComponent>())
 				{
-					ScriptEngine::OnTriggerBeginEntity(triggerEntity, otherEntity);
+					collision.EntityID = otherEntity.GetUUID();
+					ScriptEngine::OnTriggerBeginEntity(triggerEntity, otherEntity, collision);
 				}
 
 				if (otherEntity.HasComponent<ScriptComponent>())
 				{
-					ScriptEngine::OnTriggerBeginEntity(otherEntity, triggerEntity);
+					collision.EntityID = triggerEntity.GetUUID();
+					ScriptEngine::OnTriggerBeginEntity(otherEntity, triggerEntity, collision);
 				}
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
+				Collision collision{};
+
 				if (triggerEntity.HasComponent<ScriptComponent>())
 				{
-					ScriptEngine::OnTriggerEndEntity(triggerEntity, otherEntity);
+					collision.EntityID = otherEntity.GetUUID();
+					ScriptEngine::OnTriggerEndEntity(triggerEntity, otherEntity, collision);
 				}
 
 				if (otherEntity.HasComponent<ScriptComponent>())
 				{
-					ScriptEngine::OnTriggerEndEntity(otherEntity, triggerEntity);
+					collision.EntityID = triggerEntity.GetUUID();
+					ScriptEngine::OnTriggerEndEntity(otherEntity, triggerEntity, collision);
 				}
 			}
 		}

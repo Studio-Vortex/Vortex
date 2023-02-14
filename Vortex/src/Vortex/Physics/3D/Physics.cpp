@@ -531,7 +531,7 @@ namespace Vortex {
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
-			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
 			Math::vec3 scale = transform.Scale;
 
 			physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x * scale.x, boxCollider.HalfSize.y * scale.y, boxCollider.HalfSize.z * scale.z);
@@ -556,7 +556,7 @@ namespace Vortex {
 
 		if (entity.HasComponent<SphereColliderComponent>())
 		{
-			auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
 
 			float largestComponent = Math::Max(transform.Scale.x, Math::Max(transform.Scale.y, transform.Scale.z));
 			physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius * largestComponent);
@@ -608,7 +608,7 @@ namespace Vortex {
 
 		if (entity.HasComponent<MeshColliderComponent>())
 		{
-
+			const auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
 		}
 	}
 

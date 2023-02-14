@@ -417,7 +417,7 @@ namespace Vortex {
 		s_Data->EntityInstances.erase(it);
 	}
 
-	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Entity other, Collision collision)
+	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Entity other, const Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = other.GetUUID();
@@ -429,7 +429,7 @@ namespace Vortex {
 		it->second->InvokeOnCollisionBegin(collision);
 	}
 
-	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other)
+	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other, const Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = other.GetUUID();
@@ -438,10 +438,10 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
-		it->second->InvokeOnCollisionEnd();
+		it->second->InvokeOnCollisionEnd(collision);
 	}
 
-	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Entity otherEntity)
+	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Entity otherEntity, const Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = otherEntity.GetUUID();
@@ -450,10 +450,10 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
-		it->second->InvokeOnTriggerBegin();
+		it->second->InvokeOnTriggerBegin(collision);
 	}
 
-	void ScriptEngine::OnTriggerEndEntity(Entity entity, Entity otherEntity)
+	void ScriptEngine::OnTriggerEndEntity(Entity entity, Entity otherEntity, const Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = otherEntity.GetUUID();
@@ -462,7 +462,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
-		it->second->InvokeOnTriggerEnd();
+		it->second->InvokeOnTriggerEnd(collision);
 	}
 
 	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
@@ -668,9 +668,9 @@ namespace Vortex {
 		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);
 		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 1);
-		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 0);
-		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 0);
-		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 0);
+		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 1);
+		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 1);
+		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 1);
 		m_OnCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
 		m_OnGuiFunc            = m_ScriptClass->GetMethod("OnGui", 0);
 
@@ -703,31 +703,40 @@ namespace Vortex {
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
-	void ScriptInstance::InvokeOnCollisionBegin(Collision collision)
+	void ScriptInstance::InvokeOnCollisionBegin(const Collision& collision)
 	{
 		if (m_OnCollisionBeginFunc)
 		{
-			void* param = &collision;
+			void* param = (void*)&collision;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc, &param);
 		}
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnd()
+	void ScriptInstance::InvokeOnCollisionEnd(const Collision& collision)
 	{
 		if (m_OnCollisionEndFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEndFunc);
+		{
+			void* param = (void*)&collision;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEndFunc, &param);
+		}
 	}
 
-	void ScriptInstance::InvokeOnTriggerBegin()
+	void ScriptInstance::InvokeOnTriggerBegin(const Collision& collision)
 	{
 		if (m_OnTriggerBeginFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerBeginFunc);
+		{
+			void* param = (void*)&collision;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerBeginFunc, &param);
+		}
 	}
 
-	void ScriptInstance::InvokeOnTriggerEnd()
+	void ScriptInstance::InvokeOnTriggerEnd(const Collision& collision)
 	{
 		if (m_OnTriggerEndFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEndFunc);
+		{
+			void* param = (void*)&collision;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEndFunc, &param);
+		}
 	}
 
 	void ScriptInstance::InvokeOnRaycastCollision()

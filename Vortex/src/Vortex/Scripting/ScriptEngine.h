@@ -112,10 +112,10 @@ namespace Vortex {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
-		void InvokeOnCollisionBegin(Collision collision);
-		void InvokeOnCollisionEnd();
-		void InvokeOnTriggerBegin();
-		void InvokeOnTriggerEnd();
+		void InvokeOnCollisionBegin(const Collision& collision);
+		void InvokeOnCollisionEnd(const Collision& collision);
+		void InvokeOnTriggerBegin(const Collision& collision);
+		void InvokeOnTriggerEnd(const Collision& collision);
 		void InvokeOnRaycastCollision();
 		void InvokeOnGui();
 
@@ -198,10 +198,10 @@ namespace Vortex {
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
-		static void OnCollisionBeginEntity(Entity entity, Entity other, Collision collision);
-		static void OnCollisionEndEntity(Entity entity, Entity other);
-		static void OnTriggerBeginEntity(Entity entity, Entity otherEntity);
-		static void OnTriggerEndEntity(Entity entity, Entity otherEntity);
+		static void OnCollisionBeginEntity(Entity entity, Entity other, const Collision& collision);
+		static void OnCollisionEndEntity(Entity entity, Entity other, const Collision& collision);
+		static void OnTriggerBeginEntity(Entity entity, Entity otherEntity, const Collision& collision);
+		static void OnTriggerEndEntity(Entity entity, Entity otherEntity, const Collision& collision);
 		static void OnRaycastCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
 

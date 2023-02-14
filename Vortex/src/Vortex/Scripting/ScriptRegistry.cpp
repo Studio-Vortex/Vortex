@@ -2172,7 +2172,15 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<RigidBodyComponent>().DisableGravity = disabled;
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		rigidbody.DisableGravity = disabled;
+
+		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
+
+		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
+		{
+			dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
+		}
 	}
 
 	static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
@@ -2233,10 +2241,14 @@ namespace Vortex {
 		else
 			rb.LockFlags &= ~(uint8_t)flag;
 
-		if (forceWake)
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)rb.RuntimeActor;
+
+		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
 		{
-			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
-			actor->wakeUp();
+			dynamicActor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
+
+			if (forceWake)
+				dynamicActor->wakeUp();
 		}
 	}
 
