@@ -488,6 +488,18 @@ namespace Vortex {
 		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
 	}
 
+	static void Entity_SetMarker(UUID entityUUID, MonoString* monoString)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		char* managedString = mono_string_to_utf8(monoString);
+		entity.GetComponent<TagComponent>().Marker = std::string(managedString);
+		mono_free(managedString);
+	}
+
 	static bool Entity_AddChild(UUID parentUUID, UUID childUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -511,7 +523,9 @@ namespace Vortex {
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+		VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
 		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+		VX_CORE_ASSERT(child, "Child UUID was Invalid!");
 
 		if (parent && child)
 		{
@@ -3962,6 +3976,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Entity_GetChild);
 		VX_ADD_INTERNAL_CALL(Entity_GetTag);
 		VX_ADD_INTERNAL_CALL(Entity_GetMarker);
+		VX_ADD_INTERNAL_CALL(Entity_SetMarker);
 		VX_ADD_INTERNAL_CALL(Entity_AddChild);
 		VX_ADD_INTERNAL_CALL(Entity_RemoveChild);
 		VX_ADD_INTERNAL_CALL(Entity_GetScriptInstance);

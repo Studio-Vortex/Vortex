@@ -151,6 +151,9 @@ namespace Vortex {
 		internal extern static string Entity_GetMarker(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_SetMarker(ulong entityID, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_AddChild(ulong parentEntityID, ulong childEntityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

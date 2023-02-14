@@ -8,7 +8,11 @@ namespace Vortex {
 		public Transform transform;
 
 		public string Tag => InternalCalls.Entity_GetTag(ID);
-		public string Marker => InternalCalls.Entity_GetMarker(ID);
+		public string Marker
+		{
+			get => InternalCalls.Entity_GetMarker(ID);
+			set => InternalCalls.Entity_SetMarker(ID, value);
+		}
 
 		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
