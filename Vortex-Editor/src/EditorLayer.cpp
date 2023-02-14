@@ -1398,21 +1398,24 @@ namespace Vortex {
 			}
 		}
 
+		const auto boundingBoxColor = ColorToVec4(Color::Orange);
+
 		if (projectProps.EditorProps.ShowBoundingBoxes)
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent, StaticMeshRendererComponent>();
-
-			const auto boundingBoxColor = ColorToVec4(Color::Orange);
-
-			for (const auto& e : view)
 			{
-				Entity entity{ e, m_ActiveScene.get() };
-				const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				auto meshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
-				if (entity.HasComponent<MeshRendererComponent>())
+				for (const auto& e : meshView)
 				{
+					Entity entity{ e, m_ActiveScene.get() };
+					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+
 					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
 					SharedRef<Mesh> mesh = meshRenderer.Mesh;
+
+					if (!mesh)
+						continue;
+
 					const auto& submeshes = mesh->GetSubmeshes();
 
 					for (const auto& submesh : submeshes)
@@ -1420,11 +1423,23 @@ namespace Vortex {
 						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 					}
 				}
-				else if (entity.HasComponent<StaticMeshRendererComponent>())
+			}
+
+			{
+				auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+
+				for (const auto& e : staticMeshView)
 				{
+					Entity entity{ e, m_ActiveScene.get() };
+					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+
 					const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-					SharedRef<StaticMesh> model = staticMeshRenderer.StaticMesh;
-					const auto& submeshes = model->GetSubmeshes();
+					SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
+
+					if (!staticMesh)
+						continue;
+
+					const auto& submeshes = staticMesh->GetSubmeshes();
 
 					for (const auto& submesh : submeshes)
 					{
@@ -1438,7 +1453,6 @@ namespace Vortex {
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
 			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
-			const auto outlineColor = ColorToVec4(Color::Orange);
 
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{
@@ -1448,14 +1462,14 @@ namespace Vortex {
 
 				switch (m_SelectionMode)
 				{
-					case EditorLayer::SelectionMode::Entity:
-						Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, outlineColor);
+					case SelectionMode::Entity:
+						Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
 						break;
-					case EditorLayer::SelectionMode::Submesh:
+					case SelectionMode::Submesh:
 						const auto& submeshes = mesh->GetSubmeshes();
 						for (const auto& submesh : submeshes)
 						{
-							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
+							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 						}
 						break;
 				}
@@ -1468,14 +1482,14 @@ namespace Vortex {
 
 				switch (m_SelectionMode)
 				{
-					case EditorLayer::SelectionMode::Entity:
-						Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, outlineColor);
+					case SelectionMode::Entity:
+						Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
 						break;
-					case EditorLayer::SelectionMode::Submesh:
+					case SelectionMode::Submesh:
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						for (const auto& submesh : submeshes)
 						{
-							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
+							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 						}
 						break;
 				}
@@ -1485,7 +1499,7 @@ namespace Vortex {
 			{
 				const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
 
-				Renderer2D::DrawRect(transform, outlineColor);
+				Renderer2D::DrawRect(transform, boundingBoxColor);
 			}
 			if (selectedEntity.HasComponent<CircleRendererComponent>())
 			{
@@ -1493,7 +1507,7 @@ namespace Vortex {
 
 				Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
 
-				Renderer2D::DrawCircle(scaledTransform, outlineColor);
+				Renderer2D::DrawCircle(scaledTransform, boundingBoxColor);
 			}
 			if (selectedEntity.HasComponent<TextMeshComponent>())
 			{
@@ -1502,7 +1516,7 @@ namespace Vortex {
 				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
 				Math::mat4 transform = worldSpaceTransform.GetTransform();
 
-				Renderer2D::DrawRect(transform, outlineColor);
+				Renderer2D::DrawRect(transform, boundingBoxColor);
 			}
 			if (selectedEntity.HasComponent<CameraComponent>())
 			{
@@ -1511,11 +1525,11 @@ namespace Vortex {
 				{
 					// TODO fix this
 					//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
-					Renderer2D::DrawRect(transform, outlineColor);
+					Renderer2D::DrawRect(transform, boundingBoxColor);
 				}
 				else
 				{
-					Renderer2D::DrawRect(transform, outlineColor);
+					Renderer2D::DrawRect(transform, boundingBoxColor);
 				}
 			}
 			if (selectedEntity.HasComponent<LightSourceComponent>())
