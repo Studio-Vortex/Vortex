@@ -1342,8 +1342,8 @@ namespace Vortex {
 						Entity entity{ e, m_ActiveScene.get() };
 
 						Math::AABB aabb = {
-							- Math::vec3(0.5f),
-							+ Math::vec3(0.5f)
+							- Math::vec3(0.501f),
+							+ Math::vec3(0.501f)
 						};
 
 						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
@@ -1408,7 +1408,7 @@ namespace Vortex {
 				for (const auto& e : meshView)
 				{
 					Entity entity{ e, m_ActiveScene.get() };
-					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
 					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
 					SharedRef<Mesh> mesh = meshRenderer.Mesh;
@@ -1431,7 +1431,7 @@ namespace Vortex {
 				for (const auto& e : staticMeshView)
 				{
 					Entity entity{ e, m_ActiveScene.get() };
-					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
 					const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 					SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
@@ -1452,7 +1452,7 @@ namespace Vortex {
 		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
 		{
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity) * Math::Scale(Math::vec3(1.001f));
 
 			if (selectedEntity.HasComponent<MeshRendererComponent>())
 			{

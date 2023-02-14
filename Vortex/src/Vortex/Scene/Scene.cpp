@@ -934,14 +934,14 @@ namespace Vortex {
 		component.Source = Skybox::Create();
 	}
 
-	template <> void Scene::OnComponentAdded<LightSource2DComponent>(Entity entity, LightSource2DComponent& component)
-	{
-		component.Source = LightSource2D::Create(LightSource2DProperties());
-	}
-
 	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
 	{
 		component.Source = LightSource::Create(LightSourceProperties());
+	}
+
+	template <> void Scene::OnComponentAdded<LightSource2DComponent>(Entity entity, LightSource2DComponent& component)
+	{
+		component.Source = LightSource2D::Create(LightSource2DProperties());
 	}
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)

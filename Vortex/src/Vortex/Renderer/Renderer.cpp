@@ -500,23 +500,23 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				FramebufferProperties depthCubemapProps{};
+				/*FramebufferProperties depthCubemapProps{};
 				depthCubemapProps.Width = s_Data.ShadowMapResolution;
 				depthCubemapProps.Height = s_Data.ShadowMapResolution;
 				SharedRef<DepthCubemapFramebuffer> framebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
 				s_Data.PointLightDepthMapFramebuffers.push_back(framebuffer);
-				s_Data.SceneLightDesc.ActivePointLights++;
+				s_Data.SceneLightDesc.ActivePointLights++;*/
 
 				break;
 			}
 			case LightType::Spot:
 			{
-				FramebufferProperties depthFramebufferProps{};
+				/*FramebufferProperties depthFramebufferProps{};
 				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
 				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
 				SharedRef<DepthMapFramebuffer> framebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
 				s_Data.SpotLightDepthMapFramebuffers.push_back(framebuffer);
-				s_Data.SceneLightDesc.ActiveSpotLights++;
+				s_Data.SceneLightDesc.ActiveSpotLights++;*/
 
 				break;
 			}

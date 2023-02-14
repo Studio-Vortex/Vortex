@@ -2217,7 +2217,7 @@ namespace Vortex {
 		if (value)
 			rb.LockFlags |= (uint8_t)flag;
 		else
-			rb.LockFlags &= (uint8_t)flag;
+			rb.LockFlags &= ~(uint8_t)flag;
 
 		if (forceWake)
 		{
