@@ -9,9 +9,14 @@ namespace Sandbox.Basketball {
 			if (Input.IsMouseButtonDown(MouseButton.Left))
 			{
 				Entity hoveredEntity = Scene.GetHoveredEntity();
+
+				if (hoveredEntity == null)
+					return;
+
+				Destroy(hoveredEntity);
+
 				if (hoveredEntity.Tag == "Removable Cube")
 				{
-					Destroy(hoveredEntity);
 				}
 			}
 		}

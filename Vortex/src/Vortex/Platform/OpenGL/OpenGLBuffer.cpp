@@ -1,8 +1,6 @@
 #include "vxpch.h"
 #include "OpenGLBuffer.h"
 
-#include "Vortex/Renderer/Model.h"
-
 #include <Glad/glad.h>
 
 namespace Vortex {

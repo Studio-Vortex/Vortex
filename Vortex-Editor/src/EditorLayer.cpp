@@ -652,25 +652,47 @@ namespace Vortex {
 
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
 						{
-							SharedRef<Model> model = m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh;
+							SharedRef<Mesh> mesh = m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh;
 							std::string filename = texturePath.filename().string();
 
 							// TODO rework implementation to get a submesh and set the material texture
 
-							/*if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-								//model->GetMaterial()->SetAlbedoMap(texture);
+							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+								mesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
 							if (filename.find("normal") != std::string::npos)
-								//model->GetMaterial()->SetNormalMap(texture);
+								mesh->GetSubmesh(0).GetMaterial()->SetNormalMap(texture);
 							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-								//model->GetMaterial()->SetMetallicMap(texture);
+								mesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(texture);
 							if (filename.find("roughness") != std::string::npos)
-								//model->GetMaterial()->SetRoughnessMap(texture);
+								mesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(texture);
 							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-								//model->GetMaterial()->SetEmissionMap(texture);
+								mesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(texture);
 							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-								//model->GetMaterial()->SetParallaxOcclusionMap(texture);
+								mesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(texture);
 							if (filename.find("ao") != std::string::npos)
-								//model->GetMaterial()->SetAmbientOcclusionMap(texture);*/
+								mesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(texture);
+						}
+						if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+						{
+							SharedRef<StaticMesh> staticMesh = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							std::string filename = texturePath.filename().string();
+
+							// TODO ditto
+
+							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
+							if (filename.find("normal") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetNormalMap(texture);
+							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(texture);
+							if (filename.find("roughness") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(texture);
+							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(texture);
+							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(texture);
+							if (filename.find("ao") != std::string::npos)
+								staticMesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(texture);
 						}
 					}
 					else
@@ -680,16 +702,19 @@ namespace Vortex {
 				{
 					std::filesystem::path modelPath = filePath;
 
-					if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
+					bool hasMeshComponent = m_HoveredEntity.HasComponent<MeshRendererComponent>() || m_HoveredEntity.HasComponent<StaticMeshRendererComponent>();
+					if (m_HoveredEntity && hasMeshComponent)
 					{
 						meshImportPopupOpen = true;
-						m_ModelFilepath = modelPath.string();
-						m_ModelEntityToEdit = m_HoveredEntity;
+						m_MeshFilepath = modelPath.string();
+						m_MeshEntityToEdit = m_HoveredEntity;
 						// TODO set material
 					}
 				}
 				else if (filePath.extension().string() == ".vortex")
+				{
 					OpenScene(filePath);
+				}
 			}
 
 			Gui::EndDragDropTarget();
@@ -730,8 +755,8 @@ namespace Vortex {
 			UI::BeginPropertyGrid();
 
 			std::string assetDir = Project::GetAssetDirectory().string();
-			size_t assetDirPos = m_ModelFilepath.find(assetDir);
-			std::string filepath = m_ModelFilepath.substr(assetDirPos + assetDir.size() + 1);
+			size_t assetDirPos = m_MeshFilepath.find(assetDir);
+			std::string filepath = m_MeshFilepath.substr(assetDirPos + assetDir.size() + 1);
 			UI::Property("Filepath", filepath, true);
 
 			UI::EndPropertyGrid();
@@ -740,13 +765,20 @@ namespace Vortex {
 
 			if (Gui::Button("Import", button_size))
 			{
-				MeshRendererComponent& meshRenderer = m_ModelEntityToEdit.GetComponent<MeshRendererComponent>();
+				if (m_MeshEntityToEdit.HasComponent<MeshRendererComponent>())
+				{
+					MeshRendererComponent& meshRenderer = m_MeshEntityToEdit.GetComponent<MeshRendererComponent>();
+					meshRenderer.Mesh = Mesh::Create(m_MeshFilepath, m_MeshEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_MeshEntityToEdit);
+				}
+				else if (m_MeshEntityToEdit.HasComponent<StaticMeshRendererComponent>())
+				{
+					StaticMeshRendererComponent& staticMeshRenderer = m_MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
+					staticMeshRenderer.StaticMesh = StaticMesh::Create(m_MeshFilepath, m_MeshEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_MeshEntityToEdit);
+					staticMeshRenderer.Type = MeshType::Custom;
+				}
 
-				meshRenderer.Mesh = Model::Create(m_ModelFilepath, m_ModelEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_ModelEntityToEdit);
-				meshRenderer.Type = MeshType::Custom;
-
-				m_ModelFilepath = "";
-				m_ModelImportOptions = ModelImportOptions();
+				m_MeshFilepath = "";
+				m_ModelImportOptions = MeshImportOptions();
 
 				Gui::CloseCurrentPopup();
 			}
@@ -755,8 +787,8 @@ namespace Vortex {
 
 			if (Gui::Button("Cancel", button_size))
 			{
-				m_ModelFilepath = "";
-				m_ModelImportOptions = ModelImportOptions();
+				m_MeshFilepath = "";
+				m_ModelImportOptions = MeshImportOptions();
 
 				Gui::CloseCurrentPopup();
 			}
@@ -1368,19 +1400,30 @@ namespace Vortex {
 
 		if (projectProps.EditorProps.ShowBoundingBoxes)
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent, StaticMeshRendererComponent>();
 
 			for (auto& e : view)
 			{
 				Entity entity{ e, m_ActiveScene.get() };
-				const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
-				SharedRef<Model> model = meshRenderer.Mesh;
-				
 				const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 
-				for (const auto& submesh : model->GetSubmeshes())
+				if (entity.HasComponent<MeshRendererComponent>())
 				{
-					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+					SharedRef<Mesh> mesh = meshRenderer.Mesh;
+					const auto& submeshes = mesh->GetSubmeshes();
+
+					for (const auto& submesh : submeshes)
+						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+				}
+				else if (entity.HasComponent<StaticMeshRendererComponent>())
+				{
+					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+					SharedRef<Mesh> model = meshRenderer.Mesh;
+					const auto& submeshes = model->GetSubmeshes();
+
+					for (const auto& submesh : submeshes)
+						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
 				}
 			}
 		}
@@ -1394,20 +1437,43 @@ namespace Vortex {
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				SharedRef<Model> model = meshRenderer.Mesh;
+				SharedRef<Mesh> mesh = meshRenderer.Mesh;
 
-				if (m_SelectionMode == SelectionMode::Entity)
+				switch (m_SelectionMode)
 				{
-					Renderer2D::DrawAABB(model->GetBoundingBox(), transform, ColorToVec4(Color::Orange));
-				}
-				else if (m_SelectionMode == SelectionMode::Submesh)
-				{
-					for (const auto& submesh : model->GetSubmeshes())
-					{
-						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
-					}
+					case EditorLayer::SelectionMode::Entity:
+						Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+						break;
+					case EditorLayer::SelectionMode::Submesh:
+						const auto& submeshes = mesh->GetSubmeshes();
+						for (const auto& submesh : submeshes)
+						{
+							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+						}
+						break;
 				}
 			}
+			else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
+			{
+				const auto& staticMeshRenderer = selectedEntity.GetComponent<StaticMeshRendererComponent>();
+
+				SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
+
+				switch (m_SelectionMode)
+				{
+					case EditorLayer::SelectionMode::Entity:
+						Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+						break;
+					case EditorLayer::SelectionMode::Submesh:
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						for (const auto& submesh : submeshes)
+						{
+							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, ColorToVec4(Color::Orange));
+						}
+						break;
+				}
+			}
+
 			if (selectedEntity.HasComponent<SpriteRendererComponent>())
 			{
 				const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
 
 namespace Vortex {
 

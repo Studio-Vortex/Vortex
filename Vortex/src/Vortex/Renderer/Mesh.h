@@ -6,6 +6,8 @@
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Buffer.h"
+#include "Vortex/Renderer/MeshImportOptions.h"
+#include "Vortex/Renderer/VertexTypes.h"
 
 #include <vector>
 #include <unordered_map>
@@ -20,46 +22,10 @@ namespace Vortex {
 
 #define MAX_BONE_INFLUENCE 4
 
-	struct VORTEX_API ModelImportOptions
-	{
-		TransformComponent MeshTransformation;
-
-		ModelImportOptions() = default;
-		ModelImportOptions(const ModelImportOptions&) = default;
-
-		inline bool operator==(const ModelImportOptions& other) const
-		{
-			return MeshTransformation.Translation == other.MeshTransformation.Translation &&
-				MeshTransformation.GetRotationEuler() == other.MeshTransformation.GetRotationEuler() &&
-				MeshTransformation.Scale == other.MeshTransformation.Scale;
-		}
-	};
-
 	struct VORTEX_API BoneInfo
 	{
 		uint32_t ID;
 		Math::mat4 OffsetMatrix;
-	};
-
-	struct VORTEX_API Vertex
-	{
-		Math::vec3 Position;
-		Math::vec4 Color;
-		Math::vec3 Normal;
-		Math::vec3 Tangent;
-		Math::vec3 BiTangent;
-		Math::vec2 TexCoord;
-		Math::vec2 TexScale;
-		Math::ivec4 BoneIDs;
-		Math::vec4 BoneWeights;
-
-		// Editor-only
-		int EntityID;
-	};
-
-	struct VORTEX_API Index
-	{
-		uint32_t i0, i1, i2;
 	};
 
 	class VORTEX_API Submesh
@@ -67,7 +33,6 @@ namespace Vortex {
 	public:
 		Submesh() = default;
 		Submesh(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material);
-		Submesh(bool skybox = true);
 		~Submesh() = default;
 
 		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
@@ -104,39 +69,13 @@ namespace Vortex {
 		Math::AABB m_BoundingBox;
 	};
 
-	class VORTEX_API Model
+	class VORTEX_API Mesh
 	{
 	public:
-		enum class Default
-		{
-			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
-		};
-
-		// TODO: move to asset system when we have one
-		inline static std::vector<std::string> DefaultMeshSourcePaths = {
-			"Resources/Meshes/Cube.fbx",
-			"Resources/Meshes/Sphere.fbx",
-			"Resources/Meshes/Capsule.fbx",
-			"Resources/Meshes/Cone.fbx",
-			"Resources/Meshes/Cylinder.fbx",
-			"Resources/Meshes/Plane.fbx",
-			"Resources/Meshes/Torus.fbx",
-		};
-
-		// Same with this
-		static bool IsDefaultMesh(const std::string& path)
-		{
-			auto it = std::find(DefaultMeshSourcePaths.begin(), DefaultMeshSourcePaths.end(), path);
-			bool isDefaultMesh = it != DefaultMeshSourcePaths.end();
-			return isDefaultMesh;
-		}
-
-		Model() = default;
-		Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
-		Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID);
-		Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
-		Model(MeshType meshType);
-		~Model() = default;
+		Mesh() = default;
+		Mesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
+		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
+		~Mesh() = default;
 
 		void OnUpdate(int entityID = -1);
 
@@ -152,17 +91,15 @@ namespace Vortex {
 
 		const Math::AABB& GetBoundingBox() const { return m_BoundingBox; }
 
-		inline const ModelImportOptions& GetImportOptions() const { return m_ImportOptions; }
+		inline const MeshImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
 
-		static SharedRef<Model> Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
-		static SharedRef<Model> Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions = ModelImportOptions(), int entityID = -1);
-		static SharedRef<Model> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
-		static SharedRef<Model> Create(MeshType meshType);
+		static SharedRef<Mesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
+		static SharedRef<Mesh> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 
 	private:
-		void ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
-		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID);
+		void ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 
 		void SetVertexBoneDataToDefault(Vertex& vertex) const;
 		void SetVertexBoneData(Vertex& vertex, int boneID, float weight) const;
@@ -172,7 +109,7 @@ namespace Vortex {
 
 	private:
 		std::vector<Submesh> m_Submeshes;
-		ModelImportOptions m_ImportOptions;
+		MeshImportOptions m_ImportOptions;
 		std::string m_Filepath;
 		const aiScene* m_Scene;
 

@@ -327,10 +327,18 @@
 
 	public class MeshRenderer : Component
 	{
+		public Submesh GetSubmesh(uint index)
+		{
+			return new Submesh(index, Entity);
+		}
+	}
+
+	public class StaticMeshRenderer : Component
+	{
 		public MeshType Type
 		{
-			get => InternalCalls.MeshRendererComponent_GetMeshType(Entity.ID);
-			set => InternalCalls.MeshRendererComponent_SetMeshType(Entity.ID, value);
+			get => InternalCalls.StaticMeshRendererComponent_GetMeshType(Entity.ID);
+			set => InternalCalls.StaticMeshRendererComponent_SetMeshType(Entity.ID, value);
 		}
 
 		public Submesh GetSubmesh(uint index)
@@ -703,7 +711,7 @@
 		}
 	}
 
-	public class StaticMeshCollider : Component
+	public class MeshCollider : Component
 	{
 
 	}

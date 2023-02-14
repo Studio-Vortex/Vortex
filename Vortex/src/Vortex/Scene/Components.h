@@ -156,7 +156,8 @@ namespace Vortex {
 	class Skybox;
 	class LightSource;
 	class LightSource2D;
-	class Model;
+	class Mesh;
+	class StaticMesh;
 	class ParticleEmitter;
 	class Font;
 	class Animator;
@@ -204,15 +205,23 @@ namespace Vortex {
 			: Type(type), Source(source) { }
 	};
 
-	enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
-
 	struct MeshRendererComponent
 	{
-		MeshType Type = MeshType::Cube;
-		SharedRef<Model> Mesh = nullptr;
+		SharedRef<Mesh> Mesh = nullptr;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
+	};
+
+	enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
+
+	struct StaticMeshRendererComponent
+	{
+		MeshType Type = MeshType::Cube;
+		SharedRef<StaticMesh> StaticMesh = nullptr;
+
+		StaticMeshRendererComponent() = default;
+		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;
 	};
 
 	struct SpriteRendererComponent
@@ -391,12 +400,15 @@ namespace Vortex {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 	};
 
-	struct StaticMeshColliderComponent
+	struct MeshColliderComponent
 	{
-		uint32_t TODO;
+		uint32_t SubmeshIndex = 0;
+		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
+		bool IsTrigger = false;
+		bool UseSharedShape = false;
 
-		StaticMeshColliderComponent() = default;
-		StaticMeshColliderComponent(const StaticMeshColliderComponent&) = default;
+		MeshColliderComponent() = default;
+		MeshColliderComponent(const MeshColliderComponent&) = default;
 	};
 
 	enum class RigidBody2DType { Static = 0, Dynamic, Kinematic };
@@ -510,14 +522,14 @@ namespace Vortex {
 		// Core
 		HierarchyComponent, TransformComponent,
 		// Rendering
-		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent,
+		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, StaticMeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
 		TextMeshComponent, AnimatorComponent, AnimationComponent,
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics
 		RigidBodyComponent, CharacterControllerComponent, PhysicsMaterialComponent, BoxColliderComponent,
-		SphereColliderComponent, CapsuleColliderComponent, StaticMeshColliderComponent,
+		SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		// AI
 		NavMeshAgentComponent,

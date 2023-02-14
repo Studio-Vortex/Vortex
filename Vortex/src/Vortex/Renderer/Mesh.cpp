@@ -1,5 +1,5 @@
 #include "vxpch.h"
-#include "Model.h"
+#include "Mesh.h"
 
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
@@ -48,62 +48,6 @@ namespace Vortex {
 		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
 	{
 		CreateAndUploadMesh();
-	}
-
-	Submesh::Submesh(bool skybox)
-	{
-		m_VertexArray = VertexArray::Create();
-
-		float vertices[] =
-		{
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-
-			-0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f, -0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-
-			-0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f, -0.5f,
-			 0.5f, -0.5f,  0.5f,
-			 0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f,  0.5f,
-			-0.5f, -0.5f, -0.5f,
-
-			-0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f, -0.5f,
-			 0.5f,  0.5f,  0.5f,
-			 0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f,  0.5f,
-			-0.5f,  0.5f, -0.5f,
-		};
-
-		uint32_t dataSize = 36 * sizeof(Math::vec3);
-		m_VertexBuffer = VertexBuffer::Create(vertices, dataSize);
-		m_VertexBuffer->SetLayout({ { ShaderDataType::Float3, "a_Position" } });
-
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
 	void Submesh::SetMaterial(const SharedRef<Material>& material)
@@ -176,32 +120,7 @@ namespace Vortex {
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
 
-	Model::Model(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions)
-	{
-		LogStream::Initialize();
-
-		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
-
-		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
-		{
-			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
-
-		CreateBoundingBoxFromSubmeshes();
-	}
-
-	Model::Model(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+	Mesh::Mesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 		: m_ImportOptions(importOptions), m_Filepath(filepath)
 	{
 		LogStream::Initialize();
@@ -224,7 +143,7 @@ namespace Vortex {
 		CreateBoundingBoxFromSubmeshes();
 	}
 
-	Model::Model(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
+	Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
 	{
 		std::vector<Vertex> verts = { Vertex{} };
 		std::vector<uint32_t> inds = { 0 };
@@ -283,12 +202,7 @@ namespace Vortex {
 		CreateBoundingBoxFromSubmeshes();
 	}
 
-	Model::Model(MeshType meshType)
-	{
-		m_Submeshes.push_back(Submesh(true));
-	}
-
-	void Model::ProcessNode(aiNode* node, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
+	void Mesh::ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
@@ -304,7 +218,7 @@ namespace Vortex {
 		}
 	}
 
-	Submesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, const ModelImportOptions& importOptions, const int entityID)
+	Submesh Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -429,7 +343,7 @@ namespace Vortex {
 		return { meshName, vertices, indices, material };
 	}
 
-	void Model::CreateBoundingBoxFromSubmeshes()
+	void Mesh::CreateBoundingBoxFromSubmeshes()
 	{
 		// initialize bounding box to default
 		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
@@ -450,7 +364,7 @@ namespace Vortex {
 		}
 	}
 
-	void Model::SetVertexBoneDataToDefault(Vertex& vertex) const
+	void Mesh::SetVertexBoneDataToDefault(Vertex& vertex) const
 	{
 		for (uint32_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 		{
@@ -459,7 +373,7 @@ namespace Vortex {
 		}
 	}
 
-	void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight) const
+	void Mesh::SetVertexBoneData(Vertex& vertex, int boneID, float weight) const
 	{
 		for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 		{
@@ -472,7 +386,7 @@ namespace Vortex {
 		}
 	}
 
-	bool Model::ExtractBoneWeightsForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+	bool Mesh::ExtractBoneWeightsForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
 	{
 		if (!scene->HasAnimations())
 			return false;
@@ -514,7 +428,7 @@ namespace Vortex {
 		return true;
 	}
 
-	void Model::OnUpdate(int entityID)
+	void Mesh::OnUpdate(int entityID)
 	{
 		bool isDirty = false;
 
@@ -543,36 +457,26 @@ namespace Vortex {
 		}
 	}
 
-	const Submesh& Model::GetSubmesh(uint32_t index) const
+	const Submesh& Mesh::GetSubmesh(uint32_t index) const
 	{
 		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
 		return m_Submeshes[index];
 	}
 
-	Submesh& Model::GetSubmesh(uint32_t index)
+	Submesh& Mesh::GetSubmesh(uint32_t index)
 	{
 		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
 		return m_Submeshes[index];
 	}
 
-	SharedRef<Model> Model::Create(Model::Default defaultMesh, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+	SharedRef<Mesh> Mesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Model>(defaultMesh, transform, importOptions, (int)(entt::entity)entityID);
+		return CreateShared<Mesh>(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
-	SharedRef<Model> Model::Create(const std::string& filepath, const TransformComponent& transform, const ModelImportOptions& importOptions, int entityID)
+	SharedRef<Mesh> Mesh::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
 	{
-		return CreateShared<Model>(filepath, transform, importOptions, (int)(entt::entity)entityID);
-	}
-
-	SharedRef<Model> Model::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
-	{
-		return CreateShared<Model>(vertices, indices, transform);
-	}
-
-	SharedRef<Model> Model::Create(MeshType meshType)
-	{
-		return CreateShared<Model>(meshType);
+		return CreateShared<Mesh>(vertices, indices, transform);
 	}
 
 }

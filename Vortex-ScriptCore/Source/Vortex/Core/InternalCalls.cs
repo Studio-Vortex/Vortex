@@ -339,11 +339,15 @@ namespace Vortex {
 
 		#region MeshRenderer
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static MeshType MeshRendererComponent_GetMeshType(ulong entityID);
+		#endregion
+
+		#region StaticMeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
+		internal extern static MeshType StaticMeshRendererComponent_GetMeshType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
 
 		#endregion
 
@@ -775,6 +779,10 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CapsuleColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		#endregion
+
+		#region MeshCollider
 
 		#endregion
 

@@ -9,7 +9,8 @@
 #include "Vortex/Animation/Animator.h"
 
 #include "Vortex/Renderer/Renderer.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
@@ -440,29 +441,27 @@ namespace Vortex {
 
 			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-			VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(meshRendererComponent.Type), out);
-
 			if (meshRendererComponent.Mesh)
 			{
-				SharedRef<Model> model = meshRendererComponent.Mesh;
-				const auto& meshSourcePath = model->GetPath();
-				std::string relativePath = (Model::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
+				SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
+				const auto& meshSourcePath = mesh->GetPath();
+				std::string relativePath = FileSystem::Relative(meshSourcePath, projectAssetDirectory).string();
 				VX_SERIALIZE_PROPERTY(MeshSource, relativePath, out);
 
-				if (ModelImportOptions importOptions = model->GetImportOptions(); importOptions != ModelImportOptions{})
+				if (MeshImportOptions importOptions = mesh->GetImportOptions(); importOptions != MeshImportOptions{})
 				{
-					out << YAML::Key << "ModelImportOptions" << YAML::Value << YAML::BeginMap; // ModelImportOptions
+					out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
 
 					VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
 					VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
 					VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
 
-					out << YAML::EndMap; // ModelImportOptions
+					out << YAML::EndMap; // MeshImportOptions
 				}
 
 				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
 
-				const auto& submeshes = model->GetSubmeshes();
+				const auto& submeshes = mesh->GetSubmeshes();
 
 				for (const auto& submesh : submeshes)
 				{
@@ -517,6 +516,91 @@ namespace Vortex {
 			}
 
 			out << YAML::EndMap; // MeshRendererComponent
+		}
+
+		if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			out << YAML::Key << "StaticMeshRendererComponent" << YAML::Value << YAML::BeginMap; // StaticMeshRendererComponent
+
+			const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+
+			VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
+
+			if (staticMeshRenderer.StaticMesh)
+			{
+				SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
+				const auto& meshSourcePath = staticMesh->GetPath();
+				std::string relativePath = (StaticMesh::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
+				VX_SERIALIZE_PROPERTY(MeshSource, relativePath, out);
+
+				if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
+				{
+					out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
+
+					VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
+					VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
+					VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
+
+					out << YAML::EndMap; // MeshImportOptions
+				}
+
+				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
+
+				const auto& submeshes = staticMesh->GetSubmeshes();
+
+				for (const auto& submesh : submeshes)
+				{
+					out << YAML::BeginMap; // Submesh
+
+					VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
+
+					SharedRef<Material> material = submesh.GetMaterial();
+
+					SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+					SharedRef<Texture2D> normalMap = material->GetNormalMap();
+					SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+					SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+					SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
+					SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
+					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+
+					if (albedoMap)
+						VX_SERIALIZE_PROPERTY(AlbedoMapPath, std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string(), out);
+					else
+						VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
+					if (normalMap)
+						VX_SERIALIZE_PROPERTY(NormalMapPath, std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string(), out);
+					if (metallicMap)
+						VX_SERIALIZE_PROPERTY(MetallicMapPath, std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string(), out);
+					else
+						VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
+					if (roughnessMap)
+						VX_SERIALIZE_PROPERTY(RoughnessMapPath, std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string(), out);
+					else
+						VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
+					if (emissionMap)
+						VX_SERIALIZE_PROPERTY(EmissionMapPath, std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string(), out);
+					else
+						VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
+					if (parallaxOcclusionMap)
+					{
+						VX_SERIALIZE_PROPERTY(ParallaxOcclusionMapPath, std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
+						VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
+					}
+					if (ambientOcclusionMap)
+						VX_SERIALIZE_PROPERTY(AmbientOcclusionMapPath, std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
+
+					VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
+					VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
+					VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
+
+					out << YAML::EndMap; // Submesh
+				}
+
+				out << YAML::EndSeq; // Submeshes
+			}
+
+			out << YAML::EndMap; // StaticMeshRendererComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
@@ -1003,25 +1087,14 @@ namespace Vortex {
 			{
 				auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
 
-				meshRendererComponent.Type = Utils::MeshTypeFromString(meshComponent["MeshType"].as<std::string>());
-
 				if (meshComponent["MeshSource"])
 				{
 					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
-					std::string assetPath = "";
+					std::string assetPath = Project::GetAssetFileSystemPath(modelPath).string();
 
-					ModelImportOptions importOptions = ModelImportOptions();
+					MeshImportOptions importOptions = MeshImportOptions();
 
-					if (Model::IsDefaultMesh(modelPath))
-					{
-						assetPath = modelPath;
-					}
-					else
-					{
-						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
-					}
-
-					if (meshComponent["ModelImportOptions"])
+					if (meshComponent["MeshImportOptions"])
 					{
 						auto modelImportOptions = meshComponent["ModelImportOptions"];
 						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
@@ -1029,7 +1102,7 @@ namespace Vortex {
 						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 					}
 
-					meshRendererComponent.Mesh = Model::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
+					meshRendererComponent.Mesh = Mesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
 				}
 
 				auto submeshesData = meshComponent["Submeshes"];
@@ -1040,6 +1113,83 @@ namespace Vortex {
 					for (auto submeshData : submeshesData)
 					{
 						Submesh submesh = meshRendererComponent.Mesh->GetSubmesh(i++);
+						SharedRef<Material> material = submesh.GetMaterial();
+
+						if (submeshData["AlbedoMapPath"])
+							material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AlbedoMapPath"].as<std::string>()).string()));
+						if (submeshData["Albedo"])
+							material->SetAlbedo(submeshData["Albedo"].as<Math::vec3>());
+						if (submeshData["NormalMapPath"])
+							material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["NormalMapPath"].as<std::string>()).string()));
+						if (submeshData["MetallicMapPath"])
+							material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["MetallicMapPath"].as<std::string>()).string()));
+						if (submeshData["Metallic"])
+							material->SetMetallic(submeshData["Metallic"].as<float>());
+						if (submeshData["RoughnessMapPath"])
+							material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["RoughnessMapPath"].as<std::string>()).string()));
+						if (submeshData["Roughness"])
+							material->SetRoughness(submeshData["Roughness"].as<float>());
+						if (submeshData["EmissionMapPath"])
+							material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["EmissionMapPath"].as<std::string>()).string()));
+						if (submeshData["Emission"])
+							material->SetEmission(submeshData["Emission"].as<float>());
+						if (submeshData["ParallaxOcclusionMapPath"])
+							material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["ParallaxOcclusionMapPath"].as<std::string>()).string()));
+						if (submeshData["ParallaxHeightScale"])
+							material->SetParallaxHeightScale(submeshData["ParallaxHeightScale"].as<float>());
+						if (submeshData["AmbientOcclusionMapPath"])
+							material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AmbientOcclusionMapPath"].as<std::string>()).string()));
+
+						if (submeshData["UV"])
+							material->SetUV(submeshData["UV"].as<Math::vec2>());
+
+						if (submeshData["Opacity"])
+							material->SetOpacity(submeshData["Opacity"].as<float>());
+
+						if (submeshData["MaterialFlags"])
+							material->SetFlags(submeshData["MaterialFlags"].as<uint32_t>());
+					}
+				}
+			}
+
+			auto staticMeshComponent = entity["StaticMeshRendererComponent"];
+			if (staticMeshComponent)
+			{
+				auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
+
+				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
+
+				if (staticMeshComponent["MeshSource"])
+				{
+					std::string modelPath = staticMeshComponent["MeshSource"].as<std::string>();
+					std::string assetPath = "";
+
+					if (StaticMesh::IsDefaultMesh(modelPath))
+						assetPath = modelPath;
+					else
+						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
+
+					MeshImportOptions importOptions = MeshImportOptions();
+
+					if (staticMeshComponent["MeshImportOptions"])
+					{
+						auto modelImportOptions = staticMeshComponent["ModelImportOptions"];
+						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
+						importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
+						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+					}
+
+					staticMeshRendererComponent.StaticMesh = StaticMesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
+				}
+
+				auto submeshesData = staticMeshComponent["Submeshes"];
+				if (submeshesData)
+				{
+					uint32_t i = 0;
+
+					for (auto submeshData : submeshesData)
+					{
+						StaticSubmesh submesh = staticMeshRendererComponent.StaticMesh->GetSubmesh(i++);
 						SharedRef<Material> material = submesh.GetMaterial();
 
 						if (submeshData["AlbedoMapPath"])
@@ -1149,9 +1299,9 @@ namespace Vortex {
 				}
 
 				auto& animation = deserializedEntity.AddComponent<AnimationComponent>();
-				SharedRef<Model> model = deserializedEntity.GetComponent<MeshRendererComponent>().Mesh;
-				std::string filepath = model->GetPath();
-				animation.Animation = Animation::Create(filepath, model);
+				SharedRef<Mesh> mesh = deserializedEntity.GetComponent<MeshRendererComponent>().Mesh;
+				std::string filepath = mesh->GetPath();
+				animation.Animation = Animation::Create(filepath, mesh);
 			}
 
 			auto animatorComponent = entity["AnimatorComponent"];

@@ -22,7 +22,8 @@
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
 
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
@@ -1126,17 +1127,23 @@ namespace Vortex {
 
 #pragma region Mesh Renderer Component
 
-	static MeshType MeshRendererComponent_GetMeshType(UUID entityUUID)
+
+
+#pragma endregion
+
+#pragma region Static Mesh Renderer Component
+
+	static MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<MeshRendererComponent>().Type;
+		return entity.GetComponent<StaticMeshRendererComponent>().Type;
 	}
 
-	static void MeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
+	static void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
@@ -1145,9 +1152,9 @@ namespace Vortex {
 
 		if (meshType != MeshType::Custom)
 		{
-			MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
+			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			meshRenderer.Type = meshType;
-			meshRenderer.Mesh = Model::Create(Model::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+			meshRenderer.StaticMesh = StaticMesh::Create(StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 		}
 	}
 
@@ -1162,11 +1169,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+		}
 	}
 
 	static void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
@@ -1176,11 +1192,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+		}
 	}
 
 	static float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
@@ -1190,11 +1215,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+		}
 	}
 
 	static void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
@@ -1204,11 +1238,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+		}
 	}
 
 	static float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
@@ -1218,11 +1261,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+		}
 	}
 
 	static void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
@@ -1232,11 +1284,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+		}
 	}
 
 	static float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
@@ -1246,11 +1307,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		return submeshes[submeshIndex].GetMaterial()->GetEmission();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetEmission();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetEmission();
+		}
 	}
 
 	static void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
@@ -1260,11 +1330,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+		}
 	}
 
 	static void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
@@ -1274,11 +1353,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+		}
 	}
 
 	static void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
@@ -1288,11 +1376,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+		}
 	}
 
 	static float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
@@ -1302,11 +1399,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+		}
 	}
 
 	static void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
@@ -1316,11 +1422,20 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-		const auto& submeshes = model->GetSubmeshes();
-		VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-		submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+			const auto& submeshes = mesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+		}
+		else if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			const auto& submeshes = staticMesh->GetSubmeshes();
+			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+			submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+		}
 	}
 
 #pragma endregion
@@ -3908,8 +4023,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(AnimatorComponent_IsPlaying);
 		VX_ADD_INTERNAL_CALL(AnimatorComponent_Play);
 
-		VX_ADD_INTERNAL_CALL(MeshRendererComponent_GetMeshType);
-		VX_ADD_INTERNAL_CALL(MeshRendererComponent_SetMeshType);
+		VX_ADD_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
+		VX_ADD_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
 
 		VX_ADD_INTERNAL_CALL(Material_GetAlbedo);
 		VX_ADD_INTERNAL_CALL(Material_SetAlbedo);

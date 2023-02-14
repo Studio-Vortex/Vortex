@@ -134,40 +134,40 @@ namespace Vortex {
 		return editorCamera->GetPosition() + (editorCamera->GetForwardDirection() * 3.0f);
 	}
 
-	inline static void CreateDefaultModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
+	inline static void CreateDefaultModel(const std::string& name, StaticMesh::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
 	{
 		entity = contextScene->CreateEntity(name);
-		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
-		meshRenderer.Type = static_cast<MeshType>(defaultMesh);
+		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();
+		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
 
-		ModelImportOptions importOptions = ModelImportOptions();
+		MeshImportOptions importOptions = MeshImportOptions();
 
 		switch (defaultMesh)
 		{
-			case Model::Default::Cube:
+			case StaticMesh::Default::Cube:
 				entity.AddComponent<RigidBodyComponent>();
 				entity.AddComponent<BoxColliderComponent>();
 				break;
-			case Model::Default::Sphere:
+			case StaticMesh::Default::Sphere:
 				entity.AddComponent<RigidBodyComponent>();
 				entity.AddComponent<SphereColliderComponent>();
 				break;
-			case Model::Default::Capsule:
+			case StaticMesh::Default::Capsule:
 				entity.AddComponent<RigidBodyComponent>();
 				entity.AddComponent<CapsuleColliderComponent>();
 				importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
 				break;
-			case Model::Default::Cone:
+			case StaticMesh::Default::Cone:
 				break;
-			case Model::Default::Cylinder:
+			case StaticMesh::Default::Cylinder:
 				break;
-			case Model::Default::Plane:
+			case StaticMesh::Default::Plane:
 				break;
-			case Model::Default::Torus:
+			case StaticMesh::Default::Torus:
 				break;
 		}
 		
-		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+		staticMeshRendererComponent.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 	}
 
@@ -182,25 +182,25 @@ namespace Vortex {
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-				CreateDefaultModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cube", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Sphere"))
-				CreateDefaultModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Sphere", StaticMesh::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Capsule"))
-				CreateDefaultModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Capsule", StaticMesh::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Cone"))
-				CreateDefaultModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cone", StaticMesh::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Cylinder"))
-				CreateDefaultModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Cylinder", StaticMesh::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Plane"))
-				CreateDefaultModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Plane", StaticMesh::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			if (Gui::MenuItem("Torus"))
-				CreateDefaultModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Torus", StaticMesh::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
 
 			Gui::EndMenu();
 		}
@@ -282,7 +282,7 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateDefaultModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Box Collider", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<BoxColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -290,7 +290,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateDefaultModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Sphere Collider", StaticMesh::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<SphereColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
@@ -298,17 +298,17 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateDefaultModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Capsule Collider", StaticMesh::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
-			if (Gui::MenuItem("Static Mesh Collider"))
+			if (Gui::MenuItem("Mesh Collider"))
 			{
-				CreateDefaultModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				CreateDefaultModel("Mesh Collider", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
-				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
+				m_SelectedEntity.AddComponent<MeshColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
 			}
 
@@ -601,10 +601,10 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Reset Component"))
 				{
-					if constexpr (std::is_same<TComponent, MeshRendererComponent>())
+					if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 					{
-						component = MeshRendererComponent();
-						component.Mesh = Model::Create(Model::Default::Cube, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+						component = StaticMeshRendererComponent();
+						component.StaticMesh = StaticMesh::Create(StaticMesh::Default::Cube, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 					}
 					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 					{
@@ -823,6 +823,8 @@ namespace Vortex {
 				DisplayAddComponentPopup<LightSourceComponent>(componentName);
 			if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<MeshRendererComponent>(componentName);
+			if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<StaticMeshRendererComponent>(componentName);
 			if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<LightSource2DComponent>(componentName);
 			if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -855,8 +857,8 @@ namespace Vortex {
 				DisplayAddComponentPopup<SphereColliderComponent>(componentName);
 			if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<CapsuleColliderComponent>(componentName);
-			if (const char* componentName = "Static Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<StaticMeshColliderComponent>(componentName);
+			if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				DisplayAddComponentPopup<MeshColliderComponent>(componentName);
 
 			if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 				DisplayAddComponentPopup<RigidBody2DComponent>(componentName);
@@ -1112,12 +1114,56 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string meshSourcePath = "";
-
 			if (component.Mesh)
 			{
-				meshSourcePath = component.Mesh->GetPath();
-				if (Model::IsDefaultMesh(meshSourcePath))
+				std::string meshSourcePath = component.Mesh->GetPath();
+				std::string relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
+				UI::Property("Mesh Source", relativeMeshPath, true);
+			}
+
+			// Accept a Model File from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path modelFilepath = std::filesystem::path(path);
+
+					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
+					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
+					{
+						component.Mesh = Mesh::Create(modelFilepath.string(), entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+
+						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && component.Mesh->HasAnimations())
+						{
+							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+
+							animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
+							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+						}
+					}
+					else
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
+				}
+				Gui::EndDragDropTarget();
+			}
+
+			UI::EndPropertyGrid();
+
+			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
+		});
+
+		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", entity, [&](auto& component)
+		{
+			UI::BeginPropertyGrid();
+
+			std::string meshSourcePath = "";
+
+			if (component.StaticMesh)
+			{
+				meshSourcePath = component.StaticMesh->GetPath();
+				if (StaticMesh::IsDefaultMesh(meshSourcePath))
 					UI::Property("Mesh Source", meshSourcePath, true);
 				else
 				{
@@ -1137,17 +1183,8 @@ namespace Vortex {
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
 					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+						component.StaticMesh = StaticMesh::Create(modelFilepath.string(), entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 						component.Type = MeshType::Custom;
-
-						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && component.Mesh->HasAnimations())
-						{
-							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
-
-							animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
-							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
-						}
 					}
 					else
 						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
@@ -1163,14 +1200,14 @@ namespace Vortex {
 
 				if (component.Type == MeshType::Capsule)
 				{
-					ModelImportOptions importOptions = ModelImportOptions();
+					MeshImportOptions importOptions = MeshImportOptions();
 					importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-					component.Mesh = Model::Create((Model::Default)currentMeshType, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+					component.StaticMesh = StaticMesh::Create((StaticMesh::Default)currentMeshType, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 				}
 				else if (component.Type != MeshType::Custom)
-					component.Mesh = Model::Create((Model::Default)currentMeshType, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+					component.StaticMesh = StaticMesh::Create((StaticMesh::Default)currentMeshType, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 				else
-					component.Mesh = Model::Create(meshSourcePath, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+					component.StaticMesh = StaticMesh::Create(meshSourcePath, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 			}
 
 			UI::EndPropertyGrid();
@@ -1746,9 +1783,20 @@ namespace Vortex {
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<StaticMeshColliderComponent>("Static Mesh Collider", entity, [](auto& component)
+		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](auto& component)
 		{
-			
+			UI::BeginPropertyGrid();
+
+			static const char* collisionComplexities[] = { "Default", "Use Complex as Simple", "Use Simple as Complex" };
+			uint32_t currentCollisionComplexity = (uint32_t)component.CollisionComplexity;
+
+			if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYCOUNT(collisionComplexities), currentCollisionComplexity))
+				component.CollisionComplexity = (ECollisionComplexity)currentCollisionComplexity;
+
+			UI::Property("Is Trigger", component.IsTrigger);
+			UI::Property("Use Shared Shape", component.UseSharedShape);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)

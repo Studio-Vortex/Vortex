@@ -6,7 +6,7 @@
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/LightSource.h"
 
@@ -40,6 +40,7 @@ namespace Vortex {
 		entity.m_Scene->CopyComponentIfExists<SkyboxComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<LightSourceComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<MeshRendererComponent>(newEntity, m_Scene->m_Registry, entity);
+		entity.m_Scene->CopyComponentIfExists<StaticMeshRendererComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<SpriteRendererComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<CircleRendererComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<ParticleEmitterComponent>(newEntity, m_Scene->m_Registry, entity);
@@ -52,7 +53,7 @@ namespace Vortex {
 		entity.m_Scene->CopyComponentIfExists<BoxColliderComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<SphereColliderComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<CapsuleColliderComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<StaticMeshColliderComponent>(newEntity, m_Scene->m_Registry, entity);
+		entity.m_Scene->CopyComponentIfExists<MeshColliderComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<RigidBody2DComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<BoxCollider2DComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<CircleCollider2DComponent>(newEntity, m_Scene->m_Registry, entity);

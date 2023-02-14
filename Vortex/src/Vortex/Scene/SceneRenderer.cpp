@@ -1,7 +1,8 @@
 #include "vxpch.h"
 #include "SceneRenderer.h"
 
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
@@ -320,11 +321,8 @@ namespace Vortex {
 			}
 
 			// Geometry pass
-			// Sort Meshes by distance from camera and render in reverse order
+			// Sort All Meshes by distance from camera and render in reverse order
 			std::map<float, Entity> sortedEntities;
-
-			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
-			uint32_t i = 0;
 
 			auto SortEntityByDistanceFunc = [&](float distance, Entity entity, uint32_t offset = 0)
 			{
@@ -338,28 +336,70 @@ namespace Vortex {
 				sortedEntities[distance + (0.01f * offset)] = entity;
 			};
 
-			for (const auto e : meshView)
+			// Sort Meshes
 			{
-				Entity entity{ e, scene };
-				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+				auto meshRendererView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+				uint32_t i = 0;
 
-				if (!renderPacket.Scene->IsRunning())
+				for (const auto e : meshRendererView)
 				{
-					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					Entity entity{ e, scene };
+					if (!entity.IsActive())
+						continue;
 
-					SortEntityByDistanceFunc(distance, entity, i);
+					Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+
+					if (renderPacket.EditorScene)
+					{
+						EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+						Math::vec3 cameraPosition = editorCamera->GetPosition();
+						float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+						SortEntityByDistanceFunc(distance, entity, i);
+					}
+					else
+					{
+						Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTransform.Translation;
+						float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+						SortEntityByDistanceFunc(distance, entity, i);
+					}
+
+					i++;
 				}
-				else
+			}
+
+			// Sort Static Meshes
+			{
+				auto staticMeshRendererView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+				uint32_t i = 0;
+
+				for (const auto e : staticMeshRendererView)
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTransform.Translation;
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					Entity entity{ e, scene };
+					if (!entity.IsActive())
+						continue;
 
-					SortEntityByDistanceFunc(distance, entity, i);
+					Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+
+					if (renderPacket.EditorScene)
+					{
+						EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+						Math::vec3 cameraPosition = editorCamera->GetPosition();
+						float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+						SortEntityByDistanceFunc(distance, entity, i);
+					}
+					else
+					{
+						Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTransform.Translation;
+						float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+						SortEntityByDistanceFunc(distance, entity, i);
+					}
+
+					i++;
 				}
-
-				i++;
 			}
 
 			InstrumentationTimer timer("Geometry Pass");
@@ -367,62 +407,103 @@ namespace Vortex {
 				for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 				{
 					Entity entity = it->second;
-					MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-					if (!entity.IsActive())
-						continue;
-
-					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-
-					SharedRef<Model> model = meshRendererComponent.Mesh;
-					if (!model)
-						continue;
-
-					auto& submeshes = model->GetSubmeshes();
-
-					// render each submesh
-					for (auto& submesh : submeshes)
+					if (entity.HasComponent<MeshRendererComponent>())
 					{
-						SharedRef<Material> material = submesh.GetMaterial();
+						const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-						if (!material)
+						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+						SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
+						if (!mesh)
 							continue;
 
-						SetMaterialFlags(material);
+						const auto& submeshes = mesh->GetSubmeshes();
 
-						SharedRef<Shader> shader = material->GetShader();
-						shader->Enable();
-
-						SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-						shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-						shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-						shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
-						shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
-
-						Renderer::BindSkyLightDepthMap();
-						Renderer::BindPointLightDepthMaps();
-						Renderer::BindSpotLightDepthMaps();
-
-						if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+						// render each submesh
+						for (auto& submesh : submeshes)
 						{
-							shader->SetBool("u_HasAnimations", true);
+							SharedRef<Material> material = submesh.GetMaterial();
 
-							const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-							const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+							if (!material)
+								continue;
 
-							for (uint32_t i = 0; i < transforms.size(); i++)
+							SetMaterialFlags(material);
+
+							SharedRef<Shader> shader = material->GetShader();
+							shader->Enable();
+
+							SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
+							shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
+							shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+							shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+							shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+							Renderer::BindSkyLightDepthMap();
+							Renderer::BindPointLightDepthMaps();
+							Renderer::BindSpotLightDepthMaps();
+
+							if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
 							{
-								shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+								shader->SetBool("u_HasAnimations", true);
+
+								const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+								const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+								for (uint32_t i = 0; i < transforms.size(); i++)
+								{
+									shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+								}
 							}
+							else
+							{
+								shader->SetBool("u_HasAnimations", false);
+							}
+
+							submesh.Render();
+
+							ResetAllMaterialFlags();
 						}
-						else
+					}
+					else if (entity.HasComponent<StaticMeshRendererComponent>())
+					{
+						const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+						SharedRef<StaticMesh> staticMesh = staticMeshRendererComponent.StaticMesh;
+						if (!staticMesh)
+							continue;
+
+						const auto& submeshes = staticMesh->GetSubmeshes();
+
+						// render each submesh
+						for (auto& submesh : submeshes)
 						{
-							shader->SetBool("u_HasAnimations", false);
+							SharedRef<Material> material = submesh.GetMaterial();
+
+							if (!material)
+								continue;
+
+							SetMaterialFlags(material);
+
+							SharedRef<Shader> shader = material->GetShader();
+							shader->Enable();
+
+							SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
+							shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
+							shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
+							shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+							shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+							Renderer::BindSkyLightDepthMap();
+							Renderer::BindPointLightDepthMaps();
+							Renderer::BindSpotLightDepthMaps();
+
+							submesh.Render();
+
+							ResetAllMaterialFlags();
 						}
-
-						submesh.Render();
-
-						ResetAllMaterialFlags();
 					}
 				}
 			}

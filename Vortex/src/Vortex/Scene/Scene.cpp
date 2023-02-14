@@ -12,6 +12,8 @@
 #include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Prefab.h"
 #include "Vortex/Scene/SceneRenderer.h"
@@ -162,7 +164,7 @@ namespace Vortex {
 	{
 		// Starting Entities
 		Entity startingCube = context->CreateEntity("Cube");
-		startingCube.AddComponent<MeshRendererComponent>();
+		startingCube.AddComponent<StaticMeshRendererComponent>();
 		startingCube.AddComponent<RigidBodyComponent>();
 		startingCube.AddComponent<BoxColliderComponent>();
 
@@ -830,17 +832,36 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<MeshRendererComponent>();
-
-		for (auto& entity : view)
 		{
-			const auto& meshRendererComponent = view.get<MeshRendererComponent>(entity);
+			auto view = m_Registry.view<MeshRendererComponent>();
 
-			SharedRef<Model> model = meshRendererComponent.Mesh;
-			if (!model)
-				continue;
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-			model->OnUpdate((int)(entt::entity)entity);
+				SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
+				if (!mesh)
+					continue;
+
+				mesh->OnUpdate((int)(entt::entity)e);
+			}
+		}
+
+		{
+			auto view = m_Registry.view<StaticMeshRendererComponent>();
+
+			for (auto& e : view)
+			{
+				Entity entity{ e, this };
+				StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+				SharedRef<StaticMesh> staticMesh = staticMeshRendererComponent.StaticMesh;
+				if (!staticMesh)
+					continue;
+
+				staticMesh->OnUpdate((int)(entt::entity)e);
+			}
 		}
 	}
 
@@ -925,24 +946,29 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
 	{
-		Model::Default defaultModel = Model::Default::Cube;
-		ModelImportOptions importOptions = ModelImportOptions();
+
+	}
+
+	template <> void Scene::OnComponentAdded<StaticMeshRendererComponent>(Entity entity, StaticMeshRendererComponent& component)
+	{
+		StaticMesh::Default defaultModel = StaticMesh::Default::Cube;
+		MeshImportOptions importOptions = MeshImportOptions();
 
 		if (component.Type == MeshType::Custom)
 		{
-			defaultModel = Model::Default::Cube;
+			defaultModel = StaticMesh::Default::Cube;
 		}
 		else if (component.Type == MeshType::Capsule)
 		{
-			ModelImportOptions importOptions = ModelImportOptions();
+			MeshImportOptions importOptions = MeshImportOptions();
 			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
 		}
 		else
 		{
-			defaultModel = (Model::Default)component.Type;
+			defaultModel = (StaticMesh::Default)component.Type;
 		}
 
-		component.Mesh = Model::Create(defaultModel, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+		component.StaticMesh = StaticMesh::Create(defaultModel, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
@@ -971,7 +997,7 @@ namespace Vortex {
 	{
 		if (entity.HasComponent<MeshRendererComponent>() && entity.GetComponent<MeshRendererComponent>().Mesh->HasAnimations())
 		{
-			SharedRef<Model> model = entity.GetComponent<MeshRendererComponent>().Mesh;
+			SharedRef<Mesh> model = entity.GetComponent<MeshRendererComponent>().Mesh;
 			std::string filepath = model->GetPath();
 			component.Animation = Animation::Create(filepath, model);
 		}
@@ -998,7 +1024,7 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<CapsuleColliderComponent>(Entity entity, CapsuleColliderComponent& component) { }
 
-	template <> void Scene::OnComponentAdded<StaticMeshColliderComponent>(Entity entity, StaticMeshColliderComponent& component) { }
+	template <> void Scene::OnComponentAdded<MeshColliderComponent>(Entity entity, MeshColliderComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
 

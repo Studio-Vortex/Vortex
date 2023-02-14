@@ -6,14 +6,6 @@
 
 namespace Vortex {
 
-	enum class FilterGroup : uint32_t
-	{
-		Static = BIT(0),
-		Dynamic = BIT(1),
-		Kinematic = BIT(2),
-		All = Static | Dynamic | Kinematic
-	};
-
 	enum class BroadphaseType
 	{
 		SweepAndPrune,
@@ -47,12 +39,19 @@ namespace Vortex {
 		Failure
 	};
 
-	enum class ForceMode : uint8_t
+	enum class FilterGroup : uint32_t
 	{
-		Force = 0,
-		Impulse,
-		VelocityChange,
-		Acceleration
+		Static = BIT(0),
+		Dynamic = BIT(1),
+		Kinematic = BIT(2),
+		All = Static | Dynamic | Kinematic
+	};
+
+	enum class ECollisionComplexity : uint8_t
+	{
+		Default = 0, // Use simple for collision and complex for scene queries
+		UseComplexAsSimple = 1, // Use complex for collision AND scene queries
+		UseSimpleAsComplex = 2 // Use simple for collision AND scene queries
 	};
 
 	enum class ActorLockFlag : uint8_t
@@ -66,6 +65,14 @@ namespace Vortex {
 		RotationY = BIT(4),
 		RotationZ = BIT(5),
 		Rotation = RotationX | RotationY | RotationZ
+	};
+
+	enum class ForceMode : uint8_t
+	{
+		Force = 0,
+		Impulse,
+		VelocityChange,
+		Acceleration
 	};
 
 	enum class NonWalkableMode : uint8_t

@@ -2,7 +2,8 @@
 #include "Physics.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Utils/PlatformUtils.h"
@@ -301,7 +302,7 @@ namespace Vortex {
 		}
 
 		/*{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
 			for (const auto& e : view)
 			{
@@ -389,7 +390,7 @@ namespace Vortex {
 		}
 
 		//{
-		//	auto view = contextScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+		//	auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
 		//	for (const auto& e : view)
 		//	{
@@ -429,7 +430,7 @@ namespace Vortex {
 		}
 
 		/*{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
 			for (const auto& e : view)
 			{
@@ -637,8 +638,8 @@ namespace Vortex {
 
 		const TransformComponent& transform = entity.GetTransform();
 		Math::mat4 entityTransform = transform.GetTransform();
-		const MeshRendererComponent& meshRenderer = entity.GetComponent<MeshRendererComponent>();
-		SharedRef<Model> model = meshRenderer.Mesh;
+		const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+		SharedRef<StaticMesh> model = staticMeshRenderer.StaticMesh;
 
 		actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(transform));
 
@@ -771,7 +772,7 @@ namespace Vortex {
 
 			s_Data->PhysicsScene->removeActor(*actor);
 		}
-		/*else if (entity.HasComponent<MeshRendererComponent>())
+		/*else if (entity.HasComponent<StaticMeshRendererComponent>())
 		{
 			if (s_StaticActorsFromMeshes.contains(entity.GetUUID()))
 			{

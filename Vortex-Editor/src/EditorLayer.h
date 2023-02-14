@@ -112,9 +112,9 @@ namespace Vortex {
 
 		Entity m_HoveredEntity;
 
-		std::string m_ModelFilepath = "";
-		ModelImportOptions m_ModelImportOptions = ModelImportOptions();
-		Entity m_ModelEntityToEdit;
+		std::string m_MeshFilepath = "";
+		MeshImportOptions m_ModelImportOptions = MeshImportOptions();
+		Entity m_MeshEntityToEdit;
 
 		Math::vec2 m_ViewportSize{};
 		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };

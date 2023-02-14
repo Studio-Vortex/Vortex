@@ -21,7 +21,7 @@ namespace Vortex {
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
-	Animation::Animation(const std::string& animationPath, SharedRef<Model>& model)
+	Animation::Animation(const std::string& animationPath, SharedRef<Mesh>& mesh)
 		: m_Filepath(animationPath)
 	{
 		Assimp::Importer importer;
@@ -33,7 +33,7 @@ namespace Vortex {
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHeirarchyData(m_RootNode, scene->mRootNode);
-		ReadMissingBones(animation, model);
+		ReadMissingBones(animation, mesh);
 	}
 
 	Bone* Animation::FindBone(const std::string& name)
@@ -51,12 +51,12 @@ namespace Vortex {
 			return &(*iter);
 	}
 
-	void Animation::ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model)
+	void Animation::ReadMissingBones(const aiAnimation* animation, SharedRef<Mesh>& mesh)
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = model->GetBoneInfoMap();//getting m_BoneInfoMap from Model class
-		uint32_t& boneCount = model->GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& boneInfoMap = mesh->GetBoneInfoMap();//getting m_BoneInfoMap from Model class
+		uint32_t& boneCount = mesh->GetBoneCount(); //getting the m_BoneCounter from Model class
 
 		//reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
@@ -94,9 +94,9 @@ namespace Vortex {
 		}
 	}
 
-	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Model>& model)
+	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Mesh>& mesh)
 	{
-		return CreateShared<Animation>(animationPath, model);
+		return CreateShared<Animation>(animationPath, mesh);
 	}
 
 }

@@ -3,7 +3,7 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
 #include "Vortex/Animation/Bone.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/Mesh.h"
 
 #include <string>
 #include <unordered_map>
@@ -25,7 +25,7 @@ namespace Vortex {
 	{
 	public:
 		Animation() = default;
-		Animation(const std::string& animationPath, SharedRef<Model>& model);
+		Animation(const std::string& animationPath, SharedRef<Mesh>& mesh);
 		~Animation() = default;
 
 		Bone* FindBone(const std::string& name);
@@ -41,10 +41,10 @@ namespace Vortex {
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 
-		static SharedRef<Animation> Create(const std::string& animationPath, SharedRef<Model>& model);
+		static SharedRef<Animation> Create(const std::string& animationPath, SharedRef<Mesh>& mesh);
 
 	private:
-		void ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model);
+		void ReadMissingBones(const aiAnimation* animation, SharedRef<Mesh>& mesh);
 		void ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src) const;
 
 	private:
