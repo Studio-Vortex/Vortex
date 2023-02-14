@@ -107,14 +107,16 @@ using Vortex;
 
 public class Untitled : Entity
 {
-	public override void OnCreate()
+	// Called once before the first frame or when the Entity is Instantiated into the Scene
+	void OnCreate()
 	{
-		// Called once before the first frame
+		
 	}
 
-	public override void OnUpdate(float delta)
+	// Called once every frame
+	void OnUpdate(float delta)
 	{
-		// Called once every frame
+		
 	}
 }
 )";
