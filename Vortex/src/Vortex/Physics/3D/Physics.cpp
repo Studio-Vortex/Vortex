@@ -135,6 +135,30 @@ namespace Vortex {
 		return s_Data->ControllerManager;
 	}
 
+	void Physics::WakeUpActor(Entity entity)
+	{
+		if (!entity.HasComponent<RigidBodyComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Cannot wake up Entity without RigidBody Component '{}', '{}'", entity.GetName(), entity.GetUUID());
+			return;
+		}
+
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		
+		if (rigidbody.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot wake up Static Actor '{}', '{}'", entity.GetName(), entity.GetUUID());
+			return;
+		}
+
+		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
+
+		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
+		{
+			dynamicActor->wakeUp();
+		}
+	}
+
 	void Physics::WakeUpActors()
 	{
 		VX_PROFILE_FUNCTION();

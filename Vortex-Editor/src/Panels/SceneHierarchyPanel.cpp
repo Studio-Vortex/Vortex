@@ -1598,7 +1598,7 @@ namespace Vortex {
 			}
 		});
 
-		DrawComponent<RigidBodyComponent>("RigidBody", entity, [](auto& component)
+		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
@@ -1638,7 +1638,9 @@ namespace Vortex {
 					bool rotationY = (component.LockFlags & (uint8_t)ActorLockFlag::RotationY);
 					bool rotationZ = (component.LockFlags & (uint8_t)ActorLockFlag::RotationZ);
 
-					Gui::Text("Lock Position");
+					bool modified = false;
+
+					Gui::Text("Freeze Position");
 					Gui::NextColumn();
 					Gui::PushItemWidth(-1);
 
@@ -1646,7 +1648,10 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##TranslationX", &translationX))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationX;
+						modified = true;
+					}
 
 					Gui::SameLine();
 
@@ -1654,7 +1659,10 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##TranslationY", &translationY))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationY;
+						modified = true;
+					}
 
 					Gui::SameLine();
 
@@ -1662,13 +1670,16 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##TranslationZ", &translationZ))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationZ;
+						modified = true;
+					}
 
 					Gui::PopItemWidth();
 					Gui::NextColumn();
 					UI::Draw::Underline();
 
-					Gui::Text("Lock Rotation");
+					Gui::Text("Freeze Rotation");
 					Gui::NextColumn();
 					Gui::PushItemWidth(-1);
 
@@ -1676,7 +1687,10 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##RotationX", &rotationX))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationX;
+						modified = true;
+					}
 
 					Gui::SameLine();
 
@@ -1684,7 +1698,10 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##RotationY", &rotationY))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationY;
+						modified = true;
+					}
 
 					Gui::SameLine();
 
@@ -1692,7 +1709,10 @@ namespace Vortex {
 					Gui::SameLine();
 
 					if (Gui::Checkbox("##RotationZ", &rotationZ))
+					{
 						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationZ;
+						modified = true;
+					}
 
 					Gui::PopItemWidth();
 					Gui::NextColumn();
@@ -1700,6 +1720,11 @@ namespace Vortex {
 
 					UI::EndPropertyGrid();
 					UI::EndTreeNode();
+
+					if (modified && m_ContextScene->IsRunning())
+					{
+						Physics::WakeUpActor(entity);
+					}
 				}
 			}
 		});

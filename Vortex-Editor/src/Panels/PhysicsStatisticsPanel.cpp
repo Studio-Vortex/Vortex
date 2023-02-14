@@ -19,6 +19,11 @@ namespace Vortex {
 
 		if (Physics::GetPhysicsScene() != nullptr)
 		{
+			if (Gui::Button("Wake up actors"))
+			{
+				Physics::WakeUpActors();
+			}
+
 			physx::PxSimulationStatistics* simulationStats = Physics::GetSimulationStatistics();
 
 			Gui::Text("Active Constraints: %u", simulationStats->nbActiveConstraints);

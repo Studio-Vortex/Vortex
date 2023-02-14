@@ -57,6 +57,7 @@ namespace Vortex {
 		static physx::PxPhysics* GetPhysicsFactory();
 		static physx::PxControllerManager* GetControllerManager();
 
+		static void WakeUpActor(Entity entity);
 		static void WakeUpActors();
 
 		static void UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
