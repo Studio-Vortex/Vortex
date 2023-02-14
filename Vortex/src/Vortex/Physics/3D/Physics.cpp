@@ -63,9 +63,21 @@ namespace Vortex {
 		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale TolerancesScale;
+
+#ifndef VX_DIST
 		physx::PxSimulationStatistics SimulationStats;
+#endif
 		
 		PhysicsContactListener ContactListener;
+
+		// TODO substep through the simulation
+		struct SubstepInfo
+		{
+			float SubstepSize = 0.0f;
+			float Accumulator = 0.0f;
+			uint32_t NumSubsteps = 0;
+			inline static constexpr uint32_t MaxSubsteps = 8;
+		} SubstepInfo;
 
 		Scene* ContextScene = nullptr;
 	};

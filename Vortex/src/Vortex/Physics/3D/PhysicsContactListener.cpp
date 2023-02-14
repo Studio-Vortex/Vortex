@@ -27,7 +27,9 @@ namespace Vortex {
 	void PhysicsContactListener::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was Invalid!");
+
+		if (contextScene == nullptr || !contextScene->IsRunning())
+			return;
 
 		bool removedActorA = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_0;
 		bool removedActorB = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_1;
@@ -48,32 +50,28 @@ namespace Vortex {
 		{
 			if (entityA.HasComponent<ScriptComponent>())
 			{
-				Collision collisionA{};
-				collisionA.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionBeginEntity(entityA, entityB, collisionA);
+				Collision collision{};
+				collision.EntityID = entityB.GetUUID();
+				ScriptEngine::OnCollisionBeginEntity(entityA, entityB, collision);
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
-				Collision collisionB{};
-				collisionB.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionBeginEntity(entityB, entityA, collisionB);
+				Collision collision{};
+				collision.EntityID = entityA.GetUUID();
+				ScriptEngine::OnCollisionBeginEntity(entityB, entityA, collision);
 			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
 			if (entityA.HasComponent<ScriptComponent>())
 			{
-				Collision collisionA{};
-				collisionA.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionEndEntity(entityA, entityB, collisionA);
+				ScriptEngine::OnCollisionEndEntity(entityA, entityB);
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
-				Collision collisionB{};
-				collisionB.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionEndEntity(entityB, entityA, collisionB);
+				ScriptEngine::OnCollisionEndEntity(entityB, entityA);
 			}
 		}
 	}
@@ -81,7 +79,9 @@ namespace Vortex {
 	void PhysicsContactListener::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was Invalid!");
+
+		if (contextScene == nullptr || !contextScene->IsRunning())
+			return;
 
 		for (uint32_t i = 0; i < count; i++)
 		{

@@ -847,7 +847,7 @@ namespace Vortex {
 		#region Physics2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
+		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RaycastHit2D hit, bool drawDebugLine);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Physics2D_GetWorldGravity(out Vector2 result);

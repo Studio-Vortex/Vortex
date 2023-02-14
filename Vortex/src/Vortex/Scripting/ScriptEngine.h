@@ -19,6 +19,10 @@ extern "C"
 
 namespace Vortex {
 
+	// Forward declarations
+	class TimeStep;
+	struct Collision;
+
 	enum class VORTEX_API ScriptFieldType
 	{
 		None = 0,
@@ -108,7 +112,7 @@ namespace Vortex {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
-		void InvokeOnCollisionBegin();
+		void InvokeOnCollisionBegin(Collision collision);
 		void InvokeOnCollisionEnd();
 		void InvokeOnTriggerBegin();
 		void InvokeOnTriggerEnd();
@@ -173,10 +177,6 @@ namespace Vortex {
 		uint32_t FieldCount;
 	};
 
-	// Forward declarations
-	class TimeStep;
-	struct Collision;
-
 	class VORTEX_API ScriptEngine
 	{
 	public:
@@ -199,7 +199,7 @@ namespace Vortex {
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
 		static void OnCollisionBeginEntity(Entity entity, Entity other, Collision collision);
-		static void OnCollisionEndEntity(Entity entity, Entity other, Collision collision);
+		static void OnCollisionEndEntity(Entity entity, Entity other);
 		static void OnTriggerBeginEntity(Entity entity, Entity otherEntity);
 		static void OnTriggerEndEntity(Entity entity, Entity otherEntity);
 		static void OnRaycastCollisionEntity(Entity entity);

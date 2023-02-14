@@ -391,8 +391,8 @@ namespace Vortex {
 
 	void ScriptEngine::OnUpdateEntity(Entity entity, TimeStep delta)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		if (it != s_Data->EntityInstances.end())
 		{
@@ -406,8 +406,8 @@ namespace Vortex {
 
 	void ScriptEngine::OnDestroyEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -419,22 +419,22 @@ namespace Vortex {
 
 	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Entity other, Collision collision)
 	{
-		UUID uuid = entity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = other.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
-		it->second->InvokeOnCollisionBegin();
+		it->second->InvokeOnCollisionBegin(collision);
 	}
 
-	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other, Collision collision)
+	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other)
 	{
-		UUID uuid = entity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = other.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -443,10 +443,10 @@ namespace Vortex {
 
 	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Entity otherEntity)
 	{
-		UUID uuid = entity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = otherEntity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -455,10 +455,10 @@ namespace Vortex {
 
 	void ScriptEngine::OnTriggerEndEntity(Entity entity, Entity otherEntity)
 	{
-		UUID uuid = entity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 		UUID otherUUID = otherEntity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -467,8 +467,8 @@ namespace Vortex {
 
 	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -477,8 +477,8 @@ namespace Vortex {
 
 	void ScriptEngine::OnGuiEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
+		auto it = s_Data->EntityInstances.find(entityUUID);
 
 		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
 
@@ -667,7 +667,7 @@ namespace Vortex {
 		m_OnCreateFunc         = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 0);
+		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 1);
 		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 0);
 		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 0);
 		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 0);
@@ -703,10 +703,13 @@ namespace Vortex {
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
-	void ScriptInstance::InvokeOnCollisionBegin()
+	void ScriptInstance::InvokeOnCollisionBegin(Collision collision)
 	{
 		if (m_OnCollisionBeginFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc);
+		{
+			void* param = &collision;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc, &param);
+		}
 	}
 
 	void ScriptInstance::InvokeOnCollisionEnd()
