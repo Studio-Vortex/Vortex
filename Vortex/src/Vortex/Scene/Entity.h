@@ -61,6 +61,12 @@ namespace Vortex {
 			return m_Scene->m_Registry.all_of<TComponent...>(m_EntityID);
 		}
 
+		template <typename... TComponent>
+		inline bool HasAny() const
+		{
+			return m_Scene->m_Registry.any_of<TComponent...>(m_EntityID);
+		}
+
 		inline UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
 
 		inline Scene* GetContextScene() { return m_Scene; }

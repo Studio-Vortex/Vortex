@@ -54,6 +54,14 @@ namespace Vortex {
 		UseSimpleAsComplex = 2 // Use simple for collision AND scene queries
 	};
 
+	enum class CollisionDetectionType : int32_t
+	{
+		None = -1,
+		Discrete,
+		Continuous,
+		ContinuousSpeculative
+	};
+
 	enum class ActorLockFlag : uint8_t
 	{
 		TranslationX = BIT(0),

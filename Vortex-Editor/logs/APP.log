@@ -18,5 +18,10 @@ Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
 Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
-Deserializing Scene 'MenuScene'
+Deserializing Scene 'LongWayDown'
+Collision Started!
+Collision Started!
+Collision Ended!
+Collision Ended!
+Collision Started!
 Shutting down...

@@ -314,8 +314,6 @@ namespace Vortex {
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
-	enum class CollisionDetectionType : int32_t { None = -1, Discrete, Continuous, ContinuousSpeculative };
-
 	struct RigidBodyComponent
 	{
 		RigidBodyType Type = RigidBodyType::Static;

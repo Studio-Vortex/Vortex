@@ -69,6 +69,8 @@ namespace Vortex {
 
 		static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
 		static void SetPhysicsSceneGravity(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
+
+		static void CreateCollider(Entity entity);
 		static physx::PxMaterial* CreatePhysicsMaterial(const PhysicsMaterialComponent& material);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
