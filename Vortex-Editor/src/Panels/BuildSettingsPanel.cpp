@@ -5,8 +5,7 @@ namespace Vortex {
 	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& callback)
 		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeCallback(callback)
 	{
-		auto projectFilename = m_ProjectProperties.General.Name + ".vxproject";
-		m_ProjectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);
+		m_ProjectPath = Project::GetProjectFilepath();
 		m_StartupScene = m_ProjectProperties.General.StartScene;
 	}
 

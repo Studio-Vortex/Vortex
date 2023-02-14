@@ -21,6 +21,7 @@ namespace Vortex {
 		if (serializer.Deserialize(filepath))
 		{
 			s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(filepath);
+			s_ActiveProject->m_ProjectFilepath = filepath;
 			s_AssetManager = CreateShared<EditorAssetManager>();
 			return s_ActiveProject;
 		}
@@ -39,6 +40,7 @@ namespace Vortex {
 		if (serializer.Serialize(filepath))
 		{
 			s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(filepath);
+			s_ActiveProject->m_ProjectFilepath = filepath;
 			return true;
 		}
 

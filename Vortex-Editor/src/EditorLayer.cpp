@@ -1693,6 +1693,15 @@ namespace Vortex {
 
 				break;
 			}
+			case Key::B:
+			{
+				if (controlPressed && shiftPressed && m_SceneState == SceneState::Edit)
+				{
+					OnLaunchRuntime(Project::GetProjectFilepath());
+				}
+
+				break;
+			}
 			case Key::D:
 			{
 				if (controlPressed && !rightMouseButtonPressed)

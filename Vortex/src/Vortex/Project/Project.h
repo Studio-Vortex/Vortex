@@ -107,6 +107,12 @@ namespace Vortex {
 			return s_ActiveProject->m_ProjectDirectory;
 		}
 
+		inline static const std::filesystem::path& GetProjectFilepath()
+		{
+			VX_CORE_ASSERT(s_ActiveProject, "No active project!");
+			return s_ActiveProject->m_ProjectFilepath;
+		}
+
 		inline static std::filesystem::path GetAssetDirectory()
 		{
 			VX_CORE_ASSERT(s_ActiveProject, "No active project!");
@@ -134,6 +140,7 @@ namespace Vortex {
 	private:
 		ProjectProperties m_Properties;
 		std::filesystem::path m_ProjectDirectory = "";
+		std::filesystem::path m_ProjectFilepath = "";
 
 		inline static SharedRef<IAssetManager> s_AssetManager = nullptr;
 		inline static SharedRef<Project> s_ActiveProject = nullptr;
