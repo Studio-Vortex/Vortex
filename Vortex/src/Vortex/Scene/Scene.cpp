@@ -642,8 +642,10 @@ namespace Vortex {
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
 
-			if (!cameraComponent.FixedAspectRatio)
-				cameraComponent.Camera.SetViewportSize(width, height);
+			if (cameraComponent.FixedAspectRatio)
+				continue;
+
+			cameraComponent.Camera.SetViewportSize(width, height);
 		}
 	}
 
@@ -726,7 +728,7 @@ namespace Vortex {
 	{
 		auto view = m_Registry.view<TagComponent>();
 
-		for (auto& entity : view)
+		for (const auto& entity : view)
 		{
 			const auto& tag = view.get<TagComponent>(entity).Tag;
 			if (strcmp(name.data(), tag.c_str()) == 0)

@@ -104,6 +104,8 @@ namespace Vortex {
 		void OnAnimatorUpdate(TimeStep delta);
 		void OnParticleEmitterUpdate(TimeStep delta);
 
+		void FindAndRemoveInvalidEntites();
+
 	private:
 		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
 		entt::registry m_Registry;
