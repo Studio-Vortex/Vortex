@@ -171,7 +171,7 @@ namespace Vortex {
 		Entity startingSkyLight = context->CreateEntity("Sky Light");
 		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
 		lightSource.Type = LightType::Directional;
-		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-1.0f), 0.0f });
+		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-57.0f), 0.0f });
 		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
 
 		Entity startingCamera = context->CreateEntity("Camera");
@@ -224,6 +224,9 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		if (entity.GetContextScene() != this)
+			return;
+
 		// Call the entitys OnDestroy function if they are a script instance
 		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr && m_IsRunning)
 		{
@@ -243,7 +246,7 @@ namespace Vortex {
 		{
 			for (size_t i = 0; i < entity.Children().size(); i++)
 			{
-				auto childID = entity.Children()[i];
+				auto& childID = entity.Children()[i];
 				Entity child = TryGetEntityWithUUID(childID);
 				DestroyEntity(child, excludeChildren);
 			}

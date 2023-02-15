@@ -1243,6 +1243,8 @@ namespace Vortex {
 			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 			return submeshes[submeshIndex].GetMaterial()->GetMetallic();
 		}
+
+		return 0.0f;
 	}
 
 	static void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
@@ -1289,6 +1291,8 @@ namespace Vortex {
 			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 			return submeshes[submeshIndex].GetMaterial()->GetRoughness();
 		}
+
+		return 0.0f;
 	}
 
 	static void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
@@ -1335,6 +1339,8 @@ namespace Vortex {
 			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 			return submeshes[submeshIndex].GetMaterial()->GetEmission();
 		}
+
+		return 0.0f;
 	}
 
 	static void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
@@ -1427,6 +1433,8 @@ namespace Vortex {
 			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 			return submeshes[submeshIndex].GetMaterial()->GetOpacity();
 		}
+
+		return 0.0f;
 	}
 
 	static void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
