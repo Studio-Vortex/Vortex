@@ -2,8 +2,6 @@
 #include "Physics.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Renderer/Mesh.h"
-#include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
@@ -224,21 +222,20 @@ namespace Vortex {
 
 	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
-		s_Data->PhysicsScene->simulate(s_FixedTimeStep);
+		s_Data->PhysicsScene->simulate(delta);
 		s_Data->PhysicsScene->fetchResults(true);
 		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_PhysicsSceneGravity));
 
-		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+		auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
 		for (const auto& e : view)
 		{
 			Entity entity{ e, contextScene };
-
 			auto& transform = entity.GetTransform();
 
 			if (entity.HasComponent<RigidBodyComponent>())
 			{
-				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+				const auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 				if (!rigidbody.RuntimeActor)
 				{
@@ -267,7 +264,7 @@ namespace Vortex {
 				// Synchronize controller transform
 				if (entity.HasComponent<CharacterControllerComponent>())
 				{
-					auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+					const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
 					physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
 
 					Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());

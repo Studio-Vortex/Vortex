@@ -1884,10 +1884,7 @@ namespace Vortex {
 
 		SetSceneContext(m_ActiveScene);
 
-		m_EditorCamera->Focus({ 0, 0, 0 });
-		m_EditorCamera->SetDistance(10);
-		m_SecondEditorCamera->Focus({ 0, 0, 0 });
-		m_SecondEditorCamera->SetDistance(10);
+		ResetEditorCameras();
 
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene

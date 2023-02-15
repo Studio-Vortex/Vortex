@@ -667,9 +667,8 @@ namespace Vortex {
 		{
 			if (auto parent = entity.GetParent(); parent)
 			{
-				scene->ParentEntity(newEntity, entity);
-				/*newEntity.SetParentUUID(parent.GetUUID());
-				parent.AddChild(newEntity.GetUUID());*/
+				newEntity.SetParentUUID(parent.GetUUID());
+				parent.AddChild(newEntity.GetUUID());
 			}
 		};
 
