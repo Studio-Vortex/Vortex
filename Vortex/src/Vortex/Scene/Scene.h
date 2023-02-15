@@ -68,6 +68,8 @@ namespace Vortex {
 
 		Entity GetPrimaryCameraEntity();
 
+		bool AreEntitiesRelated(Entity first, Entity second);
+
 		void SortEntities();
 
 		void ConvertToLocalSpace(Entity entity);

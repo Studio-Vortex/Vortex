@@ -211,31 +211,12 @@ namespace Vortex {
 		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
 		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
 
+		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+
+		for (const auto& e : view)
 		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, contextScene };
-				CreatePhysicsActor(entity);
-			}
-		}
-
-		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, contextScene };
-
-				if (entity.HasComponent<RigidBodyComponent>())
-					continue;
-
-				if (entity.HasComponent<CharacterControllerComponent>())
-					continue;
-
-				CreatePhysicsActorFromMesh(entity);
-			}
+			Entity entity{ e, contextScene };
+			CreatePhysicsActor(entity);
 		}
 
 		s_Data->ContextScene = contextScene;
@@ -247,90 +228,65 @@ namespace Vortex {
 		s_Data->PhysicsScene->fetchResults(true);
 		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_PhysicsSceneGravity));
 
+		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+
+		for (const auto& e : view)
 		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+			Entity entity{ e, contextScene };
 
-			for (const auto& e : view)
+			auto& transform = entity.GetTransform();
+
+			if (entity.HasComponent<RigidBodyComponent>())
 			{
-				Entity entity{ e, contextScene };
+				auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-				auto& transform = entity.GetTransform();
-
-				if (entity.HasComponent<RigidBodyComponent>())
+				if (!rigidbody.RuntimeActor)
 				{
-					auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+					CreatePhysicsActor(entity);
+				}
 
-					if (!rigidbody.RuntimeActor)
+				physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
+
+				if (rigidbody.Type == RigidBodyType::Dynamic)
+				{
+					physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
+
+					entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
+
+					if (actor->is<physx::PxRigidDynamic>())
 					{
-						CreatePhysicsActor(entity);
-					}
-
-					physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
-
-					if (rigidbody.Type == RigidBodyType::Dynamic)
-					{
-						physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
-
-						entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
-
-						if (actor->is<physx::PxRigidDynamic>())
-						{
-							UpdateDynamicActorFlags(rigidbody, dynamicActor);
-						}
-					}
-					else if (rigidbody.Type == RigidBodyType::Static)
-					{
-						// Synchronize with entity Transform
-						actor->setGlobalPose(ToPhysXTransform(transform));
-					}
-
-					// Synchronize controller transform
-					if (entity.HasComponent<CharacterControllerComponent>())
-					{
-						auto& characterController = entity.GetComponent<CharacterControllerComponent>();
-						physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
-
-						Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());
-
-						if (entity.HasComponent<CapsuleColliderComponent>())
-						{
-							const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-							position -= capsuleCollider.Offset;
-						}
-						else if (entity.HasComponent<BoxColliderComponent>())
-						{
-							const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-							position -= boxCollider.Offset;
-						}
-
-						controller->setStepOffset(characterController.StepOffset);
-						controller->setSlopeLimit(Math::Deg2Rad(characterController.SlopeLimitDegrees));
-
-						transform.Translation = position;
+						UpdateDynamicActorFlags(rigidbody, dynamicActor);
 					}
 				}
-			}
-		}
-
-		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, contextScene };
-				Math::mat4 transform = entity.GetTransform().GetTransform();
-
-				if (entity.HasComponent<RigidBodyComponent>())
-					continue;
-
-				if (!s_StaticActorsFromMeshes.contains(entity.GetUUID()))
-				{
-					CreatePhysicsActorFromMesh(entity);
-				}
-				else
+				else if (rigidbody.Type == RigidBodyType::Static)
 				{
 					// Synchronize with entity Transform
-					s_StaticActorsFromMeshes[entity.GetUUID()]->setGlobalPose(ToPhysXTransform(transform));
+					actor->setGlobalPose(ToPhysXTransform(transform));
+				}
+
+				// Synchronize controller transform
+				if (entity.HasComponent<CharacterControllerComponent>())
+				{
+					auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+					physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
+
+					Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());
+
+					if (entity.HasComponent<CapsuleColliderComponent>())
+					{
+						const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+						position -= capsuleCollider.Offset;
+					}
+					else if (entity.HasComponent<BoxColliderComponent>())
+					{
+						const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+						position -= boxCollider.Offset;
+					}
+
+					controller->setStepOffset(characterController.StepOffset);
+					controller->setSlopeLimit(Math::Deg2Rad(characterController.SlopeLimitDegrees));
+
+					transform.Translation = position;
 				}
 			}
 		}
@@ -342,30 +298,11 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
-		std::unordered_map<UUID, Entity> rigidBodiesToDestroy;
+		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
+		for (const auto& e : view)
 		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, contextScene };
-				rigidBodiesToDestroy[entity.GetUUID()] = entity;
-			}
-		}
-
-		{
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, contextScene };
-				rigidBodiesToDestroy[entity.GetUUID()] = entity;
-			}
-		}
-
-		for (auto& [uuid, entity] : rigidBodiesToDestroy)
-		{
+			Entity entity{ e, contextScene };
 			DestroyPhysicsActor(entity);
 		}
 
@@ -382,7 +319,6 @@ namespace Vortex {
 		physx::PxRigidActor* actor = nullptr;
 
 		const TransformComponent& transform = entity.GetTransform();
-		Math::mat4 entityTransform = transform.GetTransform();
 		RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 		if (rigidbody.Type == RigidBodyType::Static)
@@ -391,7 +327,7 @@ namespace Vortex {
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = Physics::GetPhysicsFactory()->createRigidDynamic(ToPhysXTransform(entityTransform));
+			physx::PxRigidDynamic* dynamicActor = Physics::GetPhysicsFactory()->createRigidDynamic(ToPhysXTransform(transform));
 			Physics::UpdateDynamicActorFlags(rigidbody, dynamicActor);
 			actor = dynamicActor;
 		}
@@ -405,7 +341,6 @@ namespace Vortex {
 
 		if (entity.HasComponent<CharacterControllerComponent>())
 		{
-			const TransformComponent& transform = entity.GetTransform();
 			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 
 			if (entity.HasComponent<CapsuleColliderComponent>())
@@ -485,42 +420,6 @@ namespace Vortex {
 			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
-	}
-
-	void Physics::CreatePhysicsActorFromMesh(Entity entity)
-	{
-		physx::PxRigidActor* actor = nullptr;
-
-		const TransformComponent& transform = entity.GetTransform();
-		Math::mat4 entityTransform = transform.GetTransform();
-		const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-		SharedRef<StaticMesh> model = staticMeshRenderer.StaticMesh;
-
-		actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(transform));
-
-		VX_CORE_ASSERT(actor, "Failed to create Physics Actor from Mesh!");
-
-		PhysicsBodyData* physicsBodyData = new PhysicsBodyData();
-		physicsBodyData->EntityUUID = entity.GetUUID();
-		actor->userData = physicsBodyData;
-
-		Math::AABB boundingBox = model->GetBoundingBox();
-
-		Math::vec3 scale = transform.Scale;
-
-		physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boundingBox.Max.x * scale.x, boundingBox.Max.y * scale.y, boundingBox.Max.z * scale.z);
-		physx::PxMaterial* material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-
-		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
-		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
-		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
-
-		Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
-
-		s_Data->PhysicsScene->addActor(*actor);
-
-		VX_CORE_ASSERT(!s_StaticActorsFromMeshes.contains(entity.GetUUID()), "Static Mesh was already created from entity with UUID '{}'", entity.GetUUID());
-		s_StaticActorsFromMeshes[entity.GetUUID()] = actor;
 	}
 
 	void Physics::CreateCollider(Entity entity)
@@ -715,19 +614,6 @@ namespace Vortex {
 			delete physicsBodyData;
 
 			s_Data->PhysicsScene->removeActor(*actor);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			VX_CORE_ASSERT(s_StaticActorsFromMeshes.contains(entity.GetUUID()), "Entity was not found in Static Actor map!");
-
-			actor = s_StaticActorsFromMeshes[entity.GetUUID()];
-
-			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
-			delete physicsBodyData;
-
-			s_Data->PhysicsScene->removeActor(*actor);
-
-			s_StaticActorsFromMeshes.erase(entity.GetUUID());
 		}
 	}
 

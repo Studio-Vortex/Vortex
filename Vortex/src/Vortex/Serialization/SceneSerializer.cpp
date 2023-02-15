@@ -651,6 +651,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(SizeVariation, emitterProperties.SizeVariation, out);
 			VX_SERIALIZE_PROPERTY(Velocity, emitterProperties.Velocity, out);
 			VX_SERIALIZE_PROPERTY(VelocityVariation, emitterProperties.VelocityVariation, out);
+			VX_SERIALIZE_PROPERTY(GenerateRandomColors, emitterProperties.GenerateRandomColors, out);
 
 			out << YAML::EndMap; // ParticleEmitterComponent
 		}
@@ -1271,6 +1272,8 @@ namespace Vortex {
 				emitterProperties.SizeVariation = particleEmitterComponent["SizeVariation"].as<Math::vec2>();
 				emitterProperties.Velocity = particleEmitterComponent["Velocity"].as<Math::vec3>();
 				emitterProperties.VelocityVariation = particleEmitterComponent["VelocityVariation"].as<Math::vec3>();
+				if (particleEmitterComponent["GenerateRandomColors"])
+					emitterProperties.GenerateRandomColors = particleEmitterComponent["GenerateRandomColors"].as<bool>();
 
 				particleEmitter.Emitter = ParticleEmitter::Create(emitterProperties);
 			}

@@ -818,6 +818,11 @@ namespace Vortex {
 		return Entity{};
 	}
 
+	bool Scene::AreEntitiesRelated(Entity first, Entity second)
+	{
+		return first.IsAncesterOf(second) || second.IsAncesterOf(second);
+	}
+
 	void Scene::SortEntities()
 	{
 		m_Registry.sort<IDComponent>([&](const auto lhs, const auto rhs)

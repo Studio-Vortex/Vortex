@@ -1299,8 +1299,15 @@ namespace Vortex {
 			UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
 			UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
 			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
-			UI::Property("Color Start", &emitterProperties.ColorBegin);
-			UI::Property("Color End", &emitterProperties.ColorEnd);
+
+			UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
+			
+			if (!emitterProperties.GenerateRandomColors)
+			{
+				UI::Property("Color Start", &emitterProperties.ColorBegin);
+				UI::Property("Color End", &emitterProperties.ColorEnd);
+			}
+			
 			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
 			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
 

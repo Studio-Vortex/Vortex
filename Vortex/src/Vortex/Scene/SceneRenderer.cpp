@@ -129,7 +129,12 @@ namespace Vortex {
 
 						float life = particle.LifeRemaining / particle.LifeTime;
 						Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
-						Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
+						Math::vec4 color;
+
+						if (particleEmitter->GetProperties().GenerateRandomColors)
+							color = particle.RandomColor;
+						else
+							color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
 
 						Renderer2D::DrawQuadBillboard(
 							cameraView,

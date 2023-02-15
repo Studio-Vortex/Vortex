@@ -457,6 +457,7 @@ namespace Vortex {
 			uint32_t mipHeight = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
 			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
 
+			// don't forget to set viewport to mip level
 			{
 				Viewport viewport;
 				viewport.TopLeftXPos = 0;

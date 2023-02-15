@@ -61,6 +61,9 @@ namespace Vortex {
 		// Color
 		particle.ColorBegin = m_Properties.ColorBegin;
 		particle.ColorEnd = m_Properties.ColorEnd;
+		
+		if (m_Properties.GenerateRandomColors)
+			particle.RandomColor = Math::vec4(Random::Float(), Random::Float(), Random::Float(), 1.0f);
 
 		particle.LifeTime = m_Properties.LifeTime;
 		particle.LifeRemaining = m_Properties.LifeTime;

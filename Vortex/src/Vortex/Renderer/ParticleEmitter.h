@@ -18,6 +18,7 @@ namespace Vortex {
 		Math::vec4 ColorEnd = Math::vec4(1.0f);
 		float Rotation = 0.1f;
 		float LifeTime = 1.0f;
+		bool GenerateRandomColors = false;
 	};
 
 	class VORTEX_API ParticleEmitter
@@ -29,6 +30,7 @@ namespace Vortex {
 			Math::vec3 Velocity = Math::vec3(1.0f);
 			Math::vec2 SizeBegin = Math::vec2(1.0f), SizeEnd = Math::vec2(1.0f);
 			Math::vec4 ColorBegin = Math::vec4(1.0f), ColorEnd = Math::vec4(1.0f);
+			Math::vec4 RandomColor = Math::vec4(1.0f);
 			float Rotation = 0.0f;
 
 			float LifeTime = 1.0f;

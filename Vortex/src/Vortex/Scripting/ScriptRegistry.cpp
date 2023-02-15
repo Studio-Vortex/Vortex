@@ -3542,7 +3542,7 @@ namespace Vortex {
 
 	static float Random_Float()
 	{
-		return (float)(rand() / (float)rand());
+		return Random::Float();
 	}
 
 #pragma endregion
