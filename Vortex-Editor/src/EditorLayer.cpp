@@ -1661,16 +1661,14 @@ namespace Vortex {
 
 			case Key::F:
 			{
-				const auto& entityWorldSpaceTranslation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-
 				if (selectedEntity && m_AllowViewportCameraEvents && !ImGuizmo::IsUsing() && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					m_EditorCamera->Focus(entityWorldSpaceTranslation);
+					m_EditorCamera->Focus(m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation);
 					m_EditorCamera->SetDistance(10);
 				}
 				else if (selectedEntity && m_AllowSecondViewportCameraEvents && !ImGuizmo::IsUsing() && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
-					m_SecondEditorCamera->Focus(entityWorldSpaceTranslation);
+					m_SecondEditorCamera->Focus(m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation);
 					m_SecondEditorCamera->SetDistance(10);
 				}
 
