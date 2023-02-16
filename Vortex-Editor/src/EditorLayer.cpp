@@ -331,12 +331,15 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
+			Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+
 			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
+			m_ECSDebugPanel.OnGuiRender(selectedEntity);
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialEditorPanel.OnGuiRender(m_SceneHierarchyPanel.GetSelectedEntity());
+			m_MaterialEditorPanel.OnGuiRender(selectedEntity);
 			m_BuildSettingsPanel->OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
@@ -454,7 +457,7 @@ namespace Vortex {
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
-							m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
+							m_SceneHierarchyPanel.EditSelectedEntityName(true);
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
@@ -490,17 +493,6 @@ namespace Vortex {
 				Gui::EndMenu();
 			}
 
-			if (Gui::BeginMenu("Script"))
-			{
-				if (inEditMode)
-				{
-					if (Gui::MenuItem("Reload Mono Assembly", "Ctrl+R"))
-						ScriptEngine::ReloadAssembly();
-				}
-
-				Gui::EndMenu();
-			}
-
 			if (Gui::BeginMenu("View"))
 			{
 				Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay);
@@ -516,9 +508,6 @@ namespace Vortex {
 					if (Gui::MenuItem("Maximize Scene", "Ctrl+Space"))
 						m_SceneViewportMaximized = true;
 				}
-
-				UI::Draw::Underline();
-				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 
 				Gui::EndMenu();
 			}
@@ -543,10 +532,15 @@ namespace Vortex {
 				Gui::EndMenu();
 			}
 
+			if (Gui::BeginMenu("Build"))
+			{
+				Gui::MenuItem("Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
+
+				Gui::EndMenu();
+			}
+			
 			if (Gui::BeginMenu("Window"))
 			{
-				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
-				UI::Draw::Underline();
 				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
@@ -555,23 +549,33 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
-				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
-				UI::Draw::Underline();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Build Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
-				UI::Draw::Underline();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
+
+				UI::Draw::Underline();
+				UI::ShiftCursorY(20.0f);
+
+				Gui::Text("Debug");
+				UI::Draw::Underline();
+
+				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 
 				Gui::EndMenu();
 			}
@@ -1121,7 +1125,7 @@ namespace Vortex {
 		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds[1].x - backgroundWidth - 14, m_ViewportBounds[0].y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
-		Gui::Begin("##viewport_settings", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+		Gui::Begin("Viewport Settings", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
 		const float desiredHeight = 26.0f;
 		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
@@ -1642,10 +1646,7 @@ namespace Vortex {
 			}
 			case Key::R:
 			{
-				if (controlPressed)
-					ScriptEngine::ReloadAssembly();
-
-				else if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
+				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
 					if (altPressed && selectedEntity)
 					{
@@ -1754,7 +1755,7 @@ namespace Vortex {
 			case Key::F2:
 			{
 				if (selectedEntity)
-					m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
+					m_SceneHierarchyPanel.EditSelectedEntityName(true);
 
 				break;
 			}
@@ -1807,7 +1808,7 @@ namespace Vortex {
 					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 
 					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
-						m_SceneHierarchyPanel.SetEntityShouldBeRenamed(false);
+						m_SceneHierarchyPanel.EditSelectedEntityName(false);
 				}
 
 				break;
@@ -1946,6 +1947,8 @@ namespace Vortex {
 			const static std::string originalTitle = window.GetTitle();
 			std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
 			window.SetTitle(newTitle);
+
+			m_ActiveScene->SetDebugName(sceneName);
 		}
 	}
 
@@ -2142,7 +2145,8 @@ namespace Vortex {
 		{
 			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
-			m_SceneHierarchyPanel.SetEntityShouldBeRenamed(true);
+			// TODO should we keep this?
+			m_SceneHierarchyPanel.EditSelectedEntityName(true);
 		}
 	}
 
@@ -2150,6 +2154,7 @@ namespace Vortex {
 	{
 		m_SceneHierarchyPanel.SetSceneContext(scene);
 		m_SceneRendererPanel.SetSceneContext(scene);
+		m_ECSDebugPanel.SetSceneContext(scene);
 	}
 
 	void EditorLayer::ResetEditorCameras()

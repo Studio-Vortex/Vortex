@@ -14,6 +14,7 @@
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
+#include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
 
 #include <Vortex/Scene/SceneRenderer.h>
@@ -151,6 +152,7 @@ namespace Vortex {
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
 		ConsolePanel m_ConsolePanel;
+		ECSDebugPanel m_ECSDebugPanel;
 		AboutPanel m_AboutPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };

@@ -21,7 +21,7 @@ namespace Vortex {
 		inline void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
 		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
-		inline void SetEntityShouldBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
 		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 

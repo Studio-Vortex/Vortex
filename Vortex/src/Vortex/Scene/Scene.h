@@ -93,6 +93,11 @@ namespace Vortex {
 			return m_Registry.view<TComponent...>();
 		}
 
+#ifndef VX_DIST
+		const std::string& GetDebugName() const { return m_DebugName; }
+		void SetDebugName(const std::string& name) { m_DebugName = name; }
+#endif
+
 		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
 		static SharedRef<Scene> Create();
 
@@ -119,12 +124,17 @@ namespace Vortex {
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;
 
+#ifndef VX_DIST
+		std::string m_DebugName;
+#endif
+
 	private:
 		friend class Entity;
 		friend class Prefab;
 		friend class PrefabSerializer;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
+		friend class ECSDebugPanel;
 	};
 
 }

@@ -235,6 +235,14 @@ namespace Vortex {
 			Physics2D::DestroyPhysicsBody(entity);
 		}
 
+		if (entity.HasParent())
+		{
+			if (Entity parent = entity.GetParent())
+			{
+				parent.RemoveChild(entity.GetUUID());
+			}
+		}
+
 		if (!excludeChildren)
 		{
 			for (size_t i = 0; i < entity.Children().size(); i++)

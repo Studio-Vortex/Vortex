@@ -321,7 +321,7 @@ namespace Vortex {
 
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
 
-			for (auto& child : hierarchyComponent.Children)
+			for (const auto& child : hierarchyComponent.Children)
 			{
 				out << YAML::BeginMap;
 				VX_SERIALIZE_PROPERTY(Handle, child, out);
