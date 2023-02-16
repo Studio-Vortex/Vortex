@@ -64,6 +64,23 @@ namespace Vortex {
 
 						// Copy Resources
 						{
+							if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
+							{
+								const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+								auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+								
+								dstMesh = StaticMesh::Create(srcMesh->GetPath(), dst.GetTransform(), MeshImportOptions(), (int)(entt::entity)dst);
+								
+								const auto& submeshes = srcMesh->GetSubmeshes();
+								uint32_t i = 0;
+
+								for (const auto& srcSubmesh : submeshes)
+								{
+									StaticSubmesh& submesh = dstMesh->GetSubmesh(i++);
+									submesh.SetMaterial(srcSubmesh.GetMaterial());
+								}
+							}
+
 							if constexpr (std::is_same<TComponent, SkyboxComponent>())
 							{
 								const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
