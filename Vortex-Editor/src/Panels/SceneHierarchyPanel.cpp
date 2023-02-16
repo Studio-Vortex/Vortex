@@ -10,6 +10,8 @@
 
 namespace Vortex {
 
+#define MAX_CHILD_ENTITY_SEARCH_DEPTH 10
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
 	{
 		SetSceneContext(context);
@@ -60,21 +62,44 @@ namespace Vortex {
 					m_ContextScene->DestroyEntity(entityToBeDestroyed);
 				}
 
+				uint32_t searchDepth = 0;
+				const bool entitySearchBarInUse = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
+				std::vector<UUID> topEntitiesInHierarchy;
+
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					Entity entity{ entityID, m_ContextScene.get() };
+					const Entity entity{ entityID, m_ContextScene.get() };
+					
+					if (!entity)
+						return;
 
-					if (entity)
-					{
-						// If the name lines up with the search box we can show it
-						if (entity.GetParentUUID() == 0 && m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
-							DrawEntityNode(entity, editorCamera);
-					}
+					const bool isTopEntityInHierarchy = entity.GetParentUUID() == 0;
+
+					if (!isTopEntityInHierarchy)
+						return;
+
+					topEntitiesInHierarchy.push_back(entity.GetUUID());
+
+					const bool matchingSearch = m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str());
+					
+					if (!matchingSearch)
+						return;
+
+					DrawEntityNode(entity, editorCamera);
 				});
+
+				if (entitySearchBarInUse)
+				{
+					for (const auto& topEntity : topEntitiesInHierarchy)
+					{
+						RecursiveEntitySearch(topEntity, editorCamera, searchDepth);
+					}
+				}
 
 				if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
 				{
-					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+					const auto flags = ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", flags);
 
 					if (payload)
 					{
@@ -109,6 +134,38 @@ namespace Vortex {
 		{
 			DisplayInsectorPanel(hoveredEntity);
 		}
+	}
+
+	void SceneHierarchyPanel::RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth)
+	{
+		if (searchDepth > MAX_CHILD_ENTITY_SEARCH_DEPTH)
+			return;
+
+		const Entity entity = m_ContextScene->TryGetEntityWithUUID(topEntity);
+
+		if (!entity || entity.Children().empty())
+			return;
+
+		const auto& children = entity.Children();
+
+		for (const auto& childUUID : children)
+		{
+			const Entity child = m_ContextScene->TryGetEntityWithUUID(childUUID);
+
+			if (!child)
+				continue;
+
+			const std::string& name = child.GetName();
+
+			if (m_EntitySearchInputTextFilter.PassFilter(name.c_str()))
+			{
+				DrawEntityNode(child, editorCamera);
+			}
+
+			RecursiveEntitySearch(child.GetUUID(), editorCamera, searchDepth);
+		}
+
+		searchDepth++;
 	}
 
     void SceneHierarchyPanel::SetSceneContext(SharedRef<Scene> scene)

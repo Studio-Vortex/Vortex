@@ -1174,7 +1174,7 @@ namespace Vortex {
 
 					if (staticMeshComponent["MeshImportOptions"])
 					{
-						auto modelImportOptions = staticMeshComponent["ModelImportOptions"];
+						auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
 						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
 						importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();

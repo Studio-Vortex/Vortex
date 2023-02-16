@@ -51,6 +51,8 @@ namespace Vortex {
 		void DrawEntityNode(Entity entity, const EditorCamera* editorCamera);
 		void DrawComponents(Entity entity);
 
+		void RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth);
+
 	private:
 		inline static bool s_ShowSceneHierarchyPanel = true;
 		inline static bool s_ShowInspectorPanel = true;

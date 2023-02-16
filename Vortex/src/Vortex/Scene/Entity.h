@@ -70,9 +70,10 @@ namespace Vortex {
 		inline UUID GetUUID() const { return GetComponent<IDComponent>().ID; }
 
 		inline Scene* GetContextScene() { return m_Scene; }
+		inline const Scene* GetContextScene() const { return m_Scene; }
 		
-		inline const std::string& GetName() { return GetComponent<TagComponent>().Tag; }
-		inline const std::string& GetMarker() { return GetComponent<TagComponent>().Marker; }
+		inline const std::string& GetName() const { return GetComponent<TagComponent>().Tag; }
+		inline const std::string& GetMarker() const { return GetComponent<TagComponent>().Marker; }
 		
 		inline void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
 		inline TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
@@ -96,7 +97,7 @@ namespace Vortex {
 			children.erase(it);
 		}
 
-		inline bool HasParent() { return (bool)m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
+		inline bool HasParent() { return GetParentUUID() != 0; }
 
 		inline bool IsAncesterOf(Entity entity)
 		{

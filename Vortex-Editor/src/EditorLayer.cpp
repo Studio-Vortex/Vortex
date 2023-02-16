@@ -201,13 +201,13 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 
+		timer = InstrumentationTimer("Bloom Pass");
 		PostProcessProperties postProcessProps{};
 		postProcessProps.TargetFramebuffer = m_Framebuffer;
 		postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
 		PostProcessStage stages[] = { PostProcessStage::Bloom };
 		postProcessProps.Stages = stages;
 		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
-		timer = InstrumentationTimer("Bloom Pass");
 		Renderer::BeginPostProcessingStages(postProcessProps);
 		renderTime.BloomPassRenderTime += timer.ElapsedMS();
 

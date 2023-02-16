@@ -107,7 +107,7 @@ namespace Vortex {
 			{
 				auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
 
-				for (const auto& e : view)
+				for (const auto e : view)
 				{
 					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
 					Entity entity{ e, scene };
@@ -127,7 +127,7 @@ namespace Vortex {
 						if (!particle.Active)
 							continue;
 
-						float life = particle.LifeRemaining / particle.LifeTime;
+						const float life = particle.LifeRemaining / particle.LifeTime;
 						Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
 						Math::vec4 color;
 
@@ -153,7 +153,7 @@ namespace Vortex {
 				RendererAPI::TriangleCullMode cullMode = Renderer2D::GetCullMode();
 				Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
 
-				for (auto& e : view)
+				for (const auto e : view)
 				{
 					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 					Entity entity{ e, scene };
@@ -216,48 +216,23 @@ namespace Vortex {
 
 						const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
 
-						switch (lightSourceComponent.Type)
-						{
-							case LightType::Directional:
-							{
-								Renderer2D::DrawQuadBillboard(
-									cameraView,
-									transform.Translation,
-									EditorResources::SkyLightIcon,
-									Math::vec2(projectProps.GizmoProps.GizmoSize),
-									ColorToVec4(Color::White),
-									(int)(entt::entity)e
-								);
+						SharedRef<Texture2D> icon = nullptr;
 
-								break;
-							}
-							case LightType::Point:
-							{
-								Renderer2D::DrawQuadBillboard(
-									cameraView,
-									transform.Translation,
-									EditorResources::PointLightIcon,
-									Math::vec2(projectProps.GizmoProps.GizmoSize),
-									ColorToVec4(Color::White),
-									(int)(entt::entity)e
-								);
+						if (lightSourceComponent.Type == LightType::Directional)
+							icon = EditorResources::SkyLightIcon;
+						if (lightSourceComponent.Type == LightType::Point)
+							icon = EditorResources::PointLightIcon;
+						if (lightSourceComponent.Type == LightType::Spot)
+							icon = EditorResources::SpotLightIcon;
 
-								break;
-							}
-							case LightType::Spot:
-							{
-								Renderer2D::DrawQuadBillboard(
-									cameraView,
-									transform.Translation,
-									EditorResources::SpotLightIcon,
-									Math::vec2(projectProps.GizmoProps.GizmoSize),
-									ColorToVec4(Color::White),
-									(int)(entt::entity)e
-								);
-
-								break;
-							}
-						}
+						Renderer2D::DrawQuadBillboard(
+							cameraView,
+							transform.Translation,
+							icon,
+							Math::vec2(projectProps.GizmoProps.GizmoSize),
+							ColorToVec4(Color::White),
+							(int)(entt::entity)e
+						);
 					}
 				}
 
@@ -313,14 +288,14 @@ namespace Vortex {
 			{
 				auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
 
-				for (auto& e : lightSourceView)
+				for (const auto e : lightSourceView)
 				{
 					Entity entity{ e, scene };
 
 					if (!entity.IsActive())
 						continue;
 
-					LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 					Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
 				}
 			}
@@ -382,6 +357,7 @@ namespace Vortex {
 				for (const auto e : staticMeshRendererView)
 				{
 					Entity entity{ e, scene };
+
 					if (!entity.IsActive())
 						continue;
 
@@ -409,6 +385,8 @@ namespace Vortex {
 
 			InstrumentationTimer timer("Geometry Pass");
 			{
+				SceneLightDescription sceneLightDesc = Renderer::GetSceneLightDescription();
+
 				for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 				{
 					Entity entity = it->second;
@@ -438,10 +416,9 @@ namespace Vortex {
 							SharedRef<Shader> shader = material->GetShader();
 							shader->Enable();
 
-							SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-							shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-							shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-							shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+							shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
+							shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
+							shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
 							shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 							Renderer::BindSkyLightDepthMap();
@@ -495,10 +472,9 @@ namespace Vortex {
 							SharedRef<Shader> shader = material->GetShader();
 							shader->Enable();
 
-							SceneLightDescription lightDesc = Renderer::GetSceneLightDescription();
-							shader->SetBool("u_SceneProperties.HasSkyLight", lightDesc.HasSkyLight);
-							shader->SetInt("u_SceneProperties.ActivePointLights", lightDesc.ActivePointLights);
-							shader->SetInt("u_SceneProperties.ActiveSpotLights", lightDesc.ActiveSpotLights);
+							shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
+							shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
+							shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
 							shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 							Renderer::BindSkyLightDepthMap();
@@ -524,7 +500,7 @@ namespace Vortex {
 	{
 		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
 
-		for (auto& e : skyboxView)
+		for (const auto e : skyboxView)
 		{
 			Entity entity{ e, scene };
 

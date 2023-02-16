@@ -864,7 +864,6 @@ namespace Vortex {
 				pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
 			}
 
-
 			s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
 			pbrShader->Enable();
 			pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
