@@ -104,7 +104,7 @@ namespace Vortex {
 			if (!triggerEntity || !otherEntity)
 				continue;
 
-			if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_CCD)
+			if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
 				if (triggerEntity.HasComponent<ScriptComponent>())
 				{

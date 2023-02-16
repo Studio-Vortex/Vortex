@@ -1,6 +1,6 @@
 Vortex Engine v0.1a
 Initalizing...
-Creating window 'Vortex Editor - (Release - v0.1a)' (1600.000, 900.000)
+Creating window 'Vortex Editor - (Debug devel - v0.1a)' (1600.000, 900.000)
 Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
 Shader Loaded: 'Renderer_PBR_Static' - path /Resources/Shaders/Renderer_PBR_Static.glsl
 Shader Loaded: 'Equirectangular_to_Cubemap' - path /Resources/Shaders/Equirectangular_to_Cubemap.glsl
@@ -18,12 +18,7 @@ Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
 Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
-Deserializing Scene 'Over'
-This thing is friendly
-Deserializing Scene 'Over'
-This thing is friendly
-Deserializing Scene 'Over'
-This thing is friendly
-This thing is friendly
-This thing is friendly
+Deserializing Scene 'SampleScene'
+Triggered Something!
+Triggered Something!
 Shutting down...
