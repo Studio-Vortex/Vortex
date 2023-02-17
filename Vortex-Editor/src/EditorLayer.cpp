@@ -653,35 +653,10 @@ namespace Vortex {
 					{
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
-
-						if (m_HoveredEntity && m_HoveredEntity.HasComponent<MeshRendererComponent>())
-						{
-							SharedRef<Mesh> mesh = m_HoveredEntity.GetComponent<MeshRendererComponent>().Mesh;
-							std::string filename = texturePath.filename().string();
-
-							// TODO rework implementation to get a submesh and set the material texture
-
-							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
-							if (filename.find("normal") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetNormalMap(texture);
-							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(texture);
-							if (filename.find("roughness") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(texture);
-							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(texture);
-							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(texture);
-							if (filename.find("ao") != std::string::npos)
-								mesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(texture);
-						}
-						if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+						else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 						{
 							SharedRef<StaticMesh> staticMesh = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
 							std::string filename = texturePath.filename().string();
-
-							// TODO ditto
 
 							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
 								staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
@@ -706,8 +681,7 @@ namespace Vortex {
 				{
 					std::filesystem::path modelPath = filePath;
 
-					bool hasMeshComponent = m_HoveredEntity.HasComponent<MeshRendererComponent>() || m_HoveredEntity.HasComponent<StaticMeshRendererComponent>();
-					if (m_HoveredEntity && hasMeshComponent)
+					if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 					{
 						meshImportPopupOpen = true;
 						m_MeshFilepath = modelPath.string();

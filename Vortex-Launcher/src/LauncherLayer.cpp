@@ -4,9 +4,6 @@
 
 namespace Vortex {
 
-#define VX_MAX_PROJECT_NAME_LENGTH 256
-#define VX_MAX_PROJECT_DIR_LENGTH 256
-
 	LauncherLayer::LauncherLayer()
 		: Layer("LauncherLayer") { }
 
@@ -24,6 +21,10 @@ namespace Vortex {
 		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
 		m_VortexLogoIcon = Texture2D::Create("Resources/Images/VortexLogo.png");
+
+		m_Properties.EditorPath = Application::Get().GetEditorBinaryPath();
+		m_Properties.WorkingDirectory = Application::Get().GetProperties().WorkingDirectory;
+		ResetInputFields();
 	}
 
 	void LauncherLayer::OnDetach() { }
@@ -165,15 +166,8 @@ namespace Vortex {
 		Gui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		Gui::SetNextWindowSize(ImVec2(700, 0));
 
-		auto ResetInputBoxesFunc = [&](char* projectNameBuffer, char* projectDirectoryBuffer)
-		{
-			memset(projectNameBuffer, 0, VX_MAX_PROJECT_NAME_LENGTH);
-			memset(projectDirectoryBuffer, 0, VX_MAX_PROJECT_DIR_LENGTH);
-		};
-
 		if (Gui::BeginPopupModal("Create New Project"))
 		{
-			static char projectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH]{ 0 };
 			ImGuiIO& io = Gui::GetIO();
 			auto contextRegionAvail = Gui::GetContentRegionAvail();
 			Gui::Columns(2);
@@ -182,11 +176,15 @@ namespace Vortex {
 			Gui::Text("Directory");
 			Gui::NextColumn();
 			Gui::PushItemWidth(-1);
-			Gui::InputText("##Project Name", projectNameBuffer, VX_MAX_PROJECT_NAME_LENGTH);
-
-			Gui::PushItemWidth(-1);
-			static char projectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH]{ 0 };
-			Gui::InputText("##Directory", projectDirectoryBuffer, VX_MAX_PROJECT_NAME_LENGTH);
+			Gui::InputText("##Project Name", m_Properties.ProjectNameBuffer, VX_MAX_PROJECT_NAME_LENGTH);
+			Gui::PushItemWidth(Gui::GetContentRegionAvail().x * 0.9f);
+			Gui::InputText("##Directory", m_Properties.ProjectDirectoryBuffer, VX_MAX_PROJECT_NAME_LENGTH);
+			Gui::SameLine();
+			if (Gui::Button("..."))
+			{
+				std::string filepath = FileDialogue::OpenFolderDialog();
+				memcpy(m_Properties.ProjectDirectoryBuffer, filepath.data(), VX_MAX_PROJECT_DIR_LENGTH);
+			}
 
 			Gui::Columns(1);
 
@@ -198,63 +196,119 @@ namespace Vortex {
 
 			if (Gui::Button("Go Back", buttonSize))
 			{
-				ResetInputBoxesFunc(projectNameBuffer, projectDirectoryBuffer);
+				ResetInputFields();
 				Gui::CloseCurrentPopup();
 			}
 
-			bool textBoxesEmpty = strlen(projectNameBuffer) == 0 && strlen(projectDirectoryBuffer) == 0;
+			bool textBoxesEmpty = strlen(m_Properties.ProjectNameBuffer) == 0 && strlen(m_Properties.ProjectDirectoryBuffer) == 0;
 
 			Gui::SameLine();
 			Gui::SetCursorPosX((Gui::GetWindowWidth() * 0.5f) - (buttonSize.x * 0.5f));
 			Gui::BeginDisabled(textBoxesEmpty);
 			if (Gui::Button("Create Project", buttonSize))
 			{
-				if (!std::filesystem::exists(projectDirectoryBuffer))
-					std::filesystem::create_directories(projectDirectoryBuffer);
-
-				SharedRef<Project> project = Project::New();
-				auto& projectProps = project->GetProperties();
-				projectProps.General.Name = std::string(projectNameBuffer);
-				projectProps.General.AssetDirectory = "Assets";
-				projectProps.General.AssetRegistryPath = projectProps.General.AssetDirectory / "AssetRegistry.vxr";
-				projectProps.General.StartScene = "Scenes/SampleScene.vortex";
-				projectProps.ScriptingProps.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", projectNameBuffer);
-
-				auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
-				m_ProjectPath = projectDirectoryBuffer / std::filesystem::path(projectFilename);
-				std::filesystem::path projectDirectoryPath = m_ProjectPath.parent_path();
-				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
-				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
-				std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
-
-				// premake script
-				//FileSystem::LaunchApplication("Resources/HelperScripts/GeneratePremakeScript.bat", ((projectDirectoryBuffer / projectProps.General.AssetDirectory) / "Scripts").string().c_str());
-
-				// build project dll
-				//FileSystem::LaunchApplication("Resources/HelperScripts/BuildSolution.bat", (projectDirectoryBuffer / projectProps.General.ScriptBinaryPath).string().c_str());
-
-				SharedRef<Scene> startScene = Scene::Create();
-				Scene::CreateDefaultEntities(startScene);
-				SceneSerializer serializer(startScene);
-				serializer.Serialize((projectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
-
-				Project::SaveActive(m_ProjectPath);
-
-				LaunchEditor();
-
-				ResetInputBoxesFunc(projectNameBuffer, projectDirectoryBuffer);
-				Gui::CloseCurrentPopup();
+				CreateProject();
 			}
+
 			Gui::EndDisabled();
 
 			Gui::EndPopup();
 		}
 	}
 
+	void LauncherLayer::ResetInputFields()
+	{
+		memset(m_Properties.ProjectNameBuffer, 0, VX_MAX_PROJECT_NAME_LENGTH);
+		memset(m_Properties.ProjectDirectoryBuffer, 0, VX_MAX_PROJECT_DIR_LENGTH);
+	}
+
+	void LauncherLayer::CreateProject()
+	{
+		if (!std::filesystem::exists(m_Properties.ProjectDirectoryBuffer))
+			std::filesystem::create_directories(m_Properties.ProjectDirectoryBuffer);
+
+		SharedRef<Project> project = Project::New();
+		auto& projectProps = project->GetProperties();
+		projectProps.General.Name = std::string(m_Properties.ProjectNameBuffer);
+		projectProps.General.AssetDirectory = "Assets";
+		projectProps.General.AssetRegistryPath = projectProps.General.AssetDirectory / "AssetRegistry.vxr";
+		projectProps.General.StartScene = "Scenes/SampleScene.vortex";
+		projectProps.ScriptingProps.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", m_Properties.ProjectNameBuffer);
+		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
+		m_ProjectPath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path(projectFilename);
+		std::filesystem::path projectDirectoryPath = m_ProjectPath.parent_path();
+		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
+		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
+		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
+
+		SharedRef<Scene> startScene = Scene::Create();
+		Scene::CreateDefaultEntities(startScene);
+		SceneSerializer serializer(startScene);
+		serializer.Serialize((m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
+
+		std::filesystem::copy("Resources/NewProjectTemplate/premake5.lua", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
+		std::filesystem::copy("Resources/NewProjectTemplate/Win32Gen.bat", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
+
+		std::filesystem::path premakeFilepath = (m_Properties.ProjectDirectoryBuffer / projectProps.General.AssetDirectory) / "Scripts/premake5.lua";
+		std::ifstream premakeFile(premakeFilepath);
+		std::stringstream ss;
+		ss << premakeFile.rdbuf();
+
+		std::string str = ss.str();
+
+		ReplaceToken(str, "$PROJECT_NAME$", m_Properties.ProjectNameBuffer);
+
+		std::ofstream fout(premakeFilepath);
+		fout << str;
+		fout.close();
+
+		Project::SaveActive(m_ProjectPath);
+
+		std::filesystem::current_path("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
+
+		FileSystem::LaunchApplication("Win32Gen.bat", "");
+
+		ResetWorkingDirectory();
+
+		// build project dll
+		auto projectNameAsFilepath = std::filesystem::path(m_Properties.ProjectNameBuffer);
+		projectNameAsFilepath.replace_extension(".sln");
+		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectNameAsFilepath;
+
+		std::filesystem::current_path("Resources/HelperScripts");
+
+		FileSystem::LaunchApplication("BuildSolution.bat", solutionPath.string().c_str());
+
+		ResetWorkingDirectory();
+
+		LaunchEditor();
+
+		ResetInputFields();
+
+		Gui::CloseCurrentPopup();
+	}
+
+	void LauncherLayer::ReplaceToken(std::string& str, const char* token, const std::string& value)
+	{
+		size_t pos = 0;
+
+		while ((pos = str.find(token, pos)) != std::string::npos)
+		{
+			size_t length = strlen(token);
+			str.replace(pos, length, value);
+			pos += length;
+		}
+	}
+
+	void LauncherLayer::ResetWorkingDirectory()
+	{
+		std::filesystem::current_path(m_Properties.WorkingDirectory);
+	}
+
 	void LauncherLayer::LaunchEditor()
 	{
-		std::string editorPath = Application::Get().GetEditorBinaryPath();
-		FileSystem::LaunchApplication(editorPath.c_str(), m_ProjectPath.string().c_str());
+		std::string projectPath = FileSystem::Relative(m_ProjectPath, m_Properties.WorkingDirectory).string();
+		FileSystem::LaunchApplication(m_Properties.EditorPath.c_str(), projectPath.c_str());
 	}
 
 }
