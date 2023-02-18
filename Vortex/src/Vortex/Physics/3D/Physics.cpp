@@ -120,27 +120,7 @@ namespace Vortex {
 
 		s_Data->ContextScene = contextScene;
 
-		// We have to create all rigibodies in the scene before we can create any fixed joints
-		{
-			const auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, s_Data->ContextScene };
-				CreatePhysicsActor(entity);
-			}
-		}
-
-		// Create Fixed Joints
-		{
-			const auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, FixedJointComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, s_Data->ContextScene };
-				CreateFixedJoint(entity);
-			}
-		}
+		TraverseSceneForUninitializedActors();
 	}
 
 	void Physics::OnSimulationUpdate(TimeStep delta)
@@ -149,82 +129,64 @@ namespace Vortex {
 		s_Data->PhysicsScene->fetchResults(true);
 		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_PhysicsSceneGravity));
 
-		auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+		TraverseSceneForUninitializedActors();
 
-		for (const auto e : view)
+		for (const auto& [entityUUID, actor] : s_ActiveActors)
 		{
-			Entity entity{ e, s_Data->ContextScene };
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
 			auto& transform = entity.GetTransform();
 
-			if (!entity.HasComponent<RigidBodyComponent>())
-				continue;
-
-			UUID entityUUID = entity.GetUUID();
 			const auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-			if (!rigidbody.RuntimeActor)
-			{
-				CreatePhysicsActor(entity);
-			}
-
-			physx::PxRigidActor* actor = static_cast<physx::PxRigidActor*>(rigidbody.RuntimeActor);
 
 			if (rigidbody.Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* dynamicActor = static_cast<physx::PxRigidDynamic*>(actor);
+				physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
 
 				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
 
-				if (actor->is<physx::PxRigidDynamic>())
-				{
-					UpdateDynamicActorProperties(rigidbody, dynamicActor);
-				}
+				UpdateDynamicActorProperties(rigidbody, dynamicActor);
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
 			{
 				// Synchronize with entity Transform
 				actor->setGlobalPose(ToPhysXTransform(transform));
 			}
+		}
 
-			// Synchronize controller transform
-			if (entity.HasComponent<CharacterControllerComponent>())
+		for (const auto& [entityUUID, characterController] : s_ActiveControllers)
+		{
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			const CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+			auto& transform = entity.GetTransform();
+
+			Math::vec3 position = FromPhysXExtendedVector(characterController->getPosition());
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
 			{
-				const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
-				physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
-
-				Math::vec3 position = FromPhysXExtendedVector(controller->getPosition());
-
-				if (entity.HasComponent<CapsuleColliderComponent>())
-				{
-					const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-					position -= capsuleCollider.Offset;
-				}
-				else if (entity.HasComponent<BoxColliderComponent>())
-				{
-					const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-					position -= boxCollider.Offset;
-				}
-
-				controller->setStepOffset(characterController.StepOffset);
-				controller->setSlopeLimit(Math::Deg2Rad(characterController.SlopeLimitDegrees));
-
-				transform.Translation = position;
+				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+				position -= capsuleCollider.Offset;
+			}
+			else if (entity.HasComponent<BoxColliderComponent>())
+			{
+				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				position -= boxCollider.Offset;
 			}
 
-			if (entity.HasComponent<FixedJointComponent>())
-			{
-				if (!s_ActiveFixedJoints.contains(entityUUID))
-				{
-					CreateFixedJoint(entity);
-				}
+			characterController->setStepOffset(characterControllerComponent.StepOffset);
+			characterController->setSlopeLimit(Math::Deg2Rad(characterControllerComponent.SlopeLimitDegrees));
 
-				physx::PxVec3 lin(0.0f), ang(0.0f);
-				physx::PxFixedJoint* fixedJoint = s_ActiveFixedJoints[entity.GetUUID()];
-				fixedJoint->getConstraint()->getForce(lin, ang);
-				Math::vec3 linear = FromPhysXVector(lin);
-				Math::vec3 angular = FromPhysXVector(ang);
-				s_LastReportedJointForces[fixedJoint] = std::make_pair(linear, angular);
-			}
+			transform.Translation = position;
+		}
+
+		for (const auto& [entityUUID, fixedJoint] : s_ActiveFixedJoints)
+		{
+			physx::PxVec3 linear(0.0f), angular(0.0f);
+			physx::PxFixedJoint* fixedJoint = s_ActiveFixedJoints[entityUUID];
+			fixedJoint->getConstraint()->getForce(linear, angular);
+
+			Math::vec3 linearForce = FromPhysXVector(linear);
+			Math::vec3 angularForce = FromPhysXVector(angular);
+			s_LastReportedJointForces[fixedJoint] = std::make_pair(linearForce, angularForce);
 		}
 
 #ifndef VX_DIST
@@ -234,11 +196,26 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
-		const auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+		std::vector<UUID> actorsToDestroy;
 
-		for (const auto e : view)
+		for (const auto& [entityUUID, fixedJoint] : s_ActiveFixedJoints)
 		{
-			Entity entity{ e, contextScene };
+			actorsToDestroy.push_back(entityUUID);
+		}
+
+		for (const auto& [entityUUID, characterController] : s_ActiveControllers)
+		{
+			actorsToDestroy.push_back(entityUUID);
+		}
+
+		for (const auto& [entityUUID, actor] : s_ActiveActors)
+		{
+			actorsToDestroy.push_back(entityUUID);
+		}
+
+		for (const auto& entityUUID : actorsToDestroy)
+		{
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
 			DestroyPhysicsActor(entity);
 		}
 
@@ -911,6 +888,47 @@ namespace Vortex {
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
+	}
+
+	void Physics::TraverseSceneForUninitializedActors()
+	{
+		auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, s_Data->ContextScene };
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.RuntimeActor || s_ActiveActors.contains(entity.GetUUID()))
+				continue;
+
+			CreatePhysicsActor(entity);
+		}
+
+		auto characterControllerView = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, CharacterControllerComponent>();
+
+		for (const auto e : characterControllerView)
+		{
+			Entity entity{ e, s_Data->ContextScene };
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+
+			if (characterController.RuntimeController || s_ActiveControllers.contains(entity.GetUUID()))
+				continue;
+
+			CreatePhysicsActor(entity);
+		}
+
+		auto fixedJointView = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, FixedJointComponent>();
+
+		for (const auto e : fixedJointView)
+		{
+			Entity entity{ e, s_Data->ContextScene };
+
+			if (s_ActiveFixedJoints.contains(entity.GetUUID()))
+				continue;
+
+			CreateFixedJoint(entity);
+		}
 	}
 
 }

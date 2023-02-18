@@ -115,6 +115,8 @@ namespace Vortex {
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 
+		static void TraverseSceneForUninitializedActors();
+
 	private:
 		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_ActiveActors;
 		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
