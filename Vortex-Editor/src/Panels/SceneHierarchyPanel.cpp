@@ -499,7 +499,7 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const auto& tag = entity.GetComponent<TagComponent>().Tag;
 
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -507,8 +507,8 @@ namespace Vortex {
 		if (entity.Children().empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool isPrefab = entity.HasComponent<PrefabComponent>();
-		bool entityActive = entity.IsActive();
+		const bool isPrefab = entity.HasComponent<PrefabComponent>();
+		const bool entityActive = entity.IsActive();
 
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
@@ -522,7 +522,8 @@ namespace Vortex {
 		if (!entityActive)
 			Gui::PopStyleColor();
 
-		if (Gui::IsItemClicked())
+		// Allow dragging entities
+		if (Gui::IsItemHovered() && Gui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
 			m_SelectedEntity = entity;
 			m_EntityShouldBeRenamed = false;
@@ -592,10 +593,11 @@ namespace Vortex {
 
 		if (opened)
 		{
-			for (auto& child : entity.Children())
+			const auto& children = entity.Children();
+			for (const auto& child : children)
 			{
 				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
-				if (childEntity)
+				if (childEntity && std::find(children.begin(), children.end(), child) != children.end());
 				{
 					DrawEntityNode(childEntity, editorCamera);
 				}
@@ -1827,9 +1829,28 @@ namespace Vortex {
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<FixedJointComponent>("Fixed Joint", entity, [](auto& component)
+		DrawComponent<FixedJointComponent>("Fixed Joint", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
+
+			std::string connectedEntityName = "Null";
+			if (Entity connectedEntity = m_ContextScene->TryGetEntityWithUUID(component.ConnectedEntity))
+			{
+				connectedEntityName = connectedEntity.GetName();
+			}
+
+			UI::Property("Connected Entity", connectedEntityName, true);
+
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+				{
+					Entity& droppedEntity = *((Entity*)payload->Data);
+					component.ConnectedEntity = droppedEntity.GetUUID();
+				}
+
+				Gui::EndDragDropTarget();
+			}
 
 			UI::Property("Is Breakable", component.IsBreakable);
 			

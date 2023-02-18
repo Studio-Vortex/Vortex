@@ -2125,9 +2125,9 @@ namespace Vortex {
 	{
 		if (m_SceneState == SceneState::Play)
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+			const auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, m_ActiveScene.get() };
 
@@ -2161,9 +2161,9 @@ namespace Vortex {
 
 	void EditorLayer::StopAudioSources()
 	{
-		auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
+		const auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
 
-		for (auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, m_ActiveScene.get() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
@@ -2182,13 +2182,13 @@ namespace Vortex {
 
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 
-		if (selectedEntity)
-		{
-			Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
-			m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
-			// TODO should we keep this?
-			m_SceneHierarchyPanel.EditSelectedEntityName(true);
-		}
+		if (!selectedEntity)
+			return;
+
+		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
+		m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
+		// TODO should we keep this?
+		m_SceneHierarchyPanel.EditSelectedEntityName(true);
 	}
 
 	void EditorLayer::SetSceneContext(const SharedRef<Scene>& scene)
