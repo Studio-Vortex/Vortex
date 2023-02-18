@@ -5,6 +5,9 @@ namespace Vortex {
 
 	void EditorResources::Init()
 	{
+		SearchIcon = Texture2D::Create("Resources/Icons/General/Search.png");
+		ClearIcon = Texture2D::Create("Resources/Icons/General/Clear.png");
+
 		PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
 		PauseIcon = Texture2D::Create("Resources/Icons/PauseButton.png");
 		StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Vortex.h>
+#include "Vortex/Renderer/Texture.h"
 
 namespace Vortex {
 
@@ -8,6 +8,10 @@ namespace Vortex {
 	{
 	public:
 		static void Init();
+
+		// General
+		inline static SharedRef<Texture2D> SearchIcon = nullptr;
+		inline static SharedRef<Texture2D> ClearIcon = nullptr;
 
 		// Scene
 		inline static SharedRef<Texture2D> PlayIcon = nullptr;

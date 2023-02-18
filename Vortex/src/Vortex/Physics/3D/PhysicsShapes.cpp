@@ -9,8 +9,6 @@ namespace Vortex {
 	{
 		if (m_Material != nullptr)
 			m_Material->release();
-
-		m_Material = Physics::CreatePhysicsMaterial(material);
 	}
 
 	ConvexMeshShape::ConvexMeshShape(MeshColliderComponent& component, const physx::PxRigidActor& actor, Entity entity)

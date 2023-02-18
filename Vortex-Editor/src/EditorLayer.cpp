@@ -1163,6 +1163,8 @@ namespace Vortex {
 					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYCOUNT(selectionModes), currentSelectionMode))
 						m_SelectionMode = (SelectionMode)currentSelectionMode;
 
+					UI::Property("Selected Entity Collider", m_ShowSelectedEntityCollider);
+
 					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
 
@@ -1264,10 +1266,10 @@ namespace Vortex {
 		// Render Editor Grid
 		if (m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid)
 		{
-			float axisLineLength = 1'000.0f;
-			float gridLineLength = 750.0f;
-			float gridWidth = 750.0f;
-			float gridLength = 750.0f;
+			static constexpr float axisLineLength = 1'000.0f;
+			static constexpr float gridLineLength = 750.0f;
+			static constexpr float gridWidth = 750.0f;
+			static constexpr float gridLength = 750.0f;
 
 			float originalLineWidth = Renderer2D::GetLineWidth();
 
@@ -1310,11 +1312,13 @@ namespace Vortex {
 		// Render Physics Colliders
 		if (projectProps.PhysicsProps.ShowColliders)
 		{
+			const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
+
 			{
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
 
-					for (auto e : view)
+					for (const auto e : view)
 					{
 						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
 						Entity entity{ e, m_ActiveScene.get() };
@@ -1328,7 +1332,32 @@ namespace Vortex {
 							* Math::Translate(bc.Offset)
 							* Math::Scale(bc.HalfSize * 2.0f);
 
-						Renderer2D::DrawAABB(aabb, transform, projectProps.PhysicsProps.Physics3DColliderColor);
+						Renderer2D::DrawAABB(aabb, transform, colliderColor);
+					}
+				}
+
+				{
+					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
+
+					for (const auto e : view)
+					{
+						auto [tc, sc] = view.get<TransformComponent, SphereColliderComponent>(e);
+						Entity entity{ e, m_ActiveScene.get() };
+
+						const auto& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
+						Math::vec3 translation = worldSpaceTransform.Translation + sc.Offset;
+						Math::vec3 scale = worldSpaceTransform.Scale;
+
+						const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
+						const float radius = (largestComponent * sc.Radius) * 1.005f;
+
+						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(-45.0f), 0.0f, 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(45.0f), 0.0f, 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(-45.0f), 0.0f }, radius, colliderColor);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(45.0f), 0.0f }, radius, colliderColor);
 					}
 				}
 			}
@@ -1341,7 +1370,7 @@ namespace Vortex {
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
 
-					for (auto e : view)
+					for (const auto e : view)
 					{
 						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
 						Entity entity{ e, m_ActiveScene.get() };
@@ -1359,7 +1388,7 @@ namespace Vortex {
 				{
 					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
 
-					for (auto e : view)
+					for (const auto e : view)
 					{
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
 						Entity entity{ e, m_ActiveScene.get() };
@@ -1377,13 +1406,14 @@ namespace Vortex {
 		}
 
 		const auto boundingBoxColor = ColorToVec4(Color::Orange);
+		const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
 
 		if (projectProps.EditorProps.ShowBoundingBoxes)
 		{
 			{
 				auto meshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 
-				for (const auto& e : meshView)
+				for (const auto e : meshView)
 				{
 					Entity entity{ e, m_ActiveScene.get() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
@@ -1406,7 +1436,7 @@ namespace Vortex {
 			{
 				auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
 
-				for (const auto& e : staticMeshView)
+				for (const auto e : staticMeshView)
 				{
 					Entity entity{ e, m_ActiveScene.get() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
@@ -1428,7 +1458,7 @@ namespace Vortex {
 		}
 
 		// Draw selected entity outline 
-		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity(); selectedEntity)
 		{
 			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity) * Math::Scale(Math::vec3(1.001f));
 
@@ -1470,6 +1500,43 @@ namespace Vortex {
 							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 						}
 						break;
+				}
+			}
+
+			if (m_ShowSelectedEntityCollider)
+			{
+				if (selectedEntity.HasComponent<BoxColliderComponent>())
+				{
+					const auto& bc = selectedEntity.GetComponent<BoxColliderComponent>();
+
+					Math::AABB aabb = {
+						-Math::vec3(0.503f),
+						+Math::vec3(0.503f)
+					};
+
+					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity)
+						* Math::Translate(bc.Offset)
+						* Math::Scale(bc.HalfSize * 2.0f);
+
+					Renderer2D::DrawAABB(aabb, transform, colliderColor);
+				}
+				if (selectedEntity.HasComponent<SphereColliderComponent>())
+				{
+					const auto& sc = selectedEntity.GetComponent<SphereColliderComponent>();
+					const auto& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+					Math::vec3 translation = worldSpaceTransform.Translation + sc.Offset;
+					Math::vec3 scale = worldSpaceTransform.Scale;
+
+					const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
+					const float radius = (largestComponent * sc.Radius) * 1.005f;
+
+					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(-45.0f), 0.0f, 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(45.0f), 0.0f, 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(-45.0f), 0.0f }, radius, colliderColor);
+					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(45.0f), 0.0f }, radius, colliderColor);
 				}
 			}
 
@@ -1862,7 +1929,7 @@ namespace Vortex {
 		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
 		m_EditorScene = m_ActiveScene; // Set the editors scene
 
-		Scene::CreateDefaultEntities(m_ActiveScene);
+		Scene::Create3DSampleScene(m_ActiveScene);
 	}
 
 	void EditorLayer::OpenExistingScene()

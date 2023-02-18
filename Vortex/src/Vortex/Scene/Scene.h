@@ -20,7 +20,8 @@ namespace Vortex {
 		~Scene() = default;
 
 		static SharedRef<Scene> Copy(SharedRef<Scene> source);
-		static void CreateDefaultEntities(SharedRef<Scene>& context);
+		static void Create2DSampleScene(SharedRef<Scene>& context);
+		static void Create3DSampleScene(SharedRef<Scene>& context);
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
@@ -37,6 +38,7 @@ namespace Vortex {
 		void OnRuntimeStop();
 
 		void OnPhysicsSimulationStart();
+		void OnPhysicsSimulationUpdate(TimeStep delta);
 		void OnPhysicsSimulationStop();
 
 		void OnUpdateRuntime(TimeStep delta);
@@ -67,6 +69,8 @@ namespace Vortex {
 		Entity FindEntityWithID(entt::entity entity);
 
 		Entity GetPrimaryCameraEntity();
+
+		const std::vector<Entity>& GetAllEntities();
 
 		bool AreEntitiesRelated(Entity first, Entity second);
 

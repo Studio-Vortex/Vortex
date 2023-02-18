@@ -48,6 +48,34 @@ namespace Vortex {
 			}
 		}
 
+		static physx::PxTransform GetLocalFrame(physx::PxRigidActor* actor)
+		{
+			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
+			Scene* contextScene = physicsBodyData->ContextScene;
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(physicsBodyData->EntityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const TransformComponent& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+			Math::quaternion rotation = worldSpaceTransform.GetRotation();
+			Math::vec3 globalNormal = rotation * Math::vec3(0.0f, 0.0f, -1.0f);
+			Math::vec3 globalAxis = rotation * Math::vec3(0.0f, 1.0f, 0.0f);
+
+			physx::PxVec3 localAnchor = actor->getGlobalPose().transformInv(ToPhysXVector(worldSpaceTransform.Translation));
+			physx::PxVec3 localNormal = actor->getGlobalPose().rotateInv(ToPhysXVector(globalNormal));
+			physx::PxVec3 localAxis = actor->getGlobalPose().rotateInv(ToPhysXVector(globalAxis));
+
+			physx::PxMat33 rot(localAxis, localNormal, localAxis.cross(localNormal));
+
+			physx::PxTransform localFrame;
+			localFrame.p = localAnchor;
+			localFrame.q = physx::PxQuat(rot);
+			localFrame.q.normalize();
+
+			return localFrame;
+		}
+
 	}
 
 	struct PhysicsEngineInternalData
@@ -55,7 +83,7 @@ namespace Vortex {
 		physx::PxDefaultAllocator DefaultAllocator;
 		physx::PxDefaultErrorCallback ErrorCallback;
 		physx::PxFoundation* Foundation = nullptr;
-		physx::PxPhysics* PhysicsFactory = nullptr;
+		physx::PxPhysics* PhysXSDK = nullptr;
 		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
 		physx::PxCooking* CookingFactory = nullptr;
 		physx::PxControllerManager* ControllerManager = nullptr;
@@ -82,145 +110,40 @@ namespace Vortex {
 
 	static PhysicsEngineInternalData* s_Data = nullptr;
 
-	void Physics::Init()
+	void Physics::OnSimulationStart(Scene* contextScene)
 	{
-		s_Data = new PhysicsEngineInternalData();
+		InitPhysicsSceneInternal();
 
-		// Create the scene with the description
-		s_Data->Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Data->DefaultAllocator, s_Data->ErrorCallback);
-		VX_CORE_ASSERT(s_Data->Foundation, "Failed to create Physics Scene Foundation!");
+		s_ActiveActors.clear();
+		s_ActiveControllers.clear();
+		s_ActiveFixedJoints.clear();
 
-		s_Data->TolerancesScale = physx::PxTolerancesScale();
-		s_Data->TolerancesScale.length = 1.0; // Typical length of an object
-		s_Data->TolerancesScale.speed = 100.0f; // Typical speed of an object, gravity * speed is a reasonable choice
-		s_Data->PhysicsFactory = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data->Foundation, s_Data->TolerancesScale, true, nullptr);
+		s_Data->ContextScene = contextScene;
 
-		bool extentionsLoaded = PxInitExtensions(*s_Data->PhysicsFactory, nullptr);
-		VX_CORE_ASSERT(extentionsLoaded, "Failed to initialize PhysX Extensions");
-
-		s_Data->Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
-
-		physx::PxCookingParams cookingParameters = physx::PxCookingParams(s_Data->TolerancesScale);
-		cookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
-
-		s_Data->CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Data->Foundation, cookingParameters);
-		VX_CORE_ASSERT(s_Data->CookingFactory, "Failed to Initialize PhysX Cooking!");
-	}
-
-	void Physics::Shutdown()
-	{
-		s_Data->CookingFactory->release();
-		s_Data->Dispatcher->release();
-		PxCloseExtensions();
-		s_Data->PhysicsFactory->release();
-		s_Data->Foundation->release();
-
-		delete s_Data;
-	}
-
-	physx::PxScene* Physics::GetPhysicsScene()
-	{
-		return s_Data->PhysicsScene;
-	}
-
-	physx::PxPhysics* Physics::GetPhysicsFactory()
-	{
-		return s_Data->PhysicsFactory;
-	}
-
-	physx::PxControllerManager* Physics::GetControllerManager()
-	{
-		return s_Data->ControllerManager;
-	}
-
-	void Physics::WakeUpActor(Entity entity)
-	{
-		if (!entity.HasComponent<RigidBodyComponent>())
+		// We have to create all rigibodies in the scene before we can create any fixed joints
 		{
-			VX_CONSOLE_LOG_WARN("Cannot wake up Entity without RigidBody Component '{}', '{}'", entity.GetName(), entity.GetUUID());
-			return;
-		}
+			const auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		
-		if (rigidbody.Type != RigidBodyType::Dynamic)
-		{
-			VX_CONSOLE_LOG_WARN("Cannot wake up Static Actor '{}', '{}'", entity.GetName(), entity.GetUUID());
-			return;
-		}
-
-		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
-
-		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
-		{
-			dynamicActor->wakeUp();
-		}
-	}
-
-	void Physics::WakeUpActors()
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (!s_Data->PhysicsScene)
-			return;
-
-		physx::PxActorTypeFlags flags = physx::PxActorTypeFlag::eRIGID_DYNAMIC;
-		uint32_t count = s_Data->PhysicsScene->getNbActors(flags);
-
-		physx::PxActor** buffer = new physx::PxActor*[count];
-		s_Data->PhysicsScene->getActors(flags, buffer, count);
-
-		for (uint32_t i = 0; i < count; i++)
-		{
-			if (physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>())
+			for (const auto e : view)
 			{
-				bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
-				bool isAwake = !actor->isSleeping();
-
-				if (gravityDisabled || isAwake)
-					continue;
-
-				actor->wakeUp();
+				Entity entity{ e, s_Data->ContextScene };
+				CreatePhysicsActor(entity);
 			}
 		}
 
-		delete[] buffer;
-	}
-
-	void Physics::OnSimulationStart(Scene* contextScene)
-	{
-		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
-		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
-
-		SharedRef<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		sceneDescription.broadPhaseType = Utils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
-		sceneDescription.frictionType = Utils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
-
-		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
-		sceneDescription.filterShader = PhysicsFilterShader::FilterShader;
-		sceneDescription.simulationEventCallback = &s_Data->ContactListener;
-
-		s_Data->PhysicsScene = s_Data->PhysicsFactory->createScene(sceneDescription);
-		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
-
-		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
-
-		for (const auto& e : view)
+		// Create Fixed Joints
 		{
-			Entity entity{ e, contextScene };
-			CreatePhysicsActor(entity);
-		}
+			const auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, FixedJointComponent>();
 
-		s_Data->ContextScene = contextScene;
+			for (const auto e : view)
+			{
+				Entity entity{ e, s_Data->ContextScene };
+				CreateFixedJoint(entity);
+			}
+		}
 	}
 
-	void Physics::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
+	void Physics::OnSimulationUpdate(TimeStep delta)
 	{
 		s_Data->PhysicsScene->simulate(delta);
 		s_Data->PhysicsScene->fetchResults(true);
@@ -228,9 +151,9 @@ namespace Vortex {
 
 		auto view = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
-		for (const auto& e : view)
+		for (const auto e : view)
 		{
-			Entity entity{ e, contextScene };
+			Entity entity{ e, s_Data->ContextScene };
 			auto& transform = entity.GetTransform();
 
 			if (entity.HasComponent<RigidBodyComponent>())
@@ -252,7 +175,7 @@ namespace Vortex {
 
 					if (actor->is<physx::PxRigidDynamic>())
 					{
-						UpdateDynamicActorFlags(rigidbody, dynamicActor);
+						UpdateDynamicActorProperties(rigidbody, dynamicActor);
 					}
 				}
 				else if (rigidbody.Type == RigidBodyType::Static)
@@ -295,14 +218,241 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
-		auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+		const auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
 
-		for (const auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, contextScene };
 			DestroyPhysicsActor(entity);
 		}
 
+		ShutdownPhysicsSceneInternal();
+	}
+
+	void Physics::ReCreateActor(Entity entity)
+	{
+		DestroyPhysicsActor(entity);
+		CreatePhysicsActor(entity);
+	}
+
+	physx::PxScene* Physics::GetPhysicsScene()
+	{
+		return s_Data->PhysicsScene;
+	}
+
+#ifndef VX_DIST
+
+	physx::PxSimulationStatistics* Physics::GetSimulationStatistics()
+	{
+		return &s_Data->SimulationStats;
+	}
+
+#endif
+
+	void Physics::WakeUpActor(Entity entity)
+	{
+		if (!entity.HasComponent<RigidBodyComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Cannot wake up Entity without RigidBody Component '{}', '{}'", entity.GetName(), entity.GetUUID());
+			return;
+		}
+
+		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		
+		if (rigidbody.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Cannot wake up Static Actor '{}', '{}'", entity.GetName(), entity.GetUUID());
+			return;
+		}
+
+		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
+
+		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
+		{
+			dynamicActor->wakeUp();
+		}
+	}
+
+	void Physics::WakeUpActors()
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (!s_Data->PhysicsScene || !s_Data->ContextScene)
+			return;
+
+		physx::PxActorTypeFlags flags = physx::PxActorTypeFlag::eRIGID_DYNAMIC;
+		uint32_t count = s_Data->PhysicsScene->getNbActors(flags);
+
+		physx::PxActor** buffer = new physx::PxActor*[count];
+		s_Data->PhysicsScene->getActors(flags, buffer, count);
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			if (physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>())
+			{
+				bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
+				bool isAwake = !actor->isSleeping();
+
+				if (gravityDisabled || isAwake)
+					continue;
+
+				actor->wakeUp();
+			}
+		}
+
+		delete[] buffer;
+	}
+
+	bool Physics::Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outHitInfo)
+	{
+		physx::PxRaycastBuffer hitInfo;
+		bool result = s_Data->PhysicsScene->raycast(ToPhysXVector(origin), ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
+
+		if (result)
+		{
+			void* userData = hitInfo.block.actor->userData;
+
+			if (!userData)
+			{
+				*outHitInfo = RaycastHit();
+				return false;
+			}
+
+			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
+			UUID entityUUID = physicsBodyData->EntityUUID;
+
+			// Call Hit Entity's OnRaycastCollision Method
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity hitEntity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(hitEntity, "Entity UUID was Invalid!");
+
+			if (hitEntity.HasComponent<ScriptComponent>())
+			{
+				const ScriptComponent& scriptComponent = hitEntity.GetComponent<ScriptComponent>();
+
+				if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
+				{
+					ScriptEngine::OnRaycastCollisionEntity(hitEntity);
+				}
+			}
+
+			outHitInfo->EntityID = entityUUID;
+			outHitInfo->Position = FromPhysXVector(hitInfo.block.position);
+			outHitInfo->Normal = FromPhysXVector(hitInfo.block.normal);
+			outHitInfo->Distance = hitInfo.block.distance;
+		}
+
+		return result;
+	}
+
+	physx::PxRigidActor* Physics::GetActor(UUID entityUUID)
+	{
+		VX_CORE_ASSERT(s_ActiveActors.contains(entityUUID), "Entity was not found in active actors map!");
+
+		if (s_ActiveActors.contains(entityUUID))
+		{
+			return s_ActiveActors[entityUUID];
+		}
+		
+		return nullptr;
+	}
+
+	physx::PxController* Physics::GetController(UUID entityUUID)
+	{
+		VX_CORE_ASSERT(s_ActiveControllers.contains(entityUUID), "Entity was not found in active controllers map!");
+
+		if (s_ActiveControllers.contains(entityUUID))
+		{
+			return s_ActiveControllers[entityUUID];
+		}
+
+		return nullptr;
+	}
+
+	physx::PxFixedJoint* Physics::GetFixedJoint(UUID entityUUID)
+	{
+		VX_CORE_ASSERT(s_ActiveFixedJoints.contains(entityUUID), "Entity was not found in active fixed joint map!");
+		
+		if (s_ActiveFixedJoints.contains(entityUUID))
+		{
+			return s_ActiveFixedJoints[entityUUID];
+		}
+
+		return nullptr;
+	}
+
+	void Physics::Init()
+	{
+		InitPhysicsSDKInternal();
+	}
+
+	void Physics::InitPhysicsSDKInternal()
+	{
+		s_Data = new PhysicsEngineInternalData();
+
+		// Create the scene with the description
+		s_Data->Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_Data->DefaultAllocator, s_Data->ErrorCallback);
+		VX_CORE_ASSERT(s_Data->Foundation, "Failed to create Physics Scene Foundation!");
+
+		s_Data->TolerancesScale = physx::PxTolerancesScale();
+		s_Data->TolerancesScale.length = 1.0; // Typical length of an object
+		s_Data->TolerancesScale.speed = 100.0f; // Typical speed of an object, gravity * speed is a reasonable choice
+		s_Data->PhysXSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Data->Foundation, s_Data->TolerancesScale, true, nullptr);
+
+		bool extentionsLoaded = PxInitExtensions(*s_Data->PhysXSDK, nullptr);
+		VX_CORE_ASSERT(extentionsLoaded, "Failed to initialize PhysX Extensions");
+
+		s_Data->Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
+
+		physx::PxCookingParams cookingParameters = physx::PxCookingParams(s_Data->TolerancesScale);
+		cookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
+
+		s_Data->CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Data->Foundation, cookingParameters);
+		VX_CORE_ASSERT(s_Data->CookingFactory, "Failed to Initialize PhysX Cooking!");
+	}
+
+	void Physics::InitPhysicsSceneInternal()
+	{
+		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+
+		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
+
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
+		sceneDescription.broadPhaseType = Utils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
+		sceneDescription.frictionType = Utils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
+
+		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
+		sceneDescription.filterShader = PhysicsFilterShader::FilterShader;
+		sceneDescription.simulationEventCallback = &s_Data->ContactListener;
+
+		s_Data->PhysicsScene = s_Data->PhysXSDK->createScene(sceneDescription);
+		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
+	}
+
+	void Physics::Shutdown()
+	{
+		ShutdownPhysicsSDKInternal();
+	}
+
+	void Physics::ShutdownPhysicsSDKInternal()
+	{
+		s_Data->CookingFactory->release();
+		s_Data->Dispatcher->release();
+		PxCloseExtensions();
+		s_Data->PhysXSDK->release();
+		s_Data->Foundation->release();
+
+		delete s_Data;
+	}
+
+	void Physics::ShutdownPhysicsSceneInternal()
+	{
 		s_Data->ControllerManager->release();
 		s_Data->ControllerManager = nullptr;
 		s_Data->PhysicsScene->release();
@@ -320,95 +470,42 @@ namespace Vortex {
 
 		if (rigidbody.Type == RigidBodyType::Static)
 		{
-			actor = Physics::GetPhysicsFactory()->createRigidStatic(ToPhysXTransform(transform));
+			actor = s_Data->PhysXSDK->createRigidStatic(ToPhysXTransform(transform));
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
-			physx::PxRigidDynamic* dynamicActor = Physics::GetPhysicsFactory()->createRigidDynamic(ToPhysXTransform(transform));
-			Physics::UpdateDynamicActorFlags(rigidbody, dynamicActor);
+			physx::PxRigidDynamic* dynamicActor = s_Data->PhysXSDK->createRigidDynamic(ToPhysXTransform(transform));
+			Physics::UpdateDynamicActorProperties(rigidbody, dynamicActor);
 			actor = dynamicActor;
 		}
 
-		VX_CORE_ASSERT(actor, "Failed to create Physics Actor!");
-		rigidbody.RuntimeActor = actor;
+		VX_CORE_ASSERT(actor != nullptr, "Failed to create Physics Actor!");
+		rigidbody.RuntimeActor = (void*)actor;
 
+		UUID entityUUID = entity.GetUUID();
 		PhysicsBodyData* physicsBodyData = new PhysicsBodyData();
-		physicsBodyData->EntityUUID = entity.GetUUID();
+		physicsBodyData->EntityUUID = entityUUID;
+		physicsBodyData->ContextScene = entity.GetContextScene();
 		actor->userData = physicsBodyData;
+
+		s_PhysicsBodyData[entityUUID] = physicsBodyData;
 
 		if (entity.HasComponent<CharacterControllerComponent>())
 		{
+			VX_CORE_ASSERT(!s_ActiveControllers.contains(entity.GetUUID()), "Entities cannot have multiple controllers!");
+
+			physx::PxController* controller = CreateController(entity);
+			s_ActiveControllers[entityUUID] = controller;
 			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.RuntimeController = (void*)controller;
 
-			if (entity.HasComponent<CapsuleColliderComponent>())
-			{
-				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = CreatePhysicsMaterial(physicsMaterial);
-				}
-				else
-				{
-					// Create a default material
-					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-				}
-
-				float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
-
-				physx::PxCapsuleControllerDesc desc;
-				desc.position = ToPhysXExtendedVector(transform.Translation + capsuleCollider.Offset);
-				desc.height = capsuleCollider.Height * transform.Scale.y;
-				desc.radius = capsuleCollider.Radius * radiusScale;
-				desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
-				desc.climbingMode = (physx::PxCapsuleClimbingMode::Enum)characterController.ClimbMode;
-				desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
-				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = characterController.ContactOffset;
-				desc.material = material;
-				desc.upDirection = { 0.0f, 1.0f, 0.0f };
-
-				characterController.RuntimeController = (void*)s_Data->ControllerManager->createController(desc);
-			}
-			else if (entity.HasComponent<BoxColliderComponent>())
-			{
-				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-
-				physx::PxMaterial* material = nullptr;
-
-				if (entity.HasComponent<PhysicsMaterialComponent>())
-				{
-					const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-					material = CreatePhysicsMaterial(physicsMaterial);
-				}
-				else
-				{
-					// Create a default material
-					material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-				}
-
-				physx::PxBoxControllerDesc desc;
-				desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
-				desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
-				desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
-				desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
-				desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
-				desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
-				desc.stepOffset = characterController.StepOffset;
-				desc.contactOffset = characterController.ContactOffset;
-				desc.material = material;
-				desc.upDirection = { 0.0f, 1.0f, 0.0f };
-
-				characterController.RuntimeController = (void*)s_Data->ControllerManager->createController(desc);
-			}
+			return;
 		}
-		else
-		{
-			CreateCollider(entity);
-		}
+
+		s_ActiveActors[entityUUID] = actor;
+		CreateCollider(entity);
 
 		// Set Filters
 		if (rigidbody.Type == RigidBodyType::Static)
@@ -417,6 +514,47 @@ namespace Vortex {
 			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
+	}
+
+	void Physics::DestroyPhysicsActor(Entity entity)
+	{
+		if (!entity.HasComponent<RigidBodyComponent>())
+			return;
+
+		const UUID entityUUID = entity.GetUUID();
+
+		if (s_ActiveActors.contains(entityUUID))
+		{
+			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			physx::PxRigidActor* actor = s_ActiveActors[entityUUID];
+			s_Data->PhysicsScene->removeActor(*actor);
+			actor->release();
+			rigidbody.RuntimeActor = nullptr;
+			s_ActiveActors.erase(entity);
+		}
+
+		if (s_ActiveControllers.contains(entityUUID))
+		{
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.RuntimeController = nullptr;
+			s_ActiveControllers[entityUUID]->release();
+			s_ActiveControllers.erase(entity);
+		}
+
+		if (s_ActiveFixedJoints.contains(entityUUID))
+		{
+			FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
+			fixedJoint.ConnectedEntity = 0;
+			s_ActiveFixedJoints[entityUUID]->release();
+			s_ActiveFixedJoints.erase(entity);
+		}
+
+		if (s_PhysicsBodyData.contains(entityUUID))
+		{
+			PhysicsBodyData* physicsBodyData = s_PhysicsBodyData[entityUUID];
+			delete physicsBodyData;
+			s_PhysicsBodyData.erase(entity);
+		}
 	}
 
 	void Physics::CreateCollider(Entity entity)
@@ -508,9 +646,118 @@ namespace Vortex {
 		}
 	}
 
+	void Physics::CreateFixedJoint(Entity entity)
+	{
+		VX_CORE_ASSERT(entity.HasComponent<FixedJointComponent>(), "Entity doesn't have Fixed Joint Component");
+
+		if (!entity)
+		{
+			return;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		UUID connectedEntityUUID = fixedJointComponent.ConnectedEntity;
+		Entity connectedEntity = s_Data->ContextScene->TryGetEntityWithUUID(connectedEntityUUID);
+		VX_CORE_ASSERT(connectedEntity, "Connected Entity was Invalid!");
+
+		if (!connectedEntity)
+		{
+			return;
+		}
+
+		physx::PxRigidActor* actor0 = GetActor(entity);
+		physx::PxRigidActor* actor1 = GetActor(connectedEntity);
+
+		if (!actor0 || !actor1)
+		{
+			VX_CONSOLE_LOG_ERROR("Unable to create Fixed Joint with entities '{}', '{}'", entity.GetName(), connectedEntity.GetName());
+			return;
+		}
+
+		physx::PxTransform localFrame0 = Utils::GetLocalFrame(actor0);
+		physx::PxTransform localFrame1 = Utils::GetLocalFrame(actor1);
+
+		physx::PxFixedJointCreate(*s_Data->PhysXSDK, actor0, localFrame0, actor1, localFrame1);
+	}
+
+	physx::PxController* Physics::CreateController(Entity entity)
+	{
+		const auto& transform = entity.GetTransform();
+		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+
+		physx::PxController* controller = nullptr;
+
+		if (entity.HasComponent<CapsuleColliderComponent>())
+		{
+			const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			physx::PxMaterial* material = nullptr;
+
+			if (entity.HasComponent<PhysicsMaterialComponent>())
+			{
+				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+				material = CreatePhysicsMaterial(physicsMaterial);
+			}
+			else
+			{
+				// Create a default material
+				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
+			}
+
+			const float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
+
+			physx::PxCapsuleControllerDesc desc;
+			desc.position = ToPhysXExtendedVector(transform.Translation + capsuleCollider.Offset);
+			desc.height = capsuleCollider.Height * transform.Scale.y;
+			desc.radius = capsuleCollider.Radius * radiusScale;
+			desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
+			desc.climbingMode = (physx::PxCapsuleClimbingMode::Enum)characterController.ClimbMode;
+			desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+			desc.stepOffset = characterController.StepOffset;
+			desc.contactOffset = characterController.ContactOffset;
+			desc.material = material;
+			desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+			controller = s_Data->ControllerManager->createController(desc);
+		}
+		else if (entity.HasComponent<BoxColliderComponent>())
+		{
+			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			physx::PxMaterial* material = nullptr;
+
+			if (entity.HasComponent<PhysicsMaterialComponent>())
+			{
+				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
+				material = CreatePhysicsMaterial(physicsMaterial);
+			}
+			else
+			{
+				// Create a default material
+				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
+			}
+
+			physx::PxBoxControllerDesc desc;
+			desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
+			desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
+			desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
+			desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
+			desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
+			desc.slopeLimit = Math::Max(0.0f, cosf(Math::Deg2Rad(characterController.SlopeLimitDegrees)));
+			desc.stepOffset = characterController.StepOffset;
+			desc.contactOffset = characterController.ContactOffset;
+			desc.material = material;
+			desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+			controller = s_Data->ControllerManager->createController(desc);
+		}
+
+		return controller;
+	}
+
 	physx::PxMaterial* Physics::CreatePhysicsMaterial(const PhysicsMaterialComponent& component)
 	{
-		physx::PxMaterial* material = Physics::GetPhysicsFactory()->createMaterial(component.StaticFriction, component.DynamicFriction, component.Bounciness);
+		physx::PxMaterial* material = s_Data->PhysXSDK->createMaterial(component.StaticFriction, component.DynamicFriction, component.Bounciness);
 		material->setFrictionCombineMode((physx::PxCombineMode::Enum)component.FrictionCombineMode);
 		material->setRestitutionCombineMode((physx::PxCombineMode::Enum)component.RestitutionCombineMode);
 		return material;
@@ -537,7 +784,7 @@ namespace Vortex {
 		s_Data->DefaultAllocator.deallocate(shapes);
 	}
 
-	void Physics::UpdateDynamicActorFlags(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
+	void Physics::UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor)
 	{
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
@@ -583,40 +830,6 @@ namespace Vortex {
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidbody.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
-	}
-
-	void Physics::DestroyPhysicsActor(Entity entity)
-	{
-		physx::PxActor* actor = nullptr;
-
-		if (entity.HasComponent<RigidBodyComponent>())
-		{
-			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-			physx::PxActor* actor = static_cast<physx::PxActor*>(rigidbody.RuntimeActor);
-
-			if (actor == nullptr)
-			{
-				VX_CONSOLE_LOG_WARN("Trying to delete Physics Actor that doesn't exist!");
-				return;
-			}
-
-			if (entity.HasComponent<CharacterControllerComponent>())
-			{
-				physx::PxController* controller = static_cast<physx::PxController*>(entity.GetComponent<CharacterControllerComponent>().RuntimeController);
-				controller->release();
-			}
-
-			// Destroy the physics body data
-			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
-			delete physicsBodyData;
-
-			s_Data->PhysicsScene->removeActor(*actor);
-		}
-	}
-
-	physx::PxSimulationStatistics* Physics::GetSimulationStatistics()
-	{
-		return &s_Data->SimulationStats;
 	}
 
 }

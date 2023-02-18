@@ -168,7 +168,15 @@ namespace Vortex {
 
 		if (Gui::BeginPopupModal("Create New Project"))
 		{
-			ImGuiIO& io = Gui::GetIO();
+			static const char* options[] = { ProjectTypeToString(ProjectType::e2D), ProjectTypeToString(ProjectType::e3D) };
+			uint32_t selectedProjectType = (uint32_t)m_Properties.Type;
+			UI::BeginPropertyGrid();
+			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYCOUNT(options), selectedProjectType))
+			{
+				m_Properties.Type == (ProjectType)selectedProjectType;
+			}
+			UI::EndPropertyGrid();
+
 			auto contextRegionAvail = Gui::GetContentRegionAvail();
 			Gui::Columns(2);
 			Gui::Text("Project Name");
@@ -240,14 +248,16 @@ namespace Vortex {
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
-
-		SharedRef<Scene> startScene = Scene::Create();
-		Scene::CreateDefaultEntities(startScene);
-		SceneSerializer serializer(startScene);
-		serializer.Serialize((m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
-
 		std::filesystem::copy("Resources/NewProjectTemplate/premake5.lua", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
 		std::filesystem::copy("Resources/NewProjectTemplate/Win32Gen.bat", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
+
+		SharedRef<Scene> startScene = Scene::Create();
+		if (m_Properties.Type == ProjectType::e2D)
+			Scene::Create2DSampleScene(startScene);
+		else
+			Scene::Create3DSampleScene(startScene);
+		SceneSerializer serializer(startScene);
+		serializer.Serialize((m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
 
 		std::filesystem::path premakeFilepath = (m_Properties.ProjectDirectoryBuffer / projectProps.General.AssetDirectory) / "Scripts/premake5.lua";
 		std::ifstream premakeFile(premakeFilepath);
@@ -309,6 +319,18 @@ namespace Vortex {
 	{
 		std::string projectPath = FileSystem::Relative(m_ProjectPath, m_Properties.WorkingDirectory).string();
 		FileSystem::LaunchApplication(m_Properties.EditorPath.c_str(), projectPath.c_str());
+	}
+
+	const char* LauncherLayer::ProjectTypeToString(ProjectType type)
+	{
+		switch (type)
+		{
+			case ProjectType::e2D: return "2D";
+			case ProjectType::e3D: return "3D";
+		}
+
+		VX_CORE_ASSERT(false, "Unknown project type!");
+		return "";
 	}
 
 }

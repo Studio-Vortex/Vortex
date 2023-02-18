@@ -355,6 +355,18 @@ namespace Vortex {
 		CharacterControllerComponent(const CharacterControllerComponent&) = default;
 	};
 
+	struct FixedJointComponent
+	{
+		UUID ConnectedEntity;
+
+		bool IsBreakable = true;
+		float BreakForce = 100.0f;
+		float BreakTorque = 10.0f;
+
+		bool EnableCollision = false;
+		bool EnablePreProcessing = true;
+	};
+
 	struct PhysicsMaterialComponent
 	{
 		float StaticFriction = 1.0F;
@@ -526,8 +538,8 @@ namespace Vortex {
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics
-		RigidBodyComponent, CharacterControllerComponent, PhysicsMaterialComponent, BoxColliderComponent,
-		SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent,
+		RigidBodyComponent, CharacterControllerComponent, FixedJointComponent, PhysicsMaterialComponent,
+		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		// AI
 		NavMeshAgentComponent,

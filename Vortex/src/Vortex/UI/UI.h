@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Math.h"
-#include "Vortex/Renderer/Texture.h"
 #include "Vortex/Gui/Colors.h"
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Renderer/Texture.h"
 #include "Vortex/Editor/FontAwesome.h"
+#include "Vortex/Editor/EditorResources.h"
 
 #include <imgui_internal.h>
 
@@ -15,6 +17,7 @@ namespace Vortex::UI {
 	static uint32_t s_Counter = 0;
 	static uint32_t s_CheckboxCount = 0;
 	static char s_IDBuffer[16] = "##";
+	static char s_LabelIDBuffer[1024];
 
 	class ScopedStyle
 	{
@@ -144,6 +147,42 @@ namespace Vortex::UI {
 		float hue, sat, val;
 		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
 		return ImColor::HSV(hue, sat, std::min(val * multiplier, 1.0f));
+	}
+
+	inline static const char* GenerateLabelID(std::string_view label)
+	{
+		*fmt::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
+		return s_LabelIDBuffer;
+	}
+
+	static inline ImRect GetItemRect()
+	{
+		return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+	}
+
+	static inline ImRect RectExpanded(const ImRect& rect, float x, float y)
+	{
+		ImRect result = rect;
+		result.Min.x -= x;
+		result.Min.y -= y;
+		result.Max.x += x;
+		result.Max.y += y;
+		return result;
+	}
+
+	static inline ImRect RectOffset(const ImRect& rect, float x, float y)
+	{
+		ImRect result = rect;
+		result.Min.x += x;
+		result.Min.y += y;
+		result.Max.x += x;
+		result.Max.y += y;
+		return result;
+	}
+
+	static inline ImRect RectOffset(const ImRect& rect, ImVec2 xy)
+	{
+		return RectOffset(rect, xy.x, xy.y);
 	}
 
 	namespace Draw {
@@ -369,6 +408,37 @@ namespace Vortex::UI {
 		Gui::PopStyleVar(2);
 		ShiftCursorY(18.0f);
 		PopID();
+	}
+
+	inline static bool BeginPopup(const char* str_id, ImGuiWindowFlags flags)
+	{
+		bool opened = false;
+
+		if (ImGui::BeginPopup(str_id, flags))
+		{
+			opened = true;
+			// Fill background wiht nice gradient
+			const float padding = ImGui::GetStyle().WindowBorderSize;
+			const ImRect windowRect = UI::RectExpanded(ImGui::GetCurrentWindow()->Rect(), -padding, -padding);
+			ImGui::PushClipRect(windowRect.Min, windowRect.Max, false);
+			const ImColor col1 = ImGui::GetStyleColorVec4(ImGuiCol_PopupBg);
+			const ImColor col2 = UI::ColorWithMultipliedValue(col1, 0.8f);
+			ImGui::GetWindowDrawList()->AddRectFilledMultiColor(windowRect.Min, windowRect.Max, col1, col1, col2, col2);
+			ImGui::GetWindowDrawList()->AddRect(windowRect.Min, windowRect.Max, UI::ColorWithMultipliedValue(col1, 1.1f));
+			ImGui::PopClipRect();
+
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(0, 0, 0, 80));
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
+		}
+
+		return opened;
+	}
+
+	inline static void EndPopup()
+	{
+		ImGui::PopStyleVar(); // WindowPadding;
+		ImGui::PopStyleColor(); // HeaderHovered;
+		ImGui::EndPopup();
 	}
 
 	inline static bool PropertyGridHeader(const char* label, bool defaultOpen = true)
@@ -923,7 +993,8 @@ namespace Vortex::UI {
 		const std::string id = "##" + std::string(label);
 		if (Gui::BeginCombo(id.c_str(), current))
 		{
-			bool isSearching = Gui::InputTextWithHint(id.c_str(), "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
+			const bool isSearching = Gui::InputTextWithHint(id.c_str(), "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
+
 			if (isSearching)
 				textFilter.Build();
 
@@ -947,48 +1018,9 @@ namespace Vortex::UI {
 				}
 
 				if (isSelected)
-					Gui::SetItemDefaultFocus();
-			}
-
-			Gui::EndCombo();
-		}
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
-	{
-		const char* current = Gui::GetFont()->GetDebugName();
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		bool modified = false;
-
-		const std::string id = "##" + std::string(label);
-		if (Gui::BeginCombo(id.c_str(), current))
-		{
-			ImGuiIO& io = Gui::GetIO();
-			for (uint32_t i = 0; i < count; i++)
-			{
-				const bool isSelected = current == selected->GetDebugName();
-				if (Gui::Selectable(options[i], isSelected))
 				{
-					current = options[i];
-					selected = io.Fonts->Fonts[i];
-					io.FontDefault = selected;
-					modified = true;
-				}
-
-				if (isSelected)
 					Gui::SetItemDefaultFocus();
+				}
 			}
 
 			Gui::EndCombo();
@@ -1092,6 +1124,517 @@ namespace Vortex::UI {
 		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	};
 
+	inline static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = ImColor(80, 80, 80))
+	{
+		auto* drawList = ImGui::GetWindowDrawList();
+		const ImRect rect = RectExpanded(GetItemRect(), 1.0f, 1.0f);
+		if (ImGui::IsItemHovered() && !ImGui::IsItemActive())
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				ImColor(60, 60, 60), rounding, 0, 1.5f);
+		}
+		if (ImGui::IsItemActive())
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				colourWhenActive, rounding, 0, 1.0f);
+		}
+		else if (!ImGui::IsItemHovered() && drawWhenInactive)
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				ImColor(50, 50, 50), rounding, 0, 1.0f);
+		}
+	};
+
+	template <typename StringType, typename... OtherReplacements>
+	inline static std::string Replace(StringType textToSearch, std::string_view firstToReplace, std::string_view firstReplacement,
+		OtherReplacements&&... otherPairsOfStringsToReplace)
+	{
+		static_assert ((sizeof... (otherPairsOfStringsToReplace) & 1u) == 0,
+			"This function expects a list of pairs of strings as its arguments");
+
+		if constexpr (std::is_same<const StringType, const std::string_view>::value || std::is_same<const StringType, const char* const>::value)
+		{
+			return Replace(std::string(textToSearch), firstToReplace, firstReplacement,
+				std::forward<OtherReplacements>(otherPairsOfStringsToReplace)...);
+		}
+		else if constexpr (sizeof... (otherPairsOfStringsToReplace) == 0)
+		{
+			size_t pos = 0;
+
+			for (;;)
+			{
+				pos = textToSearch.find(firstToReplace, pos);
+
+				if (pos == std::string::npos)
+					return textToSearch;
+
+				textToSearch.replace(pos, firstToReplace.length(), firstReplacement);
+				pos += firstReplacement.length();
+			}
+		}
+		else
+		{
+			return Replace(Replace(std::move(textToSearch), firstToReplace, firstReplacement),
+				std::forward<OtherReplacements>(otherPairsOfStringsToReplace)...);
+		}
+	}
+
+	template <typename CharStartsDelimiter, typename CharIsInDelimiterBody>
+	inline static std::vector<std::string> SplitString(std::string_view source,
+		CharStartsDelimiter&& isDelimiterStart,
+		CharIsInDelimiterBody&& isDelimiterBody,
+		bool keepDelimiters)
+	{
+		std::vector<std::string> tokens;
+		auto tokenStart = source.begin();
+		auto pos = tokenStart;
+
+		while (pos != source.end())
+		{
+			if (isDelimiterStart(*pos))
+			{
+				auto delimiterStart = pos++;
+
+				while (pos != source.end() && isDelimiterBody(*pos))
+					++pos;
+
+				if (pos != source.begin())
+					tokens.push_back({ tokenStart, keepDelimiters ? pos : delimiterStart });
+
+				tokenStart = pos;
+			}
+			else
+			{
+				++pos;
+			}
+		}
+
+		if (pos != source.begin())
+			tokens.push_back({ tokenStart, pos });
+
+		return tokens;
+	}
+
+	inline static bool IsWhitespace(char c) { return c == ' ' || (c <= 13 && c >= 9); }
+
+	inline static std::vector<std::string> SplitAtWhitespace(std::string_view text, bool keepDelimiters = false)
+	{
+		return SplitString(text,
+			[](char c) { return IsWhitespace(c); },
+			[](char c) { return IsWhitespace(c); },
+			keepDelimiters);
+	}
+
+	inline static std::string& ToLower(std::string& string)
+	{
+		std::transform(string.begin(), string.end(), string.begin(),
+			[](const unsigned char c) { return std::tolower(c); });
+
+		return string;
+	}
+
+	inline static bool IsMatchingSearch(const std::string& item, std::string_view searchQuery, bool caseSensitive = false, bool stripWhiteSpaces = false, bool stripUnderscores = false)
+	{
+		if (searchQuery.empty())
+			return true;
+
+		if (item.empty())
+			return false;
+
+		std::string itemSanitized = stripUnderscores ? Replace(item, "_", " ") : item;
+
+		if (stripWhiteSpaces)
+			itemSanitized = Replace(itemSanitized, " ", "");
+
+		std::string searchString = stripWhiteSpaces ? Replace(searchQuery, " ", "") : std::string(searchQuery);
+
+		if (!caseSensitive)
+		{
+			itemSanitized = ToLower(itemSanitized);
+			searchString = ToLower(searchString);
+		}
+
+		bool result = false;
+		if (searchString.find(" ") != std::string::npos)
+		{
+			std::vector<std::string> searchTerms = SplitAtWhitespace(searchString);
+			for (const auto& searchTerm : searchTerms)
+			{
+				if (!searchTerm.empty() && itemSanitized.find(searchTerm) != std::string::npos)
+					result = true;
+				else
+				{
+					result = false;
+					break;
+				}
+			}
+		}
+		else
+		{
+			result = itemSanitized.find(searchString) != std::string::npos;
+		}
+
+		return result;
+	}
+
+	template<uint32_t BuffSize = 256, typename StringType>
+	inline static bool SearchWidget(StringType& searchString, const char* hint = "Search...", bool* grabFocus = nullptr)
+	{
+		PushID();
+
+		ShiftCursorY(1.0f);
+
+		const bool layoutSuspended = []
+		{
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			if (window->DC.CurrentLayout)
+			{
+				ImGui::SuspendLayout();
+				return true;
+			}
+			return false;
+		}();
+
+		bool modified = false;
+		bool searching = false;
+
+		const float areaPosX = ImGui::GetCursorPosX();
+		const float framePaddingY = ImGui::GetStyle().FramePadding.y;
+
+		UI::ScopedStyle rounding(ImGuiStyleVar_FrameRounding, 3.0f);
+		UI::ScopedStyle padding(ImGuiStyleVar_FramePadding, ImVec2(28.0f, framePaddingY));
+
+		if constexpr (std::is_same<StringType, std::string>::value)
+		{
+			char searchBuffer[BuffSize]{};
+			strcpy_s<BuffSize>(searchBuffer, searchString.c_str());
+			if (ImGui::InputText(GenerateID(), searchBuffer, BuffSize))
+			{
+				searchString = searchBuffer;
+				modified = true;
+			}
+			else if (ImGui::IsItemDeactivatedAfterEdit())
+			{
+				searchString = searchBuffer;
+				modified = true;
+			}
+
+			searching = searchBuffer[0] != 0;
+		}
+		else
+		{
+			static_assert(std::is_same<decltype(&searchString[0]), char*>::value,
+				"searchString paramenter must be std::string& or char*");
+
+			if (ImGui::InputText(GenerateID(), searchString, BuffSize))
+			{
+				modified = true;
+			}
+			else if (ImGui::IsItemDeactivatedAfterEdit())
+			{
+				modified = true;
+			}
+
+			searching = searchString[0] != 0;
+		}
+
+		if (grabFocus && *grabFocus)
+		{
+			if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+				&& !ImGui::IsAnyItemActive()
+				&& !ImGui::IsMouseClicked(0))
+			{
+				ImGui::SetKeyboardFocusHere(-1);
+			}
+
+			if (ImGui::IsItemFocused())
+				*grabFocus = false;
+		}
+
+		UI::DrawItemActivityOutline(3.0f, true, Colors::Theme::accent);
+		ImGui::SetItemAllowOverlap();
+
+		ImGui::SameLine(areaPosX + 5.0f);
+
+		if (layoutSuspended)
+			ImGui::ResumeLayout();
+
+		ImGui::BeginHorizontal(GenerateID(), ImGui::GetItemRectSize());
+		const ImVec2 iconSize(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight());
+
+		// Search icon
+		{
+			const float iconYOffset = framePaddingY - 3.0f;
+			UI::ShiftCursorY(iconYOffset);
+			UI::ImageEx(EditorResources::SearchIcon, iconSize, ImVec4(1.0f, 1.0f, 1.0f, 0.2f), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
+			UI::ShiftCursorY(-iconYOffset);
+
+			// Hint
+			if (!searching)
+			{
+				UI::ShiftCursorY(-framePaddingY + 1.0f);
+				UI::ScopedColour text(ImGuiCol_Text, Colors::Theme::textDarker);
+				UI::ScopedStyle padding(ImGuiStyleVar_FramePadding, ImVec2(0.0f, framePaddingY));
+				ImGui::TextUnformatted(hint);
+				UI::ShiftCursorY(-1.0f);
+			}
+		}
+
+		ImGui::Spring();
+
+		// Clear icon
+		if (searching)
+		{
+			const float spacingX = 4.0f;
+			const float lineHeight = ImGui::GetItemRectSize().y - framePaddingY / 2.0f;
+
+			if (ImGui::InvisibleButton(GenerateID(), ImVec2{ lineHeight, lineHeight }))
+			{
+				if constexpr (std::is_same<StringType, std::string>::value)
+					searchString.clear();
+				else
+					memset(searchString, 0, BuffSize);
+
+				modified = true;
+			}
+
+			if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+
+			UI::DrawButtonImage(EditorResources::ClearIcon, IM_COL32(160, 160, 160, 200),
+				IM_COL32(170, 170, 170, 255),
+				IM_COL32(160, 160, 160, 150),
+				UI::RectExpanded(UI::GetItemRect(), -2.0f, -2.0f));
+
+			ImGui::Spring(-1.0f, spacingX * 2.0f);
+		}
+
+		ImGui::EndHorizontal();
+		UI::ShiftCursorY(-1.0f);
+		UI::PopID();
+		return modified;
+	}
+
+	inline static bool EntitySearchPopup(const char* ID, SharedRef<Scene> scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = { 250.0f, 350.0f })
+	{
+		UI::ScopedColour popupBG(ImGuiCol_PopupBg, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.6f));
+
+		bool modified = false;
+
+		auto entities = scene->GetAllEntitiesWith<IDComponent, TagComponent>();
+		UUID current = selected;
+
+		ImGui::SetNextWindowSize({ size.x, 0.0f });
+
+		static bool s_GrabFocus = true;
+
+		if (UI::BeginPopup(ID, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+		{
+			static std::string searchString;
+
+			if (ImGui::GetCurrentWindow()->Appearing)
+			{
+				s_GrabFocus = true;
+				searchString.clear();
+			}
+
+			// Search widget
+			UI::ShiftCursor(3.0f, 2.0f);
+			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - ImGui::GetCursorPosX() * 2.0f);
+			SearchWidget(searchString, hint, &s_GrabFocus);
+
+			const bool searching = !searchString.empty();
+
+			// Clear property button
+			if (cleared != nullptr)
+			{
+				UI::ScopedColourStack buttonColours(
+					ImGuiCol_Button, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.0f),
+					ImGuiCol_ButtonHovered, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.2f),
+					ImGuiCol_ButtonActive, UI::ColorWithMultipliedValue(Colors::Theme::background, 0.9f));
+
+				UI::ScopedStyle border(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
+				ImGui::SetCursorPosX(0);
+
+				ImGui::PushItemFlag(ImGuiItemFlags_NoNav, searching);
+
+				if (ImGui::Button("CLEAR", { ImGui::GetWindowWidth(), 0.0f }))
+				{
+					*cleared = true;
+					modified = true;
+				}
+
+				ImGui::PopItemFlag();
+			}
+
+			// List of entities
+			{
+				UI::ScopedColour listBoxBg(ImGuiCol_FrameBg, IM_COL32_DISABLE);
+				UI::ScopedColour listBoxBorder(ImGuiCol_Border, IM_COL32_DISABLE);
+
+				ImGuiID listID = ImGui::GetID("##SearchListBox");
+				if (ImGui::BeginListBox("##SearchListBox", ImVec2(-FLT_MIN, 0.0f)))
+				{
+					bool forwardFocus = false;
+
+					ImGuiContext& g = *GImGui;
+					if (g.NavJustMovedToId != 0)
+					{
+						if (g.NavJustMovedToId == listID)
+						{
+							forwardFocus = true;
+							// ActivateItem moves keyboard navigation focuse inside of the window
+							ImGui::ActivateItem(listID);
+							ImGui::SetKeyboardFocusHere(1);
+						}
+					}
+
+					for (auto enttID : entities)
+					{
+						const auto& idComponent = entities.get<IDComponent>(enttID);
+						const auto& tagComponent = entities.get<TagComponent>(enttID);
+
+						if (!searchString.empty() && !UI::IsMatchingSearch(tagComponent.Tag, searchString))
+							continue;
+
+						bool is_selected = current == idComponent.ID;
+						if (ImGui::Selectable(tagComponent.Tag.c_str(), is_selected))
+						{
+							current = selected = idComponent.ID;
+							modified = true;
+						}
+
+						if (forwardFocus)
+							forwardFocus = false;
+						else if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::EndListBox();
+				}
+			}
+			if (modified)
+				ImGui::CloseCurrentPopup();
+
+			UI::EndPopup();
+		}
+
+		return modified;
+	}
+
+	inline static bool PropertyEntityReference(const char* label, UUID& entityID, SharedRef<Scene> currentScene)
+	{
+		bool receivedValidEntity = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ShiftCursorY(4.0f);
+		ImGui::PushItemWidth(-1);
+
+		ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+		{
+			ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+			float width = ImGui::GetContentRegionAvail().x;
+			float itemHeight = 28.0f;
+
+			std::string buttonText = "Null";
+
+			Entity entity = currentScene->TryGetEntityWithUUID(entityID);
+			if (entity)
+				buttonText = entity.GetComponent<TagComponent>().Tag;
+
+			// PropertyEntityReference could be called multiple times in same "context"
+			// and so we need a unique id for the asset search popup each time.
+			// notes
+			// - don't use GenerateID(), that's inviting id clashes, which would be super confusing.
+			// - don't store return from GenerateLabelId in a const char* here. Because its pointing to an internal
+			//   buffer which may get overwritten by the time you want to use it later on.
+			std::string assetSearchPopupID = GenerateLabelID("ARSP");
+			{
+				UI::ScopedColour buttonLabelColor(ImGuiCol_Text, ImGui::ColorConvertU32ToFloat4(Colors::Theme::text));
+				ImGui::Button(GenerateLabelID(buttonText), { width, itemHeight });
+
+				const bool isHovered = ImGui::IsItemHovered();
+				if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					ImGui::OpenPopup(assetSearchPopupID.c_str());
+			}
+
+			ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+
+			bool clear = false;
+			if (EntitySearchPopup(assetSearchPopupID.c_str(), currentScene, entityID, &clear))
+			{
+				if (clear)
+					entityID = 0;
+				receivedValidEntity = true;
+			}
+		}
+
+		if (!(ImGui::GetItemFlags() & ImGuiItemFlags_Disabled))
+		{
+			if (ImGui::BeginDragDropTarget())
+			{
+				auto data = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM");
+
+				if (data)
+				{
+					entityID = *(UUID*)data->Data;
+					receivedValidEntity = true;
+				}
+
+				ImGui::EndDragDropTarget();
+			}
+		}
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return receivedValidEntity;
+	}
+
+	inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
+	{
+		const char* current = Gui::GetFont()->GetDebugName();
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		bool modified = false;
+
+		const std::string id = "##" + std::string(label);
+		if (Gui::BeginCombo(id.c_str(), current))
+		{
+			ImGuiIO& io = Gui::GetIO();
+			for (uint32_t i = 0; i < count; i++)
+			{
+				const bool isSelected = current == selected->GetDebugName();
+				if (Gui::Selectable(options[i], isSelected))
+				{
+					current = options[i];
+					selected = io.Fonts->Fonts[i];
+					io.FontDefault = selected;
+					modified = true;
+				}
+
+				if (isSelected)
+					Gui::SetItemDefaultFocus();
+			}
+
+			Gui::EndCombo();
+		}
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+		Draw::Underline();
+
+		return modified;
+	}
+
 	inline static bool TreeNode(const char* label, bool defaultOpen = true)
 	{
 		bool opened = false;
@@ -1107,37 +1650,6 @@ namespace Vortex::UI {
 
 		return opened;
 	}
-
-	static inline ImRect GetItemRect()
-	{
-		return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-	}
-
-	static inline ImRect RectExpanded(const ImRect& rect, float x, float y)
-	{
-		ImRect result = rect;
-		result.Min.x -= x;
-		result.Min.y -= y;
-		result.Max.x += x;
-		result.Max.y += y;
-		return result;
-	}
-
-	static inline ImRect RectOffset(const ImRect& rect, float x, float y)
-	{
-		ImRect result = rect;
-		result.Min.x += x;
-		result.Min.y += y;
-		result.Max.x += x;
-		result.Max.y += y;
-		return result;
-	}
-
-	static inline ImRect RectOffset(const ImRect& rect, ImVec2 xy)
-	{
-		return RectOffset(rect, xy.x, xy.y);
-	}
-
 
 	inline static bool ShowMessageBox(const char* title, const ImVec2& size)
 	{

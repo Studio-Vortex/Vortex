@@ -1871,7 +1871,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
 
 		*outTranslation = translation;
@@ -1892,7 +1892,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 
 		const auto& transformComponent = entity.GetTransform();
 		Math::vec3 rotation = transformComponent.GetRotationEuler();
@@ -1917,7 +1917,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
 
 		*outRotation = Math::EulerAngles(orientation);
@@ -1938,7 +1938,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		physx::PxTransform physxTransform = actor->getGlobalPose();
 		physxTransform.q = ToPhysXQuat(*rotation);
 
@@ -1960,7 +1960,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		physx::PxTransform physxTransform = actor->getGlobalPose();
 		physxTransform.p += ToPhysXVector(*translation);
 
@@ -1974,7 +1974,7 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
 		if (rb.Type != RigidBodyType::Dynamic)
 		{
@@ -1982,7 +1982,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		physx::PxTransform physxTransform = actor->getGlobalPose();
 		physxTransform.q *= ToPhysXQuat(*rotation);
 
@@ -1996,8 +1996,15 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidDynamic* actor = ((physx::PxRigidDynamic*)rigidBody.RuntimeActor);
+		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+		if (rb.Type != RigidBodyType::Dynamic)
+		{
+			VX_CONSOLE_LOG_WARN("Calling RigidBody.LookAt with Static actor");
+			return;
+		}
+
+		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
 		physx::PxTransform physxTransform = actor->getGlobalPose();
 
 		Math::mat4 transform = FromPhysXTransform(physxTransform);
@@ -2030,17 +2037,13 @@ namespace Vortex {
 
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-		if (bodyType != rigidbody.Type) // recreate the body if the new type is different than the old one
-		{
-			if (rigidbody.RuntimeActor)
-			{
-				Physics::DestroyPhysicsActor(entity);
-			}
+		bool consistentBodyType = bodyType == rigidbody.Type;
 
-			rigidbody.Type = bodyType;
-			rigidbody.RuntimeActor = nullptr;
-			Physics::CreatePhysicsActor(entity);
-		}
+		if (consistentBodyType || !Physics::GetActor(entityUUID))
+			return;
+
+		rigidbody.Type = bodyType;
+		Physics::ReCreateActor(entity);
 	}
 
 	static CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
@@ -2183,12 +2186,9 @@ namespace Vortex {
 		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 		rigidbody.DisableGravity = disabled;
 
-		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 
-		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
-		{
-			dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
-		}
+		actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
 	}
 
 	static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
@@ -2245,18 +2245,21 @@ namespace Vortex {
 		}
 
 		if (value)
-			rb.LockFlags |= (uint8_t)flag;
-		else
-			rb.LockFlags &= ~(uint8_t)flag;
-
-		physx::PxRigidActor* actor = (physx::PxRigidActor*)rb.RuntimeActor;
-
-		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
 		{
-			dynamicActor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
+			rb.LockFlags |= (uint8_t)flag;
+		}
+		else
+		{
+			rb.LockFlags &= ~(uint8_t)flag;
+		}
 
-			if (forceWake)
-				dynamicActor->wakeUp();
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+
+		actor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
+
+		if (forceWake)
+		{
+			actor->wakeUp();
 		}
 	}
 
@@ -2294,7 +2297,7 @@ namespace Vortex {
 			return false;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 		return actor->isSleeping();
 	}
 
@@ -2313,7 +2316,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)rb.RuntimeActor;
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 		actor->wakeUp();
 	}
 
@@ -2332,8 +2335,8 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->addForce(ToPhysXVector(*force), static_cast<physx::PxForceMode::Enum>(mode));
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+		actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 	}
 
 	static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
@@ -2351,7 +2354,7 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 		physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
 	}
 
@@ -2370,8 +2373,8 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->addTorque(ToPhysXVector(*torque), static_cast<physx::PxForceMode::Enum>(mode));
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+		actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 	}
 
 	static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
@@ -2389,8 +2392,8 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->clearTorque(static_cast<physx::PxForceMode::Enum>(mode));
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+		actor->clearTorque((physx::PxForceMode::Enum)mode);
 	}
 
 	static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
@@ -2408,8 +2411,8 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxRigidDynamic* actor = static_cast<physx::PxRigidDynamic*>(rigidbody.RuntimeActor);
-		actor->clearForce(static_cast<physx::PxForceMode::Enum>(mode));
+		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+		actor->clearForce((physx::PxForceMode::Enum)mode);
 	}
 
 #pragma endregion
@@ -2418,44 +2421,7 @@ namespace Vortex {
 
 	static bool Physics_Raycast(Math::vec3* origin, Math::vec3* direction, float maxDistance, RaycastHit* outHit)
 	{
-		physx::PxScene* scene = Physics::GetPhysicsScene();
-		physx::PxRaycastBuffer hitInfo;
-		bool result = scene->raycast(ToPhysXVector(*origin), ToPhysXVector(Math::Normalize(*direction)), maxDistance, hitInfo);
-
-		if (result)
-		{
-			void* userData = hitInfo.block.actor->userData;
-
-			if (!userData)
-			{
-				*outHit = RaycastHit();
-				return false;
-			}
-
-			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
-			UUID entityUUID = physicsBodyData->EntityUUID;
-
-			// Call Hit Entity's OnCollision Method
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity hitEntity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(hitEntity, "Entity UUID was Invalid!");
-
-			if (hitEntity.HasComponent<ScriptComponent>())
-			{
-				if (ScriptEngine::EntityClassExists(hitEntity.GetComponent<ScriptComponent>().ClassName))
-				{
-					ScriptEngine::OnRaycastCollisionEntity(hitEntity);
-				}
-			}
-
-			outHit->EntityID = entityUUID;
-			outHit->Position = FromPhysXVector(hitInfo.block.position);
-			outHit->Normal = FromPhysXVector(hitInfo.block.normal);
-			outHit->Distance = hitInfo.block.distance;
-		}
-
-		return result;
+		return Physics::Raycast(*origin, *direction, maxDistance, outHit);
 	}
 
 	static void Physics_GetSceneGravity(Math::vec3* outGravity)
@@ -2520,14 +2486,14 @@ namespace Vortex {
 
 		if (!entity.HasComponent<CharacterControllerComponent>())
 		{
-			VX_CORE_WARN_TAG("Scripting", "Trying to move entity without Character Controller!");
+			VX_CONSOLE_LOG_WARN("Calling CharacterController.Move without a Character Controller!");
 			return;
 		}
 
 		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
 
 		physx::PxControllerFilters filters; // TODO
-		physx::PxController* controller = static_cast<physx::PxController*>(characterControllerComponent.RuntimeController);
+		physx::PxController* controller = Physics::GetController(entityUUID);
 
 		auto gravity = Physics::GetPhysicsSceneGravity();
 
@@ -2554,6 +2520,12 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Calling CharacterController.Jump without a Character Controller!");
+			return;
+		}
+
 		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 		characterController.SpeedDown = -1.0f * jumpForce;
 	}
@@ -2565,8 +2537,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return false;
+		}
+
 		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-		physx::PxController* controller = static_cast<physx::PxController*>(characterController.RuntimeController);
+		physx::PxController* controller = Physics::GetController(entityUUID);
 
 		physx::PxControllerState state;
 		controller->getState(state);
@@ -2587,6 +2565,12 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return 0.0f;
+		}
+
 		return entity.GetComponent<CharacterControllerComponent>().SpeedDown;
 	}
 
@@ -2596,6 +2580,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return 0.0f;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees;
 	}
@@ -2607,7 +2597,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
+
 		entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees = slopeLimit;
+		Physics::GetController(entityUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
 	}
 
 	static float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
@@ -2616,6 +2613,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return 0.0f;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().StepOffset;
 	}
@@ -2627,7 +2630,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
+
 		entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
+		Physics::GetController(entityUUID)->setStepOffset(stepOffset);
 	}
 
 	static float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
@@ -2636,6 +2646,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return 0.0f;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().ContactOffset;
 	}
@@ -2647,7 +2663,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
+
 		entity.GetComponent<CharacterControllerComponent>().ContactOffset = contactOffset;
+		Physics::GetController(entityUUID)->setContactOffset(contactOffset);
 	}
 
 	static NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
@@ -2656,6 +2679,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return NonWalkableMode::PreventClimbing;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().NonWalkMode;
 	}
@@ -2667,7 +2696,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
+
 		entity.GetComponent<CharacterControllerComponent>().NonWalkMode = mode;
+		Physics::GetController(entityUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
 	}
 
 	static CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
@@ -2676,6 +2712,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return CapsuleClimbMode::Easy;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().ClimbMode;
 	}
@@ -2687,7 +2729,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
+
 		entity.GetComponent<CharacterControllerComponent>().ClimbMode = mode;
+		// TODO any way to set capsule climbing mode during runtime?
 	}
 
 	static bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
@@ -2696,6 +2745,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return false;
+		}
 
 		return entity.GetComponent<CharacterControllerComponent>().DisableGravity;
 	}
@@ -2706,6 +2761,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			return;
+		}
 
 		entity.GetComponent<CharacterControllerComponent>().DisableGravity = disableGravity;
 	}

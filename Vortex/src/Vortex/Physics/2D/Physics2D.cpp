@@ -108,7 +108,7 @@ namespace Vortex {
 			s_PhysicsScene->Step(delta, s_PhysicsWorld2DVeloctityIterations, s_PhysicsWorld2DPositionIterations);
 
 			// Get transform from Box2D
-			for (auto e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();

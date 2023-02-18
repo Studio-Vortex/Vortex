@@ -170,7 +170,19 @@ namespace Vortex {
 		return destination;
 	}
 
-	void Scene::CreateDefaultEntities(SharedRef<Scene>& context)
+	void Scene::Create2DSampleScene(SharedRef<Scene>& context)
+	{
+		// Starting Entities
+		Entity startingCamera = context->CreateEntity("Camera");
+		startingCamera.AddComponent<AudioListenerComponent>();
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = { 0.0f, 0.0f, 0.0f };
+		cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
+	}
+
+	void Scene::Create3DSampleScene(SharedRef<Scene>& context)
 	{
 		// Starting Entities
 		Entity startingCube = context->CreateEntity("Cube");
@@ -234,20 +246,22 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (entity.GetContextScene() != this)
+		if (entity.GetContextScene() != this || !entity)
 			return;
-
-		// Call the entitys OnDestroy function if they are a script instance
-		if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr && m_IsRunning)
-		{
-			const std::string& className = entity.GetComponent<ScriptComponent>().ClassName;
-
-			if (ScriptEngine::EntityClassExists(className))
-				ScriptEngine::OnDestroyEntity(entity);
-		}
 
 		if (m_IsRunning)
 		{
+			// Destroy script instance
+			if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
+			{
+				const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+				if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
+				{
+					ScriptEngine::OnDestroyEntity(entity);
+				}
+			}
+
 			Physics::DestroyPhysicsActor(entity);
 			Physics2D::DestroyPhysicsBody(entity);
 		}
@@ -271,12 +285,12 @@ namespace Vortex {
 		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
-		m_Registry.destroy(entity);
 
 		VX_CORE_ASSERT(it != m_EntityMap.end(), "Enitiy was not found in Entity Map!");
 
 		// Remove the entity from our internal map
-		m_EntityMap.erase(it->first);
+		m_EntityMap.erase(it->second);
+		m_Registry.destroy(entity);
 
 		SortEntities();
 	}
@@ -494,6 +508,12 @@ namespace Vortex {
 		Physics2D::OnSimulationStart(this);
 	}
 
+	void Scene::OnPhysicsSimulationUpdate(TimeStep delta)
+	{
+		Physics::OnSimulationUpdate(delta);
+		Physics2D::OnSimulationUpdate(delta, this);
+	}
+
 	void Scene::OnPhysicsSimulationStop()
 	{
 		VX_PROFILE_FUNCTION();
@@ -508,9 +528,15 @@ namespace Vortex {
 
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
+			// C++ Entity OnUpdate
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				nsc.Instance->OnUpdate(delta);
+			});
+
 			// C# Entity OnUpdate
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto entityID : view)
+			const auto view = m_Registry.view<ScriptComponent>();
+			for (const auto entityID : view)
 			{
 				Entity entity{ entityID, this };
 
@@ -520,15 +546,8 @@ namespace Vortex {
 				ScriptEngine::OnUpdateEntity(entity, delta);
 			}
 
-			// C++ Entity OnUpdate
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				nsc.Instance->OnUpdate(delta);
-			});
-
 			// Update Physics Bodies
-			Physics::OnSimulationUpdate(delta, this);
-			Physics2D::OnSimulationUpdate(delta, this);
+			OnPhysicsSimulationUpdate(delta);
 
 			// Update Animators
 			OnAnimatorUpdate(delta);
@@ -579,8 +598,7 @@ namespace Vortex {
 
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
-			Physics::OnSimulationUpdate(delta, this);
-			Physics2D::OnSimulationUpdate(delta, this);
+			OnPhysicsSimulationUpdate(delta);
 
 			// Update Animators
 			OnAnimatorUpdate(delta);
@@ -764,7 +782,9 @@ namespace Vortex {
 		m_Registry.each([&](auto e)
 		{
 			if (e == entity)
+			{
 				return Entity{ e, this };
+			}
 		});
 
 		return {};
@@ -805,7 +825,8 @@ namespace Vortex {
 
 		Math::mat4 transform(1.0f);
 
-		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		UUID parentUUID = entity.GetParentUUID();
+		Entity parent = TryGetEntityWithUUID(parentUUID);
 
 		if (parent)
 		{
@@ -838,6 +859,21 @@ namespace Vortex {
 		}
 
 		return Entity{};
+	}
+
+	const std::vector<Entity>& Scene::GetAllEntities()
+	{
+		std::vector<Entity> result;
+
+		m_Registry.each([&](auto e)
+		{
+			Entity entity{ e, this };
+
+			if (entity)
+				result.push_back(entity);
+		});
+
+		return result;
 	}
 
 	bool Scene::AreEntitiesRelated(Entity first, Entity second)
@@ -1042,6 +1078,10 @@ namespace Vortex {
 	}
 	
 	template <> void Scene::OnComponentAdded<RigidBodyComponent>(Entity entity, RigidBodyComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<CharacterControllerComponent>(Entity entity, CharacterControllerComponent& component) { }
+
+	template <> void Scene::OnComponentAdded<FixedJointComponent>(Entity entity, FixedJointComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<PhysicsMaterialComponent>(Entity entity, PhysicsMaterialComponent& component) { }
 
