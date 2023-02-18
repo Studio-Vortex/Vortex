@@ -2805,11 +2805,23 @@ namespace Vortex {
 			return;
 		}
 		
-		if (contextScene->TryGetEntityWithUUID(connectedEntityUUID) != Entity{})
+		if (!contextScene->TryGetEntityWithUUID(connectedEntityUUID))
+			return;
+		
+		physx::PxRigidActor* actor0 = Physics::GetActor(entityUUID);
+		physx::PxRigidActor* actor1 = Physics::GetActor(connectedEntityUUID);
+
+		if (!actor0 || !actor1)
 		{
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-			fixedJointComponent.ConnectedEntity = connectedEntityUUID;
+			return;
 		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.ConnectedEntity = connectedEntityUUID;
+
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+
+		fixedJoint->setActors(actor0, actor1);
 	}
 
 	static float FixedJointComponent_GetBreakForce(UUID entityUUID)
@@ -2844,6 +2856,9 @@ namespace Vortex {
 
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
 		fixedJointComponent.BreakForce = breakForce;
+
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+		fixedJoint->setBreakForce(breakForce, fixedJointComponent.BreakTorque);
 	}
 
 	static float FixedJointComponent_GetBreakTorque(UUID entityUUID)
@@ -2878,23 +2893,9 @@ namespace Vortex {
 
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
 		fixedJointComponent.BreakTorque = breakTorque;
-	}
 
-	static void FixedJointComponent_GetBreakForceAndTorque(UUID entityUUID, Math::vec2* outResult)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
-		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
-		}
-
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		*outResult = { fixedJointComponent.BreakForce, fixedJointComponent.BreakTorque };
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+		fixedJoint->setBreakForce(fixedJointComponent.BreakForce, breakTorque);
 	}
 
 	static void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
@@ -2913,6 +2914,9 @@ namespace Vortex {
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
 		fixedJointComponent.BreakForce = breakForce;
 		fixedJointComponent.BreakTorque = breakTorque;
+
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+		fixedJoint->setBreakForce(breakForce, breakTorque);
 	}
 
 	static bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
@@ -2947,6 +2951,9 @@ namespace Vortex {
 
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
 		fixedJointComponent.EnableCollision = enableCollision;
+
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, enableCollision);
 	}
 
 	static bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
@@ -2981,6 +2988,9 @@ namespace Vortex {
 
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
 		fixedJointComponent.EnableCollision = enablePreProcessing;
+
+		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !enablePreProcessing);
 	}
 
 	static bool FixedJointComponent_IsBroken(UUID entityUUID)
@@ -3031,7 +3041,7 @@ namespace Vortex {
 		}
 
 		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.EnableCollision = isBreakable;
+		fixedJointComponent.IsBreakable = isBreakable;
 	}
 
 	static void FixedJointComponent_Break(UUID entityUUID)
@@ -4491,7 +4501,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakForce);
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetBreakTorque);
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakTorque);
-		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetBreakForceAndTorque);
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakForceAndTorque);
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetEnableCollision);
 		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetCollisionEnabled);

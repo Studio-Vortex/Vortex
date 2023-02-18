@@ -616,6 +616,13 @@ namespace Vortex {
 			delete physicsBodyData;
 			s_PhysicsBodyData.erase(entity);
 		}
+
+		if (s_ConstrainedJointData.contains(entityUUID))
+		{
+			ConstrainedJointData* jointData = s_ConstrainedJointData[entityUUID];
+			delete jointData;
+			s_ConstrainedJointData.erase(entity);
+		}
 	}
 
 	void Physics::CreateCollider(Entity entity)
@@ -740,7 +747,18 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(!s_ActiveFixedJoints.contains(entity.GetUUID()), "Entities can only have one Fixed Joint!");
 
-		s_ActiveFixedJoints[entity.GetUUID()] = physx::PxFixedJointCreate(*s_Data->PhysXSDK, actor0, localFrame0, actor1, localFrame1);
+		physx::PxFixedJoint* fixedJoint = physx::PxFixedJointCreate(*s_Data->PhysXSDK, actor0, localFrame0, actor1, localFrame1);
+		s_ActiveFixedJoints[entity.GetUUID()] = fixedJoint;
+
+		ConstrainedJointData* jointData = new ConstrainedJointData();
+		jointData->EntityUUID = entity.GetUUID();
+		jointData->IsBroken = false;
+
+		s_ConstrainedJointData[entity.GetUUID()] = jointData;
+
+		fixedJoint->setBreakForce(fixedJointComponent.BreakForce, fixedJointComponent.BreakTorque);
+		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, fixedJointComponent.EnableCollision);
+		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !fixedJointComponent.EnablePreProcessing);
 	}
 
 	physx::PxController* Physics::CreateController(Entity entity)

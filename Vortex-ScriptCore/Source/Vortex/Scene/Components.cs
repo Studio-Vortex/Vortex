@@ -646,6 +646,11 @@
 			set => InternalCalls.FixedJointComponent_SetBreakTorque(Entity.ID, value);
 		}
 
+		public void SetBreakForceAndTorque(float breakForce, float breakTorque)
+		{
+			InternalCalls.FixedJointComponent_SetBreakForceAndTorque(Entity.ID, breakForce, breakTorque);
+		}
+
 		public bool IsCollisionEnabled
 		{
 			get => InternalCalls.FixedJointComponent_GetEnableCollision(Entity.ID);

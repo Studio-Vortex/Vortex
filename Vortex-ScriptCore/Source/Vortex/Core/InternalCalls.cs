@@ -728,9 +728,6 @@ namespace Vortex {
 		internal static extern void FixedJointComponent_SetBreakTorque(ulong entityID, float breakTorque);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal static extern void FixedJointComponent_GetBreakForceAndTorque(ulong entityID, out Vector2 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void FixedJointComponent_SetBreakForceAndTorque(ulong entityID, float breakForce, float breakTorque);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

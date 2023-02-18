@@ -464,6 +464,144 @@ namespace Vortex {
 		Gui::End();
 	}
 
+	void SceneHierarchyPanel::DisplayAddComponentPopup()
+	{
+		if (Gui::BeginPopup("AddComponent"))
+		{
+			// Search Bar + Filtering
+			const bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			const bool searchBarInUse = strlen(m_ComponentSearchInputTextFilter.InputBuf) != 0;
+
+			if (isSearching)
+			{
+				m_ComponentSearchInputTextFilter.Build();
+			}
+
+			Gui::Spacing();
+			UI::Draw::Underline();
+
+			if (!searchBarInUse)
+			{
+				if (Gui::BeginMenu("Rendering"))
+				{
+					DisplayComponentMenuItem<CameraComponent>("Camera");
+					DisplayComponentMenuItem<SkyboxComponent>("Skybox");
+					DisplayComponentMenuItem<LightSourceComponent>("Light Source");
+					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer");
+					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer");
+					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D");
+					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer");
+					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer");
+					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter");
+					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh");
+					DisplayComponentMenuItem<AnimatorComponent>("Animator");
+					DisplayComponentMenuItem<AnimationComponent>("Animation");
+
+					Gui::EndMenu();
+				}
+
+				if (Gui::BeginMenu("Physics"))
+				{
+					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody");
+					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller");
+					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint");
+					DisplayComponentMenuItem<PhysicsMaterialComponent>("Physics Material");
+					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider");
+					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider");
+					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider");
+					DisplayComponentMenuItem<MeshColliderComponent>("Mesh Collider");
+
+					DisplayComponentMenuItem<RigidBody2DComponent>("RigidBody 2D");
+					DisplayComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D");
+					DisplayComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D");
+
+					Gui::EndMenu();
+				}
+
+				if (Gui::BeginMenu("Audio"))
+				{
+					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source");
+					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener");
+
+					Gui::EndMenu();
+				}
+
+				if (Gui::BeginMenu("AI"))
+				{
+					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent");
+
+					Gui::EndMenu();
+				}
+
+				DisplayComponentMenuItem<ScriptComponent>("Script");
+			}
+			else
+			{
+				if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
+					DisplayComponentMenuItem<CameraComponent>(name);
+				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SkyboxComponent>(componentName);
+				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<LightSourceComponent>(componentName);
+				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<MeshRendererComponent>(componentName);
+				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName);
+				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<LightSource2DComponent>(componentName);
+				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SpriteRendererComponent>(componentName);
+				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CircleRendererComponent>(componentName);
+				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName);
+				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<TextMeshComponent>(componentName);
+				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AnimatorComponent>(componentName);
+				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AnimationComponent>(componentName);
+
+				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<RigidBodyComponent>(componentName);
+				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CharacterControllerComponent>(componentName);
+				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<FixedJointComponent>(componentName);
+				if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<PhysicsMaterialComponent>(componentName);
+				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<BoxColliderComponent>(componentName);
+				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SphereColliderComponent>(componentName);
+				if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CapsuleColliderComponent>(componentName);
+				if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<MeshColliderComponent>(componentName);
+
+				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AudioSourceComponent>(componentName);
+				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AudioListenerComponent>(componentName);
+
+				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<RigidBody2DComponent>(componentName);
+				if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<BoxCollider2DComponent>(componentName);
+				if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName);
+
+				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName);
+
+				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<ScriptComponent>(componentName);
+			}
+
+			Gui::EndPopup();
+		}
+	}
+
 	void SceneHierarchyPanel::DisplayAddMarkerPopup(TagComponent& tagComponent)
 	{
 		Gui::Spacing();
@@ -867,78 +1005,7 @@ namespace Vortex {
 		}
 
 		Gui::PopItemWidth();
-		if (Gui::BeginPopup("AddComponent"))
-		{
-			// Search Bar + Filtering
-			bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
-			if (isSearching)
-				m_ComponentSearchInputTextFilter.Build();
-
-			Gui::Spacing();
-			UI::Draw::Underline();
-
-			if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
-				DisplayAddComponentPopup<CameraComponent>(name);
-			if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SkyboxComponent>(componentName);
-			if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<LightSourceComponent>(componentName);
-			if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<MeshRendererComponent>(componentName);
-			if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<StaticMeshRendererComponent>(componentName);
-			if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<LightSource2DComponent>(componentName);
-			if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SpriteRendererComponent>(componentName);
-			if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CircleRendererComponent>(componentName);
-			if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ParticleEmitterComponent>(componentName);
-			if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<TextMeshComponent>(componentName);
-			if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AnimatorComponent>(componentName);
-			if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AnimationComponent>(componentName);
-
-			if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AudioSourceComponent>(componentName);
-			if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AudioListenerComponent>(componentName);
-
-			if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<RigidBodyComponent>(componentName);
-			if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CharacterControllerComponent>(componentName);
-			if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<FixedJointComponent>(componentName);
-			if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<PhysicsMaterialComponent>(componentName);
-			if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<BoxColliderComponent>(componentName);
-			if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SphereColliderComponent>(componentName);
-			if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CapsuleColliderComponent>(componentName);
-			if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<MeshColliderComponent>(componentName);
-
-			if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<RigidBody2DComponent>(componentName);
-			if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<BoxCollider2DComponent>(componentName);
-			if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CircleCollider2DComponent>(componentName);
-
-			if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<NavMeshAgentComponent>(componentName);
-
-			if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ScriptComponent>(componentName);
-
-			Gui::EndPopup();
-		}
+		DisplayAddComponentPopup();
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{

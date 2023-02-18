@@ -34,7 +34,7 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name)
+		void DisplayComponentMenuItem(const std::string& name)
 		{
 			if (!m_SelectedEntity.HasComponent<TComponent>())
 			{
@@ -45,6 +45,8 @@ namespace Vortex {
 				}
 			}
 		}
+
+		void DisplayAddComponentPopup();
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
