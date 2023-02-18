@@ -615,6 +615,60 @@
 		}
 	}
 
+	public class FixedJoint : Component
+	{
+		public Entity ConnectedEntity
+		{
+			get
+			{
+				ulong entityID = InternalCalls.FixedJointComponent_GetConnectedEntity(Entity.ID);
+
+				if (entityID != 0)
+				{
+					return new Entity(entityID);
+				}
+
+				return null;
+			}
+
+			set => InternalCalls.FixedJointComponent_SetConnectedEntity(Entity.ID, value.ID);
+		}
+
+		public float BreakForce
+		{
+			get => InternalCalls.FixedJointComponent_GetBreakForce(Entity.ID);
+			set => InternalCalls.FixedJointComponent_SetBreakForce(Entity.ID, value);
+		}
+
+		public float BreakTorque
+		{
+			get => InternalCalls.FixedJointComponent_GetBreakTorque(Entity.ID);
+			set => InternalCalls.FixedJointComponent_SetBreakTorque(Entity.ID, value);
+		}
+
+		public bool IsCollisionEnabled
+		{
+			get => InternalCalls.FixedJointComponent_GetEnableCollision(Entity.ID);
+			set => InternalCalls.FixedJointComponent_SetCollisionEnabled(Entity.ID, value);
+		}
+
+		public bool IsPreProcessingEnabled
+		{
+			get => InternalCalls.FixedJointComponent_GetPreProcessingEnabled(Entity.ID);
+			set => InternalCalls.FixedJointComponent_SetPreProcessingEnabled(Entity.ID, value);
+		}
+
+		public bool IsBroken => InternalCalls.FixedJointComponent_IsBroken(Entity.ID);
+
+		public bool IsBreakable
+		{
+			get => InternalCalls.FixedJointComponent_GetIsBreakable(Entity.ID);
+			set => InternalCalls.FixedJointComponent_SetIsBreakable(Entity.ID, value);
+		}
+
+		public void Break() => InternalCalls.FixedJointComponent_Break(Entity.ID);
+	}
+
 	public class PhysicsMaterial : Component
 	{
 		public float StaticFriction;
@@ -1043,6 +1097,11 @@
 		public void Start() => InternalCalls.ParticleEmitterComponent_Start(Entity.ID);
 
 		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
+	}
+
+	public class Script : Component
+	{
+		public object Instance => InternalCalls.Entity_GetScriptInstance(Entity.ID);
 	}
 
 }

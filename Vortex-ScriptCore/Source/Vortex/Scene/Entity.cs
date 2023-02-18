@@ -27,12 +27,27 @@ namespace Vortex {
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
 		protected virtual void OnDestroy() { }
-		protected virtual void OnCollisionBegin(Collision other) { }
-		protected virtual void OnCollisionEnd(Collision other) { }
-		protected virtual void OnTriggerBegin(Collision other) { }
-		protected virtual void OnTriggerEnd(Collision other) { }
+		protected virtual void OnCollisionEnter(Collision other) { }
+		protected virtual void OnCollisionExit(Collision other) { }
+		protected virtual void OnTriggerEnter(Collision other) { }
+		protected virtual void OnTriggerExit(Collision other) { }
+		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
 		protected virtual void OnRaycastCollision() { }
 		protected virtual void OnGui() { }
+
+		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
+
+		public Entity FindEntityByName(string name) => Scene.FindEntityByName(name);
+
+		public Entity FindChildByName(string name)
+		{
+			ulong entityID = InternalCalls.Entity_FindChildByName(ID, name);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
 
 		public bool HasComponent<T>()
 			where T : Component, new()
@@ -49,19 +64,6 @@ namespace Vortex {
 
 			T component = new T() { Entity = this };
 			return component;
-		}
-
-		public bool TryGetComponent<T>(out T component)
-			where T : Component, new()
-		{
-			if (!HasComponent<T>())
-			{
-				component = null;
-				return false;
-			}
-
-			component = new T() { Entity = this };
-			return true;
 		}
 
 		public T AddComponent<T>()
@@ -89,19 +91,22 @@ namespace Vortex {
 			}
 		}
 
+		public bool TryGetComponent<T>(out T component)
+			where T : Component, new()
+		{
+			if (!HasComponent<T>())
+			{
+				component = null;
+				return false;
+			}
+
+			component = new T() { Entity = this };
+			return true;
+		}
+
 		public Entity GetChild(uint index)
 		{
 			ulong entityID = InternalCalls.Entity_GetChild(ID, index);
-
-			if (entityID == 0)
-				return null;
-
-			return new Entity(entityID);
-		}
-
-		public Entity FindChildByName(string name)
-		{
-			ulong entityID = InternalCalls.Entity_FindChildByName(ID, name);
 
 			if (entityID == 0)
 				return null;
@@ -113,6 +118,13 @@ namespace Vortex {
 
 		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);
 
+		public bool Is<T>()
+			where T : Entity, new()
+		{
+			object instance = InternalCalls.Entity_GetScriptInstance(ID);
+			return instance is T;
+		}
+
 		public T As<T>()
 			where T : Entity, new()
 		{
@@ -120,12 +132,25 @@ namespace Vortex {
 			return instance as T;
 		}
 
-		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
+		public void SetActive(bool active) => InternalCalls.Entity_SetActive(ID, active);
 
-		public void SetActive(bool active)
+		public override bool Equals(object obj) => obj is Entity other && Equals(other);
+
+		public bool Equals(Entity other)
 		{
-			InternalCalls.Entity_SetActive(ID, active);
+			if (other is null)
+				return false;
+
+			if (ReferenceEquals(this, other))
+				return true;
+
+			return ID == other.ID;
 		}
+
+		public override int GetHashCode() => (int)ID;
+
+		public static bool operator ==(Entity entityA, Entity entityB) => entityA is null ? entityB is null : entityA.Equals(entityB);
+		public static bool operator !=(Entity entityA, Entity entityB) => !(entityA == entityB);
 	}
 
 }

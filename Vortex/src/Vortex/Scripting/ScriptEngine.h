@@ -112,10 +112,11 @@ namespace Vortex {
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
-		void InvokeOnCollisionBegin(Collision& collision);
-		void InvokeOnCollisionEnd(Collision& collision);
-		void InvokeOnTriggerBegin(Collision& collision);
-		void InvokeOnTriggerEnd(Collision& collision);
+		void InvokeOnCollisionEnter(Collision& collision);
+		void InvokeOnCollisionExit(Collision& collision);
+		void InvokeOnTriggerEnter(Collision& collision);
+		void InvokeOnTriggerExit(Collision& collision);
+		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
 		void InvokeOnRaycastCollision();
 		void InvokeOnGui();
 
@@ -156,10 +157,11 @@ namespace Vortex {
 		MonoMethod* m_OnCreateFunc = nullptr;
 		MonoMethod* m_OnUpdateFunc = nullptr;
 		MonoMethod* m_OnDestroyFunc = nullptr;
-		MonoMethod* m_OnCollisionBeginFunc = nullptr;
-		MonoMethod* m_OnCollisionEndFunc = nullptr;
-		MonoMethod* m_OnTriggerBeginFunc = nullptr;
-		MonoMethod* m_OnTriggerEndFunc = nullptr;
+		MonoMethod* m_OnCollisionEnterFunc = nullptr;
+		MonoMethod* m_OnCollisionExitFunc = nullptr;
+		MonoMethod* m_OnTriggerEnterFunc = nullptr;
+		MonoMethod* m_OnTriggerExitFunc = nullptr;
+		MonoMethod* m_OnFixedJointDisconnectedFunc = nullptr;
 		MonoMethod* m_OnRaycastCollisionFunc = nullptr;
 		MonoMethod* m_OnGuiFunc = nullptr;
 
@@ -193,15 +195,16 @@ namespace Vortex {
 		static void OnRuntimeStart(Scene* contextScene);
 		static void OnRuntimeStop();
 
-		static bool EntityClassExists(const std::string& fullClassName);
+		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
 
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
-		static void OnCollisionBeginEntity(Entity entity, Collision& collision);
-		static void OnCollisionEndEntity(Entity entity, Collision& collision);
-		static void OnTriggerBeginEntity(Entity entity, Collision& collision);
-		static void OnTriggerEndEntity(Entity entity, Collision& collision);
+		static void OnCollisionEnterEntity(Entity entity, Collision& collision);
+		static void OnCollisionExitEntity(Entity entity, Collision& collision);
+		static void OnTriggerEnterEntity(Entity entity, Collision& collision);
+		static void OnTriggerExitEntity(Entity entity, Collision& collision);
+		static void OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
 		static void OnRaycastCollisionEntity(Entity entity);
 		static void OnGuiEntity(Entity entity);
 

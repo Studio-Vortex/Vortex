@@ -707,6 +707,58 @@ namespace Vortex {
 
 		#endregion
 
+		#region FixedJoint
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern ulong FixedJointComponent_GetConnectedEntity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetConnectedEntity(ulong entityID, ulong connectedEntityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float FixedJointComponent_GetBreakForce(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakForce(ulong entityID, float breakForce);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float FixedJointComponent_GetBreakTorque(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakTorque(ulong entityID, float breakTorque);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_GetBreakForceAndTorque(ulong entityID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakForceAndTorque(ulong entityID, float breakForce, float breakTorque);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetEnableCollision(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetCollisionEnabled(ulong entityID, bool enableCollision);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetPreProcessingEnabled(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetPreProcessingEnabled(ulong entityID, bool enablePreProcessing);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_IsBroken(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetIsBreakable(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetIsBreakable(ulong entityID, bool isBreakable);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_Break(ulong entityID);
+
+		#endregion
+
 		#region PhysicsMaterial
 
 

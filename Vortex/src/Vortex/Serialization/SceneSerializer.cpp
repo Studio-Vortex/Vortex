@@ -776,6 +776,21 @@ namespace Vortex {
 			out << YAML::EndMap; // CharacterControllerComponent
 		}
 
+		if (entity.HasComponent<FixedJointComponent>())
+		{
+			out << YAML::Key << "FixedJointComponent" << YAML::BeginMap; // FixedJointComponent
+
+			const auto& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			VX_SERIALIZE_PROPERTY(ConnectedEntity, fixedJointComponent.ConnectedEntity, out);
+			VX_SERIALIZE_PROPERTY(BreakForce, fixedJointComponent.BreakForce, out);
+			VX_SERIALIZE_PROPERTY(BreakTorque, fixedJointComponent.BreakTorque, out);
+			VX_SERIALIZE_PROPERTY(EnableCollision, fixedJointComponent.EnableCollision, out);
+			VX_SERIALIZE_PROPERTY(EnablePreProcessing, fixedJointComponent.EnablePreProcessing, out);
+			VX_SERIALIZE_PROPERTY(IsBreakable, fixedJointComponent.IsBreakable, out);
+
+			out << YAML::EndMap; // FixedJointComponent
+		}
+
 		if (entity.HasComponent<PhysicsMaterialComponent>())
 		{
 			out << YAML::Key << "PhysicsMaterialComponent" << YAML::BeginMap; // PhysicsMaterialComponent
@@ -1420,6 +1435,19 @@ namespace Vortex {
 				characterController.StepOffset = characterControllerComponent["StepOffset"].as<float>();
 				if (characterControllerComponent["ContactOffset"])
 					characterController.ContactOffset = characterControllerComponent["ContactOffset"].as<float>();
+			}
+
+			auto fixedJointComponent = entity["FixedJointComponent"];
+			if (fixedJointComponent)
+			{
+				auto& fixedJoint = deserializedEntity.AddComponent<FixedJointComponent>();
+
+				VX_DESERIALIZE_PROPERTY(ConnectedEntity, uint64_t, fixedJoint.ConnectedEntity, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(BreakForce, float, fixedJoint.BreakForce, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(BreakTorque, float, fixedJoint.BreakTorque, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(EnableCollision, float, fixedJoint.EnableCollision, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(EnablePreProcessing, float, fixedJoint.EnablePreProcessing, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(IsBreakable, float, fixedJoint.IsBreakable, fixedJointComponent);
 			}
 
 			auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];

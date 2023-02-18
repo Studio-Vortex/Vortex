@@ -2773,6 +2773,285 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region FixedJoint Component
+
+	static uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return 0;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.ConnectedEntity;
+	}
+
+	static void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+		
+		if (contextScene->TryGetEntityWithUUID(connectedEntityUUID) != Entity{})
+		{
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.ConnectedEntity = connectedEntityUUID;
+		}
+	}
+
+	static float FixedJointComponent_GetBreakForce(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return 0.0f;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.BreakForce;
+	}
+
+	static void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.BreakForce = breakForce;
+	}
+
+	static float FixedJointComponent_GetBreakTorque(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return 0.0f;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.BreakTorque;
+	}
+
+	static void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.BreakTorque = breakTorque;
+	}
+
+	static void FixedJointComponent_GetBreakForceAndTorque(UUID entityUUID, Math::vec2* outResult)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		*outResult = { fixedJointComponent.BreakForce, fixedJointComponent.BreakTorque };
+	}
+
+	static void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.BreakForce = breakForce;
+		fixedJointComponent.BreakTorque = breakTorque;
+	}
+
+	static bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return false;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.EnableCollision;
+	}
+
+	static void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.EnableCollision = enableCollision;
+	}
+
+	static bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return false;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.EnablePreProcessing;
+	}
+
+	static void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.EnableCollision = enablePreProcessing;
+	}
+
+	static bool FixedJointComponent_IsBroken(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return false;
+		}
+
+		const ConstrainedJointData* jointData = Physics::GetConstrainedJointData(entityUUID);
+		return jointData->IsBroken;
+	}
+
+	static bool FixedJointComponent_GetIsBreakable(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return false;
+		}
+
+		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		return fixedJointComponent.IsBreakable;
+	}
+
+	static void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+		fixedJointComponent.EnableCollision = isBreakable;
+	}
+
+	static void FixedJointComponent_Break(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+		if (!entity.HasComponent<FixedJointComponent>())
+		{
+			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+			return;
+		}
+
+		Physics::BreakJoint(entityUUID);
+	}
+
+#pragma endregion
+
 #pragma region BoxCollider Component
 
 	static void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
@@ -4205,6 +4484,23 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetClimbMode);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
+
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetConnectedEntity);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetConnectedEntity);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetBreakForce);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakForce);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetBreakTorque);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakTorque);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetBreakForceAndTorque);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetBreakForceAndTorque);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetEnableCollision);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetCollisionEnabled);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetPreProcessingEnabled);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetPreProcessingEnabled);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_IsBroken);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_GetIsBreakable);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_SetIsBreakable);
+		VX_ADD_INTERNAL_CALL(FixedJointComponent_Break);
 
 		VX_ADD_INTERNAL_CALL(BoxColliderComponent_GetHalfSize);
 		VX_ADD_INTERNAL_CALL(BoxColliderComponent_SetHalfSize);

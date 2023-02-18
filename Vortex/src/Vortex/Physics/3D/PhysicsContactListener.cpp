@@ -6,10 +6,75 @@
 
 namespace Vortex {
 
+	namespace Utils {
+
+		bool HasValidScriptInstance(Entity entity)
+		{
+			if (!entity.HasComponent<ScriptComponent>())
+			{
+				return false;
+			}
+
+			const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+			return ScriptEngine::EntityClassExists(scriptComponent.ClassName);
+		}
+
+	}
+
 	void PhysicsContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
 	{
-		PX_UNUSED(constraints);
-		PX_UNUSED(count);
+		Scene* contextScene = ScriptEngine::GetContextScene();
+
+		if (!contextScene || !contextScene->IsRunning())
+			return;
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			physx::PxJoint* nativeJoint = (physx::PxJoint*)constraints[i].externalReference;
+			ConstrainedJointData* jointData = (ConstrainedJointData*)nativeJoint->userData;
+			jointData->IsBroken = true;
+
+			Entity entity = contextScene->TryGetEntityWithUUID(jointData->EntityUUID);
+
+			if (!entity)
+			{
+				continue;
+			}
+
+			Entity connectedEntity;
+
+			if (entity.HasComponent<FixedJointComponent>())
+			{
+				const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+				UUID connectedEntityUUID = fixedJointComponent.ConnectedEntity;
+
+				if (Entity attachedEntity = contextScene->TryGetEntityWithUUID(connectedEntityUUID))
+				{
+					connectedEntity = attachedEntity;
+				}
+			}
+
+			if (!connectedEntity)
+			{
+				continue;
+			}
+
+			if (nativeJoint->is<physx::PxFixedJoint>())
+			{
+				physx::PxFixedJoint* fixedJoint = nativeJoint->is<physx::PxFixedJoint>();
+				const std::pair<Math::vec3, Math::vec3>& forceAndTorque = Physics::GetLastReportedFixedJointForces(fixedJoint);
+
+				if (Utils::HasValidScriptInstance(entity))
+				{
+					ScriptEngine::OnFixedJointDisconnected(entity, forceAndTorque);
+				}
+
+				if (Utils::HasValidScriptInstance(connectedEntity))
+				{
+					ScriptEngine::OnFixedJointDisconnected(connectedEntity, forceAndTorque);
+				}
+			}
+		}
 	}
 
 	void PhysicsContactListener::onWake(physx::PxActor** actors, physx::PxU32 count)
@@ -28,7 +93,7 @@ namespace Vortex {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 
-		if (contextScene == nullptr || !contextScene->IsRunning())
+		if (!contextScene || !contextScene->IsRunning())
 			return;
 
 		bool removedActorA = pairHeader.flags & physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_0;
@@ -52,30 +117,30 @@ namespace Vortex {
 			{
 				Collision collision{};
 				collision.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionBeginEntity(entityA, collision);
+				ScriptEngine::OnCollisionEnterEntity(entityA, collision);
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
 				Collision collision{};
 				collision.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionBeginEntity(entityB, collision);
+				ScriptEngine::OnCollisionEnterEntity(entityB, collision);
 			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
-			if (entityA.HasComponent<ScriptComponent>())
+			if (Utils::HasValidScriptInstance(entityA))
 			{
 				Collision collision{};
 				collision.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionEndEntity(entityA, collision);
+				ScriptEngine::OnCollisionExitEntity(entityA, collision);
 			}
 
-			if (entityB.HasComponent<ScriptComponent>())
+			if (Utils::HasValidScriptInstance(entityB))
 			{
 				Collision collision{};
 				collision.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionEndEntity(entityB, collision);
+				ScriptEngine::OnCollisionExitEntity(entityB, collision);
 			}
 		}
 	}
@@ -84,7 +149,7 @@ namespace Vortex {
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
 
-		if (contextScene == nullptr || !contextScene->IsRunning())
+		if (!contextScene || !contextScene->IsRunning())
 			return;
 
 		for (uint32_t i = 0; i < count; i++)
@@ -106,34 +171,34 @@ namespace Vortex {
 
 			if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
-				if (triggerEntity.HasComponent<ScriptComponent>())
+				if (Utils::HasValidScriptInstance(triggerEntity))
 				{
 					Collision collision{};
 					collision.EntityID = otherEntity.GetUUID();
-					ScriptEngine::OnTriggerBeginEntity(triggerEntity, collision);
+					ScriptEngine::OnTriggerEnterEntity(triggerEntity, collision);
 				}
 
-				if (otherEntity.HasComponent<ScriptComponent>())
+				if (Utils::HasValidScriptInstance(otherEntity))
 				{
 					Collision collision{};
 					collision.EntityID = triggerEntity.GetUUID();
-					ScriptEngine::OnTriggerBeginEntity(otherEntity, collision);
+					ScriptEngine::OnTriggerEnterEntity(otherEntity, collision);
 				}
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
-				if (triggerEntity.HasComponent<ScriptComponent>())
+				if (Utils::HasValidScriptInstance(triggerEntity))
 				{
 					Collision collision{};
 					collision.EntityID = otherEntity.GetUUID();
-					ScriptEngine::OnTriggerEndEntity(triggerEntity, collision);
+					ScriptEngine::OnTriggerExitEntity(triggerEntity, collision);
 				}
 
-				if (otherEntity.HasComponent<ScriptComponent>())
+				if (Utils::HasValidScriptInstance(otherEntity))
 				{
 					Collision collision{};
 					collision.EntityID = triggerEntity.GetUUID();
-					ScriptEngine::OnTriggerEndEntity(otherEntity, collision);
+					ScriptEngine::OnTriggerExitEntity(otherEntity, collision);
 				}
 			}
 		}

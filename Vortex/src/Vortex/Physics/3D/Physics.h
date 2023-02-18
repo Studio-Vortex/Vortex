@@ -32,6 +32,12 @@ namespace Vortex {
 		Scene* ContextScene = nullptr;
 	};
 
+	struct ConstrainedJointData
+	{
+		UUID EntityUUID = 0;
+		bool IsBroken = false;
+	};
+
 	struct RaycastHit
 	{
 		uint64_t EntityID;
@@ -73,6 +79,13 @@ namespace Vortex {
 		static physx::PxController* GetController(UUID entityUUID);
 		static physx::PxFixedJoint* GetFixedJoint(UUID entityUUID);
 
+		static const std::pair<Math::vec3, Math::vec3>& GetLastReportedFixedJointForces(physx::PxFixedJoint* fixedJoint);
+
+		static const PhysicsBodyData* GetPhysicsBodyData(UUID entityUUID);
+		static const ConstrainedJointData* GetConstrainedJointData(UUID entityUUID);
+
+		static void BreakJoint(UUID entityUUID);
+
 		VX_FORCE_INLINE static uint32_t GetPhysicsScenePositionIterations() { return s_PhysicsSolverIterations; }
 		VX_FORCE_INLINE static void SetPhysicsScenePositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
 
@@ -107,7 +120,12 @@ namespace Vortex {
 		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
 		inline static std::unordered_map<UUID, physx::PxFixedJoint*> s_ActiveFixedJoints;
 
+		//                                                                               first - linear force, second - angular force
+		using LastReportedFixedJointForcesMap = std::unordered_map<physx::PxFixedJoint*, std::pair<Math::vec3, Math::vec3>>;
+		inline static LastReportedFixedJointForcesMap s_LastReportedJointForces;
+
 		inline static std::unordered_map<UUID, PhysicsBodyData*> s_PhysicsBodyData;
+		inline static std::unordered_map<UUID, ConstrainedJointData*> s_ConstrainedJointData;
 
 		inline constexpr static float s_FixedTimeStep = 1.0f / 100.0f;
 		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);

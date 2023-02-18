@@ -2120,9 +2120,22 @@ namespace Vortex {
 						}
 						if (field.Type == ScriptFieldType::Entity)
 						{
-							UUID data = scriptInstance->GetFieldValue<uint64_t>(name);
-							if (UI::PropertyEntityReference(name.c_str(), data, m_ContextScene))
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (UI::Property(name.c_str(), data))
+							{
 								scriptInstance->SetFieldValue(name, data);
+							}
+
+							if (Gui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Entity& droppedEntity = *((Entity*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}
+
+								Gui::EndDragDropTarget();
+							}
 						}
 					}
 				}
@@ -2243,9 +2256,22 @@ namespace Vortex {
 							}
 							if (field.Type == ScriptFieldType::Entity)
 							{
-								UUID data = scriptField.GetValue<uint64_t>();
-								if (UI::PropertyEntityReference(name.c_str(), data, m_ContextScene))
+								uint64_t data = scriptField.GetValue<uint64_t>();
+								if (UI::Property(name.c_str(), data))
+								{
 									scriptField.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										scriptField.SetValue(droppedEntity.GetUUID());
+									}
+
+									Gui::EndDragDropTarget();
+								}
 							}
 						}
 						else
@@ -2413,12 +2439,25 @@ namespace Vortex {
 							}
 							if (field.Type == ScriptFieldType::Entity)
 							{
-								UUID data;
-								if (UI::PropertyEntityReference(name.c_str(), data, m_ContextScene))
+								uint64_t data;
+								if (UI::Property(name.c_str(), data))
 								{
 									ScriptFieldInstance fieldInstance = entityClassFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										ScriptFieldInstance fieldInstance = entityClassFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue(droppedEntity.GetUUID());
+									}
+
+									Gui::EndDragDropTarget();
 								}
 							}
 						}

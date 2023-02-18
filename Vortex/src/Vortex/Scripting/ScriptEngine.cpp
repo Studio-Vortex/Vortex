@@ -360,9 +360,9 @@ namespace Vortex {
 			s_Data->EntityInstances.clear();
 	}
 
-	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	bool ScriptEngine::EntityClassExists(const std::string& fullyQualifiedClassName)
 	{
-		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
+		return s_Data->EntityClasses.contains(fullyQualifiedClassName);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
@@ -371,13 +371,15 @@ namespace Vortex {
 
 		if (EntityClassExists(scriptComponent.ClassName))
 		{
-			UUID uuid = entity.GetUUID();
+			UUID entityUUID = entity.GetUUID();
+
+			VX_CORE_ASSERT(!s_Data->EntityInstances.contains(entityUUID), "Instance was already found with UUID!");
 
 			SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(s_Data->EntityClasses[scriptComponent.ClassName], entity);
-			s_Data->EntityInstances[uuid] = instance;
+			s_Data->EntityInstances[entityUUID] = instance;
 
 			// Copy field values
-			auto it = s_Data->EntityScriptFields.find(uuid);
+			auto it = s_Data->EntityScriptFields.find(entityUUID);
 			if (it != s_Data->EntityScriptFields.end())
 			{
 				const ScriptFieldMap& fields = it->second;
@@ -409,56 +411,61 @@ namespace Vortex {
 		UUID entityUUID = entity.GetUUID();
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
 
 		it->second->InvokeOnDestroy();
 
-		// Remove the instance from the map because it is no longer an active instance of a class
 		s_Data->EntityInstances.erase(it);
 	}
 
-	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Collision& collision)
+	void ScriptEngine::OnCollisionEnterEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnCollisionBegin(collision);
+		it->second->InvokeOnCollisionEnter(collision);
 	}
 
-	void ScriptEngine::OnCollisionEndEntity(Entity entity, Collision& collision)
+	void ScriptEngine::OnCollisionExitEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnCollisionEnd(collision);
+		it->second->InvokeOnCollisionExit(collision);
 	}
 
-	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Collision& collision)
+	void ScriptEngine::OnTriggerEnterEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnTriggerBegin(collision);
+		it->second->InvokeOnTriggerEnter(collision);
 	}
 
-	void ScriptEngine::OnTriggerEndEntity(Entity entity, Collision& collision)
+	void ScriptEngine::OnTriggerExitEntity(Entity entity, Collision& collision)
 	{
 		UUID entityUUID = entity.GetUUID();
 
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
 		auto it = s_Data->EntityInstances.find(entityUUID);
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		it->second->InvokeOnTriggerExit(collision);
+	}
 
-		it->second->InvokeOnTriggerEnd(collision);
+	void ScriptEngine::OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entityUUID), "Instance was not found in Entity Instance Map!");
+		auto it = s_Data->EntityInstances.find(entityUUID);
+
+		it->second->InvokeOnFixedJointDisconnected(forceAndTorque);
 	}
 
 	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
@@ -659,92 +666,111 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_Constructor          = s_Data->EntityClass->GetMethod(".ctor", 1);
-		m_OnCreateFunc         = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 1);
-		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 1);
-		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 1);
-		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 1);
-		m_OnRaycastCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
-		m_OnGuiFunc            = m_ScriptClass->GetMethod("OnGui", 0);
+		m_Constructor                  = s_Data->EntityClass->GetMethod(".ctor", 1);
+		m_OnCreateFunc                 = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdateFunc                 = m_ScriptClass->GetMethod("OnUpdate", 1);
+		m_OnDestroyFunc                = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_OnCollisionEnterFunc         = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
+		m_OnCollisionExitFunc          = m_ScriptClass->GetMethod("OnCollisionExit", 1);
+		m_OnTriggerEnterFunc           = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
+		m_OnTriggerExitFunc            = m_ScriptClass->GetMethod("OnTriggerExit", 1);
+		m_OnFixedJointDisconnectedFunc = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
+		m_OnRaycastCollisionFunc       = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
+		m_OnGuiFunc                    = m_ScriptClass->GetMethod("OnGui", 0);
+
+		if (!m_Constructor)
+			return;
 
 		// Call Entity constructor
-		{
-			UUID entitytUUID = entity.GetUUID();
-			void* param = &entitytUUID;
-			scriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
-		}
+		UUID entitytUUID = entity.GetUUID();
+		void* param = &entitytUUID;
+		scriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
 	}
 
 	void ScriptInstance::InvokeOnCreate()
 	{
-		if (m_OnCreateFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
+		if (!m_OnCreateFunc)
+			return;
+		
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
 	}
 
 	void ScriptInstance::InvokeOnUpdate(float delta)
 	{
-		if (m_OnUpdateFunc)
-		{
-			void* param = &delta;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
-		}
+		if (!m_OnUpdateFunc)
+			return;
+
+		void* param = &delta;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnDestroy()
 	{
-		if (m_OnDestroyFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
+		if (!m_OnDestroyFunc)
+			return;
+
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
-	void ScriptInstance::InvokeOnCollisionBegin(Collision& collision)
+	void ScriptInstance::InvokeOnCollisionEnter(Collision& collision)
 	{
-		if (m_OnCollisionBeginFunc)
-		{
-			void* param = &collision;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc, &param);
-		}
+		if (!m_OnCollisionEnterFunc)
+			return;
+
+		void* param = &collision;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEnterFunc, &param);
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnd(Collision& collision)
+	void ScriptInstance::InvokeOnCollisionExit(Collision& collision)
 	{
-		if (m_OnCollisionEndFunc)
-		{
-			void* param = &collision;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEndFunc, &param);
-		}
+		if (!m_OnCollisionExitFunc)
+			return;
+
+		void* param = &collision;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionExitFunc, &param);
 	}
 
-	void ScriptInstance::InvokeOnTriggerBegin(Collision& collision)
+	void ScriptInstance::InvokeOnTriggerEnter(Collision& collision)
 	{
-		if (m_OnTriggerBeginFunc)
-		{
-			void* param = &collision;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerBeginFunc, &param);
-		}
+		if (!m_OnTriggerEnterFunc)
+			return;
+
+		void* param = &collision;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEnterFunc, &param);
 	}
 
-	void ScriptInstance::InvokeOnTriggerEnd(Collision& collision)
+	void ScriptInstance::InvokeOnTriggerExit(Collision& collision)
 	{
-		if (m_OnTriggerEndFunc)
-		{
-			void* param = &collision;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEndFunc, &param);
-		}
+		if (!m_OnTriggerExitFunc)
+			return;
+
+		void* param = &collision;
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerExitFunc, &param);
+	}
+
+	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	{
+		if (!m_OnFixedJointDisconnectedFunc)
+			return;
+
+		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnFixedJointDisconnectedFunc, params);
 	}
 
 	void ScriptInstance::InvokeOnRaycastCollision()
 	{
-		if (m_OnRaycastCollisionFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnRaycastCollisionFunc);
+		if (!m_OnRaycastCollisionFunc)
+			return;
+
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnRaycastCollisionFunc);
 	}
 
 	void ScriptInstance::InvokeOnGui()
 	{
-		if (m_OnGuiFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnGuiFunc);
+		if (!m_OnGuiFunc)
+			return;
+		
+		m_ScriptClass->InvokeMethod(m_Instance, m_OnGuiFunc);
 	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
