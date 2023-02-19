@@ -117,7 +117,7 @@ namespace Vortex {
 			return RigidBody2DType::Static;
 		}
 
-		static std::string RigidBodyBodyTypeToString(RigidBodyType bodyType)
+		static std::string RigidBodyTypeToString(RigidBodyType bodyType)
 		{
 			switch (bodyType)
 			{
@@ -129,7 +129,7 @@ namespace Vortex {
 			return {};
 		}
 
-		static RigidBodyType RigidBodyBodyTypeFromString(const std::string& bodyTypeString)
+		static RigidBodyType RigidBodyTypeFromString(const std::string& bodyTypeString)
 		{
 			if (bodyTypeString == "Static")    return RigidBodyType::Static;
 			if (bodyTypeString == "Dynamic")   return RigidBodyType::Dynamic;
@@ -747,7 +747,7 @@ namespace Vortex {
 
 			const auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
 			VX_SERIALIZE_PROPERTY(Mass, rigidbodyComponent.Mass, out);
-			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyBodyTypeToString(rigidbodyComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyTypeToString(rigidbodyComponent.Type), out);
 			VX_SERIALIZE_PROPERTY(AngularDrag, rigidbodyComponent.AngularDrag, out);
 			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidbodyComponent.AngularVelocity, out);
 			VX_SERIALIZE_PROPERTY(DisableGravity, rigidbodyComponent.DisableGravity, out);
@@ -1399,7 +1399,7 @@ namespace Vortex {
 			{
 				auto& rigidbody = deserializedEntity.AddComponent<RigidBodyComponent>();
 
-				rigidbody.Type = Utils::RigidBodyBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
+				rigidbody.Type = Utils::RigidBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
 				if (rigidbodyComponent["Mass"])
 					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 				if (rigidbodyComponent["AngularDrag"])
@@ -1445,9 +1445,9 @@ namespace Vortex {
 				VX_DESERIALIZE_PROPERTY(ConnectedEntity, uint64_t, fixedJoint.ConnectedEntity, fixedJointComponent);
 				VX_DESERIALIZE_PROPERTY(BreakForce, float, fixedJoint.BreakForce, fixedJointComponent);
 				VX_DESERIALIZE_PROPERTY(BreakTorque, float, fixedJoint.BreakTorque, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(EnableCollision, float, fixedJoint.EnableCollision, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(EnablePreProcessing, float, fixedJoint.EnablePreProcessing, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(IsBreakable, float, fixedJoint.IsBreakable, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(EnableCollision, bool, fixedJoint.EnableCollision, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(EnablePreProcessing, bool, fixedJoint.EnablePreProcessing, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(IsBreakable, bool, fixedJoint.IsBreakable, fixedJointComponent);
 			}
 
 			auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];
