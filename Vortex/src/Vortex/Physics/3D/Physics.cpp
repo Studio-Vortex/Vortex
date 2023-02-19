@@ -730,6 +730,7 @@ namespace Vortex {
 		ConstrainedJointData* jointData = new ConstrainedJointData();
 		jointData->EntityUUID = entity.GetUUID();
 		jointData->IsBroken = false;
+		fixedJoint->userData = jointData;
 
 		s_ConstrainedJointData[entity.GetUUID()] = jointData;
 
