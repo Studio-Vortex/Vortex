@@ -857,6 +857,40 @@ namespace Vortex {
 
 #pragma region Light Source Component
 
+	static LightType LightSourceComponent_GetLightType(UUID entityUUID)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return LightType::Directional;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Type;
+	}
+
+	static void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
+	{
+		Scene* contextScene = ScriptEngine::GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Type = type;
+	}
+
 	static void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -864,7 +898,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRadiance = entity.GetComponent<LightSourceComponent>().Source->GetRadiance();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		*outRadiance = lsc.Source->GetRadiance();
 	}
 
 	static void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
@@ -874,7 +915,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetRadiance(*radiance);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetRadiance(*radiance);
 	}
 
 	static float LightSourceComponent_GetIntensity(UUID entityUUID)
@@ -884,7 +932,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetIntensity();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return 0.0f;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetIntensity();
 	}
 
 	static void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
@@ -894,7 +949,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetIntensity(intensity);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetIntensity(intensity);
 	}
 
 	static float LightSourceComponent_GetCutoff(UUID entityUUID)
@@ -904,7 +966,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetCutOff();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return 0.0f;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetCutOff();
 	}
 
 	static void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
@@ -914,7 +983,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetCutOff(cutoff);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetCutOff(cutoff);
 	}
 
 	static float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
@@ -924,7 +1000,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetOuterCutOff();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return 0.0f;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetOuterCutOff();
 	}
 
 	static void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
@@ -934,7 +1017,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetOuterCutOff(outerCutoff);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetOuterCutOff(outerCutoff);
 	}
 
 	static float LightSourceComponent_GetShadowBias(UUID entityUUID)
@@ -944,7 +1034,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetShadowBias();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return 0.0f;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetShadowBias();
 	}
 
 	static void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
@@ -954,7 +1051,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetShadowBias(shadowBias);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetShadowBias(shadowBias);
 	}
 
 	static bool LightSourceComponent_GetCastShadows(UUID entityUUID)
@@ -964,7 +1068,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetCastShadows();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return false;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetCastShadows();
 	}
 
 	static void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
@@ -974,7 +1085,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetCastShadows(castShadows);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetCastShadows(castShadows);
 	}
 
 	static bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
@@ -984,7 +1102,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<LightSourceComponent>().Source->GetSoftShadows();
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return false;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		return lsc.Source->GetSoftShadows();
 	}
 
 	static void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
@@ -994,7 +1119,14 @@ namespace Vortex {
 		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<LightSourceComponent>().Source->SetSoftShadows(softShadows);
+		if (!entity.HasComponent<LightSourceComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+			return;
+		}
+
+		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+		lsc.Source->SetSoftShadows(softShadows);
 	}
 
 #pragma endregion
@@ -4297,9 +4429,6 @@ namespace Vortex {
 
 	void ScriptRegistry::RegisterMethods()
 	{
-		// For Random
-		srand(time(0));
-
 		VX_ADD_INTERNAL_CALL(Application_Quit);
 		VX_ADD_INTERNAL_CALL(Application_GetSize);
 		VX_ADD_INTERNAL_CALL(Application_GetPosition);
@@ -4378,6 +4507,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		VX_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetLightType);
+		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetLightType);
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetRadiance);
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetRadiance);
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetIntensity);

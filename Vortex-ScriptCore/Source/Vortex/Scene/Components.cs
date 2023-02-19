@@ -224,7 +224,11 @@
 
 	public class LightSource : Component
 	{
-		public LightType Type;
+		public LightType Type
+		{
+			get => InternalCalls.LightSourceComponent_GetLightType(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetLightType(Entity.ID, value);
+		}
 
 		public Vector3 Radiance
 		{

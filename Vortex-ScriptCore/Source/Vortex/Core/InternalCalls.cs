@@ -253,6 +253,12 @@ namespace Vortex {
 		#region LightSource
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static LightType LightSourceComponent_GetLightType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetLightType(ulong entityID, LightType type);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_GetRadiance(ulong entityID, out Vector3 outRadiance);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

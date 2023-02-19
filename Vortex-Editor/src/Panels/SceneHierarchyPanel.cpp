@@ -1736,17 +1736,27 @@ namespace Vortex {
 			}
 		});
 
-		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&](auto& component)
+		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&, scene = m_ContextScene](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
 			const char* bodyTypes[] = { "Static", "Dynamic" };
 			int32_t currentBodyType = (int32_t)component.Type;
 			if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
+			{
+				const bool recreateActor = component.Type != (RigidBodyType)currentBodyType;
 				component.Type = (RigidBodyType)currentBodyType;
 
+				if (scene->IsRunning() && recreateActor)
+				{
+					Physics::ReCreateActor(entity);
+				}
+			}
+
 			if (component.Type == RigidBodyType::Static)
+			{
 				UI::EndPropertyGrid();
+			}
 			else
 			{
 				UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
