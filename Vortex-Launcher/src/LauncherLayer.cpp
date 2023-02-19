@@ -169,7 +169,8 @@ namespace Vortex {
 		if (Gui::BeginPopupModal("Create New Project"))
 		{
 			static const char* options[] = { ProjectTypeToString(ProjectType::e2D), ProjectTypeToString(ProjectType::e3D) };
-			uint32_t selectedProjectType = (uint32_t)m_Properties.Type;
+			int32_t selectedProjectType = (int32_t)m_Properties.Type;
+
 			UI::BeginPropertyGrid();
 			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYCOUNT(options), selectedProjectType))
 			{

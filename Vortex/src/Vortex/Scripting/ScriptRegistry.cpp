@@ -4155,24 +4155,44 @@ namespace Vortex {
 
 #pragma region Input
 
-	static bool Input_IsKeyDown(KeyCode key)
+	static bool Input_IsKeyPressed(KeyCode key)
 	{
 		return Input::IsKeyPressed(key);
 	}
-	
-	static bool Input_IsKeyUp(KeyCode key)
+
+	static bool Input_IsKeyReleased(KeyCode key)
 	{
 		return Input::IsKeyReleased(key);
 	}
 
-	static bool Input_IsMouseButtonDown(MouseButton mouseButton)
+	static bool Input_IsKeyDown(KeyCode key)
+	{
+		return Input::IsKeyDown(key);
+	}
+	
+	static bool Input_IsKeyUp(KeyCode key)
+	{
+		return Input::IsKeyUp(key);
+	}
+
+	static bool Input_IsMouseButtonPressed(MouseButton mouseButton)
 	{
 		return Input::IsMouseButtonPressed(mouseButton);
 	}
 
-	static bool Input_IsMouseButtonUp(MouseButton mouseButton)
+	static bool Input_IsMouseButtonReleased(MouseButton mouseButton)
 	{
 		return Input::IsMouseButtonReleased(mouseButton);
+	}
+
+	static bool Input_IsMouseButtonDown(MouseButton mouseButton)
+	{
+		return Input::IsMouseButtonDown(mouseButton);
+	}
+
+	static bool Input_IsMouseButtonUp(MouseButton mouseButton)
+	{
+		return Input::IsMouseButtonUp(mouseButton);
 	}
 
 	static void Input_GetMousePosition(Math::vec2* outPosition)
@@ -4194,12 +4214,12 @@ namespace Vortex {
 	
 	static bool Input_IsGamepadButtonDown(Gamepad button)
 	{
-		return Input::IsGamepadButtonPressed(button);
+		return Input::IsGamepadButtonDown(button);
 	}
 
 	static bool Input_IsGamepadButtonUp(Gamepad button)
 	{
-		return Input::IsGamepadButtonReleased(button);
+		return Input::IsGamepadButtonUp(button);
 	}
 
 	static float Input_GetGamepadAxis(Gamepad axis)
@@ -4774,8 +4794,12 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Time_GetElapsed);
 		VX_ADD_INTERNAL_CALL(Time_GetDeltaTime);
 
+		VX_ADD_INTERNAL_CALL(Input_IsKeyPressed);
+		VX_ADD_INTERNAL_CALL(Input_IsKeyReleased);
 		VX_ADD_INTERNAL_CALL(Input_IsKeyDown);
 		VX_ADD_INTERNAL_CALL(Input_IsKeyUp);
+		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonPressed);
+		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonReleased);
 		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonDown);
 		VX_ADD_INTERNAL_CALL(Input_IsMouseButtonUp);
 		VX_ADD_INTERNAL_CALL(Input_GetMousePosition);

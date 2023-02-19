@@ -251,16 +251,16 @@ namespace Vortex {
 			m_SecondViewportFramebuffer->Unbind();
 		}
 
-		if (((Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))) || Input::IsMouseButtonPressed(MouseButton::Right)) && !m_StartedClickInViewport && m_SceneViewportFocused && m_SceneViewportHovered)
+		if (((Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))) || Input::IsMouseButtonDown(MouseButton::Right)) && !m_StartedClickInViewport && m_SceneViewportFocused && m_SceneViewportHovered)
 			m_StartedClickInViewport = true;
 
-		if (!Input::IsMouseButtonPressed(MouseButton::Right) && !(Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))))
+		if (!Input::IsMouseButtonDown(MouseButton::Right) && !(Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))))
 			m_StartedClickInViewport = false;
 
-		if (((Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))) || Input::IsMouseButtonPressed(MouseButton::Right)) && !m_StartedClickInSecondViewport && m_SecondViewportFocused && m_SecondViewportHovered)
+		if (((Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))) || Input::IsMouseButtonDown(MouseButton::Right)) && !m_StartedClickInSecondViewport && m_SecondViewportFocused && m_SecondViewportHovered)
 			m_StartedClickInSecondViewport = true;
 
-		if (!Input::IsMouseButtonPressed(MouseButton::Right) && !(Input::IsKeyPressed(KeyCode::LeftAlt) && (Input::IsMouseButtonPressed(MouseButton::Left) || (Input::IsMouseButtonPressed(MouseButton::Middle)))))
+		if (!Input::IsMouseButtonDown(MouseButton::Right) && !(Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))))
 			m_StartedClickInSecondViewport = false;
 	}
 
@@ -785,13 +785,17 @@ namespace Vortex {
 
 		bool notInPlayMode = m_SceneState != SceneState::Play;
 		bool validGizmoTool = m_GizmoType != -1;
-		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
+		bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
 		bool showGizmos = false;
 
 		if (allowInPlayMode)
+		{
 			showGizmos = (selectedEntity && validGizmoTool && !altPressed);
+		}
 		else
+		{
 			showGizmos = (selectedEntity && notInPlayMode && validGizmoTool && !altPressed);
+		}
 
 		if (showGizmos)
 		{
@@ -810,7 +814,7 @@ namespace Vortex {
 			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 			// Snapping
-			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+			bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
 			float snapValue = m_GizmoType == ImGuizmo::ROTATE ? projectProps.GizmoProps.RotationSnapValue : projectProps.GizmoProps.SnapValue;
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
@@ -1613,29 +1617,29 @@ namespace Vortex {
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
-		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
+		bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
+		bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
+		bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
 
 		switch (e.GetKeyCode())
 		{
 			// File
-			case Key::N:
+			case KeyCode::N:
 			{
 				if (controlPressed && m_SceneState == SceneState::Edit)
 					CreateNewScene();
 
 				break;
 			}
-			case Key::O:
+			case KeyCode::O:
 			{
 				if (controlPressed && m_SceneState == SceneState::Edit)
 					OpenExistingProject();
 
 				break;
 			}
-			case Key::S:
+			case KeyCode::S:
 			{
 				if (controlPressed && m_SceneState == SceneState::Edit && !rightMouseButtonPressed)
 				{
@@ -1648,14 +1652,14 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::Q:
+			case KeyCode::Q:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 					OnNoGizmoSelected();
 
 				break;
 			}
-			case Key::W:
+			case KeyCode::W:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
@@ -1670,7 +1674,7 @@ namespace Vortex {
 
 				break;
 			}
-			case Key::E:
+			case KeyCode::E:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
@@ -1685,7 +1689,7 @@ namespace Vortex {
 
 				break;
 			}
-			case Key::R:
+			case KeyCode::R:
 			{
 				if (!ImGuizmo::IsUsing() && !rightMouseButtonPressed && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
@@ -1701,7 +1705,7 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::F:
+			case KeyCode::F:
 			{
 				if (selectedEntity && m_AllowViewportCameraEvents && !ImGuizmo::IsUsing() && !m_SceneHierarchyPanel.GetEntityShouldBeRenamed())
 				{
@@ -1716,7 +1720,7 @@ namespace Vortex {
 
 				break;
 			}
-			case Key::G:
+			case KeyCode::G:
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
@@ -1728,14 +1732,14 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::A:
+			case KeyCode::A:
 			{
 				if (controlPressed && !rightMouseButtonPressed)
 					m_ShowSceneCreateEntityMenu = true;
 
 				break;
 			}
-			case Key::B:
+			case KeyCode::B:
 			{
 				if (controlPressed && shiftPressed && m_SceneState == SceneState::Edit)
 				{
@@ -1744,7 +1748,7 @@ namespace Vortex {
 
 				break;
 			}
-			case Key::D:
+			case KeyCode::D:
 			{
 				if (controlPressed && !rightMouseButtonPressed)
 					DuplicateSelectedEntity();
@@ -1752,7 +1756,7 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::P:
+			case KeyCode::P:
 			{
 				if (controlPressed && shiftPressed && m_SceneState == SceneState::Play)
 				{
@@ -1771,7 +1775,7 @@ namespace Vortex {
 					break;
 				}
 			}
-			case Key::X:
+			case KeyCode::X:
 			{
 				if (controlPressed && shiftPressed)
 				{
@@ -1793,14 +1797,14 @@ namespace Vortex {
 			}
 
 			// Tools
-			case Key::F2:
+			case KeyCode::F2:
 			{
 				if (selectedEntity)
 					m_SceneHierarchyPanel.EditSelectedEntityName(true);
 
 				break;
 			}
-			case Key::F11:
+			case KeyCode::F11:
 			{
 				Window& window = Application::Get().GetWindow();
 				window.SetMaximized(!window.IsMaximized());
@@ -1813,7 +1817,7 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::Delete:
+			case KeyCode::Delete:
 			{
 				if (selectedEntity)
 					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
@@ -1821,7 +1825,7 @@ namespace Vortex {
 				break;
 			}
 
-			case Key::Space:
+			case KeyCode::Space:
 			{
 				if (controlPressed)
 					m_SceneViewportMaximized = !m_SceneViewportMaximized;
@@ -1835,8 +1839,8 @@ namespace Vortex {
 
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
-		bool altPressed = Input::IsKeyPressed(Key::LeftAlt) || Input::IsKeyPressed(Key::RightAlt);
-		bool rightMouseButtonPressed = Input::IsMouseButtonPressed(MouseButton::Right);
+		bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
+		bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
 
 		switch (e.GetMouseButton())
 		{

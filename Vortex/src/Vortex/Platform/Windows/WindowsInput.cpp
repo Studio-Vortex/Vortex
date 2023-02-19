@@ -9,49 +9,69 @@
 namespace Vortex {
 
 	static Math::vec2 s_MouseScrollOffset(0.0f);
+	static std::bitset<VX_MAX_KEYS> s_Keys{};
+	static std::bitset<VX_MAX_KEYS> s_KeysChanged{};
+	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtons{};
+	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtonsChanged{};
 
 	bool Input::IsKeyPressed(KeyCode keycode)
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
-		auto state = glfwGetKey(window, static_cast<int32_t>(keycode));
-		return state == GLFW_PRESS;
+		return s_Keys[(size_t)keycode] && KeyChangedThisFrame(keycode);
 	}
 
 	bool Input::IsKeyReleased(KeyCode keycode)
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
-		auto state = glfwGetKey(window, static_cast<int32_t>(keycode));
-		return state == GLFW_RELEASE;
+		return !s_Keys[(size_t)keycode] && KeyChangedThisFrame(keycode);
+	}
+
+	bool Input::IsKeyDown(KeyCode keycode)
+	{
+		return s_Keys[(size_t)keycode];
+	}
+
+	bool Input::IsKeyUp(KeyCode keycode)
+	{
+		return !s_Keys[(size_t)keycode];
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton button)
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
-		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
+		return s_MouseButtons[(size_t)button] && MouseButtonChangedThisFrame(button);
 	}
 
 	bool Input::IsMouseButtonReleased(MouseButton button)
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindowHandle());
-		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
-		return state == GLFW_RELEASE;
+		return !s_MouseButtons[(size_t)button] && MouseButtonChangedThisFrame(button);
 	}
 
-	bool Input::IsGamepadButtonPressed(Gamepad gamepad)
+	bool Input::IsMouseButtonDown(MouseButton button)
+	{
+		return s_MouseButtons[(size_t)button];
+	}
+
+	bool Input::IsMouseButtonUp(MouseButton button)
+	{
+		return !s_MouseButtons[(size_t)button];
+	}
+
+	bool Input::IsGamepadButtonDown(Gamepad gamepad)
 	{
 		GLFWgamepadstate state;
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
-			return state.buttons[static_cast<int32_t>(gamepad)] == true;
+		{
+			return state.buttons[(size_t)gamepad];
+		}
 	}
 
-	bool Input::IsGamepadButtonReleased(Gamepad gamepad)
+	bool Input::IsGamepadButtonUp(Gamepad gamepad)
 	{
 		GLFWgamepadstate state;
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
-			return state.buttons[static_cast<int32_t>(gamepad)] == false;
+		{
+			return !state.buttons[(size_t)gamepad];
+		}
 	}
 
 	Math::vec2 Input::GetMouseScrollOffset()
@@ -73,7 +93,9 @@ namespace Vortex {
 		GLFWgamepadstate state;
 
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
-			return state.axes[static_cast<int32_t>(axis)];
+		{
+			return state.axes[(size_t)axis];
+		}
 	}
 
 	Math::vec2 Input::GetMousePosition()
@@ -113,13 +135,65 @@ namespace Vortex {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)cursorMode);
 	}
 
-	void Input::UpdateMouseState(const Event& event)
+	void Input::UpdateMouseScrollOffset(const Event& event)
 	{
 		if (event.GetEventType() == EventType::MouseScrolled)
 		{
 			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)event;
 			SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
 		}
+	}
+
+	void Input::UpdateKeyState(KeyCode key, int action)
+	{
+		if (action != GLFW_RELEASE)
+		{
+			if (!s_Keys[(size_t)key])
+			{
+				s_Keys[(size_t)key] = true;
+			}
+		}
+		else
+		{
+			s_Keys[(size_t)key] = false;
+		}
+
+		s_KeysChanged[(size_t)key] = action != GLFW_REPEAT;
+	}
+
+	void Input::UpdateMouseButtonState(MouseButton button, int action)
+	{
+		if (action != GLFW_RELEASE)
+		{
+			if (!s_MouseButtons[(size_t)button])
+			{
+				s_MouseButtons[(size_t)button] = true;
+			}
+		}
+		else
+		{
+			s_MouseButtons[(size_t)button] = false;
+		}
+
+		s_MouseButtonsChanged[(size_t)button] = action != GLFW_REPEAT;
+	}
+
+	bool Input::KeyChangedThisFrame(KeyCode key)
+	{
+		bool result = s_KeysChanged[(size_t)key];
+
+		// set to false because the state is no longer new
+		s_KeysChanged[(size_t)key] = false;
+		return result;
+	}
+
+	bool Input::MouseButtonChangedThisFrame(MouseButton mousebutton)
+	{
+		bool result = s_MouseButtonsChanged[(size_t)mousebutton];
+
+		// set to false because the state is no longer new
+		s_MouseButtonsChanged[(size_t)mousebutton] = false;
+		return result;
 	}
 
 }

@@ -14,23 +14,23 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (Input::IsKeyPressed(Key::A))
+		if (Input::IsKeyDown(KeyCode::A))
 		{
 			m_CameraPosition.x -= cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y -= sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
-		else if (Input::IsKeyPressed(Key::D))
+		else if (Input::IsKeyDown(KeyCode::D))
 		{
 			m_CameraPosition.x += cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y += sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
 
-		if (Input::IsKeyPressed(Key::W))
+		if (Input::IsKeyDown(KeyCode::W))
 		{
 			m_CameraPosition.x += -sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y += cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 		}
-		else if (Input::IsKeyPressed(Key::S))
+		else if (Input::IsKeyDown(KeyCode::S))
 		{
 			m_CameraPosition.x -= -sin(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
 			m_CameraPosition.y -= cos(Math::Deg2Rad(m_CameraRotation)) * m_CameraTranslationSpeed * ts;
@@ -38,9 +38,9 @@ namespace Vortex {
 
 		if (m_Rotation)
 		{
-			if (Input::IsKeyPressed(Key::Q))
+			if (Input::IsKeyDown(KeyCode::Q))
 				m_CameraRotation += m_CameraRotationSpeed * ts;
-			else if (Input::IsKeyPressed(Key::E))
+			else if (Input::IsKeyDown(KeyCode::E))
 				m_CameraRotation -= m_CameraRotationSpeed * ts;
 
 			if (m_CameraRotation > 180.0f)
@@ -48,13 +48,13 @@ namespace Vortex {
 			else if (m_CameraRotation <= -180.0f)
 				m_CameraRotation += 360.0f;
 
-			if (Input::IsKeyPressed(Key::R))
+			if (Input::IsKeyDown(KeyCode::R))
 				ResetRotation();
 
 			m_Camera.SetRotation(m_CameraRotation);
 		}
 
-		if (Input::IsKeyPressed(Key::LeftShift))
+		if (Input::IsKeyDown(KeyCode::LeftShift))
 			m_CameraTranslationSpeed = m_ZoomLevel * m_ShiftKeyModiferSpeed;
 		else
 			m_CameraTranslationSpeed = m_ZoomLevel;

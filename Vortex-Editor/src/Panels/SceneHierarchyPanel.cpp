@@ -917,10 +917,10 @@ namespace Vortex {
 			Gui::SameLine();
 			Gui::PushItemWidth(-1);
 
-			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+			bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+			bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 
-			if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
+			if (Gui::Button("Add Component") || (Input::IsKeyDown(KeyCode::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
 			{
 				Gui::OpenPopup("AddComponent");
 

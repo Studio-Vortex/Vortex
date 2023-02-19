@@ -15,12 +15,16 @@ namespace Vortex {
 	public:
 		static bool IsKeyPressed(KeyCode keycode);
 		static bool IsKeyReleased(KeyCode keycode);
+		static bool IsKeyDown(KeyCode keycode);
+		static bool IsKeyUp(KeyCode keycode);
 
 		static bool IsMouseButtonPressed(MouseButton button);
 		static bool IsMouseButtonReleased(MouseButton button);
+		static bool IsMouseButtonDown(MouseButton button);
+		static bool IsMouseButtonUp(MouseButton button);
 
-		static bool IsGamepadButtonPressed(Gamepad button);
-		static bool IsGamepadButtonReleased(Gamepad button);
+		static bool IsGamepadButtonDown(Gamepad button);
+		static bool IsGamepadButtonUp(Gamepad button);
 
 		static Math::vec2 GetMouseScrollOffset();
 		static void SetMouseScrollOffset(const Math::vec2& offset);
@@ -37,7 +41,11 @@ namespace Vortex {
 		static void SetCursorMode(CursorMode cursorMode);
 
 		// For Internal Use
-		static void UpdateMouseState(const Event& event);
+		static void UpdateMouseScrollOffset(const Event& event);
+		static void UpdateKeyState(KeyCode key, int action);
+		static void UpdateMouseButtonState(MouseButton button, int action);
+		static bool KeyChangedThisFrame(KeyCode key);
+		static bool MouseButtonChangedThisFrame(MouseButton mousebutton);
 	};
 
 }

@@ -4,6 +4,8 @@
 
 namespace Vortex {
 
+#define VX_MAX_MOUSE_BUTTONS 7
+
 	enum class MouseButton : uint16_t
 	{
 		// From glfw3.h

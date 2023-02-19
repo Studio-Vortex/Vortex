@@ -1098,10 +1098,22 @@ namespace Vortex {
 		#region Input
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyPressed(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyReleased(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyDown(KeyCode key);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyUp(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonPressed(MouseButton mouseButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonReleased(MouseButton mouseButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsMouseButtonDown(MouseButton mouseButton);

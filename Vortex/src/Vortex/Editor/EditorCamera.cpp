@@ -54,7 +54,7 @@ namespace Vortex {
 			return;
 		}
 
-		if (Input::IsMouseButtonPressed(MouseButton::Right) && !Input::IsKeyPressed(KeyCode::LeftAlt))
+		if (Input::IsMouseButtonDown(MouseButton::Right) && !Input::IsKeyDown(KeyCode::LeftAlt))
 		{
 			m_CameraMode = CameraMode::FlyCam;
 			DisableMouse();
@@ -62,17 +62,17 @@ namespace Vortex {
 
 			const float speed = GetCameraSpeed();
 
-			if (Input::IsKeyPressed(KeyCode::Q))
+			if (Input::IsKeyDown(KeyCode::Q))
 				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * Math::vec3{ 0.f, yawSign, 0.f };
-			if (Input::IsKeyPressed(KeyCode::E))
+			if (Input::IsKeyDown(KeyCode::E))
 				m_PositionDelta += ts.GetDeltaTimeMs() * speed * Math::vec3{ 0.f, yawSign, 0.f };
-			if (Input::IsKeyPressed(KeyCode::S))
+			if (Input::IsKeyDown(KeyCode::S))
 				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * m_Direction;
-			if (Input::IsKeyPressed(KeyCode::W))
+			if (Input::IsKeyDown(KeyCode::W))
 				m_PositionDelta += ts.GetDeltaTimeMs() * speed * m_Direction;
-			if (Input::IsKeyPressed(KeyCode::A))
+			if (Input::IsKeyDown(KeyCode::A))
 				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * m_RightDirection;
-			if (Input::IsKeyPressed(KeyCode::D))
+			if (Input::IsKeyDown(KeyCode::D))
 				m_PositionDelta += ts.GetDeltaTimeMs() * speed * m_RightDirection;
 
 			constexpr float maxRate{ 0.12f };
@@ -90,21 +90,21 @@ namespace Vortex {
 			m_FocalPoint = m_Position + GetForwardDirection() * distance;
 			m_Distance = distance;
 		}
-		else if (Input::IsKeyPressed(KeyCode::LeftAlt))
+		else if (Input::IsKeyDown(KeyCode::LeftAlt))
 		{
 			m_CameraMode = CameraMode::ArcBall;
 
-			if (Input::IsMouseButtonPressed(MouseButton::Middle))
+			if (Input::IsMouseButtonDown(MouseButton::Middle))
 			{
 				DisableMouse();
 				MousePan(delta);
 			}
-			else if (Input::IsMouseButtonPressed(MouseButton::Left))
+			else if (Input::IsMouseButtonDown(MouseButton::Left))
 			{
 				DisableMouse();
 				MouseRotate(delta);
 			}
-			else if (Input::IsMouseButtonPressed(MouseButton::Right))
+			else if (Input::IsMouseButtonDown(MouseButton::Right))
 			{
 				DisableMouse();
 				MouseZoom((delta.x + delta.y) * 0.1f);
@@ -143,9 +143,9 @@ namespace Vortex {
 	float EditorCamera::GetCameraSpeed() const
 	{
 		float speed = m_NormalSpeed;
-		if (Input::IsKeyPressed(KeyCode::LeftControl))
+		if (Input::IsKeyDown(KeyCode::LeftControl))
 			speed /= 2 - Math::Log(m_NormalSpeed);
-		if (Input::IsKeyPressed(KeyCode::LeftShift))
+		if (Input::IsKeyDown(KeyCode::LeftShift))
 			speed *= 2 - Math::Log(m_NormalSpeed);
 
 		return Math::Clamp(speed, MIN_SPEED, MAX_SPEED);
@@ -221,7 +221,7 @@ namespace Vortex {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::IsMouseButtonPressed(MouseButton::Right))
+		if (Input::IsMouseButtonDown(MouseButton::Right))
 		{
 			m_NormalSpeed += e.GetYOffset() * 0.03f * m_NormalSpeed;
 			m_NormalSpeed = std::clamp(m_NormalSpeed, MIN_SPEED, MAX_SPEED);

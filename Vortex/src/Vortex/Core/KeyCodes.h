@@ -4,7 +4,9 @@
 
 namespace Vortex {
 
-	typedef enum class KeyCode : uint16_t
+#define VX_MAX_KEYS 348
+
+	enum class KeyCode : uint16_t
 	{
 		// From glfw3.h
 		Space                            = 32,
@@ -137,7 +139,7 @@ namespace Vortex {
 		RightSuper                       = 347,
 		Menu                             = 348,
 		MaxKeys                          = 348,
-	} Key;
+	};
 
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
 	{

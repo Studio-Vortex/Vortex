@@ -145,6 +145,8 @@ namespace Vortex {
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			
+			Input::UpdateKeyState((KeyCode)key, action);
 
 			switch (action)
 			{
@@ -180,6 +182,8 @@ namespace Vortex {
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			Input::UpdateMouseButtonState((MouseButton)button, action);
 
 			switch (action)
 			{
