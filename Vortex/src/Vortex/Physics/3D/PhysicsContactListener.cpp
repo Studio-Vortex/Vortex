@@ -32,7 +32,8 @@ namespace Vortex {
 		{
 			physx::PxJoint* nativeJoint = (physx::PxJoint*)constraints[i].externalReference;
 			ConstrainedJointData* jointData = (ConstrainedJointData*)nativeJoint->userData;
-			jointData->IsBroken = true;
+
+			nativeJoint->setConstraintFlag(physx::PxConstraintFlag::eBROKEN, true);
 
 			Entity entity = contextScene->TryGetEntityWithUUID(jointData->EntityUUID);
 

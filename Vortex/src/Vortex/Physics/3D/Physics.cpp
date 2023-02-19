@@ -411,6 +411,17 @@ namespace Vortex {
 		return nullptr;
 	}
 
+	bool Physics::IsConstraintBroken(UUID entityUUID)
+	{
+		if (s_ActiveFixedJoints.contains(entityUUID))
+		{
+			physx::PxFixedJoint* fixedJoint = s_ActiveFixedJoints[entityUUID];
+			return fixedJoint->getConstraintFlags() & physx::PxConstraintFlag::eBROKEN;
+		}
+
+		return false;
+	}
+
 	void Physics::BreakJoint(UUID entityUUID)
 	{
 		if (s_ActiveFixedJoints.contains(entityUUID))
@@ -729,7 +740,6 @@ namespace Vortex {
 
 		ConstrainedJointData* jointData = new ConstrainedJointData();
 		jointData->EntityUUID = entity.GetUUID();
-		jointData->IsBroken = false;
 		fixedJoint->userData = jointData;
 
 		s_ConstrainedJointData[entity.GetUUID()] = jointData;

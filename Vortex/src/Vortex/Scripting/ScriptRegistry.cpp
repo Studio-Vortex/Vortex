@@ -3006,8 +3006,7 @@ namespace Vortex {
 			return false;
 		}
 
-		const ConstrainedJointData* jointData = Physics::GetConstrainedJointData(entityUUID);
-		return jointData->IsBroken;
+		return Physics::IsConstraintBroken(entityUUID);
 	}
 
 	static bool FixedJointComponent_GetIsBreakable(UUID entityUUID)

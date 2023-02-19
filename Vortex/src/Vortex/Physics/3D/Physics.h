@@ -35,7 +35,6 @@ namespace Vortex {
 	struct ConstrainedJointData
 	{
 		UUID EntityUUID = 0;
-		bool IsBroken = false;
 	};
 
 	struct RaycastHit
@@ -84,6 +83,7 @@ namespace Vortex {
 		static const PhysicsBodyData* GetPhysicsBodyData(UUID entityUUID);
 		static const ConstrainedJointData* GetConstrainedJointData(UUID entityUUID);
 
+		static bool IsConstraintBroken(UUID entityUUID);
 		static void BreakJoint(UUID entityUUID);
 
 		VX_FORCE_INLINE static uint32_t GetPhysicsScenePositionIterations() { return s_PhysicsSolverIterations; }
