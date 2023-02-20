@@ -2,6 +2,7 @@
 #include "Physics.h"
 
 #include "Vortex/Project/Project.h"
+#include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
@@ -9,6 +10,8 @@
 #include "Vortex/Utils/PlatformUtils.h"
 
 namespace Vortex {
+
+	static std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS> s_OverlapBuffer;
 
 	namespace Utils {
 
@@ -74,6 +77,27 @@ namespace Vortex {
 			localFrame.q.normalize();
 
 			return localFrame;
+		}
+
+		static bool OverlapGeometry(const Math::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+		{
+			physx::PxOverlapBuffer buf(s_OverlapBuffer.data(), OVERLAP_MAX_COLLIDERS);
+			physx::PxTransform pose = ToPhysXTransform(Math::Translate(origin));
+
+			bool result = Physics::GetPhysicsScene()->overlap(geometry, pose, buf);
+
+			if (result)
+			{
+				count = buf.nbTouches > OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
+
+				for (uint32_t i = 0; i < count; i++)
+				{
+					PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)s_OverlapBuffer[i].actor->userData;
+					buffer[i].EntityID = physicsBodyData->EntityUUID;
+				}
+			}
+
+			return result;
 		}
 
 	}
@@ -579,7 +603,7 @@ namespace Vortex {
 			s_Data->PhysicsScene->removeActor(*actor);
 			actor->release();
 			rigidbody.RuntimeActor = nullptr;
-			s_ActiveActors.erase(entity);
+			s_ActiveActors.erase(entityUUID);
 		}
 
 		if (s_ActiveControllers.contains(entityUUID))
@@ -587,7 +611,7 @@ namespace Vortex {
 			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 			characterController.RuntimeController = nullptr;
 			s_ActiveControllers[entityUUID]->release();
-			s_ActiveControllers.erase(entity);
+			s_ActiveControllers.erase(entityUUID);
 		}
 
 		if (s_ActiveFixedJoints.contains(entityUUID))
@@ -595,21 +619,21 @@ namespace Vortex {
 			FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
 			fixedJoint.ConnectedEntity = 0;
 			s_ActiveFixedJoints[entityUUID]->release();
-			s_ActiveFixedJoints.erase(entity);
+			s_ActiveFixedJoints.erase(entityUUID);
 		}
 
 		if (s_PhysicsBodyData.contains(entityUUID))
 		{
 			PhysicsBodyData* physicsBodyData = s_PhysicsBodyData[entityUUID];
 			delete physicsBodyData;
-			s_PhysicsBodyData.erase(entity);
+			s_PhysicsBodyData.erase(entityUUID);
 		}
 
 		if (s_ConstrainedJointData.contains(entityUUID))
 		{
 			ConstrainedJointData* jointData = s_ConstrainedJointData[entityUUID];
 			delete jointData;
-			s_ConstrainedJointData.erase(entity);
+			s_ConstrainedJointData.erase(entityUUID);
 		}
 	}
 
@@ -836,9 +860,8 @@ namespace Vortex {
 	{
 		physx::PxFilterData filterData;
 		filterData.word0 = filterGroup; // word0 = own ID
-		filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a
+		filterData.word1 = filterMask;  // word1 = ID mask to filter pairs that trigger a contact callback
 
-		// contact callback;
 		const physx::PxU32 numShapes = actor->getNbShapes();
 
 		physx::PxShape** shapes = (physx::PxShape**)s_Data->DefaultAllocator.allocate(sizeof(physx::PxShape*) * numShapes, "", "", 0);

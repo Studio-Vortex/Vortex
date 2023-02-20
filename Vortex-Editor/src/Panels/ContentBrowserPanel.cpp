@@ -236,7 +236,7 @@ public class Untitled : Entity
 				icon = EditorResources::FontIcon;
 			else if (extension == ".wav" || extension == ".mp3")
 				icon = EditorResources::AudioFileIcon;
-			else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".hdr")
+			else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 				{
@@ -426,7 +426,7 @@ public class Untitled : Entity
 						}
 
 						// Rename SpriteRendererComponent Texture path
-						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".tga")
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
 						{
 							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
 							// we have the old filename
@@ -460,7 +460,7 @@ public class Untitled : Entity
 					icon = EditorResources::FontIcon;
 				else if (extension == ".wav" || extension == ".mp3")
 					icon = EditorResources::AudioFileIcon;
-				else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".hdr")
+				else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
 				{
 					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					{

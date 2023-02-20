@@ -138,7 +138,7 @@ namespace Vortex {
 	Scene::Scene(SharedRef<Framebuffer> targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer) { }
 
-	SharedRef<Scene> Scene::Copy(SharedRef<Scene> source)
+	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -153,8 +153,8 @@ namespace Vortex {
 		std::unordered_map<UUID, entt::entity> enttMap;
 
 		// Create entites in new scene
-		auto idView = srcSceneRegistry.view<IDComponent>();
-		for (auto& e : idView)
+		auto view = srcSceneRegistry.view<IDComponent>();
+		for (const auto e : view)
 		{
 			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
@@ -859,21 +859,6 @@ namespace Vortex {
 		}
 
 		return Entity{};
-	}
-
-	const std::vector<Entity>& Scene::GetAllEntities()
-	{
-		std::vector<Entity> result;
-
-		m_Registry.each([&](auto e)
-		{
-			Entity entity{ e, this };
-
-			if (entity)
-				result.push_back(entity);
-		});
-
-		return result;
 	}
 
 	bool Scene::AreEntitiesRelated(Entity first, Entity second)

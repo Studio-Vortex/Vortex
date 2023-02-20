@@ -45,6 +45,13 @@ namespace Vortex {
 		float Distance;
 	};
 
+#define OVERLAP_MAX_COLLIDERS 50
+
+	struct OverlapHit
+	{
+		uint64_t EntityID;
+	};
+
 	struct Collision
 	{
 		uint64_t EntityID;

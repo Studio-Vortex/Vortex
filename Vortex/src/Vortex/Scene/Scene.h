@@ -19,7 +19,7 @@ namespace Vortex {
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
 		~Scene() = default;
 
-		static SharedRef<Scene> Copy(SharedRef<Scene> source);
+		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
 		static void Create2DSampleScene(SharedRef<Scene>& context);
 		static void Create3DSampleScene(SharedRef<Scene>& context);
 
@@ -69,8 +69,6 @@ namespace Vortex {
 		Entity FindEntityWithID(entt::entity entity);
 
 		Entity GetPrimaryCameraEntity();
-
-		const std::vector<Entity>& GetAllEntities();
 
 		bool AreEntitiesRelated(Entity first, Entity second);
 

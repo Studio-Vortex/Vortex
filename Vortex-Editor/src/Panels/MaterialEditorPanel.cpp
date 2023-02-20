@@ -141,7 +141,7 @@ namespace Vortex {
 							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 							{
 								SharedRef<Texture2D> newTexture = Texture2D::Create(texturePath.string());
 
@@ -154,7 +154,7 @@ namespace Vortex {
 							}
 							else
 							{
-								VX_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+								VX_WARN("Could not load texture, not a '.png', '.jpg', '.tga' or '.psd' - {}", texturePath.filename().string());
 							}
 						}
 
@@ -163,7 +163,7 @@ namespace Vortex {
 
 					if (hovered && leftMouseButtonClicked)
 					{
-						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.tga)\0*.png;*.jpg;*.tga\0");
+						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.tga;*.psd)\0*.png;*.jpg;*.tga;*.psd\0");
 						if (!filepath.empty())
 						{
 							std::string projectDir = Project::GetProjectDirectory().string();

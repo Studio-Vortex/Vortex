@@ -2171,7 +2171,7 @@ namespace Vortex {
 
 		bool consistentBodyType = bodyType == rigidbody.Type;
 
-		if (consistentBodyType || !Physics::GetActor(entityUUID))
+		if (consistentBodyType)
 			return;
 
 		rigidbody.Type = bodyType;

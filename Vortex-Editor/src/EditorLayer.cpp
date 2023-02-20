@@ -645,7 +645,7 @@ namespace Vortex {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga")
+				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga" || filePath.extension().string() == ".psd")
 				{
 					std::filesystem::path texturePath = filePath;
 					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
@@ -686,7 +686,6 @@ namespace Vortex {
 						meshImportPopupOpen = true;
 						m_MeshFilepath = modelPath.string();
 						m_MeshEntityToEdit = m_HoveredEntity;
-						// TODO set material
 					}
 				}
 				else if (filePath.extension().string() == ".vortex")
