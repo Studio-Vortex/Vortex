@@ -1,17 +1,16 @@
 #include "vxpch.h"
 #include "ScriptEngine.h"
 
+#include "Vortex/Project/Project.h"
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Buffer.h"
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/Components.h"
-#include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Scripting/ScriptRegistry.h"
-#include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Debug/Instrumentor.h"
-#include "Vortex/Project/Project.h"
+#include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Scene/Components.h"
+#include "Vortex/Scene/Entity.h"
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/class.h>
@@ -359,6 +358,13 @@ namespace Vortex {
 		return s_Data->EntityClasses.contains(fullyQualifiedClassName);
 	}
 
+	void ScriptEngine::ConstructEntityRuntime(UUID entityUUID, MonoObject* instance)
+	{
+		void* param = &entityUUID;
+		MonoMethod* constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		ScriptUtils::InvokeMethod(instance, constructor, &param);
+	}
+
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
 		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
@@ -633,9 +639,7 @@ namespace Vortex {
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
-		mono_runtime_object_init(instance);
-		return instance;
+		return ScriptUtils::InstantiateClass(monoClass);
 	}
 
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
@@ -651,13 +655,7 @@ namespace Vortex {
 
 	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)
 	{
-		return mono_class_get_method_from_name(m_MonoClass, name.c_str(), parameterCount);
-	}
-
-	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
-	{
-		MonoObject* exception = nullptr;
-		return mono_runtime_invoke(method, instance, params, &exception);
+		return ScriptUtils::GetManagedMethodFromName(m_MonoClass, name.c_str(), parameterCount);
 	}
 
 	ScriptInstance::ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity)
@@ -696,9 +694,7 @@ namespace Vortex {
 #endif
 		
 		// Call Entity constructor
-		UUID entitytUUID = entity.GetUUID();
-		void* param = &entitytUUID;
-		scriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
+		ScriptEngine::ConstructEntityRuntime(entity.GetUUID(), m_Instance);
 	}
 
 	void ScriptInstance::InvokeOnCreate()
@@ -706,7 +702,7 @@ namespace Vortex {
 		if (!m_OnCreateFunc)
 			return;
 		
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnCreateFunc);
 	}
 
 	void ScriptInstance::InvokeOnUpdate(float delta)
@@ -715,7 +711,7 @@ namespace Vortex {
 			return;
 		
 		void* param = &delta;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnDestroy()
@@ -723,7 +719,7 @@ namespace Vortex {
 		if (!m_OnDestroyFunc)
 			return;
 
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnDestroyFunc);
 	}
 
 	void ScriptInstance::InvokeOnCollisionEnter(Collision& collision)
@@ -732,7 +728,7 @@ namespace Vortex {
 			return;
 
 		void* param = &collision;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEnterFunc, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnCollisionEnterFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnCollisionExit(Collision& collision)
@@ -741,7 +737,7 @@ namespace Vortex {
 			return;
 
 		void* param = &collision;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionExitFunc, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnCollisionExitFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnTriggerEnter(Collision& collision)
@@ -750,7 +746,7 @@ namespace Vortex {
 			return;
 
 		void* param = &collision;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEnterFunc, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnTriggerEnterFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnTriggerExit(Collision& collision)
@@ -759,7 +755,7 @@ namespace Vortex {
 			return;
 
 		void* param = &collision;
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerExitFunc, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnTriggerExitFunc, &param);
 	}
 
 	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
@@ -768,7 +764,7 @@ namespace Vortex {
 			return;
 
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnFixedJointDisconnectedFunc, params);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnFixedJointDisconnectedFunc, params);
 	}
 
 	void ScriptInstance::InvokeOnRaycastCollision()
@@ -776,7 +772,7 @@ namespace Vortex {
 		if (!m_OnRaycastCollisionFunc)
 			return;
 
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnRaycastCollisionFunc);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnRaycastCollisionFunc);
 	}
 
 	void ScriptInstance::InvokeOnGui()
@@ -784,7 +780,7 @@ namespace Vortex {
 		if (!m_OnGuiFunc)
 			return;
 		
-		m_ScriptClass->InvokeMethod(m_Instance, m_OnGuiFunc);
+		ScriptUtils::InvokeMethod(m_Instance, m_OnGuiFunc);
 	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)

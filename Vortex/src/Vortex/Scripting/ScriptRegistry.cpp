@@ -3,8 +3,10 @@
 
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Input.h"
+#include "Vortex/Core/Log.h"
 
 #include "Vortex/Scene/Scene.h"
+#include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Audio/AudioSource.h"
@@ -26,9 +28,8 @@
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
 
-#include "Vortex/Utils/PlatformUtils.h"
-#include "Vortex/Core/Log.h"
 #include "Vortex/UI/UI.h"
+#include "Vortex/Utils/PlatformUtils.h"
 
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>
@@ -422,7 +423,7 @@ namespace Vortex {
 			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-			const auto& children = entity.Children();
+			const std::vector<UUID>& children = entity.Children();
 
 			MonoClass* coreEntityClass = ScriptEngine::GetCoreEntityClass()->GetMonoClass();
 			VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
@@ -438,7 +439,9 @@ namespace Vortex {
 
 				if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
 				{
-					MonoObject* boxed = mono_object_new(ScriptEngine::GetAppDomain(), elementClass);
+					MonoObject* boxed = ScriptUtils::InstantiateClass(elementClass);
+					MonoMethod* entityConstructor = ScriptEngine::GetCoreEntityClass()->GetMethod(".ctor", 1);
+					ScriptEngine::ConstructEntityRuntime(children[i], boxed);
 					mono_array_setref(result, (uintptr_t)i, boxed);
 				}
 				/*else

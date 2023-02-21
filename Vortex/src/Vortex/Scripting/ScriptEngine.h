@@ -85,7 +85,6 @@ namespace Vortex {
 
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
-		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
 		inline std::map<std::string, ScriptField> GetFields() { return m_Fields; }
 
@@ -201,6 +200,7 @@ namespace Vortex {
 		static void OnRuntimeStop();
 
 		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
+		static void ConstructEntityRuntime(UUID entityUUID, MonoObject* instance);
 
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
