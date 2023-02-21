@@ -1,11 +1,16 @@
 #include "vxpch.h"
 #include "Physics2D.h"
 
+#include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Physics/2D/RaycastCallback2D.h"
+
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_circle_shape.h>
 #include <box2d/b2_polygon_shape.h>
+
+#include <mono/jit/jit.h>
 
 namespace Vortex {
 
@@ -24,6 +29,33 @@ namespace Vortex {
 			return b2_staticBody;
 		}
 
+	}
+
+	RaycastHit2D::RaycastHit2D(const RaycastCallback2D* raycastInfo, Scene* contextScene)
+	{
+		Hit = raycastInfo->fixture != nullptr;
+
+		if (Hit)
+		{
+			Point = Math::vec2(raycastInfo->point.x, raycastInfo->point.y);
+			Normal = Math::vec2(raycastInfo->normal.x, raycastInfo->normal.y);
+
+			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastInfo->fixture->GetUserData().pointer);
+			UUID entityUUID = physicsBodyData->EntityUUID;
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
+
+			if (ScriptEngine::GetEntityScriptInstance(entityUUID))
+			{
+				ScriptEngine::OnRaycastCollisionEntity(entity); // Call the Entity's OnCollision Function
+			}
+		}
+		else
+		{
+			Point = Math::vec2();
+			Normal = Math::vec2();
+			Tag = mono_string_new(mono_domain_get(), "");
+		}
 	}
 
 	void Physics2D::OnSimulationStart(Scene* contextScene)
@@ -45,6 +77,8 @@ namespace Vortex {
 	void Physics2D::OnSimulationUpdate(TimeStep delta, Scene* contextScene)
 	{
 		s_PhysicsScene->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
+
+		s_ContextScene = contextScene;
 
 		// Physics
 		{
@@ -128,6 +162,24 @@ namespace Vortex {
 		delete s_PhysicsScene;
 		s_PhysicsScene = nullptr;
 		s_PhysicsBodyDataMap.clear();
+		s_ContextScene = nullptr;
+	}
+
+	uint64_t Physics2D::Raycast(const Math::vec2& start, const Math::vec2& end, RaycastHit2D* outResult, bool drawDebugLine)
+	{
+		// Create an instance of the callback and initialize it
+		RaycastCallback2D raycastCallback;
+		s_PhysicsScene->RayCast(&raycastCallback, {start.x, start.y}, {end.x, end.y});
+
+		*outResult = RaycastHit2D(&raycastCallback, s_ContextScene);
+
+		if (outResult->Hit)
+		{
+			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastCallback.fixture->GetUserData().pointer);
+			return physicsBodyData->EntityUUID;
+		}
+
+		return 0; // Invalid entity UUID
 	}
 
 	void Physics2D::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)

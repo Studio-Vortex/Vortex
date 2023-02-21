@@ -13,6 +13,7 @@ extern "C"
 	typedef struct _MonoImage MonoImage;
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoMethod MonoMethod;
+	typedef struct _MonoDomain MonoDomain;
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoClassField MonoClassField;
 }
@@ -212,6 +213,7 @@ namespace Vortex {
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
+		static MonoDomain* GetAppDomain();
 
 		static void DuplicateScriptInstance(Entity entity, Entity targetEntity);
 

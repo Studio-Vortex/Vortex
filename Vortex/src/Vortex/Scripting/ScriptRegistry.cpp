@@ -3,10 +3,8 @@
 
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Input.h"
-#include "Vortex/Core/UUID.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Audio/AudioSource.h"
@@ -47,1227 +45,1234 @@
 
 namespace Vortex {
 
-#define VX_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Vortex.InternalCalls::" #icall, icall)
+#define VX_ADD_INTERNAL_CALL(icall) mono_add_internal_call("Vortex.InternalCalls::" #icall, InternalCalls::icall)
 
-	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityAddComponentFuncs;
-	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
-	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityRemoveComponentFuncs;
+	struct ScriptingData
+	{
+		std::unordered_map<MonoType*, std::function<void(Entity)>> EntityAddComponentFuncs;
+		std::unordered_map<MonoType*, std::function<bool(Entity)>> EntityHasComponentFuncs;
+		std::unordered_map<MonoType*, std::function<void(Entity)>> EntityRemoveComponentFuncs;
 
-	static Entity s_HoveredEntity = Entity{};
+		Entity HoveredEntity = Entity{};
 
-	static float s_SceneStartTime = 0.0f;
+		float SceneStartTime = 0.0f;
 
-	static std::string s_ActiveSceneName = "";
-	static std::string s_SceneToBeLoaded = "";
+		std::string ActiveSceneName = "";
+		std::string SceneToBeLoaded = "";
 
-	static Math::vec4 s_RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		Math::vec4 RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	};
+
+	static ScriptingData s_Data;
+
+	namespace InternalCalls {
 
 #pragma region Application
 
-	static void Application_Quit()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Application_Quit()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Application::Get().Quit();
-	}
+			Application::Get().Quit();
+		}
 
-	static void Application_GetSize(Math::vec2* outSize)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Application_GetSize(Math::vec2* outSize)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		*outSize = Application::Get().GetWindow().GetSize();
-	}
+			*outSize = Application::Get().GetWindow().GetSize();
+		}
 
-	static void Application_GetPosition(Math::vec2* outPosition)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Application_GetPosition(Math::vec2* outPosition)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		*outPosition = Application::Get().GetWindow().GetPosition();
-	}
+			*outPosition = Application::Get().GetWindow().GetPosition();
+		}
 
-	static bool Application_IsMaximized()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		bool Application_IsMaximized()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return Application::Get().GetWindow().IsMaximized();
-	}
+			return Application::Get().GetWindow().IsMaximized();
+		}
 
 #pragma endregion
 
 #pragma region SceneRenderer
 
-	static float SceneRenderer_GetBloomThreshold()
-	{
-		return Renderer::GetBloomSettings().x;
-	}
+		float SceneRenderer_GetBloomThreshold()
+		{
+			return Renderer::GetBloomSettings().x;
+		}
 
-	static void SceneRenderer_SetBloomThreshold(float threshold)
-	{
-		Renderer::SetBloomThreshold(threshold);
-	}
+		void SceneRenderer_SetBloomThreshold(float threshold)
+		{
+			Renderer::SetBloomThreshold(threshold);
+		}
 
-	static float SceneRenderer_GetBloomSoftKnee()
-	{
-		return Renderer::GetBloomSettings().y;
-	}
+		float SceneRenderer_GetBloomSoftKnee()
+		{
+			return Renderer::GetBloomSettings().y;
+		}
 
-	static void SceneRenderer_SetBloomSoftKnee(float softKnee)
-	{
-		Renderer::SetBloomSoftKnee(softKnee);
-	}
+		void SceneRenderer_SetBloomSoftKnee(float softKnee)
+		{
+			Renderer::SetBloomSoftKnee(softKnee);
+		}
 
-	static float SceneRenderer_GetBloomUnknown()
-	{
-		return Renderer::GetBloomSettings().z;
-	}
+		float SceneRenderer_GetBloomUnknown()
+		{
+			return Renderer::GetBloomSettings().z;
+		}
 
-	static void SceneRenderer_SetBloomUnknown(float unknown)
-	{
-		Renderer::SetBloomUnknown(unknown);
-	}
+		void SceneRenderer_SetBloomUnknown(float unknown)
+		{
+			Renderer::SetBloomUnknown(unknown);
+		}
 
-	static float SceneRenderer_GetExposure()
-	{
-		return Renderer::GetSceneExposure();
-	}
+		float SceneRenderer_GetExposure()
+		{
+			return Renderer::GetSceneExposure();
+		}
 
-	static void SceneRenderer_SetExposure(float exposure)
-	{
-		Renderer::SetSceneExposure(exposure);
-	}
+		void SceneRenderer_SetExposure(float exposure)
+		{
+			Renderer::SetSceneExposure(exposure);
+		}
 
-	static float SceneRenderer_GetGamma()
-	{
-		return Renderer::GetSceneGamma();
-	}
+		float SceneRenderer_GetGamma()
+		{
+			return Renderer::GetSceneGamma();
+		}
 
-	static void SceneRenderer_SetGamma(float gamma)
-	{
-		Renderer::SetSceneGamma(gamma);
-	}
+		void SceneRenderer_SetGamma(float gamma)
+		{
+			Renderer::SetSceneGamma(gamma);
+		}
 
 #pragma endregion
 
 #pragma region DebugRenderer
 
-	static void DebugRenderer_BeginScene()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
-
-		if (!primaryCameraEntity)
+		void DebugRenderer_BeginScene()
 		{
-			VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
+
+			if (!primaryCameraEntity)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
+				return;
+			}
+
+			SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
+			Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
 		}
 
-		SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
-		Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
-	}
-
-	static void DebugRenderer_SetClearColor(Math::vec3* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		RenderCommand::SetClearColor(*color);
-	}
-
-	static void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
-	{
-		Renderer2D::DrawLine(*p1, *p2, *color);
-	}
-
-	static void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
-
-		if (!primaryCameraEntity)
+		void DebugRenderer_SetClearColor(Math::vec3* color)
 		{
-			VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			RenderCommand::SetClearColor(*color);
 		}
 
-		Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
+		void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
+		{
+			Renderer2D::DrawLine(*p1, *p2, *color);
+		}
 
-		Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
-	}
+		void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
 
-	static void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
-	{
-		Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
-	}
+			if (!primaryCameraEntity)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
+				return;
+			}
 
-	static void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade)
-	{
-		Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
-	}
+			Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
 
-	static void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
-	{
-		Math::AABB aabb{
-			- Math::vec3(0.5f),
-			+ Math::vec3(0.5f),
-		};
+			Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
+		}
 
-		Math::mat4 transform = Math::Identity() * Math::Translate(*worldPosition) * Math::Scale(*size);
-		Renderer2D::DrawAABB(aabb, transform, *color);
-	}
+		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
+		{
+			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
+		}
 
-	static void DebugRenderer_Flush()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade)
+		{
+			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
+		}
 
-		Renderer2D::EndScene();
-	}
+		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
+		{
+			Math::AABB aabb{
+				-Math::vec3(0.5f),
+				+Math::vec3(0.5f),
+			};
+
+			Math::mat4 transform = Math::Identity() * Math::Translate(*worldPosition) * Math::Scale(*size);
+			Renderer2D::DrawAABB(aabb, transform, *color);
+		}
+
+		void DebugRenderer_Flush()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			Renderer2D::EndScene();
+		}
 
 #pragma endregion
 
 #pragma region Scene
 
-	static bool Scene_FindEntityByID(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return (bool)entity;
-	}
-
-	static uint64_t Scene_FindEntityByName(MonoString* name)
-	{
-		char* managedString = mono_string_to_utf8(name);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->FindEntityByName(managedString);
-		mono_free(managedString);
-
-		if (!entity)
-			return 0;
-
-		return entity.GetUUID();
-	}
-
-	static uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName)
-	{
-		char* managedString = mono_string_to_utf8(childName);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& children = entity.Children();
-
-		for (const auto& child : children)
+		bool Scene_FindEntityByID(UUID entityUUID)
 		{
-			Entity childEntity = contextScene->TryGetEntityWithUUID(child);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-			if (childEntity && childEntity.GetName() == managedString)
+			return (bool)entity;
+		}
+
+		uint64_t Scene_FindEntityByName(MonoString* name)
+		{
+			char* managedString = mono_string_to_utf8(name);
+
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->FindEntityByName(managedString);
+			mono_free(managedString);
+
+			if (!entity)
+				return 0;
+
+			return entity.GetUUID();
+		}
+
+		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName)
+		{
+			char* managedString = mono_string_to_utf8(childName);
+
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& children = entity.Children();
+
+			for (const auto& child : children)
 			{
-				return childEntity.GetUUID();
+				Entity childEntity = contextScene->TryGetEntityWithUUID(child);
+
+				if (childEntity && childEntity.GetName() == managedString)
+				{
+					return childEntity.GetUUID();
+				}
 			}
+
+			return 0;
 		}
 
-		return 0;
-	}
-
-	static uint64_t Scene_CreateEntity(MonoString* name)
-	{
-		char* managedString = mono_string_to_utf8(name);
-
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->CreateEntity(managedString);
-		mono_free(managedString);
-
-		return entity.GetUUID();
-	}
-
-	static uint64_t Scene_Instantiate(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity)
+		uint64_t Scene_CreateEntity(MonoString* name)
 		{
-			VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
-			return 0;
+			char* managedString = mono_string_to_utf8(name);
+
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->CreateEntity(managedString);
+			mono_free(managedString);
+
+			return entity.GetUUID();
 		}
 
-		Entity clonedEntity = contextScene->DuplicateEntity(entity);
-		UUID uuid = clonedEntity.GetUUID();
-		return uuid;
-	}
+		uint64_t Scene_Instantiate(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static bool Scene_IsPaused()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			if (!entity)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
+				return 0;
+			}
 
-		return contextScene->IsPaused();
-	}
+			Entity clonedEntity = contextScene->DuplicateEntity(entity);
+			UUID uuid = clonedEntity.GetUUID();
+			return uuid;
+		}
 
-	static void Scene_Pause()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		bool Scene_IsPaused()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		contextScene->SetPaused(true);
-	}
+			return contextScene->IsPaused();
+		}
 
-	static void Scene_Resume()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Scene_Pause()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		contextScene->SetPaused(false);
-	}
+			contextScene->SetPaused(true);
+		}
 
-	static uint64_t Scene_GetHoveredEntity()
-	{
-		if (!s_HoveredEntity)
-			return 0;
+		void Scene_Resume()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return s_HoveredEntity.GetUUID();
-	}
+			contextScene->SetPaused(false);
+		}
+
+		uint64_t Scene_GetHoveredEntity()
+		{
+			if (!s_Data.HoveredEntity)
+				return 0;
+
+			return s_Data.HoveredEntity.GetUUID();
+		}
 
 #pragma endregion
 
 #pragma region SceneManager
 
-	static void SceneManager_LoadScene(MonoString* sceneName)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void SceneManager_LoadScene(MonoString* sceneName)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		char* sceneNameCStr = mono_string_to_utf8(sceneName);
-		s_SceneToBeLoaded = std::string(sceneNameCStr);
-		mono_free(sceneNameCStr);
-	}
+			char* sceneNameCStr = mono_string_to_utf8(sceneName);
+			s_Data.SceneToBeLoaded = std::string(sceneNameCStr);
+			mono_free(sceneNameCStr);
+		}
 
-	static MonoString* SceneManager_GetActiveScene()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		MonoString* SceneManager_GetActiveScene()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return mono_string_new(mono_domain_get(), s_ActiveSceneName.c_str());
-	}
+			return mono_string_new(mono_domain_get(), s_Data.ActiveSceneName.c_str());
+		}
 
 #pragma endregion
 
 #pragma region Entity
 
-	static void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		VX_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "Managed type was not found in Map!");
-		
-		s_EntityAddComponentFuncs.at(managedType)(entity);
-	}
-
-	static bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		VX_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "Managed type was not found in Map!");
-
-		return s_EntityHasComponentFuncs.at(managedType)(entity);
-	}
-
-	static void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		VX_CORE_ASSERT(s_EntityRemoveComponentFuncs.find(managedType) != s_EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
-
-		s_EntityRemoveComponentFuncs.at(managedType)(entity);
-	}
-
-	static MonoArray* Entity_GetChildren(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& children = entity.Children();
-
-		MonoClass* coreEntityClass =  ScriptEngine::GetCoreEntityClass()->GetMonoClass();
-		VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
-
-		MonoArray* result = mono_array_new(mono_domain_get(), coreEntityClass, children.size());
-
-		for (uint32_t i = 0; i < children.size(); i++)
+		void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType)
 		{
-			MonoClass* arrayClass = mono_object_get_class((MonoObject*)result);
-			MonoClass* elementClass = mono_class_get_element_class(arrayClass);
-			int32_t elementSize = mono_array_element_size(arrayClass);
-			MonoType* elementType = mono_class_get_type(elementClass);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-			if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
+			MonoType* managedType = mono_reflection_type_get_type(componentType);
+			VX_CORE_ASSERT(s_Data.EntityAddComponentFuncs.find(managedType) != s_Data.EntityAddComponentFuncs.end(), "Managed type was not found in Map!");
+
+			s_Data.EntityAddComponentFuncs.at(managedType)(entity);
+		}
+
+		bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			MonoType* managedType = mono_reflection_type_get_type(componentType);
+			VX_CORE_ASSERT(s_Data.EntityHasComponentFuncs.find(managedType) != s_Data.EntityHasComponentFuncs.end(), "Managed type was not found in Map!");
+
+			return s_Data.EntityHasComponentFuncs.at(managedType)(entity);
+		}
+
+		void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			MonoType* managedType = mono_reflection_type_get_type(componentType);
+			VX_CORE_ASSERT(s_Data.EntityRemoveComponentFuncs.find(managedType) != s_Data.EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
+
+			s_Data.EntityRemoveComponentFuncs.at(managedType)(entity);
+		}
+
+		MonoArray* Entity_GetChildren(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& children = entity.Children();
+
+			MonoClass* coreEntityClass = ScriptEngine::GetCoreEntityClass()->GetMonoClass();
+			VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
+
+			MonoArray* result = mono_array_new(ScriptEngine::GetAppDomain(), coreEntityClass, children.size());
+			
+			for (uint32_t i = 0; i < children.size(); i++)
 			{
-				MonoObject* boxed = mono_object_new(mono_domain_get(), elementClass);
-				mono_array_setref(result, (uintptr_t)i, boxed);
+				MonoClass* arrayClass = mono_object_get_class((MonoObject*)result);
+				MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+				int32_t elementSize = mono_array_element_size(arrayClass);
+				MonoType* elementType = mono_class_get_type(elementClass);
+
+				if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
+				{
+					MonoObject* boxed = mono_object_new(mono_domain_get(), elementClass);
+					mono_array_setref(result, (uintptr_t)i, boxed);
+				}
+				else
+				{
+					char* dst = mono_array_addr_with_size(result, elementSize, i);
+					auto child = contextScene->TryGetEntityWithUUID(children[i]);
+					memcpy(dst, &child, elementSize);
+				}
 			}
-			else
+
+			return result;
+		}
+
+		uint64_t Entity_GetChild(UUID entityUUID, uint32_t index)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& children = entity.Children();
+			if (index > children.size() - 1)
 			{
-				char* dst = mono_array_addr_with_size(result, elementSize, i);
-				auto child = contextScene->TryGetEntityWithUUID(children[i]);
-				memcpy(dst, &child, elementSize);
+				VX_CORE_ASSERT(false, "Index out of bounds!");
+				return 0;
 			}
+
+			uint64_t childUUID = children[index];
+			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
+
+			return child.GetUUID();
 		}
 
-		return result;
-	}
-
-	static uint64_t Entity_GetChild(UUID entityUUID, uint32_t index)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& children = entity.Children();
-		if (index > children.size() - 1)
+		MonoString* Entity_GetTag(UUID entityUUID)
 		{
-			VX_CORE_ASSERT(false, "Index out of bounds!");
-			return 0;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return mono_string_new(mono_domain_get(), entity.GetName().c_str());
 		}
 
-		uint64_t childUUID = children[index];
-		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-		VX_CORE_ASSERT(child, "Child UUID was Invalid!");
-
-		return child.GetUUID();
-	}
-
-	static MonoString* Entity_GetTag(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return mono_string_new(mono_domain_get(), entity.GetName().c_str());
-	}
-
-	static MonoString* Entity_GetMarker(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
-	}
-
-	static void Entity_SetMarker(UUID entityUUID, MonoString* monoString)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		char* managedString = mono_string_to_utf8(monoString);
-		entity.GetComponent<TagComponent>().Marker = std::string(managedString);
-		mono_free(managedString);
-	}
-
-	static bool Entity_AddChild(UUID parentUUID, UUID childUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-		VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
-		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-		VX_CORE_ASSERT(child, "Child UUID was Invalid!");
-
-		if (parent && child)
+		MonoString* Entity_GetMarker(UUID entityUUID)
 		{
-			contextScene->ParentEntity(child, parent);
-			return true;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
 		}
 
-		return false;
-	}
-
-	static bool Entity_RemoveChild(UUID parentUUID, UUID childUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-		VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
-		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-		VX_CORE_ASSERT(child, "Child UUID was Invalid!");
-
-		if (parent && child)
+		void Entity_SetMarker(UUID entityUUID, MonoString* monoString)
 		{
-			contextScene->UnparentEntity(child);
-			return true;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			char* managedString = mono_string_to_utf8(monoString);
+			entity.GetComponent<TagComponent>().Marker = std::string(managedString);
+			mono_free(managedString);
 		}
 
-		return false;
-	}
+		bool Entity_AddChild(UUID parentUUID, UUID childUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+			VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
+			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
 
-	static MonoObject* Entity_GetScriptInstance(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		return ScriptEngine::GetManagedInstance(entityUUID);
-	}
+			if (parent && child)
+			{
+				contextScene->ParentEntity(child, parent);
+				return true;
+			}
 
-	static void Entity_Destroy(UUID entityUUID, bool excludeChildren)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return false;
+		}
 
-		contextScene->DestroyEntity(entity, excludeChildren);
-	}
+		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+			VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
+			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
 
-	static void Entity_SetActive(UUID entityUUID, bool isActive)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			if (parent && child)
+			{
+				contextScene->UnparentEntity(child);
+				return true;
+			}
 
-		entity.SetActive(isActive);
-	}
+			return false;
+		}
+
+		MonoObject* Entity_GetScriptInstance(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			return ScriptEngine::GetManagedInstance(entityUUID);
+		}
+
+		void Entity_Destroy(UUID entityUUID, bool excludeChildren)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			contextScene->DestroyEntity(entity, excludeChildren);
+		}
+
+		void Entity_SetActive(UUID entityUUID, bool isActive)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.SetActive(isActive);
+		}
 
 #pragma endregion
 
 #pragma region Transform Component
 
-	static void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
-	}
-
-	static void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<TransformComponent>().Translation = *translation;
-	}
-
-	static void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outRotation = entity.GetComponent<TransformComponent>().GetRotationEuler();
-
-		// Since we store rotation in radians we must convert to degrees here
-		outRotation->x = Math::Rad2Deg(outRotation->x);
-		outRotation->y = Math::Rad2Deg(outRotation->y);
-		outRotation->z = Math::Rad2Deg(outRotation->z);
-	}
-
-	static void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		// Since we store rotation in radians we must convert to radians here
-		rotation->x = Math::Deg2Rad(rotation->x);
-		rotation->y = Math::Deg2Rad(rotation->y);
-		rotation->z = Math::Deg2Rad(rotation->z);
-
-		entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
-	}
-
-	static void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		TransformComponent& transform = entity.GetTransform();
-		transform.Translation = *translation;
-		transform.SetRotationEuler(*rotation);
-	}
-
-	static void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outOrientation = entity.GetTransform().GetRotation();
-	}
-
-	static void TransformComponent_SetRotationQuaternion(UUID entityUUID, Math::quaternion* orientation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetTransform().SetRotation(*orientation);
-	}
-
-	static void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outScale = entity.GetComponent<TransformComponent>().Scale;
-	}
-
-	static void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<TransformComponent>().Scale = *scale;
-	}
-
-	static void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
-		*outTranslation = worldSpaceTransform.Translation;
-		*outRotationEuler = worldSpaceTransform.GetRotationEuler();
-		*outScale = worldSpaceTransform.Scale;
-	}
-
-	static void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
-
-		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
-
-		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 0.0f, -1.0f));
-	}
-
-	static void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
-
-		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
-
-		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 1.0f, 0.0f));
-	}
-
-	static void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
-
-		Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
-
-		*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(1.0f, 0.0f, 0.0f));
-	}
-
-	static void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		TransformComponent& transform = entity.GetTransform();
-		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
-		Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
-		Math::vec3 translation, rotation, scale;
-		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		transform.SetRotationEuler(rotation);
-	}
-	
-	static uint64_t TransformComponent_GetParent(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity child = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(child, "Invalid Child UUID!");
-
-		Entity parent = contextScene->TryGetEntityWithUUID(child.GetParentUUID());
-		
-		if (!parent)
+		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 		{
-			VX_CONSOLE_LOG_WARN("Invalid Parent UUID!");
-			return 0;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			*outTranslation = entity.GetComponent<TransformComponent>().Translation;
 		}
 
-		return parent.GetUUID();
-	}
+		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-		VX_CORE_ASSERT(child, "Invalid Child UUID!");
+			entity.GetComponent<TransformComponent>().Translation = *translation;
+		}
 
-		Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-		VX_CORE_ASSERT(parent, "Invalid Parent UUID!");
+		void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		contextScene->ParentEntity(child, parent);
-	}
+			*outRotation = entity.GetComponent<TransformComponent>().GetRotationEuler();
 
-	static void TransformComponent_Unparent(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			// Since we store rotation in radians we must convert to degrees here
+			outRotation->x = Math::Rad2Deg(outRotation->x);
+			outRotation->y = Math::Rad2Deg(outRotation->y);
+			outRotation->z = Math::Rad2Deg(outRotation->z);
+		}
 
-		contextScene->UnparentEntity(entity);
-	}
+		void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
-	{
-		Math::mat4 transform = a->GetTransform() * b->GetTransform();
-		TransformComponent& out = *outTransform;
-		Math::quaternion orientation;
-		Math::DecomposeTransform(transform, out.Translation, orientation, out.Scale);
-		outTransform->SetRotation(orientation);
-	}
+			// Since we store rotation in radians we must convert to radians here
+			rotation->x = Math::Deg2Rad(rotation->x);
+			rotation->y = Math::Deg2Rad(rotation->y);
+			rotation->z = Math::Deg2Rad(rotation->z);
+
+			entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
+		}
+
+		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			TransformComponent& transform = entity.GetTransform();
+			transform.Translation = *translation;
+			transform.SetRotationEuler(*rotation);
+		}
+
+		void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			*outOrientation = entity.GetTransform().GetRotation();
+		}
+
+		void TransformComponent_SetRotationQuaternion(UUID entityUUID, Math::quaternion* orientation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetTransform().SetRotation(*orientation);
+		}
+
+		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			*outScale = entity.GetComponent<TransformComponent>().Scale;
+		}
+
+		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<TransformComponent>().Scale = *scale;
+		}
+
+		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+			*outTranslation = worldSpaceTransform.Translation;
+			*outRotationEuler = worldSpaceTransform.GetRotationEuler();
+			*outScale = worldSpaceTransform.Scale;
+		}
+
+		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+
+			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 0.0f, -1.0f));
+		}
+
+		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+
+			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 1.0f, 0.0f));
+		}
+
+		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+
+			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+
+			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(1.0f, 0.0f, 0.0f));
+		}
+
+		void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			TransformComponent& transform = entity.GetTransform();
+			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
+			Math::vec3 translation, rotation, scale;
+			Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
+			transform.SetRotationEuler(rotation);
+		}
+
+		uint64_t TransformComponent_GetParent(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity child = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(child, "Invalid Child UUID!");
+
+			Entity parent = contextScene->TryGetEntityWithUUID(child.GetParentUUID());
+
+			if (!parent)
+			{
+				VX_CONSOLE_LOG_WARN("Invalid Parent UUID!");
+				return 0;
+			}
+
+			return parent.GetUUID();
+		}
+
+		void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+			VX_CORE_ASSERT(child, "Invalid Child UUID!");
+
+			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
+			VX_CORE_ASSERT(parent, "Invalid Parent UUID!");
+
+			contextScene->ParentEntity(child, parent);
+		}
+
+		void TransformComponent_Unparent(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			contextScene->UnparentEntity(entity);
+		}
+
+		void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
+		{
+			Math::mat4 transform = a->GetTransform() * b->GetTransform();
+			TransformComponent& out = *outTransform;
+			Math::quaternion orientation;
+			Math::DecomposeTransform(transform, out.Translation, orientation, out.Scale);
+			outTransform->SetRotation(orientation);
+		}
 
 #pragma endregion
 
 #pragma region Camera Component
 
-	static void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outPrimary = entity.GetComponent<CameraComponent>().Primary;
-	}
+			*outPrimary = entity.GetComponent<CameraComponent>().Primary;
+		}
 
-	static void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CameraComponent>().Primary = primary;
-	}
-	
-	static float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<CameraComponent>().Primary = primary;
+		}
 
-		return Math::Rad2Deg(entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOVRad());
-	}
+		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return Math::Rad2Deg(entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOVRad());
+		}
 
-		entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
-	}
+		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
+		}
 
-		*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
-	}
-	
-	static void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
-	}
+			*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
+		}
+
+		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
+		}
 
 #pragma endregion
 
 #pragma region Light Source Component
 
-	static LightType LightSourceComponent_GetLightType(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		LightType LightSourceComponent_GetLightType(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return LightType::Directional;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return LightType::Directional;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Type;
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Type;
-	}
-
-	static void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Type = type;
 		}
 
-		LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Type = type;
-	}
-
-	static void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			*outRadiance = lsc.Source->GetRadiance();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		*outRadiance = lsc.Source->GetRadiance();
-	}
-
-	static void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetRadiance(*radiance);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetRadiance(*radiance);
-	}
-
-	static float LightSourceComponent_GetIntensity(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		float LightSourceComponent_GetIntensity(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return 0.0f;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetIntensity();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetIntensity();
-	}
-
-	static void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetIntensity(intensity);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetIntensity(intensity);
-	}
-
-	static float LightSourceComponent_GetCutoff(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		float LightSourceComponent_GetCutoff(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return 0.0f;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetCutOff();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetCutOff();
-	}
-
-	static void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetCutOff(cutoff);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetCutOff(cutoff);
-	}
-
-	static float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return 0.0f;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetOuterCutOff();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetOuterCutOff();
-	}
-
-	static void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetOuterCutOff(outerCutoff);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetOuterCutOff(outerCutoff);
-	}
-
-	static float LightSourceComponent_GetShadowBias(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		float LightSourceComponent_GetShadowBias(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return 0.0f;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetShadowBias();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetShadowBias();
-	}
-
-	static void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetShadowBias(shadowBias);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetShadowBias(shadowBias);
-	}
-
-	static bool LightSourceComponent_GetCastShadows(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		bool LightSourceComponent_GetCastShadows(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return false;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetCastShadows();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetCastShadows();
-	}
-
-	static void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetCastShadows(castShadows);
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetCastShadows(castShadows);
-	}
-
-	static bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return false;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			return lsc.Source->GetSoftShadows();
 		}
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		return lsc.Source->GetSoftShadows();
-	}
-
-	static void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<LightSourceComponent>())
+		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
 		{
-			VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
-			return;
-		}
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-		lsc.Source->SetSoftShadows(softShadows);
-	}
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				return;
+			}
+
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+			lsc.Source->SetSoftShadows(softShadows);
+		}
 
 #pragma endregion
 
 #pragma region TextMesh Component
 
-	static MonoString* TextMeshComponent_GetTextString(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		MonoString* TextMeshComponent_GetTextString(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return mono_string_new(mono_domain_get(), entity.GetComponent<TextMeshComponent>().TextString.c_str());
-	}
+			return mono_string_new(mono_domain_get(), entity.GetComponent<TextMeshComponent>().TextString.c_str());
+		}
 
-	static void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		char* textCStr = mono_string_to_utf8(textString);
+			char* textCStr = mono_string_to_utf8(textString);
 
-		entity.GetComponent<TextMeshComponent>().TextString = std::string(textCStr);
-		mono_free(textCStr);
-	}
+			entity.GetComponent<TextMeshComponent>().TextString = std::string(textCStr);
+			mono_free(textCStr);
+		}
 
-	static void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColor = entity.GetComponent<TextMeshComponent>().Color;
-	}
+			*outColor = entity.GetComponent<TextMeshComponent>().Color;
+		}
 
-	static void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<TextMeshComponent>().Color = *color;
-	}
+			entity.GetComponent<TextMeshComponent>().Color = *color;
+		}
 
-	static float TextMeshComponent_GetLineSpacing(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		float TextMeshComponent_GetLineSpacing(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<TextMeshComponent>().LineSpacing;
-	}
+			return entity.GetComponent<TextMeshComponent>().LineSpacing;
+		}
 
-	static void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<TextMeshComponent>().LineSpacing = lineSpacing;
-	}
+			entity.GetComponent<TextMeshComponent>().LineSpacing = lineSpacing;
+		}
 
-	static float TextMeshComponent_GetKerning(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		float TextMeshComponent_GetKerning(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<TextMeshComponent>().Kerning;
-	}
+			return entity.GetComponent<TextMeshComponent>().Kerning;
+		}
 
-	static void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<TextMeshComponent>().Kerning = kerning;
-	}
+			entity.GetComponent<TextMeshComponent>().Kerning = kerning;
+		}
 
-	static float TextMeshComponent_GetMaxWidth(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		float TextMeshComponent_GetMaxWidth(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<TextMeshComponent>().MaxWidth;
-	}
+			return entity.GetComponent<TextMeshComponent>().MaxWidth;
+		}
 
-	static void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
-	}
+			entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
+		}
 
 #pragma endregion
 
 #pragma region Animator Component
 
-	static bool AnimatorComponent_IsPlaying(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<AnimatorComponent>().Animator->IsPlaying();
-	}
-
-	static void AnimatorComponent_Play(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		SharedRef<Animation> animation = entity.GetComponent<AnimationComponent>().Animation;
-
-		if (!animation)
+		bool AnimatorComponent_IsPlaying(UUID entityUUID)
 		{
-			VX_CORE_WARN_TAG("Scripting", "Animation was invalid! exiting early");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<AnimatorComponent>().Animator->IsPlaying();
 		}
 
-		SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
-		animator->PlayAnimation();
-	}
+		void AnimatorComponent_Play(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			SharedRef<Animation> animation = entity.GetComponent<AnimationComponent>().Animation;
+
+			if (!animation)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Animation was invalid! exiting early");
+				return;
+			}
+
+			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+			animator->PlayAnimation();
+		}
 
 #pragma endregion
 
@@ -1279,3107 +1284,3037 @@ namespace Vortex {
 
 #pragma region Static Mesh Renderer Component
 
-	static MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<StaticMeshRendererComponent>().Type;
-	}
-
-	static void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (meshType != MeshType::Custom)
+		MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID)
 		{
-			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-			meshRenderer.Type = meshType;
-			meshRenderer.StaticMesh = StaticMesh::Create(StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<StaticMeshRendererComponent>().Type;
 		}
-	}
+
+		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (meshType != MeshType::Custom)
+			{
+				StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+				meshRenderer.Type = meshType;
+				meshRenderer.StaticMesh = StaticMesh::Create(StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+			}
+		}
 
 #pragma endregion
 
 #pragma region Material
-	
-	static void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		if (entity.HasComponent<MeshRendererComponent>())
+		void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
 		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
-		}
-	}
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
-		}
-	}
-
-	static float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetMetallic();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+			}
 		}
 
-		return 0.0f;
-	}
-
-	static void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
+		void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
 		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
-		}
-	}
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetRoughness();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+			}
 		}
 
-		return 0.0f;
-	}
-
-	static void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
+		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
 		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
-		}
-	}
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+			}
 
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetEmission();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetEmission();
+			return 0.0f;
 		}
 
-		return 0.0f;
-	}
-
-	static void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
+		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
 		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
-		}
-	}
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
-		}
-	}
-
-	static void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
-		}
-	}
-
-	static float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
-		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetOpacity();
-		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
-		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+			}
 		}
 
-		return 0.0f;
-	}
-
-	static void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (entity.HasComponent<MeshRendererComponent>())
+		float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
 		{
-			SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-			const auto& submeshes = mesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+			}
+
+			return 0.0f;
 		}
-		else if (entity.HasComponent<StaticMeshRendererComponent>())
+
+		void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
 		{
-			SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-			const auto& submeshes = staticMesh->GetSubmeshes();
-			VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-			submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+			}
 		}
-	}
+
+		float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetEmission();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetEmission();
+			}
+
+			return 0.0f;
+		}
+
+		void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+			}
+		}
+
+		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+			}
+		}
+
+		void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+			}
+		}
+
+		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+			}
+
+			return 0.0f;
+		}
+
+		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
+				const auto& submeshes = mesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+				submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+			}
+		}
 
 #pragma endregion
 
 #pragma region Sprite Renderer Component
 
-	static void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
-	}
+			*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
+		}
 
-	static void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
-	}
+			entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
+		}
 
-	static void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
-	}
+			*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
+		}
 
-	static MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
+			const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
 
-		return mono_string_new(mono_domain_get(), texturePath.c_str());
-	}
+			return mono_string_new(mono_domain_get(), texturePath.c_str());
+		}
 
-	static void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
-	{
-		char* texturePathCStr = mono_string_to_utf8(texturePathString);
+		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
+		{
+			char* texturePathCStr = mono_string_to_utf8(texturePathString);
 
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
+			entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
 
-		mono_free(texturePathCStr);
-	}
+			mono_free(texturePathCStr);
+		}
 
-	static void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
-	}
+			entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
+		}
 
 #pragma endregion
 
 #pragma region Circle Renderer Component
 
-	static void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColor = entity.GetComponent<CircleRendererComponent>().Color;
-	}
+			*outColor = entity.GetComponent<CircleRendererComponent>().Color;
+		}
 
-	static void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleRendererComponent>().Color = *color;
-	}
+			entity.GetComponent<CircleRendererComponent>().Color = *color;
+		}
 
-	static void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
-	}
+			*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
+		}
 
-	static void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
-	}
+			entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
+		}
 
-	static void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
-	}
+			*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
+		}
 
-	static void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleRendererComponent>().Fade = fade;
-	}
+			entity.GetComponent<CircleRendererComponent>().Fade = fade;
+		}
 
 #pragma endregion
 
 #pragma region Particle Emitter Component
 
-	static void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
-	}
+			*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
+		}
 
-	static void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
+		}
 
-	static void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
-	}
+			*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
+		}
 
-	static void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
+		}
 
-	static void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outOffset = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset;
-	}
+			*outOffset = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset;
+		}
 
-	static void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset = *offset;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset = *offset;
+		}
 
-	static void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
-	}
+			*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
+		}
 
-	static void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
+		}
 
-	static void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
-	}
+			*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
+		}
 
-	static void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
+		}
 
-	static void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
-	}
+			*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
+		}
 
-	static void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
+		}
 
-	static void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
-	}
+			*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
+		}
 
-	static void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
+		}
 
-	static void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
-	}
+			*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
+		}
 
-	static void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
+		}
 
-	static void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
-	}
+			*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
+		}
 
-	static void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
+		}
 
-	static void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
-	}
+			*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
+		}
 
-	static void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
+		}
 
-	static void ParticleEmitterComponent_Start(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_Start(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
+		}
 
-	static void ParticleEmitterComponent_Stop(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void ParticleEmitterComponent_Stop(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
-	}
+			entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
+		}
 
 #pragma endregion
 
 #pragma region AudioSource Component
 
-	static bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
-	}
+			return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
+		}
 
-	static void AudioSourceComponent_Play(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void AudioSourceComponent_Play(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<AudioSourceComponent>().Source->Play();
-	}
+			entity.GetComponent<AudioSourceComponent>().Source->Play();
+		}
 
-	static void AudioSourceComponent_Stop(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void AudioSourceComponent_Stop(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<AudioSourceComponent>().Source->Stop();
-	}
+			entity.GetComponent<AudioSourceComponent>().Source->Stop();
+		}
 
 #pragma endregion
 
 #pragma region RigidBody Component
 
-	static void RigidBodyComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot get translation of Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot get translation of Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
+
+			*outTranslation = translation;
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
-
-		*outTranslation = translation;
-	}
-
-	static void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot set translation of Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot set translation of Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+
+			const auto& transformComponent = entity.GetTransform();
+			Math::vec3 rotation = transformComponent.GetRotationEuler();
+			auto entityTransform = TransformComponent{ *translation, rotation, transformComponent.Scale }.GetTransform();
+			auto physxTransform = ToPhysXTransform(entityTransform);
+
+			actor->setGlobalPose(physxTransform);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-
-		const auto& transformComponent = entity.GetTransform();
-		Math::vec3 rotation = transformComponent.GetRotationEuler();
-		auto entityTransform = TransformComponent{ *translation, rotation, transformComponent.Scale }.GetTransform();
-		auto physxTransform = ToPhysXTransform(entityTransform);
-
-		actor->setGlobalPose(physxTransform);
-	}
-
-	static void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot get rotation of Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot get rotation of Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
+
+			*outRotation = Math::EulerAngles(orientation);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
-
-		*outRotation = Math::EulerAngles(orientation);
-	}
-
-	static void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot set rotation of Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot set rotation of Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			physx::PxTransform physxTransform = actor->getGlobalPose();
+			physxTransform.q = ToPhysXQuat(*rotation);
+
+			actor->setGlobalPose(physxTransform);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		physx::PxTransform physxTransform = actor->getGlobalPose();
-		physxTransform.q = ToPhysXQuat(*rotation);
-
-		actor->setGlobalPose(physxTransform);
-	}
-
-	static void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-		
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot translate Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot translate Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			physx::PxTransform physxTransform = actor->getGlobalPose();
+			physxTransform.p += ToPhysXVector(*translation);
+
+			actor->setGlobalPose(physxTransform);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		physx::PxTransform physxTransform = actor->getGlobalPose();
-		physxTransform.p += ToPhysXVector(*translation);
-
-		actor->setGlobalPose(physxTransform);
-	}
-
-	static void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot rotate Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot rotate Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			physx::PxTransform physxTransform = actor->getGlobalPose();
+			physxTransform.q *= ToPhysXQuat(*rotation);
+
+			actor->setGlobalPose(physxTransform);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		physx::PxTransform physxTransform = actor->getGlobalPose();
-		physxTransform.q *= ToPhysXQuat(*rotation);
-
-		actor->setGlobalPose(physxTransform);
-	}
-
-	static void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
 		{
-			VX_CONSOLE_LOG_WARN("Calling RigidBody.LookAt with Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling RigidBody.LookAt with Static actor");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
+			physx::PxTransform physxTransform = actor->getGlobalPose();
+
+			Math::mat4 transform = FromPhysXTransform(physxTransform);
+
+			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+			Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
+			Math::vec3 translation, rotation, scale;
+			Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
+			physxTransform.q = ToPhysXQuat(Math::quaternion(rotation));
+
+			actor->setGlobalPose(physxTransform);
 		}
 
-		physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-		physx::PxTransform physxTransform = actor->getGlobalPose();
-
-		Math::mat4 transform = FromPhysXTransform(physxTransform);
-
-		Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
-		Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
-		Math::vec3 translation, rotation, scale;
-		Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-		physxTransform.q = ToPhysXQuat(Math::quaternion(rotation));
-
-		actor->setGlobalPose(physxTransform);
-	}
-
-	static RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().Type;
-	}
-
-	static void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		bool consistentBodyType = bodyType == rigidbody.Type;
-
-		if (consistentBodyType)
-			return;
-
-		rigidbody.Type = bodyType;
-		Physics::ReCreateActor(entity);
-	}
-
-	static CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().CollisionDetection;
-	}
-
-	static void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().CollisionDetection = collisionDetectionType;
-	}
-
-	static float RigidBodyComponent_GetMass(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().Mass;
-	}
-
-	static void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().Mass = mass;
-	}
-
-	static void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outVelocity = entity.GetComponent<RigidBodyComponent>().LinearVelocity;
-	}
-
-	static void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().LinearVelocity = *velocity;
-	}
-
-	static float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().LinearDrag;
-	}
-
-	static void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().LinearDrag = drag;
-	}
-
-	static void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		*outVelocity = entity.GetComponent<RigidBodyComponent>().AngularVelocity;
-	}
-
-	static void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().AngularVelocity = *velocity;
-	}
-
-	static float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().AngularDrag;
-	}
-
-	static void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().AngularDrag = drag;
-	}
-
-	static bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().DisableGravity;
-	}
-
-	static void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		rigidbody.DisableGravity = disabled;
-
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-
-		actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
-	}
-
-	static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBodyComponent>().IsKinematic;
-	}
-
-	static void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
-	}
-
-	static uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
-			return 0;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().Type;
 		}
 
-		return (uint32_t)rb.LockFlags;
-	}
-
-	static void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot set actor lock flag on a Static actor");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			const bool consistentBodyType = bodyType == rigidbody.Type;
+
+			if (consistentBodyType)
+				return;
+
+			rigidbody.Type = bodyType;
+			Physics::ReCreateActor(entity);
 		}
 
-		if (value)
+		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
 		{
-			rb.LockFlags |= (uint8_t)flag;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().CollisionDetection;
 		}
-		else
+
+		void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
 		{
-			rb.LockFlags &= ~(uint8_t)flag;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().CollisionDetection = collisionDetectionType;
 		}
 
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-
-		actor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
-
-		if (forceWake)
+		float RigidBodyComponent_GetMass(UUID entityUUID)
 		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().Mass;
+		}
+
+		void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().Mass = mass;
+		}
+
+		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			*outVelocity = entity.GetComponent<RigidBodyComponent>().LinearVelocity;
+		}
+
+		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().LinearVelocity = *velocity;
+		}
+
+		float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().LinearDrag;
+		}
+
+		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().LinearDrag = drag;
+		}
+
+		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			*outVelocity = entity.GetComponent<RigidBodyComponent>().AngularVelocity;
+		}
+
+		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().AngularVelocity = *velocity;
+		}
+
+		float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().AngularDrag;
+		}
+
+		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().AngularDrag = drag;
+		}
+
+		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().DisableGravity;
+		}
+
+		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			rigidbody.DisableGravity = disabled;
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+
+			actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
+		}
+
+		static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBodyComponent>().IsKinematic;
+		}
+
+		static void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
+		}
+
+		static uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+				return 0;
+			}
+
+			return (uint32_t)rb.LockFlags;
+		}
+
+		static void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot set actor lock flag on a Static actor");
+				return;
+			}
+
+			if (value)
+			{
+				rb.LockFlags |= (uint8_t)flag;
+			}
+			else
+			{
+				rb.LockFlags &= ~(uint8_t)flag;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+
+			actor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
+
+			if (forceWake)
+			{
+				actor->wakeUp();
+			}
+		}
+
+		static bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Cannot access actor lock flags of a Static actor");
+				return false;
+			}
+
+			uint8_t lockFlags = rb.LockFlags;
+
+			return lockFlags & (uint8_t)flag;
+		}
+
+		static bool RigidBodyComponent_IsSleeping(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Static actors are always sleeping");
+				return false;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			return actor->isSleeping();
+		}
+
+		static void RigidBodyComponent_WakeUp(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+
+			if (rb.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 			actor->wakeUp();
 		}
-	}
 
-	static bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot access actor lock flags of a Static actor");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 		}
 
-		uint8_t lockFlags = rb.LockFlags;
-
-		return lockFlags & (uint8_t)flag;
-	}
-
-	static bool RigidBodyComponent_IsSleeping(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-		if (rb.Type != RigidBodyType::Dynamic)
+		static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Static actors are always sleeping");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
 		}
 
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		return actor->isSleeping();
-	}
-
-	static void RigidBodyComponent_WakeUp(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-		if (rb.Type != RigidBodyType::Dynamic)
+		static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 		}
 
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		actor->wakeUp();
-	}
-
-	static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+		static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CORE_ASSERT(false, "Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			actor->clearTorque((physx::PxForceMode::Enum)mode);
 		}
 
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
-	}
-
-	static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+		static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			actor->clearForce((physx::PxForceMode::Enum)mode);
 		}
-
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
-	}
-
-	static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
-		{
-			VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
-			return;
-		}
-
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
-	}
-
-	static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
-		{
-			VX_CORE_ASSERT(false, "Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
-			return;
-		}
-
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		actor->clearTorque((physx::PxForceMode::Enum)mode);
-	}
-
-	static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-
-		if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
-		{
-			VX_CONSOLE_LOG_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
-			return;
-		}
-
-		physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-		actor->clearForce((physx::PxForceMode::Enum)mode);
-	}
 
 #pragma endregion
 
 #pragma region Physics
 
-	static bool Physics_Raycast(Math::vec3* origin, Math::vec3* direction, float maxDistance, RaycastHit* outHit)
-	{
-		return Physics::Raycast(*origin, *direction, maxDistance, outHit);
-	}
+		bool Physics_Raycast(Math::vec3* origin, Math::vec3* direction, float maxDistance, RaycastHit* outHit)
+		{
+			return Physics::Raycast(*origin, *direction, maxDistance, outHit);
+		}
 
-	static void Physics_GetSceneGravity(Math::vec3* outGravity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics_GetSceneGravity(Math::vec3* outGravity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		*outGravity = Physics::GetPhysicsSceneGravity();
-	}
+			*outGravity = Physics::GetPhysicsSceneGravity();
+		}
 
-	static void Physics_SetSceneGravity(Math::vec3* gravity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics_SetSceneGravity(Math::vec3* gravity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Physics::SetPhysicsSceneGravity(*gravity);
-		Physics::WakeUpActors();
-	}
+			Physics::SetPhysicsSceneGravity(*gravity);
+			Physics::WakeUpActors();
+		}
 
-	static uint32_t Physics_GetScenePositionIterations()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		uint32_t Physics_GetScenePositionIterations()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return Physics::GetPhysicsScenePositionIterations();
-	}
+			return Physics::GetPhysicsScenePositionIterations();
+		}
 
-	static void Physics_SetScenePositionIterations(uint32_t positionIterations)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics_SetScenePositionIterations(uint32_t positionIterations)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Physics::SetPhysicsScenePositionIterations(positionIterations);
-	}
+			Physics::SetPhysicsScenePositionIterations(positionIterations);
+		}
 
-	static uint32_t Physics_GetSceneVelocityIterations()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		uint32_t Physics_GetSceneVelocityIterations()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return Physics::GetPhysicsSceneVelocityIterations();
-	}
+			return Physics::GetPhysicsSceneVelocityIterations();
+		}
 
-	static void Physics_SetSceneVelocityIterations(uint32_t velocityIterations)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics_SetSceneVelocityIterations(uint32_t velocityIterations)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Physics::SetPhysicsSceneVelocityIterations(velocityIterations);
-	}
+			Physics::SetPhysicsSceneVelocityIterations(velocityIterations);
+		}
 
 #pragma endregion
 
 #pragma region Character Controller Component
 
-	static void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
 		{
-			VX_CONSOLE_LOG_WARN("Calling CharacterController.Move without a Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Calling CharacterController.Move without a Character Controller!");
+				return;
+			}
+
+			CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+
+			physx::PxControllerFilters filters; // TODO
+			physx::PxController* controller = Physics::GetController(entityUUID);
+
+			auto gravity = Physics::GetPhysicsSceneGravity();
+
+			if (!characterControllerComponent.DisableGravity)
+				characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
+
+			Math::vec3 movement = *displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
+
+			controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
+			entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
+
+			physx::PxControllerState state;
+			controller->getState(state);
+
+			// test if grounded
+			if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+				characterControllerComponent.SpeedDown = gravity.y * 0.01f;
 		}
 
-		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
-
-		physx::PxControllerFilters filters; // TODO
-		physx::PxController* controller = Physics::GetController(entityUUID);
-
-		auto gravity = Physics::GetPhysicsSceneGravity();
-
-		if (!characterControllerComponent.DisableGravity)
-			characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
-
-		Math::vec3 movement = *displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
-
-		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
-		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
-
-		physx::PxControllerState state;
-		controller->getState(state);
-
-		// test if grounded
-		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
-			characterControllerComponent.SpeedDown = gravity.y * 0.01f;
-	}
-
-	static void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
 		{
-			VX_CONSOLE_LOG_WARN("Calling CharacterController.Jump without a Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Calling CharacterController.Jump without a Character Controller!");
+				return;
+			}
+
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.SpeedDown = -1.0f * jumpForce;
 		}
 
-		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-		characterController.SpeedDown = -1.0f * jumpForce;
-	}
-
-	static bool CharacterControllerComponent_IsGrounded(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		bool CharacterControllerComponent_IsGrounded(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return false;
+			}
+
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			physx::PxController* controller = Physics::GetController(entityUUID);
+
+			physx::PxControllerState state;
+			controller->getState(state);
+
+			// test if grounded
+			if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+			{
+				return true;
+			}
+
 			return false;
 		}
 
-		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-		physx::PxController* controller = Physics::GetController(entityUUID);
-
-		physx::PxControllerState state;
-		controller->getState(state);
-
-		// test if grounded
-		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
 		{
-			return true;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return 0.0f;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().SpeedDown;
 		}
 
-		return false;
-	}
-
-	static float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return 0.0f;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees;
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().SpeedDown;
-	}
-
-	static float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees = slopeLimit;
+			Physics::GetController(entityUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees;
-	}
-
-	static void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return 0.0f;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().StepOffset;
 		}
 
-		entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees = slopeLimit;
-		Physics::GetController(entityUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
-	}
-
-	static float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
+			Physics::GetController(entityUUID)->setStepOffset(stepOffset);
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().StepOffset;
-	}
-
-	static void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return 0.0f;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().ContactOffset;
 		}
 
-		entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
-		Physics::GetController(entityUUID)->setStepOffset(stepOffset);
-	}
-
-	static float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().ContactOffset = contactOffset;
+			Physics::GetController(entityUUID)->setContactOffset(contactOffset);
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().ContactOffset;
-	}
-
-	static void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return NonWalkableMode::PreventClimbing;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().NonWalkMode;
 		}
 
-		entity.GetComponent<CharacterControllerComponent>().ContactOffset = contactOffset;
-		Physics::GetController(entityUUID)->setContactOffset(contactOffset);
-	}
-
-	static NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return NonWalkableMode::PreventClimbing;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().NonWalkMode = mode;
+			Physics::GetController(entityUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().NonWalkMode;
-	}
-
-	static void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return CapsuleClimbMode::Easy;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().ClimbMode;
 		}
 
-		entity.GetComponent<CharacterControllerComponent>().NonWalkMode = mode;
-		Physics::GetController(entityUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
-	}
-
-	static CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return CapsuleClimbMode::Easy;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().ClimbMode = mode;
+			// TODO any way to set capsule climbing mode during runtime?
 		}
 
-		return entity.GetComponent<CharacterControllerComponent>().ClimbMode;
-	}
-
-	static void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return false;
+			}
+
+			return entity.GetComponent<CharacterControllerComponent>().DisableGravity;
 		}
 
-		entity.GetComponent<CharacterControllerComponent>().ClimbMode = mode;
-		// TODO any way to set capsule climbing mode during runtime?
-	}
-
-	static bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
+		void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
+			}
+
+			entity.GetComponent<CharacterControllerComponent>().DisableGravity = disableGravity;
 		}
-
-		return entity.GetComponent<CharacterControllerComponent>().DisableGravity;
-	}
-
-	static void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<CharacterControllerComponent>())
-		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
-			return;
-		}
-
-		entity.GetComponent<CharacterControllerComponent>().DisableGravity = disableGravity;
-	}
 
 #pragma endregion
 
 #pragma region FixedJoint Component
 
-	static uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return 0;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return 0;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.ConnectedEntity;
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.ConnectedEntity;
-	}
-
-	static void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
-		}
-		
-		if (!contextScene->TryGetEntityWithUUID(connectedEntityUUID))
-			return;
-		
-		physx::PxRigidActor* actor0 = Physics::GetActor(entityUUID);
-		physx::PxRigidActor* actor1 = Physics::GetActor(connectedEntityUUID);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
 
-		if (!actor0 || !actor1)
-		{
-			return;
-		}
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.ConnectedEntity = connectedEntityUUID;
+			if (!contextScene->TryGetEntityWithUUID(connectedEntityUUID))
+				return;
 
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxRigidActor* actor0 = Physics::GetActor(entityUUID);
+			physx::PxRigidActor* actor1 = Physics::GetActor(connectedEntityUUID);
 
-		fixedJoint->setActors(actor0, actor1);
-	}
+			if (!actor0 || !actor1)
+			{
+				return;
+			}
 
-	static float FixedJointComponent_GetBreakForce(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.ConnectedEntity = connectedEntityUUID;
 
-		if (!entity.HasComponent<FixedJointComponent>())
-		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return 0.0f;
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+
+			fixedJoint->setActors(actor0, actor1);
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.BreakForce;
-	}
-
-	static void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		float FixedJointComponent_GetBreakForce(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return 0.0f;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.BreakForce;
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.BreakForce = breakForce;
-
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
-		fixedJoint->setBreakForce(breakForce, fixedJointComponent.BreakTorque);
-	}
-
-	static float FixedJointComponent_GetBreakTorque(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return 0.0f;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.BreakForce = breakForce;
+
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			fixedJoint->setBreakForce(breakForce, fixedJointComponent.BreakTorque);
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.BreakTorque;
-	}
-
-	static void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		float FixedJointComponent_GetBreakTorque(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return 0.0f;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.BreakTorque;
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.BreakTorque = breakTorque;
-
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
-		fixedJoint->setBreakForce(fixedJointComponent.BreakForce, breakTorque);
-	}
-
-	static void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.BreakTorque = breakTorque;
+
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			fixedJoint->setBreakForce(fixedJointComponent.BreakForce, breakTorque);
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.BreakForce = breakForce;
-		fixedJointComponent.BreakTorque = breakTorque;
-
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
-		fixedJoint->setBreakForce(breakForce, breakTorque);
-	}
-
-	static bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.BreakForce = breakForce;
+			fixedJointComponent.BreakTorque = breakTorque;
+
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			fixedJoint->setBreakForce(breakForce, breakTorque);
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.EnableCollision;
-	}
-
-	static void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return false;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.EnableCollision;
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.EnableCollision = enableCollision;
-
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
-		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, enableCollision);
-	}
-
-	static bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.EnableCollision = enableCollision;
+
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, enableCollision);
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.EnablePreProcessing;
-	}
-
-	static void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return false;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.EnablePreProcessing;
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.EnableCollision = enablePreProcessing;
-
-		physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
-		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !enablePreProcessing);
-	}
-
-	static bool FixedJointComponent_IsBroken(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.EnableCollision = enablePreProcessing;
+
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !enablePreProcessing);
 		}
 
-		return Physics::IsConstraintBroken(entityUUID);
-	}
-
-	static bool FixedJointComponent_GetIsBreakable(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		bool FixedJointComponent_IsBroken(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return false;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return false;
+			}
+
+			return Physics::IsConstraintBroken(entityUUID);
 		}
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		return fixedJointComponent.IsBreakable;
-	}
-
-	static void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		bool FixedJointComponent_GetIsBreakable(UUID entityUUID)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return false;
+			}
+
+			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.IsBreakable;
 		}
 
-		FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		fixedJointComponent.IsBreakable = isBreakable;
-	}
-
-	static void FixedJointComponent_Break(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID");
-
-		if (!entity.HasComponent<FixedJointComponent>())
+		void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable)
 		{
-			VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
-			return;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			fixedJointComponent.IsBreakable = isBreakable;
 		}
 
-		Physics::BreakJoint(entityUUID);
-	}
+		void FixedJointComponent_Break(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+
+			if (!entity.HasComponent<FixedJointComponent>())
+			{
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				return;
+			}
+
+			Physics::BreakJoint(entityUUID);
+		}
 
 #pragma endregion
 
 #pragma region BoxCollider Component
 
-	static void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outHalfSize = entity.GetComponent<BoxColliderComponent>().HalfSize;
-	}
-	
-	static void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			*outHalfSize = entity.GetComponent<BoxColliderComponent>().HalfSize;
+		}
 
-		entity.GetComponent<BoxColliderComponent>().HalfSize = *halfSize;
-	}
+		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<BoxColliderComponent>().HalfSize = *halfSize;
+		}
 
-		*outOffset = entity.GetComponent<BoxColliderComponent>().Offset;
-	}
+		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			*outOffset = entity.GetComponent<BoxColliderComponent>().Offset;
+		}
 
-		entity.GetComponent<BoxColliderComponent>().Offset = *offset;
-	}
+		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<BoxColliderComponent>().Offset = *offset;
+		}
 
-		return entity.GetComponent<BoxColliderComponent>().IsTrigger;
-	}
+		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return entity.GetComponent<BoxColliderComponent>().IsTrigger;
+		}
 
-		entity.GetComponent<BoxColliderComponent>().IsTrigger = isTrigger;
-	}
+		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<BoxColliderComponent>().IsTrigger = isTrigger;
+		}
 
 #pragma endregion
 
 #pragma region SphereCollider Component
 
-	static float SphereColliderComponent_GetRadius(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		float SphereColliderComponent_GetRadius(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<SphereColliderComponent>().Radius;
-	}
+			return entity.GetComponent<SphereColliderComponent>().Radius;
+		}
 
-	static void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SphereColliderComponent>().Radius = radius;
-	}
+			entity.GetComponent<SphereColliderComponent>().Radius = radius;
+		}
 
-	static void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outOffset = entity.GetComponent<SphereColliderComponent>().Offset;
-	}
+			*outOffset = entity.GetComponent<SphereColliderComponent>().Offset;
+		}
 
-	static void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SphereColliderComponent>().Offset = *offset;
-	}
-	
-	static bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<SphereColliderComponent>().Offset = *offset;
+		}
 
-		return entity.GetComponent<SphereColliderComponent>().IsTrigger;
-	}
-	
-	static void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<SphereColliderComponent>().IsTrigger = isTrigger;
-	}
+			return entity.GetComponent<SphereColliderComponent>().IsTrigger;
+		}
+
+		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<SphereColliderComponent>().IsTrigger = isTrigger;
+		}
 
 #pragma endregion
 
 #pragma region CapsuleCollider Component
 
-	static float CapsuleColliderComponent_GetRadius(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		float CapsuleColliderComponent_GetRadius(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<CapsuleColliderComponent>().Radius;
-	}
-	
-	static void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return entity.GetComponent<CapsuleColliderComponent>().Radius;
+		}
 
-		entity.GetComponent<CapsuleColliderComponent>().Radius = radius;
-	}
-	
-	static float CapsuleColliderComponent_GetHeight(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<CapsuleColliderComponent>().Height;
-	}
-	
-	static void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<CapsuleColliderComponent>().Radius = radius;
+		}
 
-		entity.GetComponent<CapsuleColliderComponent>().Height = height;
-	}
+		float CapsuleColliderComponent_GetHeight(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return entity.GetComponent<CapsuleColliderComponent>().Height;
+		}
 
-		*outOffset = entity.GetComponent<CapsuleColliderComponent>().Offset;
-	}
+		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<CapsuleColliderComponent>().Height = height;
+		}
 
-		entity.GetComponent<CapsuleColliderComponent>().Offset = *offset;
-	}
+		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			*outOffset = entity.GetComponent<CapsuleColliderComponent>().Offset;
+		}
 
-		return entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
-	}
+		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<CapsuleColliderComponent>().Offset = *offset;
+		}
 
-		entity.GetComponent<CapsuleColliderComponent>().IsTrigger = isTrigger;
-	}
+		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
+		}
+
+		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<CapsuleColliderComponent>().IsTrigger = isTrigger;
+		}
 
 #pragma endregion
 
 #pragma region RigidBody2D Component
 
-	static void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
-
-		const auto& position = body->GetPosition();
-		*outTranslation = Math::vec2{ position.x, position.y };
-	}
-
-	static void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
-
-		body->SetTransform({ translation->x, translation->y }, body->GetAngle());
-	}
-
-	static float RigidBody2DComponent_GetAngle(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
-
-		return Math::Rad2Deg(body->GetAngle());
-	}
-
-	static void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rigidbody.RuntimeBody;
-
-		body->SetTransform(body->GetPosition(), Math::Deg2Rad(angle));
-	}
-
-	static RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		return entity.GetComponent<RigidBody2DComponent>().Type;
-	}
-
-	static void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-		RigidBody2DComponent& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-		if (bodyType != rb2d.Type)
+		void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation)
 		{
-			Physics2D::DestroyPhysicsBody(entity);
-			rb2d.Type = bodyType;
-			rb2d.RuntimeBody = nullptr;
-			Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rb2d);
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			const auto& position = body->GetPosition();
+			*outTranslation = Math::vec2{ position.x, position.y };
 		}
-	}
 
-	static void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
-		body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
-	}
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-	static void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			body->SetTransform({ translation->x, translation->y }, body->GetAngle());
+		}
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
-		body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
-	}
+		float RigidBody2DComponent_GetAngle(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
-		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
-	}
+			return Math::Rad2Deg(body->GetAngle());
+		}
 
-	static void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
-		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
-	}
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-	static void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			body->SetTransform(body->GetPosition(), Math::Deg2Rad(angle));
+		}
 
-		*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
-	}
+		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			return entity.GetComponent<RigidBody2DComponent>().Type;
+		}
 
-		entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
-	}
+		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static float RigidBody2DComponent_GetDrag(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			RigidBody2DComponent& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
-		return entity.GetComponent<RigidBody2DComponent>().Drag;
-	}
+			if (bodyType != rb2d.Type)
+			{
+				Physics2D::DestroyPhysicsBody(entity);
+				rb2d.Type = bodyType;
+				rb2d.RuntimeBody = nullptr;
+				Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rb2d);
+			}
+		}
 
-	static void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<RigidBody2DComponent>().Drag = drag;
-	}
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
+		}
 
-	static bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
-	}
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
+		}
 
-	static void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
-	}
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
+		}
 
-	static float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+		}
 
-		return body->GetGravityScale();
-	}
+		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-	static void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
+		}
 
-		auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<RigidBody2DComponent>().GravityScale = gravityScale;
-		body->SetGravityScale(gravityScale);
-	}
+			entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
+		}
+
+		float RigidBody2DComponent_GetDrag(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBody2DComponent>().Drag;
+		}
+
+		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBody2DComponent>().Drag = drag;
+		}
+
+		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
+		}
+
+		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
+		}
+
+		float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+
+			return body->GetGravityScale();
+		}
+
+		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+
+			entity.GetComponent<RigidBody2DComponent>().GravityScale = gravityScale;
+			body->SetGravityScale(gravityScale);
+		}
 
 #pragma endregion
 
 #pragma region Physics2D
 
-	// Derived class of Box2D RayCastCallback
-	class RayCastCallback : public b2RayCastCallback
-	{
-	public:
-		RayCastCallback() : fixture(nullptr) { }
-
-		float ReportFixture(b2Fixture* fixture_, const b2Vec2& point_, const b2Vec2& normal_, float fraction_) override
+		uint64_t Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RaycastHit2D* outResult, bool drawDebugLine)
 		{
-			fixture = fixture_;
-			point = point_;
-			normal = normal_;
-			fraction = fraction_;
-			return fraction;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			return Physics2D::Raycast(*start, *end, outResult, drawDebugLine);
 		}
 
-		b2Fixture* fixture; // This is the fixture that was hit by the raycast
-		b2Vec2 point;
-		b2Vec2 normal;
-		float fraction;
-	};
-
-	struct RayCastHit2D
-	{
-		Math::vec2 Point;
-		Math::vec2 Normal;
-		MonoString* Tag;
-		bool Hit;
-
-		RayCastHit2D(const RayCastCallback& raycastInfo, Scene* contextScene)
+		void Physics2D_GetWorldGravity(Math::vec2* outGravity)
 		{
-			Hit = raycastInfo.fixture != nullptr;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-			if (Hit)
-			{
-				Point = Math::vec2(raycastInfo.point.x, raycastInfo.point.y);
-				Normal = Math::vec2(raycastInfo.normal.x, raycastInfo.normal.y);
-				UUID entityUUID = reinterpret_cast<PhysicsBody2DData*>(raycastInfo.fixture->GetUserData().pointer)->EntityUUID;
-				Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-				Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
-
-				if (ScriptEngine::GetEntityScriptInstance(entityUUID) != nullptr)
-					ScriptEngine::OnRaycastCollisionEntity(entity); // Call the Entity's OnCollision Function
-			}
-			else
-			{
-				Point = Math::vec2();
-				Normal = Math::vec2();
-				Tag = mono_string_new(mono_domain_get(), "");
-			}
-		}
-	};
-
-	static uint64_t Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RayCastHit2D* outResult, bool drawDebugLine)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		
-		// Create an instance of the callback and initialize it
-		RayCastCallback raycastCallback;
-		Physics2D::GetPhysicsScene()->RayCast(&raycastCallback, { start->x, start->y }, { end->x, end->y });
-
-		*outResult = RayCastHit2D(raycastCallback, contextScene);
-
-		// Render Raycast Hits
-		if (drawDebugLine && outResult->Hit)
-		{
-			Renderer2D::DrawLine({ start->x, start->y, 0.0f }, { end->x, end->y, 0.0f }, s_RaycastDebugLineColor);
-			Renderer2D::Flush();
+			*outGravity = Physics2D::GetPhysicsWorldGravity();
 		}
 
-		if (outResult->Hit)
+		void Physics2D_SetWorldGravity(Math::vec2* gravity)
 		{
-			return reinterpret_cast<PhysicsBody2DData*>(raycastCallback.fixture->GetUserData().pointer)->EntityUUID;
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			Physics2D::SetPhysicsWorldGravitty(*gravity);
 		}
-		else
+
+		uint32_t Physics2D_GetWorldPositionIterations()
 		{
-			return 0; // Invalid entity
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			return Physics2D::GetPhysicsWorldPositionIterations();
 		}
-	}
 
-	static void Physics2D_GetWorldGravity(Math::vec2* outGravity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics2D_SetWorldPositionIterations(uint32_t positionIterations)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		*outGravity = Physics2D::GetPhysicsWorldGravity();
-	}
+			Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
+		}
 
-	static void Physics2D_SetWorldGravity(Math::vec2* gravity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		uint32_t Physics2D_GetWorldVelocityIterations()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Physics2D::SetPhysicsWorldGravitty(*gravity);
-	}
+			return Physics2D::GetPhysicsWorldVelocityIterations();
+		}
 
-	static uint32_t Physics2D_GetWorldPositionIterations()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		void Physics2D_SetWorldVelocityIterations(uint32_t velocityIterations)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		return Physics2D::GetPhysicsWorldPositionIterations();
-	}
-
-	static void Physics2D_SetWorldPositionIterations(uint32_t positionIterations)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
-	}
-
-	static uint32_t Physics2D_GetWorldVelocityIterations()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		return Physics2D::GetPhysicsWorldVelocityIterations();
-	}
-
-	static void Physics2D_SetWorldVelocityIterations(uint32_t velocityIterations)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
-		Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
-	}
+			Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
+		}
 
 #pragma endregion
 
 #pragma region Box Collider2D Component
 
-	static void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
-	}
+			*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+		}
 
-	static void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
-	}
-	
-	static void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
+		}
 
-		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
-	}
-	
-	static void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
-	}
+			*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
+		}
 
-	static void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
-	}
+			entity.GetComponent<BoxCollider2DComponent>().Size = *size;
+		}
 
-	static void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetDensity(density);
-		// Since we changed the density we must recalculate the mass data according to box2d
-		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
-	}
+			*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
+		}
 
-	static void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
-	}
+			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+			// Since we changed the density we must recalculate the mass data according to box2d
+			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
+		}
 
-	static void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
-	}
+			*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
+		}
 
-	static void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
-	}
+			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
+		}
 
-	static void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
-	}
+			*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
+		}
 
-	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
-	}
+			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
+		}
 
-	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitutionThreshold(restitutionThreshold);
-	}
+			*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
+		}
+
+		void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitutionThreshold(restitutionThreshold);
+		}
 
 #pragma endregion
 
 #pragma region Circle Collider2D Component
 
-	static void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
-	}
+			*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
+		}
 
-	static void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
-	}
+			entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
+		}
 
-	static void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
-	}
+			*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
+		}
 
-	static void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
-	}
+			entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
+		}
 
-	static void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
-	}
+			*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
+		}
 
-	static void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetDensity(density);
-		// Since we changed the density we must recalculate the mass data according to box2d
-		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
-	}
+			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+			// Since we changed the density we must recalculate the mass data according to box2d
+			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
+		}
 
-	static void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
-	}
+			*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
+		}
 
-	static void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
-	}
+			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
+		}
 
-	static void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
-	}
+			*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
+		}
 
-	static void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
-	}
+			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
+		}
 
-	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
-	}
+			*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
+		}
 
-	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-		Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
-		((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
-	}
+			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
+		}
 
 #pragma endregion
 
 #pragma region Random
 
-	static int Random_RangedInt32(int min, int max)
-	{
-		std::random_device randomDevice;
-		std::mt19937 engine(randomDevice());
-		std::uniform_int_distribution<int> uniformDistribution(min, max);
+		int Random_RangedInt32(int min, int max)
+		{
+			std::random_device randomDevice;
+			std::mt19937 engine(randomDevice());
+			std::uniform_int_distribution<int> uniformDistribution(min, max);
 
-		return uniformDistribution(engine);
-	}
+			return uniformDistribution(engine);
+		}
 
-	static float Random_RangedFloat(float min, float max)
-	{
-		std::random_device randomDevice;
-		std::mt19937 engine(randomDevice());
-		std::uniform_real_distribution<float> uniformDistribution(min, max);
+		float Random_RangedFloat(float min, float max)
+		{
+			std::random_device randomDevice;
+			std::mt19937 engine(randomDevice());
+			std::uniform_real_distribution<float> uniformDistribution(min, max);
 
-		return uniformDistribution(engine);
-	}
+			return uniformDistribution(engine);
+		}
 
-	static float Random_Float()
-	{
-		return Random::Float();
-	}
+		float Random_Float()
+		{
+			return Random::Float();
+		}
 
 #pragma endregion
 
 #pragma region Mathf
 
-	static float Mathf_GetPI()
-	{
-		return Math::PI;
-	}
+		float Mathf_GetPI()
+		{
+			return Math::PI;
+		}
 
-	static double Mathf_GetPI_D()
-	{
-		return Math::PI_D;
-	}
+		double Mathf_GetPI_D()
+		{
+			return Math::PI_D;
+		}
 
-	static float Mathf_Abs(float in)
-	{
-		return Math::Abs(in);
-	}
+		float Mathf_Abs(float in)
+		{
+			return Math::Abs(in);
+		}
 
-	static float Mathf_Sqrt(float in)
-	{
-		return Math::Sqrt(in);
-	}
+		float Mathf_Sqrt(float in)
+		{
+			return Math::Sqrt(in);
+		}
 
-	static float Mathf_Sin(float in)
-	{
-		return Math::Sin(in);
-	}
+		float Mathf_Sin(float in)
+		{
+			return Math::Sin(in);
+		}
 
-	static float Mathf_Cos(float in)
-	{
-		return Math::Cos(in);
-	}
+		float Mathf_Cos(float in)
+		{
+			return Math::Cos(in);
+		}
 
-	static float Mathf_Acos(float in)
-	{
-		return Math::Acos(in);
-	}
+		float Mathf_Acos(float in)
+		{
+			return Math::Acos(in);
+		}
 
-	static float Mathf_Tan(float in)
-	{
-		return Math::Tan(in);
-	}
+		float Mathf_Tan(float in)
+		{
+			return Math::Tan(in);
+		}
 
-	static float Mathf_Max(float x, float y)
-	{
-		return Math::Max(x, y);
-	}
+		float Mathf_Max(float x, float y)
+		{
+			return Math::Max(x, y);
+		}
 
-	static float Mathf_Min(float x, float y)
-	{
-		return Math::Min(x, y);
-	}
+		float Mathf_Min(float x, float y)
+		{
+			return Math::Min(x, y);
+		}
 
-	static float Mathf_Deg2Rad(float degrees)
-	{
-		return Math::Deg2Rad(degrees);
-	}
+		float Mathf_Deg2Rad(float degrees)
+		{
+			return Math::Deg2Rad(degrees);
+		}
 
-	static float Mathf_Rad2Deg(float radians)
-	{
-		return Math::Rad2Deg(radians);
-	}
+		float Mathf_Rad2Deg(float radians)
+		{
+			return Math::Rad2Deg(radians);
+		}
 
-	static void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult)
-	{
-		*outResult = Math::Deg2Rad(*value);
-	}
+		void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult)
+		{
+			*outResult = Math::Deg2Rad(*value);
+		}
 
-	static void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult)
-	{
-		*outResult = Math::Rad2Deg(*value);
-	}
-	
-	static void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation)
-	{
-		Math::vec3 up{ 0.0f, 1.0f, 0.0f };
-		Math::mat4 transform = Math::LookAt(*eyePos, *worldPoint, up);
-		Math::vec3 translation, rotation, scale;
-		Math::DecomposeTransform(transform, translation, rotation, scale);
-		*outRotation = rotation;
-	}
+		void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult)
+		{
+			*outResult = Math::Rad2Deg(*value);
+		}
+
+		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation)
+		{
+			Math::vec3 up{ 0.0f, 1.0f, 0.0f };
+			Math::mat4 transform = Math::LookAt(*eyePos, *worldPoint, up);
+			Math::vec3 translation, rotation, scale;
+			Math::DecomposeTransform(transform, translation, rotation, scale);
+			*outRotation = rotation;
+		}
 
 #pragma endregion
 
 #pragma region Quaternion
 
-	
+
 
 #pragma endregion
 
 #pragma region Vector3
 
-	static void Vector3_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
-	{
-		*outResult = Math::Cross(*left, *right);
-	}
+		void Vector3_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
+		{
+			*outResult = Math::Cross(*left, *right);
+		}
 
-	static float Vector3_DotProductVec3(Math::vec3* left, Math::vec3* right)
-	{
-		return Math::Dot(*left, *right);
-	}
+		float Vector3_DotProductVec3(Math::vec3* left, Math::vec3* right)
+		{
+			return Math::Dot(*left, *right);
+		}
 
 #pragma endregion
 
 #pragma region Time
 
-	static float Time_GetElapsed()
-	{
-		return Time::GetTime() - s_SceneStartTime;
-	}
+		float Time_GetElapsed()
+		{
+			return Time::GetTime() - s_Data.SceneStartTime;
+		}
 
-	static float Time_GetDeltaTime()
-	{
-		return Time::GetDeltaTime();
-	}
+		float Time_GetDeltaTime()
+		{
+			return Time::GetDeltaTime();
+		}
 
 #pragma endregion
 
 #pragma region Input
 
-	static bool Input_IsKeyPressed(KeyCode key)
-	{
-		return Input::IsKeyPressed(key);
-	}
+		bool Input_IsKeyPressed(KeyCode key)
+		{
+			return Input::IsKeyPressed(key);
+		}
 
-	static bool Input_IsKeyReleased(KeyCode key)
-	{
-		return Input::IsKeyReleased(key);
-	}
+		bool Input_IsKeyReleased(KeyCode key)
+		{
+			return Input::IsKeyReleased(key);
+		}
 
-	static bool Input_IsKeyDown(KeyCode key)
-	{
-		return Input::IsKeyDown(key);
-	}
-	
-	static bool Input_IsKeyUp(KeyCode key)
-	{
-		return Input::IsKeyUp(key);
-	}
+		bool Input_IsKeyDown(KeyCode key)
+		{
+			return Input::IsKeyDown(key);
+		}
 
-	static bool Input_IsMouseButtonPressed(MouseButton mouseButton)
-	{
-		return Input::IsMouseButtonPressed(mouseButton);
-	}
+		bool Input_IsKeyUp(KeyCode key)
+		{
+			return Input::IsKeyUp(key);
+		}
 
-	static bool Input_IsMouseButtonReleased(MouseButton mouseButton)
-	{
-		return Input::IsMouseButtonReleased(mouseButton);
-	}
+		bool Input_IsMouseButtonPressed(MouseButton mouseButton)
+		{
+			return Input::IsMouseButtonPressed(mouseButton);
+		}
 
-	static bool Input_IsMouseButtonDown(MouseButton mouseButton)
-	{
-		return Input::IsMouseButtonDown(mouseButton);
-	}
+		bool Input_IsMouseButtonReleased(MouseButton mouseButton)
+		{
+			return Input::IsMouseButtonReleased(mouseButton);
+		}
 
-	static bool Input_IsMouseButtonUp(MouseButton mouseButton)
-	{
-		return Input::IsMouseButtonUp(mouseButton);
-	}
+		bool Input_IsMouseButtonDown(MouseButton mouseButton)
+		{
+			return Input::IsMouseButtonDown(mouseButton);
+		}
 
-	static void Input_GetMousePosition(Math::vec2* outPosition)
-	{
-		Math::vec2 mousePos = Input::GetMousePosition();
-		mousePos.y *= -1.0f; // This makes more sense
-		*outPosition = mousePos;
-	}
+		bool Input_IsMouseButtonUp(MouseButton mouseButton)
+		{
+			return Input::IsMouseButtonUp(mouseButton);
+		}
 
-	static void Input_SetMousePosition(Math::vec2* position)
-	{
-		Input::SetMousePosition(*position);
-	}
+		void Input_GetMousePosition(Math::vec2* outPosition)
+		{
+			Math::vec2 mousePos = Input::GetMousePosition();
+			mousePos.y *= -1.0f; // This makes more sense
+			*outPosition = mousePos;
+		}
 
-	static void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset)
-	{
-		*outMouseScrollOffset = Input::GetMouseScrollOffset();
-	}
-	
-	static bool Input_IsGamepadButtonDown(Gamepad button)
-	{
-		return Input::IsGamepadButtonDown(button);
-	}
+		void Input_SetMousePosition(Math::vec2* position)
+		{
+			Input::SetMousePosition(*position);
+		}
 
-	static bool Input_IsGamepadButtonUp(Gamepad button)
-	{
-		return Input::IsGamepadButtonUp(button);
-	}
+		void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset)
+		{
+			*outMouseScrollOffset = Input::GetMouseScrollOffset();
+		}
 
-	static float Input_GetGamepadAxis(Gamepad axis)
-	{
-		return Input::GetGamepadAxis(axis);
-	}
+		bool Input_IsGamepadButtonDown(Gamepad button)
+		{
+			return Input::IsGamepadButtonDown(button);
+		}
 
-	static CursorMode Input_GetCursorMode()
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		bool Input_IsGamepadButtonUp(Gamepad button)
+		{
+			return Input::IsGamepadButtonUp(button);
+		}
 
-		return Input::GetCursorMode();
-	}
+		float Input_GetGamepadAxis(Gamepad axis)
+		{
+			return Input::GetGamepadAxis(axis);
+		}
 
-	static void Input_SetCursorMode(CursorMode cursorMode)
-	{
-		Scene* contextScene = ScriptEngine::GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+		CursorMode Input_GetCursorMode()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
 
-		Input::SetCursorMode(cursorMode);
-	}
+			return Input::GetCursorMode();
+		}
+
+		void Input_SetCursorMode(CursorMode cursorMode)
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			Input::SetCursorMode(cursorMode);
+		}
 
 #pragma endregion
 
 #pragma region Gui
 
-	namespace Gui = ImGui;
+		namespace Gui = ImGui;
 
-	static uint32_t defaultWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking;
+		uint32_t defaultWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking;
 
-	static void BeginWindow(char* text, uint32_t flags = 0)
-	{
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
+		void BeginWindow(char* text, uint32_t flags)
+		{
+			ImGuiIO& io = Gui::GetIO();
+			auto boldFont = io.Fonts->Fonts[0];
+			auto largeFont = io.Fonts->Fonts[1];
 
-		Gui::Begin(text, nullptr, defaultWindowFlags | flags);
-		Gui::PushFont(largeFont);
-		Gui::TextCentered(text);
-		Gui::PopFont();
-		UI::Draw::Underline();
-		Gui::Spacing();
-	}
+			Gui::Begin(text, nullptr, defaultWindowFlags | flags);
+			Gui::PushFont(largeFont);
+			Gui::TextCentered(text);
+			Gui::PopFont();
+			UI::Draw::Underline();
+			Gui::Spacing();
+		}
 
-	static void Gui_Begin(MonoString* text)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+		void Gui_Begin(MonoString* text)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		BeginWindow(textCStr);
+			BeginWindow(textCStr);
 
-		mono_free(textCStr);
-	}
-	
-	static void Gui_BeginWithPosition(MonoString* text, Math::vec2* position)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+			mono_free(textCStr);
+		}
 
-		Gui::SetNextWindowPos({ position->x, position->y });
-		BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
+		void Gui_BeginWithPosition(MonoString* text, Math::vec2* position)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		mono_free(textCStr);
-	}
+			Gui::SetNextWindowPos({ position->x, position->y });
+			BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 
-	static void Gui_BeginWithSize(MonoString* text, float width, float height)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+			mono_free(textCStr);
+		}
 
-		Gui::SetNextWindowSize({ width, height });
-		BeginWindow(textCStr, ImGuiWindowFlags_NoResize);
+		void Gui_BeginWithSize(MonoString* text, float width, float height)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		mono_free(textCStr);
-	}
+			Gui::SetNextWindowSize({ width, height });
+			BeginWindow(textCStr, ImGuiWindowFlags_NoResize);
 
-	static void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+			mono_free(textCStr);
+		}
 
-		Gui::SetNextWindowPos({ position->x, position->y });
-		Gui::SetNextWindowSize({ size->x, size->y });
-		BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		mono_free(textCStr);
-	}
+			Gui::SetNextWindowPos({ position->x, position->y });
+			Gui::SetNextWindowSize({ size->x, size->y });
+			BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-	static void Gui_End()
-	{
-		Gui::End();
-	}
+			mono_free(textCStr);
+		}
 
-	static void Gui_Separator()
-	{
-		UI::Draw::Underline();
-	}
+		void Gui_End()
+		{
+			Gui::End();
+		}
 
-	static void Gui_Spacing()
-	{
-		Gui::Spacing();
-	}
+		void Gui_Separator()
+		{
+			UI::Draw::Underline();
+		}
 
-	static void Gui_Text(MonoString* text)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+		void Gui_Spacing()
+		{
+			Gui::Spacing();
+		}
 
-		Gui::Text(textCStr);
+		void Gui_Text(MonoString* text)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		mono_free(textCStr);
-	}
+			Gui::Text(textCStr);
 
-	static bool Gui_Button(MonoString* text)
-	{
-		char* textCStr = mono_string_to_utf8(text);
+			mono_free(textCStr);
+		}
 
-		bool result = Gui::Button(textCStr);
+		bool Gui_Button(MonoString* text)
+		{
+			char* textCStr = mono_string_to_utf8(text);
 
-		mono_free(textCStr);
+			bool result = Gui::Button(textCStr);
 
-		return result;
-	}
+			mono_free(textCStr);
+
+			return result;
+		}
 
 #pragma endregion
 
 #pragma region Log
 
-	static void Log_Print(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-		VX_CONSOLE_LOG_TRACE("{}", managedString);
-		mono_free(managedString);
-	}
-	
-	static void Log_Info(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-		VX_CONSOLE_LOG_INFO("{}", managedString);
-		mono_free(managedString);
-	}
-	
-	static void Log_Warn(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-		VX_CONSOLE_LOG_WARN("{}", managedString);
-		mono_free(managedString);
-	}
-	
-	static void Log_Error(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-		VX_CONSOLE_LOG_ERROR("{}", managedString);
-		mono_free(managedString);
-	}
+		void Log_Print(MonoString* message)
+		{
+			char* managedString = mono_string_to_utf8(message);
+			VX_CONSOLE_LOG_TRACE("{}", managedString);
+			mono_free(managedString);
+		}
 
-	static void Log_Fatal(MonoString* message)
-	{
-		char* managedString = mono_string_to_utf8(message);
-		VX_CONSOLE_LOG_FATAL("{}", managedString);
-		mono_free(managedString);
-	}
+		void Log_Info(MonoString* message)
+		{
+			char* managedString = mono_string_to_utf8(message);
+			VX_CONSOLE_LOG_INFO("{}", managedString);
+			mono_free(managedString);
+		}
+
+		void Log_Warn(MonoString* message)
+		{
+			char* managedString = mono_string_to_utf8(message);
+			VX_CONSOLE_LOG_WARN("{}", managedString);
+			mono_free(managedString);
+		}
+
+		void Log_Error(MonoString* message)
+		{
+			char* managedString = mono_string_to_utf8(message);
+			VX_CONSOLE_LOG_ERROR("{}", managedString);
+			mono_free(managedString);
+		}
+
+		void Log_Fatal(MonoString* message)
+		{
+			char* managedString = mono_string_to_utf8(message);
+			VX_CONSOLE_LOG_FATAL("{}", managedString);
+			mono_free(managedString);
+		}
 
 #pragma endregion
+
+	}
 
 	template <typename... TComponent>
 	static void RegisterComponent()
@@ -4400,9 +4335,9 @@ namespace Vortex {
 				return;
 			}
 
-			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddComponent<TComponent>(); };
-			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<TComponent>(); };
-			s_EntityRemoveComponentFuncs[managedType] = [](Entity entity) { entity.RemoveComponent<TComponent>(); };
+			s_Data.EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddComponent<TComponent>(); };
+			s_Data.EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<TComponent>(); };
+			s_Data.EntityRemoveComponentFuncs[managedType] = [](Entity entity) { entity.RemoveComponent<TComponent>(); };
 		}(), ...);
 	}
 
@@ -4414,37 +4349,37 @@ namespace Vortex {
 
 	void ScriptRegistry::RegisterComponents()
 	{
-		s_EntityHasComponentFuncs.clear();
-		s_EntityAddComponentFuncs.clear();
-		s_EntityRemoveComponentFuncs.clear();
+		s_Data.EntityHasComponentFuncs.clear();
+		s_Data.EntityAddComponentFuncs.clear();
+		s_Data.EntityRemoveComponentFuncs.clear();
 
 		RegisterComponent(AllComponents{});
 	}
 
 	void ScriptRegistry::SetHoveredEntity(Entity entity)
 	{
-		s_HoveredEntity = entity;
+		s_Data.HoveredEntity = entity;
 	}
 
 	void ScriptRegistry::SetSceneStartTime(float startTime)
 	{
-		s_SceneStartTime = startTime;
+		s_Data.SceneStartTime = startTime;
 	}
 
 	void ScriptRegistry::SetActiveSceneName(const std::string& sceneName)
 	{
-		s_ActiveSceneName = sceneName;
+		s_Data.ActiveSceneName = sceneName;
 	}
 
 	const char* ScriptRegistry::GetSceneToBeLoaded()
 	{
-		const char* sceneName = s_SceneToBeLoaded.c_str();
+		const char* sceneName = s_Data.SceneToBeLoaded.c_str();
 		return sceneName;
 	}
 
 	void ScriptRegistry::ResetSceneToBeLoaded()
 	{
-		s_SceneToBeLoaded.clear();
+		s_Data.SceneToBeLoaded.clear();
 	}
 
 	void ScriptRegistry::RegisterMethods()

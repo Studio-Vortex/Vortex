@@ -62,11 +62,16 @@ namespace Vortex {
 	private:
 		SharedRef<Scene> m_ContextScene = nullptr;
 		Entity m_SelectedEntity;
+		
+		// TODO think of a better way of doing this
 		TransformComponent m_TransformToCopy;
+		ParticleEmitterProperties m_ParticleEmitterToCopy;
+
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
 		ImGuiTextFilter m_EntityClassNameInputTextFilter;
 		ImGuiTextFilter m_EntityFieldSearchInputTextFilter;
+
 		bool m_EntityShouldBeRenamed = false;
 		bool m_EntityShouldBeDestroyed = false;
 		bool m_DisplayAddMarkerPopup = false;

@@ -67,7 +67,6 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
-		ScriptEngine::Shutdown();
 		AudioEngine::Shutdown();
 		Physics::Shutdown();
 		Renderer::Shutdown();

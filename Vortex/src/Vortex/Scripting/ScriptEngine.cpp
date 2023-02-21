@@ -25,8 +25,6 @@
 
 namespace Vortex {
 
-	static constexpr const char* APP_ASSEMBLY_PATH = "C:/dev/Vortex_Game_Engine/Vortex/Vortex-Editor/SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
-
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
 		{ "System.Single",  ScriptFieldType::Float   },
@@ -152,8 +150,6 @@ namespace Vortex {
 
 	}
 
-	bool s_ScriptEngineInitialized = false;
-
 	struct ScriptEngineData
 	{
 		MonoDomain* RootDomain = nullptr;
@@ -239,16 +235,11 @@ namespace Vortex {
 
 		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
-		s_ScriptEngineInitialized = true;
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-		if (!s_ScriptEngineInitialized)
-			return;
-
 		ShutdownMono();
-		s_ScriptEngineInitialized = false;
 
 		delete s_Data;
 		s_Data = nullptr;
@@ -258,11 +249,11 @@ namespace Vortex {
 	{
 		mono_set_assemblies_path("mono/lib");
 
+		SharedRef<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
 		if (s_Data->DebuggingEnabled)
 		{
-			SharedRef<Project> activeProject = Project::GetActive();
-			const ProjectProperties& projectProps = activeProject->GetProperties();
-
 			uint32_t debugListenerPort = projectProps.ScriptingProps.DebugListenerPort;
 
 			const char* argv[2] = {
@@ -281,7 +272,9 @@ namespace Vortex {
 		s_Data->RootDomain = rootDomain;
 
 		if (s_Data->DebuggingEnabled)
+		{
 			mono_debug_domain_create(s_Data->RootDomain);
+		}
 
 		mono_thread_set_main(mono_thread_current());
 	}
@@ -302,6 +295,7 @@ namespace Vortex {
 		char name[20] = "VortexScriptRuntime";
 		s_Data->AppDomain = mono_domain_create_appdomain(name, nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
+		mono_domain_set_config(s_Data->AppDomain, ".", "");
 
 		s_Data->CoreAssemblyFilepath = filepath;
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
@@ -556,6 +550,11 @@ namespace Vortex {
 		return s_Data->CoreAssemblyImage;
 	}
 
+	MonoDomain* ScriptEngine::GetAppDomain()
+	{
+		return s_Data->AppDomain;
+	}
+
 	void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
 	{
 		if (!entity.HasComponent<ScriptComponent>() || !targetEntity.HasComponent<ScriptComponent>())
@@ -595,7 +594,7 @@ namespace Vortex {
 
 			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
-			if (monoClass == entityClass)
+			if (!monoClass || monoClass == entityClass)
 				continue;
 
 			bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);

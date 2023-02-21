@@ -23,7 +23,7 @@ namespace Vortex {
 
 		public static float Floor(float value) => (float)Math.Floor(value);
 
-		// not the same as a%b
+		// Not the same as (a % b)
 		public static float Modulo(float a, float b) => a - b * (float)Math.Floor(a / b);
 
 		public static float Abs(float value) => InternalCalls.Mathf_Abs(value);
@@ -34,6 +34,16 @@ namespace Vortex {
 		public static float Tan(float value) => InternalCalls.Mathf_Tan(value);
 		public static float Max(float x, float y) => InternalCalls.Mathf_Max(x, y);
 		public static float Min(float x, float y) => InternalCalls.Mathf_Min(x, y);
+
+		public static float Sign(float value)
+		{
+			if (value >= 0)
+			{
+				return 1f;
+			}
+
+			return -1f;
+		}
 
 		public static float Deg2Rad(float degrees) => InternalCalls.Mathf_Deg2Rad(degrees);
 		public static float Rad2Deg(float radians) => InternalCalls.Mathf_Rad2Deg(radians);

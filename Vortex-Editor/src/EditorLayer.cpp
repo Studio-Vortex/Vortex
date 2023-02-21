@@ -88,6 +88,7 @@ namespace Vortex {
 	{
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
+		ScriptEngine::Shutdown();
 	}
 
 	void EditorLayer::OnUpdate(TimeStep delta)
@@ -1869,6 +1870,9 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
+		// Script engine needs to be shutdown before we can open a new project
+		ScriptEngine::Shutdown();
+
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())

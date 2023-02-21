@@ -6,10 +6,28 @@
 #include "Vortex/Core/TimeStep.h"
 
 // Forward declarations
+
+extern "C"
+{
+	typedef struct _MonoString MonoString;
+}
+
 class b2World;
 class b2Fixture;
 
 namespace Vortex {
+
+	class RaycastCallback2D;
+
+	struct RaycastHit2D
+	{
+		Math::vec2 Point;
+		Math::vec2 Normal;
+		MonoString* Tag;
+		bool Hit;
+
+		RaycastHit2D(const RaycastCallback2D* raycastInfo, Scene* contextScene);
+	};
 
 	struct PhysicsBody2DData
 	{
@@ -26,6 +44,8 @@ namespace Vortex {
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
 		static void OnSimulationStop();
 
+		static uint64_t Raycast(const Math::vec2& start, const Math::vec2& end, RaycastHit2D* outResult, bool drawDebugLine);
+
 		static b2World* GetPhysicsScene() { return s_PhysicsScene; }
 
 		static uint32_t GetPhysicsWorldVelocityIterations() { return s_PhysicsWorld2DVeloctityIterations; }
@@ -38,6 +58,7 @@ namespace Vortex {
 		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
 
 	private:
+		inline static Scene* s_ContextScene = nullptr;
 		inline static b2World* s_PhysicsScene = nullptr;
 
 		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.81f);

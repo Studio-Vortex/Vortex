@@ -1443,6 +1443,14 @@ namespace Vortex {
 			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
 
 			UI::EndPropertyGrid();
+		},
+		[&](const auto& component)
+		{
+			m_ParticleEmitterToCopy = component.Emitter->GetProperties();
+		},
+		[&](const auto& component)
+		{
+			component.Emitter->SetProperties(m_ParticleEmitterToCopy);
 		});
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
