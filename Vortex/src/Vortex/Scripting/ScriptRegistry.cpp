@@ -438,15 +438,15 @@ namespace Vortex {
 
 				if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
 				{
-					MonoObject* boxed = mono_object_new(mono_domain_get(), elementClass);
+					MonoObject* boxed = mono_object_new(ScriptEngine::GetAppDomain(), elementClass);
 					mono_array_setref(result, (uintptr_t)i, boxed);
 				}
-				else
+				/*else
 				{
 					char* dst = mono_array_addr_with_size(result, elementSize, i);
 					auto child = contextScene->TryGetEntityWithUUID(children[i]);
 					memcpy(dst, &child, elementSize);
-				}
+				}*/
 			}
 
 			return result;
