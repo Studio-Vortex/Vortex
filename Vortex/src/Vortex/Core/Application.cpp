@@ -181,6 +181,8 @@ namespace Vortex {
 				m_GuiLayer->EndFrame();
 			}
 
+			Input::ResetChangesForNextFrame();
+
 			m_Window->OnUpdate();
 		}
 	}

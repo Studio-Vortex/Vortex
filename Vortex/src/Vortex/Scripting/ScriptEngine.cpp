@@ -665,21 +665,36 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_Constructor                  = s_Data->EntityClass->GetMethod(".ctor", 1);
-		m_OnCreateFunc                 = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_OnUpdateFunc                 = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_OnDestroyFunc                = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionEnterFunc         = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
-		m_OnCollisionExitFunc          = m_ScriptClass->GetMethod("OnCollisionExit", 1);
-		m_OnTriggerEnterFunc           = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
-		m_OnTriggerExitFunc            = m_ScriptClass->GetMethod("OnTriggerExit", 1);
+		m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		m_OnCreateFunc = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdateFunc = m_ScriptClass->GetMethod("OnUpdate", 1);
+		m_OnDestroyFunc = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_OnCollisionEnterFunc = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
+		m_OnCollisionExitFunc = m_ScriptClass->GetMethod("OnCollisionExit", 1);
+		m_OnTriggerEnterFunc = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
+		m_OnTriggerExitFunc = m_ScriptClass->GetMethod("OnTriggerExit", 1);
 		m_OnFixedJointDisconnectedFunc = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_OnRaycastCollisionFunc       = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
-		m_OnGuiFunc                    = m_ScriptClass->GetMethod("OnGui", 0);
+		m_OnRaycastCollisionFunc = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
+		m_OnGuiFunc = m_ScriptClass->GetMethod("OnGui", 0);
 
-		if (!m_Constructor)
-			return;
+#ifdef VX_DEBUG
 
+		const std::string& className = entity.GetComponent<ScriptComponent>().ClassName;
+		m_DebugName = entity.GetName() + "-" + className;
+		
+		auto CheckMethodValidity = [&](auto method, auto name)
+		{
+			if (!method)
+			{
+				VX_CONSOLE_LOG_ERROR("Failed to locate class method for entity {}, {}", entity.GetName(), name);
+			}
+		};
+
+		CheckMethodValidity(m_Constructor, ".ctor");
+		CheckMethodValidity(m_OnCreateFunc, "OnCreate");
+		CheckMethodValidity(m_OnUpdateFunc, "OnUpdate");
+#endif
+		
 		// Call Entity constructor
 		UUID entitytUUID = entity.GetUUID();
 		void* param = &entitytUUID;
@@ -698,7 +713,7 @@ namespace Vortex {
 	{
 		if (!m_OnUpdateFunc)
 			return;
-
+		
 		void* param = &delta;
 		m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
 	}

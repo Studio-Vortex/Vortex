@@ -18,8 +18,10 @@ Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
 Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
-Deserializing Scene 'Over'
-This thing is friendly
-This thing is friendly
-Deserializing Scene 'Over'
+PDB Loaded : "Resources/Scripts/Vortex-ScriptCore.pdb"
+PDB Loaded : "Projects\\MyProject\\Assets\\Scripts/Binaries/MyProject.pdb"
+Deserializing Scene 'SampleScene'
+Space Pressed!
+Space Pressed!
+Space Pressed!
 Shutting down...

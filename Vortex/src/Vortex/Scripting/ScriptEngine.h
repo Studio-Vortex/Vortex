@@ -168,6 +168,10 @@ namespace Vortex {
 
 		inline static char s_FieldValueBuffer[16];
 
+#ifdef VX_DEBUG
+		std::string m_DebugName = "";
+#endif
+
 	private:
 		friend class ScriptEngine;
 		friend struct ScriptFieldInstance;

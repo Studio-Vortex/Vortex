@@ -46,6 +46,7 @@ namespace Vortex {
 		static void UpdateMouseButtonState(MouseButton button, int action);
 		static bool KeyChangedThisFrame(KeyCode key);
 		static bool MouseButtonChangedThisFrame(MouseButton mousebutton);
+		static void ResetChangesForNextFrame();
 	};
 
 }

@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "ScriptUtils.h"
 
-
+#include <mono/metadata/object.h>
 
 namespace Vortex {
 

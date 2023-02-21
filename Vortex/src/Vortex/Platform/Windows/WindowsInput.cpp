@@ -10,48 +10,48 @@ namespace Vortex {
 
 	static Math::vec2 s_MouseScrollOffset(0.0f);
 	static std::bitset<VX_MAX_KEYS> s_Keys{};
-	static std::bitset<VX_MAX_KEYS> s_KeysChanged{};
+	static std::bitset<VX_MAX_KEYS> s_KeysChangedThisFrame{};
 	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtons{};
-	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtonsChanged{};
+	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtonsChangedThisFrame{};
 
 	bool Input::IsKeyPressed(KeyCode keycode)
 	{
-		return s_Keys[(size_t)keycode] && KeyChangedThisFrame(keycode);
+		return s_Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
 	}
 
 	bool Input::IsKeyReleased(KeyCode keycode)
 	{
-		return !s_Keys[(size_t)keycode] && KeyChangedThisFrame(keycode);
+		return !s_Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
 	}
 
 	bool Input::IsKeyDown(KeyCode keycode)
 	{
-		return s_Keys[(size_t)keycode];
+		return s_Keys.test((size_t)keycode);
 	}
 
 	bool Input::IsKeyUp(KeyCode keycode)
 	{
-		return !s_Keys[(size_t)keycode];
+		return !s_Keys.test((size_t)keycode);
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton button)
 	{
-		return s_MouseButtons[(size_t)button] && MouseButtonChangedThisFrame(button);
+		return s_MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
 	}
 
 	bool Input::IsMouseButtonReleased(MouseButton button)
 	{
-		return !s_MouseButtons[(size_t)button] && MouseButtonChangedThisFrame(button);
+		return !s_MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
 	}
 
 	bool Input::IsMouseButtonDown(MouseButton button)
 	{
-		return s_MouseButtons[(size_t)button];
+		return s_MouseButtons.test((size_t)button);
 	}
 
 	bool Input::IsMouseButtonUp(MouseButton button)
 	{
-		return !s_MouseButtons[(size_t)button];
+		return !s_MouseButtons.test((size_t)button);
 	}
 
 	bool Input::IsGamepadButtonDown(Gamepad gamepad)
@@ -148,52 +148,46 @@ namespace Vortex {
 	{
 		if (action != GLFW_RELEASE)
 		{
-			if (!s_Keys[(size_t)key])
-			{
-				s_Keys[(size_t)key] = true;
-			}
+			if (!s_Keys.test((size_t)key))
+				s_Keys.set((size_t)key, true);
 		}
 		else
 		{
-			s_Keys[(size_t)key] = false;
+			s_Keys.set((size_t)key, false);
 		}
 
-		s_KeysChanged[(size_t)key] = action != GLFW_REPEAT;
+		s_KeysChangedThisFrame.set((size_t)key, action != GLFW_REPEAT);
 	}
 
 	void Input::UpdateMouseButtonState(MouseButton button, int action)
 	{
 		if (action != GLFW_RELEASE)
 		{
-			if (!s_MouseButtons[(size_t)button])
-			{
-				s_MouseButtons[(size_t)button] = true;
-			}
+			if (!s_MouseButtons.test((size_t)button))
+				s_MouseButtons.set((size_t)button, true);
 		}
 		else
 		{
-			s_MouseButtons[(size_t)button] = false;
+			s_MouseButtons.set((size_t)button, false);
 		}
 
-		s_MouseButtonsChanged[(size_t)button] = action != GLFW_REPEAT;
+		s_MouseButtonsChangedThisFrame.set((size_t)button, action != GLFW_REPEAT);
 	}
 
 	bool Input::KeyChangedThisFrame(KeyCode key)
 	{
-		bool result = s_KeysChanged[(size_t)key];
-
-		// set to false because the state is no longer new
-		s_KeysChanged[(size_t)key] = false;
-		return result;
+		return s_KeysChangedThisFrame.test((size_t)key);
 	}
 
 	bool Input::MouseButtonChangedThisFrame(MouseButton mousebutton)
 	{
-		bool result = s_MouseButtonsChanged[(size_t)mousebutton];
+		return s_MouseButtonsChangedThisFrame.test((size_t)mousebutton);
+	}
 
-		// set to false because the state is no longer new
-		s_MouseButtonsChanged[(size_t)mousebutton] = false;
-		return result;
+	void Input::ResetChangesForNextFrame()
+	{
+		s_KeysChangedThisFrame.reset();
+		s_MouseButtonsChangedThisFrame.reset();
 	}
 
 }
