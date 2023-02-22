@@ -741,7 +741,8 @@ namespace Vortex {
 
 		for (auto childID : childIDs)
 		{
-			Entity childDuplicate = DuplicateEntity(TryGetEntityWithUUID(childID));
+			Entity child = TryGetEntityWithUUID(childID);
+			Entity childDuplicate = DuplicateEntity(child);
 
 			// at this point childDuplicate is a child of src, we need to remove it from src
 			UnparentEntity(childDuplicate, false);
@@ -797,7 +798,9 @@ namespace Vortex {
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
 		if (!parent)
+		{
 			return;
+		}
 
 		auto& transform = entity.GetTransform();
 		Math::mat4 parentTransform = GetWorldSpaceTransformMatrix(parent);
@@ -812,7 +815,9 @@ namespace Vortex {
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 
 		if (!parent)
+		{
 			return;
+		}
 
 		Math::mat4 transform = GetWorldSpaceTransformMatrix(entity);
 		auto& entityTransform = entity.GetTransform();
@@ -850,7 +855,7 @@ namespace Vortex {
 	{
 		auto view = m_Registry.view<CameraComponent>();
 
-		for (auto& entity : view)
+		for (const auto entity : view)
 		{
 			auto& cc = view.get<CameraComponent>(entity);
 
@@ -883,7 +888,7 @@ namespace Vortex {
 		{
 			auto view = m_Registry.view<MeshRendererComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
@@ -899,7 +904,7 @@ namespace Vortex {
 		{
 			auto view = m_Registry.view<StaticMeshRendererComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
@@ -919,7 +924,7 @@ namespace Vortex {
 
 		auto view = m_Registry.view<AnimatorComponent, AnimationComponent, MeshRendererComponent>();
 
-		for (auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, this };
 			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
@@ -937,7 +942,7 @@ namespace Vortex {
 
 		auto view = m_Registry.view<ParticleEmitterComponent>();
 
-		for (auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, this };
 			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;

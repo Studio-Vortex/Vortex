@@ -8,7 +8,7 @@ namespace Vortex {
 	AudioSource::AudioSource(const std::string& filepath)
 		: m_Path(filepath)
 	{
-		LoadFromPathAndInitEngine(filepath);
+		Reload();
 	}
 
 	AudioSource::~AudioSource()
@@ -18,16 +18,16 @@ namespace Vortex {
 
 	void AudioSource::Play()
 	{
-		if (!m_Initialized)
-		{
-			LoadFromPathAndInitEngine(m_Path);
-		}
-
 		if (m_Properties.PlayOneShot)
 		{
 			AudioEngine::StartEngine(&m_Engine);
 			AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
 			return;
+		}
+
+		if (!m_Initialized)
+		{
+			Reload();
 		}
 
 		AudioEngine::StartEngine(&m_Engine);
@@ -36,34 +36,38 @@ namespace Vortex {
 
 	void AudioSource::Pause()
 	{
-		if (m_Initialized)
-			AudioEngine::PauseSound(&m_Sound);
+		if (!m_Initialized)
+			return;
+
+		AudioEngine::PauseSound(&m_Sound);
 	}
 
 	void AudioSource::Restart()
 	{
-		if (m_Initialized)
-			AudioEngine::RestartSound(&m_Sound);
+		if (!m_Initialized)
+			return;
+
+		AudioEngine::RestartSound(&m_Sound);
 	}
 
 	void AudioSource::Stop()
 	{
-		if (m_Initialized)
-		{
-			AudioEngine::RestartSound(&m_Sound);
-			AudioEngine::StopSound(&m_Sound);
-			AudioEngine::ShutdownEngine(&m_Engine);
-			m_Initialized = false;
-		}
+		if (!m_Initialized)
+			return;
+
+		AudioEngine::RestartSound(&m_Sound);
+		AudioEngine::StopSound(&m_Sound);
+		AudioEngine::ShutdownEngine(&m_Engine);
+		m_Initialized = false;
 	}
 
 	void AudioSource::Destroy()
 	{
-		if (m_Initialized)
-		{
-			AudioEngine::DestroySound(&m_Sound);
-			AudioEngine::ShutdownEngine(&m_Engine);
-		}
+		if (!m_Initialized)
+			return;
+		
+		AudioEngine::DestroySound(&m_Sound);
+		AudioEngine::ShutdownEngine(&m_Engine);
 	}
 
 	bool AudioSource::IsPlaying()
@@ -138,6 +142,7 @@ namespace Vortex {
 
 	void AudioSource::Reload()
 	{
+		VX_CORE_ASSERT(!m_Path.empty(), "Cannot load empty path!");
 		LoadFromPathAndInitEngine(m_Path);
 	}
 
@@ -153,8 +158,8 @@ namespace Vortex {
 		SetVolume(soundProps.Volume);
 		SetPlayOnStart(soundProps.PlayOnStart);
 		SetPlayOneShot(soundProps.PlayOneShot);
-		SetLoop(soundProps.Loop);
 		SetSpacialized(soundProps.Spacialized);
+		SetLoop(soundProps.Loop);
     }
 
     float AudioSource::GetAmountComplete()
@@ -165,23 +170,14 @@ namespace Vortex {
 	void AudioSource::Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
-		dest->SetCone(props.Cone);
-		dest->SetDirection(props.Direction);
-		dest->SetDopplerFactor(props.DopplerFactor);
-		dest->SetLoop(props.Loop);
-		dest->SetMaxDistance(props.MaxDistance);
-		dest->SetMinDistance(props.MinDistance);
-		dest->SetPitch(props.Pitch);
-		dest->SetPosition(props.Position);
-		dest->SetSpacialized(props.Spacialized);
-		dest->SetPlayOnStart(props.PlayOnStart);
-		dest->SetPlayOneShot(props.PlayOneShot);
-		dest->SetVelocity(props.Velocity);
-		dest->SetVolume(props.Volume);
+		const AudioSource::SoundProperties& srcProps = src->GetProperties();
+		dest->SetProperties(srcProps);
 	}
 
 	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
 	{
+		VX_CORE_ASSERT(!filepath.empty(), "Cannot load empty file!");
+
 		AudioEngine::InitEngine(&m_Engine);
 
 		AudioEngine::InitSoundFromPath(

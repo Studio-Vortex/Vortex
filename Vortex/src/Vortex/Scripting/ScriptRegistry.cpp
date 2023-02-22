@@ -1936,10 +1936,10 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Position = *position;
+			asc.Source->SetPosition(*position);
 		}
 
-		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outPosition)
+		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -1950,10 +1950,10 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			*outPosition = asc.Source->GetProperties().Position;
+			*outDirection = asc.Source->GetProperties().Direction;
 		}
 
-		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* position)
+		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -1964,10 +1964,10 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Position = *position;
+			asc.Source->SetDirection(*direction);
 		}
 
-		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* velocity)
+		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -1978,7 +1978,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			*velocity = asc.Source->GetProperties().Velocity;
+			*outVelocity = asc.Source->GetProperties().Velocity;
 		}
 
 		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
@@ -1992,7 +1992,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Velocity = *velocity;
+			asc.Source->SetVelocity(*velocity);
 		}
 
 		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID)
@@ -2020,7 +2020,9 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Cone.InnerAngle = innerAngle;
+			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			cone.InnerAngle = innerAngle;
+			asc.Source->SetCone(cone);
 		}
 
 		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID)
@@ -2048,7 +2050,9 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Cone.OuterAngle = outerAngle;
+			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			cone.OuterAngle = outerAngle;
+			asc.Source->SetCone(cone);
 		}
 
 		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID)
@@ -2076,7 +2080,9 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Cone.OuterGain = outerGain;
+			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			cone.OuterGain = outerGain;
+			asc.Source->SetCone(cone);
 		}
 
 
@@ -2105,7 +2111,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().MinDistance = minDistance;
+			asc.Source->SetMinDistance(minDistance);
 		}
 
 		float AudioSourceComponent_GetMaxDistance(UUID entityUUID)
@@ -2133,7 +2139,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().MaxDistance = maxDistance;
+			asc.Source->SetMaxDistance(maxDistance);
 		}
 
 		float AudioSourceComponent_GetPitch(UUID entityUUID)
@@ -2161,7 +2167,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Pitch = pitch;
+			asc.Source->SetPitch(pitch);
 		}
 
 		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID)
@@ -2189,7 +2195,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().DopplerFactor = dopplerFactor;
+			asc.Source->SetDopplerFactor(dopplerFactor);
 		}
 
 		float AudioSourceComponent_GetVolume(UUID entityUUID)
@@ -2217,7 +2223,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Volume = volume;
+			asc.Source->SetVolume(volume);
 		}
 
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
@@ -2245,7 +2251,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().PlayOnStart = playOnStart;
+			asc.Source->SetPlayOnStart(playOnStart);
 		}
 
 		bool AudioSourceComponent_GetPlayOneShot(UUID entityUUID)
@@ -2273,7 +2279,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().PlayOneShot = playOneShot;
+			asc.Source->SetPlayOneShot(playOneShot);
 		}
 
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
@@ -2301,7 +2307,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Spacialized = spacialized;
+			asc.Source->SetSpacialized(spacialized);
 		}
 
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID)
@@ -2329,7 +2335,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->GetProperties().Loop = loop;
+			asc.Source->SetLoop(loop);
 		}
 
 #pragma endregion
