@@ -164,7 +164,6 @@ namespace Vortex {
 		std::filesystem::path AppAssemblyFilepath;
 
 		SharedRef<ScriptClass> EntityClass = nullptr;
-		MonoMethod* EntityConstructor = nullptr;
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
@@ -234,7 +233,6 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
-		s_Data->EntityConstructor = s_Data->EntityClass->GetMethod(".ctor", 1);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 	}
 
@@ -362,8 +360,9 @@ namespace Vortex {
 
 	void ScriptEngine::ConstructEntityRuntime(UUID entityUUID, MonoObject* instance)
 	{
+		MonoMethod* constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+
 		void* param = &entityUUID;
-		MonoMethod* constructor = s_Data->EntityConstructor;
 		ScriptUtils::InvokeMethod(instance, constructor, &param);
 	}
 
