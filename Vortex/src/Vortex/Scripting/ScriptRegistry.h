@@ -75,6 +75,7 @@ namespace Vortex {
 		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName);
 		uint64_t Scene_CreateEntity(MonoString* name);
 		uint64_t Scene_Instantiate(UUID entityUUID);
+		uint64_t Scene_InstantiateAtWorldPosition(UUID entityUUID, Math::vec3* worldPosition);
 		bool Scene_IsPaused();
 		void Scene_Pause();
 		void Scene_Resume();

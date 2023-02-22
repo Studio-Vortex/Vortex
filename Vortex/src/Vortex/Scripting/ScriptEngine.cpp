@@ -164,6 +164,7 @@ namespace Vortex {
 		std::filesystem::path AppAssemblyFilepath;
 
 		SharedRef<ScriptClass> EntityClass = nullptr;
+		MonoMethod* EntityConstructor = nullptr;
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
@@ -233,6 +234,7 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
+		s_Data->EntityConstructor = s_Data->EntityClass->GetMethod(".ctor", 1);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 	}
 
@@ -361,7 +363,7 @@ namespace Vortex {
 	void ScriptEngine::ConstructEntityRuntime(UUID entityUUID, MonoObject* instance)
 	{
 		void* param = &entityUUID;
-		MonoMethod* constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		MonoMethod* constructor = s_Data->EntityConstructor;
 		ScriptUtils::InvokeMethod(instance, constructor, &param);
 	}
 
@@ -663,7 +665,6 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
 		m_OnCreateFunc = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdateFunc = m_ScriptClass->GetMethod("OnUpdate", 1);
 		m_OnDestroyFunc = m_ScriptClass->GetMethod("OnDestroy", 0);
@@ -688,9 +689,9 @@ namespace Vortex {
 			}
 		};
 
-		CheckMethodValidity(m_Constructor, ".ctor");
 		CheckMethodValidity(m_OnCreateFunc, "OnCreate");
 		CheckMethodValidity(m_OnUpdateFunc, "OnUpdate");
+
 #endif
 		
 		// Call Entity constructor

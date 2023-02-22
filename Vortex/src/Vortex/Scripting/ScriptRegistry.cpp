@@ -68,36 +68,48 @@ namespace Vortex {
 
 	namespace InternalCalls {
 
+		static Scene* GetContextScene()
+		{
+			Scene* contextScene = ScriptEngine::GetContextScene();
+			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+
+			return contextScene;
+		}
+
+		static Entity GetEntity(UUID entityUUID)
+		{
+			Entity entity = GetContextScene()->TryGetEntityWithUUID(entityUUID);
+			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+
+			return entity;
+		}
+
 #pragma region Application
 
 		void Application_Quit()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Application::Get().Quit();
 		}
 
 		void Application_GetSize(Math::vec2* outSize)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			*outSize = Application::Get().GetWindow().GetSize();
 		}
 
 		void Application_GetPosition(Math::vec2* outPosition)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			*outPosition = Application::Get().GetWindow().GetPosition();
 		}
 
 		bool Application_IsMaximized()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return Application::Get().GetWindow().IsMaximized();
 		}
@@ -162,8 +174,7 @@ namespace Vortex {
 
 		void DebugRenderer_BeginScene()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
 
@@ -179,8 +190,7 @@ namespace Vortex {
 
 		void DebugRenderer_SetClearColor(Math::vec3* color)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			RenderCommand::SetClearColor(*color);
 		}
@@ -192,8 +202,7 @@ namespace Vortex {
 
 		void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
 
 			if (!primaryCameraEntity)
@@ -230,8 +239,7 @@ namespace Vortex {
 
 		void DebugRenderer_Flush()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Renderer2D::EndScene();
 		}
@@ -242,10 +250,7 @@ namespace Vortex {
 
 		bool Scene_FindEntityByID(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return (bool)entity;
 		}
@@ -254,8 +259,7 @@ namespace Vortex {
 		{
 			char* managedString = mono_string_to_utf8(name);
 
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 			Entity entity = contextScene->FindEntityByName(managedString);
 			mono_free(managedString);
 
@@ -269,10 +273,8 @@ namespace Vortex {
 		{
 			char* managedString = mono_string_to_utf8(childName);
 
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			const auto& children = entity.Children();
 
@@ -293,8 +295,7 @@ namespace Vortex {
 		{
 			char* managedString = mono_string_to_utf8(name);
 
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 			Entity entity = contextScene->CreateEntity(managedString);
 			mono_free(managedString);
 
@@ -303,10 +304,8 @@ namespace Vortex {
 
 		uint64_t Scene_Instantiate(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity)
 			{
@@ -315,30 +314,31 @@ namespace Vortex {
 			}
 
 			Entity clonedEntity = contextScene->DuplicateEntity(entity);
-			UUID uuid = clonedEntity.GetUUID();
-			return uuid;
+			return clonedEntity.GetUUID();
+		}
+
+		uint64_t Scene_InstantiateAtWorldPosition(UUID entityUUID, Math::vec3* worldPosition)
+		{
+			return 0;
 		}
 
 		bool Scene_IsPaused()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return contextScene->IsPaused();
 		}
 
 		void Scene_Pause()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			contextScene->SetPaused(true);
 		}
 
 		void Scene_Resume()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			contextScene->SetPaused(false);
 		}
@@ -357,8 +357,7 @@ namespace Vortex {
 
 		void SceneManager_LoadScene(MonoString* sceneName)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			char* sceneNameCStr = mono_string_to_utf8(sceneName);
 			s_Data.SceneToBeLoaded = std::string(sceneNameCStr);
@@ -367,8 +366,7 @@ namespace Vortex {
 
 		MonoString* SceneManager_GetActiveScene()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return mono_string_new(mono_domain_get(), s_Data.ActiveSceneName.c_str());
 		}
@@ -379,10 +377,7 @@ namespace Vortex {
 
 		void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.EntityAddComponentFuncs.find(managedType) != s_Data.EntityAddComponentFuncs.end(), "Managed type was not found in Map!");
@@ -392,10 +387,7 @@ namespace Vortex {
 
 		bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.EntityHasComponentFuncs.find(managedType) != s_Data.EntityHasComponentFuncs.end(), "Managed type was not found in Map!");
@@ -405,10 +397,7 @@ namespace Vortex {
 
 		void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.EntityRemoveComponentFuncs.find(managedType) != s_Data.EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
@@ -418,49 +407,22 @@ namespace Vortex {
 
 		MonoArray* Entity_GetChildren(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const std::vector<UUID>& children = entity.Children();
 
 			MonoClass* coreEntityClass = ScriptEngine::GetCoreEntityClass()->GetMonoClass();
 			VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
 
-			MonoArray* result = mono_array_new(ScriptEngine::GetAppDomain(), coreEntityClass, children.size());
-			
-			for (uint32_t i = 0; i < children.size(); i++)
-			{
-				MonoClass* arrayClass = mono_object_get_class((MonoObject*)result);
-				MonoClass* elementClass = mono_class_get_element_class(arrayClass);
-				int32_t elementSize = mono_array_element_size(arrayClass);
-				MonoType* elementType = mono_class_get_type(elementClass);
-
-				if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
-				{
-					MonoObject* boxed = ScriptUtils::InstantiateClass(elementClass);
-					MonoMethod* entityConstructor = ScriptEngine::GetCoreEntityClass()->GetMethod(".ctor", 1);
-					ScriptEngine::ConstructEntityRuntime(children[i], boxed);
-					mono_array_setref(result, (uintptr_t)i, boxed);
-				}
-				/*else
-				{
-					char* dst = mono_array_addr_with_size(result, elementSize, i);
-					auto child = contextScene->TryGetEntityWithUUID(children[i]);
-					memcpy(dst, &child, elementSize);
-				}*/
-			}
-
-			return result;
+			ManagedArray managedArray(coreEntityClass, children.size());
+			managedArray.FillFromVector(children);
+			return managedArray.GetHandle();
 		}
 
 		uint64_t Entity_GetChild(UUID entityUUID, uint32_t index)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			const auto& children = entity.Children();
 			if (index > children.size() - 1)
@@ -478,30 +440,21 @@ namespace Vortex {
 
 		MonoString* Entity_GetTag(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return mono_string_new(mono_domain_get(), entity.GetName().c_str());
 		}
 
 		MonoString* Entity_GetMarker(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
 		}
 
 		void Entity_SetMarker(UUID entityUUID, MonoString* monoString)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			char* managedString = mono_string_to_utf8(monoString);
 			entity.GetComponent<TagComponent>().Marker = std::string(managedString);
@@ -510,12 +463,9 @@ namespace Vortex {
 
 		bool Entity_AddChild(UUID parentUUID, UUID childUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-			VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
-			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
+			Scene* contextScene = GetContextScene();
+			Entity parent = GetEntity(parentUUID);
+			Entity child = GetEntity(childUUID);
 
 			if (parent && child)
 			{
@@ -528,12 +478,9 @@ namespace Vortex {
 
 		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-			VX_CORE_ASSERT(parent, "Parent UUID was Invalid!");
-			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
+			Scene* contextScene = GetContextScene();
+			Entity parent = GetEntity(parentUUID);
+			Entity child = GetEntity(childUUID);
 
 			if (parent && child)
 			{
@@ -546,27 +493,21 @@ namespace Vortex {
 
 		MonoObject* Entity_GetScriptInstance(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 			return ScriptEngine::GetManagedInstance(entityUUID);
 		}
 
 		void Entity_Destroy(UUID entityUUID, bool excludeChildren)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			contextScene->DestroyEntity(entity, excludeChildren);
 		}
 
 		void Entity_SetActive(UUID entityUUID, bool isActive)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.SetActive(isActive);
 		}
@@ -577,30 +518,21 @@ namespace Vortex {
 
 		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outTranslation = entity.GetComponent<TransformComponent>().Translation;
 		}
 
 		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TransformComponent>().Translation = *translation;
 		}
 
 		void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRotation = entity.GetComponent<TransformComponent>().GetRotationEuler();
 
@@ -612,10 +544,7 @@ namespace Vortex {
 
 		void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			// Since we store rotation in radians we must convert to radians here
 			rotation->x = Math::Deg2Rad(rotation->x);
@@ -627,10 +556,7 @@ namespace Vortex {
 
 		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			TransformComponent& transform = entity.GetTransform();
 			transform.Translation = *translation;
@@ -639,50 +565,36 @@ namespace Vortex {
 
 		void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOrientation = entity.GetTransform().GetRotation();
 		}
 
 		void TransformComponent_SetRotationQuaternion(UUID entityUUID, Math::quaternion* orientation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetTransform().SetRotation(*orientation);
 		}
 
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outScale = entity.GetComponent<TransformComponent>().Scale;
 		}
 
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TransformComponent>().Scale = *scale;
 		}
 
 		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 			*outTranslation = worldSpaceTransform.Translation;
@@ -692,10 +604,8 @@ namespace Vortex {
 
 		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
@@ -706,10 +616,8 @@ namespace Vortex {
 
 		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
@@ -720,10 +628,8 @@ namespace Vortex {
 
 		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
@@ -734,10 +640,7 @@ namespace Vortex {
 
 		void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			TransformComponent& transform = entity.GetTransform();
 			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
@@ -749,12 +652,8 @@ namespace Vortex {
 
 		uint64_t TransformComponent_GetParent(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity child = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(child, "Invalid Child UUID!");
-
-			Entity parent = contextScene->TryGetEntityWithUUID(child.GetParentUUID());
+			Entity child = GetEntity(entityUUID);
+			Entity parent = GetEntity(child.GetParentUUID());
 
 			if (!parent)
 			{
@@ -767,23 +666,22 @@ namespace Vortex {
 
 		void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
-			VX_CORE_ASSERT(child, "Invalid Child UUID!");
-
-			Entity parent = contextScene->TryGetEntityWithUUID(parentUUID);
-			VX_CORE_ASSERT(parent, "Invalid Parent UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity child = GetEntity(childUUID);
+			Entity parent = GetEntity(parentUUID);
+			
+			if (!parent || !child)
+			{
+				return;
+			}
 
 			contextScene->ParentEntity(child, parent);
 		}
 
 		void TransformComponent_Unparent(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			contextScene->UnparentEntity(entity);
 		}
@@ -803,60 +701,42 @@ namespace Vortex {
 
 		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outPrimary = entity.GetComponent<CameraComponent>().Primary;
 		}
 
 		void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CameraComponent>().Primary = primary;
 		}
 
 		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return Math::Rad2Deg(entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOVRad());
 		}
 
 		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
 		}
 
 		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
 		}
 
 		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
 		}
@@ -867,10 +747,7 @@ namespace Vortex {
 
 		LightType LightSourceComponent_GetLightType(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -884,10 +761,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -901,10 +775,7 @@ namespace Vortex {
 
 		void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -918,10 +789,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -935,10 +803,7 @@ namespace Vortex {
 
 		float LightSourceComponent_GetIntensity(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -952,10 +817,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -969,10 +831,7 @@ namespace Vortex {
 
 		float LightSourceComponent_GetCutoff(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -986,10 +845,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1003,10 +859,7 @@ namespace Vortex {
 
 		float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1020,10 +873,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1037,10 +887,7 @@ namespace Vortex {
 
 		float LightSourceComponent_GetShadowBias(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1054,10 +901,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1071,10 +915,7 @@ namespace Vortex {
 
 		bool LightSourceComponent_GetCastShadows(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1088,10 +929,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1105,10 +943,7 @@ namespace Vortex {
 
 		bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1122,10 +957,7 @@ namespace Vortex {
 
 		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
@@ -1143,20 +975,14 @@ namespace Vortex {
 
 		MonoString* TextMeshComponent_GetTextString(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return mono_string_new(mono_domain_get(), entity.GetComponent<TextMeshComponent>().TextString.c_str());
 		}
 
 		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			char* textCStr = mono_string_to_utf8(textString);
 
@@ -1166,80 +992,56 @@ namespace Vortex {
 
 		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outColor = entity.GetComponent<TextMeshComponent>().Color;
 		}
 
 		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TextMeshComponent>().Color = *color;
 		}
 
 		float TextMeshComponent_GetLineSpacing(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<TextMeshComponent>().LineSpacing;
 		}
 
 		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TextMeshComponent>().LineSpacing = lineSpacing;
 		}
 
 		float TextMeshComponent_GetKerning(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<TextMeshComponent>().Kerning;
 		}
 
 		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TextMeshComponent>().Kerning = kerning;
 		}
 
 		float TextMeshComponent_GetMaxWidth(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<TextMeshComponent>().MaxWidth;
 		}
 
 		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
 		}
@@ -1250,20 +1052,14 @@ namespace Vortex {
 
 		bool AnimatorComponent_IsPlaying(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<AnimatorComponent>().Animator->IsPlaying();
 		}
 
 		void AnimatorComponent_Play(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			SharedRef<Animation> animation = entity.GetComponent<AnimationComponent>().Animation;
 
@@ -1289,20 +1085,14 @@ namespace Vortex {
 
 		MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<StaticMeshRendererComponent>().Type;
 		}
 
 		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (meshType != MeshType::Custom)
 			{
@@ -1318,10 +1108,7 @@ namespace Vortex {
 
 		void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1341,10 +1128,7 @@ namespace Vortex {
 
 		void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1364,10 +1148,7 @@ namespace Vortex {
 
 		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1389,10 +1170,7 @@ namespace Vortex {
 
 		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1412,10 +1190,7 @@ namespace Vortex {
 
 		float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1437,10 +1212,7 @@ namespace Vortex {
 
 		void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1460,10 +1232,7 @@ namespace Vortex {
 
 		float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1485,10 +1254,7 @@ namespace Vortex {
 
 		void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1508,10 +1274,7 @@ namespace Vortex {
 
 		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1531,10 +1294,7 @@ namespace Vortex {
 
 		void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1554,10 +1314,7 @@ namespace Vortex {
 
 		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1579,10 +1336,7 @@ namespace Vortex {
 
 		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1606,40 +1360,28 @@ namespace Vortex {
 
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
 		}
 
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
 		}
 
 		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
 		}
 
 		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
 
@@ -1650,10 +1392,7 @@ namespace Vortex {
 		{
 			char* texturePathCStr = mono_string_to_utf8(texturePathString);
 
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
 
@@ -1662,10 +1401,7 @@ namespace Vortex {
 
 		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
 		}
@@ -1676,60 +1412,42 @@ namespace Vortex {
 
 		void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outColor = entity.GetComponent<CircleRendererComponent>().Color;
 		}
 
 		void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CircleRendererComponent>().Color = *color;
 		}
 
 		void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
 		}
 
 		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
 		}
 
 		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
 		}
 
 		void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CircleRendererComponent>().Fade = fade;
 		}
@@ -1740,220 +1458,154 @@ namespace Vortex {
 
 		void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
 		}
 
 		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
 		}
 
 		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
 		}
 
 		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
 		}
 
 		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset;
 		}
 
 		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset = *offset;
 		}
 
 		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
 		}
 
 		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
 		}
 
 		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
 		}
 
 		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
 		}
 
 		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
 		}
 
 		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
 		}
 
 		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
 		}
 
 		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
 		}
 
 		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
 		}
 
 		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
 		}
 
 		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
 		}
 
 		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
 		}
 
 		void ParticleEmitterComponent_Start(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
 		}
 
 		void ParticleEmitterComponent_Stop(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
 		}
@@ -1964,30 +1616,21 @@ namespace Vortex {
 
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
 		}
 
 		void AudioSourceComponent_Play(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<AudioSourceComponent>().Source->Play();
 		}
 
 		void AudioSourceComponent_Stop(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<AudioSourceComponent>().Source->Stop();
 		}
@@ -1998,10 +1641,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2019,10 +1659,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2044,10 +1681,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2065,10 +1699,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2087,10 +1718,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2109,10 +1737,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2131,10 +1756,7 @@ namespace Vortex {
 
 		void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2160,20 +1782,14 @@ namespace Vortex {
 
 		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().Type;
 		}
 
 		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2188,140 +1804,98 @@ namespace Vortex {
 
 		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().CollisionDetection;
 		}
 
 		void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().CollisionDetection = collisionDetectionType;
 		}
 
 		float RigidBodyComponent_GetMass(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().Mass;
 		}
 
 		void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().Mass = mass;
 		}
 
 		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outVelocity = entity.GetComponent<RigidBodyComponent>().LinearVelocity;
 		}
 
 		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().LinearVelocity = *velocity;
 		}
 
 		float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().LinearDrag;
 		}
 
 		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().LinearDrag = drag;
 		}
 
 		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outVelocity = entity.GetComponent<RigidBodyComponent>().AngularVelocity;
 		}
 
 		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().AngularVelocity = *velocity;
 		}
 
 		float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().AngularDrag;
 		}
 
 		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().AngularDrag = drag;
 		}
 
 		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().DisableGravity;
 		}
 
 		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
 			rigidbody.DisableGravity = disabled;
@@ -2333,30 +1907,21 @@ namespace Vortex {
 
 		static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().IsKinematic;
 		}
 
 		static void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
 		}
 
 		static uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2371,10 +1936,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2405,10 +1967,7 @@ namespace Vortex {
 
 		static bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2425,10 +1984,7 @@ namespace Vortex {
 
 		static bool RigidBodyComponent_IsSleeping(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 			if (rb.Type != RigidBodyType::Dynamic)
@@ -2443,10 +1999,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_WakeUp(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
 
@@ -2462,10 +2015,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2481,10 +2031,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2500,10 +2047,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2519,10 +2063,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2538,10 +2079,7 @@ namespace Vortex {
 
 		static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2566,16 +2104,14 @@ namespace Vortex {
 
 		void Physics_GetSceneGravity(Math::vec3* outGravity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			*outGravity = Physics::GetPhysicsSceneGravity();
 		}
 
 		void Physics_SetSceneGravity(Math::vec3* gravity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics::SetPhysicsSceneGravity(*gravity);
 			Physics::WakeUpActors();
@@ -2583,32 +2119,28 @@ namespace Vortex {
 
 		uint32_t Physics_GetScenePositionIterations()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return Physics::GetPhysicsScenePositionIterations();
 		}
 
 		void Physics_SetScenePositionIterations(uint32_t positionIterations)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics::SetPhysicsScenePositionIterations(positionIterations);
 		}
 
 		uint32_t Physics_GetSceneVelocityIterations()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return Physics::GetPhysicsSceneVelocityIterations();
 		}
 
 		void Physics_SetSceneVelocityIterations(uint32_t velocityIterations)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics::SetPhysicsSceneVelocityIterations(velocityIterations);
 		}
@@ -2619,10 +2151,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2655,10 +2184,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2672,10 +2198,7 @@ namespace Vortex {
 
 		bool CharacterControllerComponent_IsGrounded(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2700,10 +2223,7 @@ namespace Vortex {
 
 		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2716,10 +2236,7 @@ namespace Vortex {
 
 		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2732,10 +2249,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2749,10 +2263,7 @@ namespace Vortex {
 
 		float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2765,10 +2276,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2782,10 +2290,7 @@ namespace Vortex {
 
 		float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2798,10 +2303,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2815,10 +2317,7 @@ namespace Vortex {
 
 		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2831,10 +2330,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2848,10 +2344,7 @@ namespace Vortex {
 
 		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2864,10 +2357,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2881,10 +2371,7 @@ namespace Vortex {
 
 		bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2897,10 +2384,7 @@ namespace Vortex {
 
 		void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
@@ -2917,10 +2401,7 @@ namespace Vortex {
 
 		uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -2934,10 +2415,8 @@ namespace Vortex {
 
 		void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -2966,10 +2445,7 @@ namespace Vortex {
 
 		float FixedJointComponent_GetBreakForce(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -2983,10 +2459,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3003,10 +2476,7 @@ namespace Vortex {
 
 		float FixedJointComponent_GetBreakTorque(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3020,10 +2490,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3040,10 +2507,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3061,10 +2525,7 @@ namespace Vortex {
 
 		bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3078,10 +2539,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3098,10 +2556,7 @@ namespace Vortex {
 
 		bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3115,10 +2570,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3135,10 +2587,7 @@ namespace Vortex {
 
 		bool FixedJointComponent_IsBroken(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3151,10 +2600,7 @@ namespace Vortex {
 
 		bool FixedJointComponent_GetIsBreakable(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3168,10 +2614,7 @@ namespace Vortex {
 
 		void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3185,10 +2628,7 @@ namespace Vortex {
 
 		void FixedJointComponent_Break(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID");
+			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
@@ -3205,60 +2645,42 @@ namespace Vortex {
 
 		void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outHalfSize = entity.GetComponent<BoxColliderComponent>().HalfSize;
 		}
 
 		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<BoxColliderComponent>().HalfSize = *halfSize;
 		}
 
 		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<BoxColliderComponent>().Offset;
 		}
 
 		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<BoxColliderComponent>().Offset = *offset;
 		}
 
 		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<BoxColliderComponent>().IsTrigger;
 		}
 
 		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<BoxColliderComponent>().IsTrigger = isTrigger;
 		}
@@ -3269,60 +2691,42 @@ namespace Vortex {
 
 		float SphereColliderComponent_GetRadius(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<SphereColliderComponent>().Radius;
 		}
 
 		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SphereColliderComponent>().Radius = radius;
 		}
 
 		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<SphereColliderComponent>().Offset;
 		}
 
 		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SphereColliderComponent>().Offset = *offset;
 		}
 
 		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<SphereColliderComponent>().IsTrigger;
 		}
 
 		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<SphereColliderComponent>().IsTrigger = isTrigger;
 		}
@@ -3333,80 +2737,56 @@ namespace Vortex {
 
 		float CapsuleColliderComponent_GetRadius(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<CapsuleColliderComponent>().Radius;
 		}
 
 		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CapsuleColliderComponent>().Radius = radius;
 		}
 
 		float CapsuleColliderComponent_GetHeight(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<CapsuleColliderComponent>().Height;
 		}
 
 		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CapsuleColliderComponent>().Height = height;
 		}
 
 		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<CapsuleColliderComponent>().Offset;
 		}
 
 		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CapsuleColliderComponent>().Offset = *offset;
 		}
 
 		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
 		}
 
 		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CapsuleColliderComponent>().IsTrigger = isTrigger;
 		}
@@ -3417,10 +2797,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
@@ -3431,10 +2808,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
@@ -3444,10 +2818,7 @@ namespace Vortex {
 
 		float RigidBody2DComponent_GetAngle(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
@@ -3457,10 +2828,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
@@ -3470,20 +2838,14 @@ namespace Vortex {
 
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBody2DComponent>().Type;
 		}
 
 		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			RigidBody2DComponent& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
@@ -3498,10 +2860,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3510,10 +2869,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3522,10 +2878,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3534,10 +2887,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3546,70 +2896,49 @@ namespace Vortex {
 
 		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
 		}
 
 		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
 		}
 
 		float RigidBody2DComponent_GetDrag(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBody2DComponent>().Drag;
 		}
 
 		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBody2DComponent>().Drag = drag;
 		}
 
 		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
 		}
 
 		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
 		}
 
 		float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3619,10 +2948,7 @@ namespace Vortex {
 
 		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rb2d.RuntimeBody;
@@ -3637,56 +2963,49 @@ namespace Vortex {
 
 		uint64_t Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RaycastHit2D* outResult, bool drawDebugLine)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			
 
 			return Physics2D::Raycast(*start, *end, outResult, drawDebugLine);
 		}
 
 		void Physics2D_GetWorldGravity(Math::vec2* outGravity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			*outGravity = Physics2D::GetPhysicsWorldGravity();
 		}
 
 		void Physics2D_SetWorldGravity(Math::vec2* gravity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics2D::SetPhysicsWorldGravitty(*gravity);
 		}
 
 		uint32_t Physics2D_GetWorldPositionIterations()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return Physics2D::GetPhysicsWorldPositionIterations();
 		}
 
 		void Physics2D_SetWorldPositionIterations(uint32_t positionIterations)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics2D::SetPhysicsWorldPositionIterations(positionIterations);
 		}
 
 		uint32_t Physics2D_GetWorldVelocityIterations()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			return Physics2D::GetPhysicsWorldVelocityIterations();
 		}
 
 		void Physics2D_SetWorldVelocityIterations(uint32_t velocityIterations)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
+			Scene* contextScene = GetContextScene();
 
 			Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations);
 		}
@@ -3697,124 +3016,93 @@ namespace Vortex {
 
 		void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
 		}
 
 		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
 		}
 
 		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
 		}
 
 		void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<BoxCollider2DComponent>().Size = *size;
 		}
 
 		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
 		}
 
 		void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			fixture->SetDensity(density);
+
 			// Since we changed the density we must recalculate the mass data according to box2d
-			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
+			fixture->GetBody()->ResetMassData();
 		}
 
 		void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
 		}
 
 		void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
+			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			fixture->SetFriction(friction);
 		}
 
 		void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
 		}
 
 		void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
+			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			fixture->SetRestitution(restitution);
 		}
 
 		void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
 		}
 
 		void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture)->SetRestitutionThreshold(restitutionThreshold);
+			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			fixture->SetRestitutionThreshold(restitutionThreshold);
 		}
 
 #pragma endregion
@@ -3823,122 +3111,88 @@ namespace Vortex {
 
 		void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
 		}
 
 		void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
 		}
 
 		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
 		}
 
 		void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
 		}
 
 		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
 		}
 
 		void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetDensity(density);
+			b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
+			fixture->SetDensity(density);
+
 			// Since we changed the density we must recalculate the mass data according to box2d
-			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->GetBody()->ResetMassData();
+			fixture->GetBody()->ResetMassData();
 		}
 
 		void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
 		}
 
 		void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
 		}
 
 		void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
 		}
 
 		void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
 		}
 
 		void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
 		}
 
 		void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Entity entity = GetEntity(entityUUID);
 
 			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
 		}
@@ -4165,17 +3419,11 @@ namespace Vortex {
 
 		CursorMode Input_GetCursorMode()
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
 			return Input::GetCursorMode();
 		}
 
 		void Input_SetCursorMode(CursorMode cursorMode)
 		{
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
 			Input::SetCursorMode(cursorMode);
 		}
 

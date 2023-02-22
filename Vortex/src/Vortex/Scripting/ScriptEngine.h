@@ -152,7 +152,6 @@ namespace Vortex {
 		SharedRef<ScriptClass> m_ScriptClass;
 
 		MonoObject* m_Instance = nullptr;
-		MonoMethod* m_Constructor = nullptr;
 
 		MonoMethod* m_OnCreateFunc = nullptr;
 		MonoMethod* m_OnUpdateFunc = nullptr;
