@@ -41,6 +41,7 @@ namespace Vortex {
 		~AudioSource();
 
 		void Play();
+		void PlayOneShot();
 		void Pause();
 		void Restart();
 		void Stop();

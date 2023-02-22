@@ -19,7 +19,7 @@ namespace Vortex {
 
 	class RaycastCallback2D;
 
-	struct RaycastHit2D
+	struct VORTEX_API RaycastHit2D
 	{
 		Math::vec2 Point;
 		Math::vec2 Normal;
@@ -29,12 +29,12 @@ namespace Vortex {
 		RaycastHit2D(const RaycastCallback2D* raycastInfo, Scene* contextScene);
 	};
 
-	struct PhysicsBody2DData
+	struct VORTEX_API PhysicsBody2DData
 	{
 		UUID EntityUUID;
 	};
 
-	class Physics2D
+	class VORTEX_API Physics2D
 	{
 	public:
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);

@@ -1539,7 +1539,16 @@ namespace Vortex {
 			Gui::BeginDisabled(component.Source == nullptr);
 
 			if (Gui::Button("Play"))
-				component.Source->Play();
+			{
+				if (component.Source->GetProperties().PlayOneShot)
+				{
+					component.Source->PlayOneShot();
+				}
+				else
+				{
+					component.Source->Play();
+				}
+			}
 
 			Gui::SameLine();
 

@@ -5,7 +5,7 @@
 
 #include "Vortex/Core/Input.h"
 #include "Vortex/Events/KeyEvent.h"
-#include "Vortex/Audio/AudioEngine.h"
+#include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Scripting/ScriptEngine.h"
@@ -51,7 +51,7 @@ namespace Vortex {
 
 		Renderer::Init();
 		Physics::Init();
-		AudioEngine::Init();
+		AudioSystem::Init();
 		Font::Init();
 		Random::Init();
 
@@ -67,7 +67,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
-		AudioEngine::Shutdown();
+		AudioSystem::Shutdown();
 		Physics::Shutdown();
 		Renderer::Shutdown();
 	}

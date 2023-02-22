@@ -1,6 +1,9 @@
 #pragma once
 
-// Forward declarations
+#include "Vortex/Core/Math.h"
+
+#include <string>
+
 struct ma_engine;
 struct ma_sound;
 
@@ -9,12 +12,6 @@ namespace Vortex {
 	class AudioEngine
 	{
 	public:
-		AudioEngine() = delete;
-		AudioEngine(const AudioEngine&) = delete;
-
-		static void Init();
-		static void Shutdown();
-
 		static void InitEngine(ma_engine* engine);
 		static void ShutdownEngine(ma_engine* engine);
 

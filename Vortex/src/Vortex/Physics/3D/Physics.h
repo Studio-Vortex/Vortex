@@ -26,18 +26,18 @@ namespace physx {
 
 namespace Vortex {
 
-	struct PhysicsBodyData
+	struct VORTEX_API PhysicsBodyData
 	{
 		UUID EntityUUID = 0;
 		Scene* ContextScene = nullptr;
 	};
 
-	struct ConstrainedJointData
+	struct VORTEX_API ConstrainedJointData
 	{
 		UUID EntityUUID = 0;
 	};
 
-	struct RaycastHit
+	struct VORTEX_API RaycastHit
 	{
 		uint64_t EntityID;
 		Math::vec3 Position;
@@ -47,17 +47,17 @@ namespace Vortex {
 
 #define OVERLAP_MAX_COLLIDERS 50
 
-	struct OverlapHit
+	struct VORTEX_API OverlapHit
 	{
 		uint64_t EntityID;
 	};
 
-	struct Collision
+	struct VORTEX_API Collision
 	{
 		uint64_t EntityID;
 	};
 
-	class Physics
+	class VORTEX_API Physics
 	{
 	public:
 		static void OnSimulationStart(Scene* contextScene);

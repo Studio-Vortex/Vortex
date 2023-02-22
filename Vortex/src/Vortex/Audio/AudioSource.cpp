@@ -18,13 +18,6 @@ namespace Vortex {
 
 	void AudioSource::Play()
 	{
-		if (m_Properties.PlayOneShot)
-		{
-			AudioEngine::StartEngine(&m_Engine);
-			AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
-			return;
-		}
-
 		if (!m_Initialized)
 		{
 			Reload();
@@ -32,6 +25,14 @@ namespace Vortex {
 
 		AudioEngine::StartEngine(&m_Engine);
 		AudioEngine::PlayFromSound(&m_Sound);
+	}
+
+	void AudioSource::PlayOneShot()
+	{
+		VX_CORE_ASSERT(!m_Path.empty(), "Cannot play empty file!");
+
+		AudioEngine::StartEngine(&m_Engine);
+		AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
 	}
 
 	void AudioSource::Pause()
@@ -78,56 +79,67 @@ namespace Vortex {
 	void AudioSource::SetPosition(const Math::vec3& position)
 	{
 		AudioEngine::SetPosition(&m_Sound, position);
+		m_Properties.Position = position;
 	}
 
 	void AudioSource::SetDirection(const Math::vec3& direction)
 	{
 		AudioEngine::SetDirection(&m_Sound, direction);
+		m_Properties.Direction = direction;
 	}
 
 	void AudioSource::SetVelocity(const Math::vec3& velocity)
 	{
 		AudioEngine::SetVeloctiy(&m_Sound, velocity);
+		m_Properties.Velocity = velocity;
 	}
 
 	void AudioSource::SetCone(const SoundProperties::AudioCone& cone)
 	{
 		AudioEngine::SetCone(&m_Sound, cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
+		m_Properties.Cone = cone;
 	}
 
 	void AudioSource::SetMinDistance(float minDistance)
 	{
 		AudioEngine::SetMinDistance(&m_Sound, minDistance);
+		m_Properties.MinDistance = minDistance;
 	}
 
 	void AudioSource::SetMaxDistance(float maxDistance)
 	{
 		AudioEngine::SetMaxDistance(&m_Sound, maxDistance);
+		m_Properties.MaxDistance = maxDistance;
 	}
 
 	void AudioSource::SetPitch(float pitch)
 	{
 		AudioEngine::SetPitch(&m_Sound, pitch);
+		m_Properties.Pitch = pitch;
 	}
 
 	void AudioSource::SetDopplerFactor(float dopplerFactor)
 	{
 		AudioEngine::SetDopplerFactor(&m_Sound, dopplerFactor);
+		m_Properties.DopplerFactor = dopplerFactor;
 	}
 
 	void AudioSource::SetVolume(float volume)
 	{
 		AudioEngine::SetVolume(&m_Sound, volume);
+		m_Properties.Volume = volume;
 	}
 
 	void AudioSource::SetSpacialized(bool spacialized)
 	{
 		AudioEngine::SetSpacialized(&m_Sound, spacialized);
+		m_Properties.Spacialized = spacialized;
 	}
 
 	void AudioSource::SetLoop(bool loop)
 	{
 		AudioEngine::SetLoop(&m_Sound, loop);
+		m_Properties.Loop = loop;
 	}
 
     void AudioSource::SetPlayOnStart(bool playOnStart)
@@ -148,6 +160,7 @@ namespace Vortex {
 
 	void AudioSource::SetProperties(const SoundProperties& soundProps)
     {
+		m_Properties = soundProps;
 		SetDirection(soundProps.Direction);
 		SetVelocity(soundProps.Velocity);
 		SetCone(soundProps.Cone);
