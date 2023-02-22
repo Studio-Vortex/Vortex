@@ -29,6 +29,11 @@ namespace Vortex {
 
 	void AudioSource::PlayOneShot()
 	{
+		if (!m_Initialized)
+		{
+			Reload();
+		}
+
 		VX_CORE_ASSERT(!m_Path.empty(), "Cannot play empty file!");
 
 		AudioEngine::StartEngine(&m_Engine);

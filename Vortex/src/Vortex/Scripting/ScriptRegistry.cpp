@@ -1883,6 +1883,20 @@ namespace Vortex {
 			asc.Source->Play();
 		}
 
+		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->PlayOneShot();
+		}
+
 		void AudioSourceComponent_Restart(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -2252,34 +2266,6 @@ namespace Vortex {
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			asc.Source->SetPlayOnStart(playOnStart);
-		}
-
-		bool AudioSourceComponent_GetPlayOneShot(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
-				return false;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().PlayOneShot;
-		}
-
-		void AudioSourceComponent_SetPlayOneShot(UUID entityUUID, bool playOneShot)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetPlayOneShot(playOneShot);
 		}
 
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
@@ -4484,6 +4470,7 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Restart);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPosition);
@@ -4510,8 +4497,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetVolume);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPlayOnStart);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPlayOnStart);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPlayOneShot);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPlayOneShot);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsSpacialized);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetIsSpacialized);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);

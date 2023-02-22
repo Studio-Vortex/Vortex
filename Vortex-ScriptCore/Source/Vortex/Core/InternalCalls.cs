@@ -523,6 +523,9 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_Play(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_PlayOneShot(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_Restart(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -599,12 +602,6 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_SetPlayOnStart(ulong entityID, bool playOnStart);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool AudioSourceComponent_GetPlayOneShot(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_SetPlayOneShot(ulong entityID, bool playOneShot);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool AudioSourceComponent_GetIsSpacialized(ulong entityID);

@@ -416,6 +416,7 @@
 	public class AudioSource : Component
 	{
 		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
+
 		public Vector3 Position
 		{
 			get
@@ -503,12 +504,6 @@
 			set => InternalCalls.AudioSourceComponent_SetPlayOnStart(Entity.ID, value);
 		}
 
-		public bool PlayOneShot
-		{
-			get => InternalCalls.AudioSourceComponent_GetPlayOneShot(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPlayOneShot(Entity.ID, value);
-		}
-
 		public bool IsSpacialized
 		{
 			get => InternalCalls.AudioSourceComponent_GetIsSpacialized(Entity.ID);
@@ -522,6 +517,7 @@
 		}
 
 		public void Play() => InternalCalls.AudioSourceComponent_Play(Entity.ID);
+		public void PlayOneShot() => InternalCalls.AudioSourceComponent_PlayOneShot(Entity.ID);
 		public void Restart() => InternalCalls.AudioSourceComponent_Restart(Entity.ID);
 		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 	}

@@ -268,6 +268,7 @@ namespace Vortex {
 
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
 		void AudioSourceComponent_Play(UUID entityUUID);
+		void AudioSourceComponent_PlayOneShot(UUID entityUUID);
 		void AudioSourceComponent_Restart(UUID entityUUID);
 		void AudioSourceComponent_Stop(UUID entityUUID);
 		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition);
@@ -294,8 +295,6 @@ namespace Vortex {
 		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume);
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID);
 		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart);
-		bool AudioSourceComponent_GetPlayOneShot(UUID entityUUID);
-		void AudioSourceComponent_SetPlayOneShot(UUID entityUUID, bool playOneShot);
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID);
 		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized);
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID);
