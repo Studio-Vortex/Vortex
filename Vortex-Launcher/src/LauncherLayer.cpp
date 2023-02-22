@@ -12,7 +12,7 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps{};
-		framebufferProps.Attachments = { FramebufferTextureFormat::RGBA16F, FramebufferTextureFormat::Depth };
+		framebufferProps.Attachments = { ImageFormat::RGBA16F, ImageFormat::Depth };
 		framebufferProps.Width = appProps.WindowWidth;
 		framebufferProps.Height = appProps.WindowHeight;
 
@@ -20,7 +20,11 @@ namespace Vortex {
 
 		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
-		m_VortexLogoIcon = Texture2D::Create("Resources/Images/VortexLogo.png");
+		ImageProperties imageProps;
+		imageProps.Filepath = "Resources/Images/VortexLogo.png";
+		imageProps.WrapMode = ImageWrap::Repeat;
+
+		m_VortexLogoIcon = Texture2D::Create(imageProps);
 
 		m_Properties.EditorPath = Application::Get().GetEditorBinaryPath();
 		m_Properties.WorkingDirectory = Application::Get().GetProperties().WorkingDirectory;

@@ -26,10 +26,10 @@ namespace Vortex {
 		FramebufferProperties framebufferProps;
 		
 		framebufferProps.Attachments = {
-			FramebufferTextureFormat::RGBA16F,
-			FramebufferTextureFormat::RED_INTEGER,
-			FramebufferTextureFormat::RGBA16F,
-			FramebufferTextureFormat::Depth
+			ImageFormat::RGBA16F,
+			ImageFormat::RED_INTEGER,
+			ImageFormat::RGBA16F,
+			ImageFormat::Depth
 		};
 
 		framebufferProps.Width = 1600;
@@ -649,11 +649,19 @@ namespace Vortex {
 				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga" || filePath.extension().string() == ".psd")
 				{
 					std::filesystem::path texturePath = filePath;
-					SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+
+					ImageProperties imageProps;
+					imageProps.Filepath = texturePath.string();
+					imageProps.WrapMode = ImageWrap::Repeat;
+
+					SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+
 					if (texture->IsLoaded())
 					{
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
+						{
 							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
+						}
 						else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 						{
 							SharedRef<StaticMesh> staticMesh = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
@@ -1916,6 +1924,26 @@ namespace Vortex {
 
 	void EditorLayer::SaveProject()
 	{
+		const std::string sceneImagePath = Project::GetAssetDirectory().string() + "/sceneImage.png";
+		const uint32_t nrChannels = 3;
+		uint32_t stride = nrChannels * (uint32_t)m_ViewportSize.x;
+		// make sure alignment is 4 bytes
+		stride += (stride % 4) ? (4 - stride % 4) : 0;
+		const uint32_t bufferSize = stride * (uint32_t)m_ViewportSize.y;
+		std::vector<char> image(bufferSize);
+		m_Framebuffer->ReadAttachmentToBuffer(0, image.data());
+
+		ImageProperties imageProps;
+		imageProps.Filepath = sceneImagePath;
+		imageProps.Width = (uint32_t)m_ViewportSize.x;
+		imageProps.Height = (uint32_t)m_ViewportSize.y;
+		imageProps.Channels = nrChannels;
+		imageProps.Buffer = (void*)image.data();
+		imageProps.Stride = stride;
+
+		SharedRef<Texture2D> sceneTexture = Texture2D::Create(imageProps);
+		sceneTexture->SaveToFile();
+
 		const auto& projectProps = Project::GetActive()->GetProperties();
 		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
 		const auto& projectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);

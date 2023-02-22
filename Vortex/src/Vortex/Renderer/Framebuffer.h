@@ -1,32 +1,17 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Renderer/Image.h"
 
 namespace Vortex {
-
-	enum class VORTEX_API FramebufferTextureFormat
-	{
-		None = 0,
-
-		// Color
-		RGBA8,
-		RGBA16F,
-		RED_INTEGER,
-
-		// Depth/stencil
-		DEPTH24STENCIL8,
-
-		// Defaults
-		Depth = DEPTH24STENCIL8,
-	};
 
 	struct VORTEX_API FramebufferTextureProperties
 	{
 		FramebufferTextureProperties() = default;
-		FramebufferTextureProperties(FramebufferTextureFormat format)
+		FramebufferTextureProperties(ImageFormat format)
 			: TextureFormat(format) { }
 
-		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
+		ImageFormat TextureFormat = ImageFormat::None;
 		// TODO: filtering/wrap
 	};
 
@@ -60,6 +45,7 @@ namespace Vortex {
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) const = 0;
+		virtual void ReadAttachmentToBuffer(uint32_t attachmentIndex, char* outBuffer) const = 0;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, int clearValue) const = 0;
 		virtual void ClearDepthAttachment() const = 0;

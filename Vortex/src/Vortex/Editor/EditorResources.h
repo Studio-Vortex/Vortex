@@ -57,6 +57,8 @@ namespace Vortex {
 		inline static SharedRef<Texture2D> CodeFileIcon = nullptr;
 		inline static SharedRef<Texture2D> SceneIcon = nullptr;
 		inline static SharedRef<Texture2D> FileIcon = nullptr;
+
+		static SharedRef<Texture2D> CreateEditorImage(const std::string& filepath);
 	};
 
 }

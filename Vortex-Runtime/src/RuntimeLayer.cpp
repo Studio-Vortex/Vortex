@@ -18,10 +18,10 @@ namespace Vortex {
 
 		FramebufferProperties framebufferProps{};
 		framebufferProps.Attachments = {
-			FramebufferTextureFormat::RGBA16F,
-			FramebufferTextureFormat::RED_INTEGER,
-			FramebufferTextureFormat::RGBA16F,
-			FramebufferTextureFormat::Depth
+			ImageFormat::RGBA16F,
+			ImageFormat::RED_INTEGER,
+			ImageFormat::RGBA16F,
+			ImageFormat::Depth
 		};
 		framebufferProps.Width = appProps.WindowWidth;
 		framebufferProps.Height = appProps.WindowHeight;

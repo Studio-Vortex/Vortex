@@ -1378,12 +1378,20 @@ namespace Vortex {
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 						{
-							SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
+							ImageProperties imageProps;
+							imageProps.Filepath = texturePath.string();
+							imageProps.WrapMode = ImageWrap::Repeat;
+
+							SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
 
 							if (texture->IsLoaded())
+							{
 								component.Texture = texture;
+							}
 							else
+							{
 								VX_CONSOLE_LOG_WARN("Could not load texture {}", texturePath.filename().string());
+							}
 						}
 						else
 							VX_CONSOLE_LOG_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());

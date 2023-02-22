@@ -143,10 +143,16 @@ namespace Vortex {
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 							{
-								SharedRef<Texture2D> newTexture = Texture2D::Create(texturePath.string());
+								ImageProperties imageProps;
+								imageProps.Filepath = texturePath.string();
+								imageProps.WrapMode = ImageWrap::Repeat;
+
+								SharedRef<Texture2D> newTexture = Texture2D::Create(imageProps);
 
 								if (newTexture->IsLoaded())
+								{
 									SetMaterialTexture(material, newTexture, i);
+								}
 								else
 								{
 									VX_WARN("Could not load texture {}", texturePath.filename().string());
@@ -164,17 +170,25 @@ namespace Vortex {
 					if (hovered && leftMouseButtonClicked)
 					{
 						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.tga;*.psd)\0*.png;*.jpg;*.tga;*.psd\0");
+						
 						if (!filepath.empty())
 						{
 							std::string projectDir = Project::GetProjectDirectory().string();
 							std::string relativePath = FileSystem::Relative(filepath, projectDir).string();
-							SetMaterialTexture(material, Texture2D::Create(relativePath), i);
+							
+							ImageProperties imageProps;
+							imageProps.Filepath = relativePath;
+							imageProps.WrapMode = ImageWrap::Repeat;
+
+							SetMaterialTexture(material, Texture2D::Create(imageProps), i);
 						}
 					}
 
 					// right click for utilities
 					if (hovered && rightMouseButtonClicked)
+					{
 						Gui::OpenPopup("MaterialUtility");
+					}
 					if (texture && texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
 					{
 						std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);

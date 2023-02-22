@@ -116,14 +116,24 @@ namespace Vortex {
 		header.Height = bitmap.height;
 		CacheFontAtlas(fontName, fontSize, header, bitmap.pixels);
 
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		ImageProperties imageProps;
+		imageProps.Width = header.Width;
+		imageProps.Height = header.Height;
+		imageProps.TextureFormat = ImageFormat::RGBA32F;
+
+		SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(bitmap.pixels, header.Width * header.Height * 4);
 		return texture;
 	}
 
 	static SharedRef<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
 	{
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		ImageProperties imageProps;
+		imageProps.Width = header.Width;
+		imageProps.Height = header.Height;
+		imageProps.TextureFormat = ImageFormat::RGBA32F;
+
+		SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(pixels, header.Width * header.Height * 4);
 		return texture;
 	}

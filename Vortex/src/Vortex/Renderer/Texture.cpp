@@ -11,13 +11,13 @@
 */
 
 namespace Vortex {
-    
-	SharedRef<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, bool rgba32f)
+
+    SharedRef<Texture2D> Texture2D::Create(const ImageProperties& imageProps)
     {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(width, height, rgba32f);
+			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(imageProps);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -27,21 +27,5 @@ namespace Vortex {
 		VX_CORE_ASSERT(false, "Unknown Renderer API!");
 		return nullptr;
     }
-
-    SharedRef<Texture2D> Texture2D::Create(const std::string& path, TextureWrap wrapMode, bool flipVertical)
-	{
-		switch (Renderer::GetGraphicsAPI())
-		{
-			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(path, wrapMode, flipVertical);
-#ifdef VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Direct3D: return nullptr;
-#endif // VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Vulkan:   return nullptr;
-		}
-
-		VX_CORE_ASSERT(false, "Unknown Renderer API!");
-		return nullptr;
-	}
 	
 }

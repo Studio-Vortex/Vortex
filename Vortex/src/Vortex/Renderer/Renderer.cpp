@@ -88,7 +88,11 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("BloomFinalComposite", BLOOM_FINAL_COMPOSITE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
-		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
+		ImageProperties brdfImageProps;
+		brdfImageProps.Filepath = BRDF_LUT_TEXTURE_PATH;
+		brdfImageProps.WrapMode = ImageWrap::Clamp;
+
+		s_Data.BRDF_LUT = Texture2D::Create(brdfImageProps);
 
 		s_Data.SkyboxMesh = StaticMesh::Create(MeshType::Cube);
 

@@ -240,10 +240,19 @@ public class Untitled : Entity
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 				{
+					ImageProperties imageProps;
+					imageProps.Filepath = currentPath.string();
+
 					if (extension == ".hdr")
-						m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string(), TextureWrap::Clamp);
+					{
+						imageProps.WrapMode = ImageWrap::Clamp;
+					}
 					else
-						m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
+					{
+						imageProps.WrapMode = ImageWrap::Repeat;
+					}
+
+					m_TextureMap[currentPath.string()] = Texture2D::Create(imageProps);
 				}
 
 				icon = m_TextureMap[currentPath.string()];
@@ -464,10 +473,19 @@ public class Untitled : Entity
 				{
 					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					{
+						ImageProperties imageProps;
+						imageProps.Filepath = currentPath.string();
+
 						if (extension == ".hdr")
-							m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string(), TextureWrap::Clamp);
+						{
+							imageProps.WrapMode = ImageWrap::Clamp;
+						}
 						else
-							m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
+						{
+							imageProps.WrapMode = ImageWrap::Repeat;
+						}
+
+						m_TextureMap[currentPath.string()] = Texture2D::Create(imageProps);
 					}
 
 					icon = m_TextureMap[currentPath.string()];

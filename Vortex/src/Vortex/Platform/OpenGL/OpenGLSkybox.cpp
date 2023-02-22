@@ -71,7 +71,10 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_HDREnvironmentMap = Texture2D::Create(filepath, TextureWrap::Clamp);
+		ImageProperties hdrImageProps;
+		hdrImageProps.Filepath = filepath;
+		hdrImageProps.WrapMode = ImageWrap::Clamp;
+		m_HDREnvironmentMap = Texture2D::Create(hdrImageProps);
 	}
 
 	void OpenGLSkybox::LoadSkybox(const std::string& filepath)

@@ -34,6 +34,7 @@ IncludeDir["msdfgen"] = "Vortex/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "Vortex/vendor/PhysX/include"
 IncludeDir["spdlog"] = "Vortex/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Vortex/vendor/stb_image"
+IncludeDir["stb_image_write"] = "Vortex/vendor/stb_image_write"
 IncludeDir["yaml_cpp"] = "Vortex/vendor/yaml-cpp/include"
 
 LibraryDir = {}
@@ -92,6 +93,8 @@ project "Vortex"
 
 		"%{prj.name}/vendor/stb_image/**.h",
 		"%{prj.name}/vendor/stb_image/**.cpp",
+		"%{prj.name}/vendor/stb_image_write/**.h",
+		"%{prj.name}/vendor/stb_image_write/**.cpp",
 
 		"%{prj.name}/vendor/miniaudio/miniaudio/miniaudio.h",
 
@@ -129,6 +132,7 @@ project "Vortex"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.stb_image_write}",
 		"%{IncludeDir.yaml_cpp}",
 	}
 

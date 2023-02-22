@@ -5,49 +5,58 @@ namespace Vortex {
 
 	void EditorResources::Init()
 	{
-		SearchIcon = Texture2D::Create("Resources/Icons/General/Search.png");
-		ClearIcon = Texture2D::Create("Resources/Icons/General/Clear.png");
+		SearchIcon = CreateEditorImage("Resources/Icons/General/Search.png");
+		ClearIcon = CreateEditorImage("Resources/Icons/General/Clear.png");
 
-		PlayIcon = Texture2D::Create("Resources/Icons/PlayButton.png");
-		PauseIcon = Texture2D::Create("Resources/Icons/PauseButton.png");
-		StopIcon = Texture2D::Create("Resources/Icons/StopButton.png");
-		SimulateIcon = Texture2D::Create("Resources/Icons/SimulateButton.png");
-		StepIcon = Texture2D::Create("Resources/Icons/StepButton.png");
+		PlayIcon = CreateEditorImage("Resources/Icons/PlayButton.png");
+		PauseIcon = CreateEditorImage("Resources/Icons/PauseButton.png");
+		StopIcon = CreateEditorImage("Resources/Icons/StopButton.png");
+		SimulateIcon = CreateEditorImage("Resources/Icons/SimulateButton.png");
+		StepIcon = CreateEditorImage("Resources/Icons/StepButton.png");
 
-		LocalModeIcon = Texture2D::Create("Resources/Icons/Scene/LocalMode.png");
-		WorldModeIcon = Texture2D::Create("Resources/Icons/Scene/WorldMode.png");
-		SelectToolIcon = Texture2D::Create("Resources/Icons/Scene/SelectTool.png");
-		TranslateToolIcon = Texture2D::Create("Resources/Icons/Scene/TranslateTool.png");
-		RotateToolIcon = Texture2D::Create("Resources/Icons/Scene/RotateTool.png");
-		ScaleToolIcon = Texture2D::Create("Resources/Icons/Scene/ScaleTool.png");
+		LocalModeIcon = CreateEditorImage("Resources/Icons/Scene/LocalMode.png");
+		WorldModeIcon = CreateEditorImage("Resources/Icons/Scene/WorldMode.png");
+		SelectToolIcon = CreateEditorImage("Resources/Icons/Scene/SelectTool.png");
+		TranslateToolIcon = CreateEditorImage("Resources/Icons/Scene/TranslateTool.png");
+		RotateToolIcon = CreateEditorImage("Resources/Icons/Scene/RotateTool.png");
+		ScaleToolIcon = CreateEditorImage("Resources/Icons/Scene/ScaleTool.png");
 
-		ShowGridIcon = Texture2D::Create("Resources/Icons/Scene/GridIcon.png");
-		MaximizeOnPlayIcon = Texture2D::Create("Resources/Icons/Scene/MaximizeIcon.png");
-		TopDownViewIcon = Texture2D::Create("Resources/Icons/Scene/TopDownCameraIcon.png");
-		TwoDViewIcon = Texture2D::Create("Resources/Icons/Scene/2DViewIcon.png");
-		PhysicsCollidersIcon = Texture2D::Create("Resources/Icons/Scene/PhysicsCollidersIcon.png");
-		BoundingBoxesIcon = Texture2D::Create("Resources/Icons/Scene/BoundingBoxIcon.png");
-		DisplaySceneIconsIcon = Texture2D::Create("Resources/Icons/Scene/SceneIconsIcon.png");
-		MuteAudioSourcesIcons = Texture2D::Create("Resources/Icons/Scene/MuteAudioIcon.png");
+		ShowGridIcon = CreateEditorImage("Resources/Icons/Scene/GridIcon.png");
+		MaximizeOnPlayIcon = CreateEditorImage("Resources/Icons/Scene/MaximizeIcon.png");
+		TopDownViewIcon = CreateEditorImage("Resources/Icons/Scene/TopDownCameraIcon.png");
+		TwoDViewIcon = CreateEditorImage("Resources/Icons/Scene/2DViewIcon.png");
+		PhysicsCollidersIcon = CreateEditorImage("Resources/Icons/Scene/PhysicsCollidersIcon.png");
+		BoundingBoxesIcon = CreateEditorImage("Resources/Icons/Scene/BoundingBoxIcon.png");
+		DisplaySceneIconsIcon = CreateEditorImage("Resources/Icons/Scene/SceneIconsIcon.png");
+		MuteAudioSourcesIcons = CreateEditorImage("Resources/Icons/Scene/MuteAudioIcon.png");
 
-		CameraIcon = Texture2D::Create("Resources/Icons/Scene/CameraIcon.png");
-		PointLightIcon = Texture2D::Create("Resources/Icons/Scene/PointLight.png");
-		SpotLightIcon = Texture2D::Create("Resources/Icons/Scene/SpotLight.png");
-		SkyLightIcon = Texture2D::Create("Resources/Icons/Scene/SkyLightIcon.png");
-		AudioSourceIcon = Texture2D::Create("Resources/Icons/Scene/AudioSourceIcon.png");
+		CameraIcon = CreateEditorImage("Resources/Icons/Scene/CameraIcon.png");
+		PointLightIcon = CreateEditorImage("Resources/Icons/Scene/PointLight.png");
+		SpotLightIcon = CreateEditorImage("Resources/Icons/Scene/SpotLight.png");
+		SkyLightIcon = CreateEditorImage("Resources/Icons/Scene/SkyLightIcon.png");
+		AudioSourceIcon = CreateEditorImage("Resources/Icons/Scene/AudioSourceIcon.png");
 
-		CheckerboardIcon = Texture2D::Create("Resources/Icons/Inspector/Checkerboard.png");
-		SettingsIcon = Texture2D::Create("Resources/Icons/Inspector/SettingsIcon.png");
-		DotsIcon = Texture2D::Create("Resources/Icons/Inspector/DotsIcon.png");
+		CheckerboardIcon = CreateEditorImage("Resources/Icons/Inspector/Checkerboard.png");
+		SettingsIcon = CreateEditorImage("Resources/Icons/Inspector/SettingsIcon.png");
+		DotsIcon = CreateEditorImage("Resources/Icons/Inspector/DotsIcon.png");
 
-		DirectoryIcon = Texture2D::Create("Resources/Icons/ContentBrowser/DirectoryIcon.png");
-		AudioFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/AudioFileIcon.png");
-		OBJIcon = Texture2D::Create("Resources/Icons/ContentBrowser/OBJIcon.png");
-		FBXIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FBXIcon.png");
-		FontIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FontIcon.png");
-		CodeFileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/CodeFileIcon.png");
-		SceneIcon = Texture2D::Create("Resources/Icons/ContentBrowser/SceneIcon.png");
-		FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
+		DirectoryIcon = CreateEditorImage("Resources/Icons/ContentBrowser/DirectoryIcon.png");
+		AudioFileIcon = CreateEditorImage("Resources/Icons/ContentBrowser/AudioFileIcon.png");
+		OBJIcon = CreateEditorImage("Resources/Icons/ContentBrowser/OBJIcon.png");
+		FBXIcon = CreateEditorImage("Resources/Icons/ContentBrowser/FBXIcon.png");
+		FontIcon = CreateEditorImage("Resources/Icons/ContentBrowser/FontIcon.png");
+		CodeFileIcon = CreateEditorImage("Resources/Icons/ContentBrowser/CodeFileIcon.png");
+		SceneIcon = CreateEditorImage("Resources/Icons/ContentBrowser/SceneIcon.png");
+		FileIcon = CreateEditorImage("Resources/Icons/ContentBrowser/FileIcon.png");
+	}
+
+	SharedRef<Texture2D> EditorResources::CreateEditorImage(const std::string& filepath)
+	{
+		ImageProperties imageProps;
+		imageProps.Filepath = filepath;
+		imageProps.WrapMode = ImageWrap::Repeat;
+
+		return Texture2D::Create(imageProps);
 	}
 
 }

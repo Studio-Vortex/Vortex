@@ -82,23 +82,23 @@ namespace Vortex {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static bool IsDepthFormat(ImageFormat format)
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
+				case ImageFormat::DEPTH24STENCIL8: return true;
 			}
 
 			return false;
 		}
 
-		static GLenum VortexFBTextureFormatToGL(FramebufferTextureFormat format)
+		static GLenum VortexFBTextureFormatToGL(ImageFormat format)
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-				case FramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
-				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case ImageFormat::RGBA8:       return GL_RGBA8;
+				case ImageFormat::RGBA16F:     return GL_RGBA16F;
+				case ImageFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
 			VX_CORE_ASSERT(false, "Unknown texture format!");
@@ -166,27 +166,27 @@ namespace Vortex {
 
 				switch (m_ColorAttachmentProperties[i].TextureFormat)
 				{
-					case FramebufferTextureFormat::RGBA8:
+					case ImageFormat::RGBA8:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA8, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
-					case FramebufferTextureFormat::RGBA16F:
+					case ImageFormat::RGBA16F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA16F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
-					case FramebufferTextureFormat::RED_INTEGER:
+					case ImageFormat::RED_INTEGER:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_R32I, GL_RED_INTEGER, m_Properties.Width, m_Properties.Height, i);
 						break;
 				}
 			}
 		}
 
-		if (m_DepthAttachmentProperty.TextureFormat != FramebufferTextureFormat::None)
+		if (m_DepthAttachmentProperty.TextureFormat != ImageFormat::None)
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
 
 			switch (m_DepthAttachmentProperty.TextureFormat)
 			{
-				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case ImageFormat::DEPTH24STENCIL8:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Properties.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Properties.Width, m_Properties.Height);
 					break;
 			}
@@ -246,6 +246,14 @@ namespace Vortex {
 		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
 
 		return pixelData;
+	}
+
+	void OpenGLFramebuffer::ReadAttachmentToBuffer(uint32_t attachmentIndex, char* outBuffer) const
+	{
+		VX_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadPixels(0, 0, m_Properties.Width, m_Properties.Height, GL_RGB, GL_UNSIGNED_BYTE, (void*)outBuffer);
 	}
 
 	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int clearValue) const

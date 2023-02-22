@@ -1,17 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Renderer/Image.h"
 
 #include <string>
 
 namespace Vortex {
-
-	enum class VORTEX_API TextureWrap
-	{
-		None = 0,
-		Clamp,
-		Repeat,
-	};
 
 	class VORTEX_API Texture
 	{
@@ -20,6 +14,8 @@ namespace Vortex {
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
+
+		virtual const ImageProperties& GetProperties() const = 0;
 
 		virtual const std::string& GetPath() const = 0;
 
@@ -33,6 +29,8 @@ namespace Vortex {
 
 		virtual uint32_t GetRendererID() const = 0;
 
+		virtual void SaveToFile() const = 0;
+
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 
@@ -41,9 +39,7 @@ namespace Vortex {
 	public:
 		virtual ~Texture2D() override = default;
 
-		// TODO: rework the last parameter
-		static SharedRef<Texture2D> Create(uint32_t width, uint32_t height, bool rgba32f = false);
-		static SharedRef<Texture2D> Create(const std::string& path, TextureWrap wrapMode = TextureWrap::Repeat, bool flipVertical = true);
+		static SharedRef<Texture2D> Create(const ImageProperties& imageProps);
 	};
 
 }

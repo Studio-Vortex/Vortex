@@ -310,14 +310,20 @@ namespace Vortex {
 				SharedRef<Texture2D> result = nullptr;
 
 				aiString path;
+
 				if (mat->GetTexture(textureType, index, &path) == AI_SUCCESS)
 				{
 					const char* pathCStr = path.C_Str();
 					std::filesystem::path filepath = std::filesystem::path(pathCStr);
 					std::filesystem::path relativePath = directoryPath / filepath;
+
 					if (FileSystem::Exists(relativePath))
 					{
-						result = Texture2D::Create(relativePath.string());
+						ImageProperties imageProps;
+						imageProps.Filepath = relativePath.string();
+						imageProps.WrapMode = ImageWrap::Repeat;
+
+						result = Texture2D::Create(imageProps);
 						return result;
 					}
 				}

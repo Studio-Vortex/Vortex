@@ -1418,7 +1418,11 @@ namespace Vortex {
 			}
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			spriteRenderer.Texture = Texture2D::Create(Project::GetAssetFileSystemPath(std::filesystem::path(texturePathCStr)).string());
+			ImageProperties imageProps;
+			imageProps.Filepath = Project::GetAssetFileSystemPath(std::filesystem::path(texturePathCStr)).string();
+			// TODO should allow as an option
+			imageProps.WrapMode = ImageWrap::Repeat;
+			spriteRenderer.Texture = Texture2D::Create(imageProps);
 
 			mono_free(texturePathCStr);
 		}

@@ -228,6 +228,89 @@ namespace Vortex {
 			return CombineMode::Average;
 		}
 
+		static void LoadSubmeshMaterial(SharedRef<Material>& material, const YAML::Node& materialData)
+		{
+			ImageProperties imageProps;
+
+			if (materialData["AlbedoMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["AlbedoMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetAlbedoMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["Albedo"])
+			{
+				material->SetAlbedo(materialData["Albedo"].as<Math::vec3>());
+			}
+			if (materialData["NormalMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["NormalMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetNormalMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["MetallicMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["MetallicMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetMetallicMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["Metallic"])
+			{
+				material->SetMetallic(materialData["Metallic"].as<float>());
+			}
+			if (materialData["RoughnessMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["RoughnessMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetRoughnessMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["Roughness"])
+			{
+				material->SetRoughness(materialData["Roughness"].as<float>());
+			}
+			if (materialData["EmissionMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["EmissionMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetEmissionMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["Emission"])
+			{
+				material->SetEmission(materialData["Emission"].as<float>());
+			}
+			if (materialData["ParallaxOcclusionMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["ParallaxOcclusionMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetParallaxOcclusionMap(Texture2D::Create(imageProps));
+			}
+			if (materialData["ParallaxHeightScale"])
+			{
+				material->SetParallaxHeightScale(materialData["ParallaxHeightScale"].as<float>());
+			}
+			if (materialData["AmbientOcclusionMapPath"])
+			{
+				imageProps.Filepath = Project::GetAssetFileSystemPath(materialData["AmbientOcclusionMapPath"].as<std::string>()).string();
+				imageProps.WrapMode = ImageWrap::Repeat;
+				material->SetAmbientOcclusionMap(Texture2D::Create(imageProps));
+			}
+
+			if (materialData["UV"])
+			{
+				material->SetUV(materialData["UV"].as<Math::vec2>());
+			}
+
+			if (materialData["Opacity"])
+			{
+				material->SetOpacity(materialData["Opacity"].as<float>());
+			}
+
+			if (materialData["MaterialFlags"])
+			{
+				material->SetFlags(materialData["MaterialFlags"].as<uint32_t>());
+			}
+		}
+
 	}
 
 	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
@@ -1131,39 +1214,7 @@ namespace Vortex {
 						Submesh submesh = meshRendererComponent.Mesh->GetSubmesh(i++);
 						SharedRef<Material> material = submesh.GetMaterial();
 
-						if (submeshData["AlbedoMapPath"])
-							material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AlbedoMapPath"].as<std::string>()).string()));
-						if (submeshData["Albedo"])
-							material->SetAlbedo(submeshData["Albedo"].as<Math::vec3>());
-						if (submeshData["NormalMapPath"])
-							material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["NormalMapPath"].as<std::string>()).string()));
-						if (submeshData["MetallicMapPath"])
-							material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["MetallicMapPath"].as<std::string>()).string()));
-						if (submeshData["Metallic"])
-							material->SetMetallic(submeshData["Metallic"].as<float>());
-						if (submeshData["RoughnessMapPath"])
-							material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["RoughnessMapPath"].as<std::string>()).string()));
-						if (submeshData["Roughness"])
-							material->SetRoughness(submeshData["Roughness"].as<float>());
-						if (submeshData["EmissionMapPath"])
-							material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["EmissionMapPath"].as<std::string>()).string()));
-						if (submeshData["Emission"])
-							material->SetEmission(submeshData["Emission"].as<float>());
-						if (submeshData["ParallaxOcclusionMapPath"])
-							material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["ParallaxOcclusionMapPath"].as<std::string>()).string()));
-						if (submeshData["ParallaxHeightScale"])
-							material->SetParallaxHeightScale(submeshData["ParallaxHeightScale"].as<float>());
-						if (submeshData["AmbientOcclusionMapPath"])
-							material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AmbientOcclusionMapPath"].as<std::string>()).string()));
-
-						if (submeshData["UV"])
-							material->SetUV(submeshData["UV"].as<Math::vec2>());
-
-						if (submeshData["Opacity"])
-							material->SetOpacity(submeshData["Opacity"].as<float>());
-
-						if (submeshData["MaterialFlags"])
-							material->SetFlags(submeshData["MaterialFlags"].as<uint32_t>());
+						Utils::LoadSubmeshMaterial(material, submeshData);
 					}
 				}
 			}
@@ -1208,39 +1259,7 @@ namespace Vortex {
 						StaticSubmesh submesh = staticMeshRendererComponent.StaticMesh->GetSubmesh(i++);
 						SharedRef<Material> material = submesh.GetMaterial();
 
-						if (submeshData["AlbedoMapPath"])
-							material->SetAlbedoMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AlbedoMapPath"].as<std::string>()).string()));
-						if (submeshData["Albedo"])
-							material->SetAlbedo(submeshData["Albedo"].as<Math::vec3>());
-						if (submeshData["NormalMapPath"])
-							material->SetNormalMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["NormalMapPath"].as<std::string>()).string()));
-						if (submeshData["MetallicMapPath"])
-							material->SetMetallicMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["MetallicMapPath"].as<std::string>()).string()));
-						if (submeshData["Metallic"])
-							material->SetMetallic(submeshData["Metallic"].as<float>());
-						if (submeshData["RoughnessMapPath"])
-							material->SetRoughnessMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["RoughnessMapPath"].as<std::string>()).string()));
-						if (submeshData["Roughness"])
-							material->SetRoughness(submeshData["Roughness"].as<float>());
-						if (submeshData["EmissionMapPath"])
-							material->SetEmissionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["EmissionMapPath"].as<std::string>()).string()));
-						if (submeshData["Emission"])
-							material->SetEmission(submeshData["Emission"].as<float>());
-						if (submeshData["ParallaxOcclusionMapPath"])
-							material->SetParallaxOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["ParallaxOcclusionMapPath"].as<std::string>()).string()));
-						if (submeshData["ParallaxHeightScale"])
-							material->SetParallaxHeightScale(submeshData["ParallaxHeightScale"].as<float>());
-						if (submeshData["AmbientOcclusionMapPath"])
-							material->SetAmbientOcclusionMap(Texture2D::Create(Project::GetAssetFileSystemPath(submeshData["AmbientOcclusionMapPath"].as<std::string>()).string()));
-
-						if (submeshData["UV"])
-							material->SetUV(submeshData["UV"].as<Math::vec2>());
-
-						if (submeshData["Opacity"])
-							material->SetOpacity(submeshData["Opacity"].as<float>());
-
-						if (submeshData["MaterialFlags"])
-							material->SetFlags(submeshData["MaterialFlags"].as<uint32_t>());
+						Utils::LoadSubmeshMaterial(material, submeshData);
 					}
 				}
 			}
@@ -1253,7 +1272,12 @@ namespace Vortex {
 				spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 
 				if (spriteComponent["TexturePath"])
-					spriteRendererComponent.Texture = Texture2D::Create(Project::GetAssetFileSystemPath(spriteComponent["TexturePath"].as<std::string>()).string());
+				{
+					ImageProperties imageProps;
+					imageProps.Filepath = Project::GetAssetFileSystemPath(spriteComponent["TexturePath"].as<std::string>()).string();
+					imageProps.WrapMode = ImageWrap::Repeat;
+					spriteRendererComponent.Texture = Texture2D::Create(imageProps);
+				}
 
 				if (spriteComponent["TextureScale"])
 					spriteRendererComponent.Scale = spriteComponent["TextureScale"].as<Math::vec2>();
