@@ -415,14 +415,114 @@
 
 	public class AudioSource : Component
 	{
-		public string Source;
-		public bool IsPlaying
+		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
+		public Vector3 Position
 		{
-			get => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
+			get
+			{
+				InternalCalls.AudioSourceComponent_GetPosition(Entity.ID, out Vector3 position);
+				return position;
+			}
+
+			set => InternalCalls.AudioSourceComponent_SetPosition(Entity.ID, ref value);
+		}
+
+		public Vector3 Direction
+		{
+			get
+			{
+				InternalCalls.AudioSourceComponent_GetDirection(Entity.ID, out Vector3 direction);
+				return direction;
+			}
+
+			set => InternalCalls.AudioSourceComponent_SetDirection(Entity.ID, ref value);
+		}
+
+		public Vector3 Velocity
+		{
+			get
+			{
+				InternalCalls.AudioSourceComponent_GetVelocity(Entity.ID, out Vector3 veloctiy);
+				return veloctiy;
+			}
+
+			set => InternalCalls.AudioSourceComponent_SetVelocity(Entity.ID, ref value);
+		}
+
+		public float ConeInnerAngle
+		{
+			get => InternalCalls.AudioSourceComponent_GetConeInnerAngle(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetConeInnerAngle(Entity.ID, value);
+		}
+
+		public float ConeOuterAngle
+		{
+			get => InternalCalls.AudioSourceComponent_GetConeOuterAngle(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetConeOuterAngle(Entity.ID, value);
+		}
+
+		public float ConeOuterGain
+		{
+			get => InternalCalls.AudioSourceComponent_GetConeOuterGain(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetConeOuterGain(Entity.ID, value);
+		}
+
+		public float MinDistance
+		{
+			get => InternalCalls.AudioSourceComponent_GetMinDistance(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetMinDistance(Entity.ID, value);
+		}
+
+		public float MaxDistance
+		{
+			get => InternalCalls.AudioSourceComponent_GetMaxDistance(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetMaxDistance(Entity.ID, value);
+		}
+
+		public float Pitch
+		{
+			get => InternalCalls.AudioSourceComponent_GetPitch(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPitch(Entity.ID, value);
+		}
+
+		public float DopplerFactor
+		{
+			get => InternalCalls.AudioSourceComponent_GetDopplerFactor(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetDopplerFactor(Entity.ID, value);
+		}
+
+		public float Volume
+		{
+			get => InternalCalls.AudioSourceComponent_GetVolume(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetVolume(Entity.ID, value);
+		}
+
+		public bool PlayOnStart
+		{
+			get => InternalCalls.AudioSourceComponent_GetPlayOnStart(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPlayOnStart(Entity.ID, value);
+		}
+
+		public bool PlayOneShot
+		{
+			get => InternalCalls.AudioSourceComponent_GetPlayOneShot(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPlayOneShot(Entity.ID, value);
+		}
+
+		public bool IsSpacialized
+		{
+			get => InternalCalls.AudioSourceComponent_GetIsSpacialized(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetIsSpacialized(Entity.ID, value);
+		}
+
+		public bool IsLooping
+		{
+			get => InternalCalls.AudioSourceComponent_GetIsLooping(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetIsLooping(Entity.ID, value);
 		}
 
 		public void Play() => InternalCalls.AudioSourceComponent_Play(Entity.ID);
-
+		public void Restart() => InternalCalls.AudioSourceComponent_Restart(Entity.ID);
 		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 	}
 

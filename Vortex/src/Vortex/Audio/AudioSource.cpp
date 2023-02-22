@@ -20,21 +20,18 @@ namespace Vortex {
 	{
 		if (!m_Initialized)
 		{
-			AudioEngine::InitEngine(&m_Engine);
-			AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, &m_LengthInSeconds, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
-			m_Initialized = true;
+			LoadFromPathAndInitEngine(m_Path);
 		}
 
 		if (m_Properties.PlayOneShot)
 		{
 			AudioEngine::StartEngine(&m_Engine);
 			AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
+			return;
 		}
-		else
-		{
-			AudioEngine::StartEngine(&m_Engine);
-			AudioEngine::PlayFromSound(&m_Sound);
-		}
+
+		AudioEngine::StartEngine(&m_Engine);
+		AudioEngine::PlayFromSound(&m_Sound);
 	}
 
 	void AudioSource::Pause()
@@ -147,7 +144,7 @@ namespace Vortex {
 	void AudioSource::SetProperties(const SoundProperties& soundProps)
     {
 		SetDirection(soundProps.Direction);
-		SetVelocity(soundProps.Veloctiy);
+		SetVelocity(soundProps.Velocity);
 		SetCone(soundProps.Cone);
 		SetMinDistance(soundProps.MinDistance);
 		SetMaxDistance(soundProps.MaxDistance);
@@ -179,7 +176,7 @@ namespace Vortex {
 		dest->SetSpacialized(props.Spacialized);
 		dest->SetPlayOnStart(props.PlayOnStart);
 		dest->SetPlayOneShot(props.PlayOneShot);
-		dest->SetVelocity(props.Veloctiy);
+		dest->SetVelocity(props.Velocity);
 		dest->SetVolume(props.Volume);
 	}
 

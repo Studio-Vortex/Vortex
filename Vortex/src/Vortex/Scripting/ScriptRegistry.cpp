@@ -1618,21 +1618,477 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<AudioSourceComponent>().Source->IsPlaying();
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->IsPlaying();
 		}
 
 		void AudioSourceComponent_Play(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<AudioSourceComponent>().Source->Play();
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->Play();
+		}
+
+		void AudioSourceComponent_Restart(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->Restart();
 		}
 
 		void AudioSourceComponent_Stop(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<AudioSourceComponent>().Source->Stop();
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->Stop();
+		}
+
+		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			*outPosition = asc.Source->GetProperties().Position;
+		}
+
+		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Position = *position;
+		}
+
+		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outPosition)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			*outPosition = asc.Source->GetProperties().Position;
+		}
+
+		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* position)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Position = *position;
+		}
+
+		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* velocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			*velocity = asc.Source->GetProperties().Velocity;
+		}
+
+		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Velocity = *velocity;
+		}
+
+		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Cone.InnerAngle;
+		}
+
+		void AudioSourceComponent_SetConeInnerAngle(UUID entityUUID, float innerAngle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Cone.InnerAngle = innerAngle;
+		}
+
+		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Cone.OuterAngle;
+		}
+
+		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Cone.OuterAngle = outerAngle;
+		}
+
+		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Cone.OuterGain;
+		}
+
+		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Cone.OuterGain = outerGain;
+		}
+
+
+		float AudioSourceComponent_GetMinDistance(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().MinDistance;
+		}
+
+		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().MinDistance = minDistance;
+		}
+
+		float AudioSourceComponent_GetMaxDistance(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().MaxDistance;
+		}
+
+		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().MaxDistance = maxDistance;
+		}
+
+		float AudioSourceComponent_GetPitch(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Pitch;
+		}
+
+		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Pitch = pitch;
+		}
+
+		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().DopplerFactor;
+		}
+
+		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().DopplerFactor = dopplerFactor;
+		}
+
+		float AudioSourceComponent_GetVolume(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Volume;
+		}
+
+		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Volume = volume;
+		}
+
+		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().PlayOnStart;
+		}
+
+		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().PlayOnStart = playOnStart;
+		}
+
+		bool AudioSourceComponent_GetPlayOneShot(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().PlayOneShot;
+		}
+
+		void AudioSourceComponent_SetPlayOneShot(UUID entityUUID, bool playOneShot)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().PlayOneShot = playOneShot;
+		}
+
+		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Spacialized;
+		}
+
+		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Spacialized = spacialized;
+		}
+
+		bool AudioSourceComponent_GetIsLooping(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			return asc.Source->GetProperties().Loop;
+		}
+
+		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			asc.Source->GetProperties().Loop = loop;
 		}
 
 #pragma endregion
@@ -3776,7 +4232,38 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Restart);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPosition);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPosition);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetDirection);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetDirection);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetVelocity);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetVelocity);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetConeInnerAngle);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetConeInnerAngle);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetConeOuterAngle);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetConeOuterAngle);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetConeOuterGain);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetConeOuterGain);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetMinDistance);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetMinDistance);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetMaxDistance);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetMaxDistance);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPitch);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPitch);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetDopplerFactor);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetDopplerFactor);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetVolume);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetVolume);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPlayOnStart);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPlayOnStart);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPlayOneShot);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPlayOneShot);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsSpacialized);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetIsSpacialized);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetIsLooping);
 
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetTranslation);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetTranslation);

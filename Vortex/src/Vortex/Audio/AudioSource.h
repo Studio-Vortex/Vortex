@@ -13,7 +13,7 @@ namespace Vortex {
 		{
 			Math::vec3 Position = Math::vec3(0.0f);
 			Math::vec3 Direction = Math::vec3(0.0f);
-			Math::vec3 Veloctiy = Math::vec3(0.0f);
+			Math::vec3 Velocity = Math::vec3(0.0f);
 
 			struct VORTEX_API AudioCone
 			{

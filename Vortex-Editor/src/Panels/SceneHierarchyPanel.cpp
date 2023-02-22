@@ -1643,9 +1643,9 @@ namespace Vortex {
 						component.Source->SetDirection(props.Direction);
 					});
 
-					UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
+					UI::DrawVec3Controls("Veloctiy", props.Velocity, 0.0f, 100.0f, [&]()
 					{
-						component.Source->SetVelocity(props.Veloctiy);
+						component.Source->SetVelocity(props.Velocity);
 					});
 
 					UI::EndPropertyGrid();

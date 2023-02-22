@@ -716,7 +716,7 @@ namespace Vortex {
 				out << YAML::BeginMap; // SoundSettings
 				VX_SERIALIZE_PROPERTY(Position, soundProperties.Position, out);
 				VX_SERIALIZE_PROPERTY(Direction, soundProperties.Direction, out);
-				VX_SERIALIZE_PROPERTY(Veloctiy, soundProperties.Veloctiy, out);
+				VX_SERIALIZE_PROPERTY(Velocity, soundProperties.Velocity, out);
 
 				out << YAML::Key << "Cone" << YAML::Value;
 				out << YAML::BeginMap; // Cone
@@ -1359,7 +1359,7 @@ namespace Vortex {
 					if (soundProps["Direction"])
 						soundProperties.Direction = soundProps["Direction"].as<Math::vec3>();
 					if (soundProps["Velocity"])
-						soundProperties.Veloctiy = soundProps["Velocity"].as<Math::vec3>();
+						soundProperties.Velocity = soundProps["Velocity"].as<Math::vec3>();
 
 					if (soundProps["Cone"])
 					{

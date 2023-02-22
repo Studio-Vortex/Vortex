@@ -268,7 +268,38 @@ namespace Vortex {
 
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
 		void AudioSourceComponent_Play(UUID entityUUID);
+		void AudioSourceComponent_Restart(UUID entityUUID);
 		void AudioSourceComponent_Stop(UUID entityUUID);
+		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition);
+		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position);
+		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outPosition);
+		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* position);
+		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* velocity);
+		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity);
+		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID);
+		void AudioSourceComponent_SetConeInnerAngle(UUID entityUUID, float innerAngle);
+		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID);
+		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle);
+		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID);
+		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain);
+		float AudioSourceComponent_GetMinDistance(UUID entityUUID);
+		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance);
+		float AudioSourceComponent_GetMaxDistance(UUID entityUUID);
+		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance);
+		float AudioSourceComponent_GetPitch(UUID entityUUID);
+		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch);
+		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID);
+		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor);
+		float AudioSourceComponent_GetVolume(UUID entityUUID);
+		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume);
+		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID);
+		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart);
+		bool AudioSourceComponent_GetPlayOneShot(UUID entityUUID);
+		void AudioSourceComponent_SetPlayOneShot(UUID entityUUID, bool playOneShot);
+		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID);
+		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized);
+		bool AudioSourceComponent_GetIsLooping(UUID entityUUID);
+		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop);
 
 #pragma endregion
 

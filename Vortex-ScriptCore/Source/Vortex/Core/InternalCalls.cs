@@ -523,7 +523,100 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_Play(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Restart(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_Stop(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetPosition(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPosition(ulong entityID, ref Vector3 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetDirection(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetDirection(ulong entityID, ref Vector3 direction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetVelocity(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetConeInnerAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetConeInnerAngle(ulong entityID, float innerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetConeOuterAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetConeOuterAngle(ulong entityID, float outerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetConeOuterGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetConeOuterGain(ulong entityID, float outerGain);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMinDistance(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMinDistance(ulong entityID, float minDistance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMaxDistance(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMaxDistance(ulong entityID, float maxDistance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetPitch(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPitch(ulong entityID, float pitch);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetDopplerFactor(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetDopplerFactor(ulong entityID, float effect);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetVolume(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetVolume(ulong entityID, float volume);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetPlayOnStart(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPlayOnStart(ulong entityID, bool playOnStart);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetPlayOneShot(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPlayOneShot(ulong entityID, bool playOneShot);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsSpacialized(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetIsSpacialized(ulong entityID, bool spacialized);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsLooping(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetIsLooping(ulong entityID, bool looping);
 
 		#endregion
 
