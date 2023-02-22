@@ -455,7 +455,42 @@ namespace Vortex {
 		}
 	}
 
-	void Physics::Init()
+    void Physics::OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement)
+    {
+		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+
+		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+		VX_CORE_ASSERT(entity.HasComponent<CharacterControllerComponent>(), "Entity doesn't have Character Controller!");
+
+		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+
+		VX_CORE_ASSERT(s_ActiveControllers.contains(entityUUID), "Invalid Controller!");
+		physx::PxControllerFilters filters; // TODO
+		physx::PxController* controller = s_ActiveControllers[entityUUID];
+
+		auto gravity = Physics::GetPhysicsSceneGravity();
+
+		if (!characterControllerComponent.DisableGravity)
+		{
+			characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
+		}
+
+		Math::vec3 movement = displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
+
+		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
+		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
+
+		physx::PxControllerState state;
+		controller->getState(state);
+
+		// test if grounded
+		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+		{
+			characterControllerComponent.SpeedDown = gravity.y * 0.01f;
+		}
+    }
+
+    void Physics::Init()
 	{
 		InitPhysicsSDKInternal();
 	}

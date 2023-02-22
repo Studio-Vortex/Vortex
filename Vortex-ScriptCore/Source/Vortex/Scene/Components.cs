@@ -669,6 +669,15 @@
 	public class CharacterController : Component
 	{
 		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Entity.ID);
+		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
+		public Vector3 FootPosition
+		{
+			get
+			{
+				InternalCalls.CharacterControllerComponent_GetFootPosition(Entity.ID, out Vector3 footPosition);
+				return footPosition;
+			}
+		}
 
 		public float SlopeLimit
 		{
@@ -687,8 +696,6 @@
 			get => InternalCalls.CharacterControllerComponent_GetContactOffset(Entity.ID);
 			set => InternalCalls.CharacterControllerComponent_SetContactOffset(Entity.ID, value);
 		}
-
-		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
 
 		public bool DisableGravity
 		{

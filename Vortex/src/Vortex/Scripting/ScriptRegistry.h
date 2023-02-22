@@ -348,6 +348,7 @@ namespace Vortex {
 		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement);
 		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce);
 		bool CharacterControllerComponent_IsGrounded(UUID entityUUID);
+		void CharacterControllerComponent_GetFootPosition(UUID entityUUID, Math::vec3* outFootPos);
 		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID);
 		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID);
 		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit);

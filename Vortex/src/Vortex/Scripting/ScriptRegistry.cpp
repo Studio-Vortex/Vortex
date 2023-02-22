@@ -1362,30 +1362,47 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outColor = entity.GetComponent<SpriteRendererComponent>().SpriteColor;
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return;
+			}
+
+			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			*outColor = spriteRenderer.SpriteColor;
 		}
 
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SpriteRendererComponent>().SpriteColor = *color;
-		}
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return;
+			}
 
-		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			*outScale = entity.GetComponent<SpriteRendererComponent>().Scale;
+			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			spriteRenderer.SpriteColor = *color;
 		}
 
 		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			const std::string& texturePath = entity.GetComponent<SpriteRendererComponent>().Texture->GetPath();
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return mono_string_new(mono_domain_get(), "");
+			}
 
-			return mono_string_new(mono_domain_get(), texturePath.c_str());
+			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			if (spriteRenderer.Texture)
+			{
+				return mono_string_new(mono_domain_get(), spriteRenderer.Texture->GetPath().c_str());
+			}
+
+			return mono_string_new(mono_domain_get(), "");
 		}
 
 		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
@@ -1394,16 +1411,44 @@ namespace Vortex {
 
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SpriteRendererComponent>().Texture = Texture2D::Create(std::string(texturePathCStr));
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return;
+			}
+
+			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			spriteRenderer.Texture = Texture2D::Create(Project::GetAssetFileSystemPath(std::filesystem::path(texturePathCStr)).string());
 
 			mono_free(texturePathCStr);
+		}
+
+		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return;
+			}
+
+			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			*outScale = spriteRenderer.Scale;
 		}
 
 		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SpriteRendererComponent>().Scale = *scale;
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				return;
+			}
+
+			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			spriteRenderer.Scale = *scale;
 		}
 
 #pragma endregion
@@ -1414,42 +1459,84 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outColor = entity.GetComponent<CircleRendererComponent>().Color;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			*outColor = circleRenderer.Color;
 		}
 
 		void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CircleRendererComponent>().Color = *color;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			circleRenderer.Color = *color;
 		}
 
 		void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			*outThickness = circleRenderer.Thickness;
 		}
 
 		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CircleRendererComponent>().Thickness = thickness;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			circleRenderer.Thickness = thickness;
 		}
 
 		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			*outFade = circleRenderer.Fade;
 		}
 
 		void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CircleRendererComponent>().Fade = fade;
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				return;
+			}
+
+			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			circleRenderer.Fade = fade;
 		}
 
 #pragma endregion
@@ -1460,154 +1547,308 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outVelocity = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outVelocity = particleEmitterComponent.Emitter->GetProperties().Velocity;
 		}
 
 		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Velocity = *velocity;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().Velocity = *velocity;
 		}
 
 		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outVelocityVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outVelocityVariation = particleEmitterComponent.Emitter->GetProperties().VelocityVariation;
 		}
 
 		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().VelocityVariation = *velocityVariation;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().VelocityVariation = *velocityVariation;
 		}
 
 		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outOffset = particleEmitterComponent.Emitter->GetProperties().Offset;
 		}
 
 		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Offset = *offset;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().Offset = *offset;
 		}
 
 		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outSizeBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outSizeBegin = particleEmitterComponent.Emitter->GetProperties().SizeBegin;
 		}
 
 		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeBegin = *sizeBegin;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().SizeBegin = *sizeBegin;
 		}
 
 		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outSizeEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outSizeEnd = particleEmitterComponent.Emitter->GetProperties().SizeEnd;
 		}
 
 		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeEnd = *sizeEnd;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().SizeEnd = *sizeEnd;
 		}
 
 		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outSizeVariation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outSizeVariation = particleEmitterComponent.Emitter->GetProperties().SizeVariation;
 		}
 
 		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().SizeVariation = *sizeVariation;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().SizeVariation = *sizeVariation;
 		}
 
 		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outColorBegin = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outColorBegin = particleEmitterComponent.Emitter->GetProperties().ColorBegin;
 		}
 
 		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorBegin = *colorBegin;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().ColorBegin = *colorBegin;
 		}
 
 		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outColorEnd = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outColorEnd = particleEmitterComponent.Emitter->GetProperties().ColorEnd;
 		}
 
 		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().ColorEnd = *colorEnd;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().ColorEnd = *colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRotation = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outRotation = particleEmitterComponent.Emitter->GetProperties().Rotation;
 		}
 
 		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().Rotation = colorEnd;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().Rotation = colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outLifeTime = entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			*outLifeTime = particleEmitterComponent.Emitter->GetProperties().LifeTime;
 		}
 
 		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->GetProperties().LifeTime = lifetime;
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->GetProperties().LifeTime = lifetime;
 		}
 
 		void ParticleEmitterComponent_Start(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->Start();
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->Start();
 		}
 
 		void ParticleEmitterComponent_Stop(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<ParticleEmitterComponent>().Emitter->Stop();
+			if (!entity.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				return;
+			}
+
+			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			particleEmitterComponent.Emitter->Stop();
 		}
 
 #pragma endregion
@@ -2555,6 +2796,8 @@ namespace Vortex {
 
 		bool Physics_Raycast(Math::vec3* origin, Math::vec3* direction, float maxDistance, RaycastHit* outHit)
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Physics::Raycast(*origin, *direction, maxDistance, outHit);
 		}
 
@@ -2615,27 +2858,7 @@ namespace Vortex {
 				return;
 			}
 
-			CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
-
-			physx::PxControllerFilters filters; // TODO
-			physx::PxController* controller = Physics::GetController(entityUUID);
-
-			auto gravity = Physics::GetPhysicsSceneGravity();
-
-			if (!characterControllerComponent.DisableGravity)
-				characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
-
-			Math::vec3 movement = *displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
-
-			controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
-			entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
-
-			physx::PxControllerState state;
-			controller->getState(state);
-
-			// test if grounded
-			if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
-				characterControllerComponent.SpeedDown = gravity.y * 0.01f;
+			Physics::OnCharacterControllerUpdateRuntime(entityUUID, *displacement);
 		}
 
 		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
@@ -2662,19 +2885,25 @@ namespace Vortex {
 				return false;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 			physx::PxController* controller = Physics::GetController(entityUUID);
-
 			physx::PxControllerState state;
 			controller->getState(state);
 
-			// test if grounded
-			if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+			return state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
+		}
+
+		void CharacterControllerComponent_GetFootPosition(UUID entityUUID, Math::vec3* outFootPos)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				return true;
+				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				return;
 			}
 
-			return false;
+			physx::PxExtendedVec3 footPosition = Physics::GetController(entityUUID)->getFootPosition();
+			*outFootPos = FromPhysXExtendedVector(footPosition);
 		}
 
 		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
@@ -2687,7 +2916,8 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().SpeedDown;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.SpeedDown;
 		}
 
 		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
@@ -2700,7 +2930,8 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.SlopeLimitDegrees;
 		}
 
 		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
@@ -2713,7 +2944,9 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().SlopeLimitDegrees = slopeLimit;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.SlopeLimitDegrees = slopeLimit;
+
 			Physics::GetController(entityUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
 		}
 
@@ -2727,7 +2960,8 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().StepOffset;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.StepOffset;
 		}
 
 		void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
@@ -2740,7 +2974,9 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.StepOffset = stepOffset;
+
 			Physics::GetController(entityUUID)->setStepOffset(stepOffset);
 		}
 
@@ -2754,7 +2990,8 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().ContactOffset;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.ContactOffset;
 		}
 
 		void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
@@ -2767,7 +3004,9 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().ContactOffset = contactOffset;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.ContactOffset = contactOffset;
+
 			Physics::GetController(entityUUID)->setContactOffset(contactOffset);
 		}
 
@@ -2781,7 +3020,8 @@ namespace Vortex {
 				return NonWalkableMode::PreventClimbing;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().NonWalkMode;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.NonWalkMode;
 		}
 
 		void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
@@ -2794,7 +3034,9 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().NonWalkMode = mode;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.NonWalkMode = mode;
+
 			Physics::GetController(entityUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
 		}
 
@@ -2808,7 +3050,8 @@ namespace Vortex {
 				return CapsuleClimbMode::Easy;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().ClimbMode;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.ClimbMode;
 		}
 
 		void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
@@ -2821,7 +3064,8 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().ClimbMode = mode;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.ClimbMode = mode;
 			// TODO any way to set capsule climbing mode during runtime?
 		}
 
@@ -2835,7 +3079,8 @@ namespace Vortex {
 				return false;
 			}
 
-			return entity.GetComponent<CharacterControllerComponent>().DisableGravity;
+			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			return characterController.DisableGravity;
 		}
 
 		void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
@@ -2848,7 +3093,8 @@ namespace Vortex {
 				return;
 			}
 
-			entity.GetComponent<CharacterControllerComponent>().DisableGravity = disableGravity;
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.DisableGravity = disableGravity;
 		}
 
 #pragma endregion
@@ -4304,6 +4550,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Move);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_Jump); 
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetFootPosition);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetSpeedDown);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_GetSlopeLimit);
 		VX_ADD_INTERNAL_CALL(CharacterControllerComponent_SetSlopeLimit);

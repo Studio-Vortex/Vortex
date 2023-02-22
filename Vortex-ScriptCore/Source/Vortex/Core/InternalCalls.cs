@@ -764,6 +764,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_GetFootPosition(ulong entityID, out Vector3 footPosition);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern float CharacterControllerComponent_GetSpeedDown(ulong entityID);

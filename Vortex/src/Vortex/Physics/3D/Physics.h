@@ -93,6 +93,8 @@ namespace Vortex {
 		static bool IsConstraintBroken(UUID entityUUID);
 		static void BreakJoint(UUID entityUUID);
 
+		static void OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement);
+
 		VX_FORCE_INLINE static uint32_t GetPhysicsScenePositionIterations() { return s_PhysicsSolverIterations; }
 		VX_FORCE_INLINE static void SetPhysicsScenePositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
 
