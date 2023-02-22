@@ -230,7 +230,7 @@ namespace Vortex {
 
 		static void LoadSubmeshMaterial(SharedRef<Material>& material, const YAML::Node& materialData)
 		{
-			ImageProperties imageProps;
+			TextureProperties imageProps;
 
 			if (materialData["AlbedoMapPath"])
 			{
@@ -1273,7 +1273,7 @@ namespace Vortex {
 
 				if (spriteComponent["TexturePath"])
 				{
-					ImageProperties imageProps;
+					TextureProperties imageProps;
 					imageProps.Filepath = Project::GetAssetFileSystemPath(spriteComponent["TexturePath"].as<std::string>()).string();
 					imageProps.WrapMode = ImageWrap::Repeat;
 					spriteRendererComponent.Texture = Texture2D::Create(imageProps);

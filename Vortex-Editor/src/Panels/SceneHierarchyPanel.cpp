@@ -1143,22 +1143,17 @@ namespace Vortex {
 
 			if (skybox->IsLoaded())
 			{
-				if (skybox->IsDirty())
-				{
-					if (Gui::Button("Regenerate Environment Map"))
-					{
-						skybox->Reload();
-						skybox->SetIsDirty(false);
-					}
-
-					Gui::SameLine();
-					UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
-				}
-
 				UI::BeginPropertyGrid();
 
-				if (UI::Property("Rotation", component.Rotation))
-					skybox->SetIsDirty(true);
+				UI::Property("Rotation", component.Rotation);
+
+				if (Gui::IsItemFocused())
+				{
+					if (Input::IsKeyPressed(KeyCode::Enter))
+					{
+						skybox->SetShouldReload(true);
+					}
+				}
 
 				UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
 
@@ -1378,7 +1373,7 @@ namespace Vortex {
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 						{
-							ImageProperties imageProps;
+							TextureProperties imageProps;
 							imageProps.Filepath = texturePath.string();
 							imageProps.WrapMode = ImageWrap::Repeat;
 

@@ -44,13 +44,6 @@ namespace Vortex {
 			m_HDREnvironmentMap->Unbind();
 	}
 
-	void OpenGLSkybox::Reload()
-	{
-		VX_PROFILE_FUNCTION();
-
-		LoadSkybox(m_HDREnvironmentMap->GetPath());
-	}
-
 	uint32_t OpenGLSkybox::GetRendererID() const
 	{
 		if (m_HDREnvironmentMap)
@@ -71,26 +64,24 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		ImageProperties hdrImageProps;
+		TextureProperties hdrImageProps;
 		hdrImageProps.Filepath = filepath;
 		hdrImageProps.WrapMode = ImageWrap::Clamp;
+		hdrImageProps.TextureFormat = ImageFormat::RGBA16F;
+
 		m_HDREnvironmentMap = Texture2D::Create(hdrImageProps);
 	}
 
 	void OpenGLSkybox::LoadSkybox(const std::string& filepath)
 	{
-		if (std::filesystem::path(filepath).filename().extension() == ".hdr")
-		{
-			LoadEquirectangularMapFromPath(filepath);
-			m_PathChanged = true;
-			return;
-		}
-		else
+		if (std::filesystem::path(filepath).filename().extension() != ".hdr")
 		{
 			VX_CONSOLE_LOG_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
+			return;
 		}
 
-		m_IsDirty = false;
+		LoadEquirectangularMapFromPath(filepath);
+		m_ShouldReload = false;
 	}
 
 }

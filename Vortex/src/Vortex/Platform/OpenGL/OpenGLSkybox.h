@@ -18,13 +18,8 @@ namespace Vortex {
 		void Bind() const override;
 		void Unbind() const override;
 
-		inline bool PathChanged() const override { return m_PathChanged; }
-		inline void SetPathChanged(bool changed) override { m_PathChanged = changed; }
-
-		inline bool IsDirty() const override { return m_IsDirty; }
-		inline void SetIsDirty(bool dirty) override { m_IsDirty = dirty; }
-
-		void Reload() override;
+		inline bool ShouldReload() const override { return m_ShouldReload; }
+		inline void SetShouldReload(bool reload) override { m_ShouldReload = reload; }
 
 		uint32_t GetRendererID() const override;
 
@@ -36,8 +31,7 @@ namespace Vortex {
 
 	private:
 		SharedRef<Texture2D> m_HDREnvironmentMap = nullptr;
-		bool m_PathChanged = false;
-		bool m_IsDirty = false;
+		bool m_ShouldReload = false;
 	};
 
 }

@@ -15,7 +15,6 @@ namespace Vortex {
     void Skybox::Copy(SharedRef<Skybox> dstSkybox, const SharedRef<Skybox>& srcSkybox)
     {
 		dstSkybox->LoadFromFilepath(srcSkybox->GetFilepath());
-		dstSkybox->Reload();
     }
 
     SharedRef<Skybox> Skybox::Create()

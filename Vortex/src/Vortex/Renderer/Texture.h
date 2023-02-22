@@ -7,6 +7,25 @@
 
 namespace Vortex {
 
+	struct TextureProperties
+	{
+		std::string Filepath = "";
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		ImageWrap WrapMode = ImageWrap::Repeat;
+		ImageFormat TextureFormat = ImageFormat::RGBA8;
+		ImageFilter TextureFilter = ImageFilter::Linear;
+
+		bool GenerateMipmaps = true;
+		bool FlipVertical = true;
+		bool IsLoaded = false;
+
+		// Only used for writing to file
+		uint32_t Channels = 0;
+		const void* Buffer = nullptr;
+		uint32_t Stride = 0;
+	};
+
 	class VORTEX_API Texture
 	{
 	public:
@@ -15,7 +34,7 @@ namespace Vortex {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
-		virtual const ImageProperties& GetProperties() const = 0;
+		virtual const TextureProperties& GetProperties() const = 0;
 
 		virtual const std::string& GetPath() const = 0;
 
@@ -39,7 +58,7 @@ namespace Vortex {
 	public:
 		virtual ~Texture2D() override = default;
 
-		static SharedRef<Texture2D> Create(const ImageProperties& imageProps);
+		static SharedRef<Texture2D> Create(const TextureProperties& imageProps);
 	};
 
 }

@@ -9,10 +9,10 @@ namespace Vortex {
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
-		OpenGLTexture2D(const ImageProperties& imageProps);
+		OpenGLTexture2D(const TextureProperties& imageProps);
 		~OpenGLTexture2D() override;
 
-		const ImageProperties& GetProperties() const override { return m_Properties; }
+		const TextureProperties& GetProperties() const override { return m_Properties; }
 
 		inline uint32_t GetWidth() const override { return m_Properties.Width; }
 		inline uint32_t GetHeight() const override { return m_Properties.Height; }
@@ -29,12 +29,12 @@ namespace Vortex {
 
 		inline uint32_t GetRendererID() const override { return m_RendererID; }
 
+		void SaveToFile() const override;
+
 		inline bool operator==(const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
 		}
-
-		void SaveToFile() const override;
 
 	private:
 		void CreateImageFromWidthAndHeight();
@@ -42,7 +42,7 @@ namespace Vortex {
 		void CreateImageFromFile();
 
 	private:
-		ImageProperties m_Properties;
+		TextureProperties m_Properties;
 		mutable uint32_t m_Slot;
 		uint32_t m_RendererID = 0;
 		GLenum m_InternalFormat, m_DataFormat;

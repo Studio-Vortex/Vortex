@@ -52,7 +52,7 @@ namespace Vortex {
 
 	SharedRef<Texture2D> EditorResources::CreateEditorImage(const std::string& filepath)
 	{
-		ImageProperties imageProps;
+		TextureProperties imageProps;
 		imageProps.Filepath = filepath;
 		imageProps.WrapMode = ImageWrap::Repeat;
 

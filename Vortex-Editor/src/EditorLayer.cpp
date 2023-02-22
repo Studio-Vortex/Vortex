@@ -650,7 +650,7 @@ namespace Vortex {
 				{
 					std::filesystem::path texturePath = filePath;
 
-					ImageProperties imageProps;
+					TextureProperties imageProps;
 					imageProps.Filepath = texturePath.string();
 					imageProps.WrapMode = ImageWrap::Repeat;
 
@@ -1933,7 +1933,7 @@ namespace Vortex {
 		std::vector<char> image(bufferSize);
 		m_Framebuffer->ReadAttachmentToBuffer(0, image.data());
 
-		ImageProperties imageProps;
+		TextureProperties imageProps;
 		imageProps.Filepath = sceneImagePath;
 		imageProps.Width = (uint32_t)m_ViewportSize.x;
 		imageProps.Height = (uint32_t)m_ViewportSize.y;

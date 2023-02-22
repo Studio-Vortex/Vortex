@@ -88,7 +88,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary->Load("BloomFinalComposite", BLOOM_FINAL_COMPOSITE_SHADER_PATH);
 		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
 
-		ImageProperties brdfImageProps;
+		TextureProperties brdfImageProps;
 		brdfImageProps.Filepath = BRDF_LUT_TEXTURE_PATH;
 		brdfImageProps.WrapMode = ImageWrap::Clamp;
 
@@ -266,7 +266,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 		// TODO fix this hack!
-		if (skybox->PathChanged() || framebufferNotCreated)
+		if (skybox->ShouldReload() || framebufferNotCreated)
 		{
 			CreateEnvironmentMap(skyboxComponent);
 		}
@@ -456,8 +456,8 @@ namespace Vortex {
 		for (uint32_t mip = 0; mip < maxMipLevels; mip++)
 		{
 			// Resize framebuffer according to mip-level size
-			uint32_t mipWidth = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
-			uint32_t mipHeight = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
+			uint32_t mipWidth = (uint32_t)s_Data.PrefilterMapResolution * std::pow(0.5, mip);
+			uint32_t mipHeight = (uint32_t)s_Data.PrefilterMapResolution * std::pow(0.5, mip);
 			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
 
 			// don't forget to set viewport to mip level
@@ -484,9 +484,10 @@ namespace Vortex {
 				RenderCommand::DrawTriangles(cubeMeshVA, 36);
 			}
 		}
+
 		s_Data.HDRFramebuffer->Unbind();
 
-		skybox->SetPathChanged(false);
+		skybox->SetShouldReload(false);
 	}
 
 	void Renderer::CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource)
@@ -1051,6 +1052,7 @@ namespace Vortex {
 		bloomFinalCompositeShader->SetBool("u_Bloom", true);
 		bloomFinalCompositeShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 		bloomFinalCompositeShader->SetFloat("u_Gamma", s_Data.SceneGamma);
+
 		Renderer2D::DrawUnitQuad();
 	}
 

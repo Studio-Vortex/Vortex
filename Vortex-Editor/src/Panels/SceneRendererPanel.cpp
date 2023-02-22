@@ -131,7 +131,7 @@ namespace Vortex {
 				Entity entity{ skyboxView[0], m_ContextScene.get() };
 				SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 				SharedRef<Skybox> skybox = skyboxComponent.Source;
-				skybox->Reload();
+				skybox->SetShouldReload(true);
 				Renderer::CreateEnvironmentMap(skyboxComponent);
 			};
 
@@ -201,11 +201,15 @@ namespace Vortex {
 
 				LightSourceComponent skylight;
 				auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
-				for (auto& e : lightSourceView)
+				for (const auto e : lightSourceView)
 				{
 					Entity entity{ e, m_ContextScene.get() };
-					if (const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>(); lightSourceComponent.Type == LightType::Directional)
-						skylight = lightSourceComponent;
+					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+					
+					if (lightSourceComponent.Type != LightType::Directional)
+						continue;
+
+					skylight = lightSourceComponent;
 				}
 
 				Renderer::CreateShadowMap(LightType::Directional, skylight.Source);
@@ -213,19 +217,27 @@ namespace Vortex {
 
 			float sceneExposure = Renderer::GetSceneExposure();
 			if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f))
+			{
 				Renderer::SetSceneExposure(sceneExposure);
+			}
 
 			float gamma = Renderer::GetSceneGamma();
 			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
+			{
 				Renderer::SetSceneGamma(gamma);
+			}
 
 			static bool wireframeMode = false;
 			if (UI::Property("Show Wireframe", wireframeMode))
+			{
 				RenderCommand::SetWireframe(wireframeMode);
+			}
 
 			static bool vsync = Application::Get().GetWindow().IsVSyncEnabled();
 			if (UI::Property("Use VSync", vsync))
+			{
 				Application::Get().GetWindow().SetVSync(vsync);
+			}
 
 			UI::EndPropertyGrid();
 
@@ -235,7 +247,9 @@ namespace Vortex {
 
 				bool bloomEnabled = Renderer::IsFlagSet(RenderFlag::EnableBloom);
 				if (UI::Property("Enable Bloom", bloomEnabled))
+				{
 					Renderer::ToggleFlag(RenderFlag::EnableBloom);
+				}
 
 				if (bloomEnabled)
 				{
@@ -249,7 +263,9 @@ namespace Vortex {
 						modified = true;
 
 					if (modified)
+					{
 						Renderer::SetBloomSettings(bloomSettings);
+					}
 
 					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
 					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();

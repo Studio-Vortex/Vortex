@@ -9,20 +9,33 @@ namespace Vortex {
 	
 	namespace Utils {
 
-		static int VortexTextureWrapModeToGL(ImageWrap wrapMode)
+		static int VortexImageWrapModeToGL(ImageWrap wrapMode)
 		{
 			switch (wrapMode)
 			{
-				case Vortex::ImageWrap::Clamp:  return GL_CLAMP_TO_EDGE;
-				case Vortex::ImageWrap::Repeat: return GL_REPEAT;
+				case ImageWrap::Clamp:  return GL_CLAMP_TO_EDGE;
+				case ImageWrap::Repeat: return GL_REPEAT;
 			}
 
-			VX_CORE_ASSERT(false, "Unknown Texture Wrap Mode!");
+			VX_CORE_ASSERT(false, "Unknown Image Wrap Mode!");
+			return 0;
+		}
+
+		static int VortexImageFilterModeToGL(ImageFilter filterMode)
+		{
+			switch (filterMode)
+			{
+				case ImageFilter::Linear:  return GL_LINEAR;
+				case ImageFilter::Nearest: return GL_NEAREST;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Image Filter Mode!");
+			return 0;
 		}
 
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const ImageProperties& imageProps)
+	OpenGLTexture2D::OpenGLTexture2D(const TextureProperties& imageProps)
 		: m_Properties(imageProps)
 	{
 		VX_PROFILE_FUNCTION();
@@ -43,7 +56,8 @@ namespace Vortex {
 		// Create Texture from file
 		stbi_set_flip_vertically_on_load(m_Properties.FlipVertical);
 
-		bool isHdrFile = m_Properties.TextureFormat == ImageFormat::RGBA16F || stbi_is_hdr(m_Properties.Filepath.c_str());
+		const bool isHdrFile = m_Properties.TextureFormat == ImageFormat::RGBA16F || stbi_is_hdr(m_Properties.Filepath.c_str());
+		
 		if (isHdrFile)
 		{
 			CreateImageFromHDRFile();
@@ -52,23 +66,12 @@ namespace Vortex {
 		{
 			CreateImageFromFile();
 		}
+
+		if (m_Properties.GenerateMipmaps)
+		{
+			glGenerateTextureMipmap(m_RendererID);
+		}
 	}
-
-	/*OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, bool rgba32f)
-		: m_Width(width), m_Height(height), m_Slot()
-	{
-		VX_PROFILE_FUNCTION();
-
-		
-	}
-
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, ImageWrap wrapMode, bool flipVertical)
-		: m_Path(path), m_Slot()
-	{
-		VX_PROFILE_FUNCTION();
-
-		
-	}*/
 
     OpenGLTexture2D::~OpenGLTexture2D()
 	{
@@ -130,18 +133,23 @@ namespace Vortex {
 
 	void OpenGLTexture2D::CreateImageFromWidthAndHeight()
 	{
-		bool rgba32f = m_Properties.TextureFormat == ImageFormat::RGBA32F;
+		const bool rgba32f = m_Properties.TextureFormat == ImageFormat::RGBA32F;
+
 		m_InternalFormat = rgba32f ? GL_RGBA32F : GL_RGBA8;
 		m_DataFormat = GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Properties.Width, m_Properties.Height);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		int wrap = rgba32f ? GL_CLAMP_TO_EDGE : Utils::VortexImageWrapModeToGL(m_Properties.WrapMode);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, rgba32f ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, rgba32f ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, wrap);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
+
+		int filter = Utils::VortexImageFilterModeToGL(m_Properties.TextureFilter);
+
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_Properties.GenerateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : filter);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, filter);
 
 		m_Properties.IsLoaded = true;
 	}
@@ -165,12 +173,15 @@ namespace Vortex {
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_Properties.Width, m_Properties.Height, 0, GL_RGB, GL_FLOAT, dataF32);
 
-		int wrap = Utils::VortexTextureWrapModeToGL(m_Properties.WrapMode);
+		int wrap = Utils::VortexImageWrapModeToGL(m_Properties.WrapMode);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		int filter = Utils::VortexImageFilterModeToGL(m_Properties.TextureFilter);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Properties.GenerateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 
 		stbi_image_free(dataF32);
 
@@ -219,16 +230,17 @@ namespace Vortex {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 			glTextureStorage2D(m_RendererID, 1, internalFormat, m_Properties.Width, m_Properties.Height);
 
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-			int wrap = Utils::VortexTextureWrapModeToGL(m_Properties.WrapMode);
+			int wrap = Utils::VortexImageWrapModeToGL(m_Properties.WrapMode);
 
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, wrap);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, wrap);
 
+			int filter = Utils::VortexImageFilterModeToGL(m_Properties.TextureFilter);
+
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_Properties.GenerateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : filter);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, filter);
+
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Properties.Width, m_Properties.Height, dataFormat, GL_UNSIGNED_BYTE, data);
-			glGenerateTextureMipmap(m_RendererID);
 
 			stbi_image_free(data);
 

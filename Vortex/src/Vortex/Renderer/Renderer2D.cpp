@@ -225,7 +225,7 @@ namespace Vortex
 		s_Data.TextVA->SetIndexBuffer(quadIB);
 		s_Data.TextVertexBufferBase = new TextVertex[Renderer2DInternalData::MaxVertices];
 
-		ImageProperties whiteTextureProps;
+		TextureProperties whiteTextureProps;
 		whiteTextureProps.Width = 1;
 		whiteTextureProps.Height = 1;
 		s_Data.WhiteTexture = Texture2D::Create(whiteTextureProps);

@@ -240,7 +240,7 @@ public class Untitled : Entity
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 				{
-					ImageProperties imageProps;
+					TextureProperties imageProps;
 					imageProps.Filepath = currentPath.string();
 
 					if (extension == ".hdr")
@@ -473,7 +473,7 @@ public class Untitled : Entity
 				{
 					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					{
-						ImageProperties imageProps;
+						TextureProperties imageProps;
 						imageProps.Filepath = currentPath.string();
 
 						if (extension == ".hdr")

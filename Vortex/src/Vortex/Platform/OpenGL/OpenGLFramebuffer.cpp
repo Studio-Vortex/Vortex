@@ -62,7 +62,7 @@ namespace Vortex {
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
 
-				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -72,7 +72,7 @@ namespace Vortex {
 			{
 				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -92,12 +92,13 @@ namespace Vortex {
 			return false;
 		}
 
-		static GLenum VortexFBTextureFormatToGL(ImageFormat format)
+		static GLenum VortexImageFormatToGL(ImageFormat format)
 		{
 			switch (format)
 			{
 				case ImageFormat::RGBA8:       return GL_RGBA8;
 				case ImageFormat::RGBA16F:     return GL_RGBA16F;
+				case ImageFormat::RGBA32F:     return GL_RGBA32F;
 				case ImageFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
@@ -171,6 +172,9 @@ namespace Vortex {
 						break;
 					case ImageFormat::RGBA16F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA16F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
+						break;
+					case ImageFormat::RGBA32F:
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA32F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
 					case ImageFormat::RED_INTEGER:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_R32I, GL_RED_INTEGER, m_Properties.Width, m_Properties.Height, i);
@@ -263,7 +267,7 @@ namespace Vortex {
 		auto& props = m_ColorAttachmentProperties[attachmentIndex];
 
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
-			Utils::VortexFBTextureFormatToGL(props.TextureFormat), GL_INT, &clearValue);
+			Utils::VortexImageFormatToGL(props.TextureFormat), GL_INT, &clearValue);
 	}
 
 	void OpenGLFramebuffer::ClearDepthAttachment() const
@@ -515,7 +519,7 @@ namespace Vortex {
 
 	void OpenGLDepthMapFramebuffer::ClearDepth(float value) const
 	{
-		glClearDepth(static_cast<double>(value));
+		glClearDepth((double)value);
 	}
 
 	void OpenGLDepthMapFramebuffer::ClearDepthAttachment() const
@@ -530,6 +534,7 @@ namespace Vortex {
 		// Create Depth Cubemap Texture
 		glGenTextures(1, &m_DepthCubemapTextureRendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemapTextureRendererID);
+
 		for (uint32_t i = 0; i < 6; i++)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, props.Width, props.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);

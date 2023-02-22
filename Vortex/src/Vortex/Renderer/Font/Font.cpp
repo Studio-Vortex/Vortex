@@ -116,7 +116,7 @@ namespace Vortex {
 		header.Height = bitmap.height;
 		CacheFontAtlas(fontName, fontSize, header, bitmap.pixels);
 
-		ImageProperties imageProps;
+		TextureProperties imageProps;
 		imageProps.Width = header.Width;
 		imageProps.Height = header.Height;
 		imageProps.TextureFormat = ImageFormat::RGBA32F;
@@ -128,7 +128,7 @@ namespace Vortex {
 
 	static SharedRef<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
 	{
-		ImageProperties imageProps;
+		TextureProperties imageProps;
 		imageProps.Width = header.Width;
 		imageProps.Height = header.Height;
 		imageProps.TextureFormat = ImageFormat::RGBA32F;

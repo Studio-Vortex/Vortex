@@ -19,13 +19,8 @@ namespace Vortex {
 
 		virtual bool IsLoaded() const = 0;
 
-		virtual bool PathChanged() const = 0;
-		virtual void SetPathChanged(bool changed) = 0;
-
-		virtual bool IsDirty() const = 0;
-		virtual void SetIsDirty(bool dirty) = 0;
-
-		virtual void Reload() = 0;
+		virtual bool ShouldReload() const = 0;
+		virtual void SetShouldReload(bool reload) = 0;
 
 		virtual uint32_t GetRendererID() const = 0;
 

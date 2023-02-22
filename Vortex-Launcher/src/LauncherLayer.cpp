@@ -20,7 +20,7 @@ namespace Vortex {
 
 		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
 
-		ImageProperties imageProps;
+		TextureProperties imageProps;
 		imageProps.Filepath = "Resources/Images/VortexLogo.png";
 		imageProps.WrapMode = ImageWrap::Repeat;
 

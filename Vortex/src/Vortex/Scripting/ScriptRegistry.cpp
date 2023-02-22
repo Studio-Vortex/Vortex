@@ -1418,7 +1418,7 @@ namespace Vortex {
 			}
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			ImageProperties imageProps;
+			TextureProperties imageProps;
 			imageProps.Filepath = Project::GetAssetFileSystemPath(std::filesystem::path(texturePathCStr)).string();
 			// TODO should allow as an option
 			imageProps.WrapMode = ImageWrap::Repeat;

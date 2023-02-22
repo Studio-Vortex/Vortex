@@ -319,7 +319,7 @@ namespace Vortex {
 
 					if (FileSystem::Exists(relativePath))
 					{
-						ImageProperties imageProps;
+						TextureProperties imageProps;
 						imageProps.Filepath = relativePath.string();
 						imageProps.WrapMode = ImageWrap::Repeat;
 

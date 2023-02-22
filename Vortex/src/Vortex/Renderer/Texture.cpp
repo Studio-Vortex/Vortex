@@ -12,7 +12,7 @@
 
 namespace Vortex {
 
-    SharedRef<Texture2D> Texture2D::Create(const ImageProperties& imageProps)
+    SharedRef<Texture2D> Texture2D::Create(const TextureProperties& imageProps)
     {
 		switch (Renderer::GetGraphicsAPI())
 		{

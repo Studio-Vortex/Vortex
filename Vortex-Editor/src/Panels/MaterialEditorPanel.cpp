@@ -143,7 +143,7 @@ namespace Vortex {
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 							{
-								ImageProperties imageProps;
+								TextureProperties imageProps;
 								imageProps.Filepath = texturePath.string();
 								imageProps.WrapMode = ImageWrap::Repeat;
 
@@ -176,7 +176,7 @@ namespace Vortex {
 							std::string projectDir = Project::GetProjectDirectory().string();
 							std::string relativePath = FileSystem::Relative(filepath, projectDir).string();
 							
-							ImageProperties imageProps;
+							TextureProperties imageProps;
 							imageProps.Filepath = relativePath;
 							imageProps.WrapMode = ImageWrap::Repeat;
 
