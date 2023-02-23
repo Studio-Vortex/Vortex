@@ -14,11 +14,14 @@ namespace Vortex {
 
 	struct LauncherProperties
 	{
-		std::string EditorPath;
-		std::string WorkingDirectory;
-		ProjectType Type = ProjectType::e3D;
+		std::filesystem::path WorkingDirectory = "";
+		std::filesystem::path ProjectPath = "";
+		std::filesystem::path EditorPath = "";
+
 		inline static char ProjectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH];
 		inline static char ProjectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH];
+
+		ProjectType Type = ProjectType::e3D;
 	};
 
 	class LauncherLayer : public Layer
@@ -48,10 +51,10 @@ namespace Vortex {
 
 	private:
 		LauncherProperties m_Properties;
-		SharedRef<Framebuffer> m_Framebuffer;
-		SharedRef<Texture2D> m_VortexLogoIcon;
+		SharedRef<Framebuffer> m_Framebuffer = nullptr;
+		SharedRef<Texture2D> m_VortexLogoIcon = nullptr;
+		SharedRef<Texture2D> m_SelectedProjectIcon = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
-		std::filesystem::path m_ProjectPath = std::filesystem::path();
 
 		bool m_CreatingNewProject = false;
 	};

@@ -9,16 +9,17 @@ namespace Vortex {
 
 	void LauncherLayer::OnAttach()
 	{
-		const auto& appProps = Application::Get().GetProperties();
+		Application& application = Application::Get();
+		const auto& appProperties = application.GetProperties();
 
 		FramebufferProperties framebufferProps{};
 		framebufferProps.Attachments = { ImageFormat::RGBA16F, ImageFormat::Depth };
-		framebufferProps.Width = appProps.WindowWidth;
-		framebufferProps.Height = appProps.WindowHeight;
+		framebufferProps.Width = appProperties.WindowWidth;
+		framebufferProps.Height = appProperties.WindowHeight;
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
-		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
+		m_ViewportSize = Math::vec2((float)appProperties.WindowWidth, (float)appProperties.WindowHeight);
 
 		TextureProperties imageProps;
 		imageProps.Filepath = "Resources/Images/VortexLogo.png";
@@ -26,8 +27,9 @@ namespace Vortex {
 
 		m_VortexLogoIcon = Texture2D::Create(imageProps);
 
-		m_Properties.EditorPath = Application::Get().GetEditorBinaryPath();
-		m_Properties.WorkingDirectory = Application::Get().GetProperties().WorkingDirectory;
+		m_Properties.EditorPath = application.GetEditorBinaryPath();
+		m_Properties.WorkingDirectory = appProperties.WorkingDirectory;
+
 		ResetInputFields();
 	}
 
@@ -83,7 +85,8 @@ namespace Vortex {
 
 		if (Gui::Selectable("New Project", selectedProject == 0))
 		{
-			m_ProjectPath = std::filesystem::path();
+			m_Properties.ProjectPath = std::filesystem::path();
+			m_SelectedProjectIcon = nullptr;
 			selectedProject = 0;
 		}
 
@@ -91,7 +94,7 @@ namespace Vortex {
 
 		i = 1;
 
-		for (auto& directoryEntry : std::filesystem::recursive_directory_iterator("Projects"))
+		for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator("Projects"))
 		{
 			if (directoryEntry.path().string().find(".vxproject") == std::string::npos)
 			{
@@ -104,7 +107,27 @@ namespace Vortex {
 
 			if (Gui::Selectable(projectName.c_str(), selectedProject == i))
 			{
-				m_ProjectPath = directoryEntry.path();
+				m_Properties.ProjectPath = directoryEntry.path();
+				std::string projectIconName = projectName + ".png";
+				std::filesystem::path projectDirectory = FileSystem::GetParentDirectory(m_Properties.ProjectPath);
+				
+				m_SelectedProjectIcon = nullptr;
+
+				for (const auto& projectEntry : std::filesystem::recursive_directory_iterator(projectDirectory))
+				{
+					if (projectEntry.path().string().find(projectIconName) == std::string::npos)
+					{
+						continue;
+					}
+					
+					TextureProperties imageProps;
+					imageProps.Filepath = (projectDirectory / projectIconName).string();
+					imageProps.WrapMode = ImageWrap::Repeat;
+
+					m_SelectedProjectIcon = Texture2D::Create(imageProps);
+					break;
+				}
+
 				selectedProject = i;
 			}
 
@@ -120,15 +143,20 @@ namespace Vortex {
 		Gui::BeginChild("Right", contentRegionAvail);
 
 		Gui::PushFont(hugeFont);
-		Gui::TextCentered("Vortex Game Engine", 24.0f);
+		Gui::TextCentered("Vortex Game Engine", 26.0f);
 		Gui::PopFont();
 		Gui::Spacing();
 		Gui::Spacing();
 		UI::Draw::Underline();
 
-		ImVec2 logoSize = { contentRegionAvail.x / 4.0f, contentRegionAvail.x / 4.0f };
-		Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - logoSize.x * 0.5f, 75.0f });
-		Gui::Image((void*)m_VortexLogoIcon->GetRendererID(), logoSize, { 0, 1 }, { 1, 0 });
+		if (m_SelectedProjectIcon)
+		{
+			ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
+			float imageScale = 1.1f;
+			ImVec2 textureSize = { 640 * imageScale, 360 * imageScale };
+			Gui::SetCursorPos({ contentRegionAvailable.x * 0.5f - textureSize.x * 0.5f, contentRegionAvailable.y * 0.5f - textureSize.y * 0.5f });
+			Gui::Image((ImTextureID)m_SelectedProjectIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
+		}
 
 		Gui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.8f, 1.0f));
 		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.8f, 1.0f));
@@ -248,8 +276,9 @@ namespace Vortex {
 		projectProps.General.StartScene = "Scenes/SampleScene.vortex";
 		projectProps.ScriptingProps.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", m_Properties.ProjectNameBuffer);
 		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
-		m_ProjectPath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path(projectFilename);
-		std::filesystem::path projectDirectoryPath = m_ProjectPath.parent_path();
+		m_Properties.ProjectPath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path(projectFilename);
+		std::filesystem::path projectDirectoryPath = FileSystem::GetParentDirectory(m_Properties.ProjectPath);
+
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
 		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
@@ -277,7 +306,7 @@ namespace Vortex {
 		fout << str;
 		fout.close();
 
-		Project::SaveActive(m_ProjectPath);
+		Project::SaveActive(m_Properties.ProjectPath);
 
 		std::filesystem::current_path("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
 
@@ -322,8 +351,8 @@ namespace Vortex {
 
 	void LauncherLayer::LaunchEditor()
 	{
-		std::string projectPath = FileSystem::Relative(m_ProjectPath, m_Properties.WorkingDirectory).string();
-		FileSystem::LaunchApplication(m_Properties.EditorPath.c_str(), projectPath.c_str());
+		std::string projectPath = FileSystem::Relative(m_Properties.ProjectPath, m_Properties.WorkingDirectory).string();
+		FileSystem::LaunchApplication(m_Properties.EditorPath.string().c_str(), projectPath.c_str());
 	}
 
 	const char* LauncherLayer::ProjectTypeToString(ProjectType type)

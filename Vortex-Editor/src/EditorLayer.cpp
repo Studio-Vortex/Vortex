@@ -395,35 +395,59 @@ namespace Vortex {
 			if (Gui::BeginMenu("File"))
 			{
 				if (Gui::MenuItem("New Project"))
+				{
 					CreateNewProject();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Open Project...", "Ctrl+O"))
+				{
 					OpenExistingProject();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save Project"))
+				{
 					SaveProject();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("New Scene", "Ctrl+N"))
+				{
 					CreateNewScene();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Open Scene..."))
+				{
 					OpenExistingScene();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save", "Ctrl+S"))
+				{
 					SaveScene();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
+				{
+					Gui::CloseCurrentPopup();
 					SaveSceneAs();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Exit", "Alt+F4"))
+				{
 					Application::Get().Quit();
+					Gui::CloseCurrentPopup();
+				}
 
 				Gui::EndMenu();
 			}
@@ -441,32 +465,48 @@ namespace Vortex {
 							TransformComponent& transform = selectedEntity.GetTransform();
 							transform.Translation = m_EditorCamera->GetPosition();
 							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
+							Gui::CloseCurrentPopup();
 						}
 
 						UI::Draw::Underline();
 					}
 
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
+					{
 						OnScenePlay();
+						Gui::CloseCurrentPopup();
+					}
 					UI::Draw::Underline();
 
 					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
+					{
 						OnSceneSimulate();
+						Gui::CloseCurrentPopup();
+					}
 
 					if (selectedEntity)
 					{
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
+						{
 							m_SceneHierarchyPanel.EditSelectedEntityName(true);
+							Gui::CloseCurrentPopup();
+						}
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
+						{
 							DuplicateSelectedEntity();
+							Gui::CloseCurrentPopup();
+						}
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Delete Entity", "Del"))
+						{
 							m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+							Gui::CloseCurrentPopup();
+						}
 					}
 				}
 				else
@@ -474,20 +514,32 @@ namespace Vortex {
 					if (inPlayMode)
 					{
 						if (Gui::MenuItem("Stop Scene", "Ctrl+P"))
+						{
 							OnSceneStop();
+							Gui::CloseCurrentPopup();
+						}
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
+						{
 							RestartScene();
+							Gui::CloseCurrentPopup();
+						}
 					}
 					else if (inSimulateMode)
 					{
 						if (Gui::MenuItem("Stop Simulation", "Ctrl+X"))
+						{
 							OnSceneStop();
+							Gui::CloseCurrentPopup();
+						}
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Restart Simulation", "Ctrl+Shift+X"))
+						{
 							RestartSceneSimulation();
+							Gui::CloseCurrentPopup();
+						}
 					}
 				}
 
@@ -502,12 +554,18 @@ namespace Vortex {
 				if (m_SceneViewportMaximized)
 				{
 					if (Gui::MenuItem("Minimize Scene", "Ctrl+Space"))
+					{
 						m_SceneViewportMaximized = false;
+						Gui::CloseCurrentPopup();
+					}
 				}
 				else
 				{
 					if (Gui::MenuItem("Maximize Scene", "Ctrl+Space"))
+					{
 						m_SceneViewportMaximized = true;
+						Gui::CloseCurrentPopup();
+					}
 				}
 
 				Gui::EndMenu();
@@ -516,19 +574,31 @@ namespace Vortex {
 			if (Gui::BeginMenu("Tools"))
 			{
 				if (Gui::MenuItem("No Selection", "Q"))
+				{
 					OnNoGizmoSelected();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Translation Tool", "W"))
+				{
 					OnTranslationToolSelected();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Rotation Tool", "E"))
+				{
 					OnRotationToolSelected();
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Scale Tool", "R"))
+				{
 					OnScaleToolSelected();
+					Gui::CloseCurrentPopup();
+				}
 
 				Gui::EndMenu();
 			}
@@ -1245,7 +1315,7 @@ namespace Vortex {
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
 	{
 		SaveScene();
-		Project::SaveActive(filepath);
+		SaveProject();
 		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
 		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
@@ -1924,25 +1994,7 @@ namespace Vortex {
 
 	void EditorLayer::SaveProject()
 	{
-		const std::string sceneImagePath = Project::GetAssetDirectory().string() + "/sceneImage.png";
-		const uint32_t nrChannels = 3;
-		uint32_t stride = nrChannels * (uint32_t)m_ViewportSize.x;
-		// make sure alignment is 4 bytes
-		stride += (stride % 4) ? (4 - stride % 4) : 0;
-		const uint32_t bufferSize = stride * (uint32_t)m_ViewportSize.y;
-		std::vector<char> image(bufferSize);
-		m_Framebuffer->ReadAttachmentToBuffer(0, image.data());
-
-		TextureProperties imageProps;
-		imageProps.Filepath = sceneImagePath;
-		imageProps.Width = (uint32_t)m_ViewportSize.x;
-		imageProps.Height = (uint32_t)m_ViewportSize.y;
-		imageProps.Channels = nrChannels;
-		imageProps.Buffer = (void*)image.data();
-		imageProps.Stride = stride;
-
-		SharedRef<Texture2D> sceneTexture = Texture2D::Create(imageProps);
-		sceneTexture->SaveToFile();
+		CaptureFramebufferImageToDisk();
 
 		const auto& projectProps = Project::GetActive()->GetProperties();
 		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
@@ -2245,6 +2297,37 @@ namespace Vortex {
 			m_EditorCamera->Focus({ 0, 0, 0 });
 			m_EditorCamera->SetDistance(10);
 		}
+	}
+
+	void EditorLayer::CaptureFramebufferImageToDisk()
+	{
+		const std::string sceneImagePath = Project::GetProjectDirectory().string() + "/" + Project::GetActive()->GetName() + ".png";
+		
+		if (FileSystem::Exists(sceneImagePath))
+		{
+			FileSystem::Remove(sceneImagePath);
+		}
+
+		const uint32_t nrChannels = 3;
+		uint32_t stride = nrChannels * (uint32_t)m_ViewportSize.x;
+
+		// make sure alignment is 4 bytes
+		stride += (stride % 4) ? (4 - stride % 4) : 0;
+
+		const uint32_t bufferSize = stride * (uint32_t)m_ViewportSize.y;
+		Buffer buffer(bufferSize);
+		m_Framebuffer->ReadAttachmentToBuffer(0, buffer.As<char>());
+
+		TextureProperties imageProps;
+		imageProps.Filepath = sceneImagePath;
+		imageProps.Width = (uint32_t)m_ViewportSize.x;
+		imageProps.Height = (uint32_t)m_ViewportSize.y;
+		imageProps.Channels = nrChannels;
+		imageProps.Buffer = buffer.As<const void>();
+		imageProps.Stride = stride;
+
+		SharedRef<Texture2D> sceneTexture = Texture2D::Create(imageProps);
+		sceneTexture->SaveToFile();
 	}
 
 	void EditorLayer::OnNoGizmoSelected()

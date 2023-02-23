@@ -98,6 +98,7 @@ namespace Vortex {
 		void DuplicateSelectedEntity();
 		void SetSceneContext(const SharedRef<Scene>& scene);
 		void ResetEditorCameras();
+		void CaptureFramebufferImageToDisk();
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
