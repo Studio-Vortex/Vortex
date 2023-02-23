@@ -305,11 +305,6 @@ namespace Vortex {
 
 #pragma region RigidBody Component
 
-		void RigidBodyComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation);
-		void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation);
-		void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation);
-		void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation);
-		void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint);
 		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID);
 		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType);
 		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID);
@@ -432,10 +427,6 @@ namespace Vortex {
 
 #pragma region RigidBody2D Component
 
-		void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation);
-		void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation);
-		float RigidBody2DComponent_GetRotation(UUID entityUUID);
-		void RigidBody2DComponent_SetRotation(UUID entityUUID, float rotation);
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID);
 		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType);
 		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake);

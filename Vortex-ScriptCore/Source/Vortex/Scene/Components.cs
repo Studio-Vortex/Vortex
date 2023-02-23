@@ -18,7 +18,7 @@
 		}
 
 		public void Translate(Vector3 translation) => Translation += translation;
-		public void Translate(float x, float y, float z) => Translation += new Vector3(x, y, z);
+		public void Translate(float x, float y, float z) => Translate(new Vector3(x, y, z));
 
 		public Quaternion Rotation
 		{
@@ -43,7 +43,7 @@
 		}
 
 		public void Rotate(Vector3 rotation) => EulerAngles += rotation;
-		public void Rotate(float x, float y, float z) => EulerAngles += new Vector3(x, y, z);
+		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
 
 		public void RotateAround(Vector3 worldPoint, Vector3 axis, float angle)
 		{
@@ -505,34 +505,6 @@
 
 	public class RigidBody : Component
 	{
-		public Vector3 Translation
-		{
-			get
-			{
-				InternalCalls.RigidBodyComponent_GetTranslation(Entity.ID, out Vector3 result);
-				return result;
-			}
-
-			set => InternalCalls.RigidBodyComponent_SetTranslation(Entity.ID, ref value);
-		}
-
-		public void Translate(Vector3 translation) => Translation += translation;
-		public void Translate(float x, float y, float z) => Translate(new Vector3(x, y, z));
-
-		public Vector3 Rotation
-		{
-			get
-			{
-				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Vector3 result);
-				return result;
-			}
-
-			set => InternalCalls.RigidBodyComponent_SetRotation(Entity.ID, ref value);
-		}
-
-		public void Rotate(Vector3 rotation) => Rotation += rotation;
-		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
-
 		public RigidBodyType BodyType
 		{
 			get => InternalCalls.RigidBodyComponent_GetBodyType(Entity.ID);
@@ -618,8 +590,6 @@
 		{
 			InternalCalls.RigidBodyComponent_AddTorque(Entity.ID, ref torque, forceMode);
 		}
-
-		public void LookAt(Vector3 worldPoint) => InternalCalls.RigidBodyComponent_LookAt(Entity.ID, ref worldPoint);
 
 		public void ClearTorque(ForceMode mode = ForceMode.Force)
 		{
@@ -854,28 +824,6 @@
 
 	public class RigidBody2D : Component
 	{
-		public Vector2 Translation
-		{
-			get
-			{
-				InternalCalls.RigidBody2DComponent_GetTranslation(Entity.ID, out Vector2 result);
-				return result;
-			}
-
-			set => InternalCalls.RigidBody2DComponent_SetTranslation(Entity.ID, ref value);
-		}
-
-		public void Translate(Vector2 translation) => Translation += translation;
-		public void Translate(float x, float y) => Translate(new Vector2(x, y));
-
-		public float Rotation
-		{
-			get => InternalCalls.RigidBody2DComponent_GetRotation(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetRotation(Entity.ID, value);
-		}
-
-		public void Rotate(float amount) => Rotation += amount;
-
 		public RigidBody2DType BodyType
 		{
 			get => InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);
