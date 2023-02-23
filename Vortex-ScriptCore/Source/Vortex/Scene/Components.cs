@@ -14,6 +14,7 @@
 				InternalCalls.TransformComponent_GetTranslation(Entity.ID, out Vector3 translation);
 				return translation;
 			}
+
 			set => InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
 		}
 
@@ -42,8 +43,12 @@
 			set => InternalCalls.TransformComponent_SetEulerAngles(Entity.ID, ref value);
 		}
 
-		public void Rotate(Vector3 rotation) => EulerAngles += rotation;
-		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
+		public void Rotate(Vector3 eulers, Space relativeTo = Space.Local)
+		{
+			InternalCalls.TransformComponent_Rotate(Entity.ID, ref eulers, relativeTo);
+		}
+
+		public void Rotate(float x, float y, float z, Space relativeTo = Space.Local) => Rotate(new Vector3(x, y, z), relativeTo);
 
 		public void RotateAround(Vector3 worldPoint, Vector3 axis, float angle)
 		{

@@ -1,5 +1,10 @@
 ﻿namespace Vortex {
 
+	public enum Space
+	{
+		Local, World,
+	}
+
 	public enum LightType
 	{
 		Directional, Point, Spot,

@@ -188,13 +188,16 @@ namespace Vortex {
 		internal extern static void TransformComponent_GetEulerAngles(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetEulerAngles(ulong entityID, ref Vector3 rotation);
+		internal extern static void TransformComponent_SetEulerAngles(ulong entityID, ref Vector3 eulerAngles);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetTranslationAndRotation(ulong entityID, ref Vector3 translation, ref Vector3 rotation);
+		internal extern static void TransformComponent_Rotate(ulong entityID, ref Vector3 eulers, Space relativeTo);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_RotateAround(ulong entityID, ref Vector3 worldPoint, ref Vector3 axis, float angle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetTranslationAndRotation(ulong entityID, ref Vector3 translation, ref Vector3 eulerAngles);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);

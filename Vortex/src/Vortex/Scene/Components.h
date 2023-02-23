@@ -69,6 +69,11 @@ namespace Vortex {
 			: ParentUUID(parentUUID) { }
 	};
 
+	enum class Space
+	{
+		Local, World,
+	};
+
 	struct TransformComponent
 	{
 		Math::vec3 Translation = Math::vec3(0.0f);

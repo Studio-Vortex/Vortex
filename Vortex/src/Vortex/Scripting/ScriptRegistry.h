@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Scene/Entity.h"
+#include <Vortex/Core/KeyCodes.h>
 
 extern "C"
 {
@@ -116,8 +117,9 @@ namespace Vortex {
 		void TransformComponent_SetRotation(UUID entityUUID, Math::quaternion* rotation);
 		void TransformComponent_GetEulerAngles(UUID entityUUID, Math::vec3* outEulerAngles);
 		void TransformComponent_SetEulerAngles(UUID entityUUID, Math::vec3* eulerAngles);
-		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation);
+		void TransformComponent_Rotate(UUID entityUUID, Math::vec3* eulers, Space relativeTo);
 		void TransformComponent_RotateAround(UUID entityUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle);
+		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation);
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale);
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale);
 		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale);
