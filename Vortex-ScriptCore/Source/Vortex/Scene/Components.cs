@@ -17,46 +17,37 @@
 			set => InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
 		}
 
-		public void Translate(Vector3 translation)
-		{
-			Translation += translation;
-		}
+		public void Translate(Vector3 translation) => Translation += translation;
+		public void Translate(float x, float y, float z) => Translation += new Vector3(x, y, z);
 
-		public void Translate(float x, float y, float z)
-		{
-			Translation += new Vector3(x, y, z);
-		}
-
-		public Vector3 Rotation
+		public Quaternion Rotation
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
+				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Quaternion rotation);
 				return rotation;
 			}
 
 			set => InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
 		}
 
-		public Quaternion GetRotation()
+		public Vector3 EulerAngles
 		{
-			InternalCalls.TransformComponent_GetRotationQuaternion(Entity.ID, out Quaternion result);
-			return result;
+			get
+			{
+				InternalCalls.TransformComponent_GetEulerAngles(Entity.ID, out Vector3 eulerAngles);
+				return eulerAngles;
+			}
+
+			set => InternalCalls.TransformComponent_SetEulerAngles(Entity.ID, ref value);
 		}
 
-		public void SetRotation(Quaternion orientation)
-		{
-			InternalCalls.TransformComponent_SetRotationQuaternion(Entity.ID, ref orientation);
-		}
+		public void Rotate(Vector3 rotation) => EulerAngles += rotation;
+		public void Rotate(float x, float y, float z) => EulerAngles += new Vector3(x, y, z);
 
-		public void Rotate(Vector3 rotation)
+		public void RotateAround(Vector3 worldPoint, Vector3 axis, float angle)
 		{
-			Rotation += rotation;
-		}
-
-		public void Rotate(float x, float y, float z)
-		{
-			Rotation += new Vector3(x, y, z);
+			InternalCalls.TransformComponent_RotateAround(Entity.ID, ref worldPoint, ref axis, angle);
 		}
 
 		public Vector3 Scale
@@ -74,10 +65,7 @@
 		/// Sets the scale of the entity
 		/// </summary>
 		/// <param name="scale">the new scale</param>
-		public void LocalScale(Vector3 scale)
-		{
-			Scale = scale;
-		}
+		public void LocalScale(Vector3 scale) => Scale = scale;
 
 		/// <summary>
 		/// Sets the scale of the entity
@@ -85,19 +73,13 @@
 		/// <param name="x">the new x scale</param>
 		/// <param name="y">the new y scale</param>
 		/// <param name="z">the new z scale</param>
-		public void LocalScale(float x, float y, float z)
-		{
-			Scale = new Vector3(x, y, z);
-		}
+		public void LocalScale(float x, float y, float z) => Scale = new Vector3(x, y, z);
 
 		/// <summary>
 		/// Applys the given scale to the current entity's scale
 		/// </summary>
 		/// <param name="scale">the scale to be applied</param>
-		public void ApplyScale(Vector3 scale)
-		{
-			Scale += scale;
-		}
+		public void ApplyScale(Vector3 scale) => Scale += scale;
 
 		/// <summary>
 		/// Applys the given scale to the current entity's scale
@@ -105,10 +87,7 @@
 		/// <param name="x">the x scale to be applied</param>
 		/// <param name="y">the y scale to be applied</param>
 		/// <param name="z">the z scale to be applied</param>
-		public void ApplyScale(float x, float y, float z)
-		{
-			Scale += new Vector3(x, y, z);
-		}
+		public void ApplyScale(float x, float y, float z) => Scale += new Vector3(x, y, z);
 
 		public struct WorldTransform
 		{
@@ -321,10 +300,7 @@
 
 	public class Animator : Component
 	{
-		public bool IsPlaying
-		{
-			get => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
-		}
+		public bool IsPlaying => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
 
 		public void Play() => InternalCalls.AnimatorComponent_Play(Entity.ID);
 	}
@@ -536,8 +512,12 @@
 				InternalCalls.RigidBodyComponent_GetTranslation(Entity.ID, out Vector3 result);
 				return result;
 			}
+
 			set => InternalCalls.RigidBodyComponent_SetTranslation(Entity.ID, ref value);
 		}
+
+		public void Translate(Vector3 translation) => Translation += translation;
+		public void Translate(float x, float y, float z) => Translate(new Vector3(x, y, z));
 
 		public Vector3 Rotation
 		{
@@ -546,8 +526,12 @@
 				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Vector3 result);
 				return result;
 			}
+
 			set => InternalCalls.RigidBodyComponent_SetRotation(Entity.ID, ref value);
 		}
+
+		public void Rotate(Vector3 rotation) => Rotation += rotation;
+		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
 
 		public RigidBodyType BodyType
 		{
@@ -619,20 +603,6 @@
 
 		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Entity.ID);
 		public void WakeUp() => InternalCalls.RigidBodyComponent_WakeUp(Entity.ID);
-
-		public void Translate(Vector3 translation)
-		{
-			InternalCalls.RigidBodyComponent_Translate(Entity.ID, ref translation);
-		}
-
-		public void Translate(float x, float y, float z) => Translate(new Vector3(x, y, z));
-
-		public void Rotate(Vector3 rotation)
-		{
-			InternalCalls.RigidBodyComponent_Rotate(Entity.ID, ref rotation);
-		}
-
-		public void Rotate(float x, float y, float z) => Rotate(new Vector3(x, y, z));
 
 		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{
@@ -895,11 +865,16 @@
 			set => InternalCalls.RigidBody2DComponent_SetTranslation(Entity.ID, ref value);
 		}
 
-		public float Angle
+		public void Translate(Vector2 translation) => Translation += translation;
+		public void Translate(float x, float y) => Translate(new Vector2(x, y));
+
+		public float Rotation
 		{
-			get => InternalCalls.RigidBody2DComponent_GetAngle(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetAngle(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetRotation(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetRotation(Entity.ID, value);
 		}
+
+		public void Rotate(float amount) => Rotation += amount;
 
 		public RigidBody2DType BodyType
 		{

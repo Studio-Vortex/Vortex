@@ -1158,6 +1158,10 @@ namespace Vortex {
 	{
 		UI::PushID();
 
+		ImGuiIO& io = Gui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -1224,7 +1228,9 @@ namespace Vortex {
 			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
 			{
 				{
+					Gui::PushFont(boldFont);
 					Gui::Text("Display");
+					Gui::PopFont();
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 
@@ -1254,7 +1260,9 @@ namespace Vortex {
 				}
 
 				{
+					Gui::PushFont(boldFont);
 					Gui::Text("Gizmos");
+					Gui::PopFont();
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 
@@ -1273,7 +1281,9 @@ namespace Vortex {
 				}
 
 				{
+					Gui::PushFont(boldFont);
 					Gui::Text("Editor Camera");
+					Gui::PopFont();
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 

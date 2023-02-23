@@ -520,38 +520,52 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outTranslation = entity.GetComponent<TransformComponent>().Translation;
+			*outTranslation = entity.GetTransform().Translation;
 		}
 
 		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TransformComponent>().Translation = *translation;
+			entity.GetTransform().Translation = *translation;
 		}
 
-		void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation)
+		void TransformComponent_GetRotation(UUID entityUUID, Math::quaternion* outRotation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRotation = entity.GetComponent<TransformComponent>().GetRotationEuler();
-
-			// Since we store rotation in radians we must convert to degrees here
-			outRotation->x = Math::Rad2Deg(outRotation->x);
-			outRotation->y = Math::Rad2Deg(outRotation->y);
-			outRotation->z = Math::Rad2Deg(outRotation->z);
+			*outRotation = entity.GetTransform().GetRotation();
 		}
 
-		void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation)
+		void TransformComponent_SetRotation(UUID entityUUID, Math::quaternion* rotation)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			entity.GetTransform().SetRotation(*rotation);
+		}
+
+		void TransformComponent_GetEulerAngles(UUID entityUUID, Math::vec3* outEulerAngles)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			*outEulerAngles = entity.GetTransform().GetRotationEuler();
+
+			// Since we store rotation in radians we must convert to degrees here
+			outEulerAngles->x = Math::Rad2Deg(outEulerAngles->x);
+			outEulerAngles->y = Math::Rad2Deg(outEulerAngles->y);
+			outEulerAngles->z = Math::Rad2Deg(outEulerAngles->z);
+		}
+
+		void TransformComponent_SetEulerAngles(UUID entityUUID, Math::vec3* eulerAngles)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			// Since we store rotation in radians we must convert to radians here
-			rotation->x = Math::Deg2Rad(rotation->x);
-			rotation->y = Math::Deg2Rad(rotation->y);
-			rotation->z = Math::Deg2Rad(rotation->z);
+			eulerAngles->x = Math::Deg2Rad(eulerAngles->x);
+			eulerAngles->y = Math::Deg2Rad(eulerAngles->y);
+			eulerAngles->z = Math::Deg2Rad(eulerAngles->z);
 
-			entity.GetComponent<TransformComponent>().SetRotationEuler(*rotation);
+			entity.GetTransform().SetRotationEuler(*eulerAngles);
 		}
 
 		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
@@ -563,32 +577,39 @@ namespace Vortex {
 			transform.SetRotationEuler(*rotation);
 		}
 
-		void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation)
+		void TransformComponent_RotateAround(UUID entityUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOrientation = entity.GetTransform().GetRotation();
-		}
+			const float angleRad = Math::Deg2Rad(angle);
+			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(entity);
+			Math::mat4 worldSpaceTransformMatrix = worldSpaceTransform.GetTransform();
+			const Math::vec3 point = *worldPoint;
+			const Math::vec3 worldSpaceTranslation = worldSpaceTransform.Translation;
+			const Math::vec3 normalizedAxis = *axis;
 
-		void TransformComponent_SetRotationQuaternion(UUID entityUUID, Math::quaternion* orientation)
-		{
-			Entity entity = GetEntity(entityUUID);
+			Math::mat4 transform;
 
-			entity.GetTransform().SetRotation(*orientation);
+			transform = worldSpaceTransformMatrix
+				* Math::Translate(point)
+				* Math::Rotate(angleRad, normalizedAxis)
+				* Math::Translate(-point);
+
+			entity.SetTransform(transform);
 		}
 
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outScale = entity.GetComponent<TransformComponent>().Scale;
+			*outScale = entity.GetTransform().Scale;
 		}
 
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TransformComponent>().Scale = *scale;
+			entity.GetTransform().Scale = *scale;
 		}
 
 		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
@@ -2409,44 +2430,6 @@ namespace Vortex {
 			actor->setGlobalPose(physxTransform);
 		}
 
-		void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
-			{
-				VX_CONSOLE_LOG_WARN("Cannot translate Static actor");
-				return;
-			}
-
-			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-			physx::PxTransform physxTransform = actor->getGlobalPose();
-			physxTransform.p += ToPhysXVector(*translation);
-
-			actor->setGlobalPose(physxTransform);
-		}
-
-		void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
-			{
-				VX_CONSOLE_LOG_WARN("Cannot rotate Static actor");
-				return;
-			}
-
-			physx::PxRigidDynamic* actor = (physx::PxRigidDynamic*)Physics::GetActor(entityUUID);
-			physx::PxTransform physxTransform = actor->getGlobalPose();
-			physxTransform.q *= ToPhysXQuat(*rotation);
-
-			actor->setGlobalPose(physxTransform);
-		}
-
 		void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -2598,21 +2581,21 @@ namespace Vortex {
 			actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
 		}
 
-		static bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
+		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			return entity.GetComponent<RigidBodyComponent>().IsKinematic;
 		}
 
-		static void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
+		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
 		}
 
-		static uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
+		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2627,7 +2610,7 @@ namespace Vortex {
 			return (uint32_t)rb.LockFlags;
 		}
 
-		static void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
+		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2658,7 +2641,7 @@ namespace Vortex {
 			}
 		}
 
-		static bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
+		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2675,7 +2658,7 @@ namespace Vortex {
 			return lockFlags & (uint8_t)flag;
 		}
 
-		static bool RigidBodyComponent_IsSleeping(UUID entityUUID)
+		bool RigidBodyComponent_IsSleeping(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2690,7 +2673,7 @@ namespace Vortex {
 			return actor->isSleeping();
 		}
 
-		static void RigidBodyComponent_WakeUp(UUID entityUUID)
+		void RigidBodyComponent_WakeUp(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2706,7 +2689,7 @@ namespace Vortex {
 			actor->wakeUp();
 		}
 
-		static void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
+		void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2722,7 +2705,7 @@ namespace Vortex {
 			actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 		}
 
-		static void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
+		void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2738,7 +2721,7 @@ namespace Vortex {
 			physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
 		}
 
-		static void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
+		void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2754,7 +2737,7 @@ namespace Vortex {
 			actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 		}
 
-		static void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
+		void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2770,7 +2753,7 @@ namespace Vortex {
 			actor->clearTorque((physx::PxForceMode::Enum)mode);
 		}
 
-		static void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
+		void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -3514,7 +3497,7 @@ namespace Vortex {
 			body->SetTransform({ translation->x, translation->y }, body->GetAngle());
 		}
 
-		float RigidBody2DComponent_GetAngle(UUID entityUUID)
+		float RigidBody2DComponent_GetRotation(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -3524,14 +3507,14 @@ namespace Vortex {
 			return Math::Rad2Deg(body->GetAngle());
 		}
 
-		void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle)
+		void RigidBody2DComponent_SetRotation(UUID entityUUID, float rotation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-			body->SetTransform(body->GetPosition(), Math::Deg2Rad(angle));
+			body->SetTransform(body->GetPosition(), Math::Deg2Rad(rotation));
 		}
 
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
@@ -4389,9 +4372,10 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetTranslation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+		VX_ADD_INTERNAL_CALL(TransformComponent_GetEulerAngles);
+		VX_ADD_INTERNAL_CALL(TransformComponent_SetEulerAngles);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetTranslationAndRotation);
-		VX_ADD_INTERNAL_CALL(TransformComponent_GetRotationQuaternion);
-		VX_ADD_INTERNAL_CALL(TransformComponent_SetRotationQuaternion);
+		VX_ADD_INTERNAL_CALL(TransformComponent_RotateAround);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 		VX_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
@@ -4510,8 +4494,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetTranslation);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetRotation);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetRotation);
-		VX_ADD_INTERNAL_CALL(RigidBodyComponent_Translate);
-		VX_ADD_INTERNAL_CALL(RigidBodyComponent_Rotate);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_LookAt);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
@@ -4609,8 +4591,8 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetTranslation);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetTranslation);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetAngle);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetAngle);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetRotation);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetRotation);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);

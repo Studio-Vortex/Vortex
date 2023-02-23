@@ -597,6 +597,7 @@ namespace Vortex {
 		actor->userData = physicsBodyData;
 
 		s_PhysicsBodyData[entityUUID] = physicsBodyData;
+		s_ActiveActors[entityUUID] = actor;
 
 		if (entity.HasComponent<CharacterControllerComponent>())
 		{
@@ -612,7 +613,6 @@ namespace Vortex {
 			return;
 		}
 
-		s_ActiveActors[entityUUID] = actor;
 		CreateCollider(entity);
 
 		// Set Filters

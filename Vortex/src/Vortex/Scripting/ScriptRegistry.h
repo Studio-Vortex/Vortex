@@ -112,11 +112,12 @@ namespace Vortex {
 
 		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation);
 		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation);
-		void TransformComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation);
-		void TransformComponent_SetRotation(UUID entityUUID, Math::vec3* rotation);
+		void TransformComponent_GetRotation(UUID entityUUID, Math::quaternion* outRotation);
+		void TransformComponent_SetRotation(UUID entityUUID, Math::quaternion* rotation);
+		void TransformComponent_GetEulerAngles(UUID entityUUID, Math::vec3* outEulerAngles);
+		void TransformComponent_SetEulerAngles(UUID entityUUID, Math::vec3* eulerAngles);
 		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation);
-		void TransformComponent_GetRotationQuaternion(UUID entityUUID, Math::quaternion* outOrientation);
-		void TransformComponent_SetRotationQuaternion(UUID entityUUID, Math::quaternion* orientation);
+		void TransformComponent_RotateAround(UUID entityUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle);
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale);
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale);
 		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale);
@@ -308,8 +309,6 @@ namespace Vortex {
 		void RigidBodyComponent_SetTranslation(UUID entityUUID, Math::vec3* translation);
 		void RigidBodyComponent_GetRotation(UUID entityUUID, Math::vec3* outRotation);
 		void RigidBodyComponent_SetRotation(UUID entityUUID, Math::vec3* rotation);
-		void RigidBodyComponent_Translate(UUID entityUUID, Math::vec3* translation);
-		void RigidBodyComponent_Rotate(UUID entityUUID, Math::vec3* rotation);
 		void RigidBodyComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint);
 		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID);
 		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType);
@@ -327,6 +326,18 @@ namespace Vortex {
 		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag);
 		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID);
 		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled);
+		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID);
+		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic);
+		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID);
+		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake);
+		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag);
+		bool RigidBodyComponent_IsSleeping(UUID entityUUID);
+		void RigidBodyComponent_WakeUp(UUID entityUUID);
+		void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode);
+		void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode);
+		void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode);
+		void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode);
+		void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode);
 
 #pragma endregion
 
@@ -423,8 +434,8 @@ namespace Vortex {
 
 		void RigidBody2DComponent_GetTranslation(UUID entityUUID, Math::vec2* outTranslation);
 		void RigidBody2DComponent_SetTranslation(UUID entityUUID, Math::vec2* translation);
-		float RigidBody2DComponent_GetAngle(UUID entityUUID);
-		void RigidBody2DComponent_SetAngle(UUID entityUUID, float angle);
+		float RigidBody2DComponent_GetRotation(UUID entityUUID);
+		void RigidBody2DComponent_SetRotation(UUID entityUUID, float rotation);
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID);
 		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType);
 		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake);

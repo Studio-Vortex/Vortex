@@ -179,19 +179,22 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetTranslation(ulong entityID, ref Vector3 translation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 result);
+		internal extern static void TransformComponent_GetRotation(ulong entityID, out Quaternion result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Quaternion orientation);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetEulerAngles(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetEulerAngles(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetTranslationAndRotation(ulong entityID, ref Vector3 translation, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotationQuaternion(ulong entityID, out Quaternion result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotationQuaternion(ulong entityID, ref Quaternion orientation);
+		internal extern static void TransformComponent_RotateAround(ulong entityID, ref Vector3 worldPoint, ref Vector3 axis, float angle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
@@ -632,12 +635,6 @@ namespace Vortex {
 		internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Vector3 rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_Translate(ulong entityID, ref Vector3 translation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_Rotate(ulong entityID, ref Vector3 rotation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -946,10 +943,10 @@ namespace Vortex {
 		internal extern static void RigidBody2DComponent_SetTranslation(ulong entityID, ref Vector2 translation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float RigidBody2DComponent_GetAngle(ulong entityID);
+		internal extern static float RigidBody2DComponent_GetRotation(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody2DComponent_SetAngle(ulong entityID, float angle);
+		internal extern static void RigidBody2DComponent_SetRotation(ulong entityID, float rotation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static RigidBody2DType RigidBody2DComponent_GetBodyType(ulong entityID);

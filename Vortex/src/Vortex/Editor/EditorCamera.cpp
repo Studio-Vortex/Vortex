@@ -49,7 +49,9 @@ namespace Vortex {
 		if (!m_IsActive)
 		{
 			if (!UI::IsInputEnabled())
+			{
 				UI::SetInputEnabled(true);
+			}
 
 			return;
 		}
@@ -135,7 +137,9 @@ namespace Vortex {
 		}
 
 		if (m_CameraMode == CameraMode::ArcBall)
+		{
 			m_Position = CalculatePosition();
+		}
 
 		UpdateCameraView();
 	}
@@ -143,10 +147,15 @@ namespace Vortex {
 	float EditorCamera::GetCameraSpeed() const
 	{
 		float speed = m_NormalSpeed;
+
 		if (Input::IsKeyDown(KeyCode::LeftControl))
+		{
 			speed /= 2 - Math::Log(m_NormalSpeed);
+		}
 		if (Input::IsKeyDown(KeyCode::LeftShift))
+		{
 			speed *= 2 - Math::Log(m_NormalSpeed);
+		}
 
 		return Math::Clamp(speed, MIN_SPEED, MAX_SPEED);
 	}
@@ -158,7 +167,9 @@ namespace Vortex {
 		// Extra step to handle the problem when the camera direction is the same as the up vector
 		const float cosAngle = Math::Dot(GetForwardDirection(), GetUpDirection());
 		if (cosAngle * yawSign > 0.99f)
+		{
 			m_PitchDelta = 0.0f;
+		}
 
 		const Math::vec3 lookAt = m_Position + GetForwardDirection();
 		m_Direction = Math::Normalize(lookAt - m_Position);
