@@ -767,13 +767,11 @@ namespace Vortex {
 			entity.SetTransform(transform);
 		}
 
-		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation)
+		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* eulers)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			TransformComponent& transform = entity.GetTransform();
-			transform.Translation = *translation;
-			transform.SetRotationEuler(*rotation);
+			TransformComponent_SetTranslation(entityUUID, translation);
+			Math::quaternion rotation(*eulers);
+			TransformComponent_SetRotation(entityUUID, &rotation);
 		}
 
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
@@ -790,14 +788,14 @@ namespace Vortex {
 			entity.GetTransform().Scale = *scale;
 		}
 
-		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale)
+		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale)
 		{
-			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(entity);
 			*outTranslation = worldSpaceTransform.Translation;
-			*outRotationEuler = worldSpaceTransform.GetRotationEuler();
+			*outRotation = worldSpaceTransform.GetRotation();
+			*outEulers = worldSpaceTransform.GetRotationEuler();
 			*outScale = worldSpaceTransform.Scale;
 		}
 

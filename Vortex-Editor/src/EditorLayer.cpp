@@ -2004,7 +2004,10 @@ namespace Vortex {
 
 	void EditorLayer::SaveProject()
 	{
-		CaptureFramebufferImageToDisk();
+		if (m_CaptureFramebufferToDiskOnSave)
+		{
+			CaptureFramebufferImageToDisk();
+		}
 
 		const auto& projectProps = Project::GetActive()->GetProperties();
 		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);

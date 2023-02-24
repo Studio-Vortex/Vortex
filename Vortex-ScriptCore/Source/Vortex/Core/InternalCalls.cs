@@ -206,7 +206,7 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 scale);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Vector3 translation, out Vector3 rotationEuler, out Vector3 scale);
+		internal extern static void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetForwardDirection(ulong entityID, out Vector3 result);

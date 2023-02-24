@@ -934,12 +934,7 @@ namespace Vortex {
 			bool active = tagComponent.IsActive;
 			if (UI::Property("Active", active))
 			{
-				tagComponent.IsActive = active;
-
-				if (active)
-					m_ContextScene->ActiveateChildren(entity);
-				else
-					m_ContextScene->DeactiveateChildren(entity);
+				entity.SetActive(active);
 			}
 
 			UI::EndPropertyGrid();

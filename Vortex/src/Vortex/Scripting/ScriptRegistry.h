@@ -122,7 +122,7 @@ namespace Vortex {
 		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation);
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale);
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale);
-		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::vec3* outRotationEuler, Math::vec3* outScale);
+		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale);
 		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection);
 		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection);
 		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection);

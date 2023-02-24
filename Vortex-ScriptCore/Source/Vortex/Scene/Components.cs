@@ -97,7 +97,8 @@
 		public struct WorldTransform
 		{
 			public Vector3 Translation;
-			public Vector3 Rotation;
+			public Quaternion Rotation;
+			public Vector3 EulerAngles;
 			public Vector3 Scale;
 		}
 
@@ -105,11 +106,13 @@
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Vector3 translation, out Vector3 rotation, out Vector3 scale);
+				InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
+
 				return new WorldTransform
 				{
 					Translation = translation,
 					Rotation = rotation,
+					EulerAngles = eulers,
 					Scale = scale
 				};
 			}
@@ -324,10 +327,8 @@
 
 	public class MeshRenderer : Component
 	{
-		public Submesh GetSubmesh(uint index)
-		{
-			return new Submesh(index, Entity);
-		}
+		public Submesh BaseMesh => GetSubmesh(0);
+		public Submesh GetSubmesh(uint index) => new Submesh(index, Entity);
 	}
 
 	public class StaticMeshRenderer : Component
@@ -338,10 +339,8 @@
 			set => InternalCalls.StaticMeshRendererComponent_SetMeshType(Entity.ID, value);
 		}
 
-		public Submesh GetSubmesh(uint index)
-		{
-			return new Submesh(index, Entity);
-		}
+		public Submesh BaseMesh => GetSubmesh(0);
+		public Submesh GetSubmesh(uint index) => new Submesh(index, Entity);
 	}
 
 	public class SpriteRenderer: Component
