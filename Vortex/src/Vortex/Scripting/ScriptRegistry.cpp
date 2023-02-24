@@ -556,9 +556,8 @@ namespace Vortex {
 				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 
 				const auto& transformComponent = entity.GetTransform();
-				Math::vec3 rotation = transformComponent.GetRotationEuler();
-				auto entityTransform = TransformComponent{ *translation, rotation, transformComponent.Scale }.GetTransform();
-				auto physxTransform = ToPhysXTransform(entityTransform);
+				physx::PxTransform physxTransform = actor->getGlobalPose();
+				physxTransform.p = ToPhysXVector(*translation);
 
 				actor->setGlobalPose(physxTransform);
 
