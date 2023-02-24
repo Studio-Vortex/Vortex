@@ -79,15 +79,7 @@ namespace Vortex {
 		inline TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
 
 		inline bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
-		inline void SetActive(bool active)
-		{
-			GetComponent<TagComponent>().IsActive = active;
-
-			if (active)
-				m_Scene->ActiveateChildren(*this);
-			else
-				m_Scene->DeactiveateChildren(*this);
-		}
+		void SetActive(bool active);
 
 		inline Entity GetParent() const { return m_Scene->TryGetEntityWithUUID(GetParentUUID()); }
 

@@ -415,6 +415,19 @@ namespace Vortex {
 				ScriptEngine::OnRuntimeStart(this);
 
 				auto view = m_Registry.view<ScriptComponent>();
+
+				for (const auto e : view)
+				{
+					Entity entity{ e, this };
+					ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
+				}
+
+				for (const auto e : view)
+				{
+					Entity entity{ e, this };
+					ScriptEngine::OnAwakeEntity(entity);
+				}
+
 				for (const auto e : view)
 				{
 					Entity entity{ e, this };

@@ -74,8 +74,6 @@ namespace Vortex {
 		friend class ScriptInstance;
 	};
 
-	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
-
 	class VORTEX_API ScriptClass
 	{
 	public:
@@ -109,6 +107,7 @@ namespace Vortex {
 		ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity);
 		~ScriptInstance() = default;
 
+		void InvokeOnAwake();
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float delta);
 		void InvokeOnDestroy();
@@ -118,6 +117,8 @@ namespace Vortex {
 		void InvokeOnTriggerExit(Collision& collision);
 		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
 		void InvokeOnRaycastCollision();
+		void InvokeOnEnabled();
+		void InvokeOnDisabled();
 		void InvokeOnGui();
 
 		inline SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
@@ -153,6 +154,7 @@ namespace Vortex {
 
 		enum class ManagedMethod
 		{
+			OnAwake,
 			OnCreate,
 			OnUpdateDelta,
 			OnUpdate,
@@ -163,6 +165,8 @@ namespace Vortex {
 			OnTriggerExit,
 			OnFixedJointDisconnected,
 			OnRaycastCollision,
+			OnEnabled,
+			OnDisabled,
 			OnGui,
 		};
 
@@ -188,6 +192,8 @@ namespace Vortex {
 		uint32_t FieldCount;
 	};
 
+	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
+
 	class VORTEX_API ScriptEngine
 	{
 	public:
@@ -205,8 +211,11 @@ namespace Vortex {
 		static void OnRuntimeStop();
 
 		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
+		static bool EntityInstanceExists(UUID entityUUID);
 		static void ConstructEntityRuntime(UUID entityUUID, MonoObject* instance);
+		static void CreateEntityScriptInstanceRuntime(Entity entity);
 
+		static void OnAwakeEntity(Entity entity);
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, TimeStep delta);
 		static void OnDestroyEntity(Entity entity);
@@ -216,6 +225,8 @@ namespace Vortex {
 		static void OnTriggerExitEntity(Entity entity, Collision& collision);
 		static void OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
 		static void OnRaycastCollisionEntity(Entity entity);
+		static void OnEnabled(Entity entity);
+		static void OnDisabled(Entity entity);
 		static void OnGuiEntity(Entity entity);
 
 		static SharedRef<ScriptClass> GetCoreEntityClass();

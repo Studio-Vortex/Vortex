@@ -24,6 +24,7 @@ namespace Vortex {
 			transform = GetComponent<Transform>();
 		}
 
+		protected virtual void OnAwake() { }
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
 		protected virtual void OnUpdate() { }
@@ -34,6 +35,8 @@ namespace Vortex {
 		protected virtual void OnTriggerExit(Collision other) { }
 		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
 		protected virtual void OnRaycastCollision() { }
+		protected virtual void OnEnabled() { }
+		protected virtual void OnDisabled() { }
 		protected virtual void OnGui() { }
 
 		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
