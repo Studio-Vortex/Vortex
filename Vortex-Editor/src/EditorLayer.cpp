@@ -1936,7 +1936,7 @@ namespace Vortex {
 			{
 				bool allowedToClick = !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed;
 
-				if ((m_SceneViewportHovered || m_SecondViewportHovered) && allowedToClick)
+				if (((m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered) && allowedToClick)
 				{
 					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 
