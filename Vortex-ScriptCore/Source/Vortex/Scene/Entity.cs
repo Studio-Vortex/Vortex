@@ -26,6 +26,7 @@ namespace Vortex {
 
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
+		protected virtual void OnUpdate() { }
 		protected virtual void OnDestroy() { }
 		protected virtual void OnCollisionEnter(Collision other) { }
 		protected virtual void OnCollisionExit(Collision other) { }

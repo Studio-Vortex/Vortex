@@ -151,18 +151,24 @@ namespace Vortex {
 	private:
 		SharedRef<ScriptClass> m_ScriptClass;
 
+		enum class ManagedMethod
+		{
+			OnCreate,
+			OnUpdateDelta,
+			OnUpdate,
+			OnDestroy,
+			OnCollisionEnter,
+			OnCollisionExit,
+			OnTriggerEnter,
+			OnTriggerExit,
+			OnFixedJointDisconnected,
+			OnRaycastCollision,
+			OnGui,
+		};
+
 		MonoObject* m_Instance = nullptr;
 
-		MonoMethod* m_OnCreateFunc = nullptr;
-		MonoMethod* m_OnUpdateFunc = nullptr;
-		MonoMethod* m_OnDestroyFunc = nullptr;
-		MonoMethod* m_OnCollisionEnterFunc = nullptr;
-		MonoMethod* m_OnCollisionExitFunc = nullptr;
-		MonoMethod* m_OnTriggerEnterFunc = nullptr;
-		MonoMethod* m_OnTriggerExitFunc = nullptr;
-		MonoMethod* m_OnFixedJointDisconnectedFunc = nullptr;
-		MonoMethod* m_OnRaycastCollisionFunc = nullptr;
-		MonoMethod* m_OnGuiFunc = nullptr;
+		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
 
 		inline static char s_FieldValueBuffer[16];
 
