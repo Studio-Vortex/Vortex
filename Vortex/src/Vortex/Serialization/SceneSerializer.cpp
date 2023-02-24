@@ -748,6 +748,7 @@ namespace Vortex {
 			// TODO come back to this
 			//out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
 			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
+			VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
 			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
 			VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
 			VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
@@ -1324,6 +1325,8 @@ namespace Vortex {
 
 				//tmc.FontAsset = Font::Create(Project::GetAssetFileSystemPath(textMeshComponent["FontSourcePath"].as<std::string>()));
 				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
+				if (textMeshComponent["BgColor"])
+					tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();
 				tmc.Kerning = textMeshComponent["Kerning"].as<float>();
 				tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
 				tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();

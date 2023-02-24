@@ -323,6 +323,12 @@ namespace Vortex {
 		internal extern static void TextMeshComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_GetBackgroundColor(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetBackgroundColor(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float TextMeshComponent_GetLineSpacing(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

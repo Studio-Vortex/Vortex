@@ -267,6 +267,7 @@ namespace Vortex {
 
 		// Font
 		Math::vec4 Color = Math::vec4(1.0f);
+		Math::vec4 BgColor = Math::vec4(0.0f);
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
 

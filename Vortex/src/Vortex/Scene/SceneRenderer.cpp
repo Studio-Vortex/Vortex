@@ -167,6 +167,7 @@ namespace Vortex {
 						scene->GetWorldSpaceTransformMatrix(entity),
 						textMeshComponent.MaxWidth,
 						textMeshComponent.Color,
+						textMeshComponent.BgColor,
 						textMeshComponent.LineSpacing,
 						textMeshComponent.Kerning,
 						(int)(entt::entity)e

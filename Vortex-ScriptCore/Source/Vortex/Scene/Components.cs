@@ -276,7 +276,19 @@
 				InternalCalls.TextMeshComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
+
 			set => InternalCalls.TextMeshComponent_SetColor(Entity.ID, ref value);
+		}
+
+		public Vector4 BackgroundColor
+		{
+			get
+			{
+				InternalCalls.TextMeshComponent_GetBackgroundColor(Entity.ID, out Vector4 color);
+				return color;
+			}
+			
+			set => InternalCalls.TextMeshComponent_SetBackgroundColor(Entity.ID, ref value);
 		}
 
 		public float LineSpacing

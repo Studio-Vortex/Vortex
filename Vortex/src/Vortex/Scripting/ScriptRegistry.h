@@ -172,6 +172,8 @@ namespace Vortex {
 		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString);
 		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
 		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color);
+		void TextMeshComponent_GetBackgroundColor(UUID entityUUID, Math::vec4* outBackgroundColor);
+		void TextMeshComponent_SetBackgroundColor(UUID entityUUID, Math::vec4* backgroundcolor);
 		float TextMeshComponent_GetLineSpacing(UUID entityUUID);
 		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing);
 		float TextMeshComponent_GetKerning(UUID entityUUID);

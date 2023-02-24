@@ -115,9 +115,9 @@ namespace Vortex {
 		// position is the center, size is the full size of the entity
 		static void DrawRect(const Math::vec3& position, const Math::vec2& size, const Math::vec4& color = ColorToVec4(Color::LightGreen), int entityID = -1);
 
-		static void DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), int entityID = -1);
-		static void DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), int entityID = -1);
-		static void DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f, int entityID = -1);
+		static void DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), const Math::vec4& bgColor = Math::vec4(0.0f), int entityID = -1);
+		static void DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), const Math::vec4& bgColor = Math::vec4(0.0f), int entityID = -1);
+		static void DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color = Math::vec4(1.0f), const Math::vec4& bgColor = Math::vec4(0.0f), float lineHeightOffset = 0.0f, float kerningOffset = 0.0f, int entityID = -1);
 
 		static float GetLineWidth();
 		static void SetLineWidth(float width);

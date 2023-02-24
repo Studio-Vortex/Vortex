@@ -54,6 +54,7 @@ namespace Vortex
 	{
 		Math::vec3 Position;
 		Math::vec4 Color;
+		Math::vec4 BgColor;
 		Math::vec2 TexCoord;
 		float TexIndex;
 
@@ -216,6 +217,7 @@ namespace Vortex
 		s_Data.TextVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color"    },
+			{ ShaderDataType::Float4, "a_BgColor"  },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Int,    "a_EntityID" },
@@ -1108,14 +1110,14 @@ namespace Vortex
 		DrawLine(topLeft, bottomLeft, color, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color, const Math::vec4& bgColor, int entityID)
 	{
-		DrawString(string, Font::GetDefaultFont(), position, maxWidth, color, entityID);
+		DrawString(string, Font::GetDefaultFont(), position, maxWidth, color, bgColor, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color, const Math::vec4& bgColor, int entityID)
 	{
-		DrawString(string, font, Math::Identity() * Math::Translate(position), maxWidth, color, entityID);
+		DrawString(string, font, Math::Identity() * Math::Translate(position), maxWidth, color, bgColor, entityID);
 	}
 
 	static bool NextLine(int index, const std::vector<int>& lines)
@@ -1144,7 +1146,7 @@ namespace Vortex
 
 #pragma warning(default : 4996)
 
-	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color, float lineHeightOffset, float kerningOffset, int entityID)
+	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color, const Math::vec4& bgColor, float lineHeightOffset, float kerningOffset, int entityID)
 	{
 		if (string.empty())
 			return;
@@ -1271,6 +1273,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pb, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { l, b };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1278,6 +1281,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pt, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { l, t };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1285,6 +1289,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pt, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { r, t };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1292,6 +1297,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pb, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { r, b };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;

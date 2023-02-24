@@ -1199,16 +1199,30 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return mono_string_new(mono_domain_get(), entity.GetComponent<TextMeshComponent>().TextString.c_str());
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return mono_string_new(mono_domain_get(), "");
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			return mono_string_new(mono_domain_get(), textMeshComponent.TextString.c_str());
 		}
 
 		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 			char* textCStr = mono_string_to_utf8(textString);
 
-			entity.GetComponent<TextMeshComponent>().TextString = std::string(textCStr);
+			textMeshComponent.TextString = std::string(textCStr);
 			mono_free(textCStr);
 		}
 
@@ -1216,56 +1230,140 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outColor = entity.GetComponent<TextMeshComponent>().Color;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			*outColor = textMeshComponent.Color;
 		}
 
 		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TextMeshComponent>().Color = *color;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.Color = *color;
+		}
+
+		void TextMeshComponent_GetBackgroundColor(UUID entityUUID, Math::vec4* outBackgroundColor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			*outBackgroundColor = textMeshComponent.BgColor;
+		}
+
+		void TextMeshComponent_SetBackgroundColor(UUID entityUUID, Math::vec4* backgroundcolor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.BgColor = *backgroundcolor;
 		}
 
 		float TextMeshComponent_GetLineSpacing(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<TextMeshComponent>().LineSpacing;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return 0.0f;
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			return textMeshComponent.LineSpacing;
 		}
 
 		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TextMeshComponent>().LineSpacing = lineSpacing;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.LineSpacing = lineSpacing;
 		}
 
 		float TextMeshComponent_GetKerning(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<TextMeshComponent>().Kerning;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return 0.0f;
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			return textMeshComponent.Kerning;
 		}
 
 		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TextMeshComponent>().Kerning = kerning;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.Kerning = kerning;
 		}
 
 		float TextMeshComponent_GetMaxWidth(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<TextMeshComponent>().MaxWidth;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return 0.0f;
+			}
+
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			return textMeshComponent.MaxWidth;
 		}
 
 		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<TextMeshComponent>().MaxWidth = maxWidth;
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.MaxWidth = maxWidth;
 		}
 
 #pragma endregion
@@ -4474,6 +4572,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetTextString);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetColor);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetColor);
+		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetBackgroundColor);
+		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetBackgroundColor);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetLineSpacing);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_SetLineSpacing);
 		VX_ADD_INTERNAL_CALL(TextMeshComponent_GetKerning);

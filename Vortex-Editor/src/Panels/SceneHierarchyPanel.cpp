@@ -1502,6 +1502,7 @@ namespace Vortex {
 			}
 
 			UI::Property("Color", &component.Color);
+			UI::Property("Background Color", &component.BgColor);
 			UI::Property("Line Spacing", component.LineSpacing, 1.0f);
 			UI::Property("Kerning", component.Kerning, 1.0f);
 			UI::Property("Max Width", component.MaxWidth, 1.0f);
