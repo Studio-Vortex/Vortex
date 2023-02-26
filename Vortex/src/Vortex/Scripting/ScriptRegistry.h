@@ -76,9 +76,7 @@ namespace Vortex {
 		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName);
 		uint64_t Scene_CreateEntity(MonoString* name);
 		uint64_t Scene_Instantiate(UUID entityUUID);
-		uint64_t Scene_InstantiateAtWorldPosition(UUID entityUUID, Math::vec3* worldPosition);
-		uint64_t Scene_InstantiateAtWithParent(UUID entityUUID, UUID parentUUID);
-		uint64_t Scene_InstantiateAtWorldPositionWithParent(UUID entityUUID, UUID parentUUID, Math::vec3* worldPosition);
+		uint64_t Scene_InstantiateAsChild(UUID entityUUID, UUID parentUUID);
 		bool Scene_IsPaused();
 		void Scene_Pause();
 		void Scene_Resume();
@@ -276,11 +274,6 @@ namespace Vortex {
 		
 #pragma region Audio Source Component
 
-		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
-		void AudioSourceComponent_Play(UUID entityUUID);
-		void AudioSourceComponent_PlayOneShot(UUID entityUUID);
-		void AudioSourceComponent_Restart(UUID entityUUID);
-		void AudioSourceComponent_Stop(UUID entityUUID);
 		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition);
 		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position);
 		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outPosition);
@@ -309,6 +302,11 @@ namespace Vortex {
 		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized);
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID);
 		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop);
+		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
+		void AudioSourceComponent_Play(UUID entityUUID);
+		void AudioSourceComponent_PlayOneShot(UUID entityUUID);
+		void AudioSourceComponent_Restart(UUID entityUUID);
+		void AudioSourceComponent_Stop(UUID entityUUID);
 
 #pragma endregion
 
@@ -336,6 +334,8 @@ namespace Vortex {
 		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled);
 		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID);
 		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic);
+		void RigidBodyComponent_GetKinematicTarget(UUID entityUUID, Math::vec3* outTarget);
+		void RigidBodyComponent_SetKinematicTarget(UUID entityUUID, Math::vec3* target);
 		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID);
 		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake);
 		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag);

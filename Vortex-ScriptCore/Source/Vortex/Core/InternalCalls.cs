@@ -101,13 +101,7 @@ namespace Vortex {
 		internal extern static ulong Scene_Instantiate(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_InstantiateAtWorldPosition(ulong entityID, ref Vector3 worldPosition);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_InstantiateWithParent(ulong entityID, ulong parentID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_InstantiateAtWorldPositionWithParent(ulong entityID, ulong parentID, ref Vector3 worldPosition);
+		internal extern static ulong Scene_InstantiateAsChild(ulong entityID, ulong parentID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_IsPaused();
@@ -714,6 +708,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID, bool isKinematic);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetKinematicTarget(ulong entityID, out Vector3 result);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetKinematicTarget(ulong entityID, ref Vector3 target);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static uint RigidBodyComponent_GetLockFlags(ulong entityID);

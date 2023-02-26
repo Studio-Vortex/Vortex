@@ -41,7 +41,36 @@
 
 		public static Entity Instantiate(Entity entity, Vector3 worldPosition)
 		{
-			ulong entityID = InternalCalls.Scene_InstantiateAtWorldPos(entity.ID, ref worldPosition);
+			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+
+			if (entityID == 0)
+				return null;
+
+			Entity entity = new Entity(entityID);
+
+			entity.transform.Translation = worldPos;
+
+			return entity;
+		}
+
+		public static Entity Instantiate(Entity entity, Vector3 worldPosition, Quaternion orientation)
+		{
+			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+
+			if (entityID == 0)
+				return null;
+
+			Entity entity = new Entity(entityID);
+
+			entity.transform.Translation = worldPos;
+			entity.transform.Rotation = orientation;
+
+			return entity;
+		}
+
+		public static Entity Instantiate(Entity entity, Entity parent)
+		{
+			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
 
 			if (entityID == 0)
 				return null;
@@ -51,15 +80,32 @@
 
 		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition)
 		{
-			ulong entityID = InternalCalls.Scene_InstantiateAtWorldPositionWithParent(entity.ID, parent.ID, ref worldPosition);
+			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
 
 			if (entityID == 0)
 				return null;
-			
-			return new Entity(entityID);
+
+			Entity entity = new Entity(entityID);
+
+			entity.transform.Translation = worldPos;
+
+			return entity;
 		}
 
-		public static Entity
+		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition, Quaternion orientation)
+		{
+			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
+
+			if (entityID == 0)
+				return null;
+
+			Entity entity = new Entity(entityID);
+
+			entity.transform.Translation = worldPos;
+			entity.transform.Rotation = orientation;
+
+			return entity;
+		}
 
 		public static bool IsPaused()
 		{

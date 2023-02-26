@@ -342,26 +342,11 @@ namespace Vortex {
 			}
 
 			Entity clonedEntity = contextScene->DuplicateEntity(entity);
+
 			return clonedEntity.GetUUID();
 		}
 
-		uint64_t Scene_InstantiateAtWorldPosition(UUID entityUUID, Math::vec3* worldPosition)
-		{
-			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity)
-			{
-				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
-				return 0;
-			}
-
-			Entity clonedEntity = contextScene->DuplicateEntity(entity);
-			clonedEntity.GetTransform().Translation = *worldPos;
-			return clonedEntity.GetUUID();
-		}
-
-		uint64_t Scene_InstantiateAtWorldPositionWithParent(UUID entityUUID, UUID parentUUID, Math::vec3* worldPosition)
+		uint64_t Scene_InstantiateAsChild(UUID entityUUID, UUID parentUUID)
 		{
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
@@ -373,10 +358,9 @@ namespace Vortex {
 				return;
 			}
 
-			Entity clonedEntity = contextScene->DuplicateEntity(entityUUID);
-			clonedEntity.GetTransform().Translation = *worldPos;
+			Entity clonedEntity = contextScene->DuplicateEntity(entity);
 
-			contextScene->ParentEntity(entity, parent);
+			contextScene->ParentEntity(clonedEntity, parent);
 
 			return clonedEntity.GetUUID();
 		}
@@ -2493,81 +2477,6 @@ namespace Vortex {
 
 #pragma region AudioSource Component
 
-		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying without a Audio Source!");
-				return false;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
-			return audioSource->IsPlaying();
-		}
-
-		void AudioSourceComponent_Play(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
-			audioSource->Play();
-		}
-
-		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
-			audioSource->PlayOneShot();
-		}
-
-		void AudioSourceComponent_Restart(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
-			audioSource->Restart();
-		}
-
-		void AudioSourceComponent_Stop(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
-			audioSource->Stop();
-		}
-
 		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -2993,6 +2902,81 @@ namespace Vortex {
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			SharedRef<AudioSource> audioSource = asc.Source;
 			audioSource->SetLoop(loop);
+		}
+
+		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying without a Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->IsPlaying();
+		}
+
+		void AudioSourceComponent_Play(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Play();
+		}
+
+		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->PlayOneShot();
+		}
+
+		void AudioSourceComponent_Restart(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Restart();
+		}
+
+		void AudioSourceComponent_Stop(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Stop();
 		}
 
 #pragma endregion
@@ -3453,6 +3437,52 @@ namespace Vortex {
 			}
 
 			rigidbody.IsKinematic = isKinematic;
+		}
+
+		void RigidBodyComponent_GetKinematicTarget(UUID entityUUID, Math::vec3* outTarget)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (!rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID);
+
+			*outTarget = FromPhysXVector(actor->getKinematicTarget());
+		}
+
+		void RigidBodyComponent_SetKinematicTarget(UUID entityUUID, Math::vec3* target)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (!rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID);
+
+			actor->setKinematicTarget(ToPhysXVector(*target));
 		}
 
 		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
@@ -5804,8 +5834,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Scene_FindChildByName);
 		VX_ADD_INTERNAL_CALL(Scene_CreateEntity);
 		VX_ADD_INTERNAL_CALL(Scene_Instantiate);
-		VX_ADD_INTERNAL_CALL(Scene_InstantiateAtWorldPosition);
-		VX_ADD_INTERNAL_CALL(Scene_InstantiateAtWorldPositionWithParent);
+		VX_ADD_INTERNAL_CALL(Scene_InstantiateAsChild);
 		VX_ADD_INTERNAL_CALL(Scene_IsPaused);
 		VX_ADD_INTERNAL_CALL(Scene_Pause);
 		VX_ADD_INTERNAL_CALL(Scene_Resume);
@@ -5922,11 +5951,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CircleRendererComponent_GetFade);
 		VX_ADD_INTERNAL_CALL(CircleRendererComponent_SetFade);
 
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Restart);
-		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetPosition);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetPosition);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetDirection);
@@ -5955,6 +5979,11 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetIsSpacialized);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_SetIsLooping);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Play);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Restart);
+		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
@@ -5978,6 +6007,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetKinematicTarget);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetKinematicTarget);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLockFlags);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetLockFlag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_IsLockFlagSet);

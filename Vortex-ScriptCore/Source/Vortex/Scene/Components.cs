@@ -602,11 +602,28 @@
 			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
 		}
 
+		public Vector3 KinematicTarget
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetKinematicTarget(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.RigidBodyComponent_SetKinematicTarget(Entity.ID, ref value);
+		}
+
 		public uint GetLockFlags() => InternalCalls.RigidBodyComponent_GetLockFlags(Entity.ID);
+		
 		public void SetLockFlag(ActorLockFlag flag, bool value, bool forceWake = false)
-			=> InternalCalls.RigidBodyComponent_SetLockFlag(Entity.ID, flag, value, forceWake);
+		{
+			InternalCalls.RigidBodyComponent_SetLockFlag(Entity.ID, flag, value, forceWake);
+		}
+
 		public bool IsLockFlagSet(ActorLockFlag flag)
-			=> InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
+		{
+			InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
+		}
 
 		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Entity.ID);
 		public void WakeUp() => InternalCalls.RigidBodyComponent_WakeUp(Entity.ID);
