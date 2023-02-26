@@ -191,6 +191,7 @@ namespace Vortex {
 
 		bool AnimatorComponent_IsPlaying(UUID entityUUID);
 		void AnimatorComponent_Play(UUID entityUUID);
+		void AnimatorComponent_Stop(UUID entityUUID);
 
 #pragma endregion
 
@@ -226,11 +227,11 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
+		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID);
+		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString);
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
 		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale);
-		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID);
-		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString);
 		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale);
 
 #pragma endregion

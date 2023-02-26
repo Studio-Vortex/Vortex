@@ -120,51 +120,71 @@ namespace Vortex {
 
 		float SceneRenderer_GetBloomThreshold()
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Renderer::GetBloomSettings().x;
 		}
 
 		void SceneRenderer_SetBloomThreshold(float threshold)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer::SetBloomThreshold(threshold);
 		}
 
 		float SceneRenderer_GetBloomSoftKnee()
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Renderer::GetBloomSettings().y;
 		}
 
 		void SceneRenderer_SetBloomSoftKnee(float softKnee)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer::SetBloomSoftKnee(softKnee);
 		}
 
 		float SceneRenderer_GetBloomUnknown()
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Renderer::GetBloomSettings().z;
 		}
 
 		void SceneRenderer_SetBloomUnknown(float unknown)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer::SetBloomUnknown(unknown);
 		}
 
 		float SceneRenderer_GetExposure()
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Renderer::GetSceneExposure();
 		}
 
 		void SceneRenderer_SetExposure(float exposure)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer::SetSceneExposure(exposure);
 		}
 
 		float SceneRenderer_GetGamma()
 		{
+			Scene* contextScene = GetContextScene();
+
 			return Renderer::GetSceneGamma();
 		}
 
 		void SceneRenderer_SetGamma(float gamma)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer::SetSceneGamma(gamma);
 		}
 
@@ -197,6 +217,8 @@ namespace Vortex {
 
 		void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer2D::DrawLine(*p1, *p2, *color);
 		}
 
@@ -218,16 +240,22 @@ namespace Vortex {
 
 		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
 
 		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
 
 		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
 		{
+			Scene* contextScene = GetContextScene();
+
 			Math::AABB aabb{
 				-Math::vec3(0.5f),
 				+Math::vec3(0.5f),
@@ -376,6 +404,8 @@ namespace Vortex {
 
 		uint64_t Scene_GetHoveredEntity()
 		{
+			Scene* contextScene = GetContextScene();
+
 			if (!s_Data.HoveredEntity)
 				return 0;
 
@@ -1091,12 +1121,12 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.LightType without a Light Source!");
 				return LightType::Directional;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Type;
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			return lightSourceComponent.Type;
 		}
 
 		void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
@@ -1105,12 +1135,12 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.LightType without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Type = type;
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.Type = type;
 		}
 
 		void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
@@ -1119,12 +1149,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Radiance without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			*outRadiance = lsc.Source->GetRadiance();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			*outRadiance = lightSource->GetRadiance();
 		}
 
 		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
@@ -1133,12 +1164,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Radiance without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetRadiance(*radiance);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetRadiance(*radiance);
 		}
 
 		float LightSourceComponent_GetIntensity(UUID entityUUID)
@@ -1147,12 +1179,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Intensity without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetIntensity();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetIntensity();
 		}
 
 		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
@@ -1161,12 +1194,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Intensity without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetIntensity(intensity);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetIntensity(intensity);
 		}
 
 		float LightSourceComponent_GetCutoff(UUID entityUUID)
@@ -1175,12 +1209,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Cutoff without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetCutOff();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetCutOff();
 		}
 
 		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
@@ -1189,12 +1224,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Cutoff without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetCutOff(cutoff);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetCutOff(cutoff);
 		}
 
 		float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
@@ -1203,12 +1239,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.OuterCutoff without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetOuterCutOff();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetOuterCutOff();
 		}
 
 		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
@@ -1217,12 +1254,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.OuterCutoff without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetOuterCutOff(outerCutoff);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetOuterCutOff(outerCutoff);
 		}
 
 		float LightSourceComponent_GetShadowBias(UUID entityUUID)
@@ -1231,12 +1269,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.ShadowBias without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetShadowBias();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetShadowBias();
 		}
 
 		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
@@ -1245,12 +1284,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.ShadowBias without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetShadowBias(shadowBias);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetShadowBias(shadowBias);
 		}
 
 		bool LightSourceComponent_GetCastShadows(UUID entityUUID)
@@ -1259,12 +1299,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.CastShadows without a Light Source!");
 				return false;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetCastShadows();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetCastShadows();
 		}
 
 		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
@@ -1273,12 +1314,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.CastShadows without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetCastShadows(castShadows);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetCastShadows(castShadows);
 		}
 
 		bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
@@ -1287,12 +1329,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.UseSoftShadows without a Light Source!");
 				return false;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			return lsc.Source->GetSoftShadows();
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			return lightSource->GetSoftShadows();
 		}
 
 		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
@@ -1301,12 +1344,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Light Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.UseSoftShadows without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
-			lsc.Source->SetSoftShadows(softShadows);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
+			lightSource->SetSoftShadows(softShadows);
 		}
 
 #pragma endregion
@@ -1319,7 +1363,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Text without a Text Mesh!");
 				return mono_string_new(mono_domain_get(), "");
 			}
 
@@ -1333,7 +1377,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Text without a Text Mesh!");
 				return;
 			}
 
@@ -1350,7 +1394,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
@@ -1364,7 +1408,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
@@ -1378,7 +1422,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.BackgroundColor without a Text Mesh!");
 				return;
 			}
 
@@ -1392,7 +1436,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.BackgroundColor without a Text Mesh!");
 				return;
 			}
 
@@ -1406,7 +1450,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.LineSpacing without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -1420,7 +1464,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.LineSpacing without a Text Mesh!");
 				return;
 			}
 
@@ -1434,7 +1478,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Kerning without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -1448,7 +1492,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Kerning without a Text Mesh!");
 				return;
 			}
 
@@ -1462,7 +1506,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.MaxWidth without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -1476,7 +1520,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.MaxWidth without a Text Mesh!");
 				return;
 			}
 
@@ -1492,23 +1536,68 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<AnimatorComponent>().Animator->IsPlaying();
+			if (!entity.HasComponent<AnimatorComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Animator.IsPlaying without a Animator!");
+				return false;
+			}
+
+			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			SharedRef<Animator> animator = animatorComponent.Animator;
+			return animator->IsPlaying();
 		}
 
 		void AnimatorComponent_Play(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			SharedRef<Animation> animation = entity.GetComponent<AnimationComponent>().Animation;
-
-			if (!animation)
+			if (!entity.HasComponent<AnimatorComponent>())
 			{
-				VX_CORE_WARN_TAG("Scripting", "Animation was invalid! exiting early");
+				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without a Animator!");
 				return;
 			}
 
-			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			SharedRef<Animator> animator = animatorComponent.Animator;
+
+			if (!entity.HasComponent<AnimationComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without an Animation!");
+				return;
+			}
+
+			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+			SharedRef<Animation> animation = animationComponent.Animation;
+
+			if (!animation)
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Animator.Play with Invalid Animator!");
+				return;
+			}
+
 			animator->PlayAnimation();
+		}
+
+		void AnimatorComponent_Stop(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AnimatorComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Animator.Stop without a Animator!");
+				return;
+			}
+
+			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			SharedRef<Animator> animator = animatorComponent.Animator;
+
+			if (!animator)
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Animator.Stop with Invalid Animator!");
+				return;
+			}
+
+			animator->Stop();
 		}
 
 #pragma endregion
@@ -1525,19 +1614,31 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<StaticMeshRendererComponent>().Type;
+			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				return MeshType::Cube;
+			}
+
+			const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+
+			return staticMeshRenderer.Type;
 		}
 
 		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (meshType != MeshType::Custom)
+			if (!entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-				meshRenderer.Type = meshType;
-				meshRenderer.StaticMesh = StaticMesh::Create(StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)], entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				return MeshType::Cube;
 			}
+
+			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			meshRenderer.Type = meshType;
+			StaticMesh::Default defaultMesh = StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)];
+			meshRenderer.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 		}
 
 #pragma endregion
@@ -1547,6 +1648,12 @@ namespace Vortex {
 		void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.Albedo without a Mesh!");
+				return;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1568,6 +1675,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.Albedo without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1587,6 +1700,12 @@ namespace Vortex {
 		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.Metallic without a Mesh!");
+				return 0.0f;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1610,6 +1729,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.Metallic without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1629,6 +1754,12 @@ namespace Vortex {
 		float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.Roughness without a Mesh!");
+				return;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1652,6 +1783,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.Roughness without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1671,6 +1808,12 @@ namespace Vortex {
 		float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.Emission without a Mesh!");
+				return;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1694,6 +1837,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.Emission without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1713,6 +1862,12 @@ namespace Vortex {
 		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.UV without a Mesh!");
+				return;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1734,6 +1889,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.UV without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1753,6 +1914,12 @@ namespace Vortex {
 		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Material.Opacity without a Mesh!");
+				return;
+			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -1776,6 +1943,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Material.Opacity without a Mesh!");
+				return;
+			}
+
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
@@ -1796,45 +1969,18 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<SpriteRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
-				return;
-			}
-
-			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			*outColor = spriteRenderer.SpriteColor;
-		}
-
-		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<SpriteRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
-				return;
-			}
-
-			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			spriteRenderer.SpriteColor = *color;
-		}
-
 		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
 				return mono_string_new(mono_domain_get(), "");
 			}
 
 			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			
 			if (spriteRenderer.Texture)
 			{
 				return mono_string_new(mono_domain_get(), spriteRenderer.Texture->GetPath().c_str());
@@ -1851,7 +1997,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Texture without a Sprite Renderer!");
 				return;
 			}
 
@@ -1865,13 +2011,41 @@ namespace Vortex {
 			mono_free(texturePathCStr);
 		}
 
+		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Color without a Sprite Renderer!");
+				return;
+			}
+
+			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			*outColor = spriteRenderer.SpriteColor;
+		}
+
+		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Color without a Sprite Renderer!");
+				return;
+			}
+
+			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			spriteRenderer.SpriteColor = *color;
+		}
+
 		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
@@ -1885,7 +2059,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
@@ -1903,7 +2077,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
@@ -1917,7 +2091,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
@@ -1931,7 +2105,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
@@ -1945,7 +2119,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
@@ -1959,7 +2133,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
@@ -1973,7 +2147,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
@@ -1991,12 +2165,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outVelocity = particleEmitterComponent.Emitter->GetProperties().Velocity;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outVelocity = particleEmitter->GetProperties().Velocity;
 		}
 
 		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
@@ -2005,12 +2180,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().Velocity = *velocity;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().Velocity = *velocity;
 		}
 
 		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
@@ -2019,12 +2195,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outVelocityVariation = particleEmitterComponent.Emitter->GetProperties().VelocityVariation;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outVelocityVariation = particleEmitter->GetProperties().VelocityVariation;
 		}
 
 		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
@@ -2033,12 +2210,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().VelocityVariation = *velocityVariation;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().VelocityVariation = *velocityVariation;
 		}
 
 		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
@@ -2047,12 +2225,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outOffset = particleEmitterComponent.Emitter->GetProperties().Offset;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outOffset = particleEmitter->GetProperties().Offset;
 		}
 
 		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
@@ -2061,12 +2240,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().Offset = *offset;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().Offset = *offset;
 		}
 
 		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
@@ -2075,12 +2255,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outSizeBegin = particleEmitterComponent.Emitter->GetProperties().SizeBegin;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outSizeBegin = particleEmitter->GetProperties().SizeBegin;
 		}
 
 		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
@@ -2089,12 +2270,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().SizeBegin = *sizeBegin;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().SizeBegin = *sizeBegin;
 		}
 
 		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
@@ -2103,12 +2285,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outSizeEnd = particleEmitterComponent.Emitter->GetProperties().SizeEnd;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outSizeEnd = particleEmitter->GetProperties().SizeEnd;
 		}
 
 		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
@@ -2117,12 +2300,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().SizeEnd = *sizeEnd;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().SizeEnd = *sizeEnd;
 		}
 
 		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
@@ -2131,12 +2315,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outSizeVariation = particleEmitterComponent.Emitter->GetProperties().SizeVariation;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outSizeVariation = particleEmitter->GetProperties().SizeVariation;
 		}
 
 		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
@@ -2145,12 +2330,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().SizeVariation = *sizeVariation;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().SizeVariation = *sizeVariation;
 		}
 
 		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
@@ -2159,12 +2345,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outColorBegin = particleEmitterComponent.Emitter->GetProperties().ColorBegin;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outColorBegin = particleEmitter->GetProperties().ColorBegin;
 		}
 
 		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
@@ -2173,12 +2360,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().ColorBegin = *colorBegin;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().ColorBegin = *colorBegin;
 		}
 
 		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
@@ -2187,12 +2375,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outColorEnd = particleEmitterComponent.Emitter->GetProperties().ColorEnd;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outColorEnd = particleEmitter->GetProperties().ColorEnd;
 		}
 
 		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
@@ -2201,12 +2390,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().ColorEnd = *colorEnd;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().ColorEnd = *colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
@@ -2215,12 +2405,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outRotation = particleEmitterComponent.Emitter->GetProperties().Rotation;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outRotation = particleEmitter->GetProperties().Rotation;
 		}
 
 		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
@@ -2229,12 +2420,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().Rotation = colorEnd;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().Rotation = colorEnd;
 		}
 
 		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
@@ -2243,12 +2435,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			*outLifeTime = particleEmitterComponent.Emitter->GetProperties().LifeTime;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			*outLifeTime = particleEmitter->GetProperties().LifeTime;
 		}
 
 		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
@@ -2257,12 +2450,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->GetProperties().LifeTime = lifetime;
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->GetProperties().LifeTime = lifetime;
 		}
 
 		void ParticleEmitterComponent_Start(UUID entityUUID)
@@ -2271,12 +2465,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->Start();
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->Start();
 		}
 
 		void ParticleEmitterComponent_Stop(UUID entityUUID)
@@ -2285,12 +2480,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			particleEmitterComponent.Emitter->Stop();
+			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			particleEmitter->Stop();
 		}
 
 #pragma endregion
@@ -2303,12 +2499,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->IsPlaying();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->IsPlaying();
 		}
 
 		void AudioSourceComponent_Play(UUID entityUUID)
@@ -2317,12 +2514,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->Play();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Play();
 		}
 
 		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
@@ -2331,12 +2529,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->PlayOneShot();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->PlayOneShot();
 		}
 
 		void AudioSourceComponent_Restart(UUID entityUUID)
@@ -2345,12 +2544,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->Restart();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Restart();
 		}
 
 		void AudioSourceComponent_Stop(UUID entityUUID)
@@ -2359,12 +2559,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->Stop();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->Stop();
 		}
 
 		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition)
@@ -2373,12 +2574,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Position without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			*outPosition = asc.Source->GetProperties().Position;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			*outPosition = audioSource->GetProperties().Position;
 		}
 
 		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position)
@@ -2387,12 +2589,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Position without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetPosition(*position);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetPosition(*position);
 		}
 
 		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -2401,12 +2604,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			*outDirection = asc.Source->GetProperties().Direction;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			*outDirection = audioSource->GetProperties().Direction;
 		}
 
 		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
@@ -2415,12 +2619,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetDirection(*direction);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetDirection(*direction);
 		}
 
 		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
@@ -2429,12 +2634,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Velocity without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			*outVelocity = asc.Source->GetProperties().Velocity;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			*outVelocity = audioSource->GetProperties().Velocity;
 		}
 
 		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
@@ -2443,12 +2649,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.VelocityIsPlaying without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetVelocity(*velocity);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetVelocity(*velocity);
 		}
 
 		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID)
@@ -2457,12 +2664,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.InnerAngle without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Cone.InnerAngle;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Cone.InnerAngle;
 		}
 
 		void AudioSourceComponent_SetConeInnerAngle(UUID entityUUID, float innerAngle)
@@ -2471,14 +2679,15 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.InnerAngle without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.InnerAngle = innerAngle;
-			asc.Source->SetCone(cone);
+			audioSource->SetCone(cone);
 		}
 
 		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID)
@@ -2487,12 +2696,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.OuterAngle without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Cone.OuterAngle;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Cone.OuterAngle;
 		}
 
 		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle)
@@ -2501,14 +2711,15 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.OuterAngle without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterAngle = outerAngle;
-			asc.Source->SetCone(cone);
+			audioSource->SetCone(cone);
 		}
 
 		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID)
@@ -2517,12 +2728,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.OuterGain without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Cone.OuterGain;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Cone.OuterGain;
 		}
 
 		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain)
@@ -2531,14 +2743,15 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.OuterGain without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			AudioSource::SoundProperties::AudioCone& cone = asc.Source->GetProperties().Cone;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterGain = outerGain;
-			asc.Source->SetCone(cone);
+			audioSource->SetCone(cone);
 		}
 
 
@@ -2548,12 +2761,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinDistance without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().MinDistance;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().MinDistance;
 		}
 
 		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance)
@@ -2562,12 +2776,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinDistance without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetMinDistance(minDistance);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetMinDistance(minDistance);
 		}
 
 		float AudioSourceComponent_GetMaxDistance(UUID entityUUID)
@@ -2576,12 +2791,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxDistance without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().MaxDistance;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().MaxDistance;
 		}
 
 		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance)
@@ -2590,12 +2806,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxDistance without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetMaxDistance(maxDistance);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetMaxDistance(maxDistance);
 		}
 
 		float AudioSourceComponent_GetPitch(UUID entityUUID)
@@ -2604,12 +2821,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pitch without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Pitch;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Pitch;
 		}
 
 		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch)
@@ -2618,12 +2836,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pitch without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetPitch(pitch);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetPitch(pitch);
 		}
 
 		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID)
@@ -2632,12 +2851,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DopplerFactor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().DopplerFactor;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().DopplerFactor;
 		}
 
 		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor)
@@ -2646,12 +2866,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DopplerFactor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetDopplerFactor(dopplerFactor);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetDopplerFactor(dopplerFactor);
 		}
 
 		float AudioSourceComponent_GetVolume(UUID entityUUID)
@@ -2660,12 +2881,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Volume without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Volume;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Volume;
 		}
 
 		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume)
@@ -2674,12 +2896,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Volume without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetVolume(volume);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetVolume(volume);
 		}
 
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
@@ -2688,12 +2911,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PlayOnStart without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().PlayOnStart;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().PlayOnStart;
 		}
 
 		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart)
@@ -2702,12 +2926,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PlayOnStart without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetPlayOnStart(playOnStart);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetPlayOnStart(playOnStart);
 		}
 
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
@@ -2716,12 +2941,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsSpacialized without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Spacialized;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Spacialized;
 		}
 
 		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized)
@@ -2730,12 +2956,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsSpacialized without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetSpacialized(spacialized);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetSpacialized(spacialized);
 		}
 
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID)
@@ -2744,12 +2971,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsLooping without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			return asc.Source->GetProperties().Loop;
+			SharedRef<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Loop;
 		}
 
 		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop)
@@ -2758,12 +2986,13 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsLooping without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			asc.Source->SetLoop(loop);
+			SharedRef<AudioSource> audioSource = asc.Source;
+			audioSource->SetLoop(loop);
 		}
 
 #pragma endregion
@@ -5661,6 +5890,7 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(AnimatorComponent_IsPlaying);
 		VX_ADD_INTERNAL_CALL(AnimatorComponent_Play);
+		VX_ADD_INTERNAL_CALL(AnimatorComponent_Stop);
 
 		VX_ADD_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
 		VX_ADD_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);

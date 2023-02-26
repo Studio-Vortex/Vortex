@@ -371,6 +371,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AnimatorComponent_Play(ulong entityID);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AnimatorComponent_Stop(ulong entityID);
+
 		#endregion
 
 		#region MeshRenderer

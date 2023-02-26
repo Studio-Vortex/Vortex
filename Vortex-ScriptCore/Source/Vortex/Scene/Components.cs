@@ -217,7 +217,7 @@
 
 	public class LightSource : Component
 	{
-		public LightType Type
+		public LightType LightType
 		{
 			get => InternalCalls.LightSourceComponent_GetLightType(Entity.ID);
 			set => InternalCalls.LightSourceComponent_SetLightType(Entity.ID, value);
@@ -263,7 +263,7 @@
 			set => InternalCalls.LightSourceComponent_SetCastShadows(Entity.ID, value);
 		}
 
-		public bool SoftShadows
+		public bool UseSoftShadows
 		{
 			get => InternalCalls.LightSourceComponent_GetSoftShadows(Entity.ID);
 			set => InternalCalls.LightSourceComponent_SetSoftShadows(Entity.ID, value);
@@ -329,6 +329,7 @@
 		public bool IsPlaying => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
 
 		public void Play() => InternalCalls.AnimatorComponent_Play(Entity.ID);
+		public void Stop() => InternalCalls.AnimatorComponent_Stop(Entity.ID);
 	}
 
 	public class MeshRenderer : Component
@@ -339,7 +340,7 @@
 
 	public class StaticMeshRenderer : Component
 	{
-		public MeshType Type
+		public MeshType MeshType
 		{
 			get => InternalCalls.StaticMeshRendererComponent_GetMeshType(Entity.ID);
 			set => InternalCalls.StaticMeshRendererComponent_SetMeshType(Entity.ID, value);
