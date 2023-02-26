@@ -654,6 +654,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetLinearVelocity(ulong entityID, ref Vector3 velocity);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetMaxLinearVelocity(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetMaxLinearVelocity(ulong entityID, float maxLinearVelocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float RigidBodyComponent_GetLinearDrag(ulong entityID);
@@ -666,6 +672,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetMaxAngularVelocity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetMaxAngularVelocity(ulong entityID, float maxAngularVelocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float RigidBodyComponent_GetAngularDrag(ulong entityID);
@@ -959,6 +971,18 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_SetDrag(ulong entityID, float drag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetAngularVelocity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, float angularVelocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetAngularDrag(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetAngularDrag(ulong entityID, float angularDrag);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool RigidBody2DComponent_GetFixedRotation(ulong entityID);

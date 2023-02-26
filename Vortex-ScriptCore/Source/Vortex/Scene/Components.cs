@@ -549,6 +549,12 @@
 			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
 		}
 
+		public float MaxVelocity
+		{
+			get => InternalCalls.RigidBodyComponent_GetMaxLinearVelocity(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetMaxLinearVelocity(Entity.ID, value);
+		}
+
 		public float Drag
 		{
 			get =>InternalCalls.RigidBodyComponent_GetLinearDrag(Entity.ID);
@@ -563,6 +569,12 @@
 				return velocity;
 			}
 			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, ref value);
+		}
+
+		public float MaxAngularVelocity
+		{
+			get => InternalCalls.RigidBodyComponent_GetMaxAngularVelocity(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetMaxAngularVelocity(Entity.ID, value);
 		}
 
 		public float AngularDrag
@@ -622,6 +634,7 @@
 	{
 		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Entity.ID);
 		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
+
 		public Vector3 FootPosition
 		{
 			get
@@ -672,7 +685,7 @@
 			InternalCalls.CharacterControllerComponent_Move(Entity.ID, ref displacement);
 		}
 
-		public void Jump(float force)
+		public void Jump(float jumpForce)
 		{
 			InternalCalls.CharacterControllerComponent_Jump(Entity.ID, force);
 		}
@@ -860,6 +873,18 @@
 		{
 			get => InternalCalls.RigidBody2DComponent_GetDrag(Entity.ID);
 			set => InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
+		}
+
+		public float AngularVelocity
+		{
+			get => InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, value);
+		}
+
+		public float AngularDrag
+		{
+			get => InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
 		}
 
 		public float GravityScale

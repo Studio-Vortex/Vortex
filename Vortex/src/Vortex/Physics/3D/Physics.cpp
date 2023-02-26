@@ -930,6 +930,7 @@ namespace Vortex {
 			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
 		}
 
+		dynamicActor->setMaxLinearVelocity(rigidbody.MaxLinearVelocity);
 		dynamicActor->setLinearDamping(rigidbody.LinearDrag);
 
 		if (rigidbody.AngularVelocity != Math::vec3(0.0f))
@@ -942,6 +943,7 @@ namespace Vortex {
 			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
 		}
 
+		dynamicActor->setMaxAngularVelocity(rigidbody.MaxAngularVelocity);
 		dynamicActor->setAngularDamping(rigidbody.AngularDrag);
 
 		uint8_t lockFlags = rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationX |

@@ -531,11 +531,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					const auto& position = body->GetPosition();
 					*outTranslation = Math::vec3(position.x, position.y, entity.GetTransform().Translation.z);
@@ -565,11 +565,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 				
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					body->SetTransform({ translation->x, translation->y }, body->GetAngle());
 					entity.GetTransform().Translation.z = translation->z;
@@ -597,11 +597,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					const float angleRad = body->GetAngle();
 					Math::vec3 currentEulers = entity.GetTransform().GetRotationEuler();
@@ -629,11 +629,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					Math::vec3 translation = entity.GetTransform().Translation;
 					Math::vec3 eulerAngles = Math::EulerAngles(*rotation);
@@ -664,11 +664,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					const auto& transform = entity.GetTransform();
 					*outEulerAngles = { transform.GetRotationEuler().x, body->GetAngle(), transform.GetRotationEuler().z };
@@ -705,11 +705,11 @@ namespace Vortex {
 			}
 			else if (entity.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rb = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				if (rb.Type == RigidBody2DType::Dynamic)
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
-					b2Body* body = (b2Body*)rb.RuntimeBody;
+					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					body->SetTransform(body->GetPosition(), Math::Deg2Rad(eulerAngles->z));
 					entity.GetTransform().SetRotationEuler(*eulerAngles);
@@ -841,9 +841,9 @@ namespace Vortex {
 
 			if (entity.HasComponent<RigidBodyComponent>())
 			{
-				const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
+				const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-				if (rb.Type == RigidBodyType::Dynamic)
+				if (rigidbody.Type == RigidBodyType::Dynamic)
 				{
 					physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 					physx::PxTransform physxTransform = actor->getGlobalPose();
@@ -2654,14 +2654,28 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().Type;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return RigidBodyType::Static;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			return rigidbody.Type;
 		}
 
 		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			const bool consistentBodyType = bodyType == rigidbody.Type;
 
@@ -2676,108 +2690,397 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().CollisionDetection;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return CollisionDetectionType::Discrete;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.CollisionDetection with a non-dynamic Rigidbody!");
+				return CollisionDetectionType::Discrete;
+			}
+
+			return rigidbody.CollisionDetection;
 		}
 
 		void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().CollisionDetection = collisionDetectionType;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.CollisionDetectiom with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.CollisionDetection = collisionDetectionType;
 		}
 
 		float RigidBodyComponent_GetMass(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().Mass;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return 0.0f;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.Mass with a non-dynamic Rigidbody!");
+				return 0.0f;
+			}
+
+			return rigidbody.Mass;
 		}
 
 		void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().Mass = mass;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.Mass with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.Mass = mass;
 		}
 
 		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outVelocity = entity.GetComponent<RigidBodyComponent>().LinearVelocity;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LinearVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			*outVelocity = rigidbody.LinearVelocity;
 		}
 
 		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().LinearVelocity = *velocity;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LinearVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.LinearVelocity = *velocity;
+		}
+
+		float RigidBodyComponent_GetMaxLinearVelocity(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return 0.0f;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxLinearVelocity with a non-dynamic Rigidbody!");
+				return 0.0f;
+			}
+
+			return rigidbody.MaxLinearVeloity;
+		}
+
+		void RigidBodyComponent_SetMaxLinearVelocity(UUID entityUUID, float maxLinearVelocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxLinearVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.MaxLinearVeloity = maxLinearVelocity;
 		}
 
 		float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().LinearDrag;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return 0.0f;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LinearDrag with a non-dynamic Rigidbody!");
+				return 0.0f;
+			}
+
+			return rigidbody.LinearDrag;
 		}
 
 		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().LinearDrag = drag;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LinearDrag with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.LinearDrag = drag;
 		}
 
 		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outVelocity = entity.GetComponent<RigidBodyComponent>().AngularVelocity;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.AngularVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			*outVelocity = rigidbody.AngularVelocity;
 		}
 
 		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().AngularVelocity = *velocity;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.AngularVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.AngularVelocity = *velocity;
+		}
+
+		float RigidBodyComponent_GetMaxAngularVelocity(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return 0.0f;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxAngularVelocity with a non-dynamic Rigidbody!");
+				return 0.0f;
+			}
+
+			return rigidbody.MaxAngularVeloity;
+		}
+
+		void RigidBodyComponent_SetMaxAngularVelocity(UUID entityUUID, float maxAngularVelocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxAngularVelocity with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.MaxAngularVeloity = maxAngularVelocity;
 		}
 
 		float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().AngularDrag;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return 0.0f;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.AngularDrag with a non-dynamic Rigidbody!");
+				return 0.0f;
+			}
+
+			return rigidbody.AngularDrag;
 		}
 
 		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().AngularDrag = drag;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.AngluarDrag with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.AngularDrag = drag;
 		}
 
 		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBodyComponent>().DisableGravity;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return false;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.DisableGravity with a non-dynamic Rigidbody!");
+				return false;
+			}
+
+			return rigidbody.DisableGravity;
 		}
 
 		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.DisableGravity with a non-dynamic Rigidbody!");
+				return;
+			}
+
 			rigidbody.DisableGravity = disabled;
-
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-
-			actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
 		}
 
 		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return false;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.IsKinematic with a non-dynamic Rigidbody!");
+				return false;
+			}
 
 			return entity.GetComponent<RigidBodyComponent>().IsKinematic;
 		}
@@ -2786,43 +3089,69 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<RigidBodyComponent>().IsKinematic = isKinematic;
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.IsKinematic with a non-dynamic Rigidbody!");
+				return;
+			}
+
+			rigidbody.IsKinematic = isKinematic;
 		}
 
 		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
+			if (!entity.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
 				return 0;
 			}
 
-			return (uint32_t)rb.LockFlags;
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LockFlags with a non-dynamic Rigidbody!");
+				return 0;
+			}
+
+			return (uint32_t)rigidbody.LockFlags;
 		}
 
 		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
+			if (!entity.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Cannot set actor lock flag on a Static actor");
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LockFlags with a non-dynamic Rigidbody!");
 				return;
 			}
 
 			if (value)
 			{
-				rb.LockFlags |= (uint8_t)flag;
+				rigidbody.LockFlags |= (uint8_t)flag;
 			}
 			else
 			{
-				rb.LockFlags &= ~(uint8_t)flag;
+				rigidbody.LockFlags &= ~(uint8_t)flag;
 			}
 
 			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
@@ -2839,27 +3168,38 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
+			if (!entity.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Cannot access actor lock flags of a Static actor");
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
 				return false;
 			}
 
-			uint8_t lockFlags = rb.LockFlags;
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
-			return lockFlags & (uint8_t)flag;
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LockFlag with a non-dynamic Rigidbody!");
+				return false;
+			}
+
+			return rigidbody.LockFlags & (uint8_t)flag;
 		}
 
 		bool RigidBodyComponent_IsSleeping(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-			if (rb.Type != RigidBodyType::Dynamic)
+			if (!entity.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Static actors are always sleeping");
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return false;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.IsSleeping with a non-dynamic Rigidbody!");
 				return false;
 			}
 
@@ -2871,11 +3211,17 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			const RigidBodyComponent& rb = entity.GetComponent<RigidBodyComponent>();
-
-			if (rb.Type != RigidBodyType::Dynamic)
+			if (!entity.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Static actors cannot be woken up");
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_WARN("Calling RigidBody.Wakeup with a non-dynamic Rigidbody!");
 				return;
 			}
 
@@ -2886,6 +3232,12 @@ namespace Vortex {
 		void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2903,6 +3255,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
@@ -2912,12 +3270,18 @@ namespace Vortex {
 			}
 
 			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), static_cast<physx::PxForceMode::Enum>(mode));
+			physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), (physx::PxForceMode::Enum)mode);
 		}
 
 		void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -2935,6 +3299,12 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
+
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
@@ -2950,6 +3320,12 @@ namespace Vortex {
 		void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				return;
+			}
 
 			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
@@ -3054,7 +3430,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.IsGrounded without a Character Controller!");
 				return false;
 			}
 
@@ -3071,7 +3447,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.FootPosition without a Character Controller!");
 				return;
 			}
 
@@ -3085,7 +3461,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SpeedDown without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -3099,7 +3475,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SlopeLimit without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -3113,7 +3489,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.SlopeLimit without a Character Controller!");
 				return;
 			}
 
@@ -3129,7 +3505,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.StepOffset without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -3143,7 +3519,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.StepOffset without a Character Controller!");
 				return;
 			}
 
@@ -3159,7 +3535,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ContactOffset without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -3173,7 +3549,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ContactOffset without a Character Controller!");
 				return;
 			}
 
@@ -3189,7 +3565,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.NonWalkMode without a Character Controller!");
 				return NonWalkableMode::PreventClimbing;
 			}
 
@@ -3203,7 +3579,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.NonWalkMode without a Character Controller!");
 				return;
 			}
 
@@ -3219,7 +3595,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ClimbMode without a Character Controller!");
 				return CapsuleClimbMode::Easy;
 			}
 
@@ -3233,7 +3609,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ClimbMode without a Character Controller!");
 				return;
 			}
 
@@ -3248,7 +3624,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.DisableGravity without a Character Controller!");
 				return false;
 			}
 
@@ -3262,7 +3638,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Character Controller!");
+				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.DisableGravity without a Character Controller!");
 				return;
 			}
 
@@ -3280,7 +3656,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.ConnectedEntity without a Fixed Joint!");
 				return 0;
 			}
 
@@ -3295,7 +3671,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.ConnectedEntity without a Fixed Joint!");
 				return;
 			}
 
@@ -3324,7 +3700,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakForce without a Fixed Joint!");
 				return 0.0f;
 			}
 
@@ -3338,7 +3714,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakForce without a Fixed Joint!");
 				return;
 			}
 
@@ -3355,7 +3731,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakTorque without a Fixed Joint!");
 				return 0.0f;
 			}
 
@@ -3369,7 +3745,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakTorque without a Fixed Joint!");
 				return;
 			}
 
@@ -3386,7 +3762,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Calling FixedJoint.SetBreakForceAndTorque without a Fixed Joint!");
 				return;
 			}
 
@@ -3404,7 +3780,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.CollisionEnabled without a Fixed Joint!");
 				return false;
 			}
 
@@ -3418,7 +3794,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.CollisionEnabled without a Fixed Joint!");
 				return;
 			}
 
@@ -3435,7 +3811,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.PreProcessingEnabled without a Fixed Joint!");
 				return false;
 			}
 
@@ -3449,7 +3825,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.PreProcessingEnabled without a Fixed Joint!");
 				return;
 			}
 
@@ -3466,7 +3842,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBroken without a Fixed Joint!");
 				return false;
 			}
 
@@ -3479,7 +3855,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBreakable without a Fixed Joint!");
 				return false;
 			}
 
@@ -3493,7 +3869,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.IsBreakable without a Fixed Joint!");
 				return;
 			}
 
@@ -3507,7 +3883,7 @@ namespace Vortex {
 
 			if (!entity.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Entity doesn't have Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Calling FixedJoint.Break without a Fixed Joint!");
 				return;
 			}
 
@@ -3522,42 +3898,90 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outHalfSize = entity.GetComponent<BoxColliderComponent>().HalfSize;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.HalfSize without a Box Collider!");
+				return;
+			}
+
+			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			*outHalfSize = boxCollider.HalfSize;
 		}
 
 		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<BoxColliderComponent>().HalfSize = *halfSize;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.HalfSize without a Box Collider!");
+				return;
+			}
+
+			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			boxCollider.HalfSize = *halfSize;
 		}
 
 		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<BoxColliderComponent>().Offset;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Offset without a Box Collider!");
+				return;
+			}
+
+			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			*outOffset = boxCollider.Offset;
 		}
 
 		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<BoxColliderComponent>().Offset = *offset;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.Offset without a Box Collider!");
+				return;
+			}
+
+			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			boxCollider.Offset = *offset;
 		}
 
 		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<BoxColliderComponent>().IsTrigger;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.IsTrigger without a Box Collider!");
+				return false;
+			}
+
+			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			return boxCollider.IsTrigger;
 		}
 
 		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<BoxColliderComponent>().IsTrigger = isTrigger;
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.IsTrigger without a Box Collider!");
+				return;
+			}
+
+			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+
+			boxCollider.IsTrigger = isTrigger;
 		}
 
 #pragma endregion
@@ -3568,42 +3992,90 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<SphereColliderComponent>().Radius;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Radius without a Sphere Collider!");
+				return 0.0f;
+			}
+
+			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			return sphereCollider.Radius;
 		}
 
 		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SphereColliderComponent>().Radius = radius;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Radius without a Sphere Collider!");
+				return;
+			}
+
+			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			sphereCollider.Radius = radius;
 		}
 
 		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<SphereColliderComponent>().Offset;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Offset without a Sphere Collider!");
+				return;
+			}
+
+			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			*outOffset = sphereCollider.Offset;
 		}
 
 		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SphereColliderComponent>().Offset = *offset;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
+				return;
+			}
+
+			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			sphereCollider.Offset = *offset;
 		}
 
 		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<SphereColliderComponent>().IsTrigger;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.IsTrigger without a Sphere Collider!");
+				return false;
+			}
+
+			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			return sphereCollider.IsTrigger;
 		}
 
 		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<SphereColliderComponent>().IsTrigger = isTrigger;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
+				return;
+			}
+
+			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+
+			sphereCollider.IsTrigger = isTrigger;
 		}
 
 #pragma endregion
@@ -3614,56 +4086,120 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<CapsuleColliderComponent>().Radius;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Radius without a Capsule Collider!");
+				return 0.0f;
+			}
+
+			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			return capsuleCollider.Radius;
 		}
 
 		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CapsuleColliderComponent>().Radius = radius;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Radius without a Capsule Collider!");
+				return;
+			}
+
+			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			capsuleCollider.Radius = radius;
 		}
 
 		float CapsuleColliderComponent_GetHeight(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<CapsuleColliderComponent>().Height;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Height without a Capsule Collider!");
+				return 0.0f;
+			}
+
+			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			return capsuleCollider.Height;
 		}
 
 		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CapsuleColliderComponent>().Height = height;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Height without a Capsule Collider!");
+				return;
+			}
+
+			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			capsuleCollider.Height = height;
 		}
 
 		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<CapsuleColliderComponent>().Offset;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Offset without a Capsule Collider!");
+				return;
+			}
+
+			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			*outOffset = capsuleCollider.Offset;
 		}
 
 		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CapsuleColliderComponent>().Offset = *offset;
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Offset without a Capsule Collider!");
+				return;
+			}
+
+			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			capsuleCollider.Offset = *offset;
 		}
 
 		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.IsTrigger without a Capsule Collider!");
+				return false;
+			}
+
+			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			return capsuleCollider.IsTrigger;
 		}
 
 		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CapsuleColliderComponent>().IsTrigger = isTrigger;
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.IsTrigger without a Capsule Collider!");
+				return;
+			}
+
+			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+
+			capsuleCollider.IsTrigger = isTrigger;
 		}
 
 #pragma endregion
@@ -3674,30 +4210,254 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return entity.GetComponent<RigidBody2DComponent>().Type;
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.BodyType without a RigidBody 2D!");
+				return RigidBody2DType::Static;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.Type;
 		}
 
 		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			RigidBody2DComponent& rb2d = entity.GetComponent<RigidBody2DComponent>();
-
-			if (bodyType != rb2d.Type)
+			if (!entity.HasComponent<RigidBody2DComponent>())
 			{
-				Physics2D::DestroyPhysicsBody(entity);
-				rb2d.Type = bodyType;
-				rb2d.RuntimeBody = nullptr;
-				Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rb2d);
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.BodyType without a RigidBody 2D!");
+				return;
 			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			const bool consistentBodyType = bodyType == rigidbody.Type;
+
+			if (consistentBodyType)
+				return;
+
+			Physics2D::DestroyPhysicsBody(entity);
+			rigidbody.Type = bodyType;
+			rigidbody.RuntimeBody = nullptr;
+			Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
+		}
+
+		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Velocity without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			*outVelocity = rigidbody.Velocity;
+		}
+
+		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Velocity without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.Velocity = *velocity;
+		}
+
+		float RigidBody2DComponent_GetDrag(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Drag without a RigidBody 2D!");
+				return 0.0f;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.Drag;
+		}
+
+		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Drag without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.Drag = drag;
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			body->SetLinearDamping(drag);
+		}
+
+		float RigidBody2DComponent_GetAngularVelocity(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularVelocity without a RigidBody 2D!");
+				return 0.0f;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.AngularVelocity;
+		}
+		
+		void RigidBody2DComponent_SetAngularVelocity(UUID entityUUID, float angularVelocity)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularVelocity without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.AngularVelocity = angularVelocity;
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			body->SetAngularVelocity(angularVelocity);
+		}
+		
+		float RigidBody2DComponent_GetAngularDrag(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularDrag without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.AngularDrag;
+		}
+
+		void RigidBody2DComponent_SetAngularDrag(UUID entityUUID, float angularDrag)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularDrag without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.AngularDrag = angularDrag;
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			body->SetAngularDamping(angularDrag);
+		}
+
+		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.FxiedRotation without a RigidBody 2D!");
+				return false;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.FixedRotation;
+		}
+
+		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.FxiedRotation without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.FixedRotation = freeze;
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			body->SetFixedRotation(freeze);
+		}
+
+		float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.GravityScale without a RigidBody 2D!");
+				return 0.0f;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			return rigidbody.GravityScale;
+		}
+
+		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.GravityScale without a RigidBody 2D!");
+				return;
+			}
+
+			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			rigidbody.GravityScale = gravityScale;
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
+			body->SetGravityScale(gravityScale);
 		}
 
 		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForce without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
 			body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
 		}
 
@@ -3705,8 +4465,16 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForceToCenter without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
 			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 		}
 
@@ -3714,8 +4482,16 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulse without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
 			body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
 		}
 
@@ -3723,72 +4499,17 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
+			if (!entity.HasComponent<RigidBody2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulseToCenter without a RigidBody 2D!");
+				return;
+			}
+
+			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+
+			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
+
 			body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
-		}
-
-		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			*outVelocity = entity.GetComponent<RigidBody2DComponent>().Velocity;
-		}
-
-		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			entity.GetComponent<RigidBody2DComponent>().Velocity = *velocity;
-		}
-
-		float RigidBody2DComponent_GetDrag(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			return entity.GetComponent<RigidBody2DComponent>().Drag;
-		}
-
-		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			entity.GetComponent<RigidBody2DComponent>().Drag = drag;
-		}
-
-		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			return entity.GetComponent<RigidBody2DComponent>().FixedRotation;
-		}
-
-		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			entity.GetComponent<RigidBody2DComponent>().FixedRotation = freeze;
-		}
-
-		float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
-
-			return body->GetGravityScale();
-		}
-
-		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
-			b2Body* body = (b2Body*)rb2d.RuntimeBody;
-
-			entity.GetComponent<RigidBody2DComponent>().GravityScale = gravityScale;
-			body->SetGravityScale(gravityScale);
 		}
 
 #pragma endregion
@@ -3797,7 +4518,7 @@ namespace Vortex {
 
 		uint64_t Physics2D_Raycast(Math::vec2* start, Math::vec2* end, RaycastHit2D* outResult, bool drawDebugLine)
 		{
-			
+			Scene* contextScene = GetContextScene();
 
 			return Physics2D::Raycast(*start, *end, outResult, drawDebugLine);
 		}
@@ -3852,42 +4573,101 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Offset without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outOffset = .Offset;
 		}
 
 		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Offset without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.Offset = *offset;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+
+			fixture->SetOffset({ offset->x, offset->y });
 		}
 
 		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Size without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outSize = boxCollider.Size;
 		}
 
 		void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<BoxCollider2DComponent>().Size = *size;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Size without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.Size = *size;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+
+			fixture->SetSize({ size->x, size->y });
 		}
 
 		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Density without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outDensity = boxCollider.Density;
 		}
 
 		void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Density without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.Density = density;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+			
 			fixture->SetDensity(density);
 
 			// Since we changed the density we must recalculate the mass data according to box2d
@@ -3898,14 +4678,33 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Friction without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outFriction = boxCollider.Friction;
 		}
 
 		void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Friction without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.Friction = friction;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+
 			fixture->SetFriction(friction);
 		}
 
@@ -3913,14 +4712,33 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Restitution without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outRestitution = boxCollider.Restitution;
 		}
 
 		void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Restitution without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.Restitution = restitution;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+			
 			fixture->SetRestitution(restitution);
 		}
 
@@ -3928,14 +4746,33 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
+				return;
+			}
+
+			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			*outRestitutionThreshold = boxCollider.RestitutionThreshold;
 		}
 
 		void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			b2Fixture* fixture = ((b2Fixture*)entity.GetComponent<BoxCollider2DComponent>().RuntimeFixture);
+			if (!entity.HasComponent<BoxCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
+				return;
+			}
+
+			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			boxCollider.RestitutionThreshold = restitutionThreshold;
+
+			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
+
 			fixture->SetRestitutionThreshold(restitutionThreshold);
 		}
 
@@ -3947,42 +4784,101 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Offset without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outOffset = circleCollider.Offset;
 		}
 
 		void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Offset without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.Offset = *offset;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
+			fixture->SetOffset({ offset->x, offset->y });
 		}
 
 		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Radius without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outRadius = circleCollider.Radius;
 		}
 
 		void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Radius without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.Radius = radius;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
+			fixture->SetRadius(radius);
 		}
 
 		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Density without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outDensity = circleCollider.Density;
 		}
 
 		void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			b2Fixture* fixture = (b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Density without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.Density = density;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
 			fixture->SetDensity(density);
 
 			// Since we changed the density we must recalculate the mass data according to box2d
@@ -3993,42 +4889,102 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Friction without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outFriction = circleCollider.Friction;
 		}
 
 		void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetFriction(friction);
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Friction without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.Friction = friction;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
+			fixture->SetFriction(friction);
 		}
 
 		void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRestitution = entity.GetComponent<CircleCollider2DComponent>().Restitution;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Restitution without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outRestitution = circleCollider.Restitution;
 		}
 
 		void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitution);
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Restitution without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.Restitution = restitution;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
+			fixture->SetRestitution(restitution);
 		}
 
 		void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
+				return;
+			}
+
+			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			*outRestitutionThreshold = circleCollider.RestitutionThreshold;
 		}
 
 		void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			((b2Fixture*)entity.GetComponent<CircleCollider2DComponent>().RuntimeFixture)->SetRestitution(restitutionThreshold);
+			if (!entity.HasComponent<CircleCollider2DComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
+				return;
+			}
+
+			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			circleCollider.RestitutionThreshold = restitutionThreshold;
+
+			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
+
+			fixture->SetRestitutionThreshold(restitutionThreshold);
 		}
 
 #pragma endregion
@@ -4654,10 +5610,14 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetMass);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLinearVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetLinearVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetMaxLinearVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetMaxLinearVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLinearDrag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetLinearDrag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetAngularVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetAngularVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetMaxAngularVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetMaxAngularVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetAngularDrag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetAngularDrag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetDisableGravity);
@@ -4742,18 +5702,22 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
-		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetVelocity);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetDrag);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetDrag);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetAngularVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetAngularVelocity);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetAngularDrag);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetAngularDrag);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_GetGravityScale);
 		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_SetGravityScale);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
+		VX_ADD_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
 
 		VX_ADD_INTERNAL_CALL(Physics2D_Raycast);
 		VX_ADD_INTERNAL_CALL(Physics2D_GetWorldGravity);

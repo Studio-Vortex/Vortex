@@ -833,10 +833,12 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Mass, rigidbodyComponent.Mass, out);
 			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyTypeToString(rigidbodyComponent.Type), out);
 			VX_SERIALIZE_PROPERTY(AngularDrag, rigidbodyComponent.AngularDrag, out);
+			VX_SERIALIZE_PROPERTY(MaxAngularVelocity, rigidbodyComponent.MaxAngularVelocity, out);
 			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidbodyComponent.AngularVelocity, out);
 			VX_SERIALIZE_PROPERTY(DisableGravity, rigidbodyComponent.DisableGravity, out);
 			VX_SERIALIZE_PROPERTY(IsKinematic, rigidbodyComponent.IsKinematic, out);
 			VX_SERIALIZE_PROPERTY(LinearDrag, rigidbodyComponent.LinearDrag, out);
+			VX_SERIALIZE_PROPERTY(MaxLinearVelocity, rigidbodyComponent.MaxLinearVelocity, out);
 			VX_SERIALIZE_PROPERTY(LinearVelocity, rigidbodyComponent.LinearVelocity, out);
 			VX_SERIALIZE_PROPERTY(CollisionDetectionType, Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection), out);
 			VX_SERIALIZE_PROPERTY(ActorLockFlags, (uint32_t)rigidbodyComponent.LockFlags, out);
@@ -934,6 +936,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type), out);
 			VX_SERIALIZE_PROPERTY(Velocity, rb2dComponent.Velocity, out);
 			VX_SERIALIZE_PROPERTY(Drag, rb2dComponent.Drag, out);
+			VX_SERIALIZE_PROPERTY(AngularVelocity, rb2dComponent.AngularVelocity, out);
 			VX_SERIALIZE_PROPERTY(AngularDrag, rb2dComponent.AngularDrag, out);
 			VX_SERIALIZE_PROPERTY(GravityScale, rb2dComponent.GravityScale, out);
 			VX_SERIALIZE_PROPERTY(FreezeRotation, rb2dComponent.FixedRotation, out);
@@ -1431,6 +1434,8 @@ namespace Vortex {
 					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 				if (rigidbodyComponent["AngularDrag"])
 					rigidbody.AngularDrag = rigidbodyComponent["AngularDrag"].as<float>();
+				if (rigidbodyComponent["MaxAngularVelocity"])
+					rigidbody.MaxAngularVelocity = rigidbodyComponent["MaxAngularVelocity"].as<float>();
 				if (rigidbodyComponent["AngularVelocity"])
 					rigidbody.AngularVelocity = rigidbodyComponent["AngularVelocity"].as<Math::vec3>();
 				if (rigidbodyComponent["DisableGravity"])
@@ -1439,6 +1444,8 @@ namespace Vortex {
 					rigidbody.IsKinematic = rigidbodyComponent["IsKinematic"].as<bool>();
 				if (rigidbodyComponent["LinearDrag"])
 					rigidbody.LinearDrag = rigidbodyComponent["LinearDrag"].as<float>();
+				if (rigidbodyComponent["MaxLinearVelocity"])
+					rigidbody.MaxLinearVelocity = rigidbodyComponent["MaxLinearVelocity"].as<float>();
 				if (rigidbodyComponent["LinearVelocity"])
 					rigidbody.LinearVelocity = rigidbodyComponent["LinearVelocity"].as<Math::vec3>();
 				if (rigidbodyComponent["CollisionDetectionType"])
@@ -1533,6 +1540,8 @@ namespace Vortex {
 					rb2d.Velocity = rigidbody2DComponent["Velocity"].as<Math::vec2>();
 				if (rigidbody2DComponent["Drag"])
 					rb2d.Drag = rigidbody2DComponent["Drag"].as<float>();
+				if (rigidbody2DComponent["AngularVelocity"])
+					rb2d.AngularVelocity = rigidbody2DComponent["AngularVelocity"].as<float>();
 				if (rigidbody2DComponent["AngularDrag"])
 					rb2d.AngularDrag = rigidbody2DComponent["AngularDrag"].as<float>();
 				if (rigidbody2DComponent["GravityScale"])

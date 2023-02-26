@@ -114,9 +114,9 @@ namespace Vortex {
 
 		inline void SetTransform(const Math::mat4& transform)
 		{
-			glm::vec3 s;
-			glm::vec4 p;
-			Math::Decompose(transform, Scale, Rotation, Translation, s, p);
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			Math::Decompose(transform, Scale, Rotation, Translation, skew, perspective);
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
@@ -136,9 +136,9 @@ namespace Vortex {
 			return Rotation;
 		}
 
-		inline void SetRotation(const Math::quaternion& quat)
+		inline void SetRotation(const Math::quaternion& rotation)
 		{
-			Rotation = quat;
+			Rotation = rotation;
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 	};
@@ -327,8 +327,10 @@ namespace Vortex {
 
 		float Mass = 1.0f;
 		Math::vec3 LinearVelocity = Math::vec3(0.0f);
+		float MaxLinearVeloity = 100f;
 		float LinearDrag = 0.01f;
 		Math::vec3 AngularVelocity = Math::vec3(0.0f);
+		float MaxAngularVelocity = 100f;
 		float AngularDrag = 0.05f;
 		bool DisableGravity = false;
 		bool IsKinematic = false;
@@ -436,6 +438,7 @@ namespace Vortex {
 
 		Math::vec2 Velocity = Math::vec2(0.0f);
 		float Drag = 0.0f;
+		float AngularVelocity = 0.0f;
 		float AngularDrag = 0.05f;
 		float GravityScale = 1.0f;
 

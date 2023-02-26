@@ -317,10 +317,14 @@ namespace Vortex {
 		void RigidBodyComponent_SetMass(UUID entityUUID, float mass);
 		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity);
 		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity);
+		float RigidBodyComponent_GetMaxLinearVelocity(UUID entityUUID);
+		void RigidBodyComponent_SetMaxLinearVelocity(UUID entityUUID, float maxLinearVelocity);
 		float RigidBodyComponent_GetLinearDrag(UUID entityUUID);
 		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag);
 		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity);
 		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity);
+		float RigidBodyComponent_GetMaxAngularVelocity(UUID entityUUID);
+		void RigidBodyComponent_SetMaxAngularVelocity(UUID entityUUID, float maxAngularVelocity);
 		float RigidBodyComponent_GetAngularDrag(UUID entityUUID);
 		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag);
 		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID);
@@ -433,18 +437,22 @@ namespace Vortex {
 
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID);
 		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType);
-		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake);
-		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake);
-		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake);
-		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake);
 		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity);
 		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity);
 		float RigidBody2DComponent_GetDrag(UUID entityUUID);
 		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag);
+		float RigidBody2DComponent_GetAngularVelocity(UUID entityUUID);
+		void RigidBody2DComponent_SetAngularVelocity(UUID entityUUID, float angularVelocity);
+		float RigidBody2DComponent_GetAngularDrag(UUID entityUUID);
+		void RigidBody2DComponent_SetAngularDrag(UUID entityUUID, float angularDrag);
 		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID);
 		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze);
 		float RigidBody2DComponent_GetGravityScale(UUID entityUUID);
 		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale);
+		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake);
+		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake);
+		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake);
+		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake);
 
 #pragma endregion
 

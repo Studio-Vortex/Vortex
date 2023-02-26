@@ -1777,8 +1777,10 @@ namespace Vortex {
 			{
 				UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
 				UI::Property("Linear Velocity", component.LinearVelocity);
+				UI::Property("Max Linear Velocity", component.MaxLinearVeloity);
 				UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
 				UI::Property("Angular Velocity", component.AngularVelocity);
+				UI::Property("Max Angular Velocity", component.MaxAngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
 				UI::Property("Disable Gravity", component.DisableGravity);
@@ -2042,6 +2044,7 @@ namespace Vortex {
 			{
 				UI::Property("Velocity", component.Velocity, 0.01f);
 				UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
+				UI::Property("Angular Velocity", component.AngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
 				UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
 				UI::Property("Freeze Rotation", component.FixedRotation);
