@@ -32,8 +32,34 @@
 		public static Entity Instantiate(Entity entity)
 		{
 			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+
+			if (entityID == 0)
+				return null;
+
 			return new Entity(entityID);
 		}
+
+		public static Entity Instantiate(Entity entity, Vector3 worldPosition)
+		{
+			ulong entityID = InternalCalls.Scene_InstantiateAtWorldPos(entity.ID, ref worldPosition);
+
+			if (entityID == 0)
+				return null;
+			
+			return new Entity(entityID);
+		}
+
+		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition)
+		{
+			ulong entityID = InternalCalls.Scene_InstantiateAtWorldPositionWithParent(entity.ID, parent.ID, ref worldPosition);
+
+			if (entityID == 0)
+				return null;
+			
+			return new Entity(entityID);
+		}
+
+		public static Entity
 
 		public static bool IsPaused()
 		{

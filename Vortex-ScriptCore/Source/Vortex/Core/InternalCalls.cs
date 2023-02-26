@@ -101,6 +101,15 @@ namespace Vortex {
 		internal extern static ulong Scene_Instantiate(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_InstantiateAtWorldPosition(ulong entityID, ref Vector3 worldPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_InstantiateWithParent(ulong entityID, ulong parentID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_InstantiateAtWorldPositionWithParent(ulong entityID, ulong parentID, ref Vector3 worldPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_IsPaused();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -235,6 +244,12 @@ namespace Vortex {
 		#endregion
 
 		#region Camera
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ProjectionType CameraComponent_GetProjectionType(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetProjectionType(ulong entityID, ProjectionType type);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_GetPrimary(ulong entityID, out bool outPrimary);

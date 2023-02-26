@@ -319,7 +319,38 @@ namespace Vortex {
 
 		uint64_t Scene_InstantiateAtWorldPosition(UUID entityUUID, Math::vec3* worldPosition)
 		{
-			return 0;
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
+				return 0;
+			}
+
+			Entity clonedEntity = contextScene->DuplicateEntity(entity);
+			clonedEntity.GetTransform().Translation = *worldPos;
+			return clonedEntity.GetUUID();
+		}
+
+		uint64_t Scene_InstantiateAtWorldPositionWithParent(UUID entityUUID, UUID parentUUID, Math::vec3* worldPosition)
+		{
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+			Entity parent = GetEntity(parentUUID);
+
+			if (!entity || !parent)
+			{
+				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
+				return;
+			}
+
+			Entity clonedEntity = contextScene->DuplicateEntity(entityUUID);
+			clonedEntity.GetTransform().Translation = *worldPos;
+
+			contextScene->ParentEntity(entity, parent);
+
+			return clonedEntity.GetUUID();
 		}
 
 		bool Scene_IsPaused()
@@ -5544,6 +5575,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Scene_FindChildByName);
 		VX_ADD_INTERNAL_CALL(Scene_CreateEntity);
 		VX_ADD_INTERNAL_CALL(Scene_Instantiate);
+		VX_ADD_INTERNAL_CALL(Scene_InstantiateAtWorldPosition);
+		VX_ADD_INTERNAL_CALL(Scene_InstantiateAtWorldPositionWithParent);
 		VX_ADD_INTERNAL_CALL(Scene_IsPaused);
 		VX_ADD_INTERNAL_CALL(Scene_Pause);
 		VX_ADD_INTERNAL_CALL(Scene_Resume);
