@@ -136,6 +136,8 @@ namespace Vortex {
 
 #pragma region Camera Component
 
+		ProjectionType CameraComponent_GetProjectionType(UUID entityUUID);
+		void CameraComponent_SetProjectionType(UUID entityUUID, ProjectionType type);
 		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary);
 		void CameraComponent_SetPrimary(UUID entityUUID, bool primary);
 		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID);

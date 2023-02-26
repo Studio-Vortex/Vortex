@@ -5,6 +5,11 @@
 		Local, World,
 	}
 
+	public enum ProjectionType
+	{
+		Perspective, Orthographic,
+	}
+
 	public enum LightType
 	{
 		Directional, Point, Spot,
@@ -30,7 +35,7 @@
 		Force,          // A standard force, using Force = mass * distance / time^2
 		Impulse,        // An Impulse force, using Force = mass * distance / time
 		VelocityChange, // An Impulse that ignores the objects mass, e.g Force = distance / time
-		Acceleration    // A constant force, not accounting for mass, e.g Force = distance / time^2
+		Acceleration,   // A constant force, not accounting for mass, e.g Force = distance / time^2
 	}
 
 	public enum ActorLockFlag : uint
@@ -50,19 +55,19 @@
 	{
 		Discrete,
 		Continuous,
-		ContinuousSpeculative
+		ContinuousSpeculative,
 	}
 
 	public enum NonWalkableMode
 	{
 		PreventClimbing,
-		PreventClimbingAndForceSliding
+		PreventClimbingAndForceSliding,
 	}
 
 	public enum CapsuleClimbMode
 	{
 		Easy,
-		Constrained
+		Constrained,
 	}
 
 	public enum CombineMode
@@ -70,7 +75,7 @@
 		Average,
 		Max,
 		Min,
-		Multiply
+		Multiply,
 	}
 
 }

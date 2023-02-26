@@ -919,46 +919,135 @@ namespace Vortex {
 
 #pragma region Camera Component
 
+		ProjectionType CameraComponent_GetProjectionType(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ProjectionType without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			return cameraComponent.ProjectionType;	
+		}
+
+		void CameraComponent_SetProjectionType(UUID entityUUID, ProjectionType type)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ProjectionType without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			SceneCamera& camera = cameraComponent.Camera;
+
+			const bool consistentProjectionType = camera.GetProjectionType() == type;
+
+			if (consistentProjectionType)
+				return;
+
+			camera.SetProjectionType(type);
+		}
+
 		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outPrimary = entity.GetComponent<CameraComponent>().Primary;
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsPrimary without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			*outPrimary = cameraComponent.Primary;
 		}
 
 		void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CameraComponent>().Primary = primary;
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsPrimary without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			cameraComponent.Primary = primary;
 		}
 
 		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			return Math::Rad2Deg(entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOVRad());
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FieldOfView without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			return Math::Rad2Deg(cameraComponent.Camera.GetPerspectiveVerticalFOVRad());
 		}
 
 		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FieldOfView without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			SceneCamera& camera = cameraComponent.Camera;
+
+			const float FOVRad = Math::Deg2Rad(perspectiveVerticalFOV);
+
+			camera.SetPerspectiveVerticalFOVRad(FOVRad);
 		}
 
 		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			*outFixedAspectRatio = entity.GetComponent<CameraComponent>().FixedAspectRatio;
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsFixedAspectRatio without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			*outFixedAspectRatio = cameraComponent.FixedAspectRatio;
 		}
 
 		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			entity.GetComponent<CameraComponent>().FixedAspectRatio = fixedAspectRatio;
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsFixedAspectRatio without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			cameraComponent.FixedAspectRatio = fixedAspectRatio;
 		}
 
 #pragma endregion
@@ -5498,6 +5587,8 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(TransformComponent_Unparent);
 		VX_ADD_INTERNAL_CALL(TransformComponent_Multiply);
 
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetProjectionType);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetProjectionType);
 		VX_ADD_INTERNAL_CALL(CameraComponent_GetPrimary);
 		VX_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		VX_ADD_INTERNAL_CALL(CameraComponent_GetPerspectiveVerticalFOV);

@@ -182,7 +182,13 @@
 
 	public class Camera : Component
 	{
-		public bool Primary
+		public ProjectionType ProjectionType
+		{
+			get => InternalCalls.CameraComponent_GetProjectionType(Entity.ID);
+			set => InternalCalls.CameraComponent_SetProjectionType(Entity.ID, value);
+		}
+
+		public bool IsPrimary
 		{
 			get
 			{
@@ -198,7 +204,7 @@
 			set => InternalCalls.CameraComponent_SetPerspectiveVerticalFOV(Entity.ID, value);
 		}
 
-		public bool FixedAspectRatio
+		public bool IsFixedAspectRatio
 		{
 			get
 			{
