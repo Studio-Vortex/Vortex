@@ -15,6 +15,14 @@ namespace Vortex {
 	class Scene
 	{
 	public:
+		struct QueueFreeData
+		{
+			UUID EntityUUID = 0;
+			float WaitTime = 0.0f;
+			bool ExcludeChildren = false;
+		};
+
+	public:
 		Scene() = default;
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
 		~Scene() = default;
@@ -27,6 +35,7 @@ namespace Vortex {
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool excludeChildren = false);
+		void DestoryEntity(const QueueFreeData& data);
 
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
@@ -125,6 +134,10 @@ namespace Vortex {
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;
+
+		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
+		QueueFreeMap m_QueueFreeMap;
+		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
 
 #ifndef VX_DIST
 		std::string m_DebugName;

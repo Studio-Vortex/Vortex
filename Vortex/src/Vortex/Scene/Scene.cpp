@@ -295,6 +295,25 @@ namespace Vortex {
 		SortEntities();
 	}
 
+	void Scene::DestroyEntity(const QueueFreeData& data);
+	{
+		VX_CORE_ASSERT(!m_QueueFreeMap.contatins(data.EntityUUID), "Entity was already submitted to be destroyed!");
+		VX_CORE_ASSERT(m_EntityMap.contains(data.EntityUUID), "Entity was not found in Scene Entity Map!");
+
+		if (data.WaitTime <= 0.0f)
+		{
+			Entity entity = m_EntityMap[data.EntityUUID];
+			DestroyEntity(entity, data.ExcludeChildren);
+			VX_CONSOLE_LOG_ERROR("Calling DestroyEntity with a wait time of 0, Use the regular method instead!");
+			return;
+		}
+
+		if (!m_QueueFreeMap.contains(data.EntityUUID))
+		{
+			m_QueueFreeMap[data.EntityUUID] = data;
+		}
+	}
+
 	void Scene::ParentEntity(Entity entity, Entity parent)
 	{
 		VX_PROFILE_FUNCTION();
@@ -453,11 +472,10 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		m_Registry.each([scene = this](auto& entityID)
+		m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
 		{
-			Entity entity{ entityID, scene };
-			if (entity.HasComponent<ScriptComponent>())
-				ScriptEngine::OnDestroyEntity(entity);
+			Entity entity{ entityID, this };
+			ScriptEngine::OnDestroyEntity(entity);
 		});
 
 		ScriptEngine::OnRuntimeStop();
@@ -466,7 +484,7 @@ namespace Vortex {
 		{
 			auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
@@ -482,7 +500,7 @@ namespace Vortex {
 		{
 			auto view = m_Registry.view<TransformComponent, AnimatorComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
@@ -498,7 +516,7 @@ namespace Vortex {
 		{
 			auto view = m_Registry.view<TransformComponent, ParticleEmitterComponent>();
 
-			for (auto& e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
@@ -539,7 +557,9 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (!m_IsPaused || m_StepFrames > 0)
+		const bool shouldUpdateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
+
+		if (shouldUpdateCurrentFrame)
 		{
 			// C++ Entity OnUpdate
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -549,9 +569,9 @@ namespace Vortex {
 
 			// C# Entity OnUpdate
 			const auto view = m_Registry.view<ScriptComponent>();
-			for (const auto entityID : view)
+			for (const auto e : view)
 			{
-				Entity entity{ entityID, this };
+				Entity entity{ e, this };
 
 				if (!entity.IsActive())
 					continue;
@@ -603,6 +623,30 @@ namespace Vortex {
 		// Update Components
 		OnModelUpdate();
 		OnParticleEmitterUpdate(delta);
+
+		if (shouldUpdateCurrentFrame)
+		{
+			// Update timers for entites to be destroyed
+			for (auto& [uuid, queueFreeData] : m_QueueFreeMap)
+			{
+				queueFreeData.WaitTime -= delta;
+
+				if (queueFreeData.WaitTime <= 0.0f)
+				{
+					VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity was already submitted to be removed from queue!!");
+					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
+				}
+			}
+
+			for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
+			{
+				VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
+				DestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
+				m_QueueFreeMap.erase(std::remove(m_QueueFreeMap.begin(), m_QueueFreeMap.end(), uuid), m_QueueFreeMap.end());
+			}
+
+			m_EntitiesToBeRemovedFromQueue.clear();
+		}
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)

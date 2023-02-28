@@ -11,7 +11,7 @@ namespace Vortex
 		public float Y;
 		public float Z;
 
-		public static Quaternion Identity = new Quaternion(1, 0, 0, 0);
+		public static Quaternion Identity => new Quaternion(1, 0, 0, 0);
 
 		public Quaternion(float w, float x, float y, float z)
 		{
@@ -173,6 +173,19 @@ namespace Vortex
 			W *= scale;
 		}
 
+		public static Quaternion EulerAngles(Vector3 eulers)
+		{
+			Vector3 c = Vector3.Cos(eulers * 0.5f);
+			Vector3 s = Vector3.Sin(eulers * 0.5f);
+
+			float W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
+			float X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
+			float Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
+			float Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
+
+			return new Quaternion(W, X, Y, Z);
+		}
+
 		public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
 		{
 			if (t > 1) t = 1;
@@ -195,7 +208,6 @@ namespace Vortex
 			{
 				return a;
 			}
-
 
 			float cosHalfAngle = a.W * b.W + Vector3.Dot(a.XYZ, b.XYZ);
 
@@ -236,7 +248,7 @@ namespace Vortex
 				return result;
 			}
 
-			return new Quaternion(1, 0, 0, 0);
+			return new Quaternion.Identity;
 		}
 
 	}
