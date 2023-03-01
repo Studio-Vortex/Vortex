@@ -139,6 +139,7 @@ namespace Vortex {
 		bool m_StartedClickInViewport = false;
 		bool m_StartedClickInSecondViewport = false;
 		bool m_ShowSelectedEntityCollider = false;
+		bool m_ShowSelectedEntityOutline = true;
 		bool m_CaptureFramebufferToDiskOnSave = false;
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();

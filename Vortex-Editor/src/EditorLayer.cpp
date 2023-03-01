@@ -383,6 +383,10 @@ namespace Vortex {
 
 	void EditorLayer::OnMainMenuBarRender()
 	{
+		ImGuiIO& io = Gui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		auto largeFont = io.Fonts->Fonts[1];
+
 		SharedRef<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -610,7 +614,7 @@ namespace Vortex {
 				std::filesystem::path scriptsFolder = std::filesystem::path("Projects") / activeProject->GetName() / "Assets\\Scripts";
 				std::filesystem::path solutionPath = scriptsFolder / projectSolutionFilename;
 
-				if (Gui::MenuItem("Open Solution"))
+				if (Gui::MenuItem("Open Visual Studio Solution"))
 				{
 					std::filesystem::current_path(scriptsFolder);
 
@@ -620,7 +624,7 @@ namespace Vortex {
 				}
 				UI::Draw::Underline();
 
-				if (Gui::MenuItem("Rebuild Solution"))
+				if (Gui::MenuItem("Rebuild C# Assembly"))
 				{
 					std::filesystem::current_path("Resources/HelperScripts");
 
@@ -634,12 +638,13 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Build"))
 			{
-				Gui::MenuItem("Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
-				UI::Draw::Underline();
 				if (Gui::MenuItem("Build and Run", "Ctrl+Shift+B"))
 				{
 					OnLaunchRuntime(activeProject->GetProjectFilepath());
 				}
+				UI::Draw::Underline();
+
+				Gui::MenuItem("Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -667,7 +672,9 @@ namespace Vortex {
 				UI::Draw::Underline();
 				UI::ShiftCursorY(20.0f);
 
+				Gui::PushFont(boldFont);
 				Gui::Text("Debug");
+				Gui::PopFont();
 				UI::Draw::Underline();
 
 				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
@@ -1285,6 +1292,7 @@ namespace Vortex {
 					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYCOUNT(selectionModes), currentSelectionMode))
 						m_SelectionMode = (SelectionMode)currentSelectionMode;
 
+					UI::Property("Selected Entity Outline", m_ShowSelectedEntityOutline);
 					UI::Property("Selected Entity Collider", m_ShowSelectedEntityCollider);
 
 					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
@@ -1580,50 +1588,9 @@ namespace Vortex {
 			}
 		}
 
-		// Draw selected entity outline 
+		// Draw selected entity outline + colliders
 		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity(); selectedEntity)
 		{
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity) * Math::Scale(Math::vec3(1.001f));
-
-			if (selectedEntity.HasComponent<MeshRendererComponent>())
-			{
-				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
-
-				if (SharedRef<Mesh> mesh = meshRenderer.Mesh)
-				{
-					switch (m_SelectionMode)
-					{
-						case SelectionMode::Entity:
-							Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
-							break;
-						case SelectionMode::Submesh:
-							const auto& submesh = mesh->GetSubmesh();
-							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-							break;
-					}
-				}
-			}
-			else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
-			{
-				const auto& staticMeshRenderer = selectedEntity.GetComponent<StaticMeshRendererComponent>();
-
-				SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
-
-				switch (m_SelectionMode)
-				{
-					case SelectionMode::Entity:
-						Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
-						break;
-					case SelectionMode::Submesh:
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						for (const auto& submesh : submeshes)
-						{
-							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-						}
-						break;
-				}
-			}
-
 			if (m_ShowSelectedEntityCollider)
 			{
 				if (selectedEntity.HasComponent<BoxColliderComponent>())
@@ -1661,57 +1628,101 @@ namespace Vortex {
 				}
 			}
 
-			if (selectedEntity.HasComponent<SpriteRendererComponent>())
+			if (m_ShowSelectedEntityOutline)
 			{
-				const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity) * Math::Scale(Math::vec3(1.001f));
 
-				Renderer2D::DrawRect(transform, boundingBoxColor);
-			}
-			if (selectedEntity.HasComponent<CircleRendererComponent>())
-			{
-				const auto& circleRenderer = selectedEntity.GetComponent<CircleRendererComponent>();
-
-				Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
-
-				Renderer2D::DrawCircle(scaledTransform, boundingBoxColor);
-			}
-			if (selectedEntity.HasComponent<TextMeshComponent>())
-			{
-				const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
-
-				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-				Math::mat4 transform = worldSpaceTransform.GetTransform();
-
-				Renderer2D::DrawRect(transform, boundingBoxColor);
-			}
-			if (selectedEntity.HasComponent<CameraComponent>())
-			{
-				const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
-				if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+				if (selectedEntity.HasComponent<MeshRendererComponent>())
 				{
-					// TODO fix this
-					//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+					const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
+
+					if (SharedRef<Mesh> mesh = meshRenderer.Mesh)
+					{
+						switch (m_SelectionMode)
+						{
+							case SelectionMode::Entity:
+								Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
+								break;
+							case SelectionMode::Submesh:
+								const auto& submesh = mesh->GetSubmesh();
+								Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+								break;
+						}
+					}
+				}
+				else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
+				{
+					const auto& staticMeshRenderer = selectedEntity.GetComponent<StaticMeshRendererComponent>();
+
+					SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
+
+					switch (m_SelectionMode)
+					{
+						case SelectionMode::Entity:
+							Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
+							break;
+						case SelectionMode::Submesh:
+							const auto& submeshes = staticMesh->GetSubmeshes();
+							for (const auto& submesh : submeshes)
+							{
+								Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+							}
+							break;
+					}
+				}
+				if (selectedEntity.HasComponent<SpriteRendererComponent>())
+				{
+					const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
+
 					Renderer2D::DrawRect(transform, boundingBoxColor);
 				}
-				else
+				if (selectedEntity.HasComponent<CircleRendererComponent>())
 				{
+					const auto& circleRenderer = selectedEntity.GetComponent<CircleRendererComponent>();
+
+					Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
+
+					Renderer2D::DrawCircle(scaledTransform, boundingBoxColor);
+				}
+				if (selectedEntity.HasComponent<TextMeshComponent>())
+				{
+					const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+
+					const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+					Math::mat4 transform = worldSpaceTransform.GetTransform();
+
 					Renderer2D::DrawRect(transform, boundingBoxColor);
 				}
-			}
-			if (selectedEntity.HasComponent<LightSourceComponent>())
-			{
-				const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
-
-				if (lightSourceComponent.Type == LightType::Point)
+				if (selectedEntity.HasComponent<CameraComponent>())
 				{
-					Math::vec4 color = { lightSourceComponent.Source->GetRadiance(), 1.0f };
+					const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 
-					Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-					const float intensity = lightSourceComponent.Source->GetIntensity() * 0.5f;
+					if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+					{
+						// TODO fix this
+						//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+						Renderer2D::DrawRect(transform, boundingBoxColor);
+					}
+					else
+					{
+						Renderer2D::DrawRect(transform, boundingBoxColor);
+					}
+				}
+				if (selectedEntity.HasComponent<LightSourceComponent>())
+				{
+					const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, intensity, color);
-					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, intensity, color);
-					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, intensity, color);
+					if (lightSourceComponent.Type == LightType::Point)
+					{
+						Math::vec4 color = { lightSourceComponent.Source->GetRadiance(), 1.0f };
+
+						Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+						const float intensity = lightSourceComponent.Source->GetIntensity() * 0.5f;
+
+						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, intensity, color);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, intensity, color);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, intensity, color);
+					}
 				}
 			}
 		}
