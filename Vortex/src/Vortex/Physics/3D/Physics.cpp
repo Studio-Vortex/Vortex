@@ -149,11 +149,11 @@ namespace Vortex {
 
 	void Physics::OnSimulationUpdate(TimeStep delta)
 	{
-		s_Data->PhysicsScene->simulate(delta);
+		TraverseSceneForUninitializedActors();
+
+		s_Data->PhysicsScene->simulate(s_FixedTimeStep);
 		s_Data->PhysicsScene->fetchResults(true);
 		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_PhysicsSceneGravity));
-
-		TraverseSceneForUninitializedActors();
 
 		for (const auto& [entityUUID, actor] : s_ActiveActors)
 		{
@@ -220,24 +220,19 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
-		std::vector<UUID> actorsToDestroy;
-
 		for (const auto& [entityUUID, fixedJoint] : s_ActiveFixedJoints)
 		{
-			actorsToDestroy.push_back(entityUUID);
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			DestroyPhysicsActor(entity);
 		}
 
 		for (const auto& [entityUUID, characterController] : s_ActiveControllers)
 		{
-			actorsToDestroy.push_back(entityUUID);
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			DestroyPhysicsActor(entity);
 		}
 
 		for (const auto& [entityUUID, actor] : s_ActiveActors)
-		{
-			actorsToDestroy.push_back(entityUUID);
-		}
-
-		for (const auto& entityUUID : actorsToDestroy)
 		{
 			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
 			DestroyPhysicsActor(entity);

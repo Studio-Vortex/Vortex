@@ -550,6 +550,18 @@ namespace Vortex {
 			contextScene->DestroyEntity(entity, excludeChildren);
 		}
 
+		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Scene::QueueFreeData queueFreeData;
+			queueFreeData.EntityUUID = entityUUID;
+			queueFreeData.ExcludeChildren = excludeChildren;
+			queueFreeData.WaitTime = waitTime;
+
+			contextScene->DestroyEntity(queueFreeData);
+		}
+
 		void Entity_SetActive(UUID entityUUID, bool isActive)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -5926,6 +5938,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Entity_RemoveChild);
 		VX_ADD_INTERNAL_CALL(Entity_GetScriptInstance);
 		VX_ADD_INTERNAL_CALL(Entity_Destroy);
+		VX_ADD_INTERNAL_CALL(Entity_DestroyTimed);
 		VX_ADD_INTERNAL_CALL(Entity_SetActive);
 
 		VX_ADD_INTERNAL_CALL(TransformComponent_GetTranslation);

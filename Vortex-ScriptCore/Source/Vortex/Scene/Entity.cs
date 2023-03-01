@@ -40,6 +40,7 @@ namespace Vortex {
 		protected virtual void OnGui() { }
 
 		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
+		public void Destroy(Entity entity, float waitTime, bool excludeChildren = false) => InternalCalls.Entity_DestroyTimed(entity.ID, waitTime, excludeChildren);
 
 		public Entity FindEntityByName(string name) => Scene.FindEntityByName(name);
 
