@@ -261,40 +261,37 @@ namespace Vortex {
 				return;
 			}
 
-			const auto& submeshes = mesh->GetSubmeshes();
+			const auto& submesh = mesh->GetSubmesh();
 
-			for (const auto& submesh : submeshes)
+			SharedRef<Material> material = submesh.GetMaterial();
+
+			if (!material)
 			{
-				SharedRef<Material> material = submesh.GetMaterial();
+				Gui::End();
+				return;
+			}
 
-				if (!material)
+			const std::string& name = material->GetName() + " / " + submesh.GetName();
+
+			if (UI::PropertyGridHeader(name.c_str()))
+			{
+				UI::BeginPropertyGrid();
+
+				std::string currentShaderName = material->GetShader()->GetName();
+				if (UI::PropertyDropdownSearch("Shader", shaderNames.data(), shaderNames.size(), currentShaderName, s_ShaderDropdownTextFilter))
 				{
-					Gui::End();
-					return;
-				}
-
-				const std::string& name = material->GetName() + " / " + submesh.GetName();
-
-				if (UI::PropertyGridHeader(name.c_str()))
-				{
-					UI::BeginPropertyGrid();
-
-					std::string currentShaderName = material->GetShader()->GetName();
-					if (UI::PropertyDropdownSearch("Shader", shaderNames.data(), shaderNames.size(), currentShaderName, s_ShaderDropdownTextFilter))
+					if (shaderLibrary.Exists(currentShaderName))
 					{
-						if (shaderLibrary.Exists(currentShaderName))
-						{
-							SharedRef<Shader> shader = shaderLibrary.Get(currentShaderName);
-							material->SetShader(shader);
-						}
+						SharedRef<Shader> shader = shaderLibrary.Get(currentShaderName);
+						material->SetShader(shader);
 					}
-
-					UI::EndPropertyGrid();
-
-					Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::ParameterCallback));
-
-					UI::EndTreeNode();
 				}
+
+				UI::EndPropertyGrid();
+
+				Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::ParameterCallback));
+
+				UI::EndTreeNode();
 			}
 		}
 		else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())

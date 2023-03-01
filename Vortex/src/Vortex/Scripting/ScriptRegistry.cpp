@@ -863,9 +863,9 @@ namespace Vortex {
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
-			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 0.0f, -1.0f));
+			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 0.0f, -1.0f));
 		}
 
 		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -875,9 +875,9 @@ namespace Vortex {
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
-			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(0.0f, 1.0f, 0.0f));
+			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f));
 		}
 
 		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -887,9 +887,9 @@ namespace Vortex {
 
 			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
 
-			Math::vec3 rotation = worldSpaceTransform.GetRotationEuler();
+			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-			*outDirection = Math::Rotate(Math::GetOrientation(rotation.x, rotation.y, rotation.z), Math::vec3(1.0f, 0.0f, 0.0f));
+			*outDirection = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f));
 		}
 
 		void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
@@ -905,9 +905,7 @@ namespace Vortex {
 					physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 					physx::PxTransform physxTransform = actor->getGlobalPose();
 
-					Math::mat4 transform = FromPhysXTransform(physxTransform);
-
-					Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
+					const Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 					Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
 					Math::vec3 translation, rotation, scale;
 					Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
@@ -1653,9 +1651,9 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
+				const auto& submesh = mesh->GetSubmesh();
 				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+				*outAlbedo = submesh.GetMaterial()->GetAlbedo();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1679,9 +1677,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetAlbedo(*albedo);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1705,9 +1702,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+				const auto& submesh = mesh->GetSubmesh();
+				return submesh.GetMaterial()->GetMetallic();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1733,9 +1729,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetMetallic(metallic);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1759,9 +1754,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+				const auto& submesh = mesh->GetSubmesh();
+				return submesh.GetMaterial()->GetRoughness();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1787,9 +1781,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetRoughness(roughness);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1813,9 +1806,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetEmission();
+				const auto& submesh = mesh->GetSubmesh();
+				return submesh.GetMaterial()->GetEmission();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1841,9 +1833,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetEmission(emission);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1867,9 +1858,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+				const auto& submesh = mesh->GetSubmesh();
+				*outUV = submesh.GetMaterial()->GetUV();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1893,9 +1883,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetUV(*uv);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1919,9 +1908,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+				const auto& submesh = mesh->GetSubmesh();
+				return submesh.GetMaterial()->GetOpacity();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -1947,9 +1935,8 @@ namespace Vortex {
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submeshes = mesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+				const auto& submesh = mesh->GetSubmesh();
+				submesh.GetMaterial()->SetOpacity(opacity);
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
@@ -5559,6 +5546,12 @@ namespace Vortex {
 			*outRotation = rotation;
 		}
 
+		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result)
+		{
+			// TODO fix this
+			*result = Math::Inverse(*rotation);
+		}
+
 #pragma endregion
 
 #pragma region Quaternion
@@ -6266,6 +6259,7 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Mathf_Deg2RadVector3);
 		VX_ADD_INTERNAL_CALL(Mathf_Rad2DegVector3);
 		VX_ADD_INTERNAL_CALL(Mathf_LookAt);
+		VX_ADD_INTERNAL_CALL(Mathf_InverseQuat);
 
 		VX_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
 		VX_ADD_INTERNAL_CALL(Vector3_DotProductVec3);

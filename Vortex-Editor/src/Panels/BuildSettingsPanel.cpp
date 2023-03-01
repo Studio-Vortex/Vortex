@@ -2,8 +2,8 @@
 
 namespace Vortex {
 
-	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& callback)
-		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeCallback(callback)
+	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project)
+		: m_ProjectProperties(project->GetProperties())
 	{
 		m_ProjectPath = Project::GetProjectFilepath();
 		m_StartupScene = m_ProjectProperties.General.StartScene;
@@ -64,16 +64,6 @@ namespace Vortex {
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
-		}
-
-		UI::ShiftCursorY(10.0f);
-
-		if (Gui::Button("Launch Detached Process"))
-		{
-			if (m_LaunchRuntimeCallback && !m_ProjectPath.empty())
-			{
-				m_LaunchRuntimeCallback(m_ProjectPath);
-			}
 		}
 
 		Gui::End();

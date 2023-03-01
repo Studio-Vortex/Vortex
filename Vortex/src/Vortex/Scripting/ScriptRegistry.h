@@ -535,6 +535,7 @@ namespace Vortex {
 		void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult);
 		void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult);
 		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation);
+		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result);
 
 #pragma endregion
 

@@ -74,17 +74,14 @@ namespace Vortex {
 	public:
 		Mesh() = default;
 		Mesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
-		Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 		~Mesh() = default;
 
 		void OnUpdate(int entityID = -1);
 
 		const std::string& GetPath() const { return m_Filepath; }
 
-		const Submesh& GetSubmesh(uint32_t index) const;
-		Submesh& GetSubmesh(uint32_t index);
-		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
-		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
+		const Submesh& GetSubmesh() const { return m_Submesh; }
+		Submesh& GetSubmesh() { return m_Submesh; }
 
 		std::unordered_map<std::string, BoneInfo>& GetBoneInfoMap() { return m_BoneInfoMap; }
 		uint32_t& GetBoneCount() { return m_BoneCounter; }
@@ -95,7 +92,6 @@ namespace Vortex {
 		inline bool HasAnimations() const { return m_HasAnimations; }
 
 		static SharedRef<Mesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
-		static SharedRef<Mesh> Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 
 	private:
 		void ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
@@ -108,7 +104,8 @@ namespace Vortex {
 		void CreateBoundingBoxFromSubmeshes();
 
 	private:
-		std::vector<Submesh> m_Submeshes;
+		//Entity m_Entity;
+		Submesh m_Submesh;
 		MeshImportOptions m_ImportOptions;
 		std::string m_Filepath;
 		const aiScene* m_Scene;

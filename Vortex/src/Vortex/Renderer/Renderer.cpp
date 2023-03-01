@@ -619,29 +619,26 @@ namespace Vortex {
 						if (!mesh)
 							continue;
 
-						auto& submeshes = mesh->GetSubmeshes();
+						auto& submesh = mesh->GetSubmesh();
 
-						for (auto& submesh : submeshes)
+						if (mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
 						{
-							if (mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+							shadowMapShader->SetBool("u_HasAnimations", true);
+
+							const AnimatorComponent& animatorComponent = meshRendererEntity.GetComponent<AnimatorComponent>();
+							const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+							for (uint32_t i = 0; i < transforms.size(); i++)
 							{
-								shadowMapShader->SetBool("u_HasAnimations", true);
-
-								const AnimatorComponent& animatorComponent = meshRendererEntity.GetComponent<AnimatorComponent>();
-								const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-
-								for (uint32_t i = 0; i < transforms.size(); i++)
-								{
-									shadowMapShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-								}
+								shadowMapShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 							}
-							else
-							{
-								shadowMapShader->SetBool("u_HasAnimations", false);
-							}
-
-							submesh.RenderToSkylightShadowMap();
 						}
+						else
+						{
+							shadowMapShader->SetBool("u_HasAnimations", false);
+						}
+
+						submesh.RenderToSkylightShadowMap();
 					}
 
 					// Render Static Meshes

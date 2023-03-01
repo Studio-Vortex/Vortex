@@ -402,51 +402,47 @@ namespace Vortex {
 						if (!mesh)
 							continue;
 
-						const auto& submeshes = mesh->GetSubmeshes();
+						const auto& submesh = mesh->GetSubmesh();
 
-						// render each submesh
-						for (auto& submesh : submeshes)
+						SharedRef<Material> material = submesh.GetMaterial();
+
+						if (!material)
+							continue;
+
+						SetMaterialFlags(material);
+
+						SharedRef<Shader> shader = material->GetShader();
+						shader->Enable();
+
+						shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
+						shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
+						shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+						shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+						Renderer::BindSkyLightDepthMap();
+						Renderer::BindPointLightDepthMaps();
+						Renderer::BindSpotLightDepthMaps();
+
+						if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
 						{
-							SharedRef<Material> material = submesh.GetMaterial();
+							shader->SetBool("u_HasAnimations", true);
 
-							if (!material)
-								continue;
+							const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+							const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
 
-							SetMaterialFlags(material);
-
-							SharedRef<Shader> shader = material->GetShader();
-							shader->Enable();
-
-							shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
-							shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
-							shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
-							shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
-
-							Renderer::BindSkyLightDepthMap();
-							Renderer::BindPointLightDepthMaps();
-							Renderer::BindSpotLightDepthMaps();
-
-							if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+							for (uint32_t i = 0; i < transforms.size(); i++)
 							{
-								shader->SetBool("u_HasAnimations", true);
-
-								const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-								const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
-
-								for (uint32_t i = 0; i < transforms.size(); i++)
-								{
-									shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
-								}
+								shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 							}
-							else
-							{
-								shader->SetBool("u_HasAnimations", false);
-							}
-
-							submesh.Render();
-
-							ResetAllMaterialFlags();
 						}
+						else
+						{
+							shader->SetBool("u_HasAnimations", false);
+						}
+
+						submesh.Render();
+
+						ResetAllMaterialFlags();
 					}
 					else if (entity.HasComponent<StaticMeshRendererComponent>())
 					{

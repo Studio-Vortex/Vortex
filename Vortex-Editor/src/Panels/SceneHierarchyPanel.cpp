@@ -1126,7 +1126,10 @@ namespace Vortex {
 
 					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
 					if (skyboxPath.filename().extension() == ".hdr")
+					{
 						skybox->LoadFromFilepath(skyboxPath.string());
+						skybox->SetShouldReload(true);
+					}
 					else
 						VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
 				}
@@ -1235,12 +1238,15 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
+			std::string relativeMeshPath = "";
+			
 			if (component.Mesh)
 			{
 				std::string meshSourcePath = component.Mesh->GetPath();
-				std::string relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
-				UI::Property("Mesh Source", relativeMeshPath, true);
+				relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
 			}
+
+			UI::Property("Mesh Source", relativeMeshPath, true);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())

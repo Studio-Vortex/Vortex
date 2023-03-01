@@ -603,9 +603,43 @@ namespace Vortex {
 				Gui::EndMenu();
 			}
 
+			if (Gui::BeginMenu("Script"))
+			{
+				auto projectSolutionFilename = std::filesystem::path(activeProject->GetName());
+				projectSolutionFilename.replace_extension(".sln");
+				std::filesystem::path scriptsFolder = std::filesystem::path("Projects") / activeProject->GetName() / "Assets\\Scripts";
+				std::filesystem::path solutionPath = scriptsFolder / projectSolutionFilename;
+
+				if (Gui::MenuItem("Open Solution"))
+				{
+					std::filesystem::current_path(scriptsFolder);
+
+					FileSystem::LaunchApplication(projectSolutionFilename.string().c_str(), "");
+
+					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
+				}
+				UI::Draw::Underline();
+
+				if (Gui::MenuItem("Rebuild Solution"))
+				{
+					std::filesystem::current_path("Resources/HelperScripts");
+
+					FileSystem::LaunchApplication("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
+
+					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
+				}
+
+				Gui::EndMenu();
+			}
+
 			if (Gui::BeginMenu("Build"))
 			{
 				Gui::MenuItem("Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
+				UI::Draw::Underline();
+				if (Gui::MenuItem("Build and Run", "Ctrl+Shift+B"))
+				{
+					OnLaunchRuntime(activeProject->GetProjectFilepath());
+				}
 
 				Gui::EndMenu();
 			}
@@ -1516,12 +1550,9 @@ namespace Vortex {
 					if (!mesh)
 						continue;
 
-					const auto& submeshes = mesh->GetSubmeshes();
+					const auto& submesh = mesh->GetSubmesh();
 
-					for (const auto& submesh : submeshes)
-					{
-						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-					}
+					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 				}
 			}
 
@@ -1558,20 +1589,18 @@ namespace Vortex {
 			{
 				const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
 
-				SharedRef<Mesh> mesh = meshRenderer.Mesh;
-
-				switch (m_SelectionMode)
+				if (SharedRef<Mesh> mesh = meshRenderer.Mesh)
 				{
-					case SelectionMode::Entity:
-						Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
-						break;
-					case SelectionMode::Submesh:
-						const auto& submeshes = mesh->GetSubmeshes();
-						for (const auto& submesh : submeshes)
-						{
+					switch (m_SelectionMode)
+					{
+						case SelectionMode::Entity:
+							Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
+							break;
+						case SelectionMode::Submesh:
+							const auto& submesh = mesh->GetSubmesh();
 							Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-						}
-						break;
+							break;
+					}
 				}
 			}
 			else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
@@ -1996,7 +2025,7 @@ namespace Vortex {
 			SharedRef<Project> activeProject = Project::GetActive();
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
 			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(EditorLayer::OnLaunchRuntime));
+			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject);
 
 			TagComponent::ResetAddedMarkers();
 		}

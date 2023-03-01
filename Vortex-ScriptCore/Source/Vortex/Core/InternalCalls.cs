@@ -1190,6 +1190,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, out Vector3 result);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_InverseQuat(ref Quaternion value, out Quaternion result);
+
 		#endregion
 
 		#region Quaternion

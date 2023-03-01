@@ -542,60 +542,53 @@ namespace Vortex {
 					out << YAML::EndMap; // MeshImportOptions
 				}
 
-				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
+				const auto& submesh = mesh->GetSubmesh();
 
-				const auto& submeshes = mesh->GetSubmeshes();
+				out << YAML::BeginMap; // Submesh
 
-				for (const auto& submesh : submeshes)
+				VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
+
+				SharedRef<Material> material = submesh.GetMaterial();
+
+				SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
+				SharedRef<Texture2D> normalMap = material->GetNormalMap();
+				SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
+				SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
+				SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
+				SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
+				SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
+
+				if (albedoMap)
+					VX_SERIALIZE_PROPERTY(AlbedoMapPath, std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string(), out);
+				else
+					VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
+				if (normalMap)
+					VX_SERIALIZE_PROPERTY(NormalMapPath, std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string(), out);
+				if (metallicMap)
+					VX_SERIALIZE_PROPERTY(MetallicMapPath, std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string(), out);
+				else
+					VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
+				if (roughnessMap)
+					VX_SERIALIZE_PROPERTY(RoughnessMapPath, std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string(), out);
+				else
+					VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
+				if (emissionMap)
+					VX_SERIALIZE_PROPERTY(EmissionMapPath, std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string(), out);
+				else
+					VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
+				if (parallaxOcclusionMap)
 				{
-					out << YAML::BeginMap; // Submesh
-
-					VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
-
-					SharedRef<Material> material = submesh.GetMaterial();
-
-					SharedRef<Texture2D> albedoMap = material->GetAlbedoMap();
-					SharedRef<Texture2D> normalMap = material->GetNormalMap();
-					SharedRef<Texture2D> metallicMap = material->GetMetallicMap();
-					SharedRef<Texture2D> roughnessMap = material->GetRoughnessMap();
-					SharedRef<Texture2D> emissionMap = material->GetEmissionMap();
-					SharedRef<Texture2D> parallaxOcclusionMap = material->GetParallaxOcclusionMap();
-					SharedRef<Texture2D> ambientOcclusionMap = material->GetAmbientOcclusionMap();
-
-					if (albedoMap)
-						VX_SERIALIZE_PROPERTY(AlbedoMapPath, std::filesystem::relative(albedoMap->GetPath(), projectAssetDirectory).string(), out);
-					else
-						VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
-					if (normalMap)
-						VX_SERIALIZE_PROPERTY(NormalMapPath, std::filesystem::relative(normalMap->GetPath(), projectAssetDirectory).string(), out);
-					if (metallicMap)
-						VX_SERIALIZE_PROPERTY(MetallicMapPath, std::filesystem::relative(metallicMap->GetPath(), projectAssetDirectory).string(), out);
-					else
-						VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
-					if (roughnessMap)
-						VX_SERIALIZE_PROPERTY(RoughnessMapPath, std::filesystem::relative(roughnessMap->GetPath(), projectAssetDirectory).string(), out);
-					else
-						VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
-					if (emissionMap)
-						VX_SERIALIZE_PROPERTY(EmissionMapPath, std::filesystem::relative(emissionMap->GetPath(), projectAssetDirectory).string(), out);
-					else
-						VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
-					if (parallaxOcclusionMap)
-					{
-						VX_SERIALIZE_PROPERTY(ParallaxOcclusionMapPath, std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
-						VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
-					}
-					if (ambientOcclusionMap)
-						VX_SERIALIZE_PROPERTY(AmbientOcclusionMapPath, std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
-
-					VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
-					VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
-					VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
-
-					out << YAML::EndMap; // Submesh
+					VX_SERIALIZE_PROPERTY(ParallaxOcclusionMapPath, std::filesystem::relative(parallaxOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
+					VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
 				}
+				if (ambientOcclusionMap)
+					VX_SERIALIZE_PROPERTY(AmbientOcclusionMapPath, std::filesystem::relative(ambientOcclusionMap->GetPath(), projectAssetDirectory).string(), out);
 
-				out << YAML::EndSeq; // Submeshes
+				VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
+				VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
+				VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
+
+				out << YAML::EndMap; // Submesh
 			}
 
 			out << YAML::EndMap; // MeshRendererComponent
@@ -1211,15 +1204,7 @@ namespace Vortex {
 				auto submeshesData = meshComponent["Submeshes"];
 				if (submeshesData)
 				{
-					uint32_t i = 0;
-
-					for (auto submeshData : submeshesData)
-					{
-						Submesh submesh = meshRendererComponent.Mesh->GetSubmesh(i++);
-						SharedRef<Material> material = submesh.GetMaterial();
-
-						Utils::LoadSubmeshMaterial(material, submeshData);
-					}
+					
 				}
 			}
 

@@ -44,7 +44,7 @@ namespace Vortex {
 		void ResetInputFields();
 
 		void ReplaceToken(std::string& str, const char* token, const std::string& value);
-        void ResetWorkingDirectory();
+		void ResetWorkingDirectory();
 		void LaunchEditor();
 
 		const char* ProjectTypeToString(ProjectType type);

@@ -102,8 +102,7 @@ namespace Vortex {
 				{
 					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
 					std::ofstream fout(m_PathToBeRenamed);
-					fout << R"(using System;
-using Vortex;
+					fout << R"(using Vortex;
 
 public class Untitled : Entity
 {
@@ -114,7 +113,7 @@ public class Untitled : Entity
 	}
 
 	// Called once every frame
-	void OnUpdate(float delta)
+	void OnUpdate()
 	{
 		
 	}

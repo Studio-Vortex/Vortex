@@ -71,6 +71,12 @@ namespace Vortex {
 			InternalCalls.Mathf_LookAt(ref eyePos, ref worldPoint, out Vector3 result);
 			return result;
 		}
+
+		public static Quaternion Inverse(Quaternion rotation)
+		{
+			InternalCalls.Mathf_InverseQuat(ref rotation, out Quaternion result);
+			return result;
+		}
 	}
 
 }

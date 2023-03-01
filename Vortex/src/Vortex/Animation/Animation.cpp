@@ -55,23 +55,22 @@ namespace Vortex {
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = mesh->GetBoneInfoMap();//getting m_BoneInfoMap from Model class
-		uint32_t& boneCount = mesh->GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& boneInfoMap = mesh->GetBoneInfoMap();// getting m_BoneInfoMap from Model class
+		uint32_t& boneCount = mesh->GetBoneCount(); // getting the m_BoneCounter from Model class
 
-		//reading channels(bones engaged in an animation and their keyframes)
+		// reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
 		{
 			auto channel = animation->mChannels[i];
 			std::string boneName = channel->mNodeName.data;
-			auto it = boneInfoMap.find(boneName);
 
-			if (it == boneInfoMap.end())
+			if (boneInfoMap.find(boneName) == boneInfoMap.end())
 			{
 				boneInfoMap[boneName].ID = boneCount;
 				boneCount++;
 			}
 
-			Bone bone(boneName, it->second.ID, channel);
+			Bone bone(boneName, boneInfoMap[channel->mNodeName.data].ID, channel);
 			m_Bones.push_back(bone);
 		}
 

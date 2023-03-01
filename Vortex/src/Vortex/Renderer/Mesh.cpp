@@ -143,72 +143,13 @@ namespace Vortex {
 		CreateBoundingBoxFromSubmeshes();
 	}
 
-	Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
-	{
-		std::vector<Vertex> verts = { Vertex{} };
-		std::vector<uint32_t> inds = { 0 };
-		SharedRef<Material> mat = nullptr;
-
-		auto TransformVerticesAndGetIndicesAndCreateMesh =
-		[
-			&collectionOfMeshes = m_Submeshes,
-			transform,
-			vertices,
-			indices,
-			&verts,
-			&inds,
-			mat
-		]()
-		{
-			auto TransformVertices = [&verts, transform, vertices]()
-			{
-				auto TransformVertexFunc = [&verts, transform](auto vertex)
-				{
-					Vertex transformedVertex = vertex;
-					Math::vec4 transformedPositionAttribute = Math::vec4(transformedVertex.Position, 1.0) * transform;
-					transformedVertex.Position = Math::vec3(transformedPositionAttribute);
-					verts.push_back(transformedVertex);
-				};
-
-				for (const auto& vertex : vertices)
-					TransformVertexFunc(vertex);
-			};
-
-			auto GetIndices = [&inds, indices]()
-			{
-				auto GetIndexFunc = [&inds](auto index)
-				{
-					uint32_t theIndices[3] = { index.i0, index.i1, index.i2 };
-					for (uint32_t i = 0; i < VX_ARRAYCOUNT(theIndices); i++)
-						inds.push_back(theIndices[i]);
-				};
-
-				for (const auto& index : indices)
-					GetIndexFunc(index);
-			};
-
-			TransformVertices();
-			GetIndices();
-
-			Submesh mesh("UnNamed", verts, inds, mat);
-			collectionOfMeshes.push_back(mesh);
-		};
-
-		if (vertices.size() > 1 && indices.size() > 1)
-		{
-			TransformVerticesAndGetIndicesAndCreateMesh();
-		}
-
-		CreateBoundingBoxFromSubmeshes();
-	}
-
 	void Mesh::ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Submeshes.push_back(ProcessMesh(mesh, scene, importOptions, entityID));
+			m_Submesh = ProcessMesh(mesh, scene, importOptions, entityID);
 		}
 
 		// do the same for children nodes
@@ -352,22 +293,7 @@ namespace Vortex {
 	void Mesh::CreateBoundingBoxFromSubmeshes()
 	{
 		// initialize bounding box to default
-		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
-		m_BoundingBox = firstBoundingBox;
-
-		for (const auto& submesh : m_Submeshes)
-		{
-			const Math::AABB& boundingBox = submesh.GetBoundingBox();
-
-			for (uint32_t i = 0; i < 3; i++)
-			{
-				if (boundingBox.Min[i] < m_BoundingBox.Min[i])
-					m_BoundingBox.Min[i] = boundingBox.Min[i];
-
-				if (boundingBox.Max[i] > m_BoundingBox.Max[i])
-					m_BoundingBox.Max[i] = boundingBox.Max[i];
-			}
-		}
+		m_BoundingBox = m_Submesh.GetBoundingBox();
 	}
 
 	void Mesh::SetVertexBoneDataToDefault(Vertex& vertex) const
@@ -438,51 +364,31 @@ namespace Vortex {
 	{
 		bool isDirty = false;
 
-		for (auto& submesh : m_Submeshes)
+		std::vector<Vertex>& vertices = m_Submesh.GetVertices();
+
+		size_t dataSize = vertices.size();
+		for (uint32_t i = 0; i < dataSize; i++)
 		{
-			std::vector<Vertex>& vertices = submesh.GetVertices();
-			
-			size_t dataSize = vertices.size();
-			for (uint32_t i = 0; i < dataSize; i++)
-			{
-				Vertex& vertex = vertices[i];
-				SharedRef<Material> material = submesh.GetMaterial();
+			Vertex& vertex = vertices[i];
+			SharedRef<Material> material = m_Submesh.GetMaterial();
 
-				isDirty = vertex.TexScale != material->GetUV();
-				if (!isDirty)
-					break;
-
-				vertex.TexScale = material->GetUV();
-			}
-
+			isDirty = vertex.TexScale != material->GetUV();
 			if (!isDirty)
 				break;
 
-			SharedRef<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
-			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
+			vertex.TexScale = material->GetUV();
 		}
-	}
 
-	const Submesh& Mesh::GetSubmesh(uint32_t index) const
-	{
-		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
-		return m_Submeshes[index];
-	}
+		if (!isDirty)
+			return;
 
-	Submesh& Mesh::GetSubmesh(uint32_t index)
-	{
-		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
-		return m_Submeshes[index];
+		SharedRef<VertexBuffer> vertexBuffer = m_Submesh.GetVertexBuffer();
+		vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
 	}
 
 	SharedRef<Mesh> Mesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 	{
 		return CreateShared<Mesh>(filepath, transform, importOptions, (int)(entt::entity)entityID);
-	}
-
-	SharedRef<Mesh> Mesh::Create(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
-	{
-		return CreateShared<Mesh>(vertices, indices, transform);
 	}
 
 }

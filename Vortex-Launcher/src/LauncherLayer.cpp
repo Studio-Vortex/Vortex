@@ -315,13 +315,16 @@ namespace Vortex {
 		ResetWorkingDirectory();
 
 		// build project dll
-		auto projectNameAsFilepath = std::filesystem::path(m_Properties.ProjectNameBuffer);
-		projectNameAsFilepath.replace_extension(".sln");
-		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectNameAsFilepath;
+		auto projectSolutionFilename = std::filesystem::path(m_Properties.ProjectNameBuffer);
+		projectSolutionFilename.replace_extension(".sln");
+		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
 		std::filesystem::current_path("Resources/HelperScripts");
 
 		FileSystem::LaunchApplication("BuildSolution.bat", solutionPath.string().c_str());
+
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(250ms);
 
 		ResetWorkingDirectory();
 
