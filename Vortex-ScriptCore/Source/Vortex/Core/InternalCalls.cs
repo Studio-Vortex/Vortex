@@ -710,10 +710,16 @@ namespace Vortex {
 		internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID, bool isKinematic);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_GetKinematicTarget(ulong entityID, out Vector3 result);
+		internal extern static void RigidBodyComponent_GetKinematicTargetTranslation(ulong entityID, out Vector3 result);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_SetKinematicTarget(ulong entityID, ref Vector3 target);
+		internal extern static void RigidBodyComponent_SetKinematicTargetTranslation(ulong entityID, ref Vector3 target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetKinematicTargetRotation(ulong entityID, out Quaternion result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetKinematicTargetRotation(ulong entityID, ref Quaternion target);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static uint RigidBodyComponent_GetLockFlags(ulong entityID);
@@ -994,7 +1000,7 @@ namespace Vortex {
 		internal extern static float RigidBody2DComponent_GetAngularVelocity(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, float angularVelocity);
+		internal extern static void RigidBody2DComponent_SetAngularVelocity(ulong entityID, float angularVelocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float RigidBody2DComponent_GetAngularDrag(ulong entityID);

@@ -35,7 +35,7 @@ namespace Vortex {
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool excludeChildren = false);
-		void DestoryEntity(const QueueFreeData& data);
+		void DestroyEntity(const QueueFreeData& data);
 
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);

@@ -46,11 +46,11 @@
 			if (entityID == 0)
 				return null;
 
-			Entity entity = new Entity(entityID);
+			Entity e = new Entity(entityID);
 
-			entity.transform.Translation = worldPos;
+			entity.transform.Translation = worldPosition;
 
-			return entity;
+			return e;
 		}
 
 		public static Entity Instantiate(Entity entity, Vector3 worldPosition, Quaternion orientation)
@@ -60,12 +60,12 @@
 			if (entityID == 0)
 				return null;
 
-			Entity entity = new Entity(entityID);
+			Entity e = new Entity(entityID);
 
-			entity.transform.Translation = worldPos;
+			entity.transform.Translation = worldPosition;
 			entity.transform.Rotation = orientation;
 
-			return entity;
+			return e;
 		}
 
 		public static Entity Instantiate(Entity entity, Entity parent)
@@ -85,11 +85,11 @@
 			if (entityID == 0)
 				return null;
 
-			Entity entity = new Entity(entityID);
+			Entity e = new Entity(entityID);
 
-			entity.transform.Translation = worldPos;
+			entity.transform.Translation = worldPosition;
 
-			return entity;
+			return e;
 		}
 
 		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition, Quaternion orientation)
@@ -99,12 +99,12 @@
 			if (entityID == 0)
 				return null;
 
-			Entity entity = new Entity(entityID);
+			Entity e = new Entity(entityID);
 
-			entity.transform.Translation = worldPos;
+			entity.transform.Translation = worldPosition;
 			entity.transform.Rotation = orientation;
 
-			return entity;
+			return e;
 		}
 
 		public static bool IsPaused()

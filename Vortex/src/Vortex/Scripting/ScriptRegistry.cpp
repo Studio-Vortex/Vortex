@@ -355,7 +355,7 @@ namespace Vortex {
 			if (!entity || !parent)
 			{
 				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
-				return;
+				return 0;
 			}
 
 			Entity clonedEntity = contextScene->DuplicateEntity(entity);
@@ -964,22 +964,23 @@ namespace Vortex {
 
 #pragma region Camera Component
 
-		ProjectionType CameraComponent_GetProjectionType(UUID entityUUID)
+		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ProjectionType without a Camera!");
-				return;
+				return SceneCamera::ProjectionType::Perspective;
 			}
 
 			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
 
-			return cameraComponent.ProjectionType;	
+			return camera.GetProjectionType();
 		}
 
-		void CameraComponent_SetProjectionType(UUID entityUUID, ProjectionType type)
+		void CameraComponent_SetProjectionType(UUID entityUUID, SceneCamera::ProjectionType type)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -989,8 +990,7 @@ namespace Vortex {
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
-
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			const bool consistentProjectionType = camera.GetProjectionType() == type;
@@ -1038,7 +1038,7 @@ namespace Vortex {
 			if (!entity.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FieldOfView without a Camera!");
-				return;
+				return 0.0f;
 			}
 
 			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
@@ -1056,8 +1056,7 @@ namespace Vortex {
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
-
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			const float FOVRad = Math::Deg2Rad(perspectiveVerticalFOV);
@@ -1616,12 +1615,12 @@ namespace Vortex {
 			if (!entity.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
-				return MeshType::Cube;
+				return;
 			}
 
 			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			meshRenderer.Type = meshType;
-			StaticMesh::Default defaultMesh = StaticMesh::DefaultMeshSourcePaths[static_cast<uint32_t>(meshType)];
+			StaticMesh::Default defaultMesh = static_cast<StaticMesh::Default>(meshType);
 			meshRenderer.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 		}
 
@@ -1742,7 +1741,7 @@ namespace Vortex {
 			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Material.Roughness without a Mesh!");
-				return;
+				return 0.0f;
 			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
@@ -1796,7 +1795,7 @@ namespace Vortex {
 			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Material.Emission without a Mesh!");
-				return;
+				return 0.0f;
 			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
@@ -1902,7 +1901,7 @@ namespace Vortex {
 			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Material.Opacity without a Mesh!");
-				return;
+				return 0.0f;
 			}
 
 			if (entity.HasComponent<MeshRendererComponent>())
@@ -3163,7 +3162,7 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return rigidbody.MaxLinearVeloity;
+			return rigidbody.MaxLinearVelocity;
 		}
 
 		void RigidBodyComponent_SetMaxLinearVelocity(UUID entityUUID, float maxLinearVelocity)
@@ -3176,7 +3175,7 @@ namespace Vortex {
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -3184,7 +3183,7 @@ namespace Vortex {
 				return;
 			}
 
-			rigidbody.MaxLinearVeloity = maxLinearVelocity;
+			rigidbody.MaxLinearVelocity = maxLinearVelocity;
 		}
 
 		float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
@@ -3289,7 +3288,7 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			return rigidbody.MaxAngularVeloity;
+			return rigidbody.MaxAngularVelocity;
 		}
 
 		void RigidBodyComponent_SetMaxAngularVelocity(UUID entityUUID, float maxAngularVelocity)
@@ -3302,7 +3301,7 @@ namespace Vortex {
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -3310,7 +3309,7 @@ namespace Vortex {
 				return;
 			}
 
-			rigidbody.MaxAngularVeloity = maxAngularVelocity;
+			rigidbody.MaxAngularVelocity = maxAngularVelocity;
 		}
 
 		float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
@@ -3439,7 +3438,7 @@ namespace Vortex {
 			rigidbody.IsKinematic = isKinematic;
 		}
 
-		void RigidBodyComponent_GetKinematicTarget(UUID entityUUID, Math::vec3* outTarget)
+		void RigidBodyComponent_GetKinematicTargetTranslation(UUID entityUUID, Math::vec3* outTranslation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -3457,12 +3456,18 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID);
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxTransform target;
 
-			*outTarget = FromPhysXVector(actor->getKinematicTarget());
+			if (actor->getKinematicTarget(target))
+			{
+				*outTranslation = FromPhysXVector(target.p);
+			}
+
+			*outTranslation = Math::vec3(0.0f);
 		}
 
-		void RigidBodyComponent_SetKinematicTarget(UUID entityUUID, Math::vec3* target)
+		void RigidBodyComponent_SetKinematicTargetTranslation(UUID entityUUID, Math::vec3* translation)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -3480,9 +3485,79 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID);
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxTransform targetTransform;
+			targetTransform.p = ToPhysXVector(*translation);
 
-			actor->setKinematicTarget(ToPhysXVector(*target));
+			physx::PxTransform t;
+
+			if (actor->getKinematicTarget(t))
+			{
+				targetTransform.q = t.q;
+			}
+
+			actor->setKinematicTarget(targetTransform);
+		}
+
+		void RigidBodyComponent_GetKinematicTargetRotation(UUID entityUUID, Math::quaternion* outRotation)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				return;
+			}
+
+			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (!rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxTransform target;
+
+			if (actor->getKinematicTarget(target))
+			{
+				*outRotation = FromPhysXQuat(target.q);
+			}
+
+			*outRotation = Math::quaternion(1, 0, 0, 0);
+		}
+
+		void RigidBodyComponent_SetKinematicTargetRotation(UUID entityUUID, Math::quaternion* rotation)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<RigidBodyComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				return;
+			}
+
+			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+
+			if (!rigidbody.IsKinematic)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				return;
+			}
+
+			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxTransform targetTransform;
+			targetTransform.q = ToPhysXQuat(*rotation);
+
+			physx::PxTransform t;
+
+			if (actor->getKinematicTarget(t))
+			{
+				targetTransform.p = t.p;
+			}
+
+			actor->setKinematicTarget(targetTransform);
 		}
 
 		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
@@ -4728,7 +4803,7 @@ namespace Vortex {
 			if (!entity.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularDrag without a RigidBody 2D!");
-				return;
+				return 0.0f;
 			}
 
 			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
@@ -4960,7 +5035,7 @@ namespace Vortex {
 
 			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
 
-			*outOffset = .Offset;
+			*outOffset = boxCollider.Offset;
 		}
 
 		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
@@ -4977,9 +5052,8 @@ namespace Vortex {
 
 			boxCollider.Offset = *offset;
 
-			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
-
-			fixture->SetOffset({ offset->x, offset->y });
+			Physics2D::DestroyPhysicsBody(entity);
+			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
 		}
 
 		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
@@ -5011,9 +5085,8 @@ namespace Vortex {
 
 			boxCollider.Size = *size;
 
-			b2Fixture* fixture = (b2Fixture*)boxCollider.RuntimeFixture;
-
-			fixture->SetSize({ size->x, size->y });
+			Physics2D::DestroyPhysicsBody(entity);
+			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
 		}
 
 		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
@@ -5188,9 +5261,8 @@ namespace Vortex {
 
 			circleCollider.Offset = *offset;
 
-			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
-
-			fixture->SetOffset({ offset->x, offset->y });
+			Physics2D::DestroyPhysicsBody(entity);
+			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
 		}
 
 		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
@@ -5222,9 +5294,8 @@ namespace Vortex {
 
 			circleCollider.Radius = radius;
 
-			b2Fixture* fixture = (b2Fixture*)circleCollider.RuntimeFixture;
-
-			fixture->SetRadius(radius);
+			Physics2D::DestroyPhysicsBody(entity);
+			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
 		}
 
 		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
@@ -6007,8 +6078,10 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
-		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetKinematicTarget);
-		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetKinematicTarget);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetTranslation);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetTranslation);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetRotation);
+		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetRotation);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetLockFlags);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetLockFlag);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_IsLockFlagSet);

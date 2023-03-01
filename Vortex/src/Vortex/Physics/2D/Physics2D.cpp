@@ -67,7 +67,7 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, contextScene };
-			auto& transform = entity.GetTransform();
+			auto transform = contextScene->GetWorldSpaceTransform(entity);
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
 			CreatePhysicsBody(entity, transform, rb2d);
@@ -89,7 +89,7 @@ namespace Vortex {
 			{
 				Entity entity = { e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();
-				const auto& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
 				// If a rigidbody component is added during runtime we can create the physics body here
 				if (!rigidbody.RuntimeBody)

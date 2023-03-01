@@ -327,10 +327,10 @@ namespace Vortex {
 
 		float Mass = 1.0f;
 		Math::vec3 LinearVelocity = Math::vec3(0.0f);
-		float MaxLinearVeloity = 100f;
+		float MaxLinearVelocity = 100.0f;
 		float LinearDrag = 0.01f;
 		Math::vec3 AngularVelocity = Math::vec3(0.0f);
-		float MaxAngularVelocity = 100f;
+		float MaxAngularVelocity = 100.0f;
 		float AngularDrag = 0.05f;
 		bool DisableGravity = false;
 		bool IsKinematic = false;

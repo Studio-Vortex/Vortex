@@ -248,7 +248,7 @@ namespace Vortex
 				return result;
 			}
 
-			return new Quaternion.Identity;
+			return Quaternion.Identity;
 		}
 
 	}

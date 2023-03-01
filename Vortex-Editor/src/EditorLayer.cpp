@@ -2154,7 +2154,7 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePause()
 	{
-		if (m_SceneState == SceneState::Edit )
+		if (m_SceneState == SceneState::Edit)
 			return;
 
 		PauseAudioSources();

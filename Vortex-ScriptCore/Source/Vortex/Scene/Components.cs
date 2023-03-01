@@ -606,11 +606,22 @@
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetKinematicTarget(Entity.ID, out Vector3 result);
+				InternalCalls.RigidBodyComponent_GetKinematicTargetTranslation(Entity.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.RigidBodyComponent_SetKinematicTarget(Entity.ID, ref value);
+			set => InternalCalls.RigidBodyComponent_SetKinematicTargetTranslation(Entity.ID, ref value);
+		}
+
+		public Quaternion KinematicTargetRotation
+		{
+			get
+			{
+				InternalCalls.RigidBodyComponent_GetKinematicTargetRotation(Entity.ID, out Quaternion result);
+				return result;
+			}
+
+			set => InternalCalls.RigidBodyComponent_SetKinematicTargetRotation(Entity.ID, ref value);
 		}
 
 		public uint GetLockFlags() => InternalCalls.RigidBodyComponent_GetLockFlags(Entity.ID);
@@ -622,7 +633,7 @@
 
 		public bool IsLockFlagSet(ActorLockFlag flag)
 		{
-			InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
+			return InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
 		}
 
 		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Entity.ID);
@@ -711,7 +722,7 @@
 
 		public void Jump(float jumpForce)
 		{
-			InternalCalls.CharacterControllerComponent_Jump(Entity.ID, force);
+			InternalCalls.CharacterControllerComponent_Jump(Entity.ID, jumpForce);
 		}
 	}
 
@@ -901,14 +912,14 @@
 
 		public float AngularVelocity
 		{
-			get => InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetAngularVelocity(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetAngularVelocity(Entity.ID, value);
 		}
 
 		public float AngularDrag
 		{
-			get => InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetAngularDrag(Entity.ID);
+			set => InternalCalls.RigidBody2DComponent_SetAngularDrag(Entity.ID, value);
 		}
 
 		public float GravityScale

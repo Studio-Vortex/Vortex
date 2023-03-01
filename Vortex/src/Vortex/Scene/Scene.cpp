@@ -295,9 +295,9 @@ namespace Vortex {
 		SortEntities();
 	}
 
-	void Scene::DestroyEntity(const QueueFreeData& data);
+	void Scene::DestroyEntity(const QueueFreeData& data)
 	{
-		VX_CORE_ASSERT(!m_QueueFreeMap.contatins(data.EntityUUID), "Entity was already submitted to be destroyed!");
+		VX_CORE_ASSERT(!m_QueueFreeMap.contains(data.EntityUUID), "Entity was already submitted to be destroyed!");
 		VX_CORE_ASSERT(m_EntityMap.contains(data.EntityUUID), "Entity was not found in Scene Entity Map!");
 
 		if (data.WaitTime <= 0.0f)
@@ -633,7 +633,7 @@ namespace Vortex {
 
 				if (queueFreeData.WaitTime <= 0.0f)
 				{
-					VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity was already submitted to be removed from queue!!");
+					VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity was already submitted to be removed from queue!");
 					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
 				}
 			}
@@ -642,7 +642,7 @@ namespace Vortex {
 			{
 				VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
 				DestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
-				m_QueueFreeMap.erase(std::remove(m_QueueFreeMap.begin(), m_QueueFreeMap.end(), uuid), m_QueueFreeMap.end());
+				m_QueueFreeMap.erase(uuid);
 			}
 
 			m_EntitiesToBeRemovedFromQueue.clear();

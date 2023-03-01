@@ -136,8 +136,8 @@ namespace Vortex {
 
 #pragma region Camera Component
 
-		ProjectionType CameraComponent_GetProjectionType(UUID entityUUID);
-		void CameraComponent_SetProjectionType(UUID entityUUID, ProjectionType type);
+		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID entityUUID);
+		void CameraComponent_SetProjectionType(UUID entityUUID, SceneCamera::ProjectionType type);
 		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary);
 		void CameraComponent_SetPrimary(UUID entityUUID, bool primary);
 		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID);
@@ -334,8 +334,10 @@ namespace Vortex {
 		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled);
 		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID);
 		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic);
-		void RigidBodyComponent_GetKinematicTarget(UUID entityUUID, Math::vec3* outTarget);
-		void RigidBodyComponent_SetKinematicTarget(UUID entityUUID, Math::vec3* target);
+		void RigidBodyComponent_GetKinematicTargetTranslation(UUID entityUUID, Math::vec3* outTranslation);
+		void RigidBodyComponent_SetKinematicTargetTranslation(UUID entityUUID, Math::vec3* translation);
+		void RigidBodyComponent_GetKinematicTargetRotation(UUID entityUUID, Math::quaternion* outRotation);
+		void RigidBodyComponent_SetKinematicTargetRotation(UUID entityUUID, Math::quaternion* rotation);
 		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID);
 		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake);
 		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag);
