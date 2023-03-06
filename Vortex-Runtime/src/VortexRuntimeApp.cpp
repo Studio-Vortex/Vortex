@@ -43,7 +43,6 @@ namespace Vortex {
 		props.IsRuntime = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		props.WorkingDirectory = "C:/dev/Vortex Engine";
 		props.CommandLineArgs = args;
 
 		return new VortexRuntime(props);

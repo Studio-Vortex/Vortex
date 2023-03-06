@@ -31,7 +31,7 @@ namespace Vortex {
 		if (!m_Properties.WorkingDirectory.empty())
 			FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
 		else
-			m_Properties.WorkingDirectory = std::filesystem::current_path();
+			m_Properties.WorkingDirectory = std::filesystem::current_path().string();
 
 		WindowProperties windowProps;
 		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
