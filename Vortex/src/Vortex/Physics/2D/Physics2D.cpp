@@ -83,7 +83,7 @@ namespace Vortex {
 		// Physics
 		{
 			// Copy transform from Vortex to Box2D
-			auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
+			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBody2DComponent>();
 
 			for (const auto e : view)
 			{
@@ -103,8 +103,6 @@ namespace Vortex {
 
 				const auto& bodyPosition = body->GetPosition();
 				const float bodyAngle = body->GetAngle();
-
-				const bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
 
 				body->SetTransform({ translation.x, translation.y }, angle);
 				if (rigidbody.Velocity != Math::vec2(0.0f))
@@ -140,7 +138,11 @@ namespace Vortex {
 					fixture->SetRestitutionThreshold(cc2d.RestitutionThreshold);
 				}
 
-				body->SetAwake(awake);
+				if (rigidbody.Type == RigidBody2DType::Dynamic)
+				{
+					const bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
+					body->SetAwake(true);// TODO fix this
+				}
 			}
 
 			s_PhysicsScene->Step(delta, s_PhysicsWorld2DVeloctityIterations, s_PhysicsWorld2DPositionIterations);

@@ -265,6 +265,8 @@ namespace Vortex {
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
 				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
 			}
 
 			if (Gui::MenuItem("Circle"))
@@ -273,6 +275,8 @@ namespace Vortex {
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
 				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
 				m_SelectedEntity.AddComponent<CircleRendererComponent>();
+				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
+				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
 			}
 
 			Gui::EndMenu();

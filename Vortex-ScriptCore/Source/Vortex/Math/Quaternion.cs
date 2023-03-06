@@ -40,6 +40,18 @@ namespace Vortex
 			Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
 		}
 
+		public Quaternion(float x, float y, float z)
+		{
+			Vector3 euler = new Vector3(x, y, z);
+			Vector3 c = Vector3.Cos(euler * 0.5f);
+			Vector3 s = Vector3.Sin(euler * 0.5f);
+
+			W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
+			X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
+			Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
+			Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
+		}
+
 		public static Vector3 operator *(Quaternion q, Vector3 v)
 		{
 			Vector3 qv = new Vector3(q.X, q.Y, q.Z);
@@ -61,6 +73,7 @@ namespace Vortex
 		public Vector3 XYZ
 		{
 			get => new Vector3(X, Y, Z);
+
 			set
 			{
 				X = value.X;
@@ -70,23 +83,15 @@ namespace Vortex
 		}
 
 		public override int GetHashCode() => (W, X, Y, Z).GetHashCode();
-
 		public override bool Equals(object obj) => obj is Quaternion other && Equals(other);
-
 		public bool Equals(Quaternion right) => W == right.W && X == right.X && Y == right.Y && Z == right.Z;
 
 		public static bool operator ==(Quaternion left, Quaternion right) => left.Equals(right);
 		public static bool operator !=(Quaternion left, Quaternion right) => !(left == right);
 
-		public float Length
-		{
-			get => Mathf.Sqrt(LengthSquared);
-		}
+		public float Length => Mathf.Sqrt(LengthSquared);
 
-		public float LengthSquared
-		{
-			get => X * X + Y * Y + Z * Z + W * W;
-		}
+		public float LengthSquared => X * X + Y * Y + Z * Z + W * W;
 
 		public static Quaternion FromToRotation(Vector3 aFrom, Vector3 aTo)
 		{
@@ -103,10 +108,7 @@ namespace Vortex
 			return new Quaternion(Mathf.Cos(rad), aAxis.X, aAxis.Y, aAxis.Z);
 		}
 
-		public static Quaternion LookRotation(Vector3 forward)
-		{
-			return LookRotation(forward, Vector3.Up);
-		}
+		public static Quaternion LookRotation(Vector3 forward) => LookRotation(forward, Vector3.Up);
 
 		public static Quaternion LookRotation(Vector3 forward, Vector3 up)
 		{
@@ -173,18 +175,8 @@ namespace Vortex
 			W *= scale;
 		}
 
-		public static Quaternion EulerAngles(Vector3 eulers)
-		{
-			Vector3 c = Vector3.Cos(eulers * 0.5f);
-			Vector3 s = Vector3.Sin(eulers * 0.5f);
-
-			float W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
-			float X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
-			float Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
-			float Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
-
-			return new Quaternion(W, X, Y, Z);
-		}
+		public static Quaternion EulerAngles(Vector3 eulers) => new Quaternion(eulers);
+		public static Quaternion EulerAngles(float x, float y, float z) => new Quaternion(new Vector3(x, y, z));
 
 		public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
 		{
@@ -248,7 +240,7 @@ namespace Vortex
 				return result;
 			}
 
-			return Quaternion.Identity;
+			return Identity;
 		}
 
 	}
