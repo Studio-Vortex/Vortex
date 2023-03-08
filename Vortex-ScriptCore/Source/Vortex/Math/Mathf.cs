@@ -8,6 +8,8 @@ namespace Vortex {
 		public static float TwoPI => PI * 2;
 		public static double PI_D => InternalCalls.Mathf_GetPI_D();
 
+		public static float Round(float value) => InternalCalls.Mathf_Round(value);
+
 		public static float Clamp(float value, float min, float max)
 		{
 			if (value < min)

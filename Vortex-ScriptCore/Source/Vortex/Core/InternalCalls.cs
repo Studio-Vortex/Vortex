@@ -261,10 +261,46 @@ namespace Vortex {
 		internal extern static void CameraComponent_SetPerspectiveVerticalFOV(ulong entityID, float perspectiveVerticalFOV);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetNearClip(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetNearClip(ulong entityID, float nearClip);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetFarClip(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetFarClip(ulong entityID, float farClip);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicSize(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicSize(ulong entityID, float orthographicSize);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicNear(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicNear(ulong entityID, float orthographicNear);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicFar(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicFar(ulong entityID, float orthographicFar);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_GetFixedAspectRatio(ulong entityID, out bool outFixedAspectRatio);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_GetClearColor(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetClearColor(ulong entityID, ref Color3 clearColor);
 
 		#endregion
 
@@ -1152,6 +1188,9 @@ namespace Vortex {
 		internal extern static double Mathf_GetPI_D();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Round(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Abs(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1192,22 +1231,6 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_InverseQuat(ref Quaternion value, out Quaternion result);
-
-		#endregion
-
-		#region Quaternion
-
-		
-
-		#endregion
-
-		#region Vector3
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Vector3_CrossProductVec3(ref Vector3 left, ref Vector3 right, out Vector3 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Vector3_DotProductVec3(ref Vector3 left, ref Vector3 right);
 
 		#endregion
 

@@ -116,11 +116,25 @@ namespace Vortex {
 
 		public static Vector3 Cross(Vector3 left, Vector3 right)
 		{
-			InternalCalls.Vector3_CrossProductVec3(ref left, ref right, out Vector3 result);
-			return result;
+			float a1 = left.X;
+			float a2 = left.Y;
+			float a3 = left.Z;
+
+			float b1 = left.X;
+			float b2 = left.Y;
+			float b3 = left.Z;
+
+			float x = a2 * b3 - a3 * b2;
+			float y = a3 * b1 - a1 * b3;
+			float z = a1 * b2 - a2 * b1;
+
+			return new Vector3(x, y, z);
 		}
 
-		public static float Dot(Vector3 left, Vector3 right) => InternalCalls.Vector3_DotProductVec3(ref left, ref right);
+		public static float Dot(Vector3 left, Vector3 right)
+		{
+			return left.X * right.X + left.Y * right.Y + left.Z * right.Z;
+		}
 
 		public static Vector3 Cos(Vector3 other) => new Vector3(Mathf.Cos(other.X), Mathf.Cos(other.Y), Mathf.Cos(other.Z));
 		public static Vector3 Sin(Vector3 other) => new Vector3(Mathf.Sin(other.X), Mathf.Sin(other.Y), Mathf.Sin(other.Z));

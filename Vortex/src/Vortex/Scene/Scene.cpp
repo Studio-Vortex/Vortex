@@ -633,7 +633,9 @@ namespace Vortex {
 
 				if (queueFreeData.WaitTime <= 0.0f)
 				{
-					VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity was already submitted to be removed from queue!");
+					VX_CORE_ASSERT(
+						std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid) != m_EntitiesToBeRemovedFromQueue.end(),
+						"Entity was already submitted to be removed from queue!");
 					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
 				}
 			}

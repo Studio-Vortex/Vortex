@@ -195,6 +195,7 @@
 				InternalCalls.CameraComponent_GetPrimary(Entity.ID, out bool primary);
 				return primary;
 			}
+
 			set => InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
 		}
 
@@ -204,6 +205,36 @@
 			set => InternalCalls.CameraComponent_SetPerspectiveVerticalFOV(Entity.ID, value);
 		}
 
+		public float NearClip
+		{
+			get => InternalCalls.CameraComponent_GetNearClip(Entity.ID);
+			set => InternalCalls.CameraComponent_SetNearClip(Entity.ID, value);
+		}
+
+		public float FarClip
+		{
+			get => InternalCalls.CameraComponent_GetFarClip(Entity.ID);
+			set => InternalCalls.CameraComponent_SetFarClip(Entity.ID, value);
+		}
+
+		public float OrthographicSize
+		{
+			get => InternalCalls.CameraComponent_GetOrthographicSize(Entity.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicSize(Entity.ID, value);
+		}
+
+		public float OrthographicNear
+		{
+			get => InternalCalls.CameraComponent_GetOrthographicNear(Entity.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicNear(Entity.ID, value);
+		}
+
+		public float OrthographicFar
+		{
+			get => InternalCalls.CameraComponent_GetOrthographicFar(Entity.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicFar(Entity.ID, value);
+		}
+
 		public bool IsFixedAspectRatio
 		{
 			get
@@ -211,7 +242,19 @@
 				InternalCalls.CameraComponent_GetFixedAspectRatio(Entity.ID, out bool fixedAspectRatio);
 				return fixedAspectRatio;
 			}
+
 			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
+		}
+
+		public Color3 ClearColor
+		{
+			get
+			{
+				InternalCalls.CameraComponent_GetClearColor(Entity.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.CameraComponent_SetClearColor(Entity.ID, ref value);
 		}
 	}
 

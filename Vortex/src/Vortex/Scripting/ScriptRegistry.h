@@ -143,8 +143,20 @@ namespace Vortex {
 		void CameraComponent_SetPrimary(UUID entityUUID, bool primary);
 		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID);
 		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV);
+		float CameraComponent_GetNearClip(UUID entityUUID);
+		void CameraComponent_SetNearClip(UUID entityUUID, float nearClip);
+		float CameraComponent_GetFarClip(UUID entityUUID);
+		void CameraComponent_SetFarClip(UUID entityUUID, float farClip);
+		float CameraComponent_GetOrthographicSize(UUID entityUUID);
+		void CameraComponent_SetOrthographicSize(UUID entityUUID, float orthographicSize);
+		float CameraComponent_GetOrthographicNear(UUID entityUUID);
+		void CameraComponent_SetOrthographicNear(UUID entityUUID, float orthographicNear);
+		float CameraComponent_GetOrthographicFar(UUID entityUUID);
+		void CameraComponent_SetOrthographicFar(UUID entityUUID, float orthographicFar);
 		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio);
 		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio);
+		void CameraComponent_GetClearColor(UUID entityUUID, Math::vec3* outColor);
+		void CameraComponent_SetClearColor(UUID entityUUID, Math::vec3* color);
 
 #pragma endregion
 
@@ -522,6 +534,7 @@ namespace Vortex {
 
 		float Mathf_GetPI();
 		double Mathf_GetPI_D();
+		float Mathf_Round(float value);
 		float Mathf_Abs(float in);
 		float Mathf_Sqrt(float in);
 		float Mathf_Sin(float in);
@@ -536,19 +549,6 @@ namespace Vortex {
 		void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult);
 		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation);
 		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result);
-
-#pragma endregion
-
-#pragma region Quaternion
-
-
-
-#pragma endregion
-
-#pragma region Vector3
-
-		void Vector3_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult);
-		float Vector3_DotProductVec3(Math::vec3* left, Math::vec3* right);
 
 #pragma endregion
 

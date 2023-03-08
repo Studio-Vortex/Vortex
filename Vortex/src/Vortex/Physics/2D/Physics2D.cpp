@@ -104,6 +104,9 @@ namespace Vortex {
 				const auto& bodyPosition = body->GetPosition();
 				const float bodyAngle = body->GetAngle();
 
+				const bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
+				body->SetAwake(awake);// TODO fix this
+
 				body->SetTransform({ translation.x, translation.y }, angle);
 				if (rigidbody.Velocity != Math::vec2(0.0f))
 				{
@@ -136,12 +139,6 @@ namespace Vortex {
 					fixture->SetFriction(cc2d.Friction);
 					fixture->SetRestitution(cc2d.Restitution);
 					fixture->SetRestitutionThreshold(cc2d.RestitutionThreshold);
-				}
-
-				if (rigidbody.Type == RigidBody2DType::Dynamic)
-				{
-					const bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
-					body->SetAwake(true);// TODO fix this
 				}
 			}
 

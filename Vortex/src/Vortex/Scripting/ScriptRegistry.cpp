@@ -907,22 +907,24 @@ namespace Vortex {
 
 					const Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 					Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
-					Math::vec3 translation, rotation, scale;
+					Math::vec3 translation, scale;
+					Math::quaternion rotation;
 					Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-					physxTransform.q = ToPhysXQuat(Math::quaternion(rotation));
+					physxTransform.q = ToPhysXQuat(rotation);
 
 					actor->setGlobalPose(physxTransform);
-				}
 
-				return;
+					return;
+				}
 			}
 
 			TransformComponent& transform = entity.GetTransform();
 			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
-			Math::vec3 translation, rotation, scale;
+			Math::vec3 translation, scale;
+			Math::quaternion rotation;
 			Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
-			transform.SetRotationEuler(rotation);
+			transform.SetRotation(rotation);
 		}
 
 		uint64_t TransformComponent_GetParent(UUID entityUUID)
@@ -1074,6 +1076,166 @@ namespace Vortex {
 			camera.SetPerspectiveVerticalFOVRad(FOVRad);
 		}
 
+		float CameraComponent_GetNearClip(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.NearClip without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			return camera.GetPerspectiveNearClip();
+		}
+
+		void CameraComponent_SetNearClip(UUID entityUUID, float nearClip)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.NearClip without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& camera = cameraComponent.Camera;
+
+			camera.SetPerspectiveNearClip(nearClip);
+		}
+
+		float CameraComponent_GetFarClip(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FarClip without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			return camera.GetPerspectiveFarClip();
+		}
+
+		void CameraComponent_SetFarClip(UUID entityUUID, float farClip)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FarClip without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& camera = cameraComponent.Camera;
+
+			camera.SetPerspectiveFarClip(farClip);
+		}
+
+		float CameraComponent_GetOrthographicSize(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicSize without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			return camera.GetOrthographicSize();
+		}
+
+		void CameraComponent_SetOrthographicSize(UUID entityUUID, float orthographicSize)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicSize without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& camera = cameraComponent.Camera;
+
+			camera.SetOrthographicSize(orthographicSize);
+		}
+
+		float CameraComponent_GetOrthographicNear(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicNear without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			return camera.GetOrthographicNearClip();
+		}
+
+		void CameraComponent_SetOrthographicNear(UUID entityUUID, float orthographicNear)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicNear without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& camera = cameraComponent.Camera;
+
+			camera.SetOrthographicNearClip(orthographicNear);
+		}
+
+		float CameraComponent_GetOrthographicFar(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicFar without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			return camera.GetOrthographicFarClip();
+		}
+
+		void CameraComponent_SetOrthographicFar(UUID entityUUID, float orthographicFar)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicFar without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& camera = cameraComponent.Camera;
+
+			camera.SetOrthographicFarClip(orthographicFar);
+		}
+
 		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -1102,6 +1264,36 @@ namespace Vortex {
 			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
 			cameraComponent.FixedAspectRatio = fixedAspectRatio;
+		}
+
+		void CameraComponent_GetClearColor(UUID entityUUID, Math::vec3* outColor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ClearColor without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			
+			*outColor = cameraComponent.ClearColor;
+		}
+
+		void CameraComponent_SetClearColor(UUID entityUUID, Math::vec3* color)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ClearColor without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			
+			cameraComponent.ClearColor = *color;
 		}
 
 #pragma endregion
@@ -1652,7 +1844,6 @@ namespace Vortex {
 			{
 				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
 				const auto& submesh = mesh->GetSubmesh();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 				*outAlbedo = submesh.GetMaterial()->GetAlbedo();
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
@@ -5477,6 +5668,11 @@ namespace Vortex {
 			return Math::PI_D;
 		}
 
+		float Mathf_Round(float value)
+		{
+			return Math::Round(value);
+		}
+
 		float Mathf_Abs(float in)
 		{
 			return Math::Abs(in);
@@ -5550,26 +5746,6 @@ namespace Vortex {
 		{
 			// TODO fix this
 			*result = Math::Inverse(*rotation);
-		}
-
-#pragma endregion
-
-#pragma region Quaternion
-
-
-
-#pragma endregion
-
-#pragma region Vector3
-
-		void Vector3_CrossProductVec3(Math::vec3* left, Math::vec3* right, Math::vec3* outResult)
-		{
-			*outResult = Math::Cross(*left, *right);
-		}
-
-		float Vector3_DotProductVec3(Math::vec3* left, Math::vec3* right)
-		{
-			return Math::Dot(*left, *right);
 		}
 
 #pragma endregion
@@ -5961,8 +6137,20 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(CameraComponent_SetPrimary);
 		VX_ADD_INTERNAL_CALL(CameraComponent_GetPerspectiveVerticalFOV);
 		VX_ADD_INTERNAL_CALL(CameraComponent_SetPerspectiveVerticalFOV);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetNearClip);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetNearClip);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetFarClip);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetFarClip);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetOrthographicSize);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetOrthographicSize);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetOrthographicNear);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetOrthographicNear);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetOrthographicFar);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetOrthographicFar);
 		VX_ADD_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
 		VX_ADD_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+		VX_ADD_INTERNAL_CALL(CameraComponent_GetClearColor);
+		VX_ADD_INTERNAL_CALL(CameraComponent_SetClearColor);
 
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_GetLightType);
 		VX_ADD_INTERNAL_CALL(LightSourceComponent_SetLightType);
@@ -6246,6 +6434,7 @@ namespace Vortex {
 
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI);
 		VX_ADD_INTERNAL_CALL(Mathf_GetPI_D);
+		VX_ADD_INTERNAL_CALL(Mathf_Round);
 		VX_ADD_INTERNAL_CALL(Mathf_Abs);
 		VX_ADD_INTERNAL_CALL(Mathf_Sqrt);
 		VX_ADD_INTERNAL_CALL(Mathf_Sin);
@@ -6260,9 +6449,6 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Mathf_Rad2DegVector3);
 		VX_ADD_INTERNAL_CALL(Mathf_LookAt);
 		VX_ADD_INTERNAL_CALL(Mathf_InverseQuat);
-
-		VX_ADD_INTERNAL_CALL(Vector3_CrossProductVec3);
-		VX_ADD_INTERNAL_CALL(Vector3_DotProductVec3);
 
 		VX_ADD_INTERNAL_CALL(Time_GetElapsed);
 		VX_ADD_INTERNAL_CALL(Time_GetDeltaTime);

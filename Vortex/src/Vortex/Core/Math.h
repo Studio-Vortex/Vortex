@@ -111,6 +111,12 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Round(T value)
+	{
+		return glm::round(value);
+	}
+
+	template <typename T>
 	static auto Max(T x, T y)
 	{
 		return glm::max(x, y);
