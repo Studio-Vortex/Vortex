@@ -147,6 +147,59 @@ namespace Vortex {
 			return it->second;
 		}
 
+        const char* ScriptFieldTypeToString(ScriptFieldType type)
+		{
+			switch (type)
+			{
+				case ScriptFieldType::None:    return "None";
+				case ScriptFieldType::Float:   return "Float";
+				case ScriptFieldType::Double:  return "Double";
+				case ScriptFieldType::Bool:    return "Bool";
+				case ScriptFieldType::Char:    return "Char";
+				case ScriptFieldType::Short:   return "Short";
+				case ScriptFieldType::Int:     return "Int";
+				case ScriptFieldType::Long:    return "Long";
+				case ScriptFieldType::Byte:    return "Byte";
+				case ScriptFieldType::UShort:  return "UShort";
+				case ScriptFieldType::UInt:    return "UInt";
+				case ScriptFieldType::ULong:   return "ULong";
+				case ScriptFieldType::Vector2: return "Vector2";
+				case ScriptFieldType::Vector3: return "Vector3";
+				case ScriptFieldType::Vector4: return "Vector4";
+				case ScriptFieldType::Color3:  return "Color3";
+				case ScriptFieldType::Color4:  return "Color4";
+				case ScriptFieldType::Entity:  return "Entity";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
+			return "None";
+		}
+
+		ScriptFieldType StringToScriptFieldType(std::string_view fieldType)
+		{
+			if (fieldType == "None")    return ScriptFieldType::None;
+			if (fieldType == "Float")   return ScriptFieldType::Float;
+			if (fieldType == "Double")  return ScriptFieldType::Double;
+			if (fieldType == "Bool")    return ScriptFieldType::Bool;
+			if (fieldType == "Char")    return ScriptFieldType::Char;
+			if (fieldType == "Short")   return ScriptFieldType::Short;
+			if (fieldType == "Int")     return ScriptFieldType::Int;
+			if (fieldType == "Long")    return ScriptFieldType::Long;
+			if (fieldType == "Byte")    return ScriptFieldType::Byte;
+			if (fieldType == "UShort")  return ScriptFieldType::UShort;
+			if (fieldType == "UInt")    return ScriptFieldType::UInt;
+			if (fieldType == "ULong")   return ScriptFieldType::ULong;
+			if (fieldType == "Vector2") return ScriptFieldType::Vector2;
+			if (fieldType == "Vector3") return ScriptFieldType::Vector3;
+			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
+			if (fieldType == "Color3")  return ScriptFieldType::Color3;
+			if (fieldType == "Color4")  return ScriptFieldType::Color4;
+			if (fieldType == "Entity")  return ScriptFieldType::Entity;
+
+			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
+			return ScriptFieldType::None;
+		}
+
 	}
 
 	struct ScriptEngineData
@@ -211,18 +264,18 @@ namespace Vortex {
 		ScriptRegistry::RegisterMethods();
 
 		std::filesystem::path coreAssemblyPath = "Resources/Scripts/Vortex-ScriptCore.dll";
-		bool status = LoadAssembly(coreAssemblyPath);
+		bool assemblyLoaded = LoadAssembly(coreAssemblyPath);
 
-		if (!status)
+		if (!assemblyLoaded)
 		{
 			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
 			return;
 		}
 
 		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.ScriptingProps.ScriptBinaryPath);
-		status = LoadAppAssembly(appAssemblyPath);
+		assemblyLoaded = LoadAppAssembly(appAssemblyPath);
 		
-		if (!status)
+		if (!assemblyLoaded)
 		{
 			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
 			return;
@@ -375,8 +428,8 @@ namespace Vortex {
 
 		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 
-		VX_CORE_ASSERT(!ScriptEngine::EntityInstanceExists(entityUUID), "Instance was already found with UUID!");
-		VX_CORE_ASSERT(ScriptEngine::EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Classes Map!");
+		VX_CORE_ASSERT(!EntityInstanceExists(entityUUID), "Instance was already found with UUID!");
+		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Entity Class was not found in Entity Classes Map!");
 
 		SharedRef<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
 		SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(scriptClass, entity);

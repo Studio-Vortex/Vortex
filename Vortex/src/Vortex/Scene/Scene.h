@@ -53,6 +53,11 @@ namespace Vortex {
 		void OnUpdateRuntime(TimeStep delta);
 		void OnUpdateSimulation(TimeStep delta, EditorCamera* camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
+
+		void SubmitToPostUpdateQueue(const std::function<void()>& func);
+
+		void ExecutePostUpdateQueue();
+
 		void OnUpdateEntityGui();
 
 		void Step(uint32_t frames = 1);
@@ -120,8 +125,6 @@ namespace Vortex {
 		void OnAnimatorUpdate(TimeStep delta);
 		void OnParticleEmitterUpdate(TimeStep delta);
 
-		void FindAndRemoveInvalidEntites();
-
 	private:
 		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
 		entt::registry m_Registry;
@@ -138,6 +141,9 @@ namespace Vortex {
 		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
 		QueueFreeMap m_QueueFreeMap;
 		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
+
+		std::vector<std::function<void()>> m_PostUpdateQueue;
+		std::mutex m_PostUpdateQueueMutex;
 
 #ifndef VX_DIST
 		std::string m_DebugName;

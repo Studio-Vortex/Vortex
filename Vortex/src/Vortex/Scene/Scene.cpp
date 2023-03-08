@@ -633,9 +633,6 @@ namespace Vortex {
 
 				if (queueFreeData.WaitTime <= 0.0f)
 				{
-					VX_CORE_ASSERT(
-						std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid) != m_EntitiesToBeRemovedFromQueue.end(),
-						"Entity was already submitted to be removed from queue!");
 					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
 				}
 			}
@@ -649,6 +646,8 @@ namespace Vortex {
 
 			m_EntitiesToBeRemovedFromQueue.clear();
 		}
+
+		ExecutePostUpdateQueue();
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)
@@ -708,14 +707,37 @@ namespace Vortex {
 		OnParticleEmitterUpdate(delta);
 	}
 
+	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
+	{
+		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
+
+		m_PostUpdateQueue.push_back(func);
+	}
+
+	void Scene::ExecutePostUpdateQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
+
+		for (auto& func : m_PostUpdateQueue)
+		{
+			func();
+		}
+	}
+
 	void Scene::OnUpdateEntityGui()
 	{
-		/*m_Registry.each([scene = this](auto& entityID)
+		if (!m_IsRunning)
 		{
-			Entity entity{ entityID, scene };
-			if (entity.HasComponent<ScriptComponent>())
-				ScriptEngine::OnGuiEntity(entity);
-		});*/
+			return;
+		}
+
+		auto view = m_Registry.view<ScriptComponent>();
+
+		for (auto& e : view)
+		{
+			Entity entity{ e, this };
+			ScriptEngine::OnGuiEntity(entity);
+		}
 	}
 
 	void Scene::Step(uint32_t frames)
