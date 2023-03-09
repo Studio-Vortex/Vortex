@@ -596,7 +596,7 @@ namespace Vortex {
 		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size);
 		void Gui_End();
 		void Gui_Underline();
-		void Gui_Spacing();
+		void Gui_Spacing(unsigned int count);
 		void Gui_Text(MonoString* text);
 		bool Gui_Button(MonoString* text);
 		bool Gui_PropertyBool(MonoString* label, bool* value);

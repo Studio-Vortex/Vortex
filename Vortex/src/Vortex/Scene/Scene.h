@@ -27,21 +27,13 @@ namespace Vortex {
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
 		~Scene() = default;
 
-		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
-		static void Create2DSampleScene(SharedRef<Scene>& context);
-		static void Create3DSampleScene(SharedRef<Scene>& context);
-
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 		void DestroyEntity(Entity entity, bool excludeChildren = false);
 		void DestroyEntity(const QueueFreeData& data);
 
-		void ParentEntity(Entity entity, Entity parent);
-		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
-
-		void ActiveateChildren(Entity entity);
-		void DeactiveateChildren(Entity entity);
+		void UpdateQueueFreeTimers(TimeStep delta);
 
 		void OnRuntimeStart(bool muteAudio = false);
 		void OnRuntimeStop();
@@ -55,14 +47,9 @@ namespace Vortex {
 		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
 
 		void SubmitToPostUpdateQueue(const std::function<void()>& func);
-
 		void ExecutePostUpdateQueue();
 
 		void OnUpdateEntityGui();
-
-		void Step(uint32_t frames = 1);
-
-		void OnViewportResize(uint32_t width, uint32_t height);
 
 		inline SharedRef<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
 		inline void SetTargetFramebuffer(SharedRef<Framebuffer> target) { m_TargetFramebuffer = target; }
@@ -74,15 +61,24 @@ namespace Vortex {
 		inline const Math::ivec2& GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
 		inline size_t GetEntityCount() const { return m_Registry.alive(); }
 
-		Entity TryGetTopEntityInHierarchy(Entity child) const;
+		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
+
+		void OnViewportResize(uint32_t width, uint32_t height);
+
+		void ParentEntity(Entity entity, Entity parent);
+		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
+
+		void ActiveateChildren(Entity entity);
+		void DeactiveateChildren(Entity entity);
+
+		Entity TryGetRootEntityInHierarchy(Entity child) const;
+		Entity TryGetEntityWithUUID(UUID uuid);
+		Entity GetPrimaryCameraEntity();
+
 		Entity DuplicateEntity(Entity entity);
 
-		Entity TryGetEntityWithUUID(UUID uuid);
 		Entity FindEntityByName(std::string_view name);
-
 		Entity FindEntityWithID(entt::entity entity);
-
-		Entity GetPrimaryCameraEntity();
 
 		bool AreEntitiesRelated(Entity first, Entity second);
 
@@ -114,6 +110,10 @@ namespace Vortex {
 		void SetDebugName(const std::string& name) { m_DebugName = name; }
 #endif
 
+		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
+		static void Create2DSampleScene(SharedRef<Scene>& context);
+		static void Create3DSampleScene(SharedRef<Scene>& context);
+
 		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
 		static SharedRef<Scene> Create();
 
@@ -121,9 +121,19 @@ namespace Vortex {
 		template <typename TComponent>
 		void OnComponentAdded(Entity entity, TComponent& component);
 
-		void OnModelUpdate();
-		void OnAnimatorUpdate(TimeStep delta);
-		void OnParticleEmitterUpdate(TimeStep delta);
+		void CreateScriptInstancesRuntime();
+		void DestroyScriptInstancesRuntime();
+
+		void StartAudioSourcesRuntime();
+		void StopAudioSourcesRuntime();
+
+		void StopAnimatorsRuntime();
+
+		void StopParticleEmittersRuntime();
+
+		void OnMeshUpdateRuntime();
+		void OnAnimatorUpdateRuntime(TimeStep delta);
+		void OnParticleEmitterUpdateRuntime(TimeStep delta);
 
 	private:
 		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
@@ -131,9 +141,6 @@ namespace Vortex {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		uint32_t m_StepFrames = 0;
-
-		bool m_IsRunning = false;
-		bool m_IsPaused = false;
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;
@@ -145,9 +152,14 @@ namespace Vortex {
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 		std::mutex m_PostUpdateQueueMutex;
 
+		std::unordered_map<uint32_t, SharedRef<Scene>> m_SceneBuildIndices;
+
 #ifndef VX_DIST
 		std::string m_DebugName;
 #endif
+
+		bool m_IsRunning = false;
+		bool m_IsPaused = false;
 
 	private:
 		friend class Entity;

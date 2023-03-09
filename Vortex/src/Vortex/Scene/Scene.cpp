@@ -56,73 +56,75 @@ namespace Vortex {
 		template<typename... TComponent>
 		static void CopyComponentIfExists(Entity dst, Entity src)
 		{
+			VX_PROFILE_FUNCTION();
+
 			([&]()
+			{
+				if (src.HasComponent<TComponent>())
 				{
-					if (src.HasComponent<TComponent>())
+					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+
+					// Copy Resources
 					{
-						dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
-
-						// Copy Resources
+						if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 						{
-							if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
-							{
-								const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-								auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
 								
-								dstMesh = StaticMesh::Create(srcMesh->GetPath(), dst.GetTransform(), MeshImportOptions(), (int)(entt::entity)dst);
+							dstMesh = StaticMesh::Create(srcMesh->GetPath(), dst.GetTransform(), MeshImportOptions(), (int)(entt::entity)dst);
 								
-								const auto& submeshes = srcMesh->GetSubmeshes();
-								uint32_t i = 0;
+							const auto& submeshes = srcMesh->GetSubmeshes();
+							uint32_t i = 0;
 
-								for (const auto& srcSubmesh : submeshes)
-								{
-									StaticSubmesh& submesh = dstMesh->GetSubmesh(i++);
-									submesh.SetMaterial(srcSubmesh.GetMaterial());
-								}
-							}
-
-							if constexpr (std::is_same<TComponent, SkyboxComponent>())
+							for (const auto& srcSubmesh : submeshes)
 							{
-								const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
-								const auto& dstSkybox = dst.GetComponent<SkyboxComponent>().Source;
-								Skybox::Copy(dstSkybox, srcSkybox);
+								StaticSubmesh& submesh = dstMesh->GetSubmesh(i++);
+								submesh.SetMaterial(srcSubmesh.GetMaterial());
 							}
+						}
 
-							if constexpr (std::is_same<TComponent, LightSourceComponent>())
+						if constexpr (std::is_same<TComponent, SkyboxComponent>())
+						{
+							const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
+							const auto& dstSkybox = dst.GetComponent<SkyboxComponent>().Source;
+							Skybox::Copy(dstSkybox, srcSkybox);
+						}
+
+						if constexpr (std::is_same<TComponent, LightSourceComponent>())
+						{
+							const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
+							const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
+							LightSource::Copy(destinationLightSource, sourceLightSource);
+						}
+
+						if constexpr (std::is_same<TComponent, AudioSourceComponent>())
+						{
+							const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
+							const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
+							AudioSource::Copy(destinationAudioSource, sourceAudioSource);
+						}
+
+						if constexpr (std::is_same<TComponent, ParticleEmitterComponent>())
+						{
+							const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
+							const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
+							ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
+						}
+
+						// If we copy a script component, we should probably copy all of the script field values as well
+						if constexpr (std::is_same<TComponent, ScriptComponent>())
+						{
+							const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
+							auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+
+							for (const auto& [name, field] : sourceScriptFieldMap)
 							{
-								const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
-								const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
-								LightSource::Copy(destinationLightSource, sourceLightSource);
-							}
-
-							if constexpr (std::is_same<TComponent, AudioSourceComponent>())
-							{
-								const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
-								const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
-								AudioSource::Copy(destinationAudioSource, sourceAudioSource);
-							}
-
-							if constexpr (std::is_same<TComponent, ParticleEmitterComponent>())
-							{
-								const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
-								const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
-								ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
-							}
-
-							// If we copy a script component, we should probably copy all of the script field values as well
-							if constexpr (std::is_same<TComponent, ScriptComponent>())
-							{
-								const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
-								auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
-
-								for (const auto& [name, field] : sourceScriptFieldMap)
-								{
-									destinationScriptFieldMap[name] = field;
-								}
+								destinationScriptFieldMap[name] = field;
 							}
 						}
 					}
-				}(), ...);
+				}
+			}(), ...);
 		}
 
 		template<typename... TComponent>
@@ -138,80 +140,17 @@ namespace Vortex {
 	Scene::Scene(SharedRef<Framebuffer> targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer) { }
 
-	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
+	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedRef<Scene> destination = Scene::Create(source->m_TargetFramebuffer);
-
-		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
-		destination->m_ViewportWidth = source->m_ViewportWidth;
-		destination->m_ViewportHeight = source->m_ViewportHeight;
-
-		auto& srcSceneRegistry = source->m_Registry;
-		auto& dstSceneRegistry = destination->m_Registry;
-		std::unordered_map<UUID, entt::entity> enttMap;
-
-		// Create entites in new scene
-		auto view = srcSceneRegistry.view<IDComponent>();
-		for (const auto e : view)
-		{
-			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
-			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name);
-			enttMap[uuid] = (entt::entity)copiedEntity;
-		}
-		
-		// Copy components (except IDComponent and TagComponent)
-		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
-
-		destination->SortEntities();
-
-		return destination;
-	}
-
-	void Scene::Create2DSampleScene(SharedRef<Scene>& context)
-	{
-		// Starting Entities
-		Entity startingCamera = context->CreateEntity("Camera");
-		startingCamera.AddComponent<AudioListenerComponent>();
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = { 0.0f, 0.0f, 0.0f };
-		cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
-	}
-
-	void Scene::Create3DSampleScene(SharedRef<Scene>& context)
-	{
-		// Starting Entities
-		Entity startingCube = context->CreateEntity("Cube");
-		startingCube.AddComponent<StaticMeshRendererComponent>();
-		startingCube.AddComponent<RigidBodyComponent>();
-		startingCube.AddComponent<BoxColliderComponent>();
-
-		Entity startingSkyLight = context->CreateEntity("Sky Light");
-		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
-		lightSource.Type = LightType::Directional;
-		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-57.0f), 0.0f });
-		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
-
-		Entity startingCamera = context->CreateEntity("Camera");
-		startingCamera.AddComponent<AudioListenerComponent>();
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = { -4.0f, 3.0f, 4.0f };
-		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
-	}
-
-	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
-	{
 		return CreateEntityWithUUID(UUID(), name, marker);
 	}
 
 	Entity Scene::CreateChildEntity(Entity parent, const std::string& name, const std::string& marker)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity child = CreateEntity(name, marker);
 
 		ParentEntity(child, parent);
@@ -297,20 +236,313 @@ namespace Vortex {
 
 	void Scene::DestroyEntity(const QueueFreeData& data)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(!m_QueueFreeMap.contains(data.EntityUUID), "Entity was already submitted to be destroyed!");
 		VX_CORE_ASSERT(m_EntityMap.contains(data.EntityUUID), "Entity was not found in Scene Entity Map!");
 
-		if (data.WaitTime <= 0.0f)
+		const bool validTimer = data.WaitTime <= 0.0f;
+
+		if (!validTimer)
 		{
 			Entity entity = m_EntityMap[data.EntityUUID];
 			DestroyEntity(entity, data.ExcludeChildren);
-			VX_CONSOLE_LOG_ERROR("Calling DestroyEntity with a wait time of 0, Use the regular method instead!");
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with a wait time of 0, Use the regular method instead!");
 			return;
 		}
 
 		if (!m_QueueFreeMap.contains(data.EntityUUID))
 		{
 			m_QueueFreeMap[data.EntityUUID] = data;
+		}
+	}
+
+	void Scene::UpdateQueueFreeTimers(TimeStep delta)
+	{
+		VX_PROFILE_FUNCTION();
+
+		// Update timers for entites to be destroyed
+		for (auto& [uuid, queueFreeData] : m_QueueFreeMap)
+		{
+			queueFreeData.WaitTime -= delta;
+
+			if (queueFreeData.WaitTime <= 0.0f)
+			{
+				m_EntitiesToBeRemovedFromQueue.push_back(uuid);
+			}
+		}
+
+		for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
+		{
+			VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
+			DestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
+			m_QueueFreeMap.erase(uuid);
+		}
+
+		m_EntitiesToBeRemovedFromQueue.clear();
+	}
+
+	void Scene::OnRuntimeStart(bool muteAudio)
+	{
+		VX_PROFILE_FUNCTION();
+
+		m_IsRunning = true;
+
+		OnPhysicsSimulationStart();
+
+		// Audio Source - PlayOnStart
+		if (!muteAudio)
+		{
+			StartAudioSourcesRuntime();
+		}
+
+		CreateScriptInstancesRuntime();
+	}
+
+	void Scene::OnRuntimeStop()
+	{
+		VX_PROFILE_FUNCTION();
+
+		m_IsRunning = false;
+
+		DestroyScriptInstancesRuntime();
+
+		ScriptEngine::OnRuntimeStop();
+
+		StopAudioSourcesRuntime();
+
+		StopAnimatorsRuntime();
+
+		StopParticleEmittersRuntime();
+
+		OnPhysicsSimulationStop();
+	}
+
+	void Scene::OnPhysicsSimulationStart()
+	{
+		VX_PROFILE_FUNCTION();
+
+		Physics::OnSimulationStart(this);
+		Physics2D::OnSimulationStart(this);
+	}
+
+	void Scene::OnPhysicsSimulationUpdate(TimeStep delta)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Physics::OnSimulationUpdate(delta);
+		Physics2D::OnSimulationUpdate(delta, this);
+	}
+
+	void Scene::OnPhysicsSimulationStop()
+	{
+		VX_PROFILE_FUNCTION();
+
+		Physics::OnSimulationStop(this);
+		Physics2D::OnSimulationStop();
+	}
+
+	void Scene::OnUpdateRuntime(TimeStep delta)
+	{
+		VX_PROFILE_FUNCTION();
+
+		const bool shouldUpdateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
+
+		if (shouldUpdateCurrentFrame)
+		{
+			// C++ Entity OnUpdate
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				nsc.Instance->OnUpdate(delta);
+			});
+
+			// C# Entity OnUpdate
+			const auto view = m_Registry.view<ScriptComponent>();
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+
+				if (!entity.IsActive())
+					continue;
+
+				ScriptEngine::OnUpdateEntity(entity, delta);
+			}
+
+			// Update Physics Bodies
+			OnPhysicsSimulationUpdate(delta);
+
+			// Update Animators
+			OnAnimatorUpdateRuntime(delta);
+
+			if (m_StepFrames)
+			{
+				m_StepFrames--;
+			}
+		}
+
+		// Locate the scene's primary camera
+		{
+			SceneCamera* primarySceneCamera = nullptr;
+			TransformComponent primarySceneCameraTransform;
+
+			Entity primaryCameraEntity = GetPrimaryCameraEntity();
+
+			if (primaryCameraEntity)
+			{
+				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+				primarySceneCamera = &cameraComponent.Camera;
+				primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
+
+				// Set clear color
+				RenderCommand::SetClearColor(cameraComponent.ClearColor);
+
+				if (primarySceneCamera)
+				{
+					SceneRenderPacket renderPacket{};
+					renderPacket.MainCamera = primarySceneCamera;
+					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
+					renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+					renderPacket.Scene = this;
+					renderPacket.EditorScene = false;
+					s_SceneRenderer.RenderScene(renderPacket);
+				}
+			}
+		}
+
+		// Update Components
+		OnMeshUpdateRuntime();
+		OnParticleEmitterUpdateRuntime(delta);
+
+		if (shouldUpdateCurrentFrame)
+		{
+			SubmitToPostUpdateQueue([=]()
+			{
+				UpdateQueueFreeTimers(delta);
+			});
+		}
+
+		ExecutePostUpdateQueue();
+	}
+
+	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (!m_IsPaused || m_StepFrames > 0)
+		{
+			OnPhysicsSimulationUpdate(delta);
+
+			// Update Animators
+			OnAnimatorUpdateRuntime(delta);
+
+			if (m_StepFrames)
+				m_StepFrames--;
+		}
+
+		// Render
+		SceneRenderPacket renderPacket{};
+		renderPacket.MainCamera = camera;
+		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+		renderPacket.Scene = this;
+		renderPacket.EditorScene = true;
+		s_SceneRenderer.RenderScene(renderPacket);
+
+		// Update Components
+		OnMeshUpdateRuntime();
+		OnParticleEmitterUpdateRuntime(delta);
+	}
+
+	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
+	{
+		VX_PROFILE_FUNCTION();
+
+		// Update Animators
+		OnAnimatorUpdateRuntime(delta);
+
+		// Render
+		{
+			SceneRenderPacket renderPacket{};
+			renderPacket.MainCamera = camera;
+			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+			renderPacket.Scene = this;
+			renderPacket.EditorScene = true;
+			s_SceneRenderer.RenderScene(renderPacket);
+		}
+
+		Entity primaryCameraEntity = GetPrimaryCameraEntity();
+		if (primaryCameraEntity)
+		{
+			const auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+
+			// Set Clear color
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
+		}
+
+		// Update Components
+		OnMeshUpdateRuntime();
+		OnParticleEmitterUpdateRuntime(delta);
+	}
+
+	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
+	{
+		VX_PROFILE_FUNCTION();
+
+		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
+
+		m_PostUpdateQueue.push_back(func);
+	}
+
+	void Scene::ExecutePostUpdateQueue()
+	{
+		VX_PROFILE_FUNCTION();
+
+		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
+
+		for (const auto& func : m_PostUpdateQueue)
+		{
+			func();
+		}
+
+		m_PostUpdateQueue.clear();
+	}
+
+	void Scene::OnUpdateEntityGui()
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (!m_IsRunning)
+			return;
+
+		auto view = m_Registry.view<ScriptComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			ScriptEngine::OnGuiEntity(entity);
+		}
+	}
+
+	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (m_ViewportWidth == width && m_ViewportHeight == height)
+			return;
+
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+
+		// Resize non-FixedAspectRatio cameras
+		auto view = m_Registry.view<CameraComponent>();
+
+		for (const auto entity : view)
+		{
+			auto& cameraComponent = view.get<CameraComponent>(entity);
+
+			if (cameraComponent.FixedAspectRatio)
+				continue;
+
+			cameraComponent.Camera.SetViewportSize(width, height);
 		}
 	}
 
@@ -361,8 +593,10 @@ namespace Vortex {
 		entity.SetParentUUID(0);
 	}
 
-    void Scene::ActiveateChildren(Entity entity)
-    {
+	void Scene::ActiveateChildren(Entity entity)
+	{
+		VX_PROFILE_FUNCTION();
+
 		const std::vector<UUID>& children = entity.Children();
 
 		for (const auto& child : children)
@@ -377,10 +611,12 @@ namespace Vortex {
 			if (!childEntity.Children().empty())
 				ActiveateChildren(childEntity);
 		}
-    }
+	}
 
-    void Scene::DeactiveateChildren(Entity entity)
-    {
+	void Scene::DeactiveateChildren(Entity entity)
+	{
+		VX_PROFILE_FUNCTION();
+
 		const std::vector<UUID>& children = entity.Children();
 
 		for (const auto& child : children)
@@ -395,387 +631,44 @@ namespace Vortex {
 			if (!childEntity.Children().empty())
 				DeactiveateChildren(childEntity);
 		}
-    }
+	}
 
-	void Scene::OnRuntimeStart(bool muteAudio)
+	Entity Scene::TryGetRootEntityInHierarchy(Entity child) const
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_IsRunning = true;
-
-		OnPhysicsSimulationStart();
-
-		// Audio Source - PlayOnStart
-		if (!muteAudio)
-		{
-			auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
-
-			for (auto& e : view)
-			{
-				Entity entity{ e, this };
-
-				if (!entity.IsActive())
-					continue;
-
-				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-				const auto& audioProps = audioSource->GetProperties();
-
-				if (audioProps.PlayOnStart)
-				{
-					audioSource->Play();
-				}
-			}
-		}
-
-		// Create Script Instances
-		{
-			// C# Entity OnCreate
-			{
-				ScriptEngine::OnRuntimeStart(this);
-
-				auto view = m_Registry.view<ScriptComponent>();
-
-				for (const auto e : view)
-				{
-					Entity entity{ e, this };
-					ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
-				}
-
-				for (const auto e : view)
-				{
-					Entity entity{ e, this };
-					ScriptEngine::OnAwakeEntity(entity);
-				}
-
-				for (const auto e : view)
-				{
-					Entity entity{ e, this };
-					ScriptEngine::OnCreateEntity(entity);
-				}
-			}
-
-			// C++ Entity OnCreate
-			{
-				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				});
-			}
-		}
-	}
-
-	void Scene::OnRuntimeStop()
-	{
-		VX_PROFILE_FUNCTION();
-
-		m_IsRunning = false;
-
-		m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
-		{
-			Entity entity{ entityID, this };
-			ScriptEngine::OnDestroyEntity(entity);
-		});
-
-		ScriptEngine::OnRuntimeStop();
-
-		// Stop all active audio sources in the scene
-		{
-			auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-				if (!audioSource->IsPlaying())
-					continue;
-
-				audioSource->Stop();
-			}
-		}
-
-		// Stop all active animators in the scene
-		{
-			auto view = m_Registry.view<TransformComponent, AnimatorComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
-
-				if (!animator->IsPlaying())
-					continue;
-
-				animator->Stop();
-			}
-		}
-
-		// Stop all active particle emitters in the scene
-		{
-			auto view = m_Registry.view<TransformComponent, ParticleEmitterComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
-
-				if (!particleEmitter->IsActive())
-					continue;
-
-				particleEmitter->Stop();
-			}
-		}
-
-		OnPhysicsSimulationStop();
-	}
-
-	void Scene::OnPhysicsSimulationStart()
-	{
-		VX_PROFILE_FUNCTION();
-
-		Physics::OnSimulationStart(this);
-		Physics2D::OnSimulationStart(this);
-	}
-
-	void Scene::OnPhysicsSimulationUpdate(TimeStep delta)
-	{
-		Physics::OnSimulationUpdate(delta);
-		Physics2D::OnSimulationUpdate(delta, this);
-	}
-
-	void Scene::OnPhysicsSimulationStop()
-	{
-		VX_PROFILE_FUNCTION();
-
-		Physics::OnSimulationStop(this);
-		Physics2D::OnSimulationStop();
-	}
-
-	void Scene::OnUpdateRuntime(TimeStep delta)
-	{
-		VX_PROFILE_FUNCTION();
-
-		const bool shouldUpdateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
-
-		if (shouldUpdateCurrentFrame)
-		{
-			// C++ Entity OnUpdate
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				nsc.Instance->OnUpdate(delta);
-			});
-
-			// C# Entity OnUpdate
-			const auto view = m_Registry.view<ScriptComponent>();
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-
-				if (!entity.IsActive())
-					continue;
-
-				ScriptEngine::OnUpdateEntity(entity, delta);
-			}
-
-			// Update Physics Bodies
-			OnPhysicsSimulationUpdate(delta);
-
-			// Update Animators
-			OnAnimatorUpdate(delta);
-
-			if (m_StepFrames)
-			{
-				m_StepFrames--;
-			}
-		}
-
-		// Locate the scene's primary camera
-		{
-			SceneCamera* primarySceneCamera = nullptr;
-			TransformComponent primarySceneCameraTransform;
-
-			Entity primaryCameraEntity = GetPrimaryCameraEntity();
-
-			if (primaryCameraEntity)
-			{
-				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
-				primarySceneCamera = &cameraComponent.Camera;
-				primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
-
-				// Set clear color
-				RenderCommand::SetClearColor(cameraComponent.ClearColor);
-
-				if (primarySceneCamera)
-				{
-					SceneRenderPacket renderPacket{};
-					renderPacket.MainCamera = primarySceneCamera;
-					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
-					renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-					renderPacket.Scene = this;
-					renderPacket.EditorScene = false;
-					s_SceneRenderer.RenderScene(renderPacket);
-				}
-			}
-		}
-
-		// Update Components
-		OnModelUpdate();
-		OnParticleEmitterUpdate(delta);
-
-		if (shouldUpdateCurrentFrame)
-		{
-			// Update timers for entites to be destroyed
-			for (auto& [uuid, queueFreeData] : m_QueueFreeMap)
-			{
-				queueFreeData.WaitTime -= delta;
-
-				if (queueFreeData.WaitTime <= 0.0f)
-				{
-					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
-				}
-			}
-
-			for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
-			{
-				VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
-				DestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
-				m_QueueFreeMap.erase(uuid);
-			}
-
-			m_EntitiesToBeRemovedFromQueue.clear();
-		}
-
-		ExecutePostUpdateQueue();
-	}
-
-	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (!m_IsPaused || m_StepFrames > 0)
-		{
-			OnPhysicsSimulationUpdate(delta);
-
-			// Update Animators
-			OnAnimatorUpdate(delta);
-
-			if (m_StepFrames)
-				m_StepFrames--;
-		}
-
-		// Render
-		SceneRenderPacket renderPacket{};
-		renderPacket.MainCamera = camera;
-		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-		renderPacket.Scene = this;
-		renderPacket.EditorScene = true;
-		s_SceneRenderer.RenderScene(renderPacket);
-
-		// Update Components
-		OnModelUpdate();
-		OnParticleEmitterUpdate(delta);
-	}
-
-	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
-	{
-		VX_PROFILE_FUNCTION();
-
-		// Update Animators
-		OnAnimatorUpdate(delta);
-
-		// Render
-		SceneRenderPacket renderPacket{};
-		renderPacket.MainCamera = camera;
-		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-		renderPacket.Scene = this;
-		renderPacket.EditorScene = true;
-		s_SceneRenderer.RenderScene(renderPacket);
-
-		Entity primaryCameraEntity = GetPrimaryCameraEntity();
-		if (primaryCameraEntity)
-		{
-			const auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
-
-			// Set Clear color
-			RenderCommand::SetClearColor(cameraComponent.ClearColor);
-		}
-
-		// Update Components
-		OnModelUpdate();
-		OnParticleEmitterUpdate(delta);
-	}
-
-	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
-
-		m_PostUpdateQueue.push_back(func);
-	}
-
-	void Scene::ExecutePostUpdateQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
-
-		for (auto& func : m_PostUpdateQueue)
-		{
-			func();
-		}
-	}
-
-	void Scene::OnUpdateEntityGui()
-	{
-		if (!m_IsRunning)
-		{
-			return;
-		}
-
-		auto view = m_Registry.view<ScriptComponent>();
-
-		for (auto& e : view)
-		{
-			Entity entity{ e, this };
-			ScriptEngine::OnGuiEntity(entity);
-		}
-	}
-
-	void Scene::Step(uint32_t frames)
-	{
-		m_StepFrames = frames;
-	}
-
-	void Scene::OnViewportResize(uint32_t width, uint32_t height)
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (m_ViewportWidth == width && m_ViewportHeight == height)
-			return;
-
-		m_ViewportWidth = width;
-		m_ViewportHeight = height;
-
-		// Resize non-FixedAspectRatio cameras
-		auto view = m_Registry.view<CameraComponent>();
-
-		for (auto& entity : view)
-		{
-			auto& cameraComponent = view.get<CameraComponent>(entity);
-
-			if (cameraComponent.FixedAspectRatio)
-				continue;
-
-			cameraComponent.Camera.SetViewportSize(width, height);
-		}
-	}
-
-	Entity Scene::TryGetTopEntityInHierarchy(Entity child) const
-	{
 		if (!child.HasParent())
 			return child;
 
 		Entity parent = child.GetParent();
-		return TryGetTopEntityInHierarchy(parent);
+		return TryGetRootEntityInHierarchy(parent);
+	}
+
+	Entity Scene::TryGetEntityWithUUID(UUID uuid)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
+			return Entity{ it->second, this };
+
+		return Entity{};
+	}
+
+	Entity Scene::GetPrimaryCameraEntity()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<CameraComponent>();
+
+		for (const auto entity : view)
+		{
+			auto& cc = view.get<CameraComponent>(entity);
+
+			if (cc.Primary)
+				return { entity, this };
+		}
+
+		return Entity{};
 	}
 
 	Entity Scene::DuplicateEntity(Entity entity)
@@ -817,7 +710,7 @@ namespace Vortex {
 		// Copy components (except IDComponent and TagComponent)
 		Utils::CopyComponentIfExists(AllComponents{}, newEntity, entity);
 
-		// We need to make a copy here because we modify it below
+		// We must copy here because the vector is modified below
 		auto childIDs = entity.Children();
 
 		for (auto childID : childIDs)
@@ -837,19 +730,13 @@ namespace Vortex {
 		return newEntity;
 	}
 
-	Entity Scene::TryGetEntityWithUUID(UUID uuid)
-	{
-		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
-			return Entity{ it->second, this };
-
-		return Entity{};
-	}
-
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
+		VX_PROFILE_FUNCTION();
+
 		auto view = m_Registry.view<TagComponent>();
 
-		for (const auto& entity : view)
+		for (const auto entity : view)
 		{
 			const auto& tag = view.get<TagComponent>(entity).Tag;
 			if (strcmp(name.data(), tag.c_str()) == 0)
@@ -861,12 +748,12 @@ namespace Vortex {
 
 	Entity Scene::FindEntityWithID(entt::entity entity)
 	{
+		VX_PROFILE_FUNCTION();
+
 		m_Registry.each([&](auto e)
 		{
 			if (e == entity)
-			{
 				return Entity{ e, this };
-			}
 		});
 
 		return {};
@@ -932,28 +819,17 @@ namespace Vortex {
 		return transformComponent;
 	}
 
-	Entity Scene::GetPrimaryCameraEntity()
-	{
-		auto view = m_Registry.view<CameraComponent>();
-
-		for (const auto entity : view)
-		{
-			auto& cc = view.get<CameraComponent>(entity);
-
-			if (cc.Primary)
-				return { entity, this };
-		}
-
-		return Entity{};
-	}
-
 	bool Scene::AreEntitiesRelated(Entity first, Entity second)
 	{
+		VX_PROFILE_FUNCTION();
+
 		return first.IsAncesterOf(second) || second.IsAncesterOf(second);
 	}
 
 	void Scene::SortEntities()
 	{
+		VX_PROFILE_FUNCTION();
+
 		m_Registry.sort<IDComponent>([&](const auto lhs, const auto rhs)
 		{
 			auto lhsEntity = m_EntityMap.find(lhs.ID);
@@ -962,7 +838,135 @@ namespace Vortex {
 		});
 	}
 
-	void Scene::OnModelUpdate()
+	void Scene::StartAudioSourcesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+
+			if (!entity.IsActive())
+				continue;
+
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			const auto& audioProps = audioSource->GetProperties();
+
+			if (!audioProps.PlayOnStart)
+				continue;
+
+			audioSource->Play();
+		}
+	}
+
+	void Scene::StopAudioSourcesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (!audioSource->IsPlaying())
+				continue;
+
+			audioSource->Stop();
+		}
+	}
+
+	void Scene::CreateScriptInstancesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		// C# Entity OnCreate
+		{
+			ScriptEngine::OnRuntimeStart(this);
+
+			auto view = m_Registry.view<ScriptComponent>();
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
+			}
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::OnAwakeEntity(entity);
+			}
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::OnCreateEntity(entity);
+			}
+		}
+
+		// C++ Entity OnCreate
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entity, this };
+				nsc.Instance->OnCreate();
+			});
+		}
+	}
+
+	void Scene::DestroyScriptInstancesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
+		{
+			Entity entity{ entityID, this };
+			ScriptEngine::OnDestroyEntity(entity);
+		});
+	}
+
+	void Scene::StopAnimatorsRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<TransformComponent, AnimatorComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
+
+			if (!animator->IsPlaying())
+				continue;
+
+			animator->Stop();
+		}
+	}
+
+	void Scene::StopParticleEmittersRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<TransformComponent, ParticleEmitterComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
+
+			if (!particleEmitter->IsActive())
+				continue;
+
+			particleEmitter->Stop();
+		}
+	}
+
+	void Scene::OnMeshUpdateRuntime()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -999,7 +1003,7 @@ namespace Vortex {
 		}
 	}
 
-	void Scene::OnAnimatorUpdate(TimeStep delta)
+	void Scene::OnAnimatorUpdateRuntime(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -1017,7 +1021,7 @@ namespace Vortex {
 		}
 	}
 
-	void Scene::OnParticleEmitterUpdate(TimeStep delta)
+	void Scene::OnParticleEmitterUpdateRuntime(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -1033,8 +1037,10 @@ namespace Vortex {
 			particleEmitter->GetProperties().Position = worldSpaceTranslation;
 			particleEmitter->OnUpdate(delta);
 
-			if (particleEmitter->IsActive())
-				particleEmitter->EmitParticle();
+			if (!particleEmitter->IsActive())
+				continue;
+			
+			particleEmitter->EmitParticle();
 		}
 	}
 
@@ -1078,10 +1084,7 @@ namespace Vortex {
 		component.Source = LightSource2D::Create(LightSource2DProperties());
 	}
 
-	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component)
-	{
-
-	}
+	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<StaticMeshRendererComponent>(Entity entity, StaticMeshRendererComponent& component)
 	{
@@ -1175,6 +1178,73 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
+
+	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
+	{
+		VX_PROFILE_FUNCTION();
+
+		SharedRef<Scene> destination = Scene::Create(source->m_TargetFramebuffer);
+
+		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
+		destination->m_ViewportWidth = source->m_ViewportWidth;
+		destination->m_ViewportHeight = source->m_ViewportHeight;
+
+		auto& srcSceneRegistry = source->m_Registry;
+		auto& dstSceneRegistry = destination->m_Registry;
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		// Create entites in new scene
+		auto view = srcSceneRegistry.view<IDComponent>();
+		for (const auto e : view)
+		{
+			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name);
+			enttMap[uuid] = (entt::entity)copiedEntity;
+		}
+
+		// Copy components (except IDComponent and TagComponent)
+		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		destination->SortEntities();
+
+		return destination;
+	}
+
+	void Scene::Create2DSampleScene(SharedRef<Scene>& context)
+	{
+		// Starting Entities
+		Entity startingCamera = context->CreateEntity("Camera");
+		startingCamera.AddComponent<AudioListenerComponent>();
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = { 0.0f, 0.0f, 0.0f };
+		cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
+	}
+
+	void Scene::Create3DSampleScene(SharedRef<Scene>& context)
+	{
+		// Starting Entities
+		Entity startingCube = context->CreateEntity("Cube");
+		startingCube.AddComponent<StaticMeshRendererComponent>();
+		startingCube.AddComponent<RigidBodyComponent>();
+		startingCube.AddComponent<BoxColliderComponent>();
+
+		Entity startingSkyLight = context->CreateEntity("Sky Light");
+		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
+		lightSource.Type = LightType::Directional;
+		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-57.0f), 0.0f });
+		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
+
+		Entity startingCamera = context->CreateEntity("Camera");
+		startingCamera.AddComponent<AudioListenerComponent>();
+		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
+		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+		TransformComponent& cameraTransform = startingCamera.GetTransform();
+		cameraTransform.Translation = { -4.0f, 3.0f, 4.0f };
+		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
+	}
 
 	SharedRef<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
 	{

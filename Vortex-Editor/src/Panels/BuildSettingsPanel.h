@@ -7,7 +7,10 @@ namespace Vortex {
 	class BuildSettingsPanel
 	{
 	public:
-		BuildSettingsPanel(const SharedRef<Project>& project);
+		using LaunchRuntimeFn = std::function<void(const std::filesystem::path&)>;
+
+	public:
+		BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& func);
 		~BuildSettingsPanel() = default;
 
 		void OnGuiRender();
@@ -20,6 +23,7 @@ namespace Vortex {
 
 	private:
 		ProjectProperties& m_ProjectProperties;
+		LaunchRuntimeFn m_LaunchRuntimeFunc;
 
 		std::filesystem::path m_ProjectPath;
 		std::filesystem::path m_StartupScene;

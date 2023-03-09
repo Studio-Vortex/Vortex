@@ -638,13 +638,19 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Build"))
 			{
-				if (Gui::MenuItem("Build and Run", "Ctrl+Shift+B"))
+				if (Gui::MenuItem("Build"))
+				{
+					// TODO build asset pack here
+				}
+				UI::Draw::Underline();
+
+				if (Gui::MenuItem("Build and Run", "Ctrl+B"))
 				{
 					OnLaunchRuntime(activeProject->GetProjectFilepath());
 				}
 				UI::Draw::Underline();
 
-				Gui::MenuItem("Settings", nullptr, &m_BuildSettingsPanel->IsOpen());
+				Gui::MenuItem("Settings", "Ctrl+Shift+B", &m_BuildSettingsPanel->IsOpen());
 
 				Gui::EndMenu();
 			}
@@ -1869,9 +1875,17 @@ namespace Vortex {
 			}
 			case KeyCode::B:
 			{
-				if (controlPressed && shiftPressed && m_SceneState == SceneState::Edit)
+				if (controlPressed && m_SceneState == SceneState::Edit)
 				{
-					OnLaunchRuntime(Project::GetProjectFilepath());
+					if (shiftPressed)
+					{
+						bool& buildSettingsPanelOpen = m_BuildSettingsPanel->IsOpen();
+						buildSettingsPanelOpen = !buildSettingsPanelOpen;
+					}
+					else
+					{
+						OnLaunchRuntime(Project::GetProjectFilepath());
+					}
 				}
 
 				break;
@@ -2036,7 +2050,7 @@ namespace Vortex {
 			SharedRef<Project> activeProject = Project::GetActive();
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
 			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject);
+			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
 
 			TagComponent::ResetAddedMarkers();
 		}

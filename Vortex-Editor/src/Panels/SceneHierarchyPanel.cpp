@@ -64,7 +64,7 @@ namespace Vortex {
 
 				uint32_t searchDepth = 0;
 				const bool entitySearchBarInUse = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
-				std::vector<UUID> topEntitiesInHierarchy;
+				std::vector<UUID> rootEntitiesInHierarchy;
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
@@ -73,12 +73,12 @@ namespace Vortex {
 					if (!entity)
 						return;
 
-					const bool isTopEntityInHierarchy = entity.GetParentUUID() == 0;
+					const bool isChildEntity = entity.GetParentUUID() == 0;
 
-					if (!isTopEntityInHierarchy)
+					if (isChildEntity)
 						return;
 
-					topEntitiesInHierarchy.push_back(entity.GetUUID());
+					rootEntitiesInHierarchy.push_back(entity.GetUUID());
 
 					const bool matchingSearch = m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str());
 					
@@ -90,9 +90,9 @@ namespace Vortex {
 
 				if (entitySearchBarInUse)
 				{
-					for (const auto& topEntity : topEntitiesInHierarchy)
+					for (const auto& rootEntity : rootEntitiesInHierarchy)
 					{
-						RecursiveEntitySearch(topEntity, editorCamera, searchDepth);
+						RecursiveEntitySearch(rootEntity, editorCamera, searchDepth);
 					}
 				}
 
@@ -136,12 +136,12 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth)
+	void SceneHierarchyPanel::RecursiveEntitySearch(UUID rootEntity, const EditorCamera* editorCamera, uint32_t& searchDepth)
 	{
 		if (searchDepth > MAX_CHILD_ENTITY_SEARCH_DEPTH)
 			return;
 
-		const Entity entity = m_ContextScene->TryGetEntityWithUUID(topEntity);
+		const Entity entity = m_ContextScene->TryGetEntityWithUUID(rootEntity);
 
 		if (!entity || entity.Children().empty())
 			return;

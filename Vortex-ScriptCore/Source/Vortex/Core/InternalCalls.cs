@@ -1327,7 +1327,7 @@ namespace Vortex {
 		internal extern static void Gui_Underline();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_Spacing();
+		internal extern static void Gui_Spacing(ulong count);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_Text(string text);

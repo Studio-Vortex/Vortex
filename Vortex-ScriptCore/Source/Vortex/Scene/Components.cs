@@ -5,7 +5,7 @@
 		public Entity Entity { get; internal set; }
 	}
 
-	public class Transform : Component
+	public class Transform: Component
 	{
 		public Vector3 Translation
 		{
@@ -180,7 +180,7 @@
 		}
 	}
 
-	public class Camera : Component
+	public class Camera: Component
 	{
 		public ProjectionType ProjectionType
 		{
@@ -258,7 +258,7 @@
 		}
 	}
 
-	public class LightSource : Component
+	public class LightSource: Component
 	{
 		public LightType LightType
 		{
@@ -313,7 +313,7 @@
 		}
 	}
 
-	public class TextMesh : Component
+	public class TextMesh: Component
 	{
 		public string Text
 		{
@@ -362,12 +362,12 @@
 		}
 	}
 
-	public class Animation : Component
+	public class Animation: Component
 	{
 
 	}
 
-	public class Animator : Component
+	public class Animator: Component
 	{
 		public bool IsPlaying => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
 
@@ -375,13 +375,13 @@
 		public void Stop() => InternalCalls.AnimatorComponent_Stop(Entity.ID);
 	}
 
-	public class MeshRenderer : Component
+	public class MeshRenderer: Component
 	{
 		public Submesh BaseMesh => GetSubmesh(0);
 		public Submesh GetSubmesh(uint index) => new Submesh(index, Entity);
 	}
 
-	public class StaticMeshRenderer : Component
+	public class StaticMeshRenderer: Component
 	{
 		public MeshType MeshType
 		{
@@ -402,6 +402,7 @@
 				InternalCalls.SpriteRendererComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
+
 			set => InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
 		}
 
@@ -418,11 +419,12 @@
 				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out Vector2 scale);
 				return scale;
 			}
+
 			set => InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, ref value);
 		}
 	}
 
-	public class CircleRenderer : Component
+	public class CircleRenderer: Component
 	{
 		public Vector4 Color
 		{
@@ -431,6 +433,7 @@
 				InternalCalls.CircleRendererComponent_GetColor(Entity.ID, out Vector4 color);
 				return color;
 			}
+
 			set => InternalCalls.CircleRendererComponent_SetColor(Entity.ID, ref value);
 		}
 
@@ -441,6 +444,7 @@
 				InternalCalls.CircleRendererComponent_GetThickness(Entity.ID, out float thickness);
 				return thickness;
 			}
+
 			set => InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, value);
 		}
 
@@ -451,11 +455,12 @@
 				InternalCalls.CircleRendererComponent_GetFade(Entity.ID, out float fade);
 				return fade;
 			}
+
 			set => InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
 		}
 	}
 
-	public class AudioSource : Component
+	public class AudioSource: Component
 	{
 		public AudioClip Clip => new AudioClip(this);
 
@@ -566,12 +571,12 @@
 		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
 	}
 
-	public class AudioListener : Component
+	public class AudioListener: Component
 	{
 		
 	}
 
-	public class RigidBody : Component
+	public class RigidBody: Component
 	{
 		public RigidBodyType BodyType
 		{
@@ -710,7 +715,7 @@
 		}
 	}
 
-	public class CharacterController : Component
+	public class CharacterController: Component
 	{
 		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Entity.ID);
 		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
@@ -771,7 +776,7 @@
 		}
 	}
 
-	public class FixedJoint : Component
+	public class FixedJoint: Component
 	{
 		public Entity ConnectedEntity
 		{
@@ -830,14 +835,14 @@
 		public void Break() => InternalCalls.FixedJointComponent_Break(Entity.ID);
 	}
 
-	public class PhysicsMaterial : Component
+	public class PhysicsMaterial: Component
 	{
 		public float StaticFriction;
 		public float DynamicFriction;
 		public float Bounciness;
 	}
 
-	public class BoxCollider : Component
+	public class BoxCollider: Component
 	{
 		public Vector3 HalfSize
 		{
@@ -868,7 +873,7 @@
 		}
 	}
 
-	public class SphereCollider : Component
+	public class SphereCollider: Component
 	{
 		public float Radius
 		{
@@ -894,7 +899,7 @@
 		}
 	}
 
-	public class CapsuleCollider : Component
+	public class CapsuleCollider: Component
 	{
 		public float Radius
 		{
@@ -926,12 +931,12 @@
 		}
 	}
 
-	public class MeshCollider : Component
+	public class MeshCollider: Component
 	{
 
 	}
 
-	public class RigidBody2D : Component
+	public class RigidBody2D: Component
 	{
 		public RigidBody2DType BodyType
 		{
@@ -1000,7 +1005,7 @@
 		}
 	}
 
-	public class BoxCollider2D : Component
+	public class BoxCollider2D: Component
 	{
 		public Vector2 Offset
 		{
@@ -1069,7 +1074,7 @@
 		}
 	}
 
-	public class CircleCollider2D : Component
+	public class CircleCollider2D: Component
 	{
 		public Vector2 Offset
 		{
@@ -1138,7 +1143,7 @@
 		}
 	}
 
-	public class ParticleEmitter : Component
+	public class ParticleEmitter: Component
 	{
 		public Vector3 Velocity
 		{
@@ -1255,7 +1260,7 @@
 		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
 	}
 
-	public class Script : Component
+	public class Script: Component
 	{
 		public object Instance => InternalCalls.Entity_GetScriptInstance(Entity.ID);
 	}

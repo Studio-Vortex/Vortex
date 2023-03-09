@@ -547,19 +547,25 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			contextScene->DestroyEntity(entity, excludeChildren);
+			contextScene->SubmitToPostUpdateQueue([=]()
+			{
+				contextScene->DestroyEntity(entity, excludeChildren);
+			});
 		}
 
 		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
 
-			Scene::QueueFreeData queueFreeData;
-			queueFreeData.EntityUUID = entityUUID;
-			queueFreeData.ExcludeChildren = excludeChildren;
-			queueFreeData.WaitTime = waitTime;
+			contextScene->SubmitToPostUpdateQueue([=]()
+			{
+				Scene::QueueFreeData queueFreeData;
+				queueFreeData.EntityUUID = entityUUID;
+				queueFreeData.ExcludeChildren = excludeChildren;
+				queueFreeData.WaitTime = waitTime;
 
-			contextScene->DestroyEntity(queueFreeData);
+				contextScene->DestroyEntity(queueFreeData);
+			});
 		}
 
 		void Entity_SetActive(UUID entityUUID, bool isActive)
@@ -5950,9 +5956,12 @@ namespace Vortex {
 			UI::Draw::Underline();
 		}
 
-		void Gui_Spacing()
+		void Gui_Spacing(unsigned int count)
 		{
-			Gui::Spacing();
+			for (uint32_t i = 0; i < count; i++)
+			{
+				Gui::Spacing();
+			}
 		}
 
 		void Gui_Text(MonoString* text)

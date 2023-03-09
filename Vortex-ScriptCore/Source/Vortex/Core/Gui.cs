@@ -9,7 +9,7 @@
 		public static void End() => InternalCalls.Gui_End();
 
 		public static void Underline() => InternalCalls.Gui_Underline();
-		public static void Spacing() => InternalCalls.Gui_Spacing();
+		public static void Spacing(ulong count = 1) => InternalCalls.Gui_Spacing(count);
 
 		public static void Text(string text) => InternalCalls.Gui_Text(text);
 		public static bool Button(string text) => InternalCalls.Gui_Button(text);

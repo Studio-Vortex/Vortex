@@ -2,8 +2,8 @@
 
 namespace Vortex {
 
-	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project)
-		: m_ProjectProperties(project->GetProperties())
+	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& func)
+		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeFunc(func)
 	{
 		m_ProjectPath = Project::GetProjectFilepath();
 		m_StartupScene = m_ProjectProperties.General.StartScene;
@@ -66,6 +66,22 @@ namespace Vortex {
 			UI::EndTreeNode();
 		}
 
+		UI::Draw::Underline();
+		for (uint32_t i = 0; i < 3; i++)
+			Gui::Spacing();
+
+		if (Gui::Button("Build"))
+		{
+			// TODO build asset pack here
+		}
+
+		Gui::SameLine();
+
+		if (Gui::Button("Build and Run"))
+		{
+			m_LaunchRuntimeFunc(m_ProjectPath);
+		}
+		
 		Gui::End();
 	}
 
