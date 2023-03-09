@@ -241,9 +241,9 @@ namespace Vortex {
 		VX_CORE_ASSERT(!m_QueueFreeMap.contains(data.EntityUUID), "Entity was already submitted to be destroyed!");
 		VX_CORE_ASSERT(m_EntityMap.contains(data.EntityUUID), "Entity was not found in Scene Entity Map!");
 
-		const bool validTimer = data.WaitTime <= 0.0f;
+		const bool invalidTimer = data.WaitTime <= 0.0f;
 
-		if (!validTimer)
+		if (invalidTimer)
 		{
 			Entity entity = m_EntityMap[data.EntityUUID];
 			DestroyEntity(entity, data.ExcludeChildren);
