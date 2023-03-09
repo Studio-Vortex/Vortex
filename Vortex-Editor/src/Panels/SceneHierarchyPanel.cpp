@@ -73,7 +73,7 @@ namespace Vortex {
 					if (!entity)
 						return;
 
-					const bool isChildEntity = entity.GetParentUUID() == 0;
+					const bool isChildEntity = entity.GetParentUUID() != 0;
 
 					if (isChildEntity)
 						return;

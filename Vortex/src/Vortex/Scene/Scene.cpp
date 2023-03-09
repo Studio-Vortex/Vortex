@@ -251,10 +251,10 @@ namespace Vortex {
 			return;
 		}
 
-		if (!m_QueueFreeMap.contains(data.EntityUUID))
-		{
-			m_QueueFreeMap[data.EntityUUID] = data;
-		}
+		if (m_QueueFreeMap.contains(data.EntityUUID))
+			return;
+
+		m_QueueFreeMap[data.EntityUUID] = data;
 	}
 
 	void Scene::UpdateQueueFreeTimers(TimeStep delta)
@@ -1178,6 +1178,24 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
+
+	void Scene::SubmitSceneToBuild(SharedRef<Scene>& scene, uint32_t buildIndex)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (s_SceneBuildIndices.contains(buildIndex))
+		{
+			VX_CONSOLE_LOG_ERROR("Build Index was already provided!");
+			return;
+		}
+
+		s_SceneBuildIndices[buildIndex] = scene;
+	}
+
+	const std::unordered_map<uint32_t, SharedRef<Scene>>& Scene::GetScenesInBuild()
+	{
+		return s_SceneBuildIndices;
+	}
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
 	{

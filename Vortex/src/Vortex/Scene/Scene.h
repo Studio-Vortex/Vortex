@@ -110,6 +110,9 @@ namespace Vortex {
 		void SetDebugName(const std::string& name) { m_DebugName = name; }
 #endif
 
+		static void SubmitSceneToBuild(SharedRef<Scene>& scene, uint32_t buildIndex);
+		static const std::unordered_map<uint32_t, SharedRef<Scene>>& GetScenesInBuild();
+
 		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
 		static void Create2DSampleScene(SharedRef<Scene>& context);
 		static void Create3DSampleScene(SharedRef<Scene>& context);
@@ -152,7 +155,8 @@ namespace Vortex {
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 		std::mutex m_PostUpdateQueueMutex;
 
-		std::unordered_map<uint32_t, SharedRef<Scene>> m_SceneBuildIndices;
+		using BuildIndexMap = std::unordered_map<uint32_t, SharedRef<Scene>>;
+		inline static BuildIndexMap s_SceneBuildIndices;
 
 #ifndef VX_DIST
 		std::string m_DebugName;

@@ -25,31 +25,40 @@ namespace Vortex {
 		std::string projectPath = m_ProjectPath.string();
 		UI::Property("Project Location", projectPath, true);
 
-		std::string startupSceneFullPath = m_StartupScene.string();
-		size_t lastSlashPos = startupSceneFullPath.find_last_of("/\\");
-		std::string filepathWithExtension = startupSceneFullPath.substr(lastSlashPos);
-		std::string startupSceneFilename = FileSystem::RemoveFileExtension(filepathWithExtension);
-		UI::Property("Startup Scene", startupSceneFilename, true);
-
 		UI::EndPropertyGrid();
 
-		// Accept Items from the content browser
-		if (Gui::BeginDragDropTarget())
+		if (UI::PropertyGridHeader("Scenes in Build"))
 		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path filePath = std::filesystem::path(path);
+			UI::BeginPropertyGrid();
 
-				if (filePath.extension().string() == ".vortex")
+			std::string startupSceneFullPath = m_StartupScene.string();
+			size_t lastSlashPos = startupSceneFullPath.find_last_of("/\\");
+			std::string filepathWithExtension = startupSceneFullPath.substr(lastSlashPos);
+			std::string startupSceneFilename = FileSystem::RemoveFileExtension(filepathWithExtension);
+			UI::Property("Startup Scene", startupSceneFilename, true);
+
+			UI::EndPropertyGrid();
+
+			// Accept Items from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
-					auto relativePath = std::filesystem::relative(filePath, Project::GetAssetDirectory());
-					m_ProjectProperties.General.StartScene = relativePath;
-					m_StartupScene = relativePath;
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path filePath = std::filesystem::path(path);
+
+					if (filePath.extension().string() == ".vortex")
+					{
+						auto relativePath = std::filesystem::relative(filePath, Project::GetAssetDirectory());
+						m_ProjectProperties.General.StartScene = relativePath;
+						m_StartupScene = relativePath;
+					}
 				}
+
+				Gui::EndDragDropTarget();
 			}
 
-			Gui::EndDragDropTarget();
+			UI::EndTreeNode();
 		}
 
 		if (UI::PropertyGridHeader("Window", false))
