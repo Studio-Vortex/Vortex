@@ -6,6 +6,12 @@
 
 namespace Vortex {
 
+	struct VORTEX_API AudioClip
+	{
+		std::string Name = "";
+		float Length = 0.0f;
+	};
+
 	class VORTEX_API AudioSource
 	{
 	public:
@@ -39,6 +45,8 @@ namespace Vortex {
 		AudioSource() = default;
 		AudioSource(const std::string& filepath);
 		~AudioSource();
+
+		const AudioClip& GetAudioClip() const;
 
 		void Play();
 		void PlayOneShot();
@@ -97,8 +105,7 @@ namespace Vortex {
 		ma_engine m_Engine;
 		ma_sound m_Sound;
 		SoundProperties m_Properties;
-
-		float m_LengthInSeconds = 0.0f;
+		AudioClip m_AudioClip;
 
 		bool m_Initialized = false;
 	};

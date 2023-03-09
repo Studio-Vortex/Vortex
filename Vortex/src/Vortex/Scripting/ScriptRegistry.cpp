@@ -3170,6 +3170,45 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Audio Clip
+
+		MonoString* AudioClip_GetName(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Name without a Audio Source!");
+				return mono_string_new(mono_domain_get(), "");
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			const AudioClip& audioClip = audioSource->GetAudioClip();
+			std::string clipName = audioClip.Name;
+
+			return mono_string_new(mono_domain_get(), clipName.c_str());
+		}
+
+		float AudioClip_GetLength(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Length without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedRef<AudioSource> audioSource = asc.Source;
+			const AudioClip& audioClip = audioSource->GetAudioClip();
+
+			return audioClip.Length;
+		}
+
+#pragma endregion
+
 #pragma region RigidBody Component
 
 		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
@@ -5854,20 +5893,10 @@ namespace Vortex {
 
 		namespace Gui = ImGui;
 
-		uint32_t defaultWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking;
-
 		void BeginWindow(char* text, uint32_t flags)
 		{
-			ImGuiIO& io = Gui::GetIO();
-			auto boldFont = io.Fonts->Fonts[0];
-			auto largeFont = io.Fonts->Fonts[1];
-
-			Gui::Begin(text, nullptr, defaultWindowFlags | flags);
-			Gui::PushFont(largeFont);
-			Gui::TextCentered(text);
-			Gui::PopFont();
-			UI::Draw::Underline();
-			Gui::Spacing();
+			Gui::Begin(text, nullptr, flags);
+			UI::BeginPropertyGrid();
 		}
 
 		void Gui_Begin(MonoString* text)
@@ -5912,10 +5941,11 @@ namespace Vortex {
 
 		void Gui_End()
 		{
+			UI::EndPropertyGrid();
 			Gui::End();
 		}
 
-		void Gui_Separator()
+		void Gui_Underline()
 		{
 			UI::Draw::Underline();
 		}
@@ -5943,6 +5973,116 @@ namespace Vortex {
 			mono_free(textCStr);
 
 			return result;
+		}
+
+		bool Gui_PropertyBool(MonoString* label, bool* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyInt(MonoString* label, int* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyULong(MonoString* label, unsigned int* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyFloat(MonoString* label, float* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyDouble(MonoString* label, double* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, *value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, value);
+
+			mono_free(textCStr);
+
+			return modified;
+		}
+
+		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value)
+		{
+			char* textCStr = mono_string_to_utf8(label);
+
+			bool modified = UI::Property(textCStr, value);
+
+			mono_free(textCStr);
+
+			return modified;
 		}
 
 #pragma endregion
@@ -6250,6 +6390,9 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Restart);
 		VX_ADD_INTERNAL_CALL(AudioSourceComponent_Stop);
 
+		VX_ADD_INTERNAL_CALL(AudioClip_GetName);
+		VX_ADD_INTERNAL_CALL(AudioClip_GetLength);
+
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
 		VX_ADD_INTERNAL_CALL(RigidBodyComponent_GetCollisionDetectionType);
@@ -6475,10 +6618,20 @@ namespace Vortex {
 		VX_ADD_INTERNAL_CALL(Gui_BeginWithSize);
 		VX_ADD_INTERNAL_CALL(Gui_BeginWithPositionAndSize);
 		VX_ADD_INTERNAL_CALL(Gui_End);
-		VX_ADD_INTERNAL_CALL(Gui_Separator);
+		VX_ADD_INTERNAL_CALL(Gui_Underline);
 		VX_ADD_INTERNAL_CALL(Gui_Spacing);
 		VX_ADD_INTERNAL_CALL(Gui_Text);
 		VX_ADD_INTERNAL_CALL(Gui_Button);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyBool);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyInt);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyULong);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyFloat);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyDouble);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyVec2);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyVec3);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyVec4);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyColor3);
+		VX_ADD_INTERNAL_CALL(Gui_PropertyColor4);
 
 		VX_ADD_INTERNAL_CALL(Log_Print);
 		VX_ADD_INTERNAL_CALL(Log_Info);

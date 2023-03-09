@@ -1562,7 +1562,8 @@ namespace Vortex {
 			Gui::SameLine();
 
 			{
-				Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
+				const bool disabled = component.Source != nullptr && !component.Source->IsPlaying();
+				Gui::BeginDisabled(disabled);
 
 				if (Gui::Button("Pause"))
 					component.Source->Pause();
@@ -1578,7 +1579,9 @@ namespace Vortex {
 			Gui::SameLine();
 
 			if (Gui::Button("Stop"))
+			{
 				component.Source->Stop();
+			}
 
 			Gui::EndDisabled();
 
@@ -1622,6 +1625,14 @@ namespace Vortex {
 			}
 
 			Gui::BeginDisabled(component.Source == nullptr);
+
+			{
+				Gui::BeginDisabled(true);
+				const AudioClip& audioClip = component.Source->GetAudioClip();
+				float length = audioClip.Length;
+				UI::Property("Length", length);
+				Gui::EndDisabled();
+			}
 
 			if (component.Source != nullptr)
 			{

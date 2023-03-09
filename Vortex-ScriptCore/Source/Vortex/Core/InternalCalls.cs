@@ -680,6 +680,16 @@ namespace Vortex {
 
 		#endregion
 
+		#region AudioClip
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static string AudioClip_GetName(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioClip_GetLength(ulong entityID);
+
+		#endregion
+
 		#region RigidBody
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1314,7 +1324,7 @@ namespace Vortex {
 		internal extern static void Gui_End();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_Separator();
+		internal extern static void Gui_Underline();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_Spacing();
@@ -1324,6 +1334,36 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Gui_Button(string text);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyBool(string label, out bool value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyInt(string label, out int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyULong(string label, out ulong value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyFloat(string label, out float value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyDouble(string label, out double value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec2(string label, out Vector2 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec3(string label, out Vector3 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec4(string label, out Vector4 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor3(string label, out Color3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor4(string label, out Color4 value);
 
 		#endregion
 

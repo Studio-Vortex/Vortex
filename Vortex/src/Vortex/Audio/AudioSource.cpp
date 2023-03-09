@@ -16,6 +16,11 @@ namespace Vortex {
 		Destroy();
 	}
 
+	const AudioClip& AudioSource::GetAudioClip() const
+	{
+		return m_AudioClip;
+	}
+
 	void AudioSource::Play()
 	{
 		if (!m_Initialized)
@@ -182,7 +187,7 @@ namespace Vortex {
 
     float AudioSource::GetAmountComplete()
 	{
-		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
+		return AudioEngine::GetSoundCursor(&m_Sound) / m_AudioClip.Length;
 	}
 
 	void AudioSource::Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src)
@@ -202,13 +207,17 @@ namespace Vortex {
 			&m_Engine,
 			filepath,
 			&m_Sound,
-			&m_LengthInSeconds,
+			&m_AudioClip.Length,
 			m_Properties.Loop,
 			m_Properties.Spacialized,
 			m_Properties.Volume
 		);
 
 		m_Initialized = true;
+
+		size_t lastSlashPos = filepath.find_last_of("/\\");
+		std::string filename = filepath.substr(lastSlashPos + 1);
+		m_AudioClip.Name = filename;
 	}
 
 	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)

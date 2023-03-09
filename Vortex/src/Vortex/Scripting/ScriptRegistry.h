@@ -323,6 +323,13 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Audio Clip
+
+		MonoString* AudioClip_GetName(UUID entityUUID);
+		float AudioClip_GetLength(UUID entityUUID);
+
+#pragma endregion
+
 #pragma region RigidBody Component
 
 		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID);
@@ -588,10 +595,20 @@ namespace Vortex {
 		void Gui_BeginWithSize(MonoString* text, float width, float height);
 		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size);
 		void Gui_End();
-		void Gui_Separator();
+		void Gui_Underline();
 		void Gui_Spacing();
 		void Gui_Text(MonoString* text);
 		bool Gui_Button(MonoString* text);
+		bool Gui_PropertyBool(MonoString* label, bool* value);
+		bool Gui_PropertyInt(MonoString* label, int* value);
+		bool Gui_PropertyULong(MonoString* label, unsigned int* value);
+		bool Gui_PropertyFloat(MonoString* label, float* value);
+		bool Gui_PropertyDouble(MonoString* label, double* value);
+		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value);
+		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value);
+		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value);
+		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value);
+		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value);
 
 #pragma endregion
 

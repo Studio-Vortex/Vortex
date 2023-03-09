@@ -457,6 +457,8 @@
 
 	public class AudioSource : Component
 	{
+		public AudioClip Clip => new AudioClip(this);
+
 		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
 
 		public Vector3 Position
