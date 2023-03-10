@@ -20,6 +20,8 @@ namespace Vortex {
 		void RenderFileExplorer();
 		void RenderSlider(float& thumbnailSize, float& padding);
 
+		std::filesystem::path FindRelativePath(const std::string& entry);
+
 	private:
 		inline static bool s_ShowPanel = true;
 

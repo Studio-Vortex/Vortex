@@ -164,7 +164,18 @@ public class Untitled : Entity
 		std::filesystem::path projectAssetDirectoryWithSlashes = Project::GetAssetDirectory();
 		size_t lastSlashPos = projectAssetDirectoryWithSlashes.string().find_last_of("/\\") + 1;
 		std::string projectAssetDirectory = projectAssetDirectoryWithSlashes.string().substr(lastSlashPos, projectAssetDirectoryWithSlashes.string().size());
-		Gui::Text(projectAssetDirectory.c_str());
+
+		if (std::filesystem::equivalent(m_CurrentDirectory, Project::GetAssetDirectory()))
+		{
+			Gui::Text(projectAssetDirectory.c_str());
+		}
+		else
+		{
+			if (Gui::Button(projectAssetDirectory.c_str()))
+			{
+				m_CurrentDirectory = Project::GetAssetDirectory();
+			}
+		}
 
 		Gui::SameLine();
 		
@@ -186,11 +197,18 @@ public class Untitled : Entity
 			if (entry == ".")
 				continue;
 
-			Gui::Text(entry.c_str());
+			std::string label = entry + "##" + std::to_string(i);
+			if (Gui::Button(label.c_str()))
+			{
+				if (!std::filesystem::equivalent(m_CurrentDirectory, entry))
+				{
+					m_CurrentDirectory = FindRelativePath(entry);
+				}
+			}
 
 			Gui::SameLine();
 
-			if (numPaths - 1 == i)
+			if (numPaths - 1 == i++)
 				break;
 
 			UI::ShiftCursorY(1.0f);
@@ -591,6 +609,11 @@ public class Untitled : Entity
 		Gui::SliderFloat("##Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
 		Gui::PopItemWidth();
 		padding = thumbnailSize / 6.0f;
+	}
+
+	std::filesystem::path ContentBrowserPanel::FindRelativePath(const std::string& entry)
+	{
+		return FileSystem::Relative(entry, m_BaseDirectory);
 	}
 
 }

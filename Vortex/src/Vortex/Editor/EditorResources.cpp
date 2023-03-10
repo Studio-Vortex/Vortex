@@ -38,7 +38,6 @@ namespace Vortex {
 
 		CheckerboardIcon = CreateEditorImage("Resources/Icons/Inspector/Checkerboard.png");
 		SettingsIcon = CreateEditorImage("Resources/Icons/Inspector/SettingsIcon.png");
-		DotsIcon = CreateEditorImage("Resources/Icons/Inspector/DotsIcon.png");
 
 		DirectoryIcon = CreateEditorImage("Resources/Icons/ContentBrowser/DirectoryIcon.png");
 		AudioFileIcon = CreateEditorImage("Resources/Icons/ContentBrowser/AudioFileIcon.png");

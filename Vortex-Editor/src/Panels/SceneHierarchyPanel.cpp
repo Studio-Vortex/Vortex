@@ -769,8 +769,9 @@ namespace Vortex {
 			UI::Draw::Underline();
 			bool open = UI::PropertyGridHeader(name.c_str());
 			Gui::PopStyleVar();
-			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (UI::ImageButtonEx(EditorResources::DotsIcon, { lineHeight * 0.75f, lineHeight * 0.8f }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
+			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.6f);
+			UI::ShiftCursorY(2.0f);
+			if (Gui::Button((const char*)VX_ICON_COG, { lineHeight, lineHeight }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
