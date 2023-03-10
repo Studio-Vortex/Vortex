@@ -220,19 +220,20 @@ namespace Vortex {
 
 	void Physics::OnSimulationStop(Scene* contextScene)
 	{
+		std::vector<UUID> actorsToDestroy;
+
 		for (const auto& [entityUUID, fixedJoint] : s_ActiveFixedJoints)
-		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			DestroyPhysicsActor(entity);
-		}
+			actorsToDestroy.push_back(entityUUID);
 
 		for (const auto& [entityUUID, characterController] : s_ActiveControllers)
-		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			DestroyPhysicsActor(entity);
-		}
+			actorsToDestroy.push_back(entityUUID);
 
 		for (const auto& [entityUUID, actor] : s_ActiveActors)
+			actorsToDestroy.push_back(entityUUID);
+
+		std::unique(actorsToDestroy.begin(), actorsToDestroy.end());
+
+		for (const auto& entityUUID : actorsToDestroy)
 		{
 			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
 			DestroyPhysicsActor(entity);
@@ -626,31 +627,11 @@ namespace Vortex {
 
 		const UUID entityUUID = entity.GetUUID();
 
-		if (s_ActiveFixedJoints.contains(entityUUID))
-		{
-			FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
-			fixedJoint.ConnectedEntity = 0;
-			s_ActiveFixedJoints[entityUUID]->release();
-			s_ActiveFixedJoints.erase(entityUUID);
-		}
+		DestroyFixedJointInternal(entityUUID);
 
-		if (s_ActiveControllers.contains(entityUUID))
-		{
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-			characterController.RuntimeController = nullptr;
-			s_ActiveControllers[entityUUID]->release();
-			s_ActiveControllers.erase(entityUUID);
-		}
+		DestroyCharacterControllerInternal(entityUUID);
 
-		if (s_ActiveActors.contains(entityUUID))
-		{
-			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-			physx::PxRigidActor* actor = s_ActiveActors[entityUUID];
-			s_Data->PhysicsScene->removeActor(*actor);
-			actor->release();
-			rigidbody.RuntimeActor = nullptr;
-			s_ActiveActors.erase(entityUUID);
-		} 
+		DestroyPhysicsActorInternal(entityUUID);
 
 		if (s_PhysicsBodyData.contains(entityUUID))
 		{
@@ -994,6 +975,44 @@ namespace Vortex {
 				continue;
 
 			CreateFixedJoint(entity);
+		}
+	}
+
+	void Physics::DestroyFixedJointInternal(UUID entityUUID)
+	{
+		if (s_ActiveFixedJoints.contains(entityUUID))
+		{
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
+			fixedJoint.ConnectedEntity = 0;
+			s_ActiveFixedJoints[entityUUID]->release();
+			s_ActiveFixedJoints.erase(entityUUID);
+		}
+	}
+
+	void Physics::DestroyCharacterControllerInternal(UUID entityUUID)
+	{
+		if (s_ActiveControllers.contains(entityUUID))
+		{
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			characterController.RuntimeController = nullptr;
+			s_ActiveControllers[entityUUID]->release();
+			s_ActiveControllers.erase(entityUUID);
+		}
+	}
+
+	void Physics::DestroyPhysicsActorInternal(UUID entityUUID)
+	{
+		if (s_ActiveActors.contains(entityUUID))
+		{
+			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			physx::PxRigidActor* actor = s_ActiveActors[entityUUID];
+			s_Data->PhysicsScene->removeActor(*actor);
+			actor->release();
+			rigidbody.RuntimeActor = nullptr;
+			s_ActiveActors.erase(entityUUID);
 		}
 	}
 

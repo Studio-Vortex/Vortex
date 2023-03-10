@@ -127,6 +127,11 @@ namespace Vortex {
 		static void TraverseSceneForUninitializedActors();
 
 	private:
+		static void DestroyFixedJointInternal(UUID entityUUID);
+		static void DestroyCharacterControllerInternal(UUID entityUUID);
+		static void DestroyPhysicsActorInternal(UUID entityUUID);
+
+	private:
 		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_ActiveActors;
 		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
 		inline static std::unordered_map<UUID, physx::PxFixedJoint*> s_ActiveFixedJoints;

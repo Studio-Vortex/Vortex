@@ -45,13 +45,13 @@ namespace Vortex {
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Medium.ttf", 17.0f);
 
 		const auto& regular = io.Fonts->AddFontFromFileTTF("Resources/Fonts/SegoeUI.ttf", 18.0f);
+		io.FontDefault = regular;
 
 		ImFontConfig config;
 		config.MergeMode = true;
 		const ImWchar iconRanges[] = { VX_ICON_MIN, VX_ICON_MAX, 0 };
 		io.Fonts->AddFontFromFileTTF(VX_FONT_ICON_FILE_NAME, 16.0f, &config, iconRanges);
-
-		io.FontDefault = regular;
+		io.Fonts->Build();
 
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -59,6 +59,7 @@ namespace Vortex {
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			style.FrameRounding = 5.0f;
 		}
 
 		io.ConfigWindowsMoveFromTitleBarOnly = true;

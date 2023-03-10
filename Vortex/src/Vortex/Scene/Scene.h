@@ -111,6 +111,7 @@ namespace Vortex {
 #endif
 
 		static void SubmitSceneToBuild(const std::string& sceneFilePath);
+		static void RemoveIndexFromBuild(uint32_t buildIndex);
 		static const std::map<uint32_t, std::string>& GetScenesInBuild();
 
 		static uint32_t GetActiveSceneBuildIndex();

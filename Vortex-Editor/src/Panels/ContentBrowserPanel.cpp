@@ -143,14 +143,13 @@ public class Untitled : Entity
 		{
 			++next_it;
 
-			if (!std::filesystem::exists(it->first))
+			if (!FileSystem::Exists(it->first))
 				m_TextureMap.erase(it);
 		}
 
 		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(m_BaseDirectory));
-		float originalFrameRounding = Gui::GetStyle().FrameRounding;
-		Gui::GetStyle().FrameRounding = 5.0f;
-		if (Gui::Button("  <--  "))
+
+		if (Gui::Button((const char*)VX_ICON_CHEVRON_LEFT, { 45, 0 }))
 		{
 			// Clear the search input text so it does not interfere with the parent directory
 			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
@@ -158,28 +157,53 @@ public class Untitled : Entity
 
 			m_CurrentDirectory = m_CurrentDirectory.parent_path();
 		}
-		Gui::GetStyle().FrameRounding = originalFrameRounding;
+
 		Gui::EndDisabled();
+		Gui::SameLine();
+		
+		std::filesystem::path projectAssetDirectoryWithSlashes = Project::GetAssetDirectory();
+		size_t lastSlashPos = projectAssetDirectoryWithSlashes.string().find_last_of("/\\") + 1;
+		std::string projectAssetDirectory = projectAssetDirectoryWithSlashes.string().substr(lastSlashPos, projectAssetDirectoryWithSlashes.string().size());
+		Gui::Text(projectAssetDirectory.c_str());
 
 		Gui::SameLine();
-		if (std::filesystem::equivalent(m_CurrentDirectory, m_BaseDirectory))
+		
+		std::filesystem::path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
+		std::vector<std::string> splitPath = String::SplitString(relativePath.string(), "/\\");
+
+		if (splitPath[0] != ".")
 		{
-			SharedRef<Project> activeProject = Project::GetActive();
-			std::filesystem::path projectAssetDirectoryWithSlashes = activeProject->GetAssetDirectory();
-			size_t lastSlashPos = projectAssetDirectoryWithSlashes.string().find_last_of("/\\") + 1;
-			std::string projectAssetDirectory = projectAssetDirectoryWithSlashes.string().substr(lastSlashPos, projectAssetDirectoryWithSlashes.string().size());
-			Gui::Text(projectAssetDirectory.c_str());
+			UI::ShiftCursorY(1.0f);
+			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
+			Gui::SameLine();
 		}
-		else
+
+		const size_t numPaths = splitPath.size();
+		uint32_t i = 0;
+
+		for (const auto& entry : splitPath)
 		{
-			Gui::Text(std::filesystem::relative(m_CurrentDirectory, m_BaseDirectory).string().c_str());
+			if (entry == ".")
+				continue;
+
+			Gui::Text(entry.c_str());
+
+			Gui::SameLine();
+
+			if (numPaths - 1 == i)
+				break;
+
+			UI::ShiftCursorY(1.0f);
+			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
+
+			Gui::SameLine();
 		}
 
 		// Search Bar + Filtering
 		float inputTextSize = Gui::GetWindowWidth() / 3.0f;
-		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
+		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
 		Gui::SetNextItemWidth(inputTextSize);
-		bool isSearching = Gui::InputTextWithHint("##AssetSearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		const bool isSearching = Gui::InputTextWithHint("##AssetSearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
 		if (isSearching)
 			m_SearchInputTextFilter.Build();
 

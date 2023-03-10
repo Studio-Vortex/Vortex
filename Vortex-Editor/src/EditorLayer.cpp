@@ -733,7 +733,7 @@ namespace Vortex {
 		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 
-		OnAssetDropped(meshImportPopupOpen);
+		UIHandleAssetDrop(meshImportPopupOpen);
 
 		OnMeshImportPopupOpened(meshImportPopupOpen);
 
@@ -750,7 +750,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::OnAssetDropped(bool& meshImportPopupOpen)
+	void EditorLayer::UIHandleAssetDrop(bool& meshImportPopupOpen)
 	{
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
@@ -1749,10 +1749,10 @@ namespace Vortex {
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
-		bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
-		bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
-		bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+		const bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
+		const bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
+		const bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
+		const bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
 
 		switch (e.GetKeyCode())
 		{
@@ -1979,14 +1979,14 @@ namespace Vortex {
 
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
-		bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
-		bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
+		const bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
+		const bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
 
 		switch (e.GetMouseButton())
 		{
 			case MouseButton::Left:
 			{
-				bool allowedToClick = !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed;
+				const bool allowedToClick = !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed;
 
 				if (((m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered) && allowedToClick)
 				{
@@ -2043,7 +2043,7 @@ namespace Vortex {
 			ScriptEngine::Init();
 
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
-			OpenScene(startScenePath.string());
+			OpenScene(startScenePath);
 
 			SharedRef<Project> activeProject = Project::GetActive();
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
@@ -2141,6 +2141,18 @@ namespace Vortex {
 			window.SetTitle(newTitle);
 
 			m_ActiveScene->SetDebugName(sceneName);
+
+			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+
+			for (const auto& [buildIndex, sceneFilepath] : buildIndices)
+			{
+				if (sceneFilepath.find(sceneFilename) == std::string::npos)
+					continue;
+				
+				Scene::SetActiveSceneBuildIndex(buildIndex);
+
+				break;
+			}
 		}
 	}
 
@@ -2332,15 +2344,21 @@ namespace Vortex {
 		{
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+
+			if (buildIndices.find(nextBuildIndex) == buildIndices.end())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to load Scene with invalid Build Index: {}", nextBuildIndex);
+				return;
+			}
+
 			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
-			std::filesystem::path assetDirectory = Project::GetAssetDirectory().string();
+			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
 			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
 
 			OpenScene(nextSceneFilepath);
 			OnScenePlay();
 
 			ScriptRegistry::ResetBuildIndex();
-			Scene::SetActiveSceneBuildIndex(nextBuildIndex);
 		});
 	}
 

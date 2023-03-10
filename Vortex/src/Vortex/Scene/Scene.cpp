@@ -1186,6 +1186,16 @@ namespace Vortex {
 		Project::SubmitSceneToBuild(sceneFilePath);
 	}
 
+	void Scene::RemoveIndexFromBuild(uint32_t buildIndex)
+	{
+		BuildIndexMap& buildIndices = Project::GetScenesInBuild();
+
+		if (buildIndices.contains(buildIndex))
+		{
+			buildIndices.erase(buildIndex);
+		}
+	}
+
 	const BuildIndexMap& Scene::GetScenesInBuild()
 	{
 		return Project::GetScenesInBuild();

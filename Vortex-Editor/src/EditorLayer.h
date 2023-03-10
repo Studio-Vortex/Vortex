@@ -36,7 +36,7 @@ namespace Vortex {
 		void OnGuiRender() override;
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
-		void OnAssetDropped(bool& meshImportPopupOpen);
+		void UIHandleAssetDrop(bool& meshImportPopupOpen);
 		void OnMeshImportPopupOpened(bool& meshImportPopupOpen);
 		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
 		void OnSecondViewportRender();

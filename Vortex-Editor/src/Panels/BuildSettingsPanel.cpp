@@ -29,29 +29,42 @@ namespace Vortex {
 
 		if (UI::PropertyGridHeader("Scenes in Build"))
 		{
-			const auto& buildScenes = Scene::GetScenesInBuild();
+			const auto& buildIndices = Scene::GetScenesInBuild();
 
 			auto contentRegionAvail = Gui::GetContentRegionAvail();
 
-			if (Gui::BeginChild("##Build Scenes", { contentRegionAvail.x, contentRegionAvail.y * 0.5f }))
+			uint32_t i = 0;
+
+			int32_t buildIndexToRemove = -1;
+
+			for (const auto& [buildIndex, sceneFilePath] : buildIndices)
 			{
-				uint32_t i = 0;
+				auto contentRegionAvail = Gui::GetContentRegionAvail();
 
-				for (const auto& [buildIndex, sceneFilePath] : buildScenes)
+				UI::BeginPropertyGrid();
+
+				size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
+				size_t lastDotPos = sceneFilePath.find_last_of('.');
+				std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
+
+				UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
+
+				UI::EndPropertyGrid();
+
+				Gui::SameLine();
+				UI::ShiftCursor(-contentRegionAvail.x + (contentRegionAvail.x * 0.05f), 3.0f);
+				std::string label = (const char*)VX_ICON_TIMES + fmt::format("##{}", i);
+				if (Gui::Button(label.c_str()))
 				{
-					UI::BeginPropertyGrid();
-
-					size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
-					size_t lastDotPos = sceneFilePath.find_last_of('.');
-					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
-
-					UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
-
-					UI::EndPropertyGrid();
-					i++;
+					buildIndexToRemove = i;
 				}
 
-				Gui::EndChild();
+				i++;
+			}
+
+			if (buildIndexToRemove != -1)
+			{
+				Scene::RemoveIndexFromBuild(buildIndexToRemove);
 			}
 
 			// Accept Items from the content browser
@@ -64,14 +77,27 @@ namespace Vortex {
 
 					if (filePath.extension().string() == ".vortex")
 					{
-						auto relativePath = FileSystem::Relative(filePath, Project::GetAssetDirectory());
+						bool isNewScene = true;
 
-						const bool isFirstSceneInBuild = m_ProjectProperties.BuildProps.BuildIndices.size() == 0;
+						for (auto& [buildIndex, sceneFilepath] : buildIndices)
+						{
+							if (filePath.string().find(sceneFilepath) != std::string::npos)
+							{
+								isNewScene = false;
+							}
+						}
 
-						if (isFirstSceneInBuild)
-							m_ProjectProperties.General.StartScene = relativePath;
+						if (isNewScene)
+						{
+							auto relativePath = FileSystem::Relative(filePath, Project::GetAssetDirectory());
 
-						Scene::SubmitSceneToBuild(relativePath.string());
+							if (const bool isFirstSceneInBuild = m_ProjectProperties.BuildProps.BuildIndices.size() == 0)
+							{
+								m_ProjectProperties.General.StartScene = relativePath;
+							}
+
+							Scene::SubmitSceneToBuild(relativePath.string());
+						}
 					}
 				}
 

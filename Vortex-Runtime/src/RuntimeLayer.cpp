@@ -181,7 +181,7 @@ namespace Vortex {
 			ScriptEngine::Init();
 
 			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
-			OpenScene(startScenePath.string());
+			OpenScene(startScenePath);
 
 			TagComponent::ResetAddedMarkers();
 
@@ -205,29 +205,37 @@ namespace Vortex {
 			Input::SetCursorMode(CursorMode::Normal);
 		}
 
-		if (std::filesystem::exists(filepath) && filepath.extension().string() == ".vortex")
-		{
-			SceneSerializer serializer(m_RuntimeScene);
-
-			if (serializer.Deserialize(filepath.string()))
-			{
-				m_RuntimeScene->OnRuntimeStart();
-				std::string filename = filepath.filename().string();
-				std::string sceneName = filename.substr(0, filename.find('.'));
-
-				ScriptRegistry::SetSceneStartTime(Time::GetTime());
-
-				return true;
-			}
-		}
-		else
+		if (!FileSystem::Exists(filepath) || filepath.extension().string() != ".vortex")
 		{
 			VX_CORE_FATAL("Could not load {} - not a scene file", filepath.filename().string());
 			Application::Get().Quit();
 			return false;
 		}
 
-		return false;
+		SceneSerializer serializer(m_RuntimeScene);
+
+		if (serializer.Deserialize(filepath.string()))
+		{
+			m_RuntimeScene->OnRuntimeStart();
+			std::string filename = filepath.filename().string();
+			std::string sceneName = filename.substr(0, filename.find('.'));
+
+			ScriptRegistry::SetSceneStartTime(Time::GetTime());
+
+			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+
+			for (auto& [buildIndex, sceneFilepath] : buildIndices)
+			{
+				if (sceneFilepath.find(filepath.string()) == std::string::npos)
+					continue;
+
+				Scene::SetActiveSceneBuildIndex(buildIndex);
+
+				break;
+			}
+		}
+
+		return true;
 	}
 
 	void RuntimeLayer::QueueSceneTransition()
@@ -236,14 +244,14 @@ namespace Vortex {
 		{
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+
 			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
-			std::filesystem::path assetDirectory = Project::GetAssetDirectory().string();
+			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
 			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
 
 			OpenScene(nextSceneFilepath);
 
 			ScriptRegistry::ResetBuildIndex();
-			Scene::SetActiveSceneBuildIndex(nextBuildIndex);
 		});
 	}
 
