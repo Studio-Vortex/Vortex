@@ -4,6 +4,7 @@
 #include "Vortex/Renderer/Renderer.h"
 
 #include "Vortex/Core/Input.h"
+#include "Vortex/Core/ThreadPool.h"
 #include "Vortex/Events/KeyEvent.h"
 #include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Renderer/Font/Font.h"
@@ -51,6 +52,7 @@ namespace Vortex {
 		// Init engine sub-systems
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
 
+		//ThreadPool::Init();
 		Renderer::Init();
 		Physics::Init();
 		AudioSystem::Init();
@@ -72,6 +74,7 @@ namespace Vortex {
 		AudioSystem::Shutdown();
 		Physics::Shutdown();
 		Renderer::Shutdown();
+		//ThreadPool::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
