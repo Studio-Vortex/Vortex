@@ -24,6 +24,8 @@ namespace Vortex {
 		bool OpenProject(const std::filesystem::path& filepath);
 		bool OpenScene(const std::filesystem::path& filepath);
 
+		void QueueSceneTransition();
+
 	private:
 		SharedRef<Framebuffer> m_Framebuffer;
 		SharedRef<Scene> m_RuntimeScene = nullptr;

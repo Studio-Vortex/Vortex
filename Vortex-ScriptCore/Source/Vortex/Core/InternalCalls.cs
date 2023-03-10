@@ -123,6 +123,9 @@ namespace Vortex {
 		internal extern static void SceneManager_LoadScene(string sceneName);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneManager_LoadSceneFromBuildIndex(uint buildIndex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string SceneManager_GetActiveScene();
 
 		#endregion

@@ -47,4 +47,17 @@ namespace Vortex {
 		return false;
 	}
 
+    void Project::SubmitSceneToBuild(const std::string& filepath)
+    {
+		BuildIndexMap& buildIndices = GetScenesInBuild();
+
+		const uint32_t buildIndex = (uint32_t)buildIndices.size();
+		buildIndices[buildIndex] = filepath;
+    }
+
+    BuildIndexMap& Project::GetScenesInBuild()
+    {
+        return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
+    }
+
 }

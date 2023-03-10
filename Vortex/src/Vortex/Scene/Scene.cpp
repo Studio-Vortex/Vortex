@@ -1179,22 +1179,16 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
-	void Scene::SubmitSceneToBuild(SharedRef<Scene>& scene, uint32_t buildIndex)
+	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (s_SceneBuildIndices.contains(buildIndex))
-		{
-			VX_CONSOLE_LOG_ERROR("Build Index was already provided!");
-			return;
-		}
-
-		s_SceneBuildIndices[buildIndex] = scene;
+		Project::SubmitSceneToBuild(sceneFilePath);
 	}
 
-	const std::unordered_map<uint32_t, SharedRef<Scene>>& Scene::GetScenesInBuild()
+	const BuildIndexMap& Scene::GetScenesInBuild()
 	{
-		return s_SceneBuildIndices;
+		return Project::GetScenesInBuild();
 	}
 
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)

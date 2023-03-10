@@ -96,7 +96,7 @@ namespace Vortex {
 		g_ApplicationRunning = false;
 	}
 
-	void Application::SubmitToMainThread(const std::function<void()>& func)
+	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
 

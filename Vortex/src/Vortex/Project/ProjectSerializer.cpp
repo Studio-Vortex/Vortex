@@ -94,6 +94,17 @@ namespace Vortex {
 					out << YAML::Key << "Resizeable" << YAML::Value << props.BuildProps.Window.Resizeable;
 				}
 				out << YAML::EndMap; // Window
+
+				out << YAML::Key << "ScenesInBuild" << YAML::Value << YAML::BeginSeq; // SceneBuildProperties
+				
+				for (const auto& [buildIndex, sceneFilepath] : props.BuildProps.BuildIndices)
+				{
+					out << YAML::BeginMap;
+					out << YAML::Key << buildIndex << sceneFilepath;
+					out << YAML::EndMap;
+				}
+
+				out << YAML::EndSeq; // SceneBuildProperties
 			}
 			out << YAML::EndMap; // BuildProperties
 
@@ -230,6 +241,25 @@ namespace Vortex {
 
 				window.SetDecorated(props.BuildProps.Window.Decorated);
 				window.SetResizeable(props.BuildProps.Window.Resizeable);
+			}
+
+			const auto buildIndicesData = buildData["ScenesInBuild"];
+
+			if (buildIndicesData)
+			{
+				uint32_t buildIndex = 0;
+
+				for (auto& buildIndexData : buildIndicesData)
+				{
+					if (buildIndexData[buildIndex])
+					{
+						std::string sceneFilepath = buildIndexData[buildIndex++].as<std::string>();
+						Scene::SubmitSceneToBuild(sceneFilepath);
+						continue;
+					}
+
+					break;
+				}
 			}
 		}
 

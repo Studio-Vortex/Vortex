@@ -68,13 +68,6 @@ namespace Vortex {
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
-		if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
-		{
-			auto scenePath = std::format("Assets/Scenes/{}.vortex", sceneToBeLoaded);
-			OpenScene(Project::GetProjectDirectory() / scenePath);
-			ScriptRegistry::ResetSceneToBeLoaded();
-		}
-
 		bool scenePaused = m_RuntimeScene->IsPaused();
 
 		if (scenePaused)
@@ -107,6 +100,11 @@ namespace Vortex {
 		postProcessProps.Stages = stages;
 		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
 		Renderer::BeginPostProcessingStages(postProcessProps);
+
+		if (ScriptRegistry::HasPendingTransitionQueued())
+		{
+			QueueSceneTransition();
+		}
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -223,13 +221,28 @@ namespace Vortex {
 		}
 		else
 		{
-			VX_WARN("Could not load {} - not a scene file", filepath.filename().string());
-			system("pause");
+			VX_CORE_FATAL("Could not load {} - not a scene file", filepath.filename().string());
 			Application::Get().Quit();
 			return false;
 		}
 
 		return false;
+	}
+
+	void RuntimeLayer::QueueSceneTransition()
+	{
+		Application::Get().SubmitToMainThreadQueue([=]()
+		{
+			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
+			std::filesystem::path assetDirectory = Project::GetAssetDirectory().string();
+			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
+
+			OpenScene(nextSceneFilepath);
+
+			ScriptRegistry::ResetBuildIndex();
+		});
 	}
 
 }

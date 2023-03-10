@@ -201,12 +201,12 @@ namespace Vortex {
 		if (Gui::BeginPopupModal("Create New Project"))
 		{
 			static const char* options[] = { ProjectTypeToString(ProjectType::e2D), ProjectTypeToString(ProjectType::e3D) };
-			int32_t selectedProjectType = (int32_t)m_Properties.Type;
+			int32_t currentProjectType = (int32_t)m_Properties.ProjectType;
 
 			UI::BeginPropertyGrid();
-			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYCOUNT(options), selectedProjectType))
+			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYCOUNT(options), currentProjectType))
 			{
-				m_Properties.Type == (ProjectType)selectedProjectType;
+				m_Properties.ProjectType == (ProjectType)currentProjectType;
 			}
 			UI::EndPropertyGrid();
 
@@ -265,8 +265,8 @@ namespace Vortex {
 
 	void LauncherLayer::CreateProject()
 	{
-		if (!std::filesystem::exists(m_Properties.ProjectDirectoryBuffer))
-			std::filesystem::create_directories(m_Properties.ProjectDirectoryBuffer);
+		if (!FileSystem::Exists(m_Properties.ProjectDirectoryBuffer))
+			FileSystem::CreateDirectories(m_Properties.ProjectDirectoryBuffer);
 
 		SharedRef<Project> project = Project::New();
 		auto& projectProps = project->GetProperties();
@@ -286,7 +286,7 @@ namespace Vortex {
 		std::filesystem::copy("Resources/NewProjectTemplate/Win32Gen.bat", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
 
 		SharedRef<Scene> startScene = Scene::Create();
-		if (m_Properties.Type == ProjectType::e2D)
+		if (m_Properties.ProjectType == ProjectType::e2D)
 			Scene::Create2DSampleScene(startScene);
 		else
 			Scene::Create3DSampleScene(startScene);

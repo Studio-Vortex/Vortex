@@ -64,7 +64,7 @@ namespace Vortex {
 
 		void Quit();
 
-		void SubmitToMainThread(const std::function<void()>& func);
+		void SubmitToMainThreadQueue(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
 		std::string GetPlatformName() const;

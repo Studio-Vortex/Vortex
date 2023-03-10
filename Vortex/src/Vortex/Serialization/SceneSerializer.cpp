@@ -334,6 +334,7 @@ namespace Vortex {
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene.get() };
+
 			if (!entity)
 				return;
 

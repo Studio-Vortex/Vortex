@@ -242,7 +242,7 @@ namespace Vortex {
 
 			s_Data->AssemblyReloadPending = true;
 
-			Application::Get().SubmitToMainThread([]()
+			Application::Get().SubmitToMainThreadQueue([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
 

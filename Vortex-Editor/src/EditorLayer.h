@@ -95,6 +95,7 @@ namespace Vortex {
 
 		// Helper
 
+		void QueueSceneTransition();
 		void DuplicateSelectedEntity();
 		void SetSceneContext(const SharedRef<Scene>& scene);
 		void ResetEditorCameras();

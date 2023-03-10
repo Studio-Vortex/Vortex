@@ -149,7 +149,7 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		std::filesystem::path& scriptBinaryPath = m_ProjectProperties.ScriptingProps.ScriptBinaryPath;
+		const std::filesystem::path& scriptBinaryPath = m_ProjectProperties.ScriptingProps.ScriptBinaryPath;
 		std::string scriptBinaryPathStr = scriptBinaryPath.string();
 		UI::Property("Script Binary Path", scriptBinaryPathStr, true);
 		UI::Property("Debug Listener Port", m_ProjectProperties.ScriptingProps.DebugListenerPort);

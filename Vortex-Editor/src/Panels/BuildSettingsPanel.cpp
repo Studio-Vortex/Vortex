@@ -29,15 +29,26 @@ namespace Vortex {
 
 		if (UI::PropertyGridHeader("Scenes in Build"))
 		{
-			UI::BeginPropertyGrid();
+			const auto& buildScenes = Scene::GetScenesInBuild();
 
-			std::string startupSceneFullPath = m_StartupScene.string();
-			size_t lastSlashPos = startupSceneFullPath.find_last_of("/\\");
-			std::string filepathWithExtension = startupSceneFullPath.substr(lastSlashPos);
-			std::string startupSceneFilename = FileSystem::RemoveFileExtension(filepathWithExtension);
-			UI::Property("Startup Scene", startupSceneFilename, true);
+			auto contentRegionAvail = Gui::GetContentRegionAvail();
 
-			UI::EndPropertyGrid();
+			if (Gui::BeginChild("##Build Scenes", { contentRegionAvail.x, contentRegionAvail.y * 0.5f }))
+			{
+				uint32_t i = 0;
+
+				for (const auto& [buildIndex, sceneFilePath] : buildScenes)
+				{
+					UI::BeginPropertyGrid();
+
+					UI::Property(std::to_string(i + 1).c_str(), *const_cast<std::string*>(&sceneFilePath), true);
+
+					UI::EndPropertyGrid();
+					i++;
+				}
+
+				Gui::EndChild();
+			}
 
 			// Accept Items from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -49,9 +60,14 @@ namespace Vortex {
 
 					if (filePath.extension().string() == ".vortex")
 					{
-						auto relativePath = std::filesystem::relative(filePath, Project::GetAssetDirectory());
-						m_ProjectProperties.General.StartScene = relativePath;
-						m_StartupScene = relativePath;
+						auto relativePath = FileSystem::Relative(filePath, Project::GetAssetDirectory());
+
+						const bool isFirstSceneInBuild = m_ProjectProperties.BuildProps.BuildIndices.size() == 0;
+
+						if (isFirstSceneInBuild)
+							m_ProjectProperties.General.StartScene = relativePath;
+
+						Scene::SubmitSceneToBuild(relativePath.string());
 					}
 				}
 
@@ -67,6 +83,7 @@ namespace Vortex {
 
 			if (!m_ProjectProperties.BuildProps.Window.Maximized)
 				UI::Property("Size", m_ProjectProperties.BuildProps.Window.Size);
+
 			UI::Property("Maximized", m_ProjectProperties.BuildProps.Window.Maximized);
 			UI::Property("Decorated", m_ProjectProperties.BuildProps.Window.Decorated);
 			UI::Property("Resizeable", m_ProjectProperties.BuildProps.Window.Resizeable);

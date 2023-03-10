@@ -26,8 +26,9 @@ namespace Vortex {
 		static void SetHoveredEntity(Entity entity);
 		static void SetSceneStartTime(float startTime);
 		static void SetActiveSceneName(const std::string& sceneName);
-		static const char* GetSceneToBeLoaded();
-		static void ResetSceneToBeLoaded();
+		static bool HasPendingTransitionQueued();
+		static uint32_t GetNextBuildIndex();
+		static void ResetBuildIndex();
 	};
 
 	namespace InternalCalls {
@@ -87,6 +88,7 @@ namespace Vortex {
 #pragma region SceneManager
 
 		void SceneManager_LoadScene(MonoString* sceneName);
+		void SceneManager_LoadSceneFromBuildIndex(uint32_t buildIndex);
 		MonoString* SceneManager_GetActiveScene();
 
 #pragma endregion

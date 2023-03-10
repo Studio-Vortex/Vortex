@@ -152,14 +152,6 @@ namespace Vortex {
 			}
 			case SceneState::Play:
 			{
-				if (const char* sceneToBeLoaded = ScriptRegistry::GetSceneToBeLoaded(); strlen(sceneToBeLoaded) != 0)
-				{
-					auto scenePath = std::format("Assets/Scenes/{}.vortex", sceneToBeLoaded);
-					OpenScene(Project::GetProjectDirectory() / scenePath);
-					OnScenePlay();
-					ScriptRegistry::ResetSceneToBeLoaded();
-				}
-
 				bool scenePaused = m_ActiveScene->IsPaused();
 
 				if (scenePaused)
@@ -263,6 +255,11 @@ namespace Vortex {
 
 		if (!Input::IsMouseButtonDown(MouseButton::Right) && !(Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))))
 			m_StartedClickInSecondViewport = false;
+
+		if (m_SceneState == SceneState::Play && ScriptRegistry::HasPendingTransitionQueued())
+		{
+			QueueSceneTransition();
+		}
 	}
 
 	void EditorLayer::OnGuiRender()
@@ -1374,6 +1371,7 @@ namespace Vortex {
 	{
 		SaveScene();
 		SaveProject();
+
 		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
 		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
@@ -2327,6 +2325,23 @@ namespace Vortex {
 
 			audioSource->Stop();
 		}
+	}
+
+	void EditorLayer::QueueSceneTransition()
+	{
+		Application::Get().SubmitToMainThreadQueue([=]()
+		{
+			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
+			std::filesystem::path assetDirectory = Project::GetAssetDirectory().string();
+			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
+
+			OpenScene(nextSceneFilepath);
+			OnScenePlay();
+
+			ScriptRegistry::ResetBuildIndex();
+		});
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

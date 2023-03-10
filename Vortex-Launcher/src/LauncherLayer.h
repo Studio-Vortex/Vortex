@@ -7,11 +7,6 @@ namespace Vortex {
 #define VX_MAX_PROJECT_NAME_LENGTH 256
 #define VX_MAX_PROJECT_DIR_LENGTH 256
 
-	enum class ProjectType : int32_t
-	{
-		e2D, e3D
-	};
-
 	struct LauncherProperties
 	{
 		std::filesystem::path WorkingDirectory = "";
@@ -21,7 +16,7 @@ namespace Vortex {
 		inline static char ProjectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH];
 		inline static char ProjectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH];
 
-		ProjectType Type = ProjectType::e3D;
+		ProjectType ProjectType = ProjectType::e3D;
 	};
 
 	class LauncherLayer : public Layer

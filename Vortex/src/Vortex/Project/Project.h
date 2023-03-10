@@ -5,11 +5,19 @@
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Asset/AssetManager/EditorAssetManager.h"
+#include "Vortex/Utils/FileSystem.h"
 
-#include <filesystem>
 #include <string>
+#include <map>
 
 namespace Vortex {
+
+	enum class VORTEX_API ProjectType : int32_t
+	{
+		e2D, e3D
+	};
+
+	using BuildIndexMap = std::map<uint32_t, std::string>;
 
 	struct VORTEX_API ProjectProperties
 	{
@@ -30,6 +38,8 @@ namespace Vortex {
 				bool Decorated = true;
 				bool Resizeable = true;
 			} Window;
+
+			BuildIndexMap BuildIndices;
 		} BuildProps;
 
 		struct VORTEX_API RendererProperties
@@ -142,6 +152,9 @@ namespace Vortex {
 		static SharedRef<Project> Load(const std::filesystem::path& filepath);
 		static SharedRef<Project> LoadRuntime(const std::filesystem::path& filepath);
 		static bool SaveActive(const std::filesystem::path& filepath);
+
+		static void SubmitSceneToBuild(const std::string& filepath);
+		static BuildIndexMap& GetScenesInBuild();
 
 	private:
 		ProjectProperties m_Properties;
