@@ -264,6 +264,21 @@ namespace Vortex {
 			Renderer2D::DrawAABB(aabb, transform, *color);
 		}
 
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID entityUUID, Math::vec4* color)
+		{
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			Math::AABB aabb{
+				-Math::vec3(0.5f),
+				+Math::vec3(0.5f),
+			};
+
+			Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(entity);
+
+			Renderer2D::DrawAABB(aabb, worldSpaceTransform, *color);
+		}
+
 		void DebugRenderer_Flush()
 		{
 			Scene* contextScene = GetContextScene();
@@ -6277,6 +6292,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawBoundingBox);
+		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawBoundingBoxFromTransform);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_Flush);
 
 		VX_REGISTER_INTERNAL_CALL(Scene_FindEntityByID);

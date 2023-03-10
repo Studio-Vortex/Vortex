@@ -79,6 +79,9 @@ namespace Vortex {
 		internal extern static void DebugRenderer_DrawBoundingBox(ref Vector3 worldPosition, ref Vector3 size, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawBoundingBoxFromTransform(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_Flush();
 
 		#endregion

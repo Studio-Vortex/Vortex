@@ -65,6 +65,7 @@ namespace Vortex {
 		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade);
 		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade);
 		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color);
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID entityUUID, Math::vec4* color);
 		void DebugRenderer_Flush();
 
 #pragma endregion
