@@ -113,6 +113,9 @@ namespace Vortex {
 		static void SubmitSceneToBuild(const std::string& sceneFilePath);
 		static const std::map<uint32_t, std::string>& GetScenesInBuild();
 
+		static uint32_t GetActiveSceneBuildIndex();
+		static void SetActiveSceneBuildIndex(uint32_t buildIndex);
+
 		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
 		static void Create2DSampleScene(SharedRef<Scene>& context);
 		static void Create3DSampleScene(SharedRef<Scene>& context);
@@ -144,6 +147,8 @@ namespace Vortex {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		uint32_t m_StepFrames = 0;
+
+		inline static uint32_t s_ActiveBuildIndex = 0;
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;

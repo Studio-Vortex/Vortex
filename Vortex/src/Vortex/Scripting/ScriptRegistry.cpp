@@ -58,7 +58,6 @@ namespace Vortex {
 
 		float SceneStartTime = 0.0f;
 
-		std::string ActiveSceneName = "";
 		int32_t NextSceneBuildIndex = -1;
 
 		Math::vec4 RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -396,6 +395,13 @@ namespace Vortex {
 			return s_Data.HoveredEntity.GetUUID();
 		}
 
+		uint32_t Scene_GetCurrentBuildIndex()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return Scene::GetActiveSceneBuildIndex();
+		}
+
 #pragma endregion
 
 #pragma region SceneManager
@@ -437,11 +443,24 @@ namespace Vortex {
 			s_Data.NextSceneBuildIndex = buildIndex;
 		}
 
+		uint32_t SceneManager_GetActiveSceneBuildIndex()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return Scene::GetActiveSceneBuildIndex();
+		}
+
 		MonoString* SceneManager_GetActiveScene()
 		{
 			Scene* contextScene = GetContextScene();
 
-			return mono_string_new(mono_domain_get(), s_Data.ActiveSceneName.c_str());
+			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+
+			std::string sceneFilepath = buildIndices.at(Scene::GetActiveSceneBuildIndex());
+			size_t lastSlashPos = sceneFilepath.find_last_of("/\\");
+			std::string activeSceneName = sceneFilepath.substr(lastSlashPos + 1);
+
+			return mono_string_new(mono_domain_get(), activeSceneName.c_str());
 		}
 
 #pragma endregion
@@ -6215,11 +6234,6 @@ namespace Vortex {
 		s_Data.SceneStartTime = startTime;
 	}
 
-	void ScriptRegistry::SetActiveSceneName(const std::string& sceneName)
-	{
-		s_Data.ActiveSceneName = sceneName;
-	}
-
 	bool ScriptRegistry::HasPendingTransitionQueued()
 	{
 		return s_Data.NextSceneBuildIndex != -1;
@@ -6272,6 +6286,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Scene_Pause);
 		VX_REGISTER_INTERNAL_CALL(Scene_Resume);
 		VX_REGISTER_INTERNAL_CALL(Scene_GetHoveredEntity);
+		VX_REGISTER_INTERNAL_CALL(Scene_GetCurrentBuildIndex);
 
 		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadScene);
 		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadSceneFromBuildIndex);

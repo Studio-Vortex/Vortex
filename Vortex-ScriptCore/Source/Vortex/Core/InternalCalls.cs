@@ -115,6 +115,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_GetHoveredEntity();
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Scene_GetCurrentBuildIndex();
+
 		#endregion
 
 		#region SceneManager

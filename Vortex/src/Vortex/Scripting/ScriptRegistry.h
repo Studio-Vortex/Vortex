@@ -25,7 +25,6 @@ namespace Vortex {
 		static void RegisterComponents();
 		static void SetHoveredEntity(Entity entity);
 		static void SetSceneStartTime(float startTime);
-		static void SetActiveSceneName(const std::string& sceneName);
 		static bool HasPendingTransitionQueued();
 		static uint32_t GetNextBuildIndex();
 		static void ResetBuildIndex();
@@ -82,6 +81,7 @@ namespace Vortex {
 		void Scene_Pause();
 		void Scene_Resume();
 		uint64_t Scene_GetHoveredEntity();
+		uint32_t Scene_GetCurrentBuildIndex();
 
 #pragma endregion
 

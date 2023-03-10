@@ -1191,6 +1191,16 @@ namespace Vortex {
 		return Project::GetScenesInBuild();
 	}
 
+    uint32_t Scene::GetActiveSceneBuildIndex()
+    {
+		return s_ActiveBuildIndex;
+    }
+
+	void Scene::SetActiveSceneBuildIndex(uint32_t buildIndex)
+	{
+		s_ActiveBuildIndex = buildIndex;
+	}
+
 	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
 	{
 		VX_PROFILE_FUNCTION();

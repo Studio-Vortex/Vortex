@@ -214,8 +214,9 @@ namespace Vortex {
 				m_RuntimeScene->OnRuntimeStart();
 				std::string filename = filepath.filename().string();
 				std::string sceneName = filename.substr(0, filename.find('.'));
-				ScriptRegistry::SetActiveSceneName(sceneName);
+
 				ScriptRegistry::SetSceneStartTime(Time::GetTime());
+
 				return true;
 			}
 		}
@@ -242,6 +243,7 @@ namespace Vortex {
 			OpenScene(nextSceneFilepath);
 
 			ScriptRegistry::ResetBuildIndex();
+			Scene::SetActiveSceneBuildIndex(nextBuildIndex);
 		});
 	}
 

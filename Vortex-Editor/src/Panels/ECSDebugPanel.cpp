@@ -32,7 +32,7 @@ namespace Vortex {
 		UI::Table("Entity", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 125.0f }, [&]()
 		{
 			Gui::TableNextColumn();
-			Gui::Text("Name");
+			Gui::Text("Entity");
 			Gui::TableNextColumn();
 			Gui::Text(selectedEntity.GetName().c_str());
 
@@ -87,7 +87,7 @@ namespace Vortex {
 
 	void ECSDebugPanel::RenderSceneEntityView()
 	{
-		static const char* columns[] = { "Name", "UUID" };
+		static const char* columns[] = { "Entity", "UUID" };
 
 		UI::Table("Entity List", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
 		{

@@ -2127,7 +2127,6 @@ namespace Vortex {
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = path;
 			std::string sceneName = sceneFilename.substr(0, sceneFilename.find('.'));
-			ScriptRegistry::SetActiveSceneName(sceneName);
 
 			Application& application = Application::Get();
 
@@ -2341,6 +2340,7 @@ namespace Vortex {
 			OnScenePlay();
 
 			ScriptRegistry::ResetBuildIndex();
+			Scene::SetActiveSceneBuildIndex(nextBuildIndex);
 		});
 	}
 

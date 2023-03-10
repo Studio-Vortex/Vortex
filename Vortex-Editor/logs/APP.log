@@ -18,11 +18,5 @@ Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
 Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
-PDB Loaded : "Resources/Scripts/Vortex-ScriptCore.pdb"
-PDB Loaded : "Projects\\ProjectBoost\\Assets\\Scripts/Binaries/ProjectBoost.pdb"
-Deserializing Scene 'Over'
-PDB Loaded : "Resources/Scripts/Vortex-ScriptCore.pdb"
-PDB Loaded : "Projects\\ProjectBoost\\Assets\\Scripts/Binaries/ProjectBoost.pdb"
-Deserializing Scene 'Over'
-Deserializing Scene 'Over'
+Deserializing Scene 'SampleScene'
 Shutting down...
