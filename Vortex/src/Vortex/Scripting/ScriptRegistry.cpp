@@ -435,10 +435,13 @@ namespace Vortex {
 
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 
-			const bool validBuildIndex = buildIndices.contains(buildIndex);
-			VX_CORE_ASSERT(validBuildIndex, "Build Index was not found");
-			if (!validBuildIndex)
-				return;
+			const bool invalidBuildIndex = buildIndex > buildIndices.size() - 1;
+
+			// Wrap around to beginning
+			if (invalidBuildIndex)
+			{
+				buildIndex = 0;
+			}
 
 			s_Data.NextSceneBuildIndex = buildIndex;
 		}

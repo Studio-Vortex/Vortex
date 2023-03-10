@@ -42,7 +42,8 @@ namespace Vortex {
 					UI::BeginPropertyGrid();
 
 					size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
-					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1);
+					size_t lastDotPos = sceneFilePath.find_last_of('.');
+					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
 
 					UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
 
