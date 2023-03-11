@@ -20,6 +20,7 @@ IncludeDir = {}
 IncludeDir["Assimp"] = "Vortex/vendor/assimp/include"
 IncludeDir["Box2D"] = "Vortex/vendor/Box2D/include"
 IncludeDir["entt"] = "Vortex/vendor/entt/include"
+IncludeDir["FastNoise"] = "Vortex/vendor/FastNoise"
 IncludeDir["filewatch"] = "Vortex/vendor/filewatch"
 IncludeDir["GLFW"] = "Vortex/vendor/GLFW/include"
 IncludeDir["Glad"] = "Vortex/vendor/Glad/include"
@@ -117,7 +118,8 @@ project "Vortex"
 
 		"%{IncludeDir.Assimp}",
 		"%{IncludeDir.Box2D}",
-		"%{IncludeDir.entt}",
+    	"%{IncludeDir.entt}",
+		"%{IncludeDir.FastNoise}",
 		"%{IncludeDir.filewatch}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.GLFW}",
