@@ -224,6 +224,12 @@ namespace Vortex {
 		internal extern static void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetTransformMatrix(ulong entityID, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetTransformMatrix(ulong entityID, ref Matrix4 transform);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetForwardDirection(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1195,6 +1201,19 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Random_Float();
+
+		#endregion
+
+		#region Matrix4
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_Rotate(float angleDeg, ref Vector3 axis, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, ref Vector3 up, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_Multiply(ref Matrix4 matrix, ref Matrix4 other, out Matrix4 result);
 
 		#endregion
 

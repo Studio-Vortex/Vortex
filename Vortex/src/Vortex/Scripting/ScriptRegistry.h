@@ -127,6 +127,8 @@ namespace Vortex {
 		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale);
 		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale);
 		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale);
+		void TransformComponent_GetTransformMatrix(UUID entityUUID, Math::mat4* outTransform);
+		void TransformComponent_SetTransformMatrix(UUID entityUUID, Math::mat4* transform);
 		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection);
 		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection);
 		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection);
@@ -537,6 +539,14 @@ namespace Vortex {
 		int Random_RangedInt32(int min, int max);
 		float Random_RangedFloat(float min, float max);
 		float Random_Float();
+
+#pragma endregion
+
+#pragma region Matrix4
+		
+		void Matrix4_Rotate(float angleDeg, Math::vec3* axis, Math::mat4* outResult);
+		void Matrix4_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* up, Math::mat4* outResult);
+		void Matrix4_Multiply(Math::mat4* matrix, Math::mat4* other, Math::mat4* outResult);
 
 #pragma endregion
 

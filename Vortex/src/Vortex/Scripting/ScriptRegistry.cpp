@@ -927,6 +927,24 @@ namespace Vortex {
 			*outScale = worldSpaceTransform.Scale;
 		}
 
+		void TransformComponent_GetTransformMatrix(UUID entityUUID, Math::mat4* outTransform)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			const TransformComponent& transform = entity.GetTransform();
+
+			*outTransform = transform.GetTransform();
+		}
+
+		void TransformComponent_SetTransformMatrix(UUID entityUUID, Math::mat4* transform)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			TransformComponent& entityTransform = entity.GetTransform();
+
+			entityTransform.SetTransform(*transform);
+		}
+
 		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
 		{
 			Scene* contextScene = GetContextScene();
@@ -5766,6 +5784,25 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Matrix4
+
+		void Matrix4_Rotate(float angleDeg, Math::vec3* axis, Math::mat4* outResult)
+		{
+			*outResult = Math::Rotate(Math::Deg2Rad(angleDeg), *axis);
+		}
+
+		void Matrix4_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* up, Math::mat4* outResult)
+		{
+			*outResult = Math::LookAt(*eyePos, *worldPoint, *up);
+		}
+
+		void Matrix4_Multiply(Math::mat4* matrix, Math::mat4* other, Math::mat4* outResult)
+		{
+			*outResult = (*matrix) * (*other);
+		}
+
+#pragma endregion
+
 #pragma region Mathf
 
 		float Mathf_GetPI()
@@ -6338,6 +6375,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetScale);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetScale);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
+		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTransformMatrix);
+		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTransformMatrix);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetForwardDirection);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetUpDirection);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetRightDirection);
@@ -6650,6 +6689,10 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Random_RangedInt32);
 		VX_REGISTER_INTERNAL_CALL(Random_RangedFloat);
 		VX_REGISTER_INTERNAL_CALL(Random_Float);
+
+		VX_REGISTER_INTERNAL_CALL(Matrix4_Rotate);
+		VX_REGISTER_INTERNAL_CALL(Matrix4_LookAt);
+		VX_REGISTER_INTERNAL_CALL(Matrix4_Multiply);
 
 		VX_REGISTER_INTERNAL_CALL(Mathf_GetPI);
 		VX_REGISTER_INTERNAL_CALL(Mathf_GetPI_D);

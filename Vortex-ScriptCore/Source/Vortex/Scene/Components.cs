@@ -118,6 +118,17 @@
 			}
 		}
 
+		public Matrix4 Matrix
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetTransformMatrix(Entity.ID, out Matrix4 result);
+				return result;
+			}
+
+			set => InternalCalls.TransformComponent_SetTransformMatrix(Entity.ID, ref value);
+		}
+
 		public Vector3 Up
 		{
 			get
