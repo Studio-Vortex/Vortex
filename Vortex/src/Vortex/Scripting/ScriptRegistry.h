@@ -20,6 +20,7 @@ namespace Vortex {
 	enum class MouseButton : uint16_t;
 	enum class GamepadButton : uint16_t;
 	enum class GamepadAxis : uint16_t;
+	class Texture2D;
 	class Noise;
 	enum class NoiseType;
 
@@ -248,8 +249,8 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID);
-		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString);
+		Texture2D* SpriteRendererComponent_GetTexture(UUID entityUUID);
+		void SpriteRendererComponent_SetTexture(UUID entityUUID, Texture2D* unmanagedInstance);
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
 		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale);
@@ -539,6 +540,16 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Texture2D
+
+		Texture2D* Texture2D_LoadFromPath(MonoString* filepath);
+		Texture2D* Texture2D_Constructor(uint32_t width, uint32_t height);
+		uint32_t Texture2D_GetWidth(Texture2D* _this);
+		uint32_t Texture2D_GetHeight(Texture2D* _this);
+		void Texture2D_SetPixel(Texture2D* _this, uint32_t x, uint32_t y, Math::vec4* color);
+
+#pragma endregion
+
 #pragma region Random
 
 		int Random_RangedInt32(int min, int max);
@@ -589,9 +600,11 @@ namespace Vortex {
 		void Noise_SetFractalLacunarity(Noise* _this, float lacunarity);
 		float Noise_GetFractalGain(Noise* _this);
 		void Noise_SetFractalGain(Noise* _this, float gain);
-		float Noise_Get(Noise* _this, float x, float y);
+		float Noise_GetVec2(Noise* _this, float x, float y);
+		float Noise_GetVec3(Noise* _this, float x, float y, float z);
 		void Noise_SetSeed(int seed);
-		float Noise_PerlinNoise(float x, float y);
+		float Noise_PerlinNoiseVec2(float x, float y);
+		float Noise_PerlinNoiseVec3(float x, float y, float z);
 
 #pragma endregion
 

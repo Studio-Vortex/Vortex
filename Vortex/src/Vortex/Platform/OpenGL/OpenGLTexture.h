@@ -22,6 +22,8 @@ namespace Vortex {
 		void SetData(const void* data, uint32_t size) override;
 		void SetData(void* data, uint32_t size) override;
 
+		void SetPixel(uint32_t xOffset, uint32_t yOffset, void* data);
+
 		void Bind(uint32_t slot) const override;
 		void Unbind() const override;
 

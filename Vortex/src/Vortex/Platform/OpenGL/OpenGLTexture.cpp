@@ -90,7 +90,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(size == m_Properties.Width * m_Properties.Height * bytesPerPixel, "Data must be entire Texture!");
 #endif // VX_ENABLE_ASSERTS
 
-		glTextureSubImage2D(m_RendererID, NULL, NULL, NULL, m_Properties.Width, m_Properties.Height, m_DataFormat, GL_FLOAT, (const void*)data);
+		glTextureSubImage2D(m_RendererID, NULL, NULL, NULL, m_Properties.Width, m_Properties.Height, m_DataFormat, GL_FLOAT, data);
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
@@ -103,6 +103,17 @@ namespace Vortex {
 #endif // VX_ENABLE_ASSERTS
 
 		glTextureSubImage2D(m_RendererID, NULL, NULL, NULL, m_Properties.Width, m_Properties.Height, m_DataFormat, GL_UNSIGNED_BYTE, (const void*)data);
+	}
+
+	void OpenGLTexture2D::SetPixel(uint32_t xOffset, uint32_t yOffset, void* data)
+	{
+		VX_PROFILE_FUNCTION();
+
+#ifdef VX_ENABLE_ASSERTS
+		VX_CORE_ASSERT(xOffset <= m_Properties.Width && yOffset <= m_Properties.Height, "Trying to set invalid Pixel!");
+#endif // VX_ENABLE_ASSERTS
+
+		glTextureSubImage2D(m_RendererID, NULL, xOffset, yOffset, 1, 1, GL_UNSIGNED_BYTE, m_DataFormat, (const void*)data);
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

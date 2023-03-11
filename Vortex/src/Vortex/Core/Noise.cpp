@@ -86,7 +86,22 @@ namespace Vortex {
 
 	float Noise::Get(float x, float y)
 	{
-		return m_FastNoise->GetNoise(x, y);
+		return Get({ x, y });
+	}
+
+	float Noise::Get(const Math::vec2& position)
+	{
+		return m_FastNoise->GetNoise(position.x, position.y);
+	}
+
+	float Noise::Get(float x, float y, float z)
+	{
+		return Get({ x, y, z });
+	}
+
+	float Noise::Get(const Math::vec3& position)
+	{
+		return m_FastNoise->GetNoise(position.x, position.y, position.z);
 	}
 
 	void Noise::SetSeed(int seed)
@@ -96,10 +111,29 @@ namespace Vortex {
 
 	float Noise::PerlinNoise(float x, float y)
 	{
+		return PerlinNoise({ x, y });
+	}
+
+	float Noise::PerlinNoise(const Math::vec2& position)
+	{
 		s_FastNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
 		// Between -1 and 1
-		const float noise = s_FastNoise.GetNoise(x, y);
+		const float noise = s_FastNoise.GetNoise(position.x, position.y);
+		return noise;
+	}
+
+	float Noise::PerlinNoise(float x, float y, float z)
+	{
+		return PerlinNoise({ x, y, z });
+	}
+
+	float Noise::PerlinNoise(const Math::vec3& position)
+	{
+		s_FastNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+
+		// Between -1 and 1
+		const float noise = s_FastNoise.GetNoise(position.x, position.y, position.z);
 		return noise;
 	}
 

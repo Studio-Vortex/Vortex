@@ -2234,30 +2234,28 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		MonoString* SpriteRendererComponent_GetTexture(UUID entityUUID)
+		Texture2D* SpriteRendererComponent_GetTexture(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
-				return mono_string_new(mono_domain_get(), "");
+				return nullptr;
 			}
 
 			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 			
 			if (spriteRenderer.Texture)
 			{
-				return mono_string_new(mono_domain_get(), spriteRenderer.Texture->GetPath().c_str());
+				return spriteRenderer.Texture.get();
 			}
 
-			return mono_string_new(mono_domain_get(), "");
+			return nullptr;
 		}
 
-		void SpriteRendererComponent_SetTexture(UUID entityUUID, MonoString* texturePathString)
+		void SpriteRendererComponent_SetTexture(UUID entityUUID, Texture2D* unmanagedInstance)
 		{
-			char* texturePathCStr = mono_string_to_utf8(texturePathString);
-
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
@@ -2267,13 +2265,8 @@ namespace Vortex {
 			}
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			TextureProperties imageProps;
-			imageProps.Filepath = Project::GetAssetFileSystemPath(std::filesystem::path(texturePathCStr)).string();
-			// TODO should allow as an option
-			imageProps.WrapMode = ImageWrap::Repeat;
-			spriteRenderer.Texture = Texture2D::Create(imageProps);
 
-			mono_free(texturePathCStr);
+			spriteRenderer.Texture = SharedRef<Texture2D>(unmanagedInstance);
 		}
 
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
@@ -5760,6 +5753,53 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Texture2D
+
+		// TODO all texture functions should use the asset system in the future
+		Texture2D* Texture2D_LoadFromPath(MonoString* filepath)
+		{
+			char* filepathCStr = mono_string_to_utf8(filepath);
+
+			TextureProperties imageProps;
+			imageProps.Filepath = Project::GetAssetFileSystemPath(filepathCStr).string();
+			imageProps.WrapMode = ImageWrap::Repeat;
+			
+			SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+
+			mono_free(filepathCStr);
+
+			return texture.get();
+		}
+
+		Texture2D* Texture2D_Constructor(uint32_t width, uint32_t height)
+		{
+			TextureProperties imageProps;
+			imageProps.Width = width;
+			imageProps.Height = height;
+			imageProps.WrapMode = ImageWrap::Repeat;
+
+			SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+
+			return texture.get();
+		}
+
+		uint32_t Texture2D_GetWidth(Texture2D* _this)
+		{
+			return _this->GetWidth();
+		}
+
+		uint32_t Texture2D_GetHeight(Texture2D* _this)
+		{
+			return _this->GetHeight();
+		}
+
+		void Texture2D_SetPixel(Texture2D* _this, uint32_t x, uint32_t y, Math::vec4* color)
+		{
+			_this->SetPixel(x, y, (void*)color);
+		}
+
+#pragma endregion
+
 #pragma region Random
 
 		int Random_RangedInt32(int min, int max)
@@ -5952,9 +5992,14 @@ namespace Vortex {
 			_this->SetFractalGain(gain);
 		}
 
-		float Noise_Get(Noise* _this, float x, float y)
+		float Noise_GetVec2(Noise* _this, float x, float y)
 		{
 			return _this->Get(x, y);
+		}
+
+		float Noise_GetVec3(Noise* _this, float x, float y, float z)
+		{
+			return _this->Get(x, y, z);
 		}
 
 		void Noise_SetSeed(int seed)
@@ -5962,9 +6007,14 @@ namespace Vortex {
 			Noise::SetSeed(seed);
 		}
 
-		float Noise_PerlinNoise(float x, float y)
+		float Noise_PerlinNoiseVec2(float x, float y)
 		{
 			return Noise::PerlinNoise(x, y);
+		}
+
+		float Noise_PerlinNoiseVec3(float x, float y, float z)
+		{
+			return Noise::PerlinNoise(x, y, z);
 		}
 
 #pragma endregion
@@ -6749,6 +6799,12 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Start);
 		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Stop);
 
+		VX_REGISTER_INTERNAL_CALL(Texture2D_LoadFromPath);
+		VX_REGISTER_INTERNAL_CALL(Texture2D_Constructor);
+		VX_REGISTER_INTERNAL_CALL(Texture2D_GetWidth);
+		VX_REGISTER_INTERNAL_CALL(Texture2D_GetHeight);
+		VX_REGISTER_INTERNAL_CALL(Texture2D_SetPixel);
+
 		VX_REGISTER_INTERNAL_CALL(Random_RangedInt32);
 		VX_REGISTER_INTERNAL_CALL(Random_RangedFloat);
 		VX_REGISTER_INTERNAL_CALL(Random_Float);
@@ -6785,9 +6841,11 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalLacunarity);
 		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalGain);
 		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalGain);
-		VX_REGISTER_INTERNAL_CALL(Noise_Get);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetVec2);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetVec3);
 		VX_REGISTER_INTERNAL_CALL(Noise_SetSeed);
-		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoise);
+		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoiseVec2);
+		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoiseVec3);
 
 		VX_REGISTER_INTERNAL_CALL(Time_GetElapsed);
 		VX_REGISTER_INTERNAL_CALL(Time_GetDeltaTime);

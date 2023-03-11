@@ -33,9 +33,15 @@ namespace Vortex {
 		void SetFractalGain(float gain);
 
 		float Get(float x, float y);
+		float Get(const Math::vec2& position);
+		float Get(float x, float y, float z);
+		float Get(const Math::vec3& position);
 
 		static void SetSeed(int seed);
 		static float PerlinNoise(float x, float y);
+		static float PerlinNoise(const Math::vec2& position);
+		static float PerlinNoise(float x, float y, float z);
+		static float PerlinNoise(const Math::vec3& position);
 
 	private:
 		FastNoiseLite* m_FastNoise = nullptr;

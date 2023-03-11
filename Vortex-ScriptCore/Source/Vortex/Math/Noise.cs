@@ -52,7 +52,22 @@ namespace Vortex {
 
 		public float Get(float x, float y)
 		{
-			return InternalCalls.Noise_Get(m_UnmanagedInstance, x, y);
+			return InternalCalls.Noise_GetVec2(m_UnmanagedInstance, x, y);
+		}
+
+		public float Get(float x, float y, float z)
+		{
+			return InternalCalls.Noise_GetVec3(m_UnmanagedInstance, x, y, z);
+		}
+
+		public float Get(Vector2 position)
+		{
+			return Get(position.X, position.Y);
+		}
+
+		public float Get(Vector3 position)
+		{
+			return Get(position.X, position.Y, position.Z);
 		}
 
 		public static void SetSeed(int seed)
@@ -62,7 +77,22 @@ namespace Vortex {
 
 		public static float PerlinNoise(float x, float y)
 		{
-			return InternalCalls.Noise_PerlinNoise(x, y);
+			return InternalCalls.Noise_PerlinNoiseVec2(x, y);
+		}
+
+		public static float PerlinNoise(float x, float y, float z)
+		{
+			return InternalCalls.Noise_PerlinNoiseVec3(x, y, z);
+		}
+
+		public static float PerlinNoise(Vector2 position)
+		{
+			return PerlinNoise(position.X, position.Y);
+		}
+
+		public static float PerlinNoise(Vector3 position)
+		{
+			return PerlinNoise(position.X, position.Y, position.Z);
 		}
 	}
 

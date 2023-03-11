@@ -59,7 +59,6 @@ namespace Vortex {
 				case LogLevel::Fatal: return "Fatal";
 			}
 
-			VX_CORE_ASSERT(false, "Unknown Log Level!");
 			return "";
 		}
 
@@ -71,7 +70,6 @@ namespace Vortex {
 			if (string == "Error") return LogLevel::Error;
 			if (string == "Fatal") return LogLevel::Fatal;
 
-			VX_CORE_ASSERT(false, "Unknown Log Level!");
 			return LogLevel::Trace;
 		}
 

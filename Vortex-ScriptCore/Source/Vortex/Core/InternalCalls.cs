@@ -487,10 +487,10 @@ namespace Vortex {
 		internal extern static void SpriteRendererComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static string SpriteRendererComponent_GetTexture(ulong entityID);
+		internal extern static IntPtr SpriteRendererComponent_GetTexture(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, string texturePathString);
+		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, IntPtr unmanagedInstance);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out Vector2 result);
@@ -1191,6 +1191,25 @@ namespace Vortex {
 
 		#endregion
 
+		#region Texture2D
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static IntPtr Texture2D_LoadFromPath(string filepath);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static IntPtr Texture2D_Constructor(uint width, uint height);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Texture2D_GetWidth(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Texture2D_GetHeight(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Texture2D_SetPixel(IntPtr unmanagedInstance, uint xOffset, uint yOffset, ref Color4 color);
+
+		#endregion
+
 		#region Random
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1305,13 +1324,19 @@ namespace Vortex {
 		internal extern static void Noise_SetFractalGain(IntPtr unmanagedInstance, float gain);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Noise_Get(IntPtr unmanagedInstance, float x, float y);
-		
+		internal extern static float Noise_GetVec2(IntPtr unmanagedInstance, float x, float y);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetVec3(IntPtr unmanagedInstance, float x, float y, float z);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Noise_SetSeed(int seed);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Noise_PerlinNoise(float x, float y);
+		internal extern static float Noise_PerlinNoiseVec2(float x, float y);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_PerlinNoiseVec3(float x, float y, float z);
 
 		#endregion
 

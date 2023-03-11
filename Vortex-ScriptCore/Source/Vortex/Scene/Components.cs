@@ -1,4 +1,6 @@
-﻿namespace Vortex {
+﻿using System;
+
+namespace Vortex {
 
 	public abstract class Component
 	{
@@ -406,6 +408,17 @@
 
 	public class SpriteRenderer: Component
 	{
+		public Texture2D Texture
+		{
+			get
+			{
+				IntPtr unmanagedInstance = InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
+				return new Texture2D(unmanagedInstance);
+			}
+
+			set => InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value.m_UnmanagedInstance);
+		}
+
 		public Vector4 Color
 		{
 			get
@@ -415,12 +428,6 @@
 			}
 
 			set => InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
-		}
-
-		public string Texture
-		{
-			get => InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
-			set => InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value);
 		}
 
 		public Vector2 Scale
