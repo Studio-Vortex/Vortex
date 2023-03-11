@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base.h"
+#include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math.h"
 
 // This ignores all warnings raised inside External headers
@@ -17,18 +17,20 @@ namespace Vortex {
 	class VORTEX_API Log
 	{
 	public:
-		enum class Type : uint8_t
+		enum class LoggerType : uint8_t
 		{
 			Core = 0, Client = 1
 		};
-		enum class Level : uint8_t
+		
+		enum class LogLevel : uint8_t
 		{
 			Trace = 0, Info, Warn, Error, Fatal
 		};
+
 		struct TagDetails
 		{
 			bool Enabled = true;
-			Level LevelFilter = Level::Trace;
+			LogLevel LevelFilter = LogLevel::Trace;
 		};
 
 	public:
@@ -43,31 +45,34 @@ namespace Vortex {
 		static std::map<std::string, TagDetails>& EnabledTags() { return s_EnabledTags; }
 
 		template <typename... Args>
-		static void PrintMessage(Log::Type type, Log::Level level, std::string_view tag, Args&&... args);
+		static void PrintMessage(Log::LoggerType type, Log::LogLevel level, std::string_view tag, Args&&... args);
 
 	private:
-		// Enum utils
-		static const char* LevelToString(Level level)
+		static const char* LogLevelToString(LogLevel level)
 		{
 			switch (level)
 			{
-				case Level::Trace: return "Trace";
-				case Level::Info:  return "Info";
-				case Level::Warn:  return "Warn";
-				case Level::Error: return "Error";
-				case Level::Fatal: return "Fatal";
+				case LogLevel::Trace: return "Trace";
+				case LogLevel::Info:  return "Info";
+				case LogLevel::Warn:  return "Warn";
+				case LogLevel::Error: return "Error";
+				case LogLevel::Fatal: return "Fatal";
 			}
+
+			VX_CORE_ASSERT(false, "Unknown Log Level!");
 			return "";
 		}
-		static Level LevelFromString(std::string_view string)
-		{
-			if (string == "Trace") return Level::Trace;
-			if (string == "Info")  return Level::Info;
-			if (string == "Warn")  return Level::Warn;
-			if (string == "Error") return Level::Error;
-			if (string == "Fatal") return Level::Fatal;
 
-			return Level::Trace;
+		static LogLevel LogLevelFromString(std::string_view string)
+		{
+			if (string == "Trace") return LogLevel::Trace;
+			if (string == "Info")  return LogLevel::Info;
+			if (string == "Warn")  return LogLevel::Warn;
+			if (string == "Error") return LogLevel::Error;
+			if (string == "Fatal") return LogLevel::Fatal;
+
+			VX_CORE_ASSERT(false, "Unknown Log Level!");
+			return LogLevel::Trace;
 		}
 
 	private:
@@ -189,7 +194,7 @@ namespace fmt {
 namespace Vortex {
 
 	template <typename... Args>
-	void Log::PrintMessage(Log::Type type, Log::Level level, std::string_view tag, Args&&... args)
+	void Log::PrintMessage(Log::LoggerType type, Log::LogLevel level, std::string_view tag, Args&&... args)
 	{
 		/*auto detail = s_EnabledTags[std::string(tag)];
 		if (detail.Enabled && detail.LevelFilter <= level)
@@ -221,34 +226,34 @@ namespace Vortex {
 
 
 // Core logging
-#define VX_CORE_TRACE_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Trace, tag, __VA_ARGS__)
-#define VX_CORE_INFO_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Info, tag, __VA_ARGS__)
-#define VX_CORE_WARN_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Warn, tag, __VA_ARGS__)
-#define VX_CORE_ERROR_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Error, tag, __VA_ARGS__)
-#define VX_CORE_FATAL_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Fatal, tag, __VA_ARGS__)
+#define VX_CORE_TRACE_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Trace, tag, __VA_ARGS__)
+#define VX_CORE_INFO_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Info, tag, __VA_ARGS__)
+#define VX_CORE_WARN_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Warn, tag, __VA_ARGS__)
+#define VX_CORE_ERROR_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Error, tag, __VA_ARGS__)
+#define VX_CORE_FATAL_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Fatal, tag, __VA_ARGS__)
 
 // Client logging
-#define VX_TRACE_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Trace, tag, __VA_ARGS__)
-#define VX_INFO_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Info, tag, __VA_ARGS__)
-#define VX_WARN_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Warn, tag, __VA_ARGS__)
-#define VX_ERROR_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Error, tag, __VA_ARGS__)
-#define VX_FATAL_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Fatal, tag, __VA_ARGS__)
+#define VX_TRACE_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Trace, tag, __VA_ARGS__)
+#define VX_INFO_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Info, tag, __VA_ARGS__)
+#define VX_WARN_TAG(tag, ...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Warn, tag, __VA_ARGS__)
+#define VX_ERROR_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Error, tag, __VA_ARGS__)
+#define VX_FATAL_TAG(tag, ...) ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Fatal, tag, __VA_ARGS__)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Core Logging
-#define VX_CORE_TRACE(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Trace, "", __VA_ARGS__)
-#define VX_CORE_INFO(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Info, "", __VA_ARGS__)
-#define VX_CORE_WARN(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Warn, "", __VA_ARGS__)
-#define VX_CORE_ERROR(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Error, "", __VA_ARGS__)
-#define VX_CORE_FATAL(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Core, ::Vortex::Log::Level::Fatal, "", __VA_ARGS__)
+#define VX_CORE_TRACE(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Trace, "", __VA_ARGS__)
+#define VX_CORE_INFO(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Info, "", __VA_ARGS__)
+#define VX_CORE_WARN(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Warn, "", __VA_ARGS__)
+#define VX_CORE_ERROR(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Error, "", __VA_ARGS__)
+#define VX_CORE_FATAL(...)  ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Core, ::Vortex::Log::LogLevel::Fatal, "", __VA_ARGS__)
 
 // Client Logging
-#define VX_TRACE(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Trace, "", __VA_ARGS__)
-#define VX_INFO(...)    ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Info, "", __VA_ARGS__)
-#define VX_WARN(...)    ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Warn, "", __VA_ARGS__)
-#define VX_ERROR(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Error, "", __VA_ARGS__)
-#define VX_FATAL(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::Type::Client, ::Vortex::Log::Level::Fatal, "", __VA_ARGS__)
+#define VX_TRACE(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Trace, "", __VA_ARGS__)
+#define VX_INFO(...)    ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Info, "", __VA_ARGS__)
+#define VX_WARN(...)    ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Warn, "", __VA_ARGS__)
+#define VX_ERROR(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Error, "", __VA_ARGS__)
+#define VX_FATAL(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Fatal, "", __VA_ARGS__)
 
 // Editor Console Logging Macros
 #define VX_CONSOLE_LOG_TRACE(...)   Vortex::Log::GetEditorConsoleLogger()->trace(__VA_ARGS__)

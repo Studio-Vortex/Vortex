@@ -18,29 +18,28 @@ namespace Vortex {
 		Button6 = 6,
 		Button7 = 7,
 
-		Last = Button7,
-		Left = Button0,
-		Right = Button1,
+		Last   = Button7,
+		Left   = Button0,
+		Right  = Button1,
 		Middle = Button2,
 	};
 
 	enum class CursorMode : uint16_t
 	{
+		// From glfw3.h
 		Normal = 0,
 		Hidden = 1,
 		Locked = 2,
 	};
 
-	inline std::ostream& operator<<(std::ostream& os, MouseButton mouseCode)
+	inline std::ostream& operator<<(std::ostream& stream, MouseButton mouseCode)
 	{
-		os << static_cast<int32_t>(mouseCode);
-		return os;
+		return stream << static_cast<int32_t>(mouseCode);
 	}
 
-	inline std::ostream& operator<<(std::ostream& os, CursorMode cursorMode)
+	inline std::ostream& operator<<(std::ostream& stream, CursorMode cursorMode)
 	{
-		os << static_cast<uint32_t>(cursorMode);
-		return os;
+		return stream << static_cast<uint32_t>(cursorMode);
 	}
 
 }

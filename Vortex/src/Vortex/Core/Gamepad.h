@@ -4,44 +4,54 @@
 
 namespace Vortex {
 
-	typedef enum class Gamepad : uint16_t
+	enum class GamepadButton : uint16_t
 	{
 		// From glfw3.h
-		ButtonA                     = 0,
-		ButtonB                     = 1,
-		ButtonX                     = 2,
-		ButtonY                     = 3,
-		LeftBumper                  = 4,
-		RightBumper                 = 5,
-		ButtonGuide                 = 6,
-		ButtonStart                 = 7,
-		ButtonBack                  = 8,
-		LeftStick                   = 9,
-		RightStick                  = 10,
-		Up                          = 11,
-		Right                       = 12,
-		Down                        = 13,
-		Left                        = 14,
-		ButtonLast                  = Left,
+		A           = 0,
+		B           = 1,
+		X           = 2,
+		Y           = 3,
 
-		ButtonCross                 = ButtonA,
-		ButtonCircle                = ButtonB,
-		ButtonSquare                = ButtonX,
-		ButtonTriangle              = ButtonY,
- 
-		AxisLeftX                   = 0,
-		AxisLeftY                   = 1,
-		AxisRightX                  = 2,
-		AxisRightY                  = 3,
-		AxisLeftTrigger             = 4,
-		AxisRightTrigger            = 5,
-		AxisLast                    = AxisRightTrigger,
-	} Gamepad;
+		LeftBumper  = 4,
+		RightBumper = 5,
+		Guide       = 6,
+		Start       = 7,
+		Back        = 8,
+		LeftStick   = 9,
+		RightStick  = 10,
 
-	inline std::ostream& operator<<(std::ostream& os, Gamepad gamepad)
+		Up          = 11,
+		Right       = 12,
+		Down        = 13,
+		Left        = 14,
+		Last        = Left,
+				    
+		Cross       = A,
+		Circle      = B,
+		Square      = X,
+		Triangle    = Y,
+	};
+
+	enum class GamepadAxis : uint16_t
 	{
-		os << static_cast<int32_t>(gamepad);
-		return os;
+		// From glfw3.h
+		LeftX        = 0,
+		LeftY        = 1,
+		RightX       = 2,
+		RightY       = 3,
+		LeftTrigger  = 4,
+		RightTrigger = 5,
+		Last         = RightTrigger,
+	};
+
+	inline std::ostream& operator<<(std::ostream& stream, GamepadButton gamepadButton)
+	{
+		return stream << static_cast<int32_t>(gamepadButton);
+	}
+
+	inline std::ostream& operator<<(std::ostream& stream, GamepadAxis gamepadAxis)
+	{
+		return stream << static_cast<int32_t>(gamepadAxis);
 	}
 
 }

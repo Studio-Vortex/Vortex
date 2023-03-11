@@ -1,34 +1,41 @@
 ﻿namespace Vortex {
 
-	public enum Gamepad
+	public enum GamepadButton
 	{
-		ButtonA              = 0,
-		ButtonB              = 1,
-		ButtonX              = 2,
-		ButtonY              = 3,
-		LeftBumper           = 4,
-		RightBumper          = 5,
-		ButtonGuide          = 6,
-		ButtonStart          = 7,
-		ButtonBack           = 8,
-		LeftStick            = 9,
-		RightStick           = 10,
-		Up                   = 11,
-		Right                = 12,
-		Down                 = 13,
-		Left                 = 14,
+		A           = 0,
+		B           = 1,
+		X           = 2,
+		Y           = 3,
 
-		ButtonCross          = ButtonA,
-		ButtonCircle         = ButtonB,
-		ButtonSquare         = ButtonX,
-		ButtonTriangle       = ButtonY,
- 
-		AxisLeftX            = 0,
-		AxisLeftY            = 1,
-		AxisRightX           = 2,
-		AxisRightY           = 3,
-		AxisLeftTrigger      = 4,
-		AxisRightTrigger     = 5,
+		LeftBumper  = 4,
+		RightBumper = 5,
+		Guide       = 6,
+		Start       = 7,
+		Back        = 8,
+		LeftStick   = 9,
+		RightStick  = 10,
+
+		Up          = 11,
+		Right       = 12,
+		Down        = 13,
+		Left        = 14,
+		Last        = Left,
+				    
+		Cross       = A,
+		Circle      = B,
+		Square      = X,
+		Triangle    = Y,
+	}
+
+	public enum GamepadAxis
+	{
+		LeftX        = 0,
+		LeftY        = 1,
+		RightX       = 2,
+		RightY       = 3,
+		LeftTrigger  = 4,
+		RightTrigger = 5,
+		Last         = RightTrigger,
 	}
 
 }

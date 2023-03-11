@@ -5,6 +5,9 @@
 #include "Vortex/Core/Input.h"
 #include "Vortex/Core/Log.h"
 
+#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Noise.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
@@ -5897,6 +5900,75 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Noise
+
+		Noise* Noise_Constructor(int seed, NoiseType type)
+		{
+			return new Noise(seed, type);
+		}
+
+		void Noise_Destructor(Noise* _this)
+		{
+			delete _this;
+		}
+
+		float Noise_GetFrequency(Noise* _this)
+		{
+			return _this->GetFrequency();
+		}
+
+		void Noise_SetFrequency(Noise* _this, float frequency)
+		{
+			_this->SetFrequency(frequency);
+		}
+
+		int Noise_GetFractalOctaves(Noise* _this)
+		{
+			return _this->GetFractalOctaves();
+		}
+
+		void Noise_SetFractalOctaves(Noise* _this, int octaves)
+		{
+			_this->SetFractalOctaves(octaves);
+		}
+
+		float Noise_GetFractalLacunarity(Noise* _this)
+		{
+			return _this->GetFractalLacunarity();
+		}
+
+		void Noise_SetFractalLacunarity(Noise* _this, float lacunarity)
+		{
+			_this->SetFractalLacunarity(lacunarity);
+		}
+
+		float Noise_GetFractalGain(Noise* _this)
+		{
+			return _this->GetFractalGain();
+		}
+
+		void Noise_SetFractalGain(Noise* _this, float gain)
+		{
+			_this->SetFractalGain(gain);
+		}
+
+		float Noise_Get(Noise* _this, float x, float y)
+		{
+			return _this->Get(x, y);
+		}
+
+		void Noise_SetSeed(int seed)
+		{
+			Noise::SetSeed(seed);
+		}
+
+		float Noise_PerlinNoise(float x, float y)
+		{
+			return Noise::PerlinNoise(x, y);
+		}
+
+#pragma endregion
+
 #pragma region Time
 
 		float Time_GetElapsed()
@@ -5970,17 +6042,17 @@ namespace Vortex {
 			*outMouseScrollOffset = Input::GetMouseScrollOffset();
 		}
 
-		bool Input_IsGamepadButtonDown(Gamepad button)
+		bool Input_IsGamepadButtonDown(GamepadButton button)
 		{
 			return Input::IsGamepadButtonDown(button);
 		}
 
-		bool Input_IsGamepadButtonUp(Gamepad button)
+		bool Input_IsGamepadButtonUp(GamepadButton button)
 		{
 			return Input::IsGamepadButtonUp(button);
 		}
 
-		float Input_GetGamepadAxis(Gamepad axis)
+		float Input_GetGamepadAxis(GamepadAxis axis)
 		{
 			return Input::GetGamepadAxis(axis);
 		}
@@ -6200,38 +6272,29 @@ namespace Vortex {
 
 #pragma region Log
 
-		void Log_Print(MonoString* message)
+		void Log_Message(MonoString* message, Log::LogLevel type)
 		{
 			char* managedString = mono_string_to_utf8(message);
-			VX_CONSOLE_LOG_TRACE("{}", managedString);
-			mono_free(managedString);
-		}
 
-		void Log_Info(MonoString* message)
-		{
-			char* managedString = mono_string_to_utf8(message);
-			VX_CONSOLE_LOG_INFO("{}", managedString);
-			mono_free(managedString);
-		}
+			switch (type)
+			{
+				case Vortex::Log::LogLevel::Trace:
+					VX_CONSOLE_LOG_TRACE("{}", managedString);
+					break;
+				case Vortex::Log::LogLevel::Info:
+					VX_CONSOLE_LOG_INFO("{}", managedString);
+					break;
+				case Vortex::Log::LogLevel::Warn:
+					VX_CONSOLE_LOG_WARN("{}", managedString);
+					break;
+				case Vortex::Log::LogLevel::Error:
+					VX_CONSOLE_LOG_ERROR("{}", managedString);
+					break;
+				case Vortex::Log::LogLevel::Fatal:
+					VX_CONSOLE_LOG_FATAL("{}", managedString);
+					break;
+			}
 
-		void Log_Warn(MonoString* message)
-		{
-			char* managedString = mono_string_to_utf8(message);
-			VX_CONSOLE_LOG_WARN("{}", managedString);
-			mono_free(managedString);
-		}
-
-		void Log_Error(MonoString* message)
-		{
-			char* managedString = mono_string_to_utf8(message);
-			VX_CONSOLE_LOG_ERROR("{}", managedString);
-			mono_free(managedString);
-		}
-
-		void Log_Fatal(MonoString* message)
-		{
-			char* managedString = mono_string_to_utf8(message);
-			VX_CONSOLE_LOG_FATAL("{}", managedString);
 			mono_free(managedString);
 		}
 
@@ -6712,6 +6775,20 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Mathf_LookAt);
 		VX_REGISTER_INTERNAL_CALL(Mathf_InverseQuat);
 
+		VX_REGISTER_INTERNAL_CALL(Noise_Constructor);
+		VX_REGISTER_INTERNAL_CALL(Noise_Destructor);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetFrequency);
+		VX_REGISTER_INTERNAL_CALL(Noise_SetFrequency);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalOctaves);
+		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalOctaves);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalLacunarity);
+		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalLacunarity);
+		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalGain);
+		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalGain);
+		VX_REGISTER_INTERNAL_CALL(Noise_Get);
+		VX_REGISTER_INTERNAL_CALL(Noise_SetSeed);
+		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoise);
+
 		VX_REGISTER_INTERNAL_CALL(Time_GetElapsed);
 		VX_REGISTER_INTERNAL_CALL(Time_GetDeltaTime);
 
@@ -6752,11 +6829,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Gui_PropertyColor3);
 		VX_REGISTER_INTERNAL_CALL(Gui_PropertyColor4);
 
-		VX_REGISTER_INTERNAL_CALL(Log_Print);
-		VX_REGISTER_INTERNAL_CALL(Log_Info);
-		VX_REGISTER_INTERNAL_CALL(Log_Warn);
-		VX_REGISTER_INTERNAL_CALL(Log_Error);
-		VX_REGISTER_INTERNAL_CALL(Log_Fatal);
+		VX_REGISTER_INTERNAL_CALL(Log_Message);
 	}
 
 }

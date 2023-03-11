@@ -54,7 +54,7 @@ namespace Vortex {
 		return !s_MouseButtons.test((size_t)button);
 	}
 
-	bool Input::IsGamepadButtonDown(Gamepad gamepad)
+	bool Input::IsGamepadButtonDown(GamepadButton gamepad)
 	{
 		GLFWgamepadstate state;
 
@@ -64,7 +64,7 @@ namespace Vortex {
 		}
 	}
 
-	bool Input::IsGamepadButtonUp(Gamepad gamepad)
+	bool Input::IsGamepadButtonUp(GamepadButton gamepad)
 	{
 		GLFWgamepadstate state;
 
@@ -88,7 +88,7 @@ namespace Vortex {
 		s_MouseScrollOffset = offset;
 	}
 
-	float Input::GetGamepadAxis(Gamepad axis)
+	float Input::GetGamepadAxis(GamepadAxis axis)
 	{
 		GLFWgamepadstate state;
 

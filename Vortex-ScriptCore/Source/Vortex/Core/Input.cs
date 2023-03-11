@@ -26,15 +26,15 @@
 			set => InternalCalls.Input_SetMousePosition(ref value);
 		}
 
-		public static Vector2 GetMouseScrollDelta()
+		public static Vector2 GetMouseWheelMovement()
 		{
-			InternalCalls.Input_GetMouseScrollOffset(out Vector2 result);
+			InternalCalls.Input_GetMouseWheelMovement(out Vector2 result);
 			return result;
 		}
 
-		public static bool IsGamepadButtonDown(Gamepad button) => InternalCalls.Input_IsGamepadButtonDown(button);
-		public static bool IsGamepadButtonUp(Gamepad button) => InternalCalls.Input_IsGamepadButtonUp(button);
-		public static float GetGamepadAxis(Gamepad axis) => InternalCalls.Input_GetGamepadAxis(axis);
+		public static bool IsGamepadButtonDown(GamepadButton button) => InternalCalls.Input_IsGamepadButtonDown(button);
+		public static bool IsGamepadButtonUp(GamepadButton button) => InternalCalls.Input_IsGamepadButtonUp(button);
+		public static float GetGamepadAxis(GamepadAxis axis) => InternalCalls.Input_GetGamepadAxis(axis);
 	}
 
 }

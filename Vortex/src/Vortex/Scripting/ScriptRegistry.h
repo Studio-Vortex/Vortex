@@ -2,7 +2,6 @@
 
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Scene/Entity.h"
-#include <Vortex/Core/KeyCodes.h>
 
 extern "C"
 {
@@ -17,6 +16,12 @@ namespace Vortex {
 	class Entity;
 	struct RaycastHit;
 	struct RaycastHit2D;
+	enum class KeyCode : uint16_t;
+	enum class MouseButton : uint16_t;
+	enum class GamepadButton : uint16_t;
+	enum class GamepadAxis : uint16_t;
+	class Noise;
+	enum class NoiseType;
 
 	class ScriptRegistry
 	{
@@ -572,6 +577,24 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Noise
+
+		Noise* Noise_Constructor(int seed, NoiseType type);
+		void Noise_Destructor(Noise* _this);
+		float Noise_GetFrequency(Noise* _this);
+		void Noise_SetFrequency(Noise* _this, float frequency);
+		int Noise_GetFractalOctaves(Noise* _this);
+		void Noise_SetFractalOctaves(Noise* _this, int octaves);
+		float Noise_GetFractalLacunarity(Noise* _this);
+		void Noise_SetFractalLacunarity(Noise* _this, float lacunarity);
+		float Noise_GetFractalGain(Noise* _this);
+		void Noise_SetFractalGain(Noise* _this, float gain);
+		float Noise_Get(Noise* _this, float x, float y);
+		void Noise_SetSeed(int seed);
+		float Noise_PerlinNoise(float x, float y);
+
+#pragma endregion
+
 #pragma region Time
 
 		float Time_GetElapsed();
@@ -592,9 +615,9 @@ namespace Vortex {
 		void Input_GetMousePosition(Math::vec2* outPosition);
 		void Input_SetMousePosition(Math::vec2* position);
 		void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset);
-		bool Input_IsGamepadButtonDown(Gamepad button);
-		bool Input_IsGamepadButtonUp(Gamepad button);
-		float Input_GetGamepadAxis(Gamepad axis);
+		bool Input_IsGamepadButtonDown(GamepadButton gamepadButton);
+		bool Input_IsGamepadButtonUp(GamepadButton gamepadButton);
+		float Input_GetGamepadAxis(GamepadAxis gamepadAxis);
 		CursorMode Input_GetCursorMode();
 		void Input_SetCursorMode(CursorMode cursorMode);
 
@@ -625,11 +648,7 @@ namespace Vortex {
 
 #pragma endregion
 
-		void Log_Print(MonoString* message);
-		void Log_Info(MonoString* message);
-		void Log_Warn(MonoString* message);
-		void Log_Error(MonoString* message);
-		void Log_Fatal(MonoString* message);
+		void Log_Message(MonoString* message, Log::LogLevel type);
 
 	}
 

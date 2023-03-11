@@ -1272,6 +1272,49 @@ namespace Vortex {
 
 		#endregion
 
+		#region Noise
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static IntPtr Noise_Constructor(int seed, NoiseType type);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_Destructor(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFrequency(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFrequency(IntPtr unmanagedInstance, float freqeuncy);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static int Noise_GetFractalOctaves(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalOctaves(IntPtr unmanagedInstance, int octaves);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFractalLacunarity(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalLacunarity(IntPtr unmanagedInstance, float lacunarity);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFractalGain(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalGain(IntPtr unmanagedInstance, float gain);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_Get(IntPtr unmanagedInstance, float x, float y);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetSeed(int seed);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_PerlinNoise(float x, float y);
+
+		#endregion
+
 		#region Time
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1315,16 +1358,16 @@ namespace Vortex {
 		internal extern static void Input_SetMousePosition(ref Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Input_GetMouseScrollOffset(out Vector2 position);
+		internal extern static void Input_GetMouseWheelMovement(out Vector2 movement);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Input_IsGamepadButtonDown(Gamepad gamepadButton);
+		internal extern static bool Input_IsGamepadButtonDown(GamepadButton gamepadButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Input_IsGamepadButtonUp(Gamepad gamepadButton);
+		internal extern static bool Input_IsGamepadButtonUp(GamepadButton gamepadButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Input_GetGamepadAxis(Gamepad gamepadAxis);
+		internal extern static float Input_GetGamepadAxis(GamepadAxis gamepadAxis);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static CursorMode Input_GetCursorMode();
@@ -1398,19 +1441,7 @@ namespace Vortex {
 		#region Log
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Log_Print(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Log_Info(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Log_Warn(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Log_Error(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Log_Fatal(string message);
+		internal extern static void Log_Message(string message, LogType type);
 
 		#endregion
 	}

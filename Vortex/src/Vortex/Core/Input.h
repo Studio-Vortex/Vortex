@@ -23,13 +23,13 @@ namespace Vortex {
 		static bool IsMouseButtonDown(MouseButton button);
 		static bool IsMouseButtonUp(MouseButton button);
 
-		static bool IsGamepadButtonDown(Gamepad button);
-		static bool IsGamepadButtonUp(Gamepad button);
+		static bool IsGamepadButtonDown(GamepadButton button);
+		static bool IsGamepadButtonUp(GamepadButton button);
 
 		static Math::vec2 GetMouseScrollOffset();
 		static void SetMouseScrollOffset(const Math::vec2& offset);
 
-		static float GetGamepadAxis(Gamepad axis);
+		static float GetGamepadAxis(GamepadAxis axis);
 
 		static Math::vec2 GetMousePosition();
 		static float GetMouseX();
