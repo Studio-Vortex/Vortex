@@ -23,15 +23,15 @@ namespace Vortex {
 			{
 				ScriptEngine::OnEnabled(self);
 			}
-		}
-		else
-		{
-			m_Scene->DeactiveateChildren(self);
 
-			if (shouldCallActivationMethod)
-			{
-				ScriptEngine::OnDisabled(self);
-			}
+			return;
+		}
+
+		m_Scene->DeactiveateChildren(self);
+
+		if (shouldCallActivationMethod)
+		{
+			ScriptEngine::OnDisabled(self);
 		}
 	}
 
