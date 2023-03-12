@@ -627,7 +627,7 @@ namespace Vortex {
 		bool Input_IsMouseButtonUp(MouseButton mouseButton);
 		void Input_GetMousePosition(Math::vec2* outPosition);
 		void Input_SetMousePosition(Math::vec2* position);
-		void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset);
+		void Input_GetMouseWheelMovement(Math::vec2* outMouseScrollOffset);
 		bool Input_IsGamepadButtonDown(GamepadButton gamepadButton);
 		bool Input_IsGamepadButtonUp(GamepadButton gamepadButton);
 		float Input_GetGamepadAxis(GamepadAxis gamepadAxis);

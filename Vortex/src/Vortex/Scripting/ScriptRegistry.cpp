@@ -6087,7 +6087,7 @@ namespace Vortex {
 			Input::SetMousePosition(*position);
 		}
 
-		void Input_GetMouseScrollOffset(Math::vec2* outMouseScrollOffset)
+		void Input_GetMouseWheelMovement(Math::vec2* outMouseScrollOffset)
 		{
 			*outMouseScrollOffset = Input::GetMouseScrollOffset();
 		}
@@ -6860,7 +6860,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Input_IsMouseButtonUp);
 		VX_REGISTER_INTERNAL_CALL(Input_GetMousePosition);
 		VX_REGISTER_INTERNAL_CALL(Input_SetMousePosition);
-		VX_REGISTER_INTERNAL_CALL(Input_GetMouseScrollOffset);
+		VX_REGISTER_INTERNAL_CALL(Input_GetMouseWheelMovement);
 		VX_REGISTER_INTERNAL_CALL(Input_IsGamepadButtonDown);
 		VX_REGISTER_INTERNAL_CALL(Input_IsGamepadButtonUp);
 		VX_REGISTER_INTERNAL_CALL(Input_GetGamepadAxis);
