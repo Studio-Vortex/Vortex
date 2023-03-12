@@ -16,6 +16,8 @@ namespace Vortex {
 		Font(const std::filesystem::path& filepath);
 		virtual ~Font();
 
+		const std::filesystem::path& GetFontPath() const { return m_Filepath; }
+
 		SharedRef<Texture2D> GetFontAtlas() const { return m_TextureAtlas; }
 		const MSDFData* GetMSDFData() const { return m_MSDFData; }
 

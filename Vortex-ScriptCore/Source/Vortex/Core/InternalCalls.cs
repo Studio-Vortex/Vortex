@@ -1254,6 +1254,9 @@ namespace Vortex {
 		internal extern static float Mathf_Sqrt(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Pow(float value, float power);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Sin(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -689,7 +689,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
 
 			if (spriteComponent.Texture)
-				VX_SERIALIZE_PROPERTY(TexturePath, std::filesystem::relative(spriteComponent.Texture->GetPath(), projectAssetDirectory).string(), out);
+				VX_SERIALIZE_PROPERTY(TexturePath, FileSystem::Relative(spriteComponent.Texture->GetPath(), projectAssetDirectory).string(), out);
 			VX_SERIALIZE_PROPERTY(TextureScale, spriteComponent.Scale, out);
 
 			out << YAML::EndMap; // SpriteRendererComponent
@@ -739,8 +739,8 @@ namespace Vortex {
 
 			const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 
-			// TODO come back to this
-			//out << YAML::Key << "FontSourcePath" << YAML::Value << std::filesystem::relative(textMeshComponent.FontAsset->GetFontAtlas()->GetPath(), projectAssetDirectory).string();
+			std::string fontSourcePath = FileSystem::Relative(textMeshComponent.FontAsset->GetFontPath(), projectAssetDirectory).string();
+			VX_SERIALIZE_PROPERTY(FontSource, fontSourcePath, out);
 			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
 			VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
 			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
@@ -1312,7 +1312,11 @@ namespace Vortex {
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
-				//tmc.FontAsset = Font::Create(Project::GetAssetFileSystemPath(textMeshComponent["FontSourcePath"].as<std::string>()));
+				if (textMeshComponent["FontSource"])
+				{
+					std::string fontSourcePath = Project::GetAssetFileSystemPath(textMeshComponent["FontSource"].as<std::string>()).string();
+					tmc.FontAsset = Font::Create(fontSourcePath);
+				}
 				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
 				if (textMeshComponent["BgColor"])
 					tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();

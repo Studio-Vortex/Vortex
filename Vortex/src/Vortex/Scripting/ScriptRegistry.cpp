@@ -651,8 +651,18 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			std::string entityName = entity.GetName();
+
 			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
+				if (entity.HasComponent<CharacterControllerComponent>())
+				{
+					physx::PxController* controller = Physics::GetController(entityUUID);
+					*outTranslation = FromPhysXExtendedVector(controller->getPosition());
+
+					return;
+				}
+
 				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 				Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
 
@@ -684,6 +694,14 @@ namespace Vortex {
 
 			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
+				if (entity.HasComponent<CharacterControllerComponent>())
+				{
+					physx::PxController* controller = Physics::GetController(entityUUID);
+					controller->setPosition(ToPhysXExtendedVector(*translation));
+
+					return;
+				}
+
 				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
 
 				const auto& transformComponent = entity.GetTransform();
@@ -5873,6 +5891,11 @@ namespace Vortex {
 			return Math::Sqrt(in);
 		}
 
+        float Mathf_Pow(float base, float power)
+        {
+            return Math::Pow(base, power);
+        }
+
 		float Mathf_Sin(float in)
 		{
 			return Math::Sin(in);
@@ -6818,6 +6841,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Mathf_Round);
 		VX_REGISTER_INTERNAL_CALL(Mathf_Abs);
 		VX_REGISTER_INTERNAL_CALL(Mathf_Sqrt);
+		VX_REGISTER_INTERNAL_CALL(Mathf_Pow);
 		VX_REGISTER_INTERNAL_CALL(Mathf_Sin);
 		VX_REGISTER_INTERNAL_CALL(Mathf_Cos);
 		VX_REGISTER_INTERNAL_CALL(Mathf_Acos);

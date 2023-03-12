@@ -153,6 +153,12 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Pow(T base, T power)
+	{
+		return glm::pow(base, power);
+	}
+
+	template <typename T>
 	static auto Cos(T v)
 	{
 		return glm::cos(v);

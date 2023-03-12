@@ -573,6 +573,7 @@ namespace Vortex {
 		float Mathf_Round(float value);
 		float Mathf_Abs(float in);
 		float Mathf_Sqrt(float in);
+		float Mathf_Pow(float base, float power);
 		float Mathf_Sin(float in);
 		float Mathf_Cos(float in);
 		float Mathf_Acos(float in);

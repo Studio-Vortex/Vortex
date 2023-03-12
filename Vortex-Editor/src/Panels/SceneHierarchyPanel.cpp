@@ -162,10 +162,10 @@ namespace Vortex {
 				DrawEntityNode(child, editorCamera);
 			}
 
+			searchDepth++;
+
 			RecursiveEntitySearch(child.GetUUID(), editorCamera, searchDepth);
 		}
-
-		searchDepth++;
 	}
 
     void SceneHierarchyPanel::SetSceneContext(SharedRef<Scene> scene)
