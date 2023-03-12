@@ -486,17 +486,64 @@ namespace Vortex {
 			{
 				if (Gui::BeginMenu("Rendering"))
 				{
+					Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<CameraComponent>("Camera");
+
+					Gui::Text((const char*)VX_ICON_SKYATLAS);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<SkyboxComponent>("Skybox");
+
+					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<LightSourceComponent>("Light Source");
+
+					Gui::Text((const char*)VX_ICON_HOME);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer");
+
+					Gui::Text((const char*)VX_ICON_CUBE);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer");
+
+					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D");
+
+					Gui::Text((const char*)VX_ICON_SPINNER);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer");
+
+					Gui::Text((const char*)VX_ICON_CIRCLE);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer");
+
+					Gui::Text((const char*)VX_ICON_BOMB);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter");
+
+					Gui::Text((const char*)VX_ICON_TEXT_HEIGHT);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh");
+
+					Gui::Text((const char*)VX_ICON_CLOCK_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AnimatorComponent>("Animator");
+
+					Gui::Text((const char*)VX_ICON_ADJUST);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AnimationComponent>("Animation");
 
 					Gui::EndMenu();
@@ -522,7 +569,14 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("Audio"))
 				{
+					Gui::Text((const char*)VX_ICON_VOLUME_UP);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source");
+
+					Gui::Text((const char*)VX_ICON_HEADPHONES);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener");
 
 					Gui::EndMenu();
@@ -530,39 +584,116 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("AI"))
 				{
+					Gui::Text((const char*)VX_ICON_LAPTOP);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent");
 
 					Gui::EndMenu();
 				}
 
+				Gui::Text((const char*)VX_ICON_FILE_CODE_O);
+				Gui::SameLine();
+				Gui::AlignTextToFramePadding();
 				DisplayComponentMenuItem<ScriptComponent>("Script");
 			}
 			else
 			{
 				if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
+				{
+					Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<CameraComponent>(name);
+				}
+
 				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_SKYATLAS);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<SkyboxComponent>(componentName);
+				}
+
 				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<LightSourceComponent>(componentName);
+				}
+
 				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_HOME);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<MeshRendererComponent>(componentName);
+				}
+
 				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_CUBE);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName);
+				}
+
 				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<LightSource2DComponent>(componentName);
+				}
+
 				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_SPINNER);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<SpriteRendererComponent>(componentName);
+				}
+
 				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_CIRCLE);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<CircleRendererComponent>(componentName);
+				}
+				
 				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_BOMB);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName);
+				}
+				
 				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_TEXT_HEIGHT);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<TextMeshComponent>(componentName);
+				}
+				
 				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_CLOCK_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AnimatorComponent>(componentName);
+				}
+				
 				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_ADJUST);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AnimationComponent>(componentName);
+				}
 
 				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayComponentMenuItem<RigidBodyComponent>(componentName);
@@ -582,9 +713,20 @@ namespace Vortex {
 					DisplayComponentMenuItem<MeshColliderComponent>(componentName);
 
 				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_VOLUME_UP);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AudioSourceComponent>(componentName);
+				}
+
 				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_HEADPHONES);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<AudioListenerComponent>(componentName);
+				}
 
 				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayComponentMenuItem<RigidBody2DComponent>(componentName);
@@ -594,10 +736,20 @@ namespace Vortex {
 					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName);
 
 				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_LAPTOP);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName);
+				}
 
 				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+				{
+					Gui::Text((const char*)VX_ICON_FILE_CODE_O);
+					Gui::SameLine();
+					Gui::AlignTextToFramePadding();
 					DisplayComponentMenuItem<ScriptComponent>(componentName);
+				}
 			}
 
 			Gui::EndPopup();

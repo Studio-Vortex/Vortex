@@ -1,0 +1,252 @@
+Vortex Engine v0.1a
+Initalizing...
+Creating window 'Vortex Editor - (Release - v0.1a)' (1600.000, 900.000)
+Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
+Shader Loaded: 'Renderer_PBR_Static' - path /Resources/Shaders/Renderer_PBR_Static.glsl
+Shader Loaded: 'Equirectangular_to_Cubemap' - path /Resources/Shaders/Equirectangular_to_Cubemap.glsl
+Shader Loaded: 'Irradiance_Convolution' - path /Resources/Shaders/Irradiance_Convolution.glsl
+Shader Loaded: 'IBL_Prefilter' - path /Resources/Shaders/IBL_Prefilter.glsl
+Shader Loaded: 'Renderer_BRDF_LUT' - path /Resources/Shaders/Renderer_BRDF_LUT.glsl
+Shader Loaded: 'Renderer_Environment' - path /Resources/Shaders/Renderer_Environment.glsl
+Shader Loaded: 'Renderer_SkyLightShadowMap' - path /Resources/Shaders/Renderer_SkyLightShadowMap.glsl
+Shader Loaded: 'Renderer_PointLightShadowMap' - path /Resources/Shaders/Renderer_PointLightShadowMap.glsl
+Shader Loaded: 'Renderer_SpotLightShadowMap' - path /Resources/Shaders/Renderer_SpotLightShadowMap.glsl
+Shader Loaded: 'GaussianBlur' - path /Resources/Shaders/GaussianBlur.glsl
+Shader Loaded: 'BloomFinalComposite' - path /Resources/Shaders/BloomFinalComposite.glsl
+Shader Loaded: 'Renderer_Stencil' - path /Resources/Shaders/Renderer_Stencil.glsl
+Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
+Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
+Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
+Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
+PDB Loaded : "Resources/Scripts/Vortex-ScriptCore.pdb"
+PDB Loaded : "Projects\\WeaponSway\\Assets\\Scripts/Binaries/WeaponSway.pdb"
+Deserializing Scene 'SampleScene'
+Weapon switched to: None
+Weapon switched to: None
+Weapon switched to: Pistol
+Weapon switched to: Rifle
+Rifle is shooting! take cover!!
+Rifle hit Capsule
+Rifle is shooting! take cover!!
+Rifle hit Capsule
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Weapon switched to: None
+Weapon switched to: None
+Weapon switched to: Pistol
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Capsule
+Pistol is shooting! take cover!!
+Pistol hit Capsule
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Capsule
+Weapon switched to: None
+Weapon switched to: None
+Weapon switched to: None
+Weapon switched to: None
+Weapon switched to: Pistol
+Weapon switched to: Rifle
+Weapon switched to: Pistol
+Weapon switched to: None
+Weapon switched to: Pistol
+Pistol is shooting! take cover!!
+Pistol hit Capsule
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Pistol is shooting! take cover!!
+Pistol is shooting! take cover!!
+Pistol hit Cube
+Weapon switched to: Rifle
+Weapon switched to: SecondaryRfile
+Weapon switched to: Shotgun
+Weapon switched to: Sniper
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Capsule
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Sniper is shooting! take cover!!
+Sniper hit Cube
+Weapon switched to: Shotgun
+Weapon switched to: SecondaryRfile
+Weapon switched to: Rifle
+Weapon switched to: Pistol
+Weapon switched to: None
+Weapon switched to: Pistol
+Weapon switched to: Rifle
+Weapon switched to: SecondaryRfile
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile hit Cube
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile hit Cube
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile hit Cube
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile hit Cube
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile is shooting! take cover!!
+SecondaryRfile hit Cube
+SecondaryRfile is shooting! take cover!!
+Weapon switched to: Rifle
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle is shooting! take cover!!
+Rifle hit Cube
+Rifle is shooting!
