@@ -89,6 +89,7 @@ namespace Vortex {
 				out << YAML::Key << "Window" << YAML::BeginMap; // Window
 				{
 					out << YAML::Key << "Size" << YAML::Value << props.BuildProps.Window.Size;
+					out << YAML::Key << "ForceSixteenByNine" << YAML::Value << props.BuildProps.Window.ForceSixteenByNine;
 					out << YAML::Key << "Maximized" << YAML::Value << props.BuildProps.Window.Maximized;
 					out << YAML::Key << "Decorated" << YAML::Value << props.BuildProps.Window.Decorated;
 					out << YAML::Key << "Resizeable" << YAML::Value << props.BuildProps.Window.Resizeable;
@@ -222,6 +223,7 @@ namespace Vortex {
 
 			auto windowData = buildData["Window"];
 			props.BuildProps.Window.Size = windowData["Size"].as<Math::vec2>();
+			props.BuildProps.Window.ForceSixteenByNine = windowData["ForceSixteenByNine"].as<bool>();
 			props.BuildProps.Window.Maximized = windowData["Maximized"].as<bool>();
 			props.BuildProps.Window.Decorated = windowData["Decorated"].as<bool>();
 			props.BuildProps.Window.Resizeable = windowData["Resizeable"].as<bool>();

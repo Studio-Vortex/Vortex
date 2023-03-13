@@ -113,6 +113,8 @@ namespace Vortex {
 		
 		std::filesystem::path m_EditorScenePath;
 
+		std::filesystem::path m_StartScenePath;
+
 		Entity m_HoveredEntity;
 
 		std::string m_MeshFilepath = "";
@@ -142,6 +144,7 @@ namespace Vortex {
 		bool m_ShowSelectedEntityCollider = false;
 		bool m_ShowSelectedEntityOutline = true;
 		bool m_CaptureFramebufferToDiskOnSave = false;
+		bool m_TransitionedFromStartScene = false;
 
 		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
 

@@ -34,6 +34,7 @@ namespace Vortex {
 			struct VORTEX_API WindowSettings
 			{
 				Math::vec2 Size = Math::vec2(1600.0f, 900.0f);
+				bool ForceSixteenByNine = false;
 				bool Maximized = false;
 				bool Decorated = true;
 				bool Resizeable = true;

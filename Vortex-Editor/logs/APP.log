@@ -20,11 +20,5 @@ Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
 PDB Loaded : "Resources/Scripts/Vortex-ScriptCore.pdb"
 PDB Loaded : "Projects\\WeaponSway\\Assets\\Scripts/Binaries/WeaponSway.pdb"
-Deserializing Scene 'SampleScene'
-Projects\WeaponSway\Assets\Fonts\ZOMBIE.ttf
-Projects\WeaponSway\Assets\Fonts\ZOMBIE.ttf
-Projects\WeaponSway\Assets\Fonts\ZOMBIE.ttf
-Fonts\ZOMBIE.ttf
-Fonts\ZOMBIE.ttf
-Fonts\ZOMBIE.ttf
+Deserializing Scene 'MainMenu'
 Shutting down...

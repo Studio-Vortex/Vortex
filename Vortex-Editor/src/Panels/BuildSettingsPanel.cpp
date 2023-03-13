@@ -31,40 +31,45 @@ namespace Vortex {
 		{
 			const auto& buildIndices = Scene::GetScenesInBuild();
 
-			auto contentRegionAvail = Gui::GetContentRegionAvail();
-
-			uint32_t i = 0;
-
-			int32_t buildIndexToRemove = -1;
-
-			for (const auto& [buildIndex, sceneFilePath] : buildIndices)
+			if (Gui::BeginChild("##ScenesInBuild"))
 			{
 				auto contentRegionAvail = Gui::GetContentRegionAvail();
 
-				UI::BeginPropertyGrid();
+				uint32_t i = 0;
 
-				size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
-				size_t lastDotPos = sceneFilePath.find_last_of('.');
-				std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
+				int32_t buildIndexToRemove = -1;
 
-				UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
-
-				UI::EndPropertyGrid();
-
-				Gui::SameLine();
-				UI::ShiftCursor(-contentRegionAvail.x + (contentRegionAvail.x * 0.05f), 3.0f);
-				std::string label = (const char*)VX_ICON_TIMES + fmt::format("##{}", i);
-				if (Gui::Button(label.c_str()))
+				for (const auto& [buildIndex, sceneFilePath] : buildIndices)
 				{
-					buildIndexToRemove = i;
+					auto contentRegionAvail = Gui::GetContentRegionAvail();
+
+					UI::BeginPropertyGrid();
+
+					size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
+					size_t lastDotPos = sceneFilePath.find_last_of('.');
+					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
+
+					UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
+
+					UI::EndPropertyGrid();
+
+					Gui::SameLine();
+					UI::ShiftCursor(-contentRegionAvail.x + (contentRegionAvail.x * 0.05f), 3.0f);
+					std::string label = (const char*)VX_ICON_TIMES + std::string("##") + std::to_string(i);
+					if (Gui::Button(label.c_str()))
+					{
+						buildIndexToRemove = i;
+					}
+
+					i++;
 				}
 
-				i++;
-			}
+				if (buildIndexToRemove != -1)
+				{
+					Scene::RemoveIndexFromBuild(buildIndexToRemove);
+				}
 
-			if (buildIndexToRemove != -1)
-			{
-				Scene::RemoveIndexFromBuild(buildIndexToRemove);
+				Gui::EndChild();
 			}
 
 			// Accept Items from the content browser
@@ -113,6 +118,13 @@ namespace Vortex {
 
 			if (!m_ProjectProperties.BuildProps.Window.Maximized)
 				UI::Property("Size", m_ProjectProperties.BuildProps.Window.Size);
+			if (UI::Property("Force 16:9 Aspect Ratio", m_ProjectProperties.BuildProps.Window.ForceSixteenByNine))
+			{
+				if (m_ProjectProperties.BuildProps.Window.ForceSixteenByNine)
+				{
+					FindAndSetBestSize();
+				}
+			}
 
 			UI::Property("Maximized", m_ProjectProperties.BuildProps.Window.Maximized);
 			UI::Property("Decorated", m_ProjectProperties.BuildProps.Window.Decorated);
@@ -139,6 +151,41 @@ namespace Vortex {
 		}
 		
 		Gui::End();
+	}
+
+	void BuildSettingsPanel::FindAndSetBestSize()
+	{
+		float width = m_ProjectProperties.BuildProps.Window.Size.x;
+		float height = m_ProjectProperties.BuildProps.Window.Size.y;
+
+		FindBestWidth(width);
+		FindBestHeight(height);
+
+		m_ProjectProperties.BuildProps.Window.Size = { width, height };
+	}
+
+	void BuildSettingsPanel::FindBestWidth(float& width)
+	{
+		if (width > 1600)
+			width = 1600;
+
+		if (width < 1600)
+			width = 1600 * 1.5f;
+
+		if (width < (1600 * 1.5f))
+			width = 800;
+	}
+
+	void BuildSettingsPanel::FindBestHeight(float& height)
+	{
+		if (height > 900)
+			height = 900;
+
+		if (height < 900)
+			height = 900 * 1.5f;
+
+		if (height < (900 * 1.5f))
+			height = 450;
 	}
 
 }

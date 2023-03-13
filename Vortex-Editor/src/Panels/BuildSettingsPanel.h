@@ -19,6 +19,11 @@ namespace Vortex {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
+		void FindAndSetBestSize();
+		void FindBestWidth(float& width);
+		void FindBestHeight(float& height);
+
+	private:
 		inline static bool s_ShowPanel = false;
 
 	private:

@@ -2256,6 +2256,12 @@ namespace Vortex {
 
 		// Reset the mouse cursor in case a script turned it off
 		Input::SetCursorMode(CursorMode::Normal);
+
+		if (m_TransitionedFromStartScene)
+		{
+			OpenScene(m_StartScenePath);
+			m_TransitionedFromStartScene = false;
+		}
 	}
 
 	void EditorLayer::RestartScene()
@@ -2342,6 +2348,8 @@ namespace Vortex {
 	{
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
+			m_StartScenePath = m_EditorScenePath;
+
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
 
@@ -2359,6 +2367,8 @@ namespace Vortex {
 			OnScenePlay();
 
 			ScriptRegistry::ResetBuildIndex();
+
+			m_TransitionedFromStartScene = true;
 		});
 	}
 
