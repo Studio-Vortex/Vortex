@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Gui/Colors.h"
+#include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Editor/FontAwesome.h"

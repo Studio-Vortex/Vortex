@@ -20,6 +20,11 @@ namespace Vortex {
 		TwoDirectional
 	};
 
+	enum class ColliderType
+	{
+		Box, Sphere, Capsule, ConvexMesh, TriangleMesh,
+	};
+
 	enum class CombineMode : uint8_t
 	{
 		Average,

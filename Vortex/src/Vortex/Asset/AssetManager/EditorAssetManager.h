@@ -14,15 +14,15 @@ namespace Vortex {
 		~EditorAssetManager() override;
 
 		AssetType GetAssetType(AssetHandle handle) const override;
-		SharedRef<Asset> GetAsset(AssetHandle handle) const override;
-		void AddMemoryOnlyAsset(SharedRef<Asset> asset) override;
+		SharedReference<Asset> GetAsset(AssetHandle handle) const override;
+		void AddMemoryOnlyAsset(SharedReference<Asset> asset) override;
 		bool ReloadData(AssetHandle handle) override;
 		bool IsHandleValid(AssetHandle handle) const override;
 		bool IsMemoryOnlyAsset(AssetHandle handle) const override;
 		bool IsAssetLoaded(AssetHandle handle) const override;
 		std::unordered_set<AssetHandle> GetAllAssetsWithType(AssetType type) const override;
-		const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetLoadedAssets() const override;
-		const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetMemoryOnlyAssets() const override;
+		const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetLoadedAssets() const override;
+		const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetMemoryOnlyAssets() const override;
 
 		const AssetRegistry& GetAssetRegistry() const;
 
@@ -33,8 +33,9 @@ namespace Vortex {
 		void WriteToRegistryFile();
 
 	private:
-		std::unordered_map<AssetHandle, SharedRef<Asset>> m_LoadedAssets;
-		std::unordered_map<AssetHandle, SharedRef<Asset>> m_MemoryOnlyAssets;
+		std::unordered_map<AssetHandle, SharedReference<Asset>> m_LoadedAssets;
+		std::unordered_map<AssetHandle, SharedReference<Asset>> m_MemoryOnlyAssets;
+
 		AssetRegistry m_AssetRegistry;
 	};
 

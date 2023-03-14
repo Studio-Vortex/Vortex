@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <Windows.h>

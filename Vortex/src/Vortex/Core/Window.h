@@ -5,7 +5,7 @@
 #include "Vortex/Core/Base.h"
 
 #include "Vortex/Events/Event.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 
 namespace Vortex {
 

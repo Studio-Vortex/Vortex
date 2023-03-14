@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <stdint.h>
 #include <cstring> // for memcpy
 
 namespace Vortex {
 
 	// Non-owning buffer
-	struct Buffer
+	struct VORTEX_API Buffer
 	{
 		uint8_t* Data = nullptr;
 		uint64_t Size = 0;
@@ -54,7 +56,7 @@ namespace Vortex {
 		}
 	};
 
-	struct UniqueBuffer
+	struct VORTEX_API UniqueBuffer
 	{
 		inline UniqueBuffer(Buffer buffer)
 			: m_Buffer(buffer) { }

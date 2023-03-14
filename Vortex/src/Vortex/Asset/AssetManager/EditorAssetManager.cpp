@@ -19,15 +19,30 @@ namespace Vortex {
 
 	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
 	{
-		return AssetType();
+		if (m_AssetRegistry.Contains(handle))
+		{
+			return m_AssetRegistry.Get(handle).Type;
+		}
+
+		VX_CORE_ASSERT(false, "Unknown Asset Type!");
+		return AssetType::None;
 	}
 
-	SharedRef<Asset> EditorAssetManager::GetAsset(AssetHandle handle) const
+	SharedReference<Asset> EditorAssetManager::GetAsset(AssetHandle handle) const
 	{
-		return SharedRef<Asset>();
+		if (m_LoadedAssets.contains(handle))
+		{
+			return m_LoadedAssets.at(handle);
+		}
+		else if (m_MemoryOnlyAssets.contains(handle))
+		{
+			return m_MemoryOnlyAssets.at(handle);
+		}
+
+		return nullptr;
 	}
 
-	void EditorAssetManager::AddMemoryOnlyAsset(SharedRef<Asset> asset)
+	void EditorAssetManager::AddMemoryOnlyAsset(SharedReference<Asset> asset)
 	{
 		AssetMetadata metadata;
 		metadata.Handle = asset->Handle;
@@ -64,12 +79,12 @@ namespace Vortex {
 		return std::unordered_set<AssetHandle>();
 	}
 
-	const std::unordered_map<AssetHandle, SharedRef<Asset>>& EditorAssetManager::GetLoadedAssets() const
+	const std::unordered_map<AssetHandle, SharedReference<Asset>>& EditorAssetManager::GetLoadedAssets() const
 	{
 		return m_LoadedAssets;
 	}
 
-	const std::unordered_map<AssetHandle, SharedRef<Asset>>& EditorAssetManager::GetMemoryOnlyAssets() const
+	const std::unordered_map<AssetHandle, SharedReference<Asset>>& EditorAssetManager::GetMemoryOnlyAssets() const
 	{
 		return m_MemoryOnlyAssets;
 	}

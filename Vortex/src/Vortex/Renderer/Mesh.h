@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Material.h"

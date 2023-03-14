@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Scene/SceneCamera.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
@@ -375,22 +377,12 @@ namespace Vortex {
 		bool EnablePreProcessing = true;
 	};
 
-	struct PhysicsMaterialComponent
-	{
-		float StaticFriction = 1.0F;
-		float DynamicFriction = 1.0F;
-		float Bounciness = 1.0F;
-		CombineMode FrictionCombineMode = CombineMode::Average;
-		CombineMode RestitutionCombineMode = CombineMode::Average;
-
-		PhysicsMaterialComponent() = default;
-		PhysicsMaterialComponent(const PhysicsMaterialComponent&) = default;
-	};
-
 	struct BoxColliderComponent
 	{
 		Math::vec3 HalfSize = Math::vec3(0.5f);
 		Math::vec3 Offset = Math::vec3(0.0f);
+		AssetHandle Material = 0;
+
 		bool IsTrigger = false;
 
 		BoxColliderComponent() = default;
@@ -401,6 +393,8 @@ namespace Vortex {
 	{
 		float Radius = 0.5f;
 		Math::vec3 Offset = Math::vec3(0.0f);
+		AssetHandle Material = 0;
+
 		bool IsTrigger = false;
 
 		SphereColliderComponent() = default;
@@ -412,6 +406,8 @@ namespace Vortex {
 		float Radius = 0.5f;
 		float Height = 1.0f;
 		Math::vec3 Offset = Math::vec3(0.0f);
+		AssetHandle Material = 0;
+
 		bool IsTrigger = false;
 
 		CapsuleColliderComponent() = default;
@@ -422,6 +418,7 @@ namespace Vortex {
 	{
 		uint32_t SubmeshIndex = 0;
 		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
+		AssetHandle Material = 0;
 		bool IsTrigger = false;
 		bool UseSharedShape = false;
 
@@ -547,7 +544,7 @@ namespace Vortex {
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
 		// Physics
-		RigidBodyComponent, CharacterControllerComponent, FixedJointComponent, PhysicsMaterialComponent,
+		RigidBodyComponent, CharacterControllerComponent, FixedJointComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
 		// AI

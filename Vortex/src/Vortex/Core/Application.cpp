@@ -11,8 +11,12 @@
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
+#include "Vortex/Networking/Networking.h"
+#include "Vortex/Networking/Server.h"
+
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/Random.h"
+#include "Vortex/Utils/Time.h"
 
 extern bool g_ApplicationRunning;
 
@@ -105,15 +109,6 @@ namespace Vortex {
 
 		m_MainThreadQueue.emplace_back(func);
 	}
-
-    std::string Application::GetPlatformName() const
-    {
-#ifdef VX_PLATFORM_WINDOWS
-		return "Windows x64";
-#else
-	#error "Vortex only supports Windows!"
-#endif
-    }
 
 	void Application::OnEvent(Event& e)
 	{

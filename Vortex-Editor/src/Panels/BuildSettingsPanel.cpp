@@ -170,9 +170,9 @@ namespace Vortex {
 			width = 1600;
 
 		if (width < 1600)
-			width = 1600 * 1.5f;
+			width = 1600 * 0.75f;
 
-		if (width < (1600 * 1.5f))
+		if (width < (1600 * 0.75f))
 			width = 800;
 	}
 
@@ -182,9 +182,9 @@ namespace Vortex {
 			height = 900;
 
 		if (height < 900)
-			height = 900 * 1.5f;
+			height = 900 * 0.75f;
 
-		if (height < (900 * 1.5f))
+		if (height < (900 * 0.75f))
 			height = 450;
 	}
 

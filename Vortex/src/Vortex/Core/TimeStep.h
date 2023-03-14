@@ -27,6 +27,11 @@ namespace Vortex {
 		{
 			m_DeltaTime += other;
 		}
+
+		inline float operator*(float other) const
+		{
+			return m_DeltaTime * other;
+		}
 		
 	private:
 		float m_DeltaTime = 0.0f;

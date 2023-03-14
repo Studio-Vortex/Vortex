@@ -3,11 +3,21 @@
 
 #include "Vortex/Project/ProjectSerializer.h"
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Renderer/MeshFactory.h"
+#include "Vortex/Asset/AssetManager/EditorAssetManager.h"
 
 namespace Vortex {
 
-	SharedRef<Project> Project::New()
+    SharedReference<IAssetManager> Project::GetAssetManager()
+    {
+        return s_AssetManager;
+    }
+
+    SharedReference<EditorAssetManager> Project::GetEditorAssetManager()
+    {
+        return s_AssetManager.As<EditorAssetManager>();
+    }
+
+    SharedRef<Project> Project::New()
 	{
 		s_ActiveProject = CreateShared<Project>();
 		return s_ActiveProject;
@@ -22,7 +32,8 @@ namespace Vortex {
 		{
 			s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(filepath);
 			s_ActiveProject->m_ProjectFilepath = filepath;
-			s_AssetManager = CreateShared<EditorAssetManager>();
+			s_AssetManager = SharedReference<EditorAssetManager>::Create();
+
 			return s_ActiveProject;
 		}
 		

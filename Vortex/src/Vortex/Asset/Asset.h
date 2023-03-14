@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 #include "Vortex/Asset/AssetTypes.h"
 #include "Vortex/Core/UUID.h"
 

@@ -3,6 +3,8 @@
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Scene/Entity.h"
 
+#include "Vortex/Core/Math/Math.h"
+
 extern "C"
 {
 	typedef struct _MonoString MonoString;
@@ -18,6 +20,7 @@ namespace Vortex {
 	struct RaycastHit2D;
 	enum class KeyCode : uint16_t;
 	enum class MouseButton : uint16_t;
+	enum class CursorMode : uint16_t;
 	enum class GamepadButton : uint16_t;
 	enum class GamepadAxis : uint16_t;
 	class Texture2D;

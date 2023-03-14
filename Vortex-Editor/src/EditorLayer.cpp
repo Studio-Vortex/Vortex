@@ -2128,14 +2128,13 @@ namespace Vortex {
 			m_EditorScenePath = path;
 			std::string sceneName = sceneFilename.substr(0, sceneFilename.find('.'));
 
-			Application& application = Application::Get();
-
-			SharedRef<Project> activeProject = Project::GetActive();
-			std::string projectName = activeProject->GetName();
-			std::string platformName = application.GetPlatformName();
+			std::string projectName = Project::GetActive()->GetName();
+			std::string platformName = Platform::GetName();
 			std::string graphicsAPI = RendererAPI::GetAPIInfo().Name;
 
+			Application& application = Application::Get();
 			Window& window = application.GetWindow();
+
 			const static std::string originalTitle = window.GetTitle();
 			std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
 			window.SetTitle(newTitle);

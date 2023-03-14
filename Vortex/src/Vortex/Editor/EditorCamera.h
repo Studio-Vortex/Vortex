@@ -5,7 +5,7 @@
 #include "Vortex/Events/Event.h"
 #include "Vortex/Events/MouseEvent.h"
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 
 namespace Vortex {
 

@@ -946,12 +946,6 @@ namespace Vortex {
 
 		#endregion
 
-		#region PhysicsMaterial
-
-
-
-		#endregion
-
 		#region BoxCollider
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

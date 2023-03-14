@@ -19,16 +19,17 @@ namespace Vortex {
 		static bool ReloadData(AssetHandle handle);
 		static AssetType GetAssetType(AssetHandle handle);
 
-		static const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetLoadedAssets();
-		static const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetMemoryOnlyAssets();
+		static const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetLoadedAssets();
+		static const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetMemoryOnlyAssets();
 
 		template <typename TAsset>
-		VX_FORCE_INLINE static SharedRef<TAsset> GetAsset(AssetHandle handle)
+		VX_FORCE_INLINE static SharedReference<TAsset> GetAsset(AssetHandle handle)
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "GetAsset only works with types derived from Asset!");
 
-			SharedRef<Asset> asset = Project::GetAssetManager()->GetAsset(handle);
-			return (TAsset)asset;
+			SharedReference<Asset> asset = Project::GetAssetManager()->GetAsset(handle);
+
+			return asset.As<TAsset>();
 		}
 
 		template <typename TAsset>
@@ -44,10 +45,11 @@ namespace Vortex {
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateMemoryOnlyAsset only works with types derived from Asset!");
 
-			SharedRef<TAsset> asset = SharedRef<TAsset>::Create(std::forward<TArgs>(args)...);
+			SharedReference<TAsset> asset = SharedReference<TAsset>::Create(std::forward<TArgs>(args)...);
 			asset->Handle = AssetHandle();
 
 			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+
 			return asset->Handle;
 		}
 
@@ -56,20 +58,23 @@ namespace Vortex {
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateMemoryOnlyAssetWithHandle only works with types derived from Asset!");
 
-			SharedRef<TAsset> asset = SharedRef<TAsset>::Create(std::forward<TArgs>(args)...);
+			SharedReference<TAsset> asset = SharedReference<TAsset>::Create(std::forward<TArgs>(args)...);
 			asset->Handle = handle;
 
 			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+
 			return asset->Handle;
 		}
 
 		template <typename TAsset>
-		VX_FORCE_INLINE static AssetHandle AddMemoryOnlyAsset(SharedRef<TAsset> asset)
+		VX_FORCE_INLINE static AssetHandle AddMemoryOnlyAsset(SharedReference<TAsset> asset)
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "AddMemoryOnlyAsset only works with types derived from Asset!");
 
 			asset->Handle = AssetHandle();
+
 			Project::GetAssetManager()->AddMemoryOnlyAsset(asset);
+
 			return asset->Handle;
 		}
 	};

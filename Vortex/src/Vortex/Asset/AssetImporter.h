@@ -2,7 +2,6 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Asset/AssetSerializer.h"
-#include "Vortex/Scene/Scene.h"
 
 #include <unordered_map>
 

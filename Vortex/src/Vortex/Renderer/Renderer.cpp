@@ -8,7 +8,10 @@
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Material.h"
 #include "Vortex/Animation/Animator.h"
+
+#include <unordered_map>
 
 namespace Vortex {
 

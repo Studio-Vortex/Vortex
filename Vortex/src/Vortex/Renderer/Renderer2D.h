@@ -11,7 +11,7 @@
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 
 #include "Vortex/Scene/Components.h"
 

@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "Scene.h"
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Project/Project.h"
 #include "Vortex/Audio/AudioEngine.h"
 #include "Vortex/Animation/Animator.h"
@@ -1156,8 +1156,6 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<CharacterControllerComponent>(Entity entity, CharacterControllerComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<FixedJointComponent>(Entity entity, FixedJointComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<PhysicsMaterialComponent>(Entity entity, PhysicsMaterialComponent& component) { }
 
 	template <> void Scene::OnComponentAdded<BoxColliderComponent>(Entity entity, BoxColliderComponent& component) { }
 

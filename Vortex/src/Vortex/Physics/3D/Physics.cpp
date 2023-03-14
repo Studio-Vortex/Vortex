@@ -3,104 +3,17 @@
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Renderer/Renderer2D.h"
+#include "Vortex/Physics/3D/PhysXUtilities.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
+#include "Vortex/Physics/3D/CookingFactory.h"
+#include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Utils/PlatformUtils.h"
+
+#include "Vortex/Utils/Time.h"
 
 namespace Vortex {
-
-	static std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS> s_OverlapBuffer;
-
-	namespace Utils {
-
-		static physx::PxBroadPhaseType::Enum VortexBroadphaseTypeToPhysXBroadphaseType(BroadphaseType broadphaseModel)
-		{
-			switch (broadphaseModel)
-			{
-				case BroadphaseType::SweepAndPrune:     return physx::PxBroadPhaseType::eSAP;
-				case BroadphaseType::MultiBoxPrune:     return physx::PxBroadPhaseType::eMBP;
-				case BroadphaseType::AutomaticBoxPrune: return physx::PxBroadPhaseType::eABP;
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
-			return physx::PxBroadPhaseType::eABP;
-		}
-
-		static physx::PxFrictionType::Enum VortexFrictionTypeToPhysXFrictionType(FrictionType frictionModel)
-		{
-			switch (frictionModel)
-			{
-				case Vortex::FrictionType::OneDirectional: return physx::PxFrictionType::eONE_DIRECTIONAL;
-				case Vortex::FrictionType::Patch:          return physx::PxFrictionType::ePATCH;
-				case Vortex::FrictionType::TwoDirectional: return physx::PxFrictionType::eTWO_DIRECTIONAL;
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Friction Type!");
-			return physx::PxFrictionType::ePATCH;
-		}
-
-		static void ReplaceInconsistentVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
-		{
-			uint32_t size = vector.length();
-			for (uint32_t i = 0; i < size; i++)
-			{
-				if (vector[i] == 0.0f)
-					vector[i] = replacementVector[i];
-			}
-		}
-
-		static physx::PxTransform GetLocalFrame(physx::PxRigidActor* actor)
-		{
-			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
-			Scene* contextScene = physicsBodyData->ContextScene;
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(physicsBodyData->EntityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-
-			const TransformComponent& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
-
-			Math::quaternion rotation = worldSpaceTransform.GetRotation();
-			Math::vec3 globalNormal = rotation * Math::vec3(0.0f, 0.0f, -1.0f);
-			Math::vec3 globalAxis = rotation * Math::vec3(0.0f, 1.0f, 0.0f);
-
-			physx::PxVec3 localAnchor = actor->getGlobalPose().transformInv(ToPhysXVector(worldSpaceTransform.Translation));
-			physx::PxVec3 localNormal = actor->getGlobalPose().rotateInv(ToPhysXVector(globalNormal));
-			physx::PxVec3 localAxis = actor->getGlobalPose().rotateInv(ToPhysXVector(globalAxis));
-
-			physx::PxMat33 rot(localAxis, localNormal, localAxis.cross(localNormal));
-
-			physx::PxTransform localFrame;
-			localFrame.p = localAnchor;
-			localFrame.q = physx::PxQuat(rot);
-			localFrame.q.normalize();
-
-			return localFrame;
-		}
-
-		static bool OverlapGeometry(const Math::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
-		{
-			physx::PxOverlapBuffer buf(s_OverlapBuffer.data(), OVERLAP_MAX_COLLIDERS);
-			physx::PxTransform pose = ToPhysXTransform(Math::Translate(origin));
-
-			bool result = Physics::GetPhysicsScene()->overlap(geometry, pose, buf);
-
-			if (result)
-			{
-				count = buf.nbTouches > OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
-
-				for (uint32_t i = 0; i < count; i++)
-				{
-					PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)s_OverlapBuffer[i].actor->userData;
-					buffer[i].EntityID = physicsBodyData->EntityUUID;
-				}
-			}
-
-			return result;
-		}
-
-	}
 
 	struct PhysicsEngineInternalData
 	{
@@ -109,7 +22,6 @@ namespace Vortex {
 		physx::PxFoundation* Foundation = nullptr;
 		physx::PxPhysics* PhysXSDK = nullptr;
 		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
-		physx::PxCooking* CookingFactory = nullptr;
 		physx::PxControllerManager* ControllerManager = nullptr;
 		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale TolerancesScale;
@@ -471,7 +383,8 @@ namespace Vortex {
 			characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
 		}
 
-		Math::vec3 movement = displacement - FromPhysXVector(controller->getUpDirection()) * characterControllerComponent.SpeedDown * Time::GetDeltaTime();
+		Math::vec3 upDirection = FromPhysXVector(controller->getUpDirection());
+		Math::vec3 movement = (displacement - upDirection) * (characterControllerComponent.SpeedDown * Time::GetDeltaTime());
 
 		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
 		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
@@ -486,7 +399,27 @@ namespace Vortex {
 		}
     }
 
-    void Physics::Init()
+	Scene* Physics::GetContextScene()
+	{
+		return s_Data->ContextScene;
+	}
+
+	physx::PxPhysics* Physics::GetPhysicsSDK()
+	{
+		return s_Data->PhysXSDK;
+	}
+
+	physx::PxTolerancesScale* Physics::GetTolerancesScale()
+	{
+		return &s_Data->TolerancesScale;
+	}
+
+	physx::PxFoundation* Physics::GetFoundation()
+	{
+		return s_Data->Foundation;
+	}
+
+	void Physics::Init()
 	{
 		InitPhysicsSDKInternal();
 	}
@@ -509,11 +442,7 @@ namespace Vortex {
 
 		s_Data->Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 
-		physx::PxCookingParams cookingParameters = physx::PxCookingParams(s_Data->TolerancesScale);
-		cookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
-
-		s_Data->CookingFactory = PxCreateCooking(PX_PHYSICS_VERSION, *s_Data->Foundation, cookingParameters);
-		VX_CORE_ASSERT(s_Data->CookingFactory, "Failed to Initialize PhysX Cooking!");
+		CookingFactory::Init();
 	}
 
 	void Physics::InitPhysicsSceneInternal()
@@ -546,13 +475,14 @@ namespace Vortex {
 
 	void Physics::ShutdownPhysicsSDKInternal()
 	{
-		s_Data->CookingFactory->release();
+		CookingFactory::Shutdown();
 		s_Data->Dispatcher->release();
 		PxCloseExtensions();
 		s_Data->PhysXSDK->release();
 		s_Data->Foundation->release();
 
 		delete s_Data;
+		s_Data = nullptr;
 	}
 
 	void Physics::ShutdownPhysicsSceneInternal()
@@ -579,7 +509,7 @@ namespace Vortex {
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
 			physx::PxRigidDynamic* dynamicActor = s_Data->PhysXSDK->createRigidDynamic(ToPhysXTransform(transform));
-			Physics::UpdateDynamicActorProperties(rigidbody, dynamicActor);
+			UpdateDynamicActorProperties(rigidbody, dynamicActor);
 			actor = dynamicActor;
 		}
 
@@ -656,85 +586,74 @@ namespace Vortex {
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
-			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-			Math::vec3 scale = transform.Scale;
-
-			physx::PxBoxGeometry boxGeometry = physx::PxBoxGeometry(boxCollider.HalfSize.x * scale.x, boxCollider.HalfSize.y * scale.y, boxCollider.HalfSize.z * scale.z);
-			physx::PxMaterial* material = nullptr;
-
-			if (entity.HasComponent<PhysicsMaterialComponent>())
-			{
-				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-				material = CreatePhysicsMaterial(physicsMaterial);
-			}
-			else
-			{
-				// Create a default material
-				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-			}
-
-			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, boxGeometry, *material);
-			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !boxCollider.IsTrigger);
-			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, boxCollider.IsTrigger);
-			shape->setLocalPose(ToPhysXTransform(Math::Translate(boxCollider.Offset)));
+			AddColliderShape(entity, actor, ColliderType::Box);
 		}
 
 		if (entity.HasComponent<SphereColliderComponent>())
 		{
-			const auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-
-			float largestComponent = Math::Max(transform.Scale.x, Math::Max(transform.Scale.y, transform.Scale.z));
-			physx::PxSphereGeometry sphereGeometry = physx::PxSphereGeometry(sphereCollider.Radius * largestComponent);
-			physx::PxMaterial* material = nullptr;
-
-			if (entity.HasComponent<PhysicsMaterialComponent>())
-			{
-				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-				material = CreatePhysicsMaterial(physicsMaterial);
-			}
-			else
-			{
-				// Create a default material
-				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-			}
-
-			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, sphereGeometry, *material);
-			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !sphereCollider.IsTrigger);
-			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
-			shape->setLocalPose(ToPhysXTransform(Math::Translate(sphereCollider.Offset)));
+			AddColliderShape(entity, actor, ColliderType::Sphere);
 		}
 
 		if (entity.HasComponent<CapsuleColliderComponent>())
 		{
-			const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-
-			physx::PxCapsuleGeometry capsuleGeometry = physx::PxCapsuleGeometry(capsuleCollider.Radius, capsuleCollider.Height / 2.0F);
-			physx::PxMaterial* material = nullptr;
-
-			if (entity.HasComponent<PhysicsMaterialComponent>())
-			{
-				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-				material = CreatePhysicsMaterial(physicsMaterial);
-			}
-			else
-			{
-				// Create a default material
-				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-			}
-
-			physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, capsuleGeometry, *material);
-			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !capsuleCollider.IsTrigger);
-			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
-			shape->setLocalPose(ToPhysXTransform(Math::Translate(capsuleCollider.Offset)));
-
-			// Make sure that the capsule is facing up (+Y)
-			shape->setLocalPose(physx::PxTransform(physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1))));
+			AddColliderShape(entity, actor, ColliderType::Capsule);
 		}
 
 		if (entity.HasComponent<MeshColliderComponent>())
 		{
-			const auto& meshCollider = entity.GetComponent<MeshColliderComponent>();
+			// TODO
 		}
+	}
+
+	void Physics::AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		if (!s_EntityColliders.contains(entityUUID))
+		{
+			s_EntityColliders[entityUUID] = std::vector<SharedRef<ColliderShape>>();
+		}
+
+		switch (type)
+		{
+			case ColliderType::Box:
+			{
+				BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				s_EntityColliders[entityUUID].push_back(CreateShared<BoxColliderShape>(boxCollider, *actor, entity));
+				break;
+			}
+			case ColliderType::Sphere:
+			{
+				SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+				s_EntityColliders[entityUUID].push_back(CreateShared<SphereColliderShape>(sphereCollider, *actor, entity));
+				break;
+			}
+			case ColliderType::Capsule:
+			{
+				CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+				s_EntityColliders[entityUUID].push_back(CreateShared<CapsuleColliderShape>(capsuleCollider, *actor, entity));
+				break;
+			}
+			case ColliderType::ConvexMesh:
+			{
+				MeshColliderComponent& convexMeshCollider = entity.GetComponent<MeshColliderComponent>();
+				s_EntityColliders[entityUUID].push_back(CreateShared<ConvexMeshShape>(convexMeshCollider, *actor, entity));
+				break;
+			}
+			case ColliderType::TriangleMesh:
+			{
+				MeshColliderComponent& triangleMeshCollider = entity.GetComponent<MeshColliderComponent>();
+				s_EntityColliders[entityUUID].push_back(CreateShared<TriangleMeshShape>(triangleMeshCollider, *actor, entity));
+				break;
+			}
+		}
+	}
+
+	physx::PxMaterial* Physics::AddControllerColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type)
+	{
+		AddColliderShape(entity, actor, type);
+
+		return s_EntityColliders[entity.GetUUID()].back()->GetMaterial();
 	}
 
 	void Physics::CreateFixedJoint(Entity entity)
@@ -795,18 +714,7 @@ namespace Vortex {
 		{
 			const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
 
-			physx::PxMaterial* material = nullptr;
-
-			if (entity.HasComponent<PhysicsMaterialComponent>())
-			{
-				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-				material = CreatePhysicsMaterial(physicsMaterial);
-			}
-			else
-			{
-				// Create a default material
-				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-			}
+			physx::PxMaterial* material = AddControllerColliderShape(entity, controller->getActor(), ColliderType::Capsule);
 
 			const float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
 
@@ -828,18 +736,7 @@ namespace Vortex {
 		{
 			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
 
-			physx::PxMaterial* material = nullptr;
-
-			if (entity.HasComponent<PhysicsMaterialComponent>())
-			{
-				const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-				material = CreatePhysicsMaterial(physicsMaterial);
-			}
-			else
-			{
-				// Create a default material
-				material = CreatePhysicsMaterial(PhysicsMaterialComponent());
-			}
+			physx::PxMaterial* material = AddControllerColliderShape(entity, controller->getActor(), ColliderType::Box);
 
 			physx::PxBoxControllerDesc desc;
 			desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
@@ -857,14 +754,6 @@ namespace Vortex {
 		}
 
 		return controller;
-	}
-
-	physx::PxMaterial* Physics::CreatePhysicsMaterial(const PhysicsMaterialComponent& component)
-	{
-		physx::PxMaterial* material = s_Data->PhysXSDK->createMaterial(component.StaticFriction, component.DynamicFriction, component.Bounciness);
-		material->setFrictionCombineMode((physx::PxCombineMode::Enum)component.FrictionCombineMode);
-		material->setRestitutionCombineMode((physx::PxCombineMode::Enum)component.RestitutionCombineMode);
-		return material;
 	}
 
 	void Physics::SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask)
@@ -892,7 +781,7 @@ namespace Vortex {
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
 
-		dynamicActor->setSolverIterationCounts(s_PhysicsSolverIterations,  s_PhysicsSolverVelocityIterations);
+		dynamicActor->setSolverIterationCounts(Physics::GetPhysicsScenePositionIterations(), Physics::GetPhysicsSceneVelocityIterations());
 
 		dynamicActor->setMass(rigidbody.Mass);
 
@@ -925,7 +814,7 @@ namespace Vortex {
 		uint8_t lockFlags = rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationX |
 			rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationY |
 			rigidbody.LockFlags & (uint8_t)ActorLockFlag::TranslationZ |
-			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationX | 
+			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationX |
 			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationY |
 			rigidbody.LockFlags & (uint8_t)ActorLockFlag::RotationZ;
 
@@ -980,40 +869,59 @@ namespace Vortex {
 
 	void Physics::DestroyFixedJointInternal(UUID entityUUID)
 	{
-		if (s_ActiveFixedJoints.contains(entityUUID))
-		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
-			fixedJoint.ConnectedEntity = 0;
-			s_ActiveFixedJoints[entityUUID]->release();
-			s_ActiveFixedJoints.erase(entityUUID);
-		}
+		if (!s_ActiveFixedJoints.contains(entityUUID))
+			return;
+		
+		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+		FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
+		fixedJoint.ConnectedEntity = 0;
+		s_ActiveFixedJoints[entityUUID]->release();
+		s_ActiveFixedJoints.erase(entityUUID);
 	}
 
 	void Physics::DestroyCharacterControllerInternal(UUID entityUUID)
 	{
-		if (s_ActiveControllers.contains(entityUUID))
-		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
-			characterController.RuntimeController = nullptr;
-			s_ActiveControllers[entityUUID]->release();
-			s_ActiveControllers.erase(entityUUID);
-		}
+		if (!s_ActiveControllers.contains(entityUUID))
+			return;
+		
+		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		characterController.RuntimeController = nullptr;
+		s_ActiveControllers[entityUUID]->release();
+		s_ActiveControllers.erase(entityUUID);
 	}
 
 	void Physics::DestroyPhysicsActorInternal(UUID entityUUID)
 	{
-		if (s_ActiveActors.contains(entityUUID))
+		if (!s_ActiveActors.contains(entityUUID))
+			return;
+		
+		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidActor* actor = s_ActiveActors[entityUUID];
+		s_Data->PhysicsScene->removeActor(*actor);
+		actor->release();
+		rigidbody.RuntimeActor = nullptr;
+		s_ActiveActors.erase(entityUUID);
+
+		DestroyColliderShapesInternal(entityUUID);
+	}
+
+	void Physics::DestroyColliderShapesInternal(UUID entityUUID)
+	{
+		if (!s_EntityColliders.contains(entityUUID))
+			return;
+		
+		std::vector<SharedRef<ColliderShape>>& colliderShapes = s_EntityColliders[entityUUID];
+
+		for (auto& shape : colliderShapes)
 		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-			physx::PxRigidActor* actor = s_ActiveActors[entityUUID];
-			s_Data->PhysicsScene->removeActor(*actor);
-			actor->release();
-			rigidbody.RuntimeActor = nullptr;
-			s_ActiveActors.erase(entityUUID);
+			shape->Release();
 		}
+
+		colliderShapes.clear();
+
+		s_EntityColliders.erase(entityUUID);
 	}
 
 }

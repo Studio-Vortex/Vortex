@@ -5,7 +5,7 @@
 #include "Vortex/Core/KeyCodes.h"
 #include "Vortex/Core/MouseCodes.h"
 #include "Vortex/Core/Gamepad.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Events/Event.h"
 
 namespace Vortex {

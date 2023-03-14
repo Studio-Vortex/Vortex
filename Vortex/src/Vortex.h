@@ -2,24 +2,33 @@
 
 /// Core
 #include "Vortex/Core/Application.h"
+#include "Vortex/Core/Platform.h"
 #include "Vortex/Core/Layer.h"
 #include "Vortex/Core/Log.h"
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/Buffer.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
 
 /// Math
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/Math/Noise.h"
+
 namespace Math = Vortex::Math;
+/// ---------------------------------------------------
+
+/// Networking
+#include "Vortex/Networking/Networking.h"
+#include "Vortex/Networking/Server.h"
 /// ---------------------------------------------------
 
 /// Gui
 #include "Vortex/Gui/GuiLayer.h"
 #include "Vortex/UI/UI.h"
 #include <imgui.h>
-// Re Exporting ImGui as Gui in Client
+
 namespace Gui = ImGui;
 /// ---------------------------------------------------
 
@@ -29,6 +38,7 @@ namespace Gui = ImGui;
 
 /// Asset Manager
 #include "Vortex/Asset/AssetManager.h"
+#include "Vortex/Asset/Asset.h"
 /// ---------------------------------------------------
 
 /// Audio
@@ -93,6 +103,9 @@ namespace Gui = ImGui;
 /// ---------------------------------------------------
 
 /// Utilities
+#include "Vortex/Utils/FileDialogue.h"
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/StringUtils.h"
+#include "Vortex/Utils/Random.h"
+#include "Vortex/Utils/Time.h"
 /// ---------------------------------------------------

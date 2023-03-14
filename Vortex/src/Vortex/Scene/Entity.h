@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Scene/Scene.h"
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Components.h"
 
 #include <entt/entt.hpp>

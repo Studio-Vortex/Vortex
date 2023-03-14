@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)

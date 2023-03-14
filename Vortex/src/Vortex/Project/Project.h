@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Asset/AssetManager/IAssetManager.h"
 #include "Vortex/Asset/AssetManager/EditorAssetManager.h"
 #include "Vortex/Utils/FileSystem.h"
 
@@ -149,6 +150,9 @@ namespace Vortex {
 			return GetAssetDirectory() / filepath;
 		}
 
+		static SharedReference<IAssetManager> GetAssetManager();
+		static SharedReference<EditorAssetManager> GetEditorAssetManager();
+
 		static SharedRef<Project> New();
 		static SharedRef<Project> Load(const std::filesystem::path& filepath);
 		static SharedRef<Project> LoadRuntime(const std::filesystem::path& filepath);
@@ -162,7 +166,7 @@ namespace Vortex {
 		std::filesystem::path m_ProjectDirectory = "";
 		std::filesystem::path m_ProjectFilepath = "";
 
-		inline static SharedRef<IAssetManager> s_AssetManager = nullptr;
+		inline static SharedReference<IAssetManager> s_AssetManager = nullptr;
 		inline static SharedRef<Project> s_ActiveProject = nullptr;
 	};
 

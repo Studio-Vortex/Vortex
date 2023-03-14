@@ -853,13 +853,6 @@ namespace Vortex {
 		public void Break() => InternalCalls.FixedJointComponent_Break(Entity.ID);
 	}
 
-	public class PhysicsMaterial: Component
-	{
-		public float StaticFriction;
-		public float DynamicFriction;
-		public float Bounciness;
-	}
-
 	public class BoxCollider: Component
 	{
 		public Vector3 HalfSize

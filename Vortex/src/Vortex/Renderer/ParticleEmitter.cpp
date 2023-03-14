@@ -2,7 +2,7 @@
 #include "ParticleEmitter.h"
 
 #include "Vortex/Scene/Entity.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/Random.h"
 
 namespace Vortex {
 

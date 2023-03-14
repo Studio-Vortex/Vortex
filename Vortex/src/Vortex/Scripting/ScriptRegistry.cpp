@@ -5,8 +5,7 @@
 #include "Vortex/Core/Input.h"
 #include "Vortex/Core/Log.h"
 
-#include "Vortex/Core/Math.h"
-#include "Vortex/Core/Noise.h"
+#include "Vortex/Core/Math/Noise.h"
 
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scripting/ScriptUtils.h"
@@ -32,7 +31,9 @@
 #include "Vortex/Animation/Animation.h"
 
 #include "Vortex/UI/UI.h"
-#include "Vortex/Utils/PlatformUtils.h"
+
+#include "Vortex/Utils/Random.h"
+#include "Vortex/Utils/Time.h"
 
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>

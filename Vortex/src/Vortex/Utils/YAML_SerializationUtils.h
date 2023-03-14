@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Vortex/Core/Math.h"
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Core/Math/Math.h"
 
 #include <yaml-cpp/yaml.h>
 
 namespace Vortex {
 
-#define VX_SERIALIZE_PROPERTY(name, value, outputNode) outputNode << YAML::Key << #name << YAML::Value << value
-#define VX_DESERIALIZE_PROPERTY(name, type, value, inputNode) value = inputNode[#name].as<type>()
+	#define VX_SERIALIZE_PROPERTY(name, value, outputNode) outputNode << YAML::Key << #name << YAML::Value << value
+	#define VX_DESERIALIZE_PROPERTY(name, type, value, inputNode) value = inputNode[#name].as<type>()
 
 }
 

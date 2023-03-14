@@ -4,6 +4,7 @@
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsData.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
@@ -21,41 +22,15 @@ namespace physx {
 	class PxRigidDynamic;
 	class PxControllerManager;
 	class PxSimulationStatistics;
+	class PxTolerancesScale;
+	class PxFoundation;
+	class PxPhysics;
 
 }
 
 namespace Vortex {
 
-	struct VORTEX_API PhysicsBodyData
-	{
-		UUID EntityUUID = 0;
-		Scene* ContextScene = nullptr;
-	};
-
-	struct VORTEX_API ConstrainedJointData
-	{
-		UUID EntityUUID = 0;
-	};
-
-	struct VORTEX_API RaycastHit
-	{
-		uint64_t EntityID;
-		Math::vec3 Position;
-		Math::vec3 Normal;
-		float Distance;
-	};
-
-#define OVERLAP_MAX_COLLIDERS 50
-
-	struct VORTEX_API OverlapHit
-	{
-		uint64_t EntityID;
-	};
-
-	struct VORTEX_API Collision
-	{
-		uint64_t EntityID;
-	};
+	class ColliderShape;
 
 	class VORTEX_API Physics
 	{
@@ -104,6 +79,12 @@ namespace Vortex {
 		VX_FORCE_INLINE static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
 		VX_FORCE_INLINE static void SetPhysicsSceneGravity(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
 
+		static Scene* GetContextScene();
+
+		static physx::PxPhysics* GetPhysicsSDK();
+		static physx::PxTolerancesScale* GetTolerancesScale();
+		static physx::PxFoundation* GetFoundation();
+
 	private:
 		static void Init();
 		static void InitPhysicsSDKInternal();
@@ -117,24 +98,28 @@ namespace Vortex {
 		static void DestroyPhysicsActor(Entity entity);
 
 		static void CreateCollider(Entity entity);
+		static void AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
+		static physx::PxMaterial* AddControllerColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
 		static void CreateFixedJoint(Entity entity);
 		static physx::PxController* CreateController(Entity entity);
-		static physx::PxMaterial* CreatePhysicsMaterial(const PhysicsMaterialComponent& material);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
-
 		static void TraverseSceneForUninitializedActors();
 
 	private:
 		static void DestroyFixedJointInternal(UUID entityUUID);
 		static void DestroyCharacterControllerInternal(UUID entityUUID);
 		static void DestroyPhysicsActorInternal(UUID entityUUID);
+		static void DestroyColliderShapesInternal(UUID entityUUID);
 
 	private:
 		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_ActiveActors;
 		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
 		inline static std::unordered_map<UUID, physx::PxFixedJoint*> s_ActiveFixedJoints;
+
+		using EntityColliderMap = std::unordered_map<UUID, std::vector<SharedRef<ColliderShape>>>;
+		inline static EntityColliderMap s_EntityColliders;
 
 		//                                                                               first - linear force, second - angular force
 		using LastReportedFixedJointForcesMap = std::unordered_map<physx::PxFixedJoint*, std::pair<Math::vec3, Math::vec3>>;

@@ -7,6 +7,7 @@
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
+#include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Mesh.h"
@@ -871,20 +872,6 @@ namespace Vortex {
 			out << YAML::EndMap; // FixedJointComponent
 		}
 
-		if (entity.HasComponent<PhysicsMaterialComponent>())
-		{
-			out << YAML::Key << "PhysicsMaterialComponent" << YAML::BeginMap; // PhysicsMaterialComponent
-
-			const auto& physicsMaterial = entity.GetComponent<PhysicsMaterialComponent>();
-			VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial.StaticFriction, out);
-			VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial.DynamicFriction, out);
-			VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial.Bounciness, out);
-			VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial.FrictionCombineMode), out);
-			VX_SERIALIZE_PROPERTY(RestitutionCombineMode, Utils::CombineModeToString(physicsMaterial.RestitutionCombineMode), out);
-
-			out << YAML::EndMap; // PhysicsMaterialComponent
-		}
-
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
@@ -893,6 +880,19 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(HalfSize, boxColliderComponent.HalfSize, out);
 			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
+
+			{
+				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
+
+				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(boxColliderComponent.Material);
+				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
+				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
+				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
+				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
+				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
+
+				out << YAML::EndMap; // PhysicsMaterial
+			}
 
 			out << YAML::EndMap; // BoxColliderComponent
 		}
@@ -905,6 +905,19 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Radius, sphereColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
+
+			{
+				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
+
+				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(sphereColliderComponent.Material);
+				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
+				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
+				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
+				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
+				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
+
+				out << YAML::EndMap; // PhysicsMaterial
+			}
 
 			out << YAML::EndMap; // SphereColliderComponent
 		}
@@ -919,7 +932,25 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, capsuleColliderComponent.IsTrigger, out);
 
+			{
+				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
+
+				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(capsuleColliderComponent.Material);
+				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
+				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
+				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
+				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
+				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
+
+				out << YAML::EndMap; // PhysicsMaterial
+			}
+
 			out << YAML::EndMap; // CapsuleColliderComponent
+		}
+
+		if (entity.HasComponent<MeshColliderComponent>())
+		{
+			// TODO
 		}
 
 		if (entity.HasComponent<RigidBody2DComponent>())
@@ -1474,20 +1505,6 @@ namespace Vortex {
 				VX_DESERIALIZE_PROPERTY(IsBreakable, bool, fixedJoint.IsBreakable, fixedJointComponent);
 			}
 
-			auto physicsMaterialComponent = entity["PhysicsMaterialComponent"];
-			if (physicsMaterialComponent)
-			{
-				auto& physicsMaterial = deserializedEntity.AddComponent<PhysicsMaterialComponent>();
-
-				physicsMaterial.StaticFriction = physicsMaterialComponent["StaticFriction"].as<float>();
-				physicsMaterial.DynamicFriction = physicsMaterialComponent["DynamicFriction"].as<float>();
-				physicsMaterial.Bounciness = physicsMaterialComponent["Bounciness"].as<float>();
-				if (physicsMaterialComponent["FrictionCombineMode"])
-					physicsMaterial.FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialComponent["FrictionCombineMode"].as<std::string>());
-				if (physicsMaterialComponent["RestitutionCombineMode"])
-					physicsMaterial.RestitutionCombineMode = Utils::CombineModeFromString(physicsMaterialComponent["RestitutionCombineMode"].as<std::string>());
-			}
-
 			auto boxColliderComponent = entity["BoxColliderComponent"];
 			if (boxColliderComponent)
 			{
@@ -1497,6 +1514,23 @@ namespace Vortex {
 				boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
 				if (boxColliderComponent["IsTrigger"])
 					boxCollider.IsTrigger = boxColliderComponent["IsTrigger"].as<bool>();
+
+				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+
+				if (physicsMaterialData)
+				{
+					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
+					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
+
+					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
+					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
+					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
+
+					if (physicsMaterialData["FrictionCombineMode"])
+						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
+					if (physicsMaterialData["BouncinessCombineMode"])
+						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+				}
 			}
 
 			auto sphereColliderComponent = entity["SphereColliderComponent"];
@@ -1507,6 +1541,23 @@ namespace Vortex {
 				sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
 				sphereCollider.Offset = sphereColliderComponent["Offset"].as<Math::vec3>();
 				sphereCollider.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
+
+				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+
+				if (physicsMaterialData)
+				{
+					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
+					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
+
+					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
+					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
+					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
+
+					if (physicsMaterialData["FrictionCombineMode"])
+						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
+					if (physicsMaterialData["BouncinessCombineMode"])
+						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+				}
 			}
 
 			auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
@@ -1518,6 +1569,31 @@ namespace Vortex {
 				capsuleCollider.Height = capsuleColliderComponent["Height"].as<float>();
 				capsuleCollider.Offset = capsuleColliderComponent["Offset"].as<Math::vec3>();
 				capsuleCollider.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
+
+				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+
+				if (physicsMaterialData)
+				{
+					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
+					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
+
+					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
+					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
+					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
+
+					if (physicsMaterialData["FrictionCombineMode"])
+						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
+					if (physicsMaterialData["BouncinessCombineMode"])
+						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+				}
+			}
+
+			auto meshColliderComponent = entity["MeshColliderComponent"];
+			if (meshColliderComponent)
+			{
+				auto& meshCollider = deserializedEntity.AddComponent<MeshColliderComponent>();
+
+				// TODO
 			}
 
 			auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

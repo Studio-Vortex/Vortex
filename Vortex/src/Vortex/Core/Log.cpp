@@ -71,6 +71,7 @@ namespace Vortex {
 		s_EditorConsoleLogger.reset();
 		s_ClientLogger.reset();
 		s_CoreLogger.reset();
+
 		spdlog::drop_all();
     }
 

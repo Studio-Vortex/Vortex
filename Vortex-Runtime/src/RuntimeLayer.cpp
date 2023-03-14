@@ -1,7 +1,6 @@
 #include "RuntimeLayer.h"
 
 #include <Vortex/Scene/Scene.h>
-#include <Vortex/Utils/PlatformUtils.h>
 #include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>

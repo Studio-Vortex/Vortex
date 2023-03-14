@@ -266,7 +266,7 @@ namespace Vortex {
 	void LauncherLayer::CreateProject()
 	{
 		if (!FileSystem::Exists(m_Properties.ProjectDirectoryBuffer))
-			FileSystem::CreateDirectories(m_Properties.ProjectDirectoryBuffer);
+			FileSystem::CreateDirectoriesV(m_Properties.ProjectDirectoryBuffer);
 
 		SharedRef<Project> project = Project::New();
 		auto& projectProps = project->GetProperties();

@@ -50,7 +50,6 @@ namespace Vortex {
 		entity.m_Scene->CopyComponentIfExists<RigidBodyComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<CharacterControllerComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<FixedJointComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<PhysicsMaterialComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<BoxColliderComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<SphereColliderComponent>(newEntity, m_Scene->m_Registry, entity);
 		entity.m_Scene->CopyComponentIfExists<CapsuleColliderComponent>(newEntity, m_Scene->m_Registry, entity);

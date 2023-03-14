@@ -3,7 +3,7 @@
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Renderer/OrthographicCamera.h"
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Events/ApplicationEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 #include "Vortex/Events/KeyEvent.h"

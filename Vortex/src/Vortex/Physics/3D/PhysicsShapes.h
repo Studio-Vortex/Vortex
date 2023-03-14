@@ -1,41 +1,31 @@
 #pragma once
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+namespace physx {
+
+	class PxMaterial;
+
+}
 
 namespace Vortex {
 
-	enum class ColliderType
-	{
-		Box, Sphere, Capsule, ConvexMesh, TriangleMesh,
-	};
-
-	class ColliderShape
+	class ColliderShape : public RefCounted
 	{
 	protected:
-		ColliderShape(ColliderType type, Entity entity, bool isShared = false)
-			: m_Type(type), m_Entity(entity), m_IsShared(isShared) { }
+		ColliderShape(ColliderType type, Entity entity, bool isShared = false);
 
 	public:
-		virtual ~ColliderShape()
-		{
-			Release();
-		}
+		virtual ~ColliderShape();
 
-		void Release()
-		{
-			if (m_IsShared && m_Material == nullptr)
-			{
-				return;
-			}
+		void Release();
 
-			VX_CORE_ASSERT(m_Material, "Material was invalid!");
-			m_Material->release();
-		}
-
-		ColliderType GetType() const { return m_Type; }
+		inline virtual ColliderType GetType() const { return m_Type; }
 
 		virtual const Math::vec3& GetOffset() const = 0;
 		virtual void SetOffset(const Math::vec3& offset) = 0;
@@ -49,11 +39,11 @@ namespace Vortex {
 
 		virtual const char* GetShapeName() const = 0;
 
-		physx::PxMaterial& GetMaterial() const { return *m_Material; }
-		void SetMaterial(const PhysicsMaterialComponent& material);
-		bool IsShared() const { return m_IsShared; }
+		inline virtual physx::PxMaterial* GetMaterial() const { return m_Material; }
+		virtual void SetMaterial(SharedReference<PhysicsMaterial>& material);
 
-		virtual bool IsValid() const { return m_Material != nullptr; }
+		inline virtual bool IsShared() const { return m_IsShared; }
+		inline virtual bool IsValid() const { return m_Material != nullptr; }
 
 	protected:
 		ColliderType m_Type;
@@ -62,30 +52,113 @@ namespace Vortex {
 		bool m_IsShared = false;
 	};
 
-	class ConvexMeshShape : public ColliderShape
+	class BoxColliderShape : public ColliderShape
 	{
 	public:
-		ConvexMeshShape(MeshColliderComponent& component, const physx::PxRigidActor& actor, Entity entity);
-		~ConvexMeshShape();
+		BoxColliderShape(BoxColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		~BoxColliderShape();
 
-		virtual const glm::vec3& GetOffset() const
-		{
-			static glm::vec3 defaultOffset = glm::vec3(0.0f);
-			return defaultOffset;
-		}
-		void SetOffset(const glm::vec3& offset) {}
+		const Math::vec3& GetHalfSize() const;
+		void SetHalfSize(const Math::vec3& halfSize);
 
-		bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
+		const Math::vec3& GetOffset() const override;
+		void SetOffset(const Math::vec3& offset) override;
+
+		bool IsTrigger() const override;
 		void SetTrigger(bool isTrigger) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 
 		void DetachFromActor(physx::PxRigidActor* actor) override;
 
-		const char* GetShapeName() const override { return "ConvexMeshCollider"; }
-		bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
+		inline const char* GetShapeName() const override { return "BoxCollider"; }
+		inline bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
 
-		static ColliderType GetStaticType() { return ColliderType::ConvexMesh; }
+		inline static ColliderType GetStaticType() { return ColliderType::Box; }
+
+	private:
+		physx::PxShape* m_Shape = nullptr;
+	};
+
+	class SphereColliderShape : public ColliderShape
+	{
+	public:
+		SphereColliderShape(SphereColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		~SphereColliderShape();
+
+		float GetRadius() const;
+		void SetRadius(float radius);
+
+		const Math::vec3& GetOffset() const override;
+		void SetOffset(const Math::vec3& offset) override;
+
+		bool IsTrigger() const override;
+		void SetTrigger(bool isTrigger) override;
+
+		void SetFilterData(const physx::PxFilterData& filterData) override;
+
+		void DetachFromActor(physx::PxRigidActor* actor) override;
+
+		inline const char* GetShapeName() const override { return "SphereCollider"; }
+		inline bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
+
+		inline static ColliderType GetStaticType() { return ColliderType::Sphere; }
+
+	private:
+		physx::PxShape* m_Shape = nullptr;
+	};
+
+	class CapsuleColliderShape : public ColliderShape
+	{
+	public:
+		CapsuleColliderShape(CapsuleColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		~CapsuleColliderShape();
+
+		float GetRadius() const;
+		void SetRadius(float radius);
+
+		float GetHeight() const;
+		void SetHeight(float height);
+
+		const Math::vec3& GetOffset() const override;
+		void SetOffset(const Math::vec3& offset) override;
+
+		bool IsTrigger() const override;
+		void SetTrigger(bool isTrigger) override;
+
+		void SetFilterData(const physx::PxFilterData& filterData) override;
+
+		void DetachFromActor(physx::PxRigidActor* actor) override;
+
+		inline const char* GetShapeName() const override { return "CapsuleCollider"; }
+		inline bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
+
+		inline static ColliderType GetStaticType() { return ColliderType::Capsule; }
+
+	private:
+		physx::PxShape* m_Shape = nullptr;
+	};
+
+	class ConvexMeshShape : public ColliderShape
+	{
+	public:
+		ConvexMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		~ConvexMeshShape();
+
+		virtual const Math::vec3& GetOffset() const override;
+		void SetOffset(const Math::vec3& offset) override;
+
+		bool IsTrigger() const override;
+		void SetTrigger(bool isTrigger) override;
+
+		void SetFilterData(const physx::PxFilterData& filterData) override;
+
+		void DetachFromActor(physx::PxRigidActor* actor) override;
+
+		inline const char* GetShapeName() const override { return "ConvexMeshCollider"; }
+		inline bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
+
+		inline static ColliderType GetStaticType() { return ColliderType::ConvexMesh; }
 
 	private:
 		std::vector<physx::PxShape*> m_Shapes;
@@ -94,30 +167,41 @@ namespace Vortex {
 	class TriangleMeshShape : public ColliderShape
 	{
 	public:
-		TriangleMeshShape(MeshColliderComponent& component, const physx::PxRigidActor& actor, Entity entity);
+		TriangleMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
 		~TriangleMeshShape();
 
-		virtual const glm::vec3& GetOffset() const
-		{
-			static glm::vec3 defaultOffset = glm::vec3(0.0f);
-			return defaultOffset;
-		}
-		virtual void SetOffset(const glm::vec3& offset) {}
+		const Math::vec3& GetOffset() const override;
+		void SetOffset(const Math::vec3& offset) override;
 
-		virtual bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
-		virtual void SetTrigger(bool isTrigger) override;
+		bool IsTrigger() const override;
+		void SetTrigger(bool isTrigger) override;
 
-		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
+		void SetFilterData(const physx::PxFilterData& filterData) override;
 
-		virtual void DetachFromActor(physx::PxRigidActor* actor) override;
+		void DetachFromActor(physx::PxRigidActor* actor) override;
 
-		virtual const char* GetShapeName() const override { return "TriangleMeshCollider"; }
-		bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
+		inline const char* GetShapeName() const override { return "TriangleMeshCollider"; }
+		inline bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
 
-		static ColliderType GetStaticType() { return ColliderType::TriangleMesh; }
+		inline static ColliderType GetStaticType() { return ColliderType::TriangleMesh; }
 
 	private:
 		std::vector<physx::PxShape*> m_Shapes;
+	};
+
+	class SharedShapeManager
+	{
+	public:
+		struct SharedShapeData
+		{
+			ECollisionComplexity Usage = ECollisionComplexity::Default;
+			std::unordered_map<uint32_t, physx::PxShape*> Shapes;
+		};
+
+		using SharedShapeMap = std::unordered_map<ColliderType, std::unordered_map<AssetHandle, std::vector<SharedShapeData>>>;
+
+	public:
+		static SharedShapeData* CreateSharedShapeData(ColliderType type, AssetHandle colliderHandle);
 	};
 
 }

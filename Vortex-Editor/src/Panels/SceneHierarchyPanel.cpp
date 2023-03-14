@@ -554,7 +554,6 @@ namespace Vortex {
 					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody");
 					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller");
 					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint");
-					DisplayComponentMenuItem<PhysicsMaterialComponent>("Physics Material");
 					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider");
 					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider");
 					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider");
@@ -701,8 +700,6 @@ namespace Vortex {
 					DisplayComponentMenuItem<CharacterControllerComponent>(componentName);
 				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayComponentMenuItem<FixedJointComponent>(componentName);
-				if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<PhysicsMaterialComponent>(componentName);
 				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayComponentMenuItem<BoxColliderComponent>(componentName);
 				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -2129,26 +2126,6 @@ namespace Vortex {
 
 			UI::Property("Enable Collision", component.EnableCollision);
 			UI::Property("Enable PreProcessing", component.EnablePreProcessing);
-
-			UI::EndPropertyGrid();
-		});
-
-		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](auto& component)
-		{
-			UI::BeginPropertyGrid();
-
-			UI::Property("Static Friction", component.StaticFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Dynamic Friction", component.DynamicFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Bounciness", component.Bounciness, 0.01f, 0.01f, 1.0f);
-
-			const char* combineModes[] = { "Average", "Maximum", "Minimum", "Multiply" };
-			int32_t currentFrictionCombineMode = (uint32_t)component.FrictionCombineMode;
-			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentFrictionCombineMode))
-				component.FrictionCombineMode = (CombineMode)currentFrictionCombineMode;
-
-			int32_t currentRestitutionCombineMode = (uint32_t)component.RestitutionCombineMode;
-			if (UI::PropertyDropdown("Restitution Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentRestitutionCombineMode))
-				component.RestitutionCombineMode = (CombineMode)currentRestitutionCombineMode;
 
 			UI::EndPropertyGrid();
 		});
