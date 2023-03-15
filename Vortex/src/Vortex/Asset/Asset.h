@@ -1,14 +1,16 @@
 #pragma once
 
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-#include "Vortex/Asset/AssetTypes.h"
+#include "Vortex/Core/Base.h"
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+
+#include "Vortex/Asset/AssetTypes.h"
 
 namespace Vortex {
 
 	using AssetHandle = UUID;
 
-	class Asset : public RefCounted
+	class VORTEX_API Asset : public RefCounted
 	{
 	public:
 		AssetHandle Handle;
@@ -31,6 +33,27 @@ namespace Vortex {
 
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetAssetType() const { return AssetType::None; }
+
+		static AssetType GetAssetTypeFromString(const std::string& name)
+		{
+			if (s_AssetTypes.contains(name))
+				return s_AssetTypes[name];
+
+			VX_CORE_ASSERT(false, "Unknown Asset Name!");
+			return AssetType::None;
+		}
+
+		static std::string GetAssetNameFromType(AssetType type)
+		{
+			for (const auto& [name, assetType] : s_AssetTypes)
+			{
+				if (assetType == type)
+					return name;
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Asset Type!");
+			return "None";
+		}
 	};
 
 }

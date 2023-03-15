@@ -9,48 +9,55 @@ namespace Vortex {
 
 	std::unordered_map<std::string, AssetType> s_AssetExtensionMap =
 	{
-		{ ".vanimation", AssetType::Animation },
-		{ ".vanimator", AssetType::Animator },
+		{ ".vanimation", AssetType::AnimationAsset },
+		{ ".vanimator", AssetType::AnimatorAsset },
 
-		{ ".wav", AssetType::Audio },
-		{ ".mp3", AssetType::Audio },
+		{ ".wav", AssetType::AudioAsset },
+		{ ".mp3", AssetType::AudioAsset },
 
-		{ ".hdr", AssetType::Environment },
+		{ ".hdr", AssetType::EnvironmentAsset },
+		{ ".HDR", AssetType::EnvironmentAsset },
 		
-		{ ".ttf", AssetType::Font },
-		{ ".TTF", AssetType::Font },
-		{ ".otc", AssetType::Font },
+		{ ".ttf", AssetType::FontAsset },
+		{ ".TTF", AssetType::FontAsset },
+		{ ".otc", AssetType::FontAsset },
+		{ ".OTC", AssetType::FontAsset },
 
-		{ ".vmaterial", AssetType::Material },
-		{ ".vpm", AssetType::PhysicsMaterial },
+		{ ".vmaterial", AssetType::MaterialAsset },
+		{ ".vpm", AssetType::PhysicsMaterialAsset },
 
-		{ ".fbx", AssetType::Mesh },
-		{ ".dae", AssetType::Mesh },
-		{ ".gltf", AssetType::Mesh },
-		{ ".glb", AssetType::Mesh },
-		{ ".obj", AssetType::Mesh },
+		{ ".fbx", AssetType::MeshAsset },
+		{ ".FBX", AssetType::MeshAsset },
+		{ ".dae", AssetType::MeshAsset },
+		{ ".DAE", AssetType::MeshAsset },
+		{ ".gltf", AssetType::MeshAsset },
+		{ ".GLTF", AssetType::MeshAsset },
+		{ ".glb", AssetType::MeshAsset },
+		{ ".GLB", AssetType::MeshAsset },
+		{ ".obj", AssetType::MeshAsset },
+		{ ".OBJ", AssetType::MeshAsset },
 
-		{ ".fbx", AssetType::StaticMesh },
-		{ ".dae", AssetType::StaticMesh },
-		{ ".gltf", AssetType::StaticMesh },
-		{ ".glb", AssetType::StaticMesh },
-		{ ".obj", AssetType::StaticMesh },
+		{ ".fbx", AssetType::StaticMeshAsset },
+		{ ".FBX", AssetType::StaticMeshAsset },
+		{ ".dae", AssetType::StaticMeshAsset },
+		{ ".DAE", AssetType::StaticMeshAsset },
+		{ ".gltf", AssetType::StaticMeshAsset },
+		{ ".GLTF", AssetType::StaticMeshAsset },
+		{ ".glb", AssetType::StaticMeshAsset },
+		{ ".GLB", AssetType::StaticMeshAsset },
+		{ ".obj", AssetType::StaticMeshAsset },
+		{ ".OBJ", AssetType::StaticMeshAsset },
 
-		{ ".vprefab", AssetType::Prefab },
-		{ ".vortex", AssetType::Scene },
+		{ ".vprefab", AssetType::PrefabAsset },
+		{ ".vortex", AssetType::SceneAsset },
 
-		{ ".cs", AssetType::Script },
-		
-		{ ".png", AssetType::SubTexture },
-		{ ".jpg", AssetType::SubTexture },
-		{ ".jpeg", AssetType::SubTexture },
-		{ ".tga", AssetType::SubTexture },
-		{ ".psd", AssetType::SubTexture },
+		{ ".cs", AssetType::ScriptAsset },
 
-		{ ".png", AssetType::Texture },
-		{ ".jpg", AssetType::Texture },
-		{ ".tga", AssetType::Texture },
-		{ ".psd", AssetType::Texture },
+		{ ".png", AssetType::TextureAsset },
+		{ ".jpg", AssetType::TextureAsset },
+		{ ".jpeg", AssetType::TextureAsset },
+		{ ".tga", AssetType::TextureAsset },
+		{ ".psd", AssetType::TextureAsset },
 	};
 
 }

@@ -12,6 +12,18 @@
 #include "Vortex/Core/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
 
+/// Events
+#include "Vortex/Events/WindowEvent.h"
+#include "Vortex/Events/KeyEvent.h"
+#include "Vortex/Events/MouseEvent.h"
+/// ---------------------------------------------------
+
+/// Input
+#include "Vortex/Core/Input.h"
+#include "Vortex/Core/KeyCodes.h"
+#include "Vortex/Core/MouseCodes.h"
+/// ---------------------------------------------------
+
 /// Math
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/Math/Noise.h"
@@ -32,8 +44,8 @@ namespace Math = Vortex::Math;
 namespace Gui = ImGui;
 /// ---------------------------------------------------
 
-/// AI
-#include "Vortex/AI/AStarPathFinder.h"
+/// Project
+#include "Vortex/Project/Project.h"
 /// ---------------------------------------------------
 
 /// Asset Manager
@@ -41,19 +53,24 @@ namespace Gui = ImGui;
 #include "Vortex/Asset/Asset.h"
 /// ---------------------------------------------------
 
+/// AI
+#include "Vortex/AI/AStarPathFinder.h"
+/// ---------------------------------------------------
+
 /// Audio
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
+/// ---------------------------------------------------
+
+/// Animation
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Animation/Animation.h"
 /// ---------------------------------------------------
 
 /// Physics
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/2D/Physics2D.h"
-/// ---------------------------------------------------
-
-/// Project
-#include "Vortex/Project/Project.h"
 /// ---------------------------------------------------
 
 /// Scene
@@ -64,28 +81,12 @@ namespace Gui = ImGui;
 #include "Vortex/Scene/Components.h"
 /// ---------------------------------------------------
 
-/// Events + Input
-#include "Vortex/Events/ApplicationEvent.h"
-#include "Vortex/Events/KeyEvent.h"
-#include "Vortex/Events/MouseEvent.h"
-
-#include "Vortex/Core/Input.h"
-#include "Vortex/Core/KeyCodes.h"
-#include "Vortex/Core/MouseCodes.h"
-/// ---------------------------------------------------
-
-/// Animation
-#include "Vortex/Animation/Animator.h"
-#include "Vortex/Animation/Animation.h"
-/// ---------------------------------------------------
-
 /// Rendering
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/RenderCommand.h"
 
 #include "Vortex/Renderer/Color.h"
-
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Texture.h"

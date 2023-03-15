@@ -1,20 +1,21 @@
 #pragma once
 
-#include "vxpch.h"
 #include "Vortex/Core/Base.h"
+
+#include <sstream>
+#include <string>
 
 namespace Vortex {
 
-	enum class EventType
+	enum class VORTEX_API EventType
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocused, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
-	enum EventCategory
+	enum VORTEX_API EventCategory
 	{
 		None = 0,
 		EventCategoryApplication   = BIT(0),
@@ -46,7 +47,7 @@ namespace Vortex {
 		}
 	};
 
-	class EventDispatcher
+	class VORTEX_API EventDispatcher
 	{
 	public:
 		EventDispatcher(Event& event)

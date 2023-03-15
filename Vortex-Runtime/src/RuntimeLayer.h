@@ -22,7 +22,7 @@ namespace Vortex {
 		void OnRuntimeSceneResumed();
 
 		bool OpenProject(const std::filesystem::path& filepath);
-		bool OpenScene(const std::filesystem::path& filepath);
+		bool OpenScene(const AssetMetadata& sceneMetadata);
 
 		void QueueSceneTransition();
 

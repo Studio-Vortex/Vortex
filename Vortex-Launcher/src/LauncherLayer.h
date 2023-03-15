@@ -34,15 +34,20 @@ namespace Vortex {
 
 	private:
 		void DisplayCreateProjectPopup();
+		
+		void CreateProjectFilesAndDirectories();
+		void CreateStartingScene();
+		void CreatePremakeBuildScript();
+		void GenerateSolutionFromBatchScript();
+		void BuildProjectDLL();
+
 		void CreateProject();
-
-		void ResetInputFields();
-
-		void ReplaceToken(std::string& str, const char* token, const std::string& value);
-		void ResetWorkingDirectory();
 		void LaunchEditor();
 
-		const char* ProjectTypeToString(ProjectType type);
+		void ReplaceToken(std::string& str, const char* token, const std::string& value);
+
+		void ResetInputFields();
+		void ResetWorkingDirectory();
 
 	private:
 		LauncherProperties m_Properties;
@@ -51,7 +56,7 @@ namespace Vortex {
 		SharedReference<Texture2D> m_SelectedProjectIcon = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 
-		bool m_CreatingNewProject = false;
+		bool m_IsCreatingNewProject = false;
 	};
 
 }

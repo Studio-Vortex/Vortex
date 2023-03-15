@@ -179,8 +179,8 @@ namespace Vortex {
 
 			ScriptEngine::Init();
 
-			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
-			OpenScene(startScenePath);
+			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
+			OpenScene(sceneMetadata);
 
 			TagComponent::ResetAddedMarkers();
 
@@ -190,7 +190,7 @@ namespace Vortex {
 		return false;
 	}
 
-	bool RuntimeLayer::OpenScene(const std::filesystem::path& filepath)
+	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)
 	{
 		if (m_RuntimeScene->IsRunning())
 		{
@@ -204,19 +204,19 @@ namespace Vortex {
 			Input::SetCursorMode(CursorMode::Normal);
 		}
 
-		if (!FileSystem::Exists(filepath) || filepath.extension().string() != ".vortex")
+		if (!sceneMetadata.IsValid() || sceneMetadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(sceneMetadata.Handle))
 		{
-			VX_CORE_FATAL("Could not load {} - not a scene file", filepath.filename().string());
+			VX_CORE_FATAL("Could not load {} - not a scene file", sceneMetadata.Filepath.filename().string());
 			Application::Get().Quit();
 			return false;
 		}
 
 		SceneSerializer serializer(m_RuntimeScene);
 
-		if (serializer.Deserialize(filepath.string()))
+		if (serializer.Deserialize(sceneMetadata.Filepath.string()))
 		{
 			m_RuntimeScene->OnRuntimeStart();
-			std::string filename = filepath.filename().string();
+			std::string filename = sceneMetadata.Filepath.filename().string();
 			std::string sceneName = filename.substr(0, filename.find('.'));
 
 			ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -225,7 +225,7 @@ namespace Vortex {
 
 			for (auto& [buildIndex, sceneFilepath] : buildIndices)
 			{
-				if (sceneFilepath.find(filepath.string()) == std::string::npos)
+				if (sceneFilepath.find(sceneMetadata.Filepath.string()) == std::string::npos)
 					continue;
 
 				Scene::SetActiveSceneBuildIndex(buildIndex);
@@ -248,7 +248,7 @@ namespace Vortex {
 			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
 			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
 
-			OpenScene(nextSceneFilepath);
+			//OpenScene(nextSceneFilepath);
 
 			ScriptRegistry::ResetBuildIndex();
 		});

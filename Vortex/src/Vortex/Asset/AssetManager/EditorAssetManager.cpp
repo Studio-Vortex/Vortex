@@ -16,14 +16,23 @@ namespace Vortex {
 	{
 		AssetImporter::Init();
 
-		LoadAssetRegistry();
-		ReloadAssets();
+		
 	}
 
 	EditorAssetManager::~EditorAssetManager()
 	{
 		WriteToRegistryFile();
-		AssetImporter::Shutdown();
+	}
+
+	void EditorAssetManager::OnSerialized()
+	{
+		WriteToRegistryFile();
+	}
+
+	void EditorAssetManager::OnDeserialized()
+	{
+		LoadAssetRegistry();
+		ReloadAssets();
 	}
 
 	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
@@ -255,7 +264,7 @@ namespace Vortex {
 		{
 			std::string filepath = entry["Filepath"].as<std::string>();
 			AssetHandle handle = entry["Handle"].as<uint64_t>();
-			AssetType type = Utils::AssetTypeFromString(entry["Type"].as<std::string>());
+			AssetType type = Asset::GetAssetTypeFromString(entry["Type"].as<std::string>());
 
 			if (type == AssetType::None)
 				continue;
@@ -343,10 +352,19 @@ namespace Vortex {
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
+			std::filesystem::path path = entry.path();
+
+			if (path.string().find(".vxr") != std::string::npos)
+				continue;
+
 			if (entry.is_directory())
-				ProcessDirectory(entry.path());
+			{
+				ProcessDirectory(path);
+			}
 			else
-				ImportAsset(entry.path());
+			{
+				ImportAsset(path);
+			}
 		}
 	}
 
@@ -360,22 +378,17 @@ namespace Vortex {
 	{
 		struct AssetRegistryEntry
 		{
-			std::string Filepath;
-			AssetType Type;
+			std::string Filepath = "";
+			AssetType Type = AssetType::None;
 		};
 
 		std::map<UUID, AssetRegistryEntry> sortedMap;
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (!FileSystem::Exists(metadata.Filepath))
+			if (metadata.IsMemoryOnly && !FileSystem::Exists(GetFileSystemPath(metadata)))
 			{
 				continue;
-			}
-
-			if (metadata.IsMemoryOnly)
-			{
-				metadata.IsMemoryOnly
 			}
 
 			std::string filepathToSerialize = metadata.Filepath.string();
@@ -396,7 +409,7 @@ namespace Vortex {
 		{
 			VX_SERIALIZE_PROPERTY(Handle, handle, out);
 			VX_SERIALIZE_PROPERTY(Filepath, entry.Filepath, out);
-			VX_SERIALIZE_PROPERTY(Type, Utils::AssetTypeToString(entry.Type), out);
+			VX_SERIALIZE_PROPERTY(Type, Asset::GetAssetNameFromType(entry.Type), out);
 		}
 
 		out << YAML::EndSeq;
@@ -404,6 +417,7 @@ namespace Vortex {
 
 		const std::string& assetRegistryPath = Project::GetAssetRegistryPath().string();
 		std::ofstream fout(assetRegistryPath);
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open asset registry file!");
 		fout << out.c_str();
 	}
 

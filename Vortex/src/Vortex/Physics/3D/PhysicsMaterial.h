@@ -27,8 +27,7 @@ namespace Vortex {
 		);
 		~PhysicsMaterial() = default;
 
-		static AssetType GetStaticType() { return AssetType::PhysicsMaterial; }
-		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+		ASSET_CLASS_TYPE(PhysicsMaterialAsset)
 	};
 
 }

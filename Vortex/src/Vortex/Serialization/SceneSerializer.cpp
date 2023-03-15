@@ -1107,7 +1107,8 @@ namespace Vortex {
 			{
 				auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-				auto path = Project::GetAssetFileSystemPath(skyboxComponent["SourcePath"].as<std::string>()).string();
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(skyboxComponent["SourcePath"].as<std::string>());
+				auto path = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 				skybox.Source = Skybox::Create(path);
 
 				if (skyboxComponent["Rotation"])
@@ -1173,7 +1174,7 @@ namespace Vortex {
 				if (meshComponent["MeshSource"])
 				{
 					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
-					std::string assetPath = Project::GetAssetFileSystemPath(modelPath).string();
+					//std::string assetPath = Project::GetEditorAssetManager()->GetMetadata(handle);
 
 					MeshImportOptions importOptions = MeshImportOptions();
 
@@ -1185,7 +1186,7 @@ namespace Vortex {
 						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 					}
 
-					meshRendererComponent.Mesh = Mesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
+					//meshRendererComponent.Mesh = Mesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
 				}
 
 				auto submeshesData = meshComponent["Submeshes"];
@@ -1210,19 +1211,19 @@ namespace Vortex {
 					if (StaticMesh::IsDefaultMesh(modelPath))
 						assetPath = modelPath;
 					else
-						assetPath = Project::GetAssetFileSystemPath(modelPath).string();
+						//assetPath = Project::GetAssetFileSystemPath(modelPath).string();
 
 					MeshImportOptions importOptions = MeshImportOptions();
 
 					if (staticMeshComponent["MeshImportOptions"])
 					{
 						auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
-						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
-						importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
-						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+						//importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
+						//importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
+						//importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 					}
 
-					staticMeshRendererComponent.StaticMesh = StaticMesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
+					//staticMeshRendererComponent.StaticMesh = StaticMesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
 				}
 
 				auto submeshesData = staticMeshComponent["Submeshes"];
@@ -1297,8 +1298,8 @@ namespace Vortex {
 
 				if (textMeshComponent["FontSource"])
 				{
-					std::string fontSourcePath = Project::GetAssetFileSystemPath(textMeshComponent["FontSource"].as<std::string>()).string();
-					tmc.FontAsset = Font::Create(fontSourcePath);
+					//std::string fontSourcePath = Project::GetAssetFileSystemPath(textMeshComponent["FontSource"].as<std::string>()).string();
+					//tmc.FontAsset = Font::Create(fontSourcePath);
 				}
 				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
 				if (textMeshComponent["BgColor"])
@@ -1653,15 +1654,6 @@ namespace Vortex {
 				}
 			}
 		}
-	}
-
-	void SceneSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
-	{
-	}
-
-	bool SceneSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
-	{
-		return false;
 	}
 
 }

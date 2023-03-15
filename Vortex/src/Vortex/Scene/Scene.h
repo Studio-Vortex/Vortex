@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Editor/EditorCamera.h"
@@ -12,7 +13,7 @@ namespace Vortex {
 
 	class Entity;
 
-	class Scene
+	class Scene : public Asset
 	{
 	public:
 		struct QueueFreeData
@@ -120,6 +121,8 @@ namespace Vortex {
 		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
 		static void Create2DSampleScene(SharedRef<Scene>& context);
 		static void Create3DSampleScene(SharedRef<Scene>& context);
+
+		ASSET_CLASS_TYPE(SceneAsset)
 
 		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
 		static SharedRef<Scene> Create();

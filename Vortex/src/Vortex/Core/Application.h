@@ -4,7 +4,9 @@
 
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/LayerStack.h"
-#include "Vortex/Events/ApplicationEvent.h"
+
+#include "Vortex/Events/WindowEvent.h"
+
 #include "Vortex/Renderer/RendererAPI.h"
 
 #include "Vortex/Gui/GuiLayer.h"

@@ -1,11 +1,11 @@
 #include "vxpch.h"
 #include "WindowsWindow.h"
 
-#include "Vortex/Events/ApplicationEvent.h"
+#include "Vortex/Core/Input.h"
+#include "Vortex/Events/WindowEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 #include "Vortex/Events/KeyEvent.h"
 
-#include "Vortex/Core/Input.h"
 #include "Vortex/Renderer/Renderer.h"
 
 #include "Vortex/Platform/OpenGL/OpenGLContext.h"

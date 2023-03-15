@@ -80,6 +80,7 @@ namespace Vortex {
 			{
 				out << YAML::Key << "Name" << YAML::Value << props.General.Name;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << props.General.AssetDirectory.string();
+				out << YAML::Key << "AssetRegistry" << YAML::Value << props.General.AssetRegistryPath.string();
 				out << YAML::Key << "StartScene" << YAML::Value << props.General.StartScene.string();
 			}
 			out << YAML::EndMap; // General
@@ -213,8 +214,9 @@ namespace Vortex {
 
 		{
 			auto generalData = projectData["General"];
-			props.General.AssetDirectory = generalData["AssetDirectory"].as<std::string>();
 			props.General.Name = generalData["Name"].as<std::string>();
+			props.General.AssetDirectory = generalData["AssetDirectory"].as<std::string>();
+			props.General.AssetRegistryPath = generalData["AssetRegistry"].as<std::string>();
 			props.General.StartScene = generalData["StartScene"].as<std::string>();
 		}
 
@@ -231,6 +233,7 @@ namespace Vortex {
 			if (Application::Get().IsRuntime())
 			{
 				Window& window = Application::Get().GetWindow();
+
 				if (props.BuildProps.Window.Maximized)
 				{
 					window.SetMaximized(props.BuildProps.Window.Maximized);

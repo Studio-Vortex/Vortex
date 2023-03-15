@@ -2,10 +2,14 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math/Math.h"
+
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+
 #include "Vortex/Asset/AssetManager/IAssetManager.h"
 #include "Vortex/Asset/AssetManager/EditorAssetManager.h"
+#include "Vortex/Asset/AssetManager/RuntimeAssetManager.h"
+
 #include "Vortex/Utils/FileSystem.h"
 
 #include <string>
@@ -26,7 +30,7 @@ namespace Vortex {
 		{
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
-			std::filesystem::path AssetRegistryPath = "";
+			std::filesystem::path AssetRegistryPath = "Assets/AssetRegistry.vxr";
 			std::filesystem::path StartScene = "";
 		} General;
 
@@ -149,23 +153,22 @@ namespace Vortex {
 			return GetProjectDirectory() / "Cache";
 		}
 
-		// TODO: move to asset manager
-		inline static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& filepath)
-		{
-			VX_CORE_ASSERT(s_ActiveProject, "No active project!");
-			return GetAssetDirectory() / filepath;
-		}
-
 		static SharedReference<IAssetManager> GetAssetManager();
 		static SharedReference<EditorAssetManager> GetEditorAssetManager();
+		static SharedReference<RuntimeAssetManager> GetRuntimeAssetManager();
 
 		static SharedRef<Project> New();
 		static SharedRef<Project> Load(const std::filesystem::path& filepath);
 		static SharedRef<Project> LoadRuntime(const std::filesystem::path& filepath);
-		static bool SaveActive(const std::filesystem::path& filepath);
 
 		static void SubmitSceneToBuild(const std::string& filepath);
 		static BuildIndexMap& GetScenesInBuild();
+
+		void Save();
+		
+	private:
+		void OnSerialized();
+		void OnDeserialized();
 
 	private:
 		ProjectProperties m_Properties;

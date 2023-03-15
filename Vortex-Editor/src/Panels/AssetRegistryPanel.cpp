@@ -18,16 +18,20 @@ namespace Vortex {
 	{
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 
+		UI::BeginPropertyGrid();
+
 		for (const auto& [handle, metadata] : editorAssetManager->GetAssetRegistry())
 		{
 			Gui::Text("AssetHandle: %llu", handle);
 			Gui::Text("Filepath: %s", metadata.Filepath);
-			Gui::Text("Type: %s", Utils::AssetTypeToString(metadata.Type));
-			Gui::Text("IsDataLoaded: %b", metadata.IsDataLoaded);
-			Gui::Text("IsMemoryOnly: %b", metadata.IsMemoryOnly);
+			Gui::Text("Type: %s", Asset::GetAssetNameFromType(metadata.Type));
+			Gui::Text("IsDataLoaded: %s", metadata.IsDataLoaded ? "true" : "false");
+			Gui::Text("IsMemoryOnly: %s", metadata.IsMemoryOnly ? "true" : "false");
 
 			UI::Draw::Underline();
 		}
+
+		UI::EndPropertyGrid();
 	}
 
 }

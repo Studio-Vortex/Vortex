@@ -272,7 +272,7 @@ namespace Vortex {
 			return;
 		}
 
-		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.ScriptingProps.ScriptBinaryPath);
+		std::filesystem::path appAssemblyPath = FileSystem::Relative(projectProps.ScriptingProps.ScriptBinaryPath, Project::GetAssetDirectory());
 		assemblyLoaded = LoadAppAssembly(appAssemblyPath);
 		
 		if (!assemblyLoaded)

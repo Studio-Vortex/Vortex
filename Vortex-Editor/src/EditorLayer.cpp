@@ -88,7 +88,11 @@ namespace Vortex {
 	{
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
+
+		// TODO should this really be here?
 		ScriptEngine::Shutdown();
+
+		EditorResources::Shutdown();
 	}
 
 	void EditorLayer::OnUpdate(TimeStep delta)
@@ -2038,8 +2042,12 @@ namespace Vortex {
 
 			ScriptEngine::Init();
 
-			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetProperties().General.StartScene);
-			OpenScene(startScenePath);
+			SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+			std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+			const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
+
+			auto relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
+			OpenScene(relativePath);
 
 			SharedRef<Project> activeProject = Project::GetActive();
 			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
@@ -2057,10 +2065,7 @@ namespace Vortex {
 			CaptureFramebufferImageToDisk();
 		}
 
-		const auto& projectProps = Project::GetActive()->GetProperties();
-		auto projectFilename = std::format("{}.vxproject", projectProps.General.Name);
-		const auto& projectPath = Project::GetProjectDirectory() / std::filesystem::path(projectFilename);
-		Project::SaveActive(projectPath);
+		Project::GetActive()->Save();
 	}
 
 	void EditorLayer::CreateNewScene()

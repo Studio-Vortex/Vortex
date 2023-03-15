@@ -5779,12 +5779,13 @@ namespace Vortex {
 #pragma region Texture2D
 
 		// TODO all texture functions should use the asset system in the future
+		// We should have already loaded all textures in the project
 		Texture2D* Texture2D_LoadFromPath(MonoString* filepath)
 		{
 			char* filepathCStr = mono_string_to_utf8(filepath);
 
 			TextureProperties imageProps;
-			imageProps.Filepath = Project::GetAssetFileSystemPath(filepathCStr).string();
+			//imageProps.Filepath = Project::GetAssetFileSystemPath(filepathCStr).string();
 			imageProps.WrapMode = ImageWrap::Repeat;
 			
 			SharedReference<Texture2D> texture = Texture2D::Create(imageProps);

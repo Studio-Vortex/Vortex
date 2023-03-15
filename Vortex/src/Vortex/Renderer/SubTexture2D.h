@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Renderer/Texture.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 namespace Vortex {
 
-	class VORTEX_API SubTexture2D : public Asset
+	class VORTEX_API SubTexture2D : public RefCounted
 	{
 	public:
 		SubTexture2D() = default;
@@ -17,9 +16,6 @@ namespace Vortex {
 
 		VX_FORCE_INLINE const SharedReference<Texture2D>& GetTexure() const { return m_Texture; }
 		VX_FORCE_INLINE const Math::vec2* GetTextureCoords() const { return m_TexCoords; }
-
-		static AssetType GetStaticType() { return AssetType::SubTexture; }
-		AssetType GetAssetType() const override { return GetStaticType(); }
 
 		static SharedReference<SubTexture2D> CreateFromCoords(const SharedReference<Texture2D>& texture, const Math::vec2& coords, const Math::vec2& cellSize, const Math::vec2& spriteSize = Math::vec2(1.0f));
 

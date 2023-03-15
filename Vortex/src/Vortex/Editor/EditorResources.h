@@ -8,6 +8,7 @@ namespace Vortex {
 	{
 	public:
 		static void Init();
+		static void Shutdown();
 
 		// General
 		inline static SharedReference<Texture2D> SearchIcon = nullptr;
@@ -57,7 +58,7 @@ namespace Vortex {
 		inline static SharedReference<Texture2D> SceneIcon = nullptr;
 		inline static SharedReference<Texture2D> FileIcon = nullptr;
 
-		static SharedReference<Texture2D> CreateEditorImage(const std::string& filepath);
+		static SharedReference<Texture2D> LoadTexture(const std::string& filepath);
 	};
 
 }

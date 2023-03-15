@@ -4,6 +4,8 @@
 #include "Vortex/Project/Project.h"
 #include "Vortex/Serialization/SceneSerializer.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
 #include <yaml-cpp/yaml.h>
 
 namespace Vortex {
@@ -11,7 +13,7 @@ namespace Vortex {
 	PrefabSerializer::PrefabSerializer(const SharedRef<Prefab>& prefab)
 		: m_Prefab(prefab) { }
 
-	bool PrefabSerializer::Serialize(const std::filesystem::path& path)
+	bool PrefabSerializer::Serialize(const std::string& filepath)
 	{
 		SharedRef<Scene> scene = m_Prefab->m_Scene;
 		YAML::Emitter out;
@@ -35,14 +37,14 @@ namespace Vortex {
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(path);
+		std::ofstream fout(filepath);
 		fout << out.c_str();
 		return true;
 	}
 
-	bool PrefabSerializer::Deserialize(const std::filesystem::path& path, PrefabComponent& prefabComponent)
+	bool PrefabSerializer::Deserialize(const std::string& filepath, PrefabComponent& prefabComponent)
 	{
-		std::ifstream stream(path);
+		std::ifstream stream(filepath);
 		if (!stream.is_open())
 		{
 			return false;
@@ -56,20 +58,11 @@ namespace Vortex {
 			return false;
 
 		YAML::Node prefabNode = data["Prefab"];
-		SharedRef<Prefab> prefab = Prefab::Create(std::filesystem::relative(path, Project::GetActive()->GetProjectDirectory()));
+		SharedRef<Prefab> prefab = Prefab::Create(FileSystem::Relative(filepath, Project::GetProjectDirectory()));
 		SceneSerializer::DeserializeEntities(prefabNode, prefab->m_Scene);
 		prefabComponent.EntityPrefab = prefab;
 
 		return true;
 	}
-
-    void PrefabSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
-    {
-    }
-
-    bool PrefabSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
-    {
-        return false;
-    }
 
 }
