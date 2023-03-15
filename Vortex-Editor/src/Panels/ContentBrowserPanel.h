@@ -30,7 +30,7 @@ namespace Vortex {
 		std::filesystem::path m_CurrentDirectory;
 		std::filesystem::path m_PathToBeRenamed;
 
-		std::unordered_map<std::string, SharedRef<Texture2D>> m_TextureMap;
+		std::unordered_map<std::string, SharedReference<Texture2D>> m_TextureMap;
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Renderer/Image.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <string>
 
@@ -26,7 +28,7 @@ namespace Vortex {
 		uint32_t Stride = 0;
 	};
 
-	class VORTEX_API Texture
+	class VORTEX_API Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -53,6 +55,9 @@ namespace Vortex {
 		virtual void SaveToFile() const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
+		static AssetType GetStaticType() { return AssetType::Texture; }
+		AssetType GetAssetType() const override { return GetStaticType(); }
 	};
 
 	class VORTEX_API Texture2D : public Texture
@@ -60,7 +65,7 @@ namespace Vortex {
 	public:
 		virtual ~Texture2D() override = default;
 
-		static SharedRef<Texture2D> Create(const TextureProperties& imageProps);
+		static SharedReference<Texture2D> Create(const TextureProperties& imageProps);
 	};
 
 }

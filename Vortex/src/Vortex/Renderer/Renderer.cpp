@@ -63,7 +63,7 @@ namespace Vortex {
 		RenderTime RenderTime;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
-		SharedRef<Texture2D> BRDF_LUT = nullptr;
+		SharedReference<Texture2D> BRDF_LUT = nullptr;
 
 		uint32_t RenderFlags = 0;
 	};

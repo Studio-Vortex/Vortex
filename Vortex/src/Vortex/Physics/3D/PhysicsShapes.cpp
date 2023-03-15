@@ -20,17 +20,14 @@ namespace Vortex {
 
 	void ColliderShape::Release()
 	{
-		if (m_IsShared || m_Material == nullptr)
+		if (m_IsShared && m_Material == nullptr)
 		{
 			return;
 		}
 
 		VX_CORE_ASSERT(m_Material, "Material was invalid!");
 
-		if (m_Material->isReleasable())
-		{
-			m_Material->release();
-		}
+		m_Material->release();
 	}
 
 	void ColliderShape::SetMaterial(SharedReference<PhysicsMaterial>& material)
@@ -56,7 +53,7 @@ namespace Vortex {
 
 		SetMaterial(material);
 
-		auto scene = Physics::GetContextScene();
+		Scene* scene = Physics::GetContextScene();
 		TransformComponent worldSpaceTransform = scene->GetWorldSpaceTransform(entity);
 
 		Math::vec3 colliderSize = Math::Abs(worldSpaceTransform.Scale * component.HalfSize);
@@ -66,17 +63,6 @@ namespace Vortex {
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
 		m_Shape->userData = this;
-	}
-
-	BoxColliderShape::~BoxColliderShape()
-	{
-		if (m_Shape == nullptr)
-			return;
-
-		if (m_Shape->isReleasable())
-		{
-			m_Shape->release();
-		}
 	}
 
 	const Math::vec3& BoxColliderShape::GetHalfSize() const
@@ -148,7 +134,7 @@ namespace Vortex {
 
 		SetMaterial(material);
 
-		auto scene = Physics::GetContextScene();
+		Scene* scene = Physics::GetContextScene();
 		TransformComponent worldSpaceTransform = scene->GetWorldSpaceTransform(entity);
 
 		float largestComponent = Math::Max(worldSpaceTransform.Scale.x, Math::Max(worldSpaceTransform.Scale.y, worldSpaceTransform.Scale.z));
@@ -159,17 +145,6 @@ namespace Vortex {
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
 		m_Shape->userData = this;
-	}
-
-	SphereColliderShape::~SphereColliderShape()
-	{
-		if (m_Shape == nullptr)
-			return;
-
-		if (m_Shape->isReleasable())
-		{
-			m_Shape->release();
-		}
 	}
 
 	float SphereColliderShape::GetRadius() const
@@ -241,7 +216,7 @@ namespace Vortex {
 
 		SetMaterial(material);
 
-		auto scene = Physics::GetContextScene();
+		Scene* scene = Physics::GetContextScene();
 		TransformComponent worldSpaceTransform = scene->GetWorldSpaceTransform(entity);
 
 		float radiusScale = Math::Max(worldSpaceTransform.Scale.x, worldSpaceTransform.Scale.z);
@@ -252,17 +227,6 @@ namespace Vortex {
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f, 0.0f, physx::PxHalfPi)));
 		m_Shape->userData = this;
-	}
-
-	CapsuleColliderShape::~CapsuleColliderShape()
-	{
-		if (m_Shape == nullptr)
-			return;
-
-		if (m_Shape->isReleasable())
-		{
-			m_Shape->release();
-		}
 	}
 
 	float CapsuleColliderShape::GetRadius() const
@@ -350,20 +314,6 @@ namespace Vortex {
 
 	}
 
-	ConvexMeshShape::~ConvexMeshShape()
-	{
-		for (auto& shape : m_Shapes)
-		{
-			if (shape == nullptr)
-				continue;
-
-			if (shape->isReleasable())
-			{
-				shape->release();
-			}
-		}
-	}
-
 	const Math::vec3& ConvexMeshShape::GetOffset() const
 	{
 		return Math::vec3(); // TODO: insert return statement here
@@ -406,20 +356,6 @@ namespace Vortex {
 		: ColliderShape(ColliderType::TriangleMesh, entity, component.UseSharedShape)
 	{
 
-	}
-
-	TriangleMeshShape::~TriangleMeshShape()
-	{
-		for (auto& shape : m_Shapes)
-		{
-			if (shape == nullptr)
-				continue;
-
-			if (shape->isReleasable())
-			{
-				shape->release();
-			}
-		}
 	}
 
 	const Math::vec3& TriangleMeshShape::GetOffset() const

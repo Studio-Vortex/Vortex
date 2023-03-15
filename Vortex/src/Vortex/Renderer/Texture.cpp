@@ -12,12 +12,12 @@
 
 namespace Vortex {
 
-    SharedRef<Texture2D> Texture2D::Create(const TextureProperties& imageProps)
+    SharedReference<Texture2D> Texture2D::Create(const TextureProperties& imageProps)
     {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLTexture2D>(imageProps);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLTexture2D>::Create(imageProps);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

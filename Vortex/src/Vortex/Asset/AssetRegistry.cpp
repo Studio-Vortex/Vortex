@@ -28,6 +28,16 @@ namespace Vortex {
 		return m_LoadedAssets.contains(handle);
 	}
 
+	std::unordered_map<AssetHandle, AssetMetadata>::iterator AssetRegistry::Find(AssetHandle handle)
+	{
+		return m_LoadedAssets.find(handle);
+	}
+
+    const std::unordered_map<AssetHandle, AssetMetadata>::const_iterator AssetRegistry::Find(AssetHandle handle) const
+    {
+		return m_LoadedAssets.find(handle);
+    }
+
 	size_t AssetRegistry::Remove(AssetHandle handle)
 	{
 		VX_CORE_ASSERT(Contains(handle), "Registry doesn't contain asset handle!");

@@ -760,17 +760,13 @@ namespace Vortex {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path filePath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".tga" || filePath.extension().string() == ".psd")
+				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".jpeg" || filePath.extension().string() == ".tga" || filePath.extension().string() == ".psd")
 				{
-					std::filesystem::path texturePath = filePath;
+					std::filesystem::path textureFilepath = filePath;
 
-					TextureProperties imageProps;
-					imageProps.Filepath = texturePath.string();
-					imageProps.WrapMode = ImageWrap::Repeat;
+					AssetHandle texture = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
 
-					SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
-
-					if (texture->IsLoaded())
+					if (AssetManager::IsHandleValid(texture))
 					{
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
 						{
@@ -779,7 +775,7 @@ namespace Vortex {
 						else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 						{
 							SharedRef<StaticMesh> staticMesh = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-							std::string filename = texturePath.filename().string();
+							std::string filename = textureFilepath.filename().string();
 
 							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
 								staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
@@ -798,7 +794,7 @@ namespace Vortex {
 						}
 					}
 					else
-						VX_CONSOLE_LOG_WARN("Could not load texture - {}", texturePath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load texture - {}", textureFilepath.filename().string());
 				}
 				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf" || filePath.extension().string() == ".dae" || filePath.extension().string() == ".glb")
 				{
@@ -1139,7 +1135,7 @@ namespace Vortex {
 
 		if (hasPlayButton)
 		{
-			SharedRef<Texture2D> icon = (hasSimulateButton) ? EditorResources::PlayIcon : EditorResources::StopIcon;
+			SharedReference<Texture2D> icon = (hasSimulateButton) ? EditorResources::PlayIcon : EditorResources::StopIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasSimulateButton)
@@ -1153,7 +1149,7 @@ namespace Vortex {
 
 		if (hasSimulateButton)
 		{
-			SharedRef<Texture2D> icon = (hasPlayButton) ? EditorResources::SimulateIcon : EditorResources::StopIcon;
+			SharedReference<Texture2D> icon = (hasPlayButton) ? EditorResources::SimulateIcon : EditorResources::StopIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasPlayButton)
@@ -1167,7 +1163,7 @@ namespace Vortex {
 
 		if (hasPauseButton)
 		{
-			SharedRef<Texture2D> icon = EditorResources::PauseIcon;
+			SharedReference<Texture2D> icon = EditorResources::PauseIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				bool paused = !scenePaused;
@@ -1182,7 +1178,7 @@ namespace Vortex {
 
 			if (scenePaused)
 			{
-				SharedRef<Texture2D> icon = EditorResources::StepIcon;
+				SharedReference<Texture2D> icon = EditorResources::StepIcon;
 				if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
 
@@ -2435,7 +2431,7 @@ namespace Vortex {
 		imageProps.Buffer = buffer.As<const void>();
 		imageProps.Stride = stride;
 
-		SharedRef<Texture2D> sceneTexture = Texture2D::Create(imageProps);
+		SharedReference<Texture2D> sceneTexture = Texture2D::Create(imageProps);
 		sceneTexture->SaveToFile();
 	}
 

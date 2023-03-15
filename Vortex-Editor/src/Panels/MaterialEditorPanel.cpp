@@ -8,35 +8,39 @@ namespace Vortex {
 
 	namespace Utils {
 
-		static SharedRef<Texture2D> GetMaterialTexture(const SharedRef<Material>& material, uint32_t index)
+		static SharedReference<Texture2D> GetMaterialTexture(const SharedRef<Material>& material, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
+			AssetHandle handle;
+
 			switch (index)
 			{
-				case 0: return material->GetAlbedoMap();
-				case 1: return material->GetNormalMap();
-				case 2: return material->GetMetallicMap();
-				case 3: return material->GetRoughnessMap();
-				case 4: return material->GetEmissionMap();
-				case 5: return material->GetParallaxOcclusionMap();
-				case 6: return material->GetAmbientOcclusionMap();
+				case 0: handle =  material->GetAlbedoMap();
+				case 1: handle =  material->GetNormalMap();
+				case 2: handle =  material->GetMetallicMap();
+				case 3: handle =  material->GetRoughnessMap();
+				case 4: handle =  material->GetEmissionMap();
+				case 5: handle =  material->GetParallaxOcclusionMap();
+				case 6: handle =  material->GetAmbientOcclusionMap();
 			}
+
+			return AssetManager::GetAsset<Texture2D>(handle);
 		}
 
-		static void SetMaterialTexture(SharedRef<Material> material, const SharedRef<Texture2D>& texture, uint32_t index)
+		static void SetMaterialTexture(SharedRef<Material> material, const SharedReference<Texture2D>& texture, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
 			switch (index)
 			{
-				case 0: material->SetAlbedoMap(texture);            break;
-				case 1: material->SetNormalMap(texture);            break;
-				case 2: material->SetMetallicMap(texture);          break;
-				case 3: material->SetRoughnessMap(texture);         break;
-				case 4: material->SetEmissionMap(texture);          break;
-				case 5: material->SetParallaxOcclusionMap(texture); break;
-				case 6: material->SetAmbientOcclusionMap(texture);  break;
+				case 0: material->SetAlbedoMap(texture->Handle);            break;
+				case 1: material->SetNormalMap(texture->Handle);            break;
+				case 2: material->SetMetallicMap(texture->Handle);          break;
+				case 3: material->SetRoughnessMap(texture->Handle);         break;
+				case 4: material->SetEmissionMap(texture->Handle);          break;
+				case 5: material->SetParallaxOcclusionMap(texture->Handle); break;
+				case 6: material->SetAmbientOcclusionMap(texture->Handle);  break;
 			}
 		}
 
@@ -102,8 +106,8 @@ namespace Vortex {
 
 			for (uint32_t i = 0; i < count; i++)
 			{
-				SharedRef<Texture2D> texture = nullptr;
-				if (SharedRef<Texture2D> entry = GetMaterialTexture(material, i))
+				SharedReference<Texture2D> texture = nullptr;
+				if (SharedReference<Texture2D> entry = GetMaterialTexture(material, i))
 				{
 					texture = entry;
 				}
@@ -141,13 +145,13 @@ namespace Vortex {
 							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
+							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".jpeg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 							{
 								TextureProperties imageProps;
 								imageProps.Filepath = texturePath.string();
 								imageProps.WrapMode = ImageWrap::Repeat;
 
-								SharedRef<Texture2D> newTexture = Texture2D::Create(imageProps);
+								SharedReference<Texture2D> newTexture = Texture2D::Create(imageProps);
 
 								if (newTexture->IsLoaded())
 								{
@@ -160,7 +164,7 @@ namespace Vortex {
 							}
 							else
 							{
-								VX_WARN("Could not load texture, not a '.png', '.jpg', '.tga' or '.psd' - {}", texturePath.filename().string());
+								VX_WARN("Could not load texture", texturePath.filename().string());
 							}
 						}
 
@@ -169,7 +173,7 @@ namespace Vortex {
 
 					if (hovered && leftMouseButtonClicked)
 					{
-						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.tga;*.psd)\0*.png;*.jpg;*.tga;*.psd\0");
+						std::string filepath = FileDialogue::OpenFileDialog("Texture File (*.png;*.jpg;*.jpeg;*.tga;*.psd)\0*.png;*.jpg;*.jpeg;*.tga;*.psd\0");
 						
 						if (!filepath.empty())
 						{
@@ -180,7 +184,7 @@ namespace Vortex {
 							imageProps.Filepath = relativePath;
 							imageProps.WrapMode = ImageWrap::Repeat;
 
-							SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+							SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 
 							SetMaterialTexture(material, texture, i);
 						}

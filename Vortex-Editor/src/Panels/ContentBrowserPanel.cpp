@@ -257,7 +257,7 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedRef<Texture2D> icon = EditorResources::FileIcon;
+			SharedReference<Texture2D> icon = EditorResources::FileIcon;
 
 			// File icons
 
@@ -277,7 +277,7 @@ public class Untitled : Entity
 				icon = EditorResources::FontIcon;
 			else if (extension == ".wav" || extension == ".mp3")
 				icon = EditorResources::AudioFileIcon;
-			else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
+			else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
 			{
 				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 				{
@@ -476,7 +476,7 @@ public class Untitled : Entity
 						}
 
 						// Rename SpriteRendererComponent Texture path
-						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
 						{
 							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
 							// we have the old filename
@@ -496,7 +496,7 @@ public class Untitled : Entity
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
 				Gui::BeginTooltip();
 
-				SharedRef<Texture2D> icon = nullptr;
+				SharedReference<Texture2D> icon = nullptr;
 
 				if (extension == ".vortex")
 					icon = EditorResources::SceneIcon;
@@ -510,7 +510,7 @@ public class Untitled : Entity
 					icon = EditorResources::FontIcon;
 				else if (extension == ".wav" || extension == ".mp3")
 					icon = EditorResources::AudioFileIcon;
-				else if (extension == ".png" || extension == ".jpg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
+				else if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".tga" || extension == ".psd" || extension == ".hdr")
 				{
 					if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
 					{
@@ -590,7 +590,7 @@ public class Untitled : Entity
 				Entity& droppedEntity = *(Entity*)payload->Data;
 				VX_CONSOLE_LOG_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
 				// Todo Create a new prefab here from the entity's uuid
-				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
+				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".vprefab"));
 				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);
 			}
 			Gui::EndDragDropTarget();

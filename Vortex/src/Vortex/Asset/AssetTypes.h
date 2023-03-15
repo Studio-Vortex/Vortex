@@ -10,7 +10,8 @@ namespace Vortex {
 	enum class AssetType : uint16_t
 	{
 		None = 0,
-		Model,
+		Mesh,
+		StaticMesh,
 		Font,
 		Audio,
 		Scene,
@@ -20,6 +21,7 @@ namespace Vortex {
 		Material,
 		Animator,
 		Animation,
+		SubTexture,
 		Environment,
 		PhysicsMaterial,
 	};
@@ -31,7 +33,8 @@ namespace Vortex {
 			switch (type)
 			{
 				case AssetType::None:            return "None";
-				case AssetType::Model:           return "Model";
+				case AssetType::Mesh:            return "Mesh";
+				case AssetType::StaticMesh:      return "StaticMesh";
 				case AssetType::Font:            return "Font";
 				case AssetType::Audio:           return "Audio";
 				case AssetType::Scene:           return "Scene";
@@ -41,6 +44,7 @@ namespace Vortex {
 				case AssetType::Material:        return "Material";
 				case AssetType::Animator:        return "Animator";
 				case AssetType::Animation:       return "Animation";
+				case AssetType::SubTexture:      return "SubTexture";
 				case AssetType::Environment:     return "Environment";
 				case AssetType::PhysicsMaterial: return "PhysicsMaterial";
 			}
@@ -52,7 +56,8 @@ namespace Vortex {
 		static AssetType AssetTypeFromString(const std::string& type)
 		{
 			if (type == "None")            return AssetType::None;
-			if (type == "Model")           return AssetType::Model;
+			if (type == "Mesh")            return AssetType::Mesh;
+			if (type == "StaticMesh")      return AssetType::StaticMesh;
 			if (type == "Font")            return AssetType::Font;
 			if (type == "Audio")           return AssetType::Audio;
 			if (type == "Scene")           return AssetType::Scene;
@@ -62,6 +67,7 @@ namespace Vortex {
 			if (type == "Material")        return AssetType::Material;
 			if (type == "Animator")        return AssetType::Animator;
 			if (type == "Animation")       return AssetType::Animation;
+			if (type == "SubTexture")      return AssetType::SubTexture;
 			if (type == "Environment")     return AssetType::Environment;
 			if (type == "PhysicsMaterial") return AssetType::PhysicsMaterial;
 

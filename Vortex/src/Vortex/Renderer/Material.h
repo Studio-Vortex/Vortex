@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Texture.h"
 
@@ -16,23 +17,23 @@ namespace Vortex {
 	{
 		std::string Name = "Unnamed";
 		Math::vec3 Albedo = Math::vec3(1.0f);
-		SharedRef<Texture2D> AlbedoMap = nullptr;
+		AssetHandle AlbedoMap = 0;
 
-		SharedRef<Texture2D> NormalMap = nullptr;
+		AssetHandle NormalMap = 0;
 
 		float Metallic = 0.5f;
-		SharedRef<Texture2D> MetallicMap = nullptr;
+		AssetHandle MetallicMap = 0;
 
 		float Roughness = 0.5f;
-		SharedRef<Texture2D> RoughnessMap = nullptr;
+		AssetHandle RoughnessMap = 0;
 
 		float Emission = 0.0f;
-		SharedRef<Texture2D> EmissionMap = nullptr;
+		AssetHandle EmissionMap = 0;
 
 		float ParallaxHeightScale = 0.5f;
-		SharedRef<Texture2D> ParallaxOcclusionMap = nullptr;
+		AssetHandle ParallaxOcclusionMap = 0;
 
-		SharedRef<Texture2D> AmbientOcclusionMap = nullptr;
+		AssetHandle AmbientOcclusionMap = 0;
 
 		Math::vec2 UV = Math::vec2(1.0f);
 
@@ -59,38 +60,38 @@ namespace Vortex {
 		const Math::vec3& GetAlbedo() const;
 		void SetAlbedo(const Math::vec3& albedo);
 
-		const SharedRef<Texture2D>& GetNormalMap() const;
-		void SetNormalMap(const SharedRef<Texture2D>& normalMap);
+		AssetHandle GetAlbedoMap() const;
+		void SetAlbedoMap(AssetHandle albedoMap);
 
-		const SharedRef<Texture2D>& GetAlbedoMap() const;
-		void SetAlbedoMap(const SharedRef<Texture2D>& albedoMap);
+		AssetHandle GetNormalMap() const;
+		void SetNormalMap(AssetHandle normalMap);
 
 		float GetMetallic() const;
 		void SetMetallic(float metallic);
 
-		const SharedRef<Texture2D>& GetMetallicMap() const;
-		void SetMetallicMap(const SharedRef<Texture2D>& metallicMap);
+		AssetHandle GetMetallicMap() const;
+		void SetMetallicMap(AssetHandle metallicMap);
 
 		float GetRoughness() const;
 		void SetRoughness(float roughness);
 
-		const SharedRef<Texture2D>& GetRoughnessMap() const;
-		void SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap);
+		AssetHandle GetRoughnessMap() const;
+		void SetRoughnessMap(AssetHandle roughnessMap);
 
 		float GetEmission() const;
 		void SetEmission(float emission);
 
-		const SharedRef<Texture2D>& GetEmissionMap() const;
-		void SetEmissionMap(const SharedRef<Texture2D>& emissionMap);
+		AssetHandle GetEmissionMap() const;
+		void SetEmissionMap(AssetHandle emissionMap);
 
 		float GetParallaxHeightScale() const;
 		void SetParallaxHeightScale(float heightScale);
 
-		const SharedRef<Texture2D>& GetParallaxOcclusionMap() const;
-		void SetParallaxOcclusionMap(const SharedRef<Texture2D>& parallaxOcclusionMap);
+		AssetHandle GetParallaxOcclusionMap() const;
+		void SetParallaxOcclusionMap(AssetHandle parallaxOcclusionMap);
 
-		const SharedRef<Texture2D>& GetAmbientOcclusionMap() const;
-		void SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap);
+		AssetHandle GetAmbientOcclusionMap() const;
+		void SetAmbientOcclusionMap(AssetHandle ambientOcclusionMap);
 
 		const Math::vec2& GetUV() const;
 		void SetUV(const Math::vec2& uv);

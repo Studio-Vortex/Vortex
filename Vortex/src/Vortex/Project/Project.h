@@ -137,6 +137,12 @@ namespace Vortex {
 			return GetProjectDirectory() / s_ActiveProject->m_Properties.General.AssetDirectory;
 		}
 
+		inline static std::filesystem::path GetAssetRegistryPath()
+		{
+			VX_CORE_ASSERT(s_ActiveProject, "No active Project!");
+			return GetProjectDirectory() / s_ActiveProject->m_Properties.General.AssetRegistryPath;
+		}
+
 		inline static std::filesystem::path GetCacheDirectory()
 		{
 			VX_CORE_ASSERT(s_ActiveProject, "No active project!");

@@ -248,25 +248,20 @@ namespace Vortex {
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
-				SharedRef<Texture2D> result = nullptr;
+				AssetHandle result = 0;
 
-				aiString path;
+				aiString textureFilepath;
 
-				if (mat->GetTexture(textureType, index, &path) == AI_SUCCESS)
+				if (mat->GetTexture(textureType, index, &textureFilepath) != AI_SUCCESS)
+					return result;
+
+				const char* pathCStr = textureFilepath.C_Str();
+				std::filesystem::path filepath = std::filesystem::path(pathCStr);
+				std::filesystem::path relativePath = directoryPath / filepath;
+
+				if (FileSystem::Exists(relativePath))
 				{
-					const char* pathCStr = path.C_Str();
-					std::filesystem::path filepath = std::filesystem::path(pathCStr);
-					std::filesystem::path relativePath = directoryPath / filepath;
-
-					if (FileSystem::Exists(relativePath))
-					{
-						TextureProperties imageProps;
-						imageProps.Filepath = relativePath.string();
-						imageProps.WrapMode = ImageWrap::Repeat;
-
-						result = Texture2D::Create(imageProps);
-						return result;
-					}
+					result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
 				}
 
 				return result;

@@ -18,7 +18,7 @@ namespace Vortex {
 
 		const std::filesystem::path& GetFontPath() const { return m_Filepath; }
 
-		SharedRef<Texture2D> GetFontAtlas() const { return m_TextureAtlas; }
+		SharedReference<Texture2D> GetFontAtlas() const { return m_TextureAtlas; }
 		const MSDFData* GetMSDFData() const { return m_MSDFData; }
 
 		static void Init();
@@ -32,7 +32,7 @@ namespace Vortex {
 
 	private:
 		std::filesystem::path m_Filepath;
-		SharedRef<Texture2D> m_TextureAtlas = nullptr;
+		SharedReference<Texture2D> m_TextureAtlas = nullptr;
 		MSDFData* m_MSDFData = nullptr;
 	};
 

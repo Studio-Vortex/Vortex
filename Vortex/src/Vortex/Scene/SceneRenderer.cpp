@@ -9,6 +9,8 @@
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/LightSource2D.h"
 
+#include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
 
@@ -73,9 +75,12 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
+					SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
+
 					Renderer2D::DrawSprite(
 						scene->GetWorldSpaceTransformMatrix(entity),
 						spriteRendererComponent,
+						texture,
 						(int)(entt::entity)e
 					);
 				}
@@ -217,7 +222,7 @@ namespace Vortex {
 
 						const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
 
-						SharedRef<Texture2D> icon = nullptr;
+						SharedReference<Texture2D> icon = nullptr;
 
 						if (lightSourceComponent.Type == LightType::Directional)
 							icon = EditorResources::SkyLightIcon;

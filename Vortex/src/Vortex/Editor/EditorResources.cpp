@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "EditorResources.h"
 
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
 namespace Vortex {
 
 	void EditorResources::Init()
@@ -49,7 +51,7 @@ namespace Vortex {
 		FileIcon = CreateEditorImage("Resources/Icons/ContentBrowser/FileIcon.png");
 	}
 
-	SharedRef<Texture2D> EditorResources::CreateEditorImage(const std::string& filepath)
+	SharedReference<Texture2D> EditorResources::CreateEditorImage(const std::string& filepath)
 	{
 		TextureProperties imageProps;
 		imageProps.Filepath = filepath;

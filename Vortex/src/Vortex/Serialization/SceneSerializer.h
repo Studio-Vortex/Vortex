@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Vortex/Scene/Scene.h"
 #include "Vortex/Core/Base.h"
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Asset/AssetSerializer.h"
 
 namespace YAML {
 
@@ -14,7 +15,7 @@ namespace Vortex {
 
 	class Entity;
 
-	class SceneSerializer
+	class SceneSerializer : public AssetSerializer
 	{
 	public:
 		SceneSerializer(const SharedRef<Scene>& scene);
@@ -27,6 +28,9 @@ namespace Vortex {
 
 		bool Deserialize(const std::string& filepath);
 		bool DeserializeRuntime(const std::string& filepath);
+
+		void Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset) override;
 
 	private:
 		SharedRef<Scene> m_Scene = nullptr;

@@ -23,7 +23,7 @@ namespace Vortex {
 	public:
 		virtual ~ColliderShape();
 
-		void Release();
+		virtual void Release();
 
 		inline virtual ColliderType GetType() const { return m_Type; }
 
@@ -56,7 +56,7 @@ namespace Vortex {
 	{
 	public:
 		BoxColliderShape(BoxColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
-		~BoxColliderShape();
+		~BoxColliderShape() override = default;
 
 		const Math::vec3& GetHalfSize() const;
 		void SetHalfSize(const Math::vec3& halfSize);
@@ -84,7 +84,7 @@ namespace Vortex {
 	{
 	public:
 		SphereColliderShape(SphereColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
-		~SphereColliderShape();
+		~SphereColliderShape() override = default;
 
 		float GetRadius() const;
 		void SetRadius(float radius);
@@ -112,7 +112,7 @@ namespace Vortex {
 	{
 	public:
 		CapsuleColliderShape(CapsuleColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
-		~CapsuleColliderShape();
+		~CapsuleColliderShape() override = default;
 
 		float GetRadius() const;
 		void SetRadius(float radius);
@@ -143,7 +143,7 @@ namespace Vortex {
 	{
 	public:
 		ConvexMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
-		~ConvexMeshShape();
+		~ConvexMeshShape() override = default;
 
 		virtual const Math::vec3& GetOffset() const override;
 		void SetOffset(const Math::vec3& offset) override;
@@ -168,7 +168,7 @@ namespace Vortex {
 	{
 	public:
 		TriangleMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
-		~TriangleMeshShape();
+		~TriangleMeshShape() override = default;
 
 		const Math::vec3& GetOffset() const override;
 		void SetOffset(const Math::vec3& offset) override;

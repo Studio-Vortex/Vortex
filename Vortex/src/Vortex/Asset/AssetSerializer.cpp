@@ -3,11 +3,20 @@
 
 namespace Vortex {
 
-	void ModelSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
+	void MeshSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
 	{
 	}
 
-	bool ModelSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
+	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
+	{
+		return false;
+	}
+
+	void StaticMeshSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
+	{
+	}
+
+	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
 	{
 		return false;
 	}
@@ -83,5 +92,23 @@ namespace Vortex {
 	{
 		return false;
 	}
+
+    void SubTextureSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+    {
+    }
+
+    bool SubTextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+    {
+        return false;
+    }
+
+    void PhysicsMaterialSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+    {
+    }
+
+    bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+    {
+        return false;
+    }
 
 }

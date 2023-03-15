@@ -30,4 +30,22 @@ namespace Vortex {
 		return SplitString(string, std::string(1, delimiter));
 	}
 
+    std::string String::ToLower(std::string& string)
+    {
+		std::transform(string.begin(), string.end(), string.begin(),
+		[](const unsigned char c)
+		{
+			return std::tolower(c);
+		});
+
+		return string;
+    }
+
+    std::string String::ToLowerCopy(std::string_view& string)
+    {
+		std::string result(string);
+		ToLower(result);
+		return result;
+    }
+
 }

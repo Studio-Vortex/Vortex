@@ -1039,12 +1039,12 @@ namespace Vortex::UI {
 		Gui::Image((ImTextureID)rendererID, size, { 0, 1 }, { 1, 0 }, tintColor, borderColor);
 	}
 
-	inline static void ImageEx(const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	inline static void ImageEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
 	{
 		Gui::Image((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, bgColor, tintColor);
 	}
 
-	inline static bool ImageButton(const char* label, const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	inline static bool ImageButton(const char* label, const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
 	{
 		bool modified = false;
 
@@ -1066,7 +1066,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	inline static bool ImageButtonEx(const SharedRef<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
+	inline static bool ImageButtonEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
 	{
 		bool modified = false;
 
@@ -1078,7 +1078,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImVec2 rectMin, ImVec2 rectMax)
 	{
@@ -1091,21 +1091,21 @@ namespace Vortex::UI {
 			drawList->AddImage((ImTextureID)imageNormal->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
 	};
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImRect rectangle)
 	{
 		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
 	};
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+	static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImVec2 rectMin, ImVec2 rectMax)
 	{
 		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectMin, rectMax);
 	};
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+	static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImRect rectangle)
 	{
@@ -1113,13 +1113,13 @@ namespace Vortex::UI {
 	};
 
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& imageNormal, const SharedRef<Texture2D>& imageHovered, const SharedRef<Texture2D>& imagePressed,
+	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
 	{
 		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	};
 
-	static void DrawButtonImage(const SharedRef<Texture2D>& image,
+	static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
 	{
 		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());

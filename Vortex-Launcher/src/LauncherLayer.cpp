@@ -279,11 +279,11 @@ namespace Vortex {
 		m_Properties.ProjectPath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path(projectFilename);
 		std::filesystem::path projectDirectoryPath = FileSystem::GetParentDirectory(m_Properties.ProjectPath);
 
-		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scenes");
-		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Binaries");
-		std::filesystem::create_directories(projectDirectoryPath / "Assets/Scripts/Source");
-		std::filesystem::copy("Resources/NewProjectTemplate/premake5.lua", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
-		std::filesystem::copy("Resources/NewProjectTemplate/Win32Gen.bat", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
+		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scenes");
+		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Binaries");
+		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Source");
+		FileSystem::Copy("Resources/NewProjectTemplate/premake5.lua", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
+		FileSystem::Copy("Resources/NewProjectTemplate/Win32Gen.bat", (m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scripts")).string());
 
 		SharedRef<Scene> startScene = Scene::Create();
 		if (m_Properties.ProjectType == ProjectType::e2D)
@@ -308,7 +308,7 @@ namespace Vortex {
 
 		Project::SaveActive(m_Properties.ProjectPath);
 
-		std::filesystem::current_path("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
+		FileSystem::SetCurrentPath("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
 
 		FileSystem::LaunchApplication("Win32Gen.bat", "");
 
@@ -319,7 +319,7 @@ namespace Vortex {
 		projectSolutionFilename.replace_extension(".sln");
 		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
-		std::filesystem::current_path("Resources/HelperScripts");
+		FileSystem::SetCurrentPath("Resources/HelperScripts");
 
 		FileSystem::LaunchApplication("BuildSolution.bat", solutionPath.string().c_str());
 
@@ -335,7 +335,7 @@ namespace Vortex {
 		Gui::CloseCurrentPopup();
 	}
 
-	void LauncherLayer::ReplaceToken(std::string& str, const char* token, const std::string& value)
+	void ReplaceToken(std::string& str, const char* token, const std::string& value)
 	{
 		size_t pos = 0;
 
@@ -349,7 +349,7 @@ namespace Vortex {
 
 	void LauncherLayer::ResetWorkingDirectory()
 	{
-		std::filesystem::current_path(m_Properties.WorkingDirectory);
+		FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
 	}
 
 	void LauncherLayer::LaunchEditor()

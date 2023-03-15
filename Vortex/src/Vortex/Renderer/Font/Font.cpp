@@ -102,7 +102,7 @@ namespace Vortex {
 	}
 
 	template <typename T, typename S, int N, GeneratorFunction<S, N> GenFunc>
-	static SharedRef<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<GlyphGeometry>& glyphs, const FontGeometry& fontGeometry, const Configuration& config)
+	static SharedReference<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<GlyphGeometry>& glyphs, const FontGeometry& fontGeometry, const Configuration& config)
 	{
 		ImmediateAtlasGenerator<S, N, GenFunc, BitmapAtlasStorage<T, N>> generator(config.width, config.height);
 		generator.setAttributes(config.generatorAttributes);
@@ -121,19 +121,19 @@ namespace Vortex {
 		imageProps.Height = header.Height;
 		imageProps.TextureFormat = ImageFormat::RGBA32F;
 
-		SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+		SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(bitmap.pixels, header.Width * header.Height * 4);
 		return texture;
 	}
 
-	static SharedRef<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
+	static SharedReference<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
 	{
 		TextureProperties imageProps;
 		imageProps.Width = header.Width;
 		imageProps.Height = header.Height;
 		imageProps.TextureFormat = ImageFormat::RGBA32F;
 
-		SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+		SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(pixels, header.Width * header.Height * 4);
 		return texture;
 	}
@@ -336,7 +336,7 @@ namespace Vortex {
 		else
 		{
 			bool floatingPointFormat = true;
-			SharedRef<Texture2D> texture = nullptr;
+			SharedReference<Texture2D> texture = nullptr;
 
 			switch (config.imageType)
 			{

@@ -5,9 +5,11 @@
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysicsData.h"
+#include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 
@@ -29,8 +31,6 @@ namespace physx {
 }
 
 namespace Vortex {
-
-	class ColliderShape;
 
 	class VORTEX_API Physics
 	{
@@ -57,6 +57,7 @@ namespace Vortex {
 		VX_FORCE_INLINE static const std::unordered_map<UUID, physx::PxFixedJoint*> GetFixedJoints() { return s_ActiveFixedJoints; }
 
 		static physx::PxRigidActor* GetActor(UUID entityUUID);
+		static const std::vector<SharedReference<ColliderShape>>& GetEntityColliders(UUID entityUUID);
 		static physx::PxController* GetController(UUID entityUUID);
 		static physx::PxFixedJoint* GetFixedJoint(UUID entityUUID);
 
@@ -111,14 +112,13 @@ namespace Vortex {
 		static void DestroyFixedJointInternal(UUID entityUUID);
 		static void DestroyCharacterControllerInternal(UUID entityUUID);
 		static void DestroyPhysicsActorInternal(UUID entityUUID);
-		static void DestroyColliderShapesInternal(UUID entityUUID);
 
 	private:
 		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_ActiveActors;
 		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
 		inline static std::unordered_map<UUID, physx::PxFixedJoint*> s_ActiveFixedJoints;
 
-		using EntityColliderMap = std::unordered_map<UUID, std::vector<SharedRef<ColliderShape>>>;
+		using EntityColliderMap = std::unordered_map<UUID, std::vector<SharedReference<ColliderShape>>>;
 		inline static EntityColliderMap s_EntityColliders;
 
 		//                                                                               first - linear force, second - angular force

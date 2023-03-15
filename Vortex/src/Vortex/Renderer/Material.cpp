@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "Material.h"
 
+#include "Vortex/Asset/AssetManager.h"
+
 namespace Vortex {
 
 	Material::Material(const SharedRef<Shader>& shader, const MaterialProperties& props)
@@ -8,9 +10,10 @@ namespace Vortex {
 
 	void Material::Bind() const
 	{
-		if (SharedRef<Texture2D> normalMap = m_Properties.NormalMap)
+		if (AssetHandle handle = m_Properties.NormalMap)
 		{
 			uint32_t normalMapTextureSlot = 6;
+			SharedReference<Texture2D> normalMap = AssetManager::GetAsset<Texture2D>(handle);
 			normalMap->Bind(normalMapTextureSlot);
 			m_Shader->SetInt("u_Material.NormalMap", normalMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasNormalMap", true);
@@ -18,9 +21,10 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasNormalMap", false);
 
-		if (SharedRef<Texture2D> albedoMap = m_Properties.AlbedoMap)
+		if (AssetHandle handle = m_Properties.AlbedoMap)
 		{
 			uint32_t albedoMapTextureSlot = 7;
+			SharedReference<Texture2D> albedoMap = AssetManager::GetAsset<Texture2D>(handle);
 			albedoMap->Bind(albedoMapTextureSlot);
 			m_Shader->SetInt("u_Material.AlbedoMap", albedoMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasAlbedoMap", true);
@@ -31,9 +35,10 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasAlbedoMap", false);
 		}
 
-		if (SharedRef<Texture2D> metallicMap = m_Properties.MetallicMap)
+		if (AssetHandle handle = m_Properties.MetallicMap)
 		{
 			uint32_t metallicMapTextureSlot = 8;
+			SharedReference<Texture2D> metallicMap = AssetManager::GetAsset<Texture2D>(handle);
 			metallicMap->Bind(metallicMapTextureSlot);
 			m_Shader->SetInt("u_Material.MetallicMap", metallicMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasMetallicMap", true);
@@ -44,9 +49,10 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasMetallicMap", false);
 		}
 
-		if (SharedRef<Texture2D> roughnessMap = m_Properties.RoughnessMap)
+		if (AssetHandle handle = m_Properties.RoughnessMap)
 		{
 			uint32_t roughnessMapTextureSlot = 9;
+			SharedReference<Texture2D> roughnessMap = AssetManager::GetAsset<Texture2D>(handle);
 			roughnessMap->Bind(roughnessMapTextureSlot);
 			m_Shader->SetInt("u_Material.RoughnessMap", roughnessMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasRoughnessMap", true);
@@ -57,9 +63,10 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasRoughnessMap", false);
 		}
 
-		if (SharedRef<Texture2D> emissionMap = m_Properties.EmissionMap)
+		if (AssetHandle handle = m_Properties.EmissionMap)
 		{
 			uint32_t emissionMapTextureSlot = 10;
+			SharedReference<Texture2D> emissionMap = AssetManager::GetAsset<Texture2D>(handle);
 			emissionMap->Bind(emissionMapTextureSlot);
 			m_Shader->SetInt("u_Material.EmissionMap", emissionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasEmissionMap", true);
@@ -70,9 +77,10 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
 		}
 
-		if (SharedRef<Texture2D> parallaxOcclusionMap = m_Properties.ParallaxOcclusionMap)
+		if (AssetHandle handle = m_Properties.ParallaxOcclusionMap)
 		{
 			uint32_t parallaxOcclusionMapTextureSlot = 11;
+			SharedReference<Texture2D> parallaxOcclusionMap = AssetManager::GetAsset<Texture2D>(handle);
 			parallaxOcclusionMap->Bind(parallaxOcclusionMapTextureSlot);
 			m_Shader->SetInt("u_Material.POMap", parallaxOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasPOMap", true);
@@ -81,9 +89,10 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasPOMap", false);
 
-		if (SharedRef<Texture2D> ambientOcclusionMap = m_Properties.AmbientOcclusionMap)
+		if (AssetHandle handle = m_Properties.AmbientOcclusionMap)
 		{
 			uint32_t ambientOcclusionMapTextureSlot = 12;
+			SharedReference<Texture2D> ambientOcclusionMap = AssetManager::GetAsset<Texture2D>(handle);
 			ambientOcclusionMap->Bind(ambientOcclusionMapTextureSlot);
 			m_Shader->SetInt("u_Material.AOMap", ambientOcclusionMapTextureSlot);
 			m_Shader->SetBool("u_Material.HasAOMap", true);
@@ -116,16 +125,6 @@ namespace Vortex {
 		m_Properties.Name = name;
     }
 
-	const SharedRef<Texture2D>& Material::GetNormalMap() const
-	{
-		return m_Properties.NormalMap;
-	}
-
-	void Material::SetNormalMap(const SharedRef<Texture2D>& normalMap)
-	{
-		m_Properties.NormalMap = normalMap;
-	}
-
 	const Math::vec3& Material::GetAlbedo() const
 	{
 		return m_Properties.Albedo;
@@ -136,14 +135,24 @@ namespace Vortex {
 		m_Properties.Albedo = albedo;
 	}
 
-	const SharedRef<Texture2D>& Material::GetAlbedoMap() const
+	AssetHandle Material::GetAlbedoMap() const
 	{
 		return m_Properties.AlbedoMap;
 	}
 
-	void Material::SetAlbedoMap(const SharedRef<Texture2D>& albedoMap)
+	void Material::SetAlbedoMap(AssetHandle albedoMap)
 	{
 		m_Properties.AlbedoMap = albedoMap;
+	}
+
+	AssetHandle Material::GetNormalMap() const
+	{
+		return m_Properties.NormalMap;
+	}
+
+	void Material::SetNormalMap(AssetHandle normalMap)
+	{
+		m_Properties.NormalMap = normalMap;
 	}
 
 	float Material::GetMetallic() const
@@ -156,12 +165,12 @@ namespace Vortex {
 		m_Properties.Metallic = metallic;
 	}
 
-	const SharedRef<Texture2D>& Material::GetMetallicMap() const
+	AssetHandle Material::GetMetallicMap() const
 	{
 		return m_Properties.MetallicMap;
 	}
 
-	void Material::SetMetallicMap(const SharedRef<Texture2D>& metallicMap)
+	void Material::SetMetallicMap(AssetHandle metallicMap)
 	{
 		m_Properties.MetallicMap = metallicMap;
 	}
@@ -176,12 +185,12 @@ namespace Vortex {
 		m_Properties.Roughness = roughness;
 	}
 
-	const SharedRef<Texture2D>& Material::GetRoughnessMap() const
+	AssetHandle Material::GetRoughnessMap() const
 	{
 		return m_Properties.RoughnessMap;
 	}
 
-	void Material::SetRoughnessMap(const SharedRef<Texture2D>& roughnessMap)
+	void Material::SetRoughnessMap(AssetHandle roughnessMap)
 	{
 		m_Properties.RoughnessMap = roughnessMap;
 	}
@@ -196,12 +205,12 @@ namespace Vortex {
 		m_Properties.Emission = emission;
 	}
 
-	const SharedRef<Texture2D>& Material::GetEmissionMap() const
+	AssetHandle Material::GetEmissionMap() const
 	{
 		return m_Properties.EmissionMap;
 	}
 
-	void Material::SetEmissionMap(const SharedRef<Texture2D>& emissionMap)
+	void Material::SetEmissionMap(AssetHandle emissionMap)
 	{
 		m_Properties.EmissionMap = emissionMap;
 	}
@@ -216,22 +225,22 @@ namespace Vortex {
 		m_Properties.ParallaxHeightScale = heightScale;
 	}
 
-	const SharedRef<Texture2D>& Material::GetParallaxOcclusionMap() const
+	AssetHandle Material::GetParallaxOcclusionMap() const
 	{
 		return m_Properties.ParallaxOcclusionMap;
 	}
 
-	void Material::SetParallaxOcclusionMap(const SharedRef<Texture2D>& parallaxOcclusionMap)
+	void Material::SetParallaxOcclusionMap(AssetHandle parallaxOcclusionMap)
 	{
 		m_Properties.ParallaxOcclusionMap = parallaxOcclusionMap;
 	}
 
-	const SharedRef<Texture2D>& Material::GetAmbientOcclusionMap() const
+	AssetHandle Material::GetAmbientOcclusionMap() const
 	{
 		return m_Properties.AmbientOcclusionMap;
 	}
 
-	void Material::SetAmbientOcclusionMap(const SharedRef<Texture2D>& ambientOcclusionMap)
+	void Material::SetAmbientOcclusionMap(AssetHandle ambientOcclusionMap)
 	{
 		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
 	}

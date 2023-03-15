@@ -234,7 +234,7 @@ namespace Vortex {
 	struct SpriteRendererComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
-		SharedRef<Texture2D> Texture = nullptr;
+		AssetHandle Texture = 0;
 		Math::vec2 Scale = Math::vec2(1.0f);
 
 		SpriteRendererComponent() = default;
@@ -416,6 +416,7 @@ namespace Vortex {
 
 	struct MeshColliderComponent
 	{
+		AssetHandle ColliderAsset = 0;
 		uint32_t SubmeshIndex = 0;
 		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
 		AssetHandle Material = 0;

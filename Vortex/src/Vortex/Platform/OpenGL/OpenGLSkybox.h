@@ -30,7 +30,7 @@ namespace Vortex {
 		void LoadSkybox(const std::string& filepath);
 
 	private:
-		SharedRef<Texture2D> m_HDREnvironmentMap = nullptr;
+		SharedReference<Texture2D> m_HDREnvironmentMap = nullptr;
 		bool m_ShouldReload = false;
 	};
 

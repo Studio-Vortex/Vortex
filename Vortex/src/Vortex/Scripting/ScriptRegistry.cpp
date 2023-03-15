@@ -7,6 +7,8 @@
 
 #include "Vortex/Core/Math/Noise.h"
 
+#include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
@@ -2267,7 +2269,8 @@ namespace Vortex {
 			
 			if (spriteRenderer.Texture)
 			{
-				return spriteRenderer.Texture.get();
+				SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRenderer.Texture);
+				return texture.Raw();
 			}
 
 			return nullptr;
@@ -2285,7 +2288,8 @@ namespace Vortex {
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
-			spriteRenderer.Texture = SharedRef<Texture2D>(unmanagedInstance);
+			// TODO
+			//spriteRenderer.Texture = SharedReference<Texture2D>(unmanagedInstance);
 		}
 
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
@@ -5783,11 +5787,11 @@ namespace Vortex {
 			imageProps.Filepath = Project::GetAssetFileSystemPath(filepathCStr).string();
 			imageProps.WrapMode = ImageWrap::Repeat;
 			
-			SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+			SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 
 			mono_free(filepathCStr);
 
-			return texture.get();
+			return texture.Raw();
 		}
 
 		Texture2D* Texture2D_Constructor(uint32_t width, uint32_t height)
@@ -5797,9 +5801,9 @@ namespace Vortex {
 			imageProps.Height = height;
 			imageProps.WrapMode = ImageWrap::Repeat;
 
-			SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
+			SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 
-			return texture.get();
+			return texture.Raw();
 		}
 
 		uint32_t Texture2D_GetWidth(Texture2D* _this)

@@ -1500,14 +1500,14 @@ namespace Vortex {
 
 			// Texutre
 			{
-				SharedRef<Texture2D> icon = EditorResources::CheckerboardIcon;
+				SharedReference<Texture2D> icon = EditorResources::CheckerboardIcon;
 
 				if (component.Texture)
-					icon = component.Texture;
+					icon = AssetManager::GetAsset<Texture2D>(component.Texture);
 				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
 
 				if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
-					component.Texture = nullptr;
+					component.Texture = EditorResources::CheckerboardIcon->Handle;
 				else if (Gui::IsItemHovered())
 				{
 					Gui::BeginTooltip();
@@ -1524,17 +1524,13 @@ namespace Vortex {
 						std::filesystem::path texturePath = std::filesystem::path(path);
 
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
+						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".jpeg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
 						{
-							TextureProperties imageProps;
-							imageProps.Filepath = texturePath.string();
-							imageProps.WrapMode = ImageWrap::Repeat;
+							AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturePath);
 
-							SharedRef<Texture2D> texture = Texture2D::Create(imageProps);
-
-							if (texture->IsLoaded())
+							if (AssetManager::IsHandleValid(textureHandle))
 							{
-								component.Texture = texture;
+								component.Texture = textureHandle;
 							}
 							else
 							{
@@ -1542,7 +1538,7 @@ namespace Vortex {
 							}
 						}
 						else
-							VX_CONSOLE_LOG_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+							VX_CONSOLE_LOG_WARN("Could not load texture", texturePath.filename().string());
 					}
 					Gui::EndDragDropTarget();
 				}

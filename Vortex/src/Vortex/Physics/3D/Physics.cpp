@@ -8,7 +8,6 @@
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
 #include "Vortex/Physics/3D/CookingFactory.h"
-#include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Utils/Time.h"
@@ -148,6 +147,10 @@ namespace Vortex {
 		for (const auto& entityUUID : actorsToDestroy)
 		{
 			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+
+			if (!entity)
+				continue;
+
 			DestroyPhysicsActor(entity);
 		}
 
@@ -213,16 +216,15 @@ namespace Vortex {
 
 		for (uint32_t i = 0; i < count; i++)
 		{
-			if (physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>())
-			{
-				bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
-				bool isAwake = !actor->isSleeping();
+			physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>();
 
-				if (gravityDisabled || isAwake)
-					continue;
+			const bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
+			const bool isAwake = !actor->isSleeping();
 
-				actor->wakeUp();
-			}
+			if (gravityDisabled || isAwake)
+				continue;
+
+			actor->wakeUp();
 		}
 
 		delete[] buffer;
@@ -281,6 +283,12 @@ namespace Vortex {
 		}
 		
 		return nullptr;
+	}
+
+	const std::vector<SharedReference<ColliderShape>>& Physics::GetEntityColliders(UUID entityUUID)
+	{
+		VX_CORE_ASSERT(s_EntityColliders.contains(entityUUID), "Entity doesn't have any colliders!");
+		return s_EntityColliders.at(entityUUID);
 	}
 
 	physx::PxController* Physics::GetController(UUID entityUUID)
@@ -534,7 +542,7 @@ namespace Vortex {
 			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 			characterController.RuntimeController = (void*)controller;
 
-			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+			SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 			return;
 		}
@@ -543,9 +551,9 @@ namespace Vortex {
 
 		// Set Filters
 		if (rigidbody.Type == RigidBodyType::Static)
-			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
+			SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
-			Physics::SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+			SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
 		s_Data->PhysicsScene->addActor(*actor);
 	}
@@ -555,26 +563,24 @@ namespace Vortex {
 		if (!entity.HasComponent<RigidBodyComponent>())
 			return;
 
-		const UUID entityUUID = entity.GetUUID();
+		DestroyFixedJointInternal(entity);
 
-		DestroyFixedJointInternal(entityUUID);
+		DestroyCharacterControllerInternal(entity);
 
-		DestroyCharacterControllerInternal(entityUUID);
+		DestroyPhysicsActorInternal(entity);
 
-		DestroyPhysicsActorInternal(entityUUID);
-
-		if (s_PhysicsBodyData.contains(entityUUID))
+		if (s_PhysicsBodyData.contains(entity))
 		{
-			PhysicsBodyData* physicsBodyData = s_PhysicsBodyData[entityUUID];
+			PhysicsBodyData* physicsBodyData = s_PhysicsBodyData[entity];
 			delete physicsBodyData;
-			s_PhysicsBodyData.erase(entityUUID);
+			s_PhysicsBodyData.erase(entity);
 		}
 
-		if (s_ConstrainedJointData.contains(entityUUID))
+		if (s_ConstrainedJointData.contains(entity))
 		{
-			ConstrainedJointData* jointData = s_ConstrainedJointData[entityUUID];
+			ConstrainedJointData* jointData = s_ConstrainedJointData[entity];
 			delete jointData;
-			s_ConstrainedJointData.erase(entityUUID);
+			s_ConstrainedJointData.erase(entity);
 		}
 	}
 
@@ -611,7 +617,7 @@ namespace Vortex {
 
 		if (!s_EntityColliders.contains(entityUUID))
 		{
-			s_EntityColliders[entityUUID] = std::vector<SharedRef<ColliderShape>>();
+			s_EntityColliders[entityUUID] = std::vector<SharedReference<ColliderShape>>();
 		}
 
 		switch (type)
@@ -619,31 +625,31 @@ namespace Vortex {
 			case ColliderType::Box:
 			{
 				BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
-				s_EntityColliders[entityUUID].push_back(CreateShared<BoxColliderShape>(boxCollider, *actor, entity));
+				s_EntityColliders[entityUUID].push_back(SharedReference<BoxColliderShape>::Create(boxCollider, *actor, entity));
 				break;
 			}
 			case ColliderType::Sphere:
 			{
 				SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-				s_EntityColliders[entityUUID].push_back(CreateShared<SphereColliderShape>(sphereCollider, *actor, entity));
+				s_EntityColliders[entityUUID].push_back(SharedReference<SphereColliderShape>::Create(sphereCollider, *actor, entity));
 				break;
 			}
 			case ColliderType::Capsule:
 			{
 				CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-				s_EntityColliders[entityUUID].push_back(CreateShared<CapsuleColliderShape>(capsuleCollider, *actor, entity));
+				s_EntityColliders[entityUUID].push_back(SharedReference<CapsuleColliderShape>::Create(capsuleCollider, *actor, entity));
 				break;
 			}
 			case ColliderType::ConvexMesh:
 			{
 				MeshColliderComponent& convexMeshCollider = entity.GetComponent<MeshColliderComponent>();
-				s_EntityColliders[entityUUID].push_back(CreateShared<ConvexMeshShape>(convexMeshCollider, *actor, entity));
+				s_EntityColliders[entityUUID].push_back(SharedReference<ConvexMeshShape>::Create(convexMeshCollider, *actor, entity));
 				break;
 			}
 			case ColliderType::TriangleMesh:
 			{
 				MeshColliderComponent& triangleMeshCollider = entity.GetComponent<MeshColliderComponent>();
-				s_EntityColliders[entityUUID].push_back(CreateShared<TriangleMeshShape>(triangleMeshCollider, *actor, entity));
+				s_EntityColliders[entityUUID].push_back(SharedReference<TriangleMeshShape>::Create(triangleMeshCollider, *actor, entity));
 				break;
 			}
 		}
@@ -903,25 +909,6 @@ namespace Vortex {
 		actor->release();
 		rigidbody.RuntimeActor = nullptr;
 		s_ActiveActors.erase(entityUUID);
-
-		DestroyColliderShapesInternal(entityUUID);
-	}
-
-	void Physics::DestroyColliderShapesInternal(UUID entityUUID)
-	{
-		if (!s_EntityColliders.contains(entityUUID))
-			return;
-		
-		std::vector<SharedRef<ColliderShape>>& colliderShapes = s_EntityColliders[entityUUID];
-
-		for (auto& shape : colliderShapes)
-		{
-			shape->Release();
-		}
-
-		colliderShapes.clear();
-
-		s_EntityColliders.erase(entityUUID);
 	}
 
 }

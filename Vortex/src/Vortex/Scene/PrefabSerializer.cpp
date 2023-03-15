@@ -63,4 +63,13 @@ namespace Vortex {
 		return true;
 	}
 
+    void PrefabSerializer::Serialize(const AssetMetadata& metadata, const SharedRef<Asset>& asset)
+    {
+    }
+
+    bool PrefabSerializer::TryLoadData(const AssetMetadata& metadata, SharedRef<Asset> asset)
+    {
+        return false;
+    }
+
 }
