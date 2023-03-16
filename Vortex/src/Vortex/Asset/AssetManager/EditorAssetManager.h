@@ -35,7 +35,7 @@ namespace Vortex {
 
 		SharedReference<Asset> GetAssetFromFilepath(const std::filesystem::path& filepath);
 		AssetHandle GetAssetHandleFromFilepath(const std::filesystem::path& filepath);
-		AssetType GetAssetTypeFromExtension(std::string_view extension);
+		AssetType GetAssetTypeFromExtension(const std::string& extension);
 		AssetType GetAssetTypeFromFilepath(const std::filesystem::path& filepath);
 
 		const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);

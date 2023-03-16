@@ -118,14 +118,14 @@ namespace Vortex {
 		static uint32_t GetActiveSceneBuildIndex();
 		static void SetActiveSceneBuildIndex(uint32_t buildIndex);
 
-		static SharedRef<Scene> Copy(SharedRef<Scene>& source);
-		static void Create2DSampleScene(SharedRef<Scene>& context);
-		static void Create3DSampleScene(SharedRef<Scene>& context);
+		static SharedReference<Scene> Copy(SharedReference<Scene>& source);
+		static void Create2DSampleScene(SharedReference<Scene>& context);
+		static void Create3DSampleScene(SharedReference<Scene>& context);
 
 		ASSET_CLASS_TYPE(SceneAsset)
 
-		static SharedRef<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
-		static SharedRef<Scene> Create();
+		static SharedReference<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
+		static SharedReference<Scene> Create();
 
 	private:
 		template <typename TComponent>

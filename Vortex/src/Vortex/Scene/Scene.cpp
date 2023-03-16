@@ -1209,11 +1209,11 @@ namespace Vortex {
 		s_ActiveBuildIndex = buildIndex;
 	}
 
-	SharedRef<Scene> Scene::Copy(SharedRef<Scene>& source)
+	SharedReference<Scene> Scene::Copy(SharedReference<Scene>& source)
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedRef<Scene> destination = Scene::Create(source->m_TargetFramebuffer);
+		SharedReference<Scene> destination = Scene::Create(source->m_TargetFramebuffer);
 
 		destination->m_TargetFramebuffer = source->m_TargetFramebuffer;
 		destination->m_ViewportWidth = source->m_ViewportWidth;
@@ -1241,7 +1241,7 @@ namespace Vortex {
 		return destination;
 	}
 
-	void Scene::Create2DSampleScene(SharedRef<Scene>& context)
+	void Scene::Create2DSampleScene(SharedReference<Scene>& context)
 	{
 		// Starting Entities
 		Entity startingCamera = context->CreateEntity("Camera");
@@ -1253,7 +1253,7 @@ namespace Vortex {
 		cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
 	}
 
-	void Scene::Create3DSampleScene(SharedRef<Scene>& context)
+	void Scene::Create3DSampleScene(SharedReference<Scene>& context)
 	{
 		// Starting Entities
 		Entity startingCube = context->CreateEntity("Cube");
@@ -1276,14 +1276,14 @@ namespace Vortex {
 		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
 	}
 
-	SharedRef<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
+	SharedReference<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
 	{
-		return CreateShared<Scene>(targetFramebuffer);
+		return SharedReference<Scene>::Create(targetFramebuffer);
 	}
 
-	SharedRef<Scene> Scene::Create()
+	SharedReference<Scene> Scene::Create()
 	{
-		return CreateShared<Scene>();
+		return SharedReference<Scene>::Create();
 	}
 
 }

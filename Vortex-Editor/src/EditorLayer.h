@@ -2,6 +2,7 @@
 
 #include <Vortex.h>
 #include <Vortex/Editor/ConsolePanel.h>
+#include <Vortex/Scene/SceneRenderer.h>
 
 #include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
@@ -17,7 +18,6 @@
 #include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
 
-#include <Vortex/Scene/SceneRenderer.h>
 
 namespace Vortex {
 
@@ -65,7 +65,7 @@ namespace Vortex {
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path);
+		void SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& path);
 
 		void OnScenePlay();
 		void OnScenePause();
@@ -97,7 +97,7 @@ namespace Vortex {
 
 		void QueueSceneTransition();
 		void DuplicateSelectedEntity();
-		void SetSceneContext(const SharedRef<Scene>& scene);
+		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
 		void CaptureFramebufferImageToDisk();
 
@@ -108,8 +108,8 @@ namespace Vortex {
 		SharedRef<Framebuffer> m_SecondViewportFramebuffer = nullptr;
 		SceneRenderer m_SecondViewportRenderer;
 
-		SharedRef<Scene> m_ActiveScene = nullptr;
-		SharedRef<Scene> m_EditorScene = nullptr;
+		SharedReference<Scene> m_ActiveScene = nullptr;
+		SharedReference<Scene> m_EditorScene = nullptr;
 		
 		std::filesystem::path m_EditorScenePath;
 

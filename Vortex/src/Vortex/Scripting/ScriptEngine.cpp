@@ -587,20 +587,16 @@ namespace Vortex {
 
 	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
-		auto it = s_Data->EntityInstances.find(uuid);
-
-		if (it != s_Data->EntityInstances.end())
-			return it->second;
+		if (s_Data->EntityInstances.contains(uuid))
+			return s_Data->EntityInstances[uuid];
 
 		return nullptr;
 	}
 
 	SharedRef<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
-		auto it = s_Data->EntityClasses.find(name);
-
-		if (it != s_Data->EntityClasses.end())
-			return it->second;
+		if (s_Data->EntityClasses.contains(name))
+			return s_Data->EntityClasses[name];
 
 		return nullptr;
 	}
@@ -613,6 +609,7 @@ namespace Vortex {
 	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
 	{
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
+		VX_CORE_ASSERT(s_Data->EntityScriptFields.contains(entity.GetUUID()), "Entity was not found in script field map!");
 
 		return s_Data->EntityScriptFields[entity.GetUUID()];
 	}

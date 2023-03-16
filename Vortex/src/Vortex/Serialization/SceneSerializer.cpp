@@ -341,7 +341,7 @@ namespace Vortex {
 
 	}
 
-	SceneSerializer::SceneSerializer(const SharedRef<Scene>& scene)
+	SceneSerializer::SceneSerializer(const SharedReference<Scene>& scene)
 		: m_Scene(scene) { }
 
 	void SceneSerializer::Serialize(const std::string& filepath)
@@ -361,7 +361,7 @@ namespace Vortex {
 
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			Entity entity = { entityID, m_Scene.Raw() };
 
 			if (!entity)
 				return;
@@ -964,64 +964,65 @@ namespace Vortex {
 			out << YAML::EndMap; // NavMeshAgentComponent
 		}
 
-		// TODO: This may need reworking, specifically the random empty() check
-		// if the script class name is empty don't even try to serialize, just move on
 		if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
 		{
-			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
-
 			const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-			VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 
-			// Fields
-			SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
-			const auto& fields = entityClass->GetFields();
-
-			if (fields.size() > 0)
+			// Script Class Fields
+			if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
 			{
-				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
+				VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 
-				out << YAML::Key << "ScriptFields" << YAML::Value;
-				out << YAML::BeginSeq;
+				SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
+				const auto& fields = entityClass->GetFields();
 
-				for (const auto& [name, field] : fields)
+				if (fields.size() > 0)
 				{
-					if (entityFields.find(name) == entityFields.end())
-						continue;
+					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
 
-					out << YAML::BeginMap; // ScriptFields
+					out << YAML::Key << "ScriptFields" << YAML::Value;
+					out << YAML::BeginSeq;
 
-					VX_SERIALIZE_PROPERTY(Name, name, out);
-					VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
-					out << YAML::Key << "Data" << YAML::Value;
-
-					ScriptFieldInstance& scriptField = entityFields.at(name);
-
-					switch (field.Type)
+					for (const auto& [name, field] : fields)
 					{
-						WRITE_SCRIPT_FIELD(Float, float)
-						WRITE_SCRIPT_FIELD(Double, double)
-						WRITE_SCRIPT_FIELD(Bool, bool)
-						WRITE_SCRIPT_FIELD(Char, int8_t)
-						WRITE_SCRIPT_FIELD(Short, int16_t)
-						WRITE_SCRIPT_FIELD(Int, int32_t)
-						WRITE_SCRIPT_FIELD(Long, int64_t)
-						WRITE_SCRIPT_FIELD(Byte, uint8_t)
-						WRITE_SCRIPT_FIELD(UShort, uint16_t)
-						WRITE_SCRIPT_FIELD(UInt, uint32_t)
-						WRITE_SCRIPT_FIELD(ULong, uint64_t)
-						WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
-						WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
-						WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
-						WRITE_SCRIPT_FIELD(Color3, Math::vec3)
-						WRITE_SCRIPT_FIELD(Color4, Math::vec4)
-						WRITE_SCRIPT_FIELD(Entity, UUID)
+						if (entityFields.find(name) == entityFields.end())
+							continue;
+
+						out << YAML::BeginMap; // ScriptFields
+
+						VX_SERIALIZE_PROPERTY(Name, name, out);
+						VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
+						out << YAML::Key << "Data" << YAML::Value;
+
+						ScriptFieldInstance& scriptField = entityFields.at(name);
+
+						switch (field.Type)
+						{
+							WRITE_SCRIPT_FIELD(Float, float)
+								WRITE_SCRIPT_FIELD(Double, double)
+								WRITE_SCRIPT_FIELD(Bool, bool)
+								WRITE_SCRIPT_FIELD(Char, int8_t)
+								WRITE_SCRIPT_FIELD(Short, int16_t)
+								WRITE_SCRIPT_FIELD(Int, int32_t)
+								WRITE_SCRIPT_FIELD(Long, int64_t)
+								WRITE_SCRIPT_FIELD(Byte, uint8_t)
+								WRITE_SCRIPT_FIELD(UShort, uint16_t)
+								WRITE_SCRIPT_FIELD(UInt, uint32_t)
+								WRITE_SCRIPT_FIELD(ULong, uint64_t)
+								WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
+								WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
+								WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
+								WRITE_SCRIPT_FIELD(Color3, Math::vec3)
+								WRITE_SCRIPT_FIELD(Color4, Math::vec4)
+								WRITE_SCRIPT_FIELD(Entity, UUID)
+						}
+
+						out << YAML::EndMap; // ScriptFields
 					}
 
-					out << YAML::EndMap; // ScriptFields
+					out << YAML::EndSeq;
 				}
-
-				out << YAML::EndSeq;
 			}
 
 			out << YAML::EndMap; // ScriptComponent
@@ -1030,7 +1031,7 @@ namespace Vortex {
 		out << YAML::EndMap; // Entity
 	}
 
-	void SceneSerializer::DeserializeEntities(YAML::Node& entitiesNode, SharedRef<Scene>& scene)
+	void SceneSerializer::DeserializeEntities(YAML::Node& entitiesNode, SharedReference<Scene>& scene)
 	{
 		for (auto entity : entitiesNode)
 		{

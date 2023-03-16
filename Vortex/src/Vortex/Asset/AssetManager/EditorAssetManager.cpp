@@ -15,8 +15,6 @@ namespace Vortex {
 	EditorAssetManager::EditorAssetManager()
 	{
 		AssetImporter::Init();
-
-		
 	}
 
 	EditorAssetManager::~EditorAssetManager()
@@ -60,7 +58,8 @@ namespace Vortex {
 		SharedReference<Asset> asset = nullptr;
 		if (!metadata.IsDataLoaded)
 		{
-			//metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
+			metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
+
 			if (!metadata.IsDataLoaded)
 				return nullptr;
 
@@ -139,12 +138,14 @@ namespace Vortex {
 
 		if (temp.find(assetDirectory.string()) == std::string::npos)
 		{
-			relativePath = FileSystem::Relative(filepath, assetDirectory);
+			return relativePath;
+		}
 
-			if (relativePath.empty())
-			{
-				relativePath = filepath.lexically_normal();
-			}
+		relativePath = FileSystem::Relative(filepath, assetDirectory);
+
+		if (relativePath.empty())
+		{
+			relativePath = filepath.lexically_normal();
 		}
 
 		return relativePath;
@@ -153,6 +154,7 @@ namespace Vortex {
 	SharedReference<Asset> EditorAssetManager::GetAssetFromFilepath(const std::filesystem::path& filepath)
 	{
 		const AssetMetadata& metadata = GetMetadata(filepath);
+
 		if (IsHandleValid(metadata.Handle))
 			return GetAsset(metadata.Handle);
 
@@ -162,13 +164,14 @@ namespace Vortex {
 	AssetHandle EditorAssetManager::GetAssetHandleFromFilepath(const std::filesystem::path& filepath)
 	{
 		SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
+
 		if (IsHandleValid(asset->Handle));
 			return asset->Handle;
 
 		return 0;
 	}
 
-	AssetType EditorAssetManager::GetAssetTypeFromExtension(std::string_view extension)
+	AssetType EditorAssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
 		std::string_view copy(extension.data());
 		std::string ext = String::ToLowerCopy(copy);
@@ -181,8 +184,8 @@ namespace Vortex {
 
 	AssetType EditorAssetManager::GetAssetTypeFromFilepath(const std::filesystem::path& filepath)
 	{
-		std::string_view ext(filepath.extension().string());
-		return GetAssetTypeFromExtension(ext);
+		std::string extension = FileSystem::GetFileExtension(filepath);
+		return GetAssetTypeFromExtension(extension);
 	}
 
 	const AssetMetadata& EditorAssetManager::GetMetadata(const std::filesystem::path& filepath)
@@ -191,7 +194,7 @@ namespace Vortex {
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (metadata.Filepath == filepath)
+			if (metadata.Filepath == relativePath)
 				return metadata;
 		}
 
@@ -386,10 +389,17 @@ namespace Vortex {
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (metadata.IsMemoryOnly && !FileSystem::Exists(GetFileSystemPath(metadata)))
-			{
+			if (!metadata.IsValid())
 				continue;
-			}
+
+			if (!FileSystem::Exists(GetFileSystemPath(metadata)))
+				continue;
+
+			if (metadata.IsMemoryOnly)
+				continue;
+
+			if (metadata.Type == AssetType::None)
+				continue;
 
 			std::string filepathToSerialize = metadata.Filepath.string();
 
@@ -401,23 +411,25 @@ namespace Vortex {
 		VX_CORE_INFO("[Asset Manager] serializing asset registry with {} entries", m_AssetRegistry.Count());
 
 		YAML::Emitter out;
+
 		out << YAML::BeginMap;
-
 		out << YAML::Key << "Assets" << YAML::BeginSeq;
-
 		for (const auto& [handle, entry] : sortedMap)
 		{
+			out << YAML::BeginMap;
 			VX_SERIALIZE_PROPERTY(Handle, handle, out);
 			VX_SERIALIZE_PROPERTY(Filepath, entry.Filepath, out);
 			VX_SERIALIZE_PROPERTY(Type, Asset::GetAssetNameFromType(entry.Type), out);
+			out << YAML::EndMap;
 		}
-
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
 		const std::string& assetRegistryPath = Project::GetAssetRegistryPath().string();
 		std::ofstream fout(assetRegistryPath);
+
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open asset registry file!");
+
 		fout << out.c_str();
 	}
 

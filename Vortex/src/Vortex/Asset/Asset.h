@@ -8,7 +8,7 @@
 
 namespace Vortex {
 
-	using AssetHandle = UUID;
+	using VORTEX_API AssetHandle = UUID;
 
 	class VORTEX_API Asset : public RefCounted
 	{
@@ -36,8 +36,8 @@ namespace Vortex {
 
 		static AssetType GetAssetTypeFromString(const std::string& name)
 		{
-			if (s_AssetTypes.contains(name))
-				return s_AssetTypes[name];
+			if (s_AssetTypesMap.contains(name))
+				return s_AssetTypesMap[name];
 
 			VX_CORE_ASSERT(false, "Unknown Asset Name!");
 			return AssetType::None;
@@ -45,7 +45,7 @@ namespace Vortex {
 
 		static std::string GetAssetNameFromType(AssetType type)
 		{
-			for (const auto& [name, assetType] : s_AssetTypes)
+			for (const auto& [name, assetType] : s_AssetTypesMap)
 			{
 				if (assetType == type)
 					return name;

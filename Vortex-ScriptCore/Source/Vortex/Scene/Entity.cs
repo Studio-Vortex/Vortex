@@ -120,7 +120,6 @@ namespace Vortex {
 		}
 
 		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
-
 		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);
 
 		public bool Is<T>()

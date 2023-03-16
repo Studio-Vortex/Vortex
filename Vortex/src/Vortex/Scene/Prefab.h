@@ -24,7 +24,7 @@ namespace Vortex {
 
 	private:
 		std::filesystem::path m_Filepath;
-		SharedRef<Scene> m_Scene = nullptr;
+		SharedReference<Scene> m_Scene = nullptr;
 		Entity m_Entity;
 
 		friend class Scene;

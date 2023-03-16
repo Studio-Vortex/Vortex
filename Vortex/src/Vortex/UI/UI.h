@@ -1416,7 +1416,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	inline static bool EntitySearchPopup(const char* ID, SharedRef<Scene> scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = { 250.0f, 350.0f })
+	inline static bool EntitySearchPopup(const char* ID, SharedReference<Scene>& scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = { 250.0f, 350.0f })
 	{
 		UI::ScopedColour popupBG(ImGuiCol_PopupBg, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.6f));
 
@@ -1524,7 +1524,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	inline static bool PropertyEntityReference(const char* label, UUID& entityID, SharedRef<Scene> currentScene)
+	inline static bool PropertyEntityReference(const char* label, UUID& entityID, SharedReference<Scene>& currentScene)
 	{
 		bool receivedValidEntity = false;
 

@@ -298,7 +298,7 @@ namespace Vortex {
 	
 	void LauncherLayer::CreateStartingScene()
 	{
-		SharedRef<Scene> startScene = Scene::Create();
+		SharedReference<Scene> startScene = Scene::Create();
 
 		if (m_Properties.ProjectType == ProjectType::e2D)
 			Scene::Create2DSampleScene(startScene);

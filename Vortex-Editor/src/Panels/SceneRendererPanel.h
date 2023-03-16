@@ -12,11 +12,11 @@ namespace Vortex {
 
 		void OnGuiRender();
 		void SetProjectContext(SharedRef<Project> project) {}
-		void SetSceneContext(SharedRef<Scene> scene);
+		void SetSceneContext(const SharedReference<Scene>& scene);
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		SharedRef<Scene> m_ContextScene = nullptr;
+		SharedReference<Scene> m_ContextScene = nullptr;
 		inline static bool s_ShowPanel = true;
 		inline static std::vector<SharedRef<Shader>> s_Loaded2DShaders;
 		inline static std::vector<SharedRef<Shader>> s_Loaded3DShaders;

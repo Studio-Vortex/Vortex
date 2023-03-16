@@ -12,7 +12,7 @@ namespace Vortex {
 
 #define MAX_CHILD_ENTITY_SEARCH_DEPTH 10
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
 		SetSceneContext(context);
 	}
@@ -68,7 +68,7 @@ namespace Vortex {
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					const Entity entity{ entityID, m_ContextScene.get() };
+					const Entity entity{ entityID, m_ContextScene.Raw() };
 					
 					if (!entity)
 						return;
@@ -168,7 +168,7 @@ namespace Vortex {
 		}
 	}
 
-    void SceneHierarchyPanel::SetSceneContext(SharedRef<Scene> scene)
+    void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
     {
 		m_ContextScene = scene;
 		m_SelectedEntity = {};
@@ -186,7 +186,7 @@ namespace Vortex {
 		m_ComponentSearchInputTextFilter.Build();
     }
 
-	inline static void CreateDefaultMesh(const std::string& name, StaticMesh::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
+	inline static void CreateDefaultMesh(const std::string& name, StaticMesh::Default defaultMesh, Entity& entity, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
 		entity = contextScene->CreateEntity(name);
 		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();

@@ -648,6 +648,15 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region AssetHandle
+
+		bool AssetHandle_IsValid(AssetHandle assetHandle)
+		{
+			return AssetManager::IsHandleValid(assetHandle);
+		}
+
+#pragma endregion
+
 #pragma region Transform Component
 
 		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
@@ -6504,6 +6513,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Entity_Destroy);
 		VX_REGISTER_INTERNAL_CALL(Entity_DestroyTimed);
 		VX_REGISTER_INTERNAL_CALL(Entity_SetActive);
+
+		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);
 
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTranslation);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslation);

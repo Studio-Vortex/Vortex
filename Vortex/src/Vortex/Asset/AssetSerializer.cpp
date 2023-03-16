@@ -1,6 +1,12 @@
 #include "vxpch.h"
 #include "AssetSerializer.h"
 
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Renderer/Texture.h"
+
+#include "Vortex/Utils/FileSystem.h"
+
 namespace Vortex {
 
 	void MeshSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -8,7 +14,7 @@ namespace Vortex {
 
 	}
 
-	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -18,7 +24,7 @@ namespace Vortex {
 
 	}
 
-	bool FontSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool FontSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -28,7 +34,7 @@ namespace Vortex {
 
 	}
 
-	bool AudioSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool AudioSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -38,7 +44,7 @@ namespace Vortex {
 
 	}
 
-	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -48,7 +54,7 @@ namespace Vortex {
 
 	}
 
-	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -58,7 +64,7 @@ namespace Vortex {
 
 	}
 
-	bool ScriptSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool ScriptSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -68,9 +74,17 @@ namespace Vortex {
 
 	}
 
-	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		return false;
+		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		TextureProperties imageProps;
+		imageProps.Filepath = fullyQualifiedPath.string();
+		imageProps.WrapMode = ImageWrap::Repeat;
+
+		asset = Texture2D::Create(imageProps);
+		asset->Handle = metadata.Handle;
+
+		return asset.As<Texture2D>()->IsLoaded();
 	}
 
 	void MaterialSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -78,7 +92,7 @@ namespace Vortex {
 
 	}
 
-	bool MaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool MaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -88,7 +102,7 @@ namespace Vortex {
 
 	}
 
-	bool AnimatorSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool AnimatorSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -98,7 +112,7 @@ namespace Vortex {
 
 	}
 
-	bool AnimationSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool AnimationSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -108,7 +122,7 @@ namespace Vortex {
 
 	}
 
-	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -118,7 +132,7 @@ namespace Vortex {
 
 	}
 
-	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}
@@ -128,7 +142,7 @@ namespace Vortex {
 
 	}
 
-	bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		return false;
 	}

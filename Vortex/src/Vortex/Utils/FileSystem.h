@@ -25,6 +25,7 @@ namespace Vortex {
 		static std::filesystem::path Absolute(const std::filesystem::path& filepath);
 		static std::filesystem::path Relative(const std::filesystem::path& filepath);
 		static std::filesystem::path Relative(const std::filesystem::path& path, const std::filesystem::path& base);
+		static std::string GetFileExtension(const std::filesystem::path& filepath);
 		static std::string RemoveFileExtension(const std::filesystem::path& filepath);
 
 		static std::filesystem::path GetCurrentPath();

@@ -15,7 +15,8 @@ namespace Vortex {
 
 	bool PrefabSerializer::Serialize(const std::string& filepath)
 	{
-		SharedRef<Scene> scene = m_Prefab->m_Scene;
+		SharedReference<Scene> scene = m_Prefab->m_Scene;
+
 		YAML::Emitter out;
 
 		out << YAML::BeginMap;
@@ -24,7 +25,7 @@ namespace Vortex {
 
 		scene->m_Registry.each([&](auto& entityID)
 		{
-			Entity entity{ entityID, scene.get() };
+			Entity entity{ entityID, scene.Raw() };
 
 			if (!entity || !entity.HasComponent<IDComponent>())
 			{

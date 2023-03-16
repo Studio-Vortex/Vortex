@@ -28,7 +28,7 @@ namespace Vortex {
 
 	private:
 		SharedRef<Framebuffer> m_Framebuffer;
-		SharedRef<Scene> m_RuntimeScene = nullptr;
+		SharedReference<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		Entity m_HoveredEntity;
 

@@ -128,7 +128,7 @@ namespace Vortex {
 			{
 				auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
 
-				Entity entity{ skyboxView[0], m_ContextScene.get() };
+				Entity entity{ skyboxView[0], m_ContextScene.Raw() };
 				SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 				SharedRef<Skybox> skybox = skyboxComponent.Source;
 				skybox->SetShouldReload(true);
@@ -203,7 +203,7 @@ namespace Vortex {
 				auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
 				for (const auto e : lightSourceView)
 				{
-					Entity entity{ e, m_ContextScene.get() };
+					Entity entity{ e, m_ContextScene.Raw() };
 					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 					
 					if (lightSourceComponent.Type != LightType::Directional)
@@ -301,7 +301,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-    void SceneRendererPanel::SetSceneContext(SharedRef<Scene> scene)
+    void SceneRendererPanel::SetSceneContext(const SharedReference<Scene>& scene)
     {
 		m_ContextScene = scene;
     }

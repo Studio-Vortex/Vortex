@@ -8,12 +8,12 @@ namespace Vortex {
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const SharedRef<Scene>& context);
+		SceneHierarchyPanel(const SharedReference<Scene>& context);
 		~SceneHierarchyPanel() = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
 		void SetProjectContext(SharedRef<Project> project) {}
-		void SetSceneContext(SharedRef<Scene> scene);
+		void SetSceneContext(const SharedReference<Scene>& scene);
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
 		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
@@ -60,7 +60,7 @@ namespace Vortex {
 		inline static bool s_ShowInspectorPanel = true;
 
 	private:
-		SharedRef<Scene> m_ContextScene = nullptr;
+		SharedReference<Scene> m_ContextScene = nullptr;
 		Entity m_SelectedEntity;
 		
 		// TODO think of a better way of doing this

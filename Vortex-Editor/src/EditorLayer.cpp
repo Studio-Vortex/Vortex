@@ -103,7 +103,7 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene.get());
+		Renderer::RenderToDepthMap(m_ActiveScene.Raw());
 		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
 		SharedRef<Project> activeProject = Project::GetActive();
@@ -189,7 +189,7 @@ namespace Vortex {
 			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 			{
 				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 			}
 		}
@@ -220,7 +220,7 @@ namespace Vortex {
 			SceneRenderPacket renderPacket{};
 			renderPacket.MainCamera = m_SecondEditorCamera;
 			renderPacket.TargetFramebuffer = m_SecondViewportFramebuffer;
-			renderPacket.Scene = m_ActiveScene.get();
+			renderPacket.Scene = m_ActiveScene.Raw();
 			renderPacket.EditorScene = true;
 			m_SecondViewportRenderer.RenderScene(renderPacket);
 
@@ -238,7 +238,7 @@ namespace Vortex {
 				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 				{
 					int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
-					m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+					m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 					ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 				}
 			}
@@ -1459,7 +1459,7 @@ namespace Vortex {
 					for (const auto e : view)
 					{
 						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::AABB aabb = {
 							- Math::vec3(0.501f),
@@ -1480,7 +1480,7 @@ namespace Vortex {
 					for (const auto e : view)
 					{
 						auto [tc, sc] = view.get<TransformComponent, SphereColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						const auto& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
 						Math::vec3 translation = worldSpaceTransform.Translation + sc.Offset;
@@ -1511,7 +1511,7 @@ namespace Vortex {
 					for (const auto e : view)
 					{
 						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
@@ -1529,7 +1529,7 @@ namespace Vortex {
 					for (const auto e : view)
 					{
 						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.get() };
+						Entity entity{ e, m_ActiveScene.Raw() };
 
 						Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
@@ -1553,7 +1553,7 @@ namespace Vortex {
 
 				for (const auto e : meshView)
 				{
-					Entity entity{ e, m_ActiveScene.get() };
+					Entity entity{ e, m_ActiveScene.Raw() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
 					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
@@ -1573,7 +1573,7 @@ namespace Vortex {
 
 				for (const auto e : staticMeshView)
 				{
-					Entity entity{ e, m_ActiveScene.get() };
+					Entity entity{ e, m_ActiveScene.Raw() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
 					const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
@@ -2108,7 +2108,7 @@ namespace Vortex {
 			return;
 		}
 
-		SharedRef<Scene> newScene = Scene::Create(m_Framebuffer);
+		SharedReference <Scene> newScene = Scene::Create(m_Framebuffer);
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -2178,7 +2178,7 @@ namespace Vortex {
 			SaveSceneAs();
 	}
 
-	void EditorLayer::SerializeScene(SharedRef<Scene> scene, const std::filesystem::path& path)
+	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& path)
 	{
 		SceneSerializer serializer(scene);
 		serializer.Serialize(path.string());
@@ -2298,7 +2298,7 @@ namespace Vortex {
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, m_ActiveScene.get() };
+				Entity entity{ e, m_ActiveScene.Raw() };
 
 				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
@@ -2334,7 +2334,7 @@ namespace Vortex {
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, m_ActiveScene.get() };
+			Entity entity{ e, m_ActiveScene.Raw() };
 			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 			if (!audioSource->IsPlaying())
@@ -2388,7 +2388,7 @@ namespace Vortex {
 		m_SceneHierarchyPanel.EditSelectedEntityName(true);
 	}
 
-	void EditorLayer::SetSceneContext(const SharedRef<Scene>& scene)
+	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
 	{
 		m_SceneHierarchyPanel.SetSceneContext(scene);
 		m_SceneRendererPanel.SetSceneContext(scene);

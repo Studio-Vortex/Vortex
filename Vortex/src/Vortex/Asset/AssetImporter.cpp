@@ -41,7 +41,7 @@ namespace Vortex {
 		Serialize(metadata, asset);
 	}
 
-	bool AssetImporter::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset> asset)
+	bool AssetImporter::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		if (!s_Serializers.contains(metadata.Type))
 		{

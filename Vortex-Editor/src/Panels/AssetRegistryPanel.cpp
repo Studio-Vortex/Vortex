@@ -1,5 +1,7 @@
 #include "AssetRegistryPanel.h"
 
+#include <imgui_internal.h>
+
 namespace Vortex {
 
 	void AssetRegistryPanel::OnGuiRender()
@@ -18,20 +20,38 @@ namespace Vortex {
 	{
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 
-		UI::BeginPropertyGrid();
+		if (Gui::InputTextWithHint("##AssetRegistrySearch", "Search...", m_AssetSearchTextFilter.InputBuf, IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf)))
+		{
+			m_AssetSearchTextFilter.Build();
+		}
+		UI::Draw::Underline();
+		Gui::Spacing();
+
+		const bool searchedString = strlen(m_AssetSearchTextFilter.InputBuf) != 0;
 
 		for (const auto& [handle, metadata] : editorAssetManager->GetAssetRegistry())
 		{
-			Gui::Text("AssetHandle: %llu", handle);
-			Gui::Text("Filepath: %s", metadata.Filepath);
-			Gui::Text("Type: %s", Asset::GetAssetNameFromType(metadata.Type));
+			std::string filepath = metadata.Filepath.string();
+			std::string typeAsString = Asset::GetAssetNameFromType(metadata.Type);
+			std::string handleAsString = std::to_string(metadata.Handle);
+
+			const bool matchingSearch = m_AssetSearchTextFilter.PassFilter(filepath.c_str())
+				|| m_AssetSearchTextFilter.PassFilter(typeAsString.c_str())
+				|| m_AssetSearchTextFilter.PassFilter(handleAsString.c_str());
+
+			if (searchedString && !matchingSearch)
+				continue;
+
+			Gui::Text("AssetHandle: %s", handleAsString.c_str());
+			Gui::Text("Filepath: %s", filepath.c_str());
+			Gui::Text("Type: %s", typeAsString.c_str());
 			Gui::Text("IsDataLoaded: %s", metadata.IsDataLoaded ? "true" : "false");
 			Gui::Text("IsMemoryOnly: %s", metadata.IsMemoryOnly ? "true" : "false");
 
 			UI::Draw::Underline();
-		}
 
-		UI::EndPropertyGrid();
+			Gui::Spacing();
+		}
 	}
 
 }

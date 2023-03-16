@@ -122,6 +122,12 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region AssetHandle
+
+		bool AssetHandle_IsValid(AssetHandle assetHandle);
+
+#pragma endregion
+
 #pragma region Transform Component
 
 		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation);

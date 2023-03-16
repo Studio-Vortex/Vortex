@@ -15,7 +15,7 @@ namespace Vortex {
 
 		void OnGuiRender();
 		void SetProjectContext(SharedRef<Project> project) {}
-		void SetSceneContext(SharedRef<Scene> scene) {}
+		void SetSceneContext(const SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
