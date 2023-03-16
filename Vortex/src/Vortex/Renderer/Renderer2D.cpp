@@ -299,16 +299,6 @@ namespace Vortex
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const OrthographicCamera& camera)
-	{
-		VX_PROFILE_FUNCTION();
-
-		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
-		SetShaderViewProjectionMatrix(viewProjection);
-
-		StartBatch();
-	}
-
 	void Renderer2D::SetShaderViewProjectionMatrix(const Math::mat4& viewProjection)
 	{
 		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");

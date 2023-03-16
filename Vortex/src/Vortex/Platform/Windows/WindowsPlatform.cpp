@@ -16,4 +16,9 @@ namespace Vortex {
 		return "Windows x64";
 	}
 
+    void Platform::HideConsoleWindow()
+    {
+		ShowWindow(GetConsoleWindow(), SW_HIDE);
+    }
+
 }

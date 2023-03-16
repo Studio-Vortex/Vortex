@@ -11,6 +11,8 @@ namespace Vortex {
 	public:
 		static void OpenURLInBrowser(const std::string& url);
 		static std::string GetName();
+
+		static void HideConsoleWindow();
 	};
 
 }

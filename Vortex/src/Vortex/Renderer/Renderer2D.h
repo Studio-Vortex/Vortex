@@ -2,7 +2,6 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Renderer/RendererAPI.h"
-#include "Vortex/Renderer/OrthographicCamera.h"
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Editor/EditorCamera.h"
@@ -28,7 +27,6 @@ namespace Vortex {
 
 		static void BeginScene(const Camera& camera, const Math::mat4& transform);
 		static void BeginScene(const EditorCamera* camera);
-		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();
 

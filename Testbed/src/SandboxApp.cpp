@@ -17,8 +17,8 @@ Vortex::Application* Vortex::CreateApplication(ApplicationCommandLineArgs args)
 {
 	ApplicationProperties props;
 	props.Name = "Sandbox";
-	props.WindowWidth = 1200;
-	props.WindowHeight = 800;
+	props.WindowWidth = 1600;
+	props.WindowHeight = 900;
 	props.MaximizeWindow = false;
 	props.WindowDecorated = true;
 	props.VSync = true;

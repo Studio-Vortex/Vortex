@@ -2,13 +2,13 @@
 #include "Base.h"
 
 #include "Vortex/Core/Log.h"
+#include "Vortex/Core/Platform.h"
 
 namespace Vortex {
 
 	void InitalizeEngine()
 	{
-		// TODO: This should be reworked
-		ShowWindow(GetConsoleWindow(), SW_HIDE);
+		Platform::HideConsoleWindow();
 
 		Log::Init();
 

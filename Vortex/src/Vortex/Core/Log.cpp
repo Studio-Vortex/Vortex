@@ -9,7 +9,9 @@
 
 namespace Vortex {
 
-#define VX_HAS_CONSOLE 1
+#ifndef VX_DIST
+	#define VX_HAS_CONSOLE 1
+#endif
 
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
@@ -24,7 +26,7 @@ namespace Vortex {
 
 		std::vector<spdlog::sink_ptr> vortexSinks =
 		{
-			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/VORTEX.log", true),
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/VORTEX.log", true),
 #if VX_HAS_CONSOLE
 			std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
 #endif
@@ -32,7 +34,7 @@ namespace Vortex {
 
 		std::vector<spdlog::sink_ptr> appSinks =
 		{
-			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/APP.log", true),
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/APP.log", true),
 #if VX_HAS_CONSOLE
 			std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
 #endif
@@ -40,7 +42,7 @@ namespace Vortex {
 
 		std::vector<spdlog::sink_ptr> editorConsoleSinks =
 		{
-			std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/APP.log", true),
+			std::make_shared<spdlog::sinks::basic_file_sink_mt>("Resources/Logs/APP.log", true),
 #if VX_HAS_CONSOLE
 			std::make_shared<EditorConsoleSink>(1)
 #endif
