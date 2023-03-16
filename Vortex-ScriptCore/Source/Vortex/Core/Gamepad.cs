@@ -19,12 +19,13 @@
 		Right       = 12,
 		Down        = 13,
 		Left        = 14,
-		Last        = Left,
 				    
 		Cross       = A,
 		Circle      = B,
 		Square      = X,
 		Triangle    = Y,
+
+		Last        = Left,
 	}
 
 	public enum GamepadAxis
