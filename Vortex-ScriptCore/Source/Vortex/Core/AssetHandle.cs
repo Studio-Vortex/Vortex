@@ -14,7 +14,7 @@ namespace Vortex {
 			m_Handle = handle;
 		}
 
-		public bool IsValid() => InternalCalls.AssetHandle_IsValid(m_Handle);
+		public bool IsValid() => InternalCalls.AssetHandle_IsValid(ref this);
 
 		public static implicit operator bool(AssetHandle assetHandle)
 		{

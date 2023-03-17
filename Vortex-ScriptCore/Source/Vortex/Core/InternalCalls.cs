@@ -188,7 +188,7 @@ namespace Vortex {
 		#region AssetHandle
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool AssetHandle_IsValid(ulong assetHandle);
+		internal extern static bool AssetHandle_IsValid(ref AssetHandle assetHandle);
 
 		#endregion
 

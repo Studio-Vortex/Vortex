@@ -650,9 +650,9 @@ namespace Vortex {
 
 #pragma region AssetHandle
 
-		bool AssetHandle_IsValid(AssetHandle assetHandle)
+		bool AssetHandle_IsValid(AssetHandle* assetHandle)
 		{
-			return AssetManager::IsHandleValid(assetHandle);
+			return AssetManager::IsHandleValid(*assetHandle);
 		}
 
 #pragma endregion
