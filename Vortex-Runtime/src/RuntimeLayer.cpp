@@ -1,6 +1,7 @@
 #include "RuntimeLayer.h"
 
 #include <Vortex/Scene/Scene.h>
+#include <Vortex/Project/ProjectLoader.h>
 #include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
@@ -136,6 +137,25 @@ namespace Vortex {
 
 	void RuntimeLayer::OnEvent(Event& e) { }
 
+	void RuntimeLayer::OnRuntimeScenePlay()
+	{
+		m_RuntimeScene->OnRuntimeStart();
+
+		ScriptRegistry::SetSceneStartTime(Time::GetTime());
+	}
+
+	void RuntimeLayer::OnRuntimeSceneStop()
+	{
+		m_RuntimeScene->OnRuntimeStop();
+
+		SharedReference<Scene> newScene = Scene::Create(m_Framebuffer);
+		m_RuntimeScene.Swap(newScene);
+		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+		// Reset the mouse cursor in case a script turned it off
+		Input::SetCursorMode(CursorMode::Normal);
+	}
+
 	void RuntimeLayer::OnRuntimeScenePaused()
 	{
 		auto view = m_RuntimeScene->GetAllEntitiesWith<AudioSourceComponent>();
@@ -166,42 +186,25 @@ namespace Vortex {
 
 	bool RuntimeLayer::OpenProject(const std::filesystem::path& filepath)
 	{
-		if (filepath.extension().string() != ".vxproject")
-		{
-			VX_WARN("Could not load {} - not a project file", filepath.filename().string());
+		VX_PROFILE_FUNCTION();
+
+		// TODO this should be changed to LoadRuntimeProject in the future
+		if (!ProjectLoader::LoadEditorProject(filepath))
 			return false;
-		}
 
-		if (Project::Load(filepath))
-		{
-			std::string projectName = std::format("{} Project Load Time", filepath.filename().string());
-			InstrumentationTimer timer(projectName.c_str());
+		const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
+		VX_CORE_VERIFY(sceneMetadata.IsValid());
 
-			ScriptEngine::Init();
-
-			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
-			OpenScene(sceneMetadata);
-
-			TagComponent::ResetAddedMarkers();
-
-			return true;
-		}
-
-		return false;
+		return OpenScene(sceneMetadata);
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)
 	{
+		VX_PROFILE_FUNCTION();
+
 		if (m_RuntimeScene->IsRunning())
 		{
-			m_RuntimeScene->OnRuntimeStop();
-			
-			SharedReference<Scene> newScene = Scene::Create();
-			m_RuntimeScene.Swap(newScene);
-			m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
-			// Reset the mouse cursor in case a script turned it off
-			Input::SetCursorMode(CursorMode::Normal);
+			OnRuntimeSceneStop();
 		}
 
 		if (!sceneMetadata.IsValid() || sceneMetadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(sceneMetadata.Handle))
@@ -213,32 +216,39 @@ namespace Vortex {
 
 		SceneSerializer serializer(m_RuntimeScene);
 
-		if (serializer.Deserialize(sceneMetadata.Filepath.string()))
+		std::string fullyQualifedScenePath = (Project::GetAssetDirectory() / sceneMetadata.Filepath).string();
+		if (serializer.Deserialize(fullyQualifedScenePath))
 		{
-			m_RuntimeScene->OnRuntimeStart();
-			std::string filename = sceneMetadata.Filepath.filename().string();
-			std::string sceneName = filename.substr(0, filename.find('.'));
+			SetSceneBuildIndexFromMetadata(sceneMetadata);
 
-			ScriptRegistry::SetSceneStartTime(Time::GetTime());
-
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-			for (auto& [buildIndex, sceneFilepath] : buildIndices)
-			{
-				if (sceneFilepath.find(sceneMetadata.Filepath.string()) == std::string::npos)
-					continue;
-
-				Scene::SetActiveSceneBuildIndex(buildIndex);
-
-				break;
-			}
+			OnRuntimeScenePlay();
 		}
 
 		return true;
 	}
 
+	void RuntimeLayer::SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata)
+	{
+		std::string filename = sceneMetadata.Filepath.filename().string();
+		std::string sceneName = filename.substr(0, filename.find('.'));
+
+		const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
+
+		for (const auto& [buildIndex, sceneFilepath] : buildIndices)
+		{
+			if (sceneFilepath.find(sceneMetadata.Filepath.string()) == std::string::npos)
+				continue;
+
+			Scene::SetActiveSceneBuildIndex(buildIndex);
+
+			break;
+		}
+	}
+
 	void RuntimeLayer::QueueSceneTransition()
 	{
+		VX_PROFILE_FUNCTION();
+
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();

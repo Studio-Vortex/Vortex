@@ -476,6 +476,7 @@ namespace Vortex {
 			const auto& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value;
+
 			out << YAML::BeginMap; // Camera
 			VX_SERIALIZE_PROPERTY(ProjectionType, (int)camera.GetProjectionType(), out);
 			VX_SERIALIZE_PROPERTY(PerspectiveFOV, camera.GetPerspectiveVerticalFOVRad(), out);
@@ -836,6 +837,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
 
+			if (AssetManager::IsHandleValid(boxColliderComponent.Material))
 			{
 				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
 
@@ -845,7 +847,7 @@ namespace Vortex {
 				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
 				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
 				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
-
+				
 				out << YAML::EndMap; // PhysicsMaterial
 			}
 
@@ -861,6 +863,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
 
+			if (AssetManager::IsHandleValid(sphereColliderComponent.Material))
 			{
 				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
 
@@ -887,6 +890,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, capsuleColliderComponent.IsTrigger, out);
 
+			if (AssetManager::IsHandleValid(capsuleColliderComponent.Material))
 			{
 				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
 

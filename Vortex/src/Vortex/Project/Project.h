@@ -30,7 +30,7 @@ namespace Vortex {
 		{
 			std::string Name = "Untitled";
 			std::filesystem::path AssetDirectory = "";
-			std::filesystem::path AssetRegistryPath = "Assets/AssetRegistry.vxr";
+			std::filesystem::path AssetRegistryPath = "AssetRegistry.vxr";
 			std::filesystem::path StartScene = "";
 		} General;
 
@@ -144,7 +144,7 @@ namespace Vortex {
 		inline static std::filesystem::path GetAssetRegistryPath()
 		{
 			VX_CORE_ASSERT(s_ActiveProject, "No active Project!");
-			return GetProjectDirectory() / s_ActiveProject->m_Properties.General.AssetRegistryPath;
+			return GetAssetDirectory() /  s_ActiveProject->m_Properties.General.AssetRegistryPath;
 		}
 
 		inline static std::filesystem::path GetCacheDirectory()
@@ -164,11 +164,11 @@ namespace Vortex {
 		static void SubmitSceneToBuild(const std::string& filepath);
 		static BuildIndexMap& GetScenesInBuild();
 
-		void Save();
+		bool SaveToDisk();
 		
 	private:
-		void OnSerialized();
-		void OnDeserialized();
+		bool OnSerialized();
+		bool OnDeserialized();
 
 	private:
 		ProjectProperties m_Properties;

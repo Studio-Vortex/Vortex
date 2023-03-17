@@ -352,7 +352,7 @@ namespace Vortex {
 		CreatePremakeBuildScript();
 
 		VX_CORE_ASSERT(Project::GetActive(), "Project wasn't created properly!");
-		Project::GetActive()->Save();
+		Project::GetActive()->SaveToDisk();
 
 		GenerateSolutionFromBatchScript();
 		ResetWorkingDirectory();

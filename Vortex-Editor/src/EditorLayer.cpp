@@ -1,11 +1,9 @@
 #include "EditorLayer.h"
 
 #include <Vortex/Serialization/SceneSerializer.h>
-#include <Vortex/Project/ProjectSerializer.h>
-#include <Vortex/Renderer/RenderCommand.h>
+#include <Vortex/Project/ProjectLoader.h>
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
-#include <Vortex/Audio/AudioEngine.h>
 #include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
 #include <Vortex/Gui/Colors.h>
@@ -2022,40 +2020,29 @@ namespace Vortex {
 		return true;
 	}
 
-	void EditorLayer::OpenProject(const std::filesystem::path& path)
+	void EditorLayer::OpenProject(const std::filesystem::path& filepath)
 	{
+		VX_PROFILE_FUNCTION();
+
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
 		m_HoveredEntity = Entity{};
 
-		if (path.extension().string() != ".vxproject")
-		{
-			VX_WARN("Could not load {} - not a project file", path.filename().string());
+		if (!ProjectLoader::LoadEditorProject(filepath))
 			return;
-		}
+		
+		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+		std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+		const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
 
-		if (Project::Load(path))
-		{
-			std::string projectName = std::format("{} Project Load Time", path.filename().string());
-			InstrumentationTimer timer(projectName.c_str());
+		auto relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
+		OpenScene(relativePath);
 
-			ScriptEngine::Init();
-
-			SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
-			std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
-			const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
-
-			auto relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
-			OpenScene(relativePath);
-
-			SharedRef<Project> activeProject = Project::GetActive();
-			m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
-			m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-			m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
-
-			TagComponent::ResetAddedMarkers();
-		}
+		SharedRef<Project> activeProject = Project::GetActive();
+		m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
+		m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
+		m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
 	}
 
 	void EditorLayer::SaveProject()
@@ -2065,7 +2052,7 @@ namespace Vortex {
 			CaptureFramebufferImageToDisk();
 		}
 
-		Project::GetActive()->Save();
+		ProjectLoader::SaveActiveEditorProject();
 	}
 
 	void EditorLayer::CreateNewScene()
@@ -2073,16 +2060,21 @@ namespace Vortex {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
+		m_EditorScenePath = ""; // No scene on disk yet
+
 		m_ActiveScene = Scene::Create(m_Framebuffer);
 
 		SetSceneContext(m_ActiveScene);
-
 		ResetEditorCameras();
 
-		m_EditorScenePath = std::filesystem::path(); // Reset the current scene path otherwise the previous scene will be overwritten
-		m_EditorScene = m_ActiveScene; // Set the editors scene
+		m_EditorScene = m_ActiveScene;
 
 		Scene::Create3DSampleScene(m_ActiveScene);
+
+		// We didn't actually serialize yet
+		std::filesystem::path memorySceneFilepath = Project::GetAssetDirectory() / "Scenes" / "UntitledScene.vortex";
+
+		SetWindowTitle(FileSystem::RemoveFileExtension(memorySceneFilepath.filename()));
 	}
 
 	void EditorLayer::OpenExistingScene()
@@ -2093,32 +2085,29 @@ namespace Vortex {
 			OpenScene(filepath);
 	}
 
-	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
 	{
 		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
 		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
-		std::string sceneFilename = path.filename().string();
+		std::string sceneFilename = filepath.filename().string();
 
-		if (path.extension().string() != ".vortex")
+		if (filepath.extension() != ".vortex")
 		{
-			VX_WARN("Could not load {} - not a scene file", sceneFilename);
+			VX_CORE_WARN("Could not load {} - not a scene file", sceneFilename);
 			return;
 		}
 
-		SharedReference <Scene> newScene = Scene::Create(m_Framebuffer);
+		SharedReference<Scene> newScene = Scene::Create(m_Framebuffer);
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
-		// Default clear color
-		RenderCommand::SetClearColor(Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)));
 
 		std::string timerName = std::format("{} Scene Load Time", sceneFilename);
 		InstrumentationTimer timer(timerName.c_str());
 
-		if (serializer.Deserialize(path.string()))
+		if (serializer.Deserialize(filepath.string()))
 		{
 			m_EditorScene = newScene;
 			SetSceneContext(m_EditorScene);
@@ -2126,19 +2115,10 @@ namespace Vortex {
 			ResetEditorCameras();
 
 			m_ActiveScene = m_EditorScene;
-			m_EditorScenePath = path;
+			m_EditorScenePath = sceneFilename;
+
 			std::string sceneName = sceneFilename.substr(0, sceneFilename.find('.'));
-
-			std::string projectName = Project::GetActive()->GetName();
-			std::string platformName = Platform::GetName();
-			std::string graphicsAPI = RendererAPI::GetAPIInfo().Name;
-
-			Application& application = Application::Get();
-			Window& window = application.GetWindow();
-
-			const static std::string originalTitle = window.GetTitle();
-			std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
-			window.SetTitle(newTitle);
+			SetWindowTitle(sceneName);
 
 			m_ActiveScene->SetDebugName(sceneName);
 
@@ -2165,6 +2145,8 @@ namespace Vortex {
 			m_EditorScenePath = filepath;
 			
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
+
+			SetWindowTitle(FileSystem::RemoveFileExtension(m_EditorScenePath.filename()));
 		}
 	}
 
@@ -2178,10 +2160,10 @@ namespace Vortex {
 			SaveSceneAs();
 	}
 
-	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& path)
+	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath)
 	{
 		SceneSerializer serializer(scene);
-		serializer.Serialize(path.string());
+		serializer.Serialize(filepath.string());
 	}
 
 	void EditorLayer::OnScenePlay()
@@ -2346,6 +2328,8 @@ namespace Vortex {
 
 	void EditorLayer::QueueSceneTransition()
 	{
+		VX_PROFILE_FUNCTION();
+
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
 			m_StartScenePath = m_EditorScenePath;
@@ -2370,6 +2354,20 @@ namespace Vortex {
 
 			m_TransitionedFromStartScene = true;
 		});
+	}
+
+	void EditorLayer::SetWindowTitle(const std::string& sceneName)
+	{
+		std::string projectName = Project::GetActive()->GetName();
+		std::string platformName = Platform::GetName();
+		std::string graphicsAPI = RendererAPI::GetAPIInfo().Name;
+
+		Application& application = Application::Get();
+		Window& window = application.GetWindow();
+
+		const static std::string originalTitle = window.GetTitle();
+		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
+		window.SetTitle(newTitle);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()

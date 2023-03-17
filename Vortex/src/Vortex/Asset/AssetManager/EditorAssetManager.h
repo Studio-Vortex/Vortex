@@ -15,9 +15,6 @@ namespace Vortex {
 		EditorAssetManager();
 		~EditorAssetManager() override;
 
-		void OnSerialized();
-		void OnDeserialized();
-
 		AssetType GetAssetType(AssetHandle handle) const override;
 		SharedReference<Asset> GetAsset(AssetHandle handle) override;
 		void AddMemoryOnlyAsset(SharedReference<Asset> asset) override;
@@ -75,6 +72,9 @@ namespace Vortex {
 
 			return asset;
 		}
+
+		bool OnSerialized();
+		bool OnDeserialized();
 
 	private:
 		void LoadAssetRegistry();

@@ -54,18 +54,18 @@ namespace Vortex {
 
 		void CreateNewProject();
 		bool OpenExistingProject();
-		void OpenProject(const std::filesystem::path& path);
+		void OpenProject(const std::filesystem::path& filepath);
 		void SaveProject();
 
 		// Scene
 
 		void CreateNewScene();
 		void OpenExistingScene();
-		void OpenScene(const std::filesystem::path& path);
+		void OpenScene(const std::filesystem::path& filepath);
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& path);
+		void SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath);
 
 		void OnScenePlay();
 		void OnScenePause();
@@ -92,10 +92,11 @@ namespace Vortex {
 		// Editor Callbacks
 
 		void OnLaunchRuntime(const std::filesystem::path& filepath);
+		void QueueSceneTransition();
 
 		// Helper
 
-		void QueueSceneTransition();
+		void SetWindowTitle(const std::string& sceneName);
 		void DuplicateSelectedEntity();
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();

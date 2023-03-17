@@ -22,15 +22,19 @@ namespace Vortex {
 		WriteToRegistryFile();
 	}
 
-	void EditorAssetManager::OnSerialized()
+	bool EditorAssetManager::OnSerialized()
 	{
 		WriteToRegistryFile();
+
+		return true;
 	}
 
-	void EditorAssetManager::OnDeserialized()
+	bool EditorAssetManager::OnDeserialized()
 	{
 		LoadAssetRegistry();
 		ReloadAssets();
+
+		return true;
 	}
 
 	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const

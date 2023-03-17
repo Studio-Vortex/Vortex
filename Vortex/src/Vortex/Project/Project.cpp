@@ -86,37 +86,37 @@ namespace Vortex {
         return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
     }
 
-	void Project::Save()
+	bool Project::SaveToDisk()
 	{
-		OnSerialized();
+		return OnSerialized();
 	}
 
-	void Project::OnSerialized()
+	bool Project::OnSerialized()
 	{
 		VX_PROFILE_FUNCTION();
 
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
 		ProjectSerializer serializer(s_ActiveProject);
-		std::filesystem::path projectPath = GetProjectFilepath();
+		const auto& projectPath = GetProjectFilepath();
 		const bool serialized = serializer.Serialize(projectPath);
 
 		if (!serialized)
-			return;
+			return false;
 
 		s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(projectPath);
 		s_ActiveProject->m_ProjectFilepath = projectPath;
 
-		s_AssetManager.As<EditorAssetManager>()->OnSerialized();
+		return s_AssetManager.As<EditorAssetManager>()->OnSerialized();
 	}
 
-	void Project::OnDeserialized()
+	bool Project::OnDeserialized()
 	{
 		VX_PROFILE_FUNCTION();
 
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
-		s_AssetManager.As<EditorAssetManager>()->OnDeserialized();
+		return s_AssetManager.As<EditorAssetManager>()->OnDeserialized();
 	}
 
 }

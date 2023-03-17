@@ -13,7 +13,10 @@ namespace Vortex {
 
 		Gui::Begin("ECS Registry View", &s_ShowPanel);
 
-		RenderSelectedEntityView(selectedEntity);
+		if (selectedEntity)
+		{
+			RenderSelectedEntityView(selectedEntity);
+		}
 
 		RenderSceneEntityView();
 
@@ -22,9 +25,6 @@ namespace Vortex {
 
 	void ECSDebugPanel::RenderSelectedEntityView(Entity selectedEntity)
 	{
-		if (!selectedEntity)
-			return;
-
 		Gui::Text("Selected Entity");
 		UI::Draw::Underline();
 		
