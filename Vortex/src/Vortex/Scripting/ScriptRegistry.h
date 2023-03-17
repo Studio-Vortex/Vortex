@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
-#include "Vortex/Scene/Entity.h"
-
 #include "Vortex/Core/Math/Math.h"
 
 extern "C"
@@ -400,6 +398,21 @@ namespace Vortex {
 		void Physics_SetScenePositionIterations(uint32_t positionIterations);
 		uint32_t Physics_GetSceneVelocityIterations();
 		void Physics_SetSceneVelocityIterations(uint32_t velocityIterations);
+
+#pragma endregion
+
+#pragma region PhysicsMaterial
+
+	float PhysicsMaterial_GetStaticFriction(AssetHandle* assetHandle);
+	void PhysicsMaterial_SetStaticFriction(AssetHandle* assetHandle, float staticFriction);
+	float PhysicsMaterial_GetDynamicFriction(AssetHandle* assetHandle);
+	void PhysicsMaterial_SetDynamicFriction(AssetHandle* assetHandle, float dynamicFriction);
+	float PhysicsMaterial_GetBounciness(AssetHandle* assetHandle);
+	void PhysicsMaterial_SetBounciness(AssetHandle* assetHandle, float bounciness);
+	CombineMode PhysicsMaterial_GetFrictionCombineMode(AssetHandle* assetHandle);
+	void PhysicsMaterial_SetFrictionCombineMode(AssetHandle* assetHandle, CombineMode frictionCombineMode);
+	CombineMode PhysicsMaterial_GetBouncinessCombineMode(AssetHandle* assetHandle);
+	void PhysicsMaterial_SetBouncinessCombineMode(AssetHandle* assetHandle, CombineMode bouncinessCombineMode);
 
 #pragma endregion
 

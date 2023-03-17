@@ -5,9 +5,11 @@
 #include "Vortex/Core/Platform.h"
 #include "Vortex/Core/Layer.h"
 #include "Vortex/Core/Log.h"
-#include "Vortex/Core/Window.h"
 #include "Vortex/Core/Buffer.h"
+#include "Vortex/Core/Window.h"
+#include "Vortex/Core/Platform.h"
 #include "Vortex/Core/TimeStep.h"
+
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 #include "Vortex/Core/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
@@ -20,6 +22,7 @@
 
 /// Input
 #include "Vortex/Core/Input.h"
+#include "Vortex/Core/Gamepad.h"
 #include "Vortex/Core/KeyCodes.h"
 #include "Vortex/Core/MouseCodes.h"
 /// ---------------------------------------------------
@@ -39,8 +42,8 @@ namespace Math = Vortex::Math;
 /// Gui
 #include "Vortex/Gui/GuiLayer.h"
 #include "Vortex/UI/UI.h"
-#include <imgui.h>
 
+#include <imgui.h>
 namespace Gui = ImGui;
 /// ---------------------------------------------------
 
@@ -70,6 +73,8 @@ namespace Gui = ImGui;
 /// Physics
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
+#include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Physics/2D/Physics2D.h"
 /// ---------------------------------------------------
 

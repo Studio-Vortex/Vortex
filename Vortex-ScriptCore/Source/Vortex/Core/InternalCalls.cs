@@ -849,6 +849,40 @@ namespace Vortex {
 
 		#endregion
 
+		#region PhysicsMaterial
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetStaticFriction(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetStaticFriction(ref AssetHandle assetHandle, float staticFriction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetDynamicFriction(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetDynamicFriction(ref AssetHandle assetHandle, float dynamicFriction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetBounciness(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetBounciness();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static CombineMode PhysicsMaterial_GetFrictionCombineMode(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetFrictionCombineMode(ref AssetHandle assetHandle, CombineMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static CombineMode PhysicsMaterial_GetBouncinessCombineMode(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetBouncinessCombineMode(ref AssetHandle assetHandle, CombineMode mode);
+
+		#endregion
+
 		#region CharacterController
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

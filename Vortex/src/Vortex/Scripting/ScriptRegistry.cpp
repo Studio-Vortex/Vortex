@@ -10,14 +10,19 @@
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Entity.h"
+
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Audio/AudioListener.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
+#include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Physics/2D/Physics2D.h"
 
 #include "Vortex/Renderer/Renderer.h"
@@ -32,10 +37,10 @@
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
 
-#include "Vortex/UI/UI.h"
-
 #include "Vortex/Utils/Random.h"
 #include "Vortex/Utils/Time.h"
+
+#include "Vortex/UI/UI.h"
 
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>
@@ -4195,6 +4200,200 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region PhysicsMaterial
+
+		float PhysicsMaterial_GetStaticFriction(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+			
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			return physicsMaterial->StaticFriction;
+		}
+
+		void PhysicsMaterial_SetStaticFriction(AssetHandle* assetHandle, float staticFriction)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
+				return;
+			}
+
+			physicsMaterial->StaticFriction = staticFriction;
+		}
+
+		float PhysicsMaterial_GetDynamicFriction(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			return physicsMaterial->DynamicFriction;
+		}
+
+		void PhysicsMaterial_SetDynamicFriction(AssetHandle* assetHandle, float dynamicFriction)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				return;
+			}
+
+			physicsMaterial->DynamicFriction = dynamicFriction;
+		}
+
+		float PhysicsMaterial_GetBounciness(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				return 0.0f;
+			}
+
+			return physicsMaterial->Bounciness;
+		}
+
+		void PhysicsMaterial_SetBounciness(AssetHandle* assetHandle, float bounciness)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				return;
+			}
+
+			physicsMaterial->Bounciness = bounciness;
+		}
+
+		CombineMode PhysicsMaterial_GetFrictionCombineMode(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				return CombineMode::Average;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				return CombineMode::Average;
+			}
+
+			return physicsMaterial->FrictionCombineMode;
+		}
+
+		void PhysicsMaterial_SetFrictionCombineMode(AssetHandle* assetHandle, CombineMode frictionCombineMode)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				return;
+			}
+
+			physicsMaterial->FrictionCombineMode = frictionCombineMode;
+		}
+
+		CombineMode PhysicsMaterial_GetBouncinessCombineMode(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				return CombineMode::Average;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				return CombineMode::Average;
+			}
+
+			return physicsMaterial->BouncinessCombineMode;
+		}
+
+		void PhysicsMaterial_SetBouncinessCombineMode(AssetHandle* assetHandle, CombineMode bouncinessCombineMode)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(*assetHandle);
+
+			if (!physicsMaterial)
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				return;
+			}
+
+			physicsMaterial->BouncinessCombineMode = bouncinessCombineMode;
+		}
+
+#pragma endregion
+
 #pragma region Character Controller Component
 
 		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
@@ -6660,6 +6859,25 @@ namespace Vortex {
 
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetName);
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetLength);
+		
+		VX_REGISTER_INTERNAL_CALL(Physics_Raycast);
+		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneGravity);
+		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneGravity);
+		VX_REGISTER_INTERNAL_CALL(Physics_GetScenePositionIterations);
+		VX_REGISTER_INTERNAL_CALL(Physics_SetScenePositionIterations);
+		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
+		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
+
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetStaticFriction);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetStaticFriction);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetDynamicFriction);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetDynamicFriction);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetBounciness);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetBounciness);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetFrictionCombineMode);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetFrictionCombineMode);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetBouncinessCombineMode);
+		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetBouncinessCombineMode);
 
 		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
 		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
@@ -6754,14 +6972,6 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetOffset);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
-
-		VX_REGISTER_INTERNAL_CALL(Physics_Raycast);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetScenePositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetScenePositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
 
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
