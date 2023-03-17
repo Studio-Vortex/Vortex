@@ -176,7 +176,7 @@ namespace Vortex {
 		std::string_view copy(extension.data());
 		std::string ext = String::ToLowerCopy(copy);
 
-		if (!s_AssetExtensionMap.contains(ext))
+		if (!IsValidAssetExtension(ext))
 			return AssetType::None;
 
 		return s_AssetExtensionMap.at(ext);
@@ -186,6 +186,11 @@ namespace Vortex {
 	{
 		std::string extension = FileSystem::GetFileExtension(filepath);
 		return GetAssetTypeFromExtension(extension);
+	}
+
+	bool EditorAssetManager::IsValidAssetExtension(const std::filesystem::path& extension)
+	{
+		return s_AssetExtensionMap.contains(extension.string());
 	}
 
 	const AssetMetadata& EditorAssetManager::GetMetadata(const std::filesystem::path& filepath)
@@ -389,21 +394,15 @@ namespace Vortex {
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (!metadata.IsValid())
+			if (!metadata.IsValid() || !IsHandleValid(handle))
 				continue;
 
 			if (!FileSystem::Exists(GetFileSystemPath(metadata)))
 				continue;
 
-			if (metadata.IsMemoryOnly)
-				continue;
-
-			if (metadata.Type == AssetType::None)
-				continue;
-
 			std::string filepathToSerialize = metadata.Filepath.string();
 
-			// WINDOWS SPECIFIC
+			// WINDOWS ONLY
 			std::replace(filepathToSerialize.begin(), filepathToSerialize.end(), '\\', '/');
 			sortedMap[metadata.Handle] = AssetRegistryEntry{ filepathToSerialize, metadata.Type };
 		}

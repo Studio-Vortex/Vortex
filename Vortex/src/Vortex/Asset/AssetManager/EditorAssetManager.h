@@ -38,6 +38,8 @@ namespace Vortex {
 		AssetType GetAssetTypeFromExtension(const std::string& extension);
 		AssetType GetAssetTypeFromFilepath(const std::filesystem::path& filepath);
 
+		bool IsValidAssetExtension(const std::filesystem::path& extension);
+
 		const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		const AssetMetadata& GetMetadata(AssetHandle handle);
 		const AssetMetadata& GetMetadata(SharedReference<Asset> asset);
@@ -47,7 +49,7 @@ namespace Vortex {
 		AssetHandle ImportAsset(const std::filesystem::path& filepath);
 
 		template <typename TAsset, typename... Args>
-		SharedReference<TAsset> CreateNewAsset(const std::string& filename, Args&&... args)
+		VX_FORCE_INLINE SharedReference<TAsset> CreateNewAsset(const std::string& filename, Args&&... args)
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateNewAsset only works for types derived from Asset");
 

@@ -67,6 +67,11 @@ namespace Vortex {
 		return std::filesystem::exists(filepath);
 	}
 
+    bool FileSystem::Equivalent(const std::filesystem::path& first, const std::filesystem::path& second)
+    {
+		return std::filesystem::equivalent(first, second);
+    }
+
 	bool FileSystem::CreateDirectoryV(const std::filesystem::path& directory)
 	{
 		return std::filesystem::create_directory(directory);

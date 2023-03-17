@@ -16,7 +16,10 @@ namespace Vortex {
 		bool IsDataLoaded = false;
 		bool IsMemoryOnly = false;
 		
-		inline bool IsValid() const { return Handle != 0 && !IsMemoryOnly; }
+		inline bool IsValid() const
+		{
+			return Type != AssetType::None && Handle != 0 && !IsMemoryOnly;
+		}
 	};
 
 }

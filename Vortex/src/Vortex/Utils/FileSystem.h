@@ -14,6 +14,7 @@ namespace Vortex {
 		static std::string ReadText(const std::filesystem::path& filepath);
 
 		static bool Exists(const std::filesystem::path& filepath);
+		static bool Equivalent(const std::filesystem::path& first, const std::filesystem::path& second);
 
 		static bool CreateDirectoryV(const std::filesystem::path& directory);
 		static bool CreateDirectoriesV(const std::filesystem::path& directories);

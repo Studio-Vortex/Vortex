@@ -28,7 +28,7 @@ namespace Vortex {
 	{
 		if (!s_Serializers.contains(metadata.Type))
 		{
-			VX_CORE_WARN("There are currently no importers for assets of type {}", metadata.Filepath.stem().string());
+			VX_CONSOLE_LOG_WARN("There are currently no importers for assets of type {}", metadata.Filepath.stem().string());
 			return;
 		}
 
@@ -45,7 +45,7 @@ namespace Vortex {
 	{
 		if (!s_Serializers.contains(metadata.Type))
 		{
-			VX_CORE_WARN("There are currently no importers for assets of type {}", metadata.Filepath.stem().string());
+			VX_CONSOLE_LOG_WARN("There are currently no importers for assets of type {}", metadata.Filepath.stem().string());
 			return false;
 		}
 

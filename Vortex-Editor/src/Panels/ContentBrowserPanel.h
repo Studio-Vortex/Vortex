@@ -16,21 +16,25 @@ namespace Vortex {
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		void RenderRightClickPopupMenu();
+		void RenderCreateItemPopup();
 		void RenderFileExplorer();
-		void RenderSlider(float& thumbnailSize, float& padding);
-
-		std::filesystem::path FindRelativePath(const std::string& entry);
+		void RenderMenuBar();
+		void RenderRightClickItemPopup(const std::filesystem::path& currentPath);
+		void RenderThumbnailSlider();
+		SharedReference<Texture2D> FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath, const std::filesystem::path& extension);
+		void FindTextureFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon);
+		void FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon);
 
 	private:
 		inline static bool s_ShowPanel = true;
+		float m_ThumbnailSize = 96.0f;
+		float m_ThumbnailPadding = 16.0f;
 
 	private:
 		std::filesystem::path m_BaseDirectory;
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_PathToBeRenamed;
+		std::filesystem::path m_ItemPathToRename;
 
-		std::unordered_map<std::string, SharedReference<Texture2D>> m_TextureMap;
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};
 
