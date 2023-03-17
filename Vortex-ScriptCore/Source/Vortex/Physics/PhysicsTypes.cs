@@ -1,33 +1,13 @@
-﻿namespace Vortex {
+namespace Vortex {
 
-	public enum Space
+	public enum RigidBody2DType
 	{
-		Local, World,
-	}
-
-	public enum ProjectionType
-	{
-		Perspective, Orthographic,
-	}
-
-	public enum LightType
-	{
-		Directional, Point, Spot,
-	}
-
-	public enum MeshType
-	{
-		Cube, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
+		Static, Dynamic, Kinematic,
 	}
 
 	public enum RigidBodyType
 	{
 		Static, Dynamic,
-	}
-
-	public enum RigidBody2DType
-	{
-		Static, Dynamic, Kinematic,
 	}
 
 	public enum ForceMode

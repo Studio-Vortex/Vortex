@@ -2,7 +2,7 @@
 
 namespace Vortex {
 
-	public class Texture2D
+	public class Texture2D: Asset
 	{
 		internal IntPtr m_UnmanagedInstance;
 
