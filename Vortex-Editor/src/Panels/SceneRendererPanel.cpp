@@ -224,7 +224,7 @@ namespace Vortex {
 					skylight = lightSourceComponent;
 				}
 
-				Renderer::CreateShadowMap(LightType::Directional, skylight.Source);
+				Renderer::CreateShadowMap(LightType::Directional);
 			}
 
 			float sceneExposure = Renderer::GetSceneExposure();

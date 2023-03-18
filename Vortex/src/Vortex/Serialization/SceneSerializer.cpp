@@ -424,8 +424,8 @@ namespace Vortex {
 		const std::filesystem::path projectAssetDirectory = Project::GetAssetDirectory();
 
 		out << YAML::BeginMap; // Entity
-		VX_SERIALIZE_PROPERTY(Entity, entity.GetUUID(), out);
 
+		VX_SERIALIZE_PROPERTY(Entity, entity.GetUUID(), out);
 		VX_SERIALIZE_PROPERTY(Active, entity.IsActive(), out);
 
 		if (entity.HasComponent<HierarchyComponent>())
@@ -630,7 +630,12 @@ namespace Vortex {
 
 						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-						SharedReference<Material> material = submesh.GetMaterial();
+						if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+							continue;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+						if (!material)
+							continue;
 
 						Utils::SerializeSubmeshMaterial(material, out);
 
@@ -647,17 +652,16 @@ namespace Vortex {
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
 			const auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
+
+			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
+
 			AssetHandle spriteHandle = spriteComponent.Texture;
-			if (AssetManager::IsHandleValid(spriteHandle))
-			{
-				out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
+			VX_SERIALIZE_PROPERTY(TextureHandle, spriteHandle, out);
 
-				VX_SERIALIZE_PROPERTY(TextureHandle, spriteComponent.Texture, out);
-				VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
-				VX_SERIALIZE_PROPERTY(TextureUV, spriteComponent.TextureUV, out);
+			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
+			VX_SERIALIZE_PROPERTY(TextureUV, spriteComponent.TextureUV, out);
 
-				out << YAML::EndMap; // SpriteRendererComponent
-			}
+			out << YAML::EndMap; // SpriteRendererComponent
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -721,7 +725,6 @@ namespace Vortex {
 
 		if (entity.HasComponent<AnimatorComponent>())
 		{
-
 			out << YAML::Key << "AnimatorComponent" << YAML::Value << YAML::BeginMap; // AnimatorComponent
 
 			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
@@ -1143,13 +1146,10 @@ namespace Vortex {
 				auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
 
 				lightComponent.Source = LightSource::Create(LightSourceProperties());
-
 				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
+
 				if (lightSourceComponent["Radiance"])
 					lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
-
-				// Create a shadow map for the light source
-				Renderer::CreateShadowMap(lightComponent.Type, lightComponent.Source);
 
 				switch (lightComponent.Type)
 				{

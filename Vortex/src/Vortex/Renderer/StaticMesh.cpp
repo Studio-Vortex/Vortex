@@ -4,6 +4,9 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Project/Project.h"
+
+#include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Utils/FileSystem.h"
 
 #include <assimp/Importer.hpp>
@@ -42,8 +45,8 @@ namespace Vortex {
 		}
 	};
 
-	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, SharedReference<Material>& material)
-		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
+	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, AssetHandle materialHandle)
+		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_MaterialHandle(materialHandle)
 	{
 		CreateAndUploadMesh();
 	}
@@ -105,9 +108,9 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void StaticSubmesh::SetMaterial(SharedReference<Material>& material)
+	void StaticSubmesh::SetMaterial(AssetHandle materialHandle)
 	{
-		m_Material = material;
+		m_MaterialHandle = materialHandle;
 	}
 
 	void StaticSubmesh::CreateAndUploadMesh()
@@ -157,8 +160,12 @@ namespace Vortex {
 
 	void StaticSubmesh::Render()
 	{
-		SharedReference<Shader> shader = m_Material->GetShader();
-		m_Material->Bind();
+		if (!AssetManager::IsHandleValid(m_MaterialHandle))
+			return;
+
+		SharedReference<Material> material = AssetManager::GetAsset<Material>(m_MaterialHandle);
+		SharedReference<Shader> shader = material->GetShader();
+		material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 
@@ -220,7 +227,7 @@ namespace Vortex {
 	{
 		std::vector<StaticVertex> vertices;
 		std::vector<uint32_t> indices;
-		SharedReference<Material> material = nullptr;
+		AssetHandle materialHandle = 0;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -323,19 +330,20 @@ namespace Vortex {
 			};
 
 			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
-			if (!materialProps.AlbedoMap)
-				materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
-
 			materialProps.NormalMap = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
 			materialProps.MetallicMap = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
 			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
 			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
 			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 
-			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), materialProps);
+			SharedReference<Material> material = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), materialProps);
+
+			// This is temporary until we have material files
+			Project::GetEditorAssetManager()->AddMemoryOnlyAsset(material);
+			materialHandle = material->Handle;
 		}
 
-		return { meshName, vertices, indices, material };
+		return { meshName, vertices, indices, materialHandle };
 	}
 
 	void StaticMesh::CreateBoundingBoxFromSubmeshes()
@@ -361,7 +369,7 @@ namespace Vortex {
 
 	void StaticMesh::OnUpdate(int entityID)
 	{
-		bool isDirty = false;
+		bool dirty = false;
 
 		for (auto& submesh : m_Submeshes)
 		{
@@ -370,18 +378,24 @@ namespace Vortex {
 			size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
-				StaticVertex& vertex = vertices[i];
-				SharedReference<Material> material = submesh.GetMaterial();
+				if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+					continue;
 
-				isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
-				if (!isDirty)
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+				if (!material)
+					continue;
+
+				StaticVertex& vertex = vertices[i];
+
+				dirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
+				if (!dirty)
 					continue;
 
 				vertex.TexScale = material->GetUV();
 				vertex.EntityID = entityID;
 			}
 
-			if (!isDirty)
+			if (!dirty)
 				continue;
 
 			SharedReference<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();

@@ -2,6 +2,7 @@
 #include "OpenGLSkybox.h"
 
 #include "Vortex/Renderer/Texture.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <Glad/glad.h>
 #include <stb_image.h>
@@ -74,7 +75,7 @@ namespace Vortex {
 
 	void OpenGLSkybox::LoadSkybox(const std::string& filepath)
 	{
-		if (std::filesystem::path(filepath).filename().extension() != ".hdr")
+		if (FileSystem::GetFileExtension(filepath) != ".hdr")
 		{
 			VX_CONSOLE_LOG_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
 			return;

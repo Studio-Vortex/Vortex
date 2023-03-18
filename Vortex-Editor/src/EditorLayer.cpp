@@ -820,21 +820,30 @@ namespace Vortex {
 								if (AssetManager::IsHandleValid(staticMeshHandle))
 								{
 									std::string filename = textureFilepath.filename().string();
+									AssetHandle materialHandle = staticMesh->GetSubmesh(0).GetMaterial();
 
-									if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(textureHandle);
-									if (filename.find("normal") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetNormalMap(textureHandle);
-									if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(textureHandle);
-									if (filename.find("roughness") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(textureHandle);
-									if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(textureHandle);
-									if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(textureHandle);
-									if (filename.find("ao") != std::string::npos)
-										staticMesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(textureHandle);
+									if (AssetManager::IsHandleValid(materialHandle))
+									{
+										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+
+										if (material)
+										{
+											if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+												material->SetAlbedoMap(textureHandle);
+											if (filename.find("normal") != std::string::npos)
+												material->SetNormalMap(textureHandle);
+											if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+												material->SetMetallicMap(textureHandle);
+											if (filename.find("roughness") != std::string::npos)
+												material->SetRoughnessMap(textureHandle);
+											if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+												material->SetEmissionMap(textureHandle);
+											if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+												material->SetParallaxOcclusionMap(textureHandle);
+											if (filename.find("ao") != std::string::npos)
+												material->SetAmbientOcclusionMap(textureHandle);
+										}
+									}
 								}
 							}
 						}
@@ -2226,7 +2235,7 @@ namespace Vortex {
 			ResetEditorCameras();
 
 			m_ActiveScene = m_EditorScene;
-			m_EditorScenePath = sceneFilename;
+			m_EditorScenePath = filepath;
 
 			SetWindowTitle(sceneFilename);
 

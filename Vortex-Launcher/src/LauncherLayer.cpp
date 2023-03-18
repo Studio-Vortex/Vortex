@@ -292,8 +292,7 @@ namespace Vortex {
 		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scenes");
 		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Binaries");
 		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Source");
-		FileSystem::Copy("Resources/NewProjectTemplate/premake5.lua", (projectDirectoryPath / std::filesystem::path("Assets/Scripts")).string());
-		FileSystem::Copy("Resources/NewProjectTemplate/Win32Gen.bat", (projectDirectoryPath / std::filesystem::path("Assets/Scripts")).string());
+		FileSystem::RecursiveDirectoryCopy("Resources/NewProjectTemplate", projectDirectoryPath / std::filesystem::path("Assets/Scripts"));
 	}
 	
 	void LauncherLayer::CreateStartingScene()
@@ -329,7 +328,7 @@ namespace Vortex {
 	void LauncherLayer::GenerateSolutionFromBatchScript()
 	{
 		FileSystem::SetCurrentPath("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
-		FileSystem::LaunchApplication("Win32Gen.bat", "");
+		FileSystem::LaunchApplication("Win64Gen.bat", "");
 	}
 
 	void LauncherLayer::BuildProjectDLL()

@@ -91,8 +91,7 @@ namespace Vortex {
 							for (const auto& srcSubmesh : submeshes)
 							{
 								StaticSubmesh& submesh = dstMesh->GetSubmesh(i++);
-								SharedReference<Material> material = srcSubmesh.GetMaterial();
-								submesh.SetMaterial(material);
+								submesh.SetMaterial(srcSubmesh.GetMaterial());
 							}
 						}
 
@@ -1072,6 +1071,8 @@ namespace Vortex {
 					continue;
 
 				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+				if (!mesh)
+					continue;
 
 				mesh->OnUpdate((int)(entt::entity)e);
 			}

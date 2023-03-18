@@ -256,14 +256,12 @@ namespace Vortex {
 
 		if (s_ShowPhysicsMaterial)
 		{
-			UI::BeginPropertyGrid();
 			RenderPhysicsMaterial(selectedEntity);
-			UI::EndPropertyGrid();
-			Gui::End();
-			return;
 		}
-
-		RenderMeshMaterial(selectedEntity);
+		else
+		{
+			RenderMeshMaterial(selectedEntity);
+		}
 
 		Gui::End();
 	}
@@ -274,11 +272,17 @@ namespace Vortex {
 			return;
 
 		const ShaderLibrary& shaderLibrary = Renderer::GetShaderLibrary();
-		std::vector<const char*> shaderNames;
+		size_t shaderCount = shaderLibrary.Size();
+		static std::vector<const char*> shaderNames;
 
-		for (const auto& [name, shader] : shaderLibrary)
+		if (shaderNames.size() < shaderCount)
 		{
-			shaderNames.emplace_back(name.c_str());
+			shaderNames.clear();
+
+			for (const auto& [shaderName, shader] : shaderLibrary)
+			{
+				shaderNames.emplace_back(shaderName.c_str());
+			}
 		}
 
 		if (selectedEntity.HasComponent<MeshRendererComponent>())
@@ -352,14 +356,12 @@ namespace Vortex {
 
 			for (const auto& submesh : submeshes)
 			{
-				SharedReference<Material> material = submesh.GetMaterial();
-
-				if (!material)
-				{
-					UI::EndPropertyGrid();
-					Gui::End();
+				if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
 					continue;
-				}
+
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+				if (!material)
+					continue;
 
 				const std::string& name = material->GetName() + " / " + submesh.GetName();
 
@@ -442,26 +444,38 @@ namespace Vortex {
 
 	void MaterialEditorPanel::RenderPhysicsMaterial(Entity selectedEntity)
 	{
+		UI::BeginPropertyGrid();
+
 		if (!selectedEntity.HasAny<BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent>())
 			return;
 		
+		AssetHandle physicsMaterialHandle = 0;
+
 		SharedReference<PhysicsMaterial> physicsMaterial = nullptr;
 
 		if (selectedEntity.HasComponent<BoxColliderComponent>())
 		{
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(selectedEntity.GetComponent<BoxColliderComponent>().Material);
+			physicsMaterialHandle = selectedEntity.GetComponent<BoxColliderComponent>().Material;
+			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
 		}
 		else if (selectedEntity.HasComponent<SphereColliderComponent>())
 		{
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(selectedEntity.GetComponent<SphereColliderComponent>().Material);
+			physicsMaterialHandle = selectedEntity.GetComponent<SphereColliderComponent>().Material;
+			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
 		}
 		else if (selectedEntity.HasComponent<CapsuleColliderComponent>())
 		{
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(selectedEntity.GetComponent<CapsuleColliderComponent>().Material);
+			physicsMaterialHandle = selectedEntity.GetComponent<CapsuleColliderComponent>().Material;
+			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
 		}
 		else if (selectedEntity.HasComponent<MeshColliderComponent>())
 		{
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(selectedEntity.GetComponent<MeshColliderComponent>().Material);
+			physicsMaterialHandle = selectedEntity.GetComponent<MeshColliderComponent>().Material;
+			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
 		}
 
 		if (physicsMaterial)
@@ -484,14 +498,18 @@ namespace Vortex {
 			std::string buffer;
 			UI::Property("Material Name", buffer);
 			Gui::BeginDisabled(buffer.size() == 0);
+			
 			if (Gui::Button("Create Physics Material"))
 			{
 				AssetHandle handle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>(0.6f, 0.6f, 0.0f);
 				physicsMaterial->Handle = handle;
 				VX_CONSOLE_LOG_INFO("MATERIAL CREATED: {}", buffer);
 			}
+
 			Gui::EndDisabled();
 		}
+
+		UI::EndPropertyGrid();
 	}
 
 }

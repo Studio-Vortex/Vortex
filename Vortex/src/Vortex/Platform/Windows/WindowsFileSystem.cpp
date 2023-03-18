@@ -97,6 +97,11 @@ namespace Vortex {
 		return std::filesystem::copy_file(from, to);
 	}
 
+    void FileSystem::RecursiveDirectoryCopy(const std::filesystem::path& from, const std::filesystem::path& to)
+    {
+		std::filesystem::copy(from, to, std::filesystem::copy_options::recursive);
+    }
+
 	std::filesystem::path FileSystem::GetParentDirectory(const std::filesystem::path& filepath)
 	{
 		if (filepath.has_parent_path())

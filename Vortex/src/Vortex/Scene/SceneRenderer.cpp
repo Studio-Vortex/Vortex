@@ -75,7 +75,11 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
-					SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
+					AssetHandle textureHandle = spriteRendererComponent.Texture;
+					SharedReference<Texture2D> texture = nullptr;
+
+					if (AssetManager::IsHandleValid(textureHandle))
+						texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 
 					Renderer2D::DrawSprite(
 						scene->GetWorldSpaceTransformMatrix(entity),
@@ -479,8 +483,10 @@ namespace Vortex {
 						// render each submesh
 						for (auto& submesh : submeshes)
 						{
-							SharedReference<Material> material = submesh.GetMaterial();
+							if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+								continue;
 
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
 							if (!material)
 								continue;
 

@@ -445,14 +445,14 @@ namespace Vortex
 		i++;
 	}
 
-	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID)
+	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, uint32_t textureIndex, const Math::vec2& textureScale, int entityID)
 	{
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.QuadVertexBufferPtr->TexIndex = (float)textureIndex;
 			s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
@@ -502,7 +502,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		constexpr float textureIndex = 0.0f; // Our White Texture
+		constexpr uint32_t textureIndex = 0; // Our White Texture
 		constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -527,24 +527,24 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -629,7 +629,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		const SharedReference<Texture2D>& texture = subtexture->GetTexure();
 
@@ -638,17 +638,17 @@ namespace Vortex
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -703,8 +703,8 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		const float textureIndex = 0.0f; // White Texture
-		const Math::vec2 textureScale = Math::vec2(1.0f);
+		static constexpr uint32_t textureIndex = 0; // White Texture
+		static constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
 		Math::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
@@ -747,19 +747,20 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
+
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -818,7 +819,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		static constexpr float textureIndex = 0.0f; // Our White Texture
+		static constexpr uint32_t textureIndex = 0; // White Texture
 		static constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -843,23 +844,23 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -948,7 +949,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		const SharedReference<Texture2D>& texture = subtexture->GetTexure();
 
@@ -956,17 +957,17 @@ namespace Vortex
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -1135,7 +1136,7 @@ namespace Vortex
 		if (string.empty())
 			return;
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		// This is not ideal (WIP)
 		std::u32string utf32string = To_UTF32(string);
@@ -1150,17 +1151,17 @@ namespace Vortex
 		{
 			if (*s_Data.FontTextureSlots[i].Raw() == *fontAtlas.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.FontTextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.FontTextureSlotIndex;
+			textureIndex = s_Data.FontTextureSlotIndex;
 			s_Data.FontTextureSlots[s_Data.FontTextureSlotIndex] = fontAtlas;
 			s_Data.FontTextureSlotIndex++;
 		}
@@ -1331,6 +1332,11 @@ namespace Vortex
 	void Renderer2D::ResetStats()
 	{
 		memset(&s_Data.Renderer2DStatistics, NULL, sizeof(s_Data.Renderer2DStatistics));
+	}
+
+	SharedReference<Texture2D> Renderer2D::GetWhiteTexture()
+	{
+		return s_Data.WhiteTexture;
 	}
 
 	const ShaderLibrary& Renderer2D::GetShaderLibrary()

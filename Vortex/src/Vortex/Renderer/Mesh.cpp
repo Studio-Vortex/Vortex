@@ -356,7 +356,7 @@ namespace Vortex {
 
 	void Mesh::OnUpdate(int entityID)
 	{
-		bool isDirty = false;
+		bool dirty = false;
 
 		std::vector<Vertex>& vertices = m_Submesh.GetVertices();
 
@@ -366,15 +366,15 @@ namespace Vortex {
 			Vertex& vertex = vertices[i];
 			SharedReference<Material> material = m_Submesh.GetMaterial();
 
-			isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
-			if (!isDirty)
+			dirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
+			if (!dirty)
 				continue;
 
 			vertex.TexScale = material->GetUV();
 			vertex.EntityID = entityID;
 		}
 
-		if (!isDirty)
+		if (!dirty)
 			return;
 
 		SharedReference<VertexBuffer> vertexBuffer = m_Submesh.GetVertexBuffer();

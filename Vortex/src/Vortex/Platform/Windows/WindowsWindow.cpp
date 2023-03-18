@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "WindowsWindow.h"
 
-#include "Vortex/Core/Input.h"
+#include "Vortex/Core/Input/Input.h"
 #include "Vortex/Events/WindowEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 #include "Vortex/Events/KeyEvent.h"

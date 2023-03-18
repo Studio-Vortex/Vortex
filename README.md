@@ -24,9 +24,9 @@ git clone --recursive "https://github.com/Jshuk-7/Vortex"
 
 Since there are currently no released binaries available, you must build the engine from source.
 
-Run the [Win32-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win32-GenProjects.bat) file found in `scripts` folder. This will create a Visual Studio 2022 solution file that you can use to build the engine.
+Run the [Win64-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win64-GenProjects.bat) file found in `scripts` folder. This will create a Visual Studio 2022 solution file that you can use to build the engine.
 
-If you make changes to the engine, or if you want to regenerate project files, rerun the [Win32-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win32-GenProjects.bat) file found in the `scripts` folder.
+If you make changes to the engine, or if you want to regenerate project files, rerun the [Win64-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win64-GenProjects.bat) file found in the `scripts` folder.
 
 ---
 

@@ -125,6 +125,8 @@ namespace Vortex {
 		static RenderStatistics GetStats();
 		static void ResetStats();
 
+		static SharedReference<Texture2D> GetWhiteTexture();
+
 		static const ShaderLibrary& GetShaderLibrary();
 
 	private:
@@ -132,7 +134,7 @@ namespace Vortex {
 		static void StartBatch();
 		static void NextBatch();
 
-		static void AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID = -1);
+		static void AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, uint32_t textureIndex, const Math::vec2& textureScale, int entityID = -1);
 		static void AddToCircleVertexBuffer(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID = -1);
 	};
 

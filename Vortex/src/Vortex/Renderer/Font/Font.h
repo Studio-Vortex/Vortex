@@ -4,6 +4,7 @@
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Scene/Components.h"
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 

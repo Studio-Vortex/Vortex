@@ -77,7 +77,7 @@ namespace Vortex {
 		static SceneLightDescription GetSceneLightDescription();
 
 		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
-		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
+		static void CreateShadowMap(LightType type);
 
 		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
 
@@ -137,6 +137,8 @@ namespace Vortex {
 		static void DisableFlag(RenderFlag flag);
 		static bool IsFlagSet(RenderFlag flag);
 		static void ClearFlags();
+
+		static SharedReference<Texture2D> GetWhiteTexture();
 
 		static ShaderLibrary& GetShaderLibrary();
 

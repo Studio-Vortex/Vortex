@@ -1984,7 +1984,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+						
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						*outAlbedo = material->GetAlbedo();
 					}
 				}
 			}
@@ -2023,7 +2032,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetAlbedo(*albedo);
 					}
 				}
 			}
@@ -2062,7 +2080,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return 0.0f;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return 0.0f;
+
+						return material->GetMetallic();
 					}
 				}
 			}
@@ -2101,7 +2128,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetMetallic(metallic);
 					}
 				}
 			}
@@ -2140,7 +2176,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return 0.0f;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return 0.0f;
+
+						return material->GetRoughness();
 					}
 				}
 			}
@@ -2179,7 +2224,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetRoughness(roughness);
 					}
 				}
 			}
@@ -2218,7 +2272,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						return submeshes[submeshIndex].GetMaterial()->GetEmission();
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return 0.0f;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return 0.0f;
+
+						return material->GetEmission();
 					}
 				}
 			}
@@ -2257,7 +2320,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetEmission(emission);
 					}
 				}
 			}
@@ -2296,7 +2368,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						*outUV = material->GetUV();
 					}
 				}
 			}
@@ -2335,7 +2416,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetUV(*uv);
 					}
 				}
 			}
@@ -2374,7 +2464,16 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return 0.0f;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return 0.0f;
+
+						return material->GetOpacity();
 					}
 				}
 			}
@@ -2413,7 +2512,16 @@ namespace Vortex {
 					{
 						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+
+						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
+						if (!AssetManager::IsHandleValid(materialHandle))
+							return;
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material)
+							return;
+
+						material->SetOpacity(opacity);
 					}
 				}
 			}

@@ -488,7 +488,7 @@ namespace Vortex {
 		skybox->SetShouldReload(false);
 	}
 
-	void Renderer::CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource)
+	void Renderer::CreateShadowMap(LightType type)
 	{
 		switch (type)
 		{
@@ -555,11 +555,16 @@ namespace Vortex {
 
 		auto lightSourceView = contextScene->GetAllEntitiesWith<LightSourceComponent>();
 
+		if (!s_Data.SkylightDepthMapFramebuffer)
+		{
+			CreateShadowMap(LightType::Directional);
+		}
+
 		for (const auto& lightSource : lightSourceView)
 		{
 			Entity lightSourceEntity{ lightSource, contextScene.Raw() };
 			LightSourceComponent& lightSourceComponent = lightSourceEntity.GetComponent<LightSourceComponent>();
-			
+
 			switch (lightSourceComponent.Type)
 			{
 				case LightType::Directional:
@@ -724,11 +729,6 @@ namespace Vortex {
 				viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
 
 				RenderCommand::SetViewport(viewport);
-			}
-
-			if (!s_Data.SkylightDepthMapFramebuffer)
-			{
-				CreateShadowMap(LightType::Directional, lightSourceComponent.Source);
 			}
 
 			s_Data.SkylightDepthMapFramebuffer->Bind();
@@ -1244,6 +1244,11 @@ namespace Vortex {
 	void Renderer::ClearFlags()
 	{
 		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
+	}
+
+	SharedReference<Texture2D> Renderer::GetWhiteTexture()
+	{
+		return Renderer2D::GetWhiteTexture();
 	}
 
 	ShaderLibrary& Renderer::GetShaderLibrary()

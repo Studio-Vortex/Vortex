@@ -26,14 +26,15 @@ namespace Vortex {
 			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
 
 			// Search Bar + Filtering
-			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 2.0f);
+			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
 			const bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search...", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
 			if (isSearching)
 				m_EntitySearchInputTextFilter.Build();
 
 			Gui::SameLine();
 
-			if (Gui::Button((const char*)VX_ICON_PLUS))
+			UI::ShiftCursorX(-4.0f);
+			if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
 				Gui::OpenPopup("CreateEntity");
 
 			if (Gui::BeginPopup("CreateEntity"))
@@ -48,20 +49,6 @@ namespace Vortex {
 
 			if (m_ContextScene)
 			{
-				if (m_EntityShouldBeDestroyed && m_SelectedEntity)
-				{
-					Entity entity = m_SelectedEntity;
-
-					DeselectEntity();
-
-					// TODO is this actually needed?
-					// If we are hovering on the entity we must reset it otherwise entt will complain
-					/*if (hoveredEntity == entity)
-						hoveredEntity = Entity{};*/
-
-					m_ContextScene->DestroyEntity(entity);
-				}
-
 				uint32_t searchDepth = 0;
 				const bool isSearching = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
 				std::vector<UUID> rootEntitiesInHierarchy;
@@ -123,6 +110,16 @@ namespace Vortex {
 
 					Gui::EndPopup();
 				}
+
+				// destroy if requested
+				if (m_EntityShouldBeDestroyed && m_SelectedEntity)
+				{
+					Entity entity = m_SelectedEntity;
+
+					DeselectEntity();
+
+					m_ContextScene->DestroyEntity(entity);
+				}
 			}
 
 			Gui::End();
@@ -166,8 +163,8 @@ namespace Vortex {
 		}
 	}
 
-    void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
-    {
+	void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
+	{
 		m_ContextScene = scene;
 		DeselectEntity();
 
@@ -180,7 +177,7 @@ namespace Vortex {
 
 		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 		m_ComponentSearchInputTextFilter.Build();
-    }
+	}
 
 	Entity& SceneHierarchyPanel::GetSelectedEntity()
 	{
@@ -317,7 +314,6 @@ namespace Vortex {
 				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			if (Gui::MenuItem("Point"))
@@ -326,7 +322,6 @@ namespace Vortex {
 				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			if (Gui::MenuItem("Spot"))
@@ -335,7 +330,6 @@ namespace Vortex {
 				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
 			}
 
 			Gui::EndMenu();
@@ -1386,9 +1380,10 @@ namespace Vortex {
 				if (UI::Property("Cast Shadows", castShadows))
 				{
 					lightSource->SetCastShadows(castShadows);
-					if (castShadows && component.Type == LightType::Directional)
+
+					if (castShadows)
 					{
-						Renderer::CreateShadowMap(LightType::Directional, lightSource);
+						Renderer::CreateShadowMap(component.Type);
 					}
 				}
 
@@ -1517,25 +1512,40 @@ namespace Vortex {
 				}
 			}
 
-			UI::EndPropertyGrid();
-
 			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
+			if (AssetManager::IsHandleValid(component.StaticMesh))
+			{
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+				AssetHandle materialHandle = staticMesh->GetSubmesh(0).GetMaterial();
+				if (AssetManager::IsHandleValid(materialHandle))
+				{
+					SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+					std::string label = "Material1";
+					std::string name = material->GetName();
+					UI::Property(label.c_str(), name, true);
+				}
+			}
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			// Texutre
+			ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+
+			// Texture
 			{
 				SharedReference<Texture2D> icon = EditorResources::CheckerboardIcon;
 
-				if (component.Texture)
+				if (AssetManager::IsHandleValid(component.Texture))
 					icon = AssetManager::GetAsset<Texture2D>(component.Texture);
-				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
 
 				if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
-					component.Texture = EditorResources::CheckerboardIcon->Handle;
+				{
+					component.Texture = 0;
+				}
 				else if (Gui::IsItemHovered())
 				{
 					Gui::BeginTooltip();

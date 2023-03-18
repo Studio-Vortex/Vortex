@@ -2,6 +2,7 @@
 #include "Vortex/Utils/FileDialogue.h"
 
 #include "Vortex/Core/Application.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
