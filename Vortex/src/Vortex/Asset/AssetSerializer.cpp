@@ -77,6 +77,7 @@ namespace Vortex {
 	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
 		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+
 		TextureProperties imageProps;
 		imageProps.Filepath = fullyQualifiedPath.string();
 		imageProps.WrapMode = ImageWrap::Repeat;
@@ -134,6 +135,8 @@ namespace Vortex {
 
 	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
+
+
 		return false;
 	}
 

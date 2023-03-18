@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Renderer/VertexArray.h"
@@ -8,6 +9,7 @@
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/MeshImportOptions.h"
 #include "Vortex/Renderer/VertexTypes.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <vector>
 #include <string>
@@ -61,43 +63,15 @@ namespace Vortex {
 		Math::AABB m_BoundingBox;
 	};
 
-	class VORTEX_API StaticMesh
+	class VORTEX_API StaticMesh : public Asset
 	{
 	public:
-		enum class Default
-		{
-			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
-		};
-
-		// TODO: move to asset system when we have one
-		inline static std::vector<std::string> DefaultMeshSourcePaths = {
-			"Resources/Meshes/Cube.fbx",
-			"Resources/Meshes/Sphere.fbx",
-			"Resources/Meshes/Capsule.fbx",
-			"Resources/Meshes/Cone.fbx",
-			"Resources/Meshes/Cylinder.fbx",
-			"Resources/Meshes/Plane.fbx",
-			"Resources/Meshes/Torus.fbx",
-		};
-
-		// ditto
-		static bool IsDefaultMesh(const std::string& path)
-		{
-			auto it = std::find(DefaultMeshSourcePaths.begin(), DefaultMeshSourcePaths.end(), path);
-			bool isDefaultMesh = it != DefaultMeshSourcePaths.end();
-			return isDefaultMesh;
-		}
-
 		StaticMesh() = default;
-		StaticMesh(StaticMesh::Default defaultMesh, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
 		StaticMesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
-		StaticMesh(const std::vector<StaticVertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
 		StaticMesh(MeshType meshType);
 		~StaticMesh() = default;
 
 		void OnUpdate(int entityID = -1);
-
-		const std::string& GetPath() const { return m_Filepath; }
 
 		const StaticSubmesh& GetSubmesh(uint32_t index) const;
 		StaticSubmesh& GetSubmesh(uint32_t index);
@@ -108,21 +82,20 @@ namespace Vortex {
 
 		inline const MeshImportOptions& GetImportOptions() const { return m_ImportOptions; }
 
-		static SharedRef<StaticMesh> Create(StaticMesh::Default defaultMesh, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
-		static SharedRef<StaticMesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
-		static SharedRef<StaticMesh> Create(const std::vector<StaticVertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform = Math::Identity());
-		static SharedRef<StaticMesh> Create(MeshType meshType);
+		ASSET_CLASS_TYPE(StaticMeshAsset)
+
+		static SharedReference<StaticMesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
+		static SharedReference<StaticMesh> Create(MeshType meshType);
 
 	private:
-		void ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
-		StaticSubmesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		void ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		StaticSubmesh ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 
 		void CreateBoundingBoxFromSubmeshes();
 
 	private:
 		std::vector<StaticSubmesh> m_Submeshes;
 		MeshImportOptions m_ImportOptions;
-		std::string m_Filepath;
 		const aiScene* m_Scene;
 
 		Math::AABB m_BoundingBox;

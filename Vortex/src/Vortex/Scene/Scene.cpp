@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Project/Project.h"
 #include "Vortex/Audio/AudioEngine.h"
 #include "Vortex/Animation/Animator.h"
@@ -68,11 +69,12 @@ namespace Vortex {
 					{
 						if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 						{
-							const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-							auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-								
-							dstMesh = StaticMesh::Create(srcMesh->GetPath(), dst.GetTransform(), MeshImportOptions(), (int)(entt::entity)dst);
-								
+							AssetHandle srcStaticMeshHandle = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							AssetHandle dstStaticMeshHandle = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							
+							SharedReference<StaticMesh> srcMesh = AssetManager::GetAsset<StaticMesh>(srcStaticMeshHandle);
+							SharedReference<StaticMesh> dstMesh = AssetManager::GetAsset<StaticMesh>(dstStaticMeshHandle);
+							
 							const auto& submeshes = srcMesh->GetSubmeshes();
 							uint32_t i = 0;
 
@@ -85,8 +87,12 @@ namespace Vortex {
 
 						if constexpr (std::is_same<TComponent, SkyboxComponent>())
 						{
-							const auto& srcSkybox = src.GetComponent<SkyboxComponent>().Source;
-							const auto& dstSkybox = dst.GetComponent<SkyboxComponent>().Source;
+							AssetHandle srcSkyboxHandle = src.GetComponent<SkyboxComponent>().Skybox;
+							AssetHandle dstSkyboxHandle = dst.GetComponent<SkyboxComponent>().Skybox;
+
+							SharedReference<Skybox> srcSkybox = AssetManager::GetAsset<Skybox>(srcSkyboxHandle);
+							SharedReference<Skybox> dstSkybox = AssetManager::GetAsset<Skybox>(dstSkyboxHandle);
+
 							Skybox::Copy(dstSkybox, srcSkybox);
 						}
 
@@ -111,7 +117,7 @@ namespace Vortex {
 							ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
 						}
 
-						// If we copy a script component, we should probably copy all of the script field values as well
+						// If we copy a script component, we should probably copy all of the script field values as well...
 						if constexpr (std::is_same<TComponent, ScriptComponent>())
 						{
 							const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
@@ -819,6 +825,67 @@ namespace Vortex {
 		return transformComponent;
 	}
 
+    const Scene::SceneMeshes& Scene::GetSceneMeshes()
+	{
+		SceneMeshes result;
+
+		auto meshRendererView = GetAllEntitiesWith<MeshRendererComponent>();
+
+		for (const auto& meshRenderer : meshRendererView)
+		{
+			Entity entity{ meshRenderer, this };
+
+			// Skip if not active
+			if (!entity.IsActive())
+				continue;
+
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+			AssetHandle meshHandle = meshRendererComponent.Mesh;
+			if (!AssetManager::IsHandleValid(meshHandle))
+				continue;
+
+			SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+			if (!mesh)
+				continue;
+
+			result.MeshEntities.push_back(entity);
+
+			result.Meshes.push_back(mesh->Handle);
+
+			Math::mat4 worldSpaceTransform = GetWorldSpaceTransformMatrix(entity);
+			result.WorldSpaceMeshTransforms.push_back(worldSpaceTransform);
+		}
+
+		auto staticMeshRendererView = GetAllEntitiesWith<StaticMeshRendererComponent>();
+
+		for (const auto& staticMeshRenderer : staticMeshRendererView)
+		{
+			Entity entity{ staticMeshRenderer, this };
+
+			// Skip if not active
+			if (!entity.IsActive())
+				continue;
+
+			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+			if (!AssetManager::IsHandleValid(staticMeshHandle))
+				continue;
+
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+			if (!staticMesh)
+				continue;
+
+			result.StaticMeshes.push_back(staticMesh->Handle);
+
+			Math::mat4 worldSpaceTransform = GetWorldSpaceTransformMatrix(entity);
+			result.WorldSpaceStaticMeshTransforms.push_back(worldSpaceTransform);
+		}
+
+		return result;
+	}
+
 	bool Scene::AreEntitiesRelated(Entity first, Entity second)
 	{
 		VX_PROFILE_FUNCTION();
@@ -978,9 +1045,11 @@ namespace Vortex {
 				Entity entity{ e, this };
 				MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
-				SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
-				if (!mesh)
+				AssetHandle meshHandle = meshRendererComponent.Mesh;
+				if (!AssetManager::IsHandleValid(meshHandle))
 					continue;
+
+				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 
 				mesh->OnUpdate((int)(entt::entity)e);
 			}
@@ -994,7 +1063,11 @@ namespace Vortex {
 				Entity entity{ e, this };
 				StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
-				SharedRef<StaticMesh> staticMesh = staticMeshRendererComponent.StaticMesh;
+				AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+				if (!AssetManager::IsHandleValid(staticMeshHandle))
+					continue;
+
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 				if (!staticMesh)
 					continue;
 
@@ -1071,7 +1144,8 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)
 	{
-		component.Source = Skybox::Create();
+		// TODO fix this with some kind of default
+		component.Skybox = 0;
 	}
 
 	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
@@ -1088,24 +1162,9 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<StaticMeshRendererComponent>(Entity entity, StaticMeshRendererComponent& component)
 	{
-		StaticMesh::Default defaultModel = StaticMesh::Default::Cube;
-		MeshImportOptions importOptions = MeshImportOptions();
+		DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)(component.Type == MeshType::Custom ? MeshType::Cube : component.Type);
 
-		if (component.Type == MeshType::Custom)
-		{
-			defaultModel = StaticMesh::Default::Cube;
-		}
-		else if (component.Type == MeshType::Capsule)
-		{
-			MeshImportOptions importOptions = MeshImportOptions();
-			importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-		}
-		else
-		{
-			defaultModel = (StaticMesh::Default)component.Type;
-		}
-
-		component.StaticMesh = StaticMesh::Create(defaultModel, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+		component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
@@ -1119,7 +1178,8 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<TextMeshComponent>(Entity entity, TextMeshComponent& component)
 	{
-		component.FontAsset = Font::GetDefaultFont();
+		if (!AssetManager::IsHandleValid(component.FontAsset))
+			component.FontAsset = Font::GetDefaultFont()->Handle;
 	}
 	
 	template <> void Scene::OnComponentAdded<AnimatorComponent>(Entity entity, AnimatorComponent& component)
@@ -1132,11 +1192,19 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
 	{
-		if (entity.HasComponent<MeshRendererComponent>() && entity.GetComponent<MeshRendererComponent>().Mesh->HasAnimations())
+		if (entity.HasComponent<MeshRendererComponent>())
 		{
-			SharedRef<Mesh> model = entity.GetComponent<MeshRendererComponent>().Mesh;
-			std::string filepath = model->GetPath();
-			component.Animation = Animation::Create(filepath, model);
+			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			AssetHandle meshHandle = meshRendererComponent.Mesh;
+			if (AssetManager::IsHandleValid(meshHandle))
+			{
+				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+				if (mesh)
+				{
+					// TODO fix this
+					//component.Animation = Animation::Create(filepath, mesh->Handle);
+				}
+			}
 		}
 	}
 

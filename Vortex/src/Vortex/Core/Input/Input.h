@@ -2,9 +2,9 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/KeyCodes.h"
-#include "Vortex/Core/MouseCodes.h"
-#include "Vortex/Core/Gamepad.h"
+#include "Vortex/Core/Input/KeyCodes.h"
+#include "Vortex/Core/Input/MouseCodes.h"
+#include "Vortex/Core/Input/Gamepad.h"
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Events/Event.h"
 

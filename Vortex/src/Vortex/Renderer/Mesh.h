@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Renderer/VertexArray.h"
@@ -8,9 +9,10 @@
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/MeshImportOptions.h"
 #include "Vortex/Renderer/VertexTypes.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 #include <string>
 
 struct aiMesh;
@@ -57,7 +59,6 @@ namespace Vortex {
 		void CreateBoundingBoxFromVertices();
 
 	private:
-		std::string m_MeshName;
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 		SharedRef<Material> m_Material = nullptr;
@@ -67,9 +68,12 @@ namespace Vortex {
 		SharedRef<IndexBuffer> m_IndexBuffer = nullptr;
 
 		Math::AABB m_BoundingBox;
+
+		// Debug, Also for editor
+		std::string m_MeshName;
 	};
 
-	class VORTEX_API Mesh
+	class VORTEX_API Mesh : public Asset
 	{
 	public:
 		Mesh() = default;
@@ -77,8 +81,6 @@ namespace Vortex {
 		~Mesh() = default;
 
 		void OnUpdate(int entityID = -1);
-
-		const std::string& GetPath() const { return m_Filepath; }
 
 		const Submesh& GetSubmesh() const { return m_Submesh; }
 		Submesh& GetSubmesh() { return m_Submesh; }
@@ -91,11 +93,13 @@ namespace Vortex {
 		inline const MeshImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
 
-		static SharedRef<Mesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
+		ASSET_CLASS_TYPE(MeshAsset)
+
+		static SharedReference<Mesh> Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions = MeshImportOptions(), int entityID = -1);
 
 	private:
-		void ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
-		Submesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		void ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		Submesh ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 
 		void SetVertexBoneDataToDefault(Vertex& vertex) const;
 		void SetVertexBoneData(Vertex& vertex, int boneID, float weight) const;
@@ -107,7 +111,6 @@ namespace Vortex {
 		//Entity m_Entity;
 		Submesh m_Submesh;
 		MeshImportOptions m_ImportOptions;
-		std::string m_Filepath;
 		const aiScene* m_Scene;
 
 		std::unordered_map<std::string, BoneInfo> m_BoneInfoMap;

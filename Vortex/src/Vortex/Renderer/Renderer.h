@@ -70,18 +70,18 @@ namespace Vortex {
 		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
-		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent);
+		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
 
 		static void DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		static SceneLightDescription GetSceneLightDescription();
 
-		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
+		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
 		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
 
 		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
 
-		static void RenderToDepthMap(Scene* contextScene);
+		static void RenderToDepthMap(SharedReference<Scene>& contextScene);
 		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
 
 		static void BindSkyLightDepthMap();
@@ -138,10 +138,19 @@ namespace Vortex {
 		static bool IsFlagSet(RenderFlag flag);
 		static void ClearFlags();
 
-		static SharedRef<ShaderLibrary> GetShaderLibrary();
+		static const ShaderLibrary& GetShaderLibrary();
 
 	private:
+		// Helpers
+
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes);
+
+		// Post Processing
+
 		static void ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps);
 		static std::vector<PostProcessStage> SortPostProcessStages(PostProcessStage* stages, uint32_t count);
 		static uint32_t GetPostProcessStageScore(PostProcessStage stage);

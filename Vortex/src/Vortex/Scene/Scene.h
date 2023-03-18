@@ -7,11 +7,15 @@
 #include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Renderer/Framebuffer.h"
 
+#include <vector>
+
 #include <entt/entt.hpp>
 
 namespace Vortex {
 
 	class Entity;
+	class Mesh;
+	class StaticMesh;
 
 	class Scene : public Asset
 	{
@@ -89,6 +93,18 @@ namespace Vortex {
 		void ConvertToWorldSpace(Entity entity);
 		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
 		TransformComponent GetWorldSpaceTransform(Entity entity);
+
+		struct SceneMeshes
+		{
+			std::vector<AssetHandle> Meshes;
+			std::vector<Math::mat4> WorldSpaceMeshTransforms;
+			std::vector<Entity> MeshEntities;
+
+			std::vector<AssetHandle> StaticMeshes;
+			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
+		};
+
+		const SceneMeshes& GetSceneMeshes();
 
 		template <typename TComponent>
 		inline void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)

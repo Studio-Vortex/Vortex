@@ -67,7 +67,7 @@ namespace Vortex {
 		}
 
 		template <typename TAsset>
-		VX_FORCE_INLINE static AssetHandle AddMemoryOnlyAsset(SharedReference<TAsset> asset)
+		VX_FORCE_INLINE static AssetHandle AddMemoryOnlyAsset(SharedReference<TAsset>& asset)
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "AddMemoryOnlyAsset only works with types derived from Asset!");
 

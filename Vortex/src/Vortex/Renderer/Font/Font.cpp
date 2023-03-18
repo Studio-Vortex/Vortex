@@ -370,17 +370,17 @@ namespace Vortex {
 
 	void Font::Shutdown()
 	{
-		s_DefaultFont.reset();
+		s_DefaultFont.Reset();
 	}
 
-	SharedRef<Font> Font::GetDefaultFont()
+	SharedReference<Font> Font::GetDefaultFont()
 	{
 		return s_DefaultFont;
 	}
 
-	SharedRef<Font> Font::Create(const std::filesystem::path& filepath)
+	SharedReference<Font> Font::Create(const std::filesystem::path& filepath)
 	{
-		return CreateShared<Font>(filepath);
+		return SharedReference<Font>::Create(filepath);
 	}
 
 }

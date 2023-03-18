@@ -48,6 +48,7 @@ namespace Vortex {
 		CreateAndUploadMesh();
 	}
 
+	// TODO MeshFactory
 	StaticSubmesh::StaticSubmesh(bool skybox)
 	{
 		m_VertexArray = VertexArray::Create();
@@ -167,115 +168,30 @@ namespace Vortex {
 
 	void StaticSubmesh::RenderToSkylightShadowMap()
 	{
-		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
+		SharedRef<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
 
-	StaticMesh::StaticMesh(StaticMesh::Default defaultMesh, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
+	StaticMesh::StaticMesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 		: m_ImportOptions(importOptions)
 	{
 		LogStream::Initialize();
 
-		m_Filepath = DefaultMeshSourcePaths[static_cast<uint32_t>(defaultMesh)];
-
-		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
+		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", filepath.c_str());
 
 		Assimp::Importer importer;
+		const aiScene* scene = importer.ReadFile(filepath, s_MeshImportFlags);
 
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
 		{
-			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
+			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", filepath.c_str());
 			return;
 		}
 
 		m_Scene = scene;
 
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
-
-		CreateBoundingBoxFromSubmeshes();
-	}
-
-	StaticMesh::StaticMesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions), m_Filepath(filepath)
-	{
-		LogStream::Initialize();
-
-		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
-
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
-		{
-			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
-			return;
-		}
-
-		m_Scene = scene;
-
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
-
-		CreateBoundingBoxFromSubmeshes();
-	}
-
-	StaticMesh::StaticMesh(const std::vector<StaticVertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
-	{
-		std::vector<StaticVertex> verts = { StaticVertex{} };
-		std::vector<uint32_t> inds = { 0 };
-		SharedRef<Material> mat = nullptr;
-
-		auto TransformVerticesAndGetIndicesAndCreateMesh =
-		[
-			&collectionOfMeshes = m_Submeshes,
-			transform,
-			vertices,
-			indices,
-			&verts,
-			&inds,
-			mat
-		]()
-		{
-			auto TransformVertices = [&verts, transform, vertices]()
-			{
-				auto TransformVertexFunc = [&verts, transform](auto vertex)
-				{
-					StaticVertex transformedVertex = vertex;
-					Math::vec4 transformedPositionAttribute = Math::vec4(transformedVertex.Position, 1.0) * transform;
-					transformedVertex.Position = Math::vec3(transformedPositionAttribute);
-					verts.push_back(transformedVertex);
-				};
-
-				for (const auto& vertex : vertices)
-					TransformVertexFunc(vertex);
-			};
-
-			auto GetIndices = [&inds, indices]()
-			{
-				auto GetIndexFunc = [&inds](auto index)
-				{
-					uint32_t theIndices[3] = { index.i0, index.i1, index.i2 };
-					for (uint32_t i = 0; i < VX_ARRAYCOUNT(theIndices); i++)
-						inds.push_back(theIndices[i]);
-				};
-
-				for (const auto& index : indices)
-					GetIndexFunc(index);
-			};
-
-			TransformVertices();
-			GetIndices();
-
-			StaticSubmesh mesh("UnNamed", verts, inds, mat);
-			collectionOfMeshes.push_back(mesh);
-		};
-
-		if (vertices.size() > 1 && indices.size() > 1)
-		{
-			TransformVerticesAndGetIndicesAndCreateMesh();
-		}
-
+		ProcessNode(filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
 		CreateBoundingBoxFromSubmeshes();
 	}
 
@@ -284,23 +200,23 @@ namespace Vortex {
 		m_Submeshes.push_back(StaticSubmesh(true));
 	}
 
-	void StaticMesh::ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	void StaticMesh::ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Submeshes.push_back(ProcessMesh(mesh, scene, importOptions, entityID));
+			m_Submeshes.push_back(ProcessMesh(filepath, mesh, scene, importOptions, entityID));
 		}
 
 		// do the same for children nodes
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], scene, importOptions, entityID);
+			ProcessNode(filepath, node->mChildren[i], scene, importOptions, entityID);
 		}
 	}
 
-	StaticSubmesh StaticMesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	StaticSubmesh StaticMesh::ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		std::vector<StaticVertex> vertices;
 		std::vector<uint32_t> indices;
@@ -383,7 +299,7 @@ namespace Vortex {
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
 
-			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(m_Filepath));
+			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(filepath));
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
@@ -416,7 +332,7 @@ namespace Vortex {
 			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
 			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 			
-			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR_Static"), materialProps);
+			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), materialProps);
 		}
 
 		return { meshName, vertices, indices, material };
@@ -457,15 +373,16 @@ namespace Vortex {
 				StaticVertex& vertex = vertices[i];
 				SharedRef<Material> material = submesh.GetMaterial();
 
-				isDirty = vertex.TexScale != material->GetUV();
+				isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
 				if (!isDirty)
-					break;
+					continue;
 
 				vertex.TexScale = material->GetUV();
+				vertex.EntityID = entityID;
 			}
 
 			if (!isDirty)
-				break;
+				continue;
 
 			SharedRef<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
 			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(StaticVertex));
@@ -484,24 +401,15 @@ namespace Vortex {
 		return m_Submeshes[index];
 	}
 
-	SharedRef<StaticMesh> StaticMesh::Create(StaticMesh::Default defaultMesh, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
+	SharedReference<StaticMesh> StaticMesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<StaticMesh>(defaultMesh, transform, importOptions, (int)(entt::entity)entityID);
+		return SharedReference<StaticMesh>::Create(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
-	SharedRef<StaticMesh> StaticMesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
+	// TODO put this in meshFactory
+	SharedReference<StaticMesh> StaticMesh::Create(MeshType meshType)
 	{
-		return CreateShared<StaticMesh>(filepath, transform, importOptions, (int)(entt::entity)entityID);
-	}
-
-	SharedRef<StaticMesh> StaticMesh::Create(const std::vector<StaticVertex>& vertices, const std::vector<Index>& indices, const Math::mat4& transform)
-	{
-		return CreateShared<StaticMesh>(vertices, indices, transform);
-	}
-
-	SharedRef<StaticMesh> StaticMesh::Create(MeshType meshType)
-	{
-		return CreateShared<StaticMesh>(meshType);
+		return SharedReference<StaticMesh>::Create(meshType);
 	}
 
 }

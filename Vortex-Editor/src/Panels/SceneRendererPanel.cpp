@@ -13,22 +13,22 @@ namespace Vortex {
 
 		if (s_Loaded2DShaders.empty())
 		{
-			auto shaders2D = Renderer2D::GetShaderLibrary();
+			const ShaderLibrary& shaders2D = Renderer2D::GetShaderLibrary();
 
-			auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
-
-			for (it = shaders2D->begin(); it != shaders2D->end(); it++)
-				s_Loaded2DShaders.push_back(it->second);
+			for (const auto& [name, shader] : shaders2D)
+			{
+				s_Loaded2DShaders.push_back(shader);
+			}
 		}
 
 		if (s_Loaded3DShaders.empty())
 		{
-			auto shaders3D = Renderer::GetShaderLibrary();
+			const ShaderLibrary& shaders3D = Renderer::GetShaderLibrary();
 
-			auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
-
-			for (it = shaders3D->begin(); it != shaders3D->end(); it++)
-				s_Loaded3DShaders.push_back(it->second);
+			for (const auto& [name, shader] : shaders3D)
+			{
+				s_Loaded3DShaders.push_back(shader);
+			}
 		}
 
 		static std::vector<std::string> shaderNames;
@@ -128,11 +128,23 @@ namespace Vortex {
 			{
 				auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
 
-				Entity entity{ skyboxView[0], m_ContextScene.Raw() };
-				SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-				SharedRef<Skybox> skybox = skyboxComponent.Source;
-				skybox->SetShouldReload(true);
-				Renderer::CreateEnvironmentMap(skyboxComponent);
+				for (const auto e : skyboxView)
+				{
+					Entity entity{ e, m_ContextScene.Raw() };
+
+					SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+					AssetHandle environmentHandle = skyboxComponent.Skybox;
+					if (!AssetManager::IsHandleValid(environmentHandle))
+						continue;
+
+					SharedReference<Skybox> environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+					if (!environment)
+						continue;
+
+					environment->SetShouldReload(true);
+					Renderer::CreateEnvironmentMap(skyboxComponent, environment);
+					break;
+				}
 			};
 
 			static const char* envMapSizes[3] = { "512", "1024", "2048" };

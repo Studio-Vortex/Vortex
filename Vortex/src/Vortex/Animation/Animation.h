@@ -25,7 +25,7 @@ namespace Vortex {
 	{
 	public:
 		Animation() = default;
-		Animation(const std::string& animationPath, SharedRef<Mesh>& mesh);
+		Animation(const std::string& animationPath, AssetHandle meshAssetHandle);
 		~Animation() = default;
 
 		Bone* FindBone(const std::string& name);
@@ -41,10 +41,10 @@ namespace Vortex {
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 
-		static SharedRef<Animation> Create(const std::string& animationPath, SharedRef<Mesh>& mesh);
+		static SharedRef<Animation> Create(const std::string& animationPath, AssetHandle meshAssetHandle);
 
 	private:
-		void ReadMissingBones(const aiAnimation* animation, SharedRef<Mesh>& mesh);
+		void ReadMissingBones(const aiAnimation* animation, SharedReference<Mesh>& mesh);
 		void ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src) const;
 
 	private:

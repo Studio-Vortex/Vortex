@@ -1,9 +1,8 @@
 #include "vxpch.h"
 #include "EditorCamera.h"
 
-#include "Vortex/Core/Input.h"
-#include "Vortex/Core/KeyCodes.h"
-#include "Vortex/Core/MouseCodes.h"
+#include "Vortex/Core/Input/Input.h"
+
 #include "Vortex/UI/UI.h"
 
 namespace Vortex {

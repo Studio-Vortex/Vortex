@@ -1,12 +1,14 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <string>
 
 namespace Vortex {
 
-	class VORTEX_API Skybox
+	class VORTEX_API Skybox : public Asset
 	{
 	public:
 		virtual ~Skybox() = default;
@@ -24,10 +26,12 @@ namespace Vortex {
 
 		virtual uint32_t GetRendererID() const = 0;
 
-		static void Copy(SharedRef<Skybox> dstSkybox, const SharedRef<Skybox>& srcSkybox);
+		static void Copy(SharedReference<Skybox>& dstSkybox, const SharedReference<Skybox>& srcSkybox);
 
-		static SharedRef<Skybox> Create();
-		static SharedRef<Skybox> Create(const std::string& filepath);
+		ASSET_CLASS_TYPE(EnvironmentAsset)
+
+		static SharedReference<Skybox> Create();
+		static SharedReference<Skybox> Create(const std::string& filepath);
 	};
 
 }

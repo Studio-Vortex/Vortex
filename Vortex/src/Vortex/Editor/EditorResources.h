@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/StaticMesh.h"
+
+#include <vector>
 
 namespace Vortex {
 

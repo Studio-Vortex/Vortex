@@ -2,6 +2,8 @@
 
 #include "Vortex/Asset/AssetManager/IAssetManager.h"
 
+#include "Vortex/Editor/DefaultMeshes.h"
+
 #include "Vortex/Asset/AssetImporter.h"
 #include "Vortex/Asset/AssetRegistry.h"
 
@@ -44,6 +46,9 @@ namespace Vortex {
 		std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata);
 
 		AssetHandle ImportAsset(const std::filesystem::path& filepath);
+
+		AssetHandle GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh);
+		bool IsDefaultStaticMesh(AssetHandle assetHandle);
 
 		template <typename TAsset, typename... Args>
 		VX_FORCE_INLINE SharedReference<TAsset> CreateNewAsset(const std::string& filename, Args&&... args)

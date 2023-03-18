@@ -160,13 +160,9 @@ namespace Vortex {
 #pragma region Rendering Components
 
 	// Forward declarations
-	class Skybox;
 	class LightSource;
 	class LightSource2D;
-	class Mesh;
-	class StaticMesh;
 	class ParticleEmitter;
-	class Font;
 	class Animator;
 	class Animation;
 
@@ -183,7 +179,7 @@ namespace Vortex {
 
 	struct SkyboxComponent
 	{
-		SharedRef<Skybox> Source = nullptr;
+		AssetHandle Skybox = 0;
 		float Rotation = 0.0f;
 		float Intensity = 1.0f;
 
@@ -214,7 +210,7 @@ namespace Vortex {
 
 	struct MeshRendererComponent
 	{
-		SharedRef<Mesh> Mesh = nullptr;
+		AssetHandle Mesh = 0;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
@@ -224,8 +220,8 @@ namespace Vortex {
 
 	struct StaticMeshRendererComponent
 	{
+		AssetHandle StaticMesh = 0;
 		MeshType Type = MeshType::Cube;
-		SharedRef<StaticMesh> StaticMesh = nullptr;
 
 		StaticMeshRendererComponent() = default;
 		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;
@@ -235,7 +231,7 @@ namespace Vortex {
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 		AssetHandle Texture = 0;
-		Math::vec2 Scale = Math::vec2(1.0f);
+		Math::vec2 TextureUV = Math::vec2(1.0f);
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -263,7 +259,7 @@ namespace Vortex {
 
 	struct TextMeshComponent
 	{
-		SharedRef<Font> FontAsset = nullptr;
+		AssetHandle FontAsset = 0;
 		std::string TextString = "";
 		size_t TextHash = 0;
 

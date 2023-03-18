@@ -34,6 +34,9 @@ namespace Vortex {
 		LoadAssetRegistry();
 		ReloadAssets();
 
+		// Should we load default meshes here?
+		DefaultMeshes::Init();
+
 		return true;
 	}
 
@@ -80,6 +83,7 @@ namespace Vortex {
 	void EditorAssetManager::AddMemoryOnlyAsset(SharedReference<Asset> asset)
 	{
 		AssetMetadata metadata;
+
 		metadata.Handle = asset->Handle;
 		metadata.IsDataLoaded = true;
 		metadata.IsMemoryOnly = true;
@@ -177,7 +181,7 @@ namespace Vortex {
 
 	AssetType EditorAssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		std::string_view copy(extension.data());
+		std::string_view copy(extension.begin(), extension.end());
 		std::string ext = String::ToLowerCopy(copy);
 
 		if (!IsValidAssetExtension(ext))
@@ -247,6 +251,16 @@ namespace Vortex {
 		m_AssetRegistry[metadata.Handle] = metadata;
 
 		return metadata.Handle;
+	}
+
+	AssetHandle EditorAssetManager::GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh)
+	{
+		return DefaultMeshes::DefaultStaticMeshes[(uint32_t)defaultMesh];
+	}
+
+	bool EditorAssetManager::IsDefaultStaticMesh(AssetHandle assetHandle)
+	{
+		return DefaultMeshes::IsDefaultStaticMesh(assetHandle);
 	}
 
 	void EditorAssetManager::LoadAssetRegistry()

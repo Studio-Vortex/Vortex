@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "Animation.h"
 
+#include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Animation/AssimpAPIHelpers.h"
 
 #include <assimp/Importer.hpp>
@@ -21,9 +22,22 @@ namespace Vortex {
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
-	Animation::Animation(const std::string& animationPath, SharedRef<Mesh>& mesh)
+	Animation::Animation(const std::string& animationPath, AssetHandle meshAssetHandle)
 		: m_Filepath(animationPath)
 	{
+		if (!AssetManager::IsHandleValid(meshAssetHandle))
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load animation, invalid mesh asset handle!");
+			return;
+		}
+
+		SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshAssetHandle);
+		if (!mesh)
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load animation, invalid mesh asset handle!");
+			return;
+		}
+
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(animationPath, s_AnimatedMeshImportFlags);
 		VX_CORE_ASSERT(scene && scene->mRootNode, "Invalid Scene");
@@ -33,6 +47,7 @@ namespace Vortex {
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHeirarchyData(m_RootNode, scene->mRootNode);
+
 		ReadMissingBones(animation, mesh);
 	}
 
@@ -51,7 +66,7 @@ namespace Vortex {
 			return &(*iter);
 	}
 
-	void Animation::ReadMissingBones(const aiAnimation* animation, SharedRef<Mesh>& mesh)
+	void Animation::ReadMissingBones(const aiAnimation* animation, SharedReference<Mesh>& mesh)
 	{
 		int size = animation->mNumChannels;
 
@@ -93,9 +108,9 @@ namespace Vortex {
 		}
 	}
 
-	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Mesh>& mesh)
+	SharedRef<Animation> Animation::Create(const std::string& animationPath, AssetHandle meshAssetHandle)
 	{
-		return CreateShared<Animation>(animationPath, mesh);
+		return CreateShared<Animation>(animationPath, meshAssetHandle);
 	}
 
 }

@@ -115,51 +115,50 @@ namespace Vortex {
 
 	void Submesh::RenderToSkylightShadowMap()
 	{
-		SharedRef<Shader> shader = Renderer::GetShaderLibrary()->Get("SkyLightShadowMap");
+		SharedRef<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
 
 	Mesh::Mesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
-		: m_ImportOptions(importOptions), m_Filepath(filepath)
+		: m_ImportOptions(importOptions)
 	{
 		LogStream::Initialize();
 
-		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", m_Filepath.c_str());
+		VX_CORE_INFO_TAG("Mesh", "Loading Mesh: {}", filepath.c_str());
 
 		Assimp::Importer importer;
 
-		const aiScene* scene = importer.ReadFile(m_Filepath, s_MeshImportFlags);
+		const aiScene* scene = importer.ReadFile(filepath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
 		{
-			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", m_Filepath.c_str());
+			VX_CORE_ERROR_TAG("Mesh", "Failed to load Mesh from: {}", filepath.c_str());
 			return;
 		}
 
 		m_Scene = scene;
 
-		ProcessNode(m_Scene->mRootNode, m_Scene, importOptions, entityID);
-
+		ProcessNode(filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
 		CreateBoundingBoxFromSubmeshes();
 	}
 
-	void Mesh::ProcessNode(aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	void Mesh::ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Submesh = ProcessMesh(mesh, scene, importOptions, entityID);
+			m_Submesh = ProcessMesh(filepath, mesh, scene, importOptions, entityID);
 		}
 
 		// do the same for children nodes
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], scene, importOptions, entityID);
+			ProcessNode(filepath, node->mChildren[i], scene, importOptions, entityID);
 		}
 	}
 
-	Submesh Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	Submesh Mesh::ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -244,7 +243,7 @@ namespace Vortex {
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
 
-			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(m_Filepath));
+			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(filepath));
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
@@ -277,7 +276,7 @@ namespace Vortex {
 			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
 			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 			
-			material = Material::Create(Renderer::GetShaderLibrary()->Get("PBR"), materialProps);
+			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR"), materialProps);
 		}
 
 		m_HasAnimations = ExtractBoneWeightsForVertices(vertices, mesh, scene);
@@ -367,11 +366,12 @@ namespace Vortex {
 			Vertex& vertex = vertices[i];
 			SharedRef<Material> material = m_Submesh.GetMaterial();
 
-			isDirty = vertex.TexScale != material->GetUV();
+			isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
 			if (!isDirty)
-				break;
+				continue;
 
 			vertex.TexScale = material->GetUV();
+			vertex.EntityID = entityID;
 		}
 
 		if (!isDirty)
@@ -381,9 +381,9 @@ namespace Vortex {
 		vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
 	}
 
-	SharedRef<Mesh> Mesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
+	SharedReference<Mesh> Mesh::Create(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID)
 	{
-		return CreateShared<Mesh>(filepath, transform, importOptions, (int)(entt::entity)entityID);
+		return SharedReference<Mesh>::Create(filepath, transform, importOptions, (int)(entt::entity)entityID);
 	}
 
 }

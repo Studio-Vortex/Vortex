@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Thread.h"
+#include "Vortex/Core/Thread/Thread.h"
 
 #include <bitset>
 

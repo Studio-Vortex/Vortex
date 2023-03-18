@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Scene/Components.h"
 
@@ -9,7 +10,7 @@ namespace Vortex {
 	// Forward declaration
 	struct MSDFData;
 
-	class VORTEX_API Font
+	class VORTEX_API Font : public Asset
 	{
 	public:
 		Font() = default;
@@ -24,11 +25,13 @@ namespace Vortex {
 		static void Init();
 		static void Shutdown();
 
-		static SharedRef<Font> GetDefaultFont();
-		static SharedRef<Font> Create(const std::filesystem::path& filepath);
+		ASSET_CLASS_TYPE(FontAsset)
+
+		static SharedReference<Font> GetDefaultFont();
+		static SharedReference<Font> Create(const std::filesystem::path& filepath);
 
 	private:
-		inline static SharedRef<Font> s_DefaultFont = nullptr;
+		inline static SharedReference<Font> s_DefaultFont = nullptr;
 
 	private:
 		std::filesystem::path m_Filepath;

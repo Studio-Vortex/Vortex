@@ -3,8 +3,8 @@
 
 #include "Vortex/Renderer/Renderer.h"
 
-#include "Vortex/Core/Input.h"
-#include "Vortex/Core/ThreadPool.h"
+#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Core/Thread/ThreadPool.h"
 #include "Vortex/Events/KeyEvent.h"
 #include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Renderer/Font/Font.h"

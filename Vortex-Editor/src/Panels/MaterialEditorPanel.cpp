@@ -273,7 +273,7 @@ namespace Vortex {
 		if (!selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 			return;
 
-		const ShaderLibrary& shaderLibrary = *Renderer::GetShaderLibrary();
+		const ShaderLibrary& shaderLibrary = Renderer::GetShaderLibrary();
 		std::vector<const char*> shaderNames;
 
 		for (const auto& [name, shader] : shaderLibrary)
@@ -283,8 +283,14 @@ namespace Vortex {
 
 		if (selectedEntity.HasComponent<MeshRendererComponent>())
 		{
-			SharedRef<Mesh> mesh = selectedEntity.GetComponent<MeshRendererComponent>().Mesh;
+			AssetHandle meshHandle = selectedEntity.GetComponent<MeshRendererComponent>().Mesh;
+			if (!AssetManager::IsHandleValid(meshHandle))
+			{
+				Gui::End();
+				return;
+			}
 
+			SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 			if (!mesh)
 			{
 				Gui::End();
@@ -326,8 +332,14 @@ namespace Vortex {
 		}
 		else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
 		{
-			SharedRef<StaticMesh> staticMesh = selectedEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			AssetHandle staticMeshHandle = selectedEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			if (!AssetManager::IsHandleValid(staticMeshHandle))
+			{
+				Gui::End();
+				return;
+			}
 
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 			if (!staticMesh)
 			{
 				Gui::End();

@@ -1,5 +1,5 @@
 #include "vxpch.h"
-#include "Vortex/Core/Input.h"
+#include "Vortex/Core/Input/Input.h"
 
 #include "Vortex/Core/Application.h"
 #include "Vortex/Events/MouseEvent.h"

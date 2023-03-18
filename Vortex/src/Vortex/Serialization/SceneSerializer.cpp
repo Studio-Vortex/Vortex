@@ -17,6 +17,8 @@
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
 
+#include "Vortex/Editor/EditorResources.h"
+
 #include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
@@ -496,17 +498,18 @@ namespace Vortex {
 
 		if (entity.HasComponent<SkyboxComponent>())
 		{
-			out << YAML::Key << "SkyboxComponent";
-			out << YAML::BeginMap; // SkyboxComponent
-
 			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			AssetHandle assetHandle = skyboxComponent.Skybox;
+			if (AssetManager::IsHandleValid(assetHandle))
+			{
+				out << YAML::Key << "SkyboxComponent" << YAML::BeginMap; // SkyboxComponent
 
-			SharedRef<Skybox> skybox = skyboxComponent.Source;
-			VX_SERIALIZE_PROPERTY(SourcePath, std::filesystem::relative(skybox->GetFilepath(), projectAssetDirectory).string(), out);
-			VX_SERIALIZE_PROPERTY(Rotation, skyboxComponent.Rotation, out);
-			VX_SERIALIZE_PROPERTY(Intensity, skyboxComponent.Intensity, out);
+				VX_SERIALIZE_PROPERTY(Skybox, assetHandle, out);
+				VX_SERIALIZE_PROPERTY(Rotation, skyboxComponent.Rotation, out);
+				VX_SERIALIZE_PROPERTY(Intensity, skyboxComponent.Intensity, out);
 
-			out << YAML::EndMap; // SkyboxComponent
+				out << YAML::EndMap; // SkyboxComponent
+			}
 		}
 
 		if (entity.HasComponent<LightSourceComponent>())
@@ -550,106 +553,111 @@ namespace Vortex {
 
 		if (entity.HasComponent<MeshRendererComponent>())
 		{
-			out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
-
 			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
-
-			if (meshRendererComponent.Mesh)
+			AssetHandle meshHandle = meshRendererComponent.Mesh;
+			if (AssetManager::IsHandleValid(meshHandle))
 			{
-				SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
-				const auto& meshSourcePath = mesh->GetPath();
-				std::string relativePath = FileSystem::Relative(meshSourcePath, projectAssetDirectory).string();
-				VX_SERIALIZE_PROPERTY(MeshSource, relativePath, out);
-
-				if (MeshImportOptions importOptions = mesh->GetImportOptions(); importOptions != MeshImportOptions{})
+				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+				if (mesh)
 				{
-					out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
+					out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
 
-					VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
-					VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
-					VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
+					VX_SERIALIZE_PROPERTY(MeshHandle, meshHandle, out);
 
-					out << YAML::EndMap; // MeshImportOptions
+					if (MeshImportOptions importOptions = mesh->GetImportOptions(); importOptions != MeshImportOptions{})
+					{
+						out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
+
+						VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
+						VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
+						VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
+
+						out << YAML::EndMap; // MeshImportOptions
+					}
+
+					{
+						const auto& submesh = mesh->GetSubmesh();
+
+						out << YAML::BeginMap; // Submesh
+
+						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
+
+						SharedRef<Material> material = submesh.GetMaterial();
+
+						Utils::SerializeSubmeshMaterial(material, out);
+
+						out << YAML::EndMap; // Submesh
+					}
+
+					out << YAML::EndMap; // MeshRendererComponent
 				}
-
-				const auto& submesh = mesh->GetSubmesh();
-
-				out << YAML::BeginMap; // Submesh
-
-				VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
-
-				SharedRef<Material> material = submesh.GetMaterial();
-
-				Utils::SerializeSubmeshMaterial(material, out);
-
-				out << YAML::EndMap; // Submesh
 			}
-
-			out << YAML::EndMap; // MeshRendererComponent
 		}
 
 		if (entity.HasComponent<StaticMeshRendererComponent>())
 		{
-			out << YAML::Key << "StaticMeshRendererComponent" << YAML::Value << YAML::BeginMap; // StaticMeshRendererComponent
-
 			const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-
-			VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
-
-			if (staticMeshRenderer.StaticMesh)
+			AssetHandle staticMeshHandle = staticMeshRenderer.StaticMesh;
+			if (AssetManager::IsHandleValid(staticMeshHandle))
 			{
-				SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
-				const auto& meshSourcePath = staticMesh->GetPath();
-				std::string relativePath = (StaticMesh::IsDefaultMesh(meshSourcePath) ? meshSourcePath : FileSystem::Relative(meshSourcePath, projectAssetDirectory).string());
-				VX_SERIALIZE_PROPERTY(MeshSource, relativePath, out);
-
-				if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+				if (staticMesh)
 				{
-					out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
+					out << YAML::Key << "StaticMeshRendererComponent" << YAML::Value << YAML::BeginMap; // StaticMeshRendererComponent
 
-					VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
-					VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
-					VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
+					VX_SERIALIZE_PROPERTY(MeshHandle, staticMeshHandle, out);
+					VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 
-					out << YAML::EndMap; // MeshImportOptions
+					if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
+					{
+						out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
+
+						VX_SERIALIZE_PROPERTY(Translation, importOptions.MeshTransformation.Translation, out);
+						VX_SERIALIZE_PROPERTY(Rotation, importOptions.MeshTransformation.GetRotationEuler(), out);
+						VX_SERIALIZE_PROPERTY(Scale, importOptions.MeshTransformation.Scale, out);
+
+						out << YAML::EndMap; // MeshImportOptions
+					}
+
+					out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
+
+					const auto& submeshes = staticMesh->GetSubmeshes();
+
+					for (const auto& submesh : submeshes)
+					{
+						out << YAML::BeginMap; // Submesh
+
+						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
+
+						SharedRef<Material> material = submesh.GetMaterial();
+
+						Utils::SerializeSubmeshMaterial(material, out);
+
+						out << YAML::EndMap; // Submesh
+					}
+
+					out << YAML::EndSeq; // Submeshes
+
+					out << YAML::EndMap; // StaticMeshRendererComponent
 				}
-
-				out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
-
-				const auto& submeshes = staticMesh->GetSubmeshes();
-
-				for (const auto& submesh : submeshes)
-				{
-					out << YAML::BeginMap; // Submesh
-
-					VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
-
-					SharedRef<Material> material = submesh.GetMaterial();
-
-					Utils::SerializeSubmeshMaterial(material, out);
-
-					out << YAML::EndMap; // Submesh
-				}
-
-				out << YAML::EndSeq; // Submeshes
 			}
-
-			out << YAML::EndMap; // StaticMeshRendererComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
-			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
-
 			const auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
+			AssetHandle spriteHandle = spriteComponent.Texture;
+			if (AssetManager::IsHandleValid(spriteHandle))
+			{
+				out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
 
-			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
-
-			if (spriteComponent.Texture)
 				VX_SERIALIZE_PROPERTY(TextureHandle, spriteComponent.Texture, out);
-			VX_SERIALIZE_PROPERTY(TextureScale, spriteComponent.Scale, out);
+				VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
+				VX_SERIALIZE_PROPERTY(TextureUV, spriteComponent.TextureUV, out);
 
-			out << YAML::EndMap; // SpriteRendererComponent
+				out << YAML::EndMap; // SpriteRendererComponent
+			}
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -692,21 +700,23 @@ namespace Vortex {
 
 		if (entity.HasComponent<TextMeshComponent>())
 		{
-			out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
-
 			const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			AssetHandle fontHandle = textMeshComponent.FontAsset;
+			if (AssetManager::IsHandleValid(fontHandle))
+			{
+				out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
 
-			std::string fontSourcePath = FileSystem::Relative(textMeshComponent.FontAsset->GetFontPath(), projectAssetDirectory).string();
-			VX_SERIALIZE_PROPERTY(FontSource, fontSourcePath, out);
-			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
-			VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
-			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
-			VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
-			VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
-			VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
-			VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
+				VX_SERIALIZE_PROPERTY(FontHandle, textMeshComponent.FontAsset, out);
+				VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
+				VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
+				VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
+				VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
+				VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
+				VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
+				VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
 
-			out << YAML::EndMap; // TextMeshComponent
+				out << YAML::EndMap; // TextMeshComponent
+			}
 		}
 
 		if (entity.HasComponent<AnimatorComponent>())
@@ -1037,6 +1047,8 @@ namespace Vortex {
 
 	void SceneSerializer::DeserializeEntities(YAML::Node& entitiesNode, SharedReference<Scene>& scene)
 	{
+		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+
 		for (auto entity : entitiesNode)
 		{
 			uint64_t uuid = entity["Entity"].as<uint64_t>();
@@ -1112,15 +1124,17 @@ namespace Vortex {
 			{
 				auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(skyboxComponent["SourcePath"].as<std::string>());
-				auto path = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
-				skybox.Source = Skybox::Create(path);
+				AssetHandle assetHandle = skyboxComponent["Skybox"].as<uint64_t>();
+				if (AssetManager::IsHandleValid(assetHandle))
+				{
+					skybox.Skybox = assetHandle;
 
-				if (skyboxComponent["Rotation"])
-					skybox.Rotation = skyboxComponent["Rotation"].as<float>();
+					if (skyboxComponent["Rotation"])
+						skybox.Rotation = skyboxComponent["Rotation"].as<float>();
 
-				if (skyboxComponent["Intensity"])
-					skybox.Intensity = skyboxComponent["Intensity"].as<float>();
+					if (skyboxComponent["Intensity"])
+						skybox.Intensity = skyboxComponent["Intensity"].as<float>();
+				}
 			}
 
 			auto lightSourceComponent = entity["LightSourceComponent"];
@@ -1174,64 +1188,58 @@ namespace Vortex {
 			auto meshComponent = entity["MeshRendererComponent"];
 			if (meshComponent)
 			{
-				auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
-
-				if (meshComponent["MeshSource"])
+				if (meshComponent["MeshHandle"])
 				{
-					std::string modelPath = meshComponent["MeshSource"].as<std::string>();
-					//std::string assetPath = Project::GetEditorAssetManager()->GetMetadata(handle);
-
-					MeshImportOptions importOptions = MeshImportOptions();
-
-					if (meshComponent["MeshImportOptions"])
+					auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
+					AssetHandle meshHandle = meshComponent["MeshHandle"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(meshHandle))
 					{
-						auto modelImportOptions = meshComponent["ModelImportOptions"];
-						importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
-						importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
-						importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+						MeshImportOptions importOptions = MeshImportOptions();
+						if (meshComponent["MeshImportOptions"])
+						{
+							auto modelImportOptions = meshComponent["ModelImportOptions"];
+							importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
+							importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
+							importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+						}
+
+						meshRendererComponent.Mesh = meshHandle;
 					}
-
-					//meshRendererComponent.Mesh = Mesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
-				}
-
-				auto submeshesData = meshComponent["Submeshes"];
-				if (submeshesData)
-				{
-					
 				}
 			}
 
 			auto staticMeshComponent = entity["StaticMeshRendererComponent"];
 			if (staticMeshComponent)
 			{
-				auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
-
-				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
-
-				if (staticMeshComponent["MeshSource"])
+				if (staticMeshComponent["MeshHandle"])
 				{
-					std::string modelPath = staticMeshComponent["MeshSource"].as<std::string>();
-					std::string assetPath = "";
-
-					if (StaticMesh::IsDefaultMesh(modelPath))
-						assetPath = modelPath;
-					else
-						//assetPath = Project::GetAssetFileSystemPath(modelPath).string();
-
-					MeshImportOptions importOptions = MeshImportOptions();
-
-					if (staticMeshComponent["MeshImportOptions"])
+					auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
+					AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint64_t>();
+					staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
+					if (AssetManager::IsHandleValid(staticMeshHandle))
 					{
-						auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
-						//importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
-						//importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
-						//importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
-					}
+						if (Project::GetEditorAssetManager()->IsDefaultStaticMesh(staticMeshHandle))
+						{
+							staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type);
+						}
+						else
+						{
+							MeshImportOptions importOptions = MeshImportOptions();
+							if (staticMeshComponent["MeshImportOptions"])
+							{
+								auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
+								importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
+								importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
+								importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
+							}
 
-					//staticMeshRendererComponent.StaticMesh = StaticMesh::Create(assetPath, deserializedEntity.GetTransform(), importOptions, (int)(entt::entity)deserializedEntity);
+							staticMeshRendererComponent.StaticMesh = staticMeshHandle;
+						}
+					}
 				}
 
-				auto submeshesData = staticMeshComponent["Submeshes"];
+				// Do this in Asset Serializer
+				/*auto submeshesData = staticMeshComponent["Submeshes"];
 				if (submeshesData)
 				{
 					uint32_t i = 0;
@@ -1243,7 +1251,7 @@ namespace Vortex {
 
 						Utils::LoadSubmeshMaterial(material, submeshData);
 					}
-				}
+				}*/
 			}
 
 			auto spriteComponent = entity["SpriteRendererComponent"];
@@ -1255,11 +1263,15 @@ namespace Vortex {
 
 				if (spriteComponent["TextureHandle"])
 				{
-					spriteRendererComponent.Texture = spriteComponent["TextureHandle"].as<uint64_t>();
+					AssetHandle assetHandle = spriteComponent["TextureHandle"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(assetHandle))
+					{
+						spriteRendererComponent.Texture = assetHandle;
+					}
 				}
 
 				if (spriteComponent["TextureScale"])
-					spriteRendererComponent.Scale = spriteComponent["TextureScale"].as<Math::vec2>();
+					spriteRendererComponent.TextureUV = spriteComponent["TextureScale"].as<Math::vec2>();
 			}
 
 			auto circleComponent = entity["CircleRendererComponent"];
@@ -1301,19 +1313,22 @@ namespace Vortex {
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
-				if (textMeshComponent["FontSource"])
+				if (textMeshComponent["FontHandle"])
 				{
-					//std::string fontSourcePath = Project::GetAssetFileSystemPath(textMeshComponent["FontSource"].as<std::string>()).string();
-					//tmc.FontAsset = Font::Create(fontSourcePath);
+					AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(fontHandle))
+					{
+						tmc.FontAsset = fontHandle;
+						tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
+						if (textMeshComponent["BgColor"])
+							tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();
+						tmc.Kerning = textMeshComponent["Kerning"].as<float>();
+						tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
+						tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
+						tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
+						tmc.TextString = textMeshComponent["TextString"].as<std::string>();
+					}
 				}
-				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
-				if (textMeshComponent["BgColor"])
-					tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();
-				tmc.Kerning = textMeshComponent["Kerning"].as<float>();
-				tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
-				tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
-				tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
-				tmc.TextString = textMeshComponent["TextString"].as<std::string>();
 			}
 
 			auto animationComponent = entity["AnimationComponent"];
@@ -1325,10 +1340,11 @@ namespace Vortex {
 					return;
 				}
 
-				auto& animation = deserializedEntity.AddComponent<AnimationComponent>();
+				// TODO fix animations to take in mesh asset handle
+				/*auto& animation = deserializedEntity.AddComponent<AnimationComponent>();
 				SharedRef<Mesh> mesh = deserializedEntity.GetComponent<MeshRendererComponent>().Mesh;
 				std::string filepath = mesh->GetPath();
-				animation.Animation = Animation::Create(filepath, mesh);
+				animation.Animation = Animation::Create(filepath, mesh);*/
 			}
 
 			auto animatorComponent = entity["AnimatorComponent"];

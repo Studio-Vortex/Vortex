@@ -2,7 +2,7 @@
 #include "ScriptRegistry.h"
 
 #include "Vortex/Core/Application.h"
-#include "Vortex/Core/Input.h"
+#include "Vortex/Core/Input/Input.h"
 #include "Vortex/Core/Log.h"
 
 #include "Vortex/Core/Math/Noise.h"
@@ -1949,8 +1949,8 @@ namespace Vortex {
 
 			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			meshRenderer.Type = meshType;
-			StaticMesh::Default defaultMesh = static_cast<StaticMesh::Default>(meshType);
-			meshRenderer.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+			//StaticMesh::Default defaultMesh = static_cast<StaticMesh::Default>(meshType);
+			//meshRenderer.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 		}
 
 #pragma endregion
@@ -1969,16 +1969,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				*outAlbedo = submesh.GetMaterial()->GetAlbedo();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						*outAlbedo = submesh.GetMaterial()->GetAlbedo();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						*outAlbedo = submeshes[submeshIndex].GetMaterial()->GetAlbedo();
+					}
+				}
 			}
 		}
 
@@ -1994,16 +2008,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetAlbedo(*albedo);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetAlbedo(*albedo);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
+					}
+				}
 			}
 		}
 
@@ -2019,19 +2047,31 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				return submesh.GetMaterial()->GetMetallic();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						return submesh.GetMaterial()->GetMetallic();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						return submeshes[submeshIndex].GetMaterial()->GetMetallic();
+					}
+				}
 			}
-
-			return 0.0f;
 		}
 
 		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
@@ -2046,16 +2086,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetMetallic(metallic);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetMetallic(metallic);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
+					}
+				}
 			}
 		}
 
@@ -2071,19 +2125,31 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				return submesh.GetMaterial()->GetRoughness();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						return submesh.GetMaterial()->GetRoughness();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						return submeshes[submeshIndex].GetMaterial()->GetRoughness();
+					}
+				}
 			}
-
-			return 0.0f;
 		}
 
 		void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
@@ -2098,16 +2164,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetRoughness(roughness);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetRoughness(roughness);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
+					}
+				}
 			}
 		}
 
@@ -2123,19 +2203,31 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				return submesh.GetMaterial()->GetEmission();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						return submesh.GetMaterial()->GetEmission();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetEmission();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						return submeshes[submeshIndex].GetMaterial()->GetEmission();
+					}
+				}
 			}
-
-			return 0.0f;
 		}
 
 		void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
@@ -2150,16 +2242,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetEmission(emission);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetEmission(emission);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
+					}
+				}
 			}
 		}
 
@@ -2175,16 +2281,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				*outUV = submesh.GetMaterial()->GetUV();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						*outUV = submesh.GetMaterial()->GetUV();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						*outUV = submeshes[submeshIndex].GetMaterial()->GetUV();
+					}
+				}
 			}
 		}
 
@@ -2200,16 +2320,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetUV(*uv);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetUV(*uv);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
+					}
+				}
 			}
 		}
 
@@ -2225,19 +2359,31 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				return submesh.GetMaterial()->GetOpacity();
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						return submesh.GetMaterial()->GetOpacity();
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						return submeshes[submeshIndex].GetMaterial()->GetOpacity();
+					}
+				}
 			}
-
-			return 0.0f;
 		}
 
 		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
@@ -2252,16 +2398,30 @@ namespace Vortex {
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
-				SharedRef<Mesh> mesh = entity.GetComponent<MeshRendererComponent>().Mesh;
-				const auto& submesh = mesh->GetSubmesh();
-				submesh.GetMaterial()->SetOpacity(opacity);
+				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
+				if (AssetManager::IsHandleValid(meshHandle))
+				{
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+					if (mesh)
+					{
+						const auto& submesh = mesh->GetSubmesh();
+						submesh.GetMaterial()->SetOpacity(opacity);
+					}
+				}
 			}
 			else if (entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				SharedRef<StaticMesh> staticMesh = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-				submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+				if (AssetManager::IsHandleValid(staticMeshHandle))
+				{
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					if (staticMesh)
+					{
+						const auto& submeshes = staticMesh->GetSubmeshes();
+						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
+						submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
+					}
+				}
 			}
 		}
 
@@ -2345,7 +2505,7 @@ namespace Vortex {
 			}
 
 			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			*outScale = spriteRenderer.Scale;
+			*outScale = spriteRenderer.TextureUV;
 		}
 
 		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
@@ -2359,7 +2519,7 @@ namespace Vortex {
 			}
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			spriteRenderer.Scale = *scale;
+			spriteRenderer.TextureUV = *scale;
 		}
 
 #pragma endregion

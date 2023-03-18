@@ -92,9 +92,4 @@ namespace Vortex {
 		return m_Shaders.size();
     }
 
-	SharedRef<ShaderLibrary> ShaderLibrary::Create()
-	{
-		return CreateShared<ShaderLibrary>();
-	}
-
 }

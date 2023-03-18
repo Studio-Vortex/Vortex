@@ -101,7 +101,7 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene.Raw());
+		Renderer::RenderToDepthMap(m_ActiveScene);
 		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
 		SharedRef<Project> activeProject = Project::GetActive();
@@ -760,58 +760,124 @@ namespace Vortex {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path filePath = std::filesystem::path(path);
+				std::filesystem::path filepath = std::filesystem::path(path);
 
-				if (filePath.extension().string() == ".png" || filePath.extension().string() == ".jpg" || filePath.extension().string() == ".jpeg" || filePath.extension().string() == ".tga" || filePath.extension().string() == ".psd")
+				AssetType assetType = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
+
+				if (assetType == AssetType::None)
 				{
-					std::filesystem::path textureFilepath = filePath;
-
-					AssetHandle texture = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
-
-					if (AssetManager::IsHandleValid(texture))
-					{
-						if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
-						{
-							m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = texture;
-						}
-						else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
-						{
-							SharedRef<StaticMesh> staticMesh = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-							std::string filename = textureFilepath.filename().string();
-
-							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(texture);
-							if (filename.find("normal") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetNormalMap(texture);
-							if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(texture);
-							if (filename.find("roughness") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(texture);
-							if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(texture);
-							if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(texture);
-							if (filename.find("ao") != std::string::npos)
-								staticMesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(texture);
-						}
-					}
-					else
-						VX_CONSOLE_LOG_WARN("Could not load texture - {}", textureFilepath.filename().string());
+					VX_CONSOLE_LOG_ERROR("Could not load asset with AssetType of none!");
+					Gui::EndDragDropTarget();
+					return;
 				}
-				else if (filePath.extension().string() == ".obj" || filePath.extension().string() == ".fbx" || filePath.extension().string() == ".gltf" || filePath.extension().string() == ".dae" || filePath.extension().string() == ".glb")
-				{
-					std::filesystem::path modelPath = filePath;
 
-					if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
-					{
-						meshImportPopupOpen = true;
-						m_MeshFilepath = modelPath.string();
-						m_MeshEntityToEdit = m_HoveredEntity;
-					}
-				}
-				else if (filePath.extension().string() == ".vortex")
+				switch (assetType)
 				{
-					OpenScene(filePath);
+					case AssetType::MeshAsset:
+					{
+						break;
+					}
+					case AssetType::FontAsset:
+					{
+						break;
+					}
+					case AssetType::AudioAsset:
+					{
+						break;
+					}
+					case AssetType::SceneAsset:
+					{
+						OpenScene(filepath);
+
+						break;
+					}
+					case AssetType::PrefabAsset:
+					{
+						break;
+					}
+					case AssetType::ScriptAsset:
+					{
+						break;
+					}
+					case AssetType::TextureAsset:
+					{
+						std::filesystem::path textureFilepath = filepath;
+
+						AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
+
+						if (AssetManager::IsHandleValid(textureHandle))
+						{
+							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(textureHandle);
+
+							if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
+							{
+								m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
+							}
+							else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+							{
+								AssetHandle staticMeshHandle = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+
+								if (AssetManager::IsHandleValid(staticMeshHandle))
+								{
+									std::string filename = textureFilepath.filename().string();
+
+									if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetAlbedoMap(textureHandle);
+									if (filename.find("normal") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetNormalMap(textureHandle);
+									if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetMetallicMap(textureHandle);
+									if (filename.find("roughness") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetRoughnessMap(textureHandle);
+									if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetEmissionMap(textureHandle);
+									if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetParallaxOcclusionMap(textureHandle);
+									if (filename.find("ao") != std::string::npos)
+										staticMesh->GetSubmesh(0).GetMaterial()->SetAmbientOcclusionMap(textureHandle);
+								}
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_WARN("Could not load texture - {}", textureFilepath.filename().string());
+						}
+
+						break;
+					}
+					case AssetType::MaterialAsset:
+					{
+						break;
+					}
+					case AssetType::AnimatorAsset:
+					{
+						break;
+					}
+					case AssetType::AnimationAsset:
+					{
+						break;
+					}
+					case AssetType::StaticMeshAsset:
+					{
+						std::filesystem::path modelPath = filepath;
+
+						if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+						{
+							meshImportPopupOpen = true;
+							m_MeshFilepath = modelPath.string();
+							m_MeshEntityToEdit = m_HoveredEntity;
+						}
+
+						break;
+					}
+					case AssetType::EnvironmentAsset:
+					{
+						break;
+					}
+					case AssetType::PhysicsMaterialAsset:
+					{
+						break;
+					}
 				}
 			}
 
@@ -866,12 +932,13 @@ namespace Vortex {
 				if (m_MeshEntityToEdit.HasComponent<MeshRendererComponent>())
 				{
 					MeshRendererComponent& meshRenderer = m_MeshEntityToEdit.GetComponent<MeshRendererComponent>();
-					meshRenderer.Mesh = Mesh::Create(m_MeshFilepath, m_MeshEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_MeshEntityToEdit);
+					meshRenderer.Mesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
 				}
 				else if (m_MeshEntityToEdit.HasComponent<StaticMeshRendererComponent>())
 				{
 					StaticMeshRendererComponent& staticMeshRenderer = m_MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
-					staticMeshRenderer.StaticMesh = StaticMesh::Create(m_MeshFilepath, m_MeshEntityToEdit.GetTransform(), m_ModelImportOptions, (int)(entt::entity)m_MeshEntityToEdit);
+					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
+
 					staticMeshRenderer.Type = MeshType::Custom;
 				}
 
@@ -1554,9 +1621,13 @@ namespace Vortex {
 					Entity entity{ e, m_ActiveScene.Raw() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
-					const auto& meshRenderer = entity.GetComponent<MeshRendererComponent>();
-					SharedRef<Mesh> mesh = meshRenderer.Mesh;
+					const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+					
+					AssetHandle meshHandle = meshRendererComponent.Mesh;
+					if (!AssetManager::IsHandleValid(meshHandle))
+						continue;
 
+					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (!mesh)
 						continue;
 
@@ -1574,9 +1645,13 @@ namespace Vortex {
 					Entity entity{ e, m_ActiveScene.Raw() };
 					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
-					const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-					SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
+					const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
+					AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+					if (!AssetManager::IsHandleValid(staticMeshHandle))
+						continue;
+
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (!staticMesh)
 						continue;
 
@@ -1610,6 +1685,7 @@ namespace Vortex {
 
 					Renderer2D::DrawAABB(aabb, transform, colliderColor);
 				}
+
 				if (selectedEntity.HasComponent<SphereColliderComponent>())
 				{
 					const auto& sc = selectedEntity.GetComponent<SphereColliderComponent>();
@@ -1636,48 +1712,80 @@ namespace Vortex {
 
 				if (selectedEntity.HasComponent<MeshRendererComponent>())
 				{
-					const auto& meshRenderer = selectedEntity.GetComponent<MeshRendererComponent>();
-
-					if (SharedRef<Mesh> mesh = meshRenderer.Mesh)
+					const auto& meshRendererComponent = selectedEntity.GetComponent<MeshRendererComponent>();
+					AssetHandle meshHandle = meshRendererComponent.Mesh;
+					if (AssetManager::IsHandleValid(meshHandle))
 					{
-						switch (m_SelectionMode)
+						SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+						if (mesh)
 						{
-							case SelectionMode::Entity:
-								Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
-								break;
-							case SelectionMode::Submesh:
-								const auto& submesh = mesh->GetSubmesh();
-								Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-								break;
+							switch (m_SelectionMode)
+							{
+								case SelectionMode::Entity:
+									Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
+									break;
+								case SelectionMode::Submesh:
+									const auto& submesh = mesh->GetSubmesh();
+									Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+									break;
+							}
 						}
 					}
 				}
 				else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
 				{
-					const auto& staticMeshRenderer = selectedEntity.GetComponent<StaticMeshRendererComponent>();
-
-					SharedRef<StaticMesh> staticMesh = staticMeshRenderer.StaticMesh;
-
-					switch (m_SelectionMode)
+					const auto& staticMeshRendererComponent = selectedEntity.GetComponent<StaticMeshRendererComponent>();
+					AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+					if (AssetManager::IsHandleValid(staticMeshHandle))
 					{
-						case SelectionMode::Entity:
-							Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
-							break;
-						case SelectionMode::Submesh:
-							const auto& submeshes = staticMesh->GetSubmeshes();
-							for (const auto& submesh : submeshes)
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+						// TODO
+						if (staticMesh)
+						{
+							switch (staticMeshRendererComponent.Type)
 							{
-								Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+								case MeshType::Cube:
+									break;
+								case MeshType::Sphere:
+									break;
+								case MeshType::Capsule:
+									break;
+								case MeshType::Cone:
+									break;
+								case MeshType::Cylinder:
+									break;
+								case MeshType::Torus:
+									break;
+								case MeshType::Plane:
+									break;
+								case MeshType::Custom:
+									break;
 							}
-							break;
+
+							switch (m_SelectionMode)
+							{
+								case SelectionMode::Entity:
+									Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
+									break;
+								case SelectionMode::Submesh:
+									const auto& submeshes = staticMesh->GetSubmeshes();
+									for (const auto& submesh : submeshes)
+									{
+										Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+									}
+									break;
+							}
+						}
 					}
 				}
+				
 				if (selectedEntity.HasComponent<SpriteRendererComponent>())
 				{
 					const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
 
 					Renderer2D::DrawRect(transform, boundingBoxColor);
 				}
+
 				if (selectedEntity.HasComponent<CircleRendererComponent>())
 				{
 					const auto& circleRenderer = selectedEntity.GetComponent<CircleRendererComponent>();
@@ -2092,7 +2200,7 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
-		std::string sceneFilename = filepath.filename().string();
+		std::string sceneFilename = FileSystem::RemoveFileExtension(filepath.filename());
 
 		if (filepath.extension() != ".vortex")
 		{
@@ -2117,10 +2225,9 @@ namespace Vortex {
 			m_ActiveScene = m_EditorScene;
 			m_EditorScenePath = sceneFilename;
 
-			std::string sceneName = sceneFilename.substr(0, sceneFilename.find('.'));
-			SetWindowTitle(sceneName);
+			SetWindowTitle(sceneFilename);
 
-			m_ActiveScene->SetDebugName(sceneName);
+			m_ActiveScene->SetDebugName(sceneFilename);
 
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 

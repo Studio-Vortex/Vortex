@@ -21,10 +21,10 @@
 /// ---------------------------------------------------
 
 /// Input
-#include "Vortex/Core/Input.h"
-#include "Vortex/Core/Gamepad.h"
-#include "Vortex/Core/KeyCodes.h"
-#include "Vortex/Core/MouseCodes.h"
+#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Core/Input/Gamepad.h"
+#include "Vortex/Core/Input/KeyCodes.h"
+#include "Vortex/Core/Input/MouseCodes.h"
 /// ---------------------------------------------------
 
 /// Math

@@ -186,40 +186,12 @@ namespace Vortex {
 		m_ComponentSearchInputTextFilter.Build();
     }
 
-	inline static void CreateDefaultMesh(const std::string& name, StaticMesh::Default defaultMesh, Entity& entity, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
+	inline static void LoadDefaultMesh(const std::string& entityName, DefaultMeshes::StaticMeshes defaultMesh, Entity& entity, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
-		entity = contextScene->CreateEntity(name);
+		entity = contextScene->CreateEntity(entityName);
 		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();
 		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
-
-		MeshImportOptions importOptions = MeshImportOptions();
-
-		switch (defaultMesh)
-		{
-			case StaticMesh::Default::Cube:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<BoxColliderComponent>();
-				break;
-			case StaticMesh::Default::Sphere:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<SphereColliderComponent>();
-				break;
-			case StaticMesh::Default::Capsule:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<CapsuleColliderComponent>();
-				importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-				break;
-			case StaticMesh::Default::Cone:
-				break;
-			case StaticMesh::Default::Cylinder:
-				break;
-			case StaticMesh::Default::Plane:
-				break;
-			case StaticMesh::Default::Torus:
-				break;
-		}
-		
-		staticMeshRendererComponent.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+		staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
 		entity.GetTransform().Translation = editorCamera->GetFocalPoint();
 	}
 
@@ -234,25 +206,39 @@ namespace Vortex {
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-				CreateDefaultMesh("Cube", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Cube", DefaultMeshes::StaticMeshes::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Sphere"))
-				CreateDefaultMesh("Sphere", StaticMesh::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Sphere", DefaultMeshes::StaticMeshes::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Capsule"))
-				CreateDefaultMesh("Capsule", StaticMesh::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Capsule", DefaultMeshes::StaticMeshes::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Cone"))
-				CreateDefaultMesh("Cone", StaticMesh::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Cone", DefaultMeshes::StaticMeshes::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Cylinder"))
-				CreateDefaultMesh("Cylinder", StaticMesh::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Cylinder", DefaultMeshes::StaticMeshes::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Plane"))
-				CreateDefaultMesh("Plane", StaticMesh::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Plane", DefaultMeshes::StaticMeshes::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			if (Gui::MenuItem("Torus"))
-				CreateDefaultMesh("Torus", StaticMesh::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				LoadDefaultMesh("Torus", DefaultMeshes::StaticMeshes::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
+			}
 
 			Gui::EndMenu();
 		}
@@ -338,7 +324,7 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateDefaultMesh("Box Collider", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				LoadDefaultMesh("Box Collider", DefaultMeshes::StaticMeshes::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<BoxColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
@@ -346,7 +332,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateDefaultMesh("Sphere Collider", StaticMesh::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+				LoadDefaultMesh("Sphere Collider", DefaultMeshes::StaticMeshes::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<SphereColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
@@ -354,7 +340,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateDefaultMesh("Capsule Collider", StaticMesh::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+				LoadDefaultMesh("Capsule Collider", DefaultMeshes::StaticMeshes::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
@@ -362,7 +348,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Mesh Collider"))
 			{
-				CreateDefaultMesh("Mesh Collider", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				LoadDefaultMesh("Mesh Collider", DefaultMeshes::StaticMeshes::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<MeshColliderComponent>();
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
@@ -370,7 +356,7 @@ namespace Vortex {
 
 			if (Gui::MenuItem("Fixed Joint"))
 			{
-				CreateDefaultMesh("Fixed Joint", StaticMesh::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+				LoadDefaultMesh("Fixed Joint", DefaultMeshes::StaticMeshes::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
 				m_SelectedEntity.AddComponent<RigidBodyComponent>();
 				m_SelectedEntity.AddComponent<FixedJointComponent>();
 				m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
@@ -956,7 +942,7 @@ namespace Vortex {
 					if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 					{
 						component = StaticMeshRendererComponent();
-						component.StaticMesh = StaticMesh::Create(StaticMesh::Default::Cube, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+						component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
 					}
 					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 					{
@@ -1250,64 +1236,72 @@ namespace Vortex {
 
 		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
 		{
-			SharedRef<Skybox> skybox = component.Source;
-			
-			UI::BeginPropertyGrid();
-
-			std::string relativeSkyboxPath;
-
-			if (skybox->IsLoaded())
+			AssetHandle environmentHandle = component.Skybox;
+			if (AssetManager::IsHandleValid(environmentHandle))
 			{
-				std::string skyboxSourcePath = skybox->GetFilepath();
-				relativeSkyboxPath = FileSystem::Relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
-			}
-			else
-			{
-				relativeSkyboxPath = "";
-			}
-
-			UI::Property("Source", relativeSkyboxPath, true);
-
-			// Accept a Skybox Directory from the content browser
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				SharedReference<Skybox> skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
+				if (skybox)
 				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path skyboxPath = std::filesystem::path(path);
+					UI::BeginPropertyGrid();
 
-					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
-					if (skyboxPath.filename().extension() == ".hdr")
+					std::string relativeSkyboxPath = "";
+
+					if (skybox->IsLoaded())
 					{
-						skybox->LoadFromFilepath(skyboxPath.string());
-						skybox->SetShouldReload(true);
+						const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Skybox);
+						relativeSkyboxPath = metadata.Filepath.string();
 					}
-					else
-						VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
-				}
 
-				Gui::EndDragDropTarget();
-			}
+					UI::Property("Source", relativeSkyboxPath, true);
 
-			UI::EndPropertyGrid();
-
-			if (skybox->IsLoaded())
-			{
-				UI::BeginPropertyGrid();
-
-				UI::Property("Rotation", component.Rotation);
-
-				if (Gui::IsItemFocused())
-				{
-					if (Input::IsKeyPressed(KeyCode::Enter))
+					// Accept a Skybox Directory from the content browser
+					if (Gui::BeginDragDropTarget())
 					{
-						skybox->SetShouldReload(true);
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path skyboxPath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
+							if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(skyboxPath); type == AssetType::EnvironmentAsset)
+							{
+								AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(skyboxPath);
+								if (AssetManager::IsHandleValid(environmentHandle))
+								{
+									component.Skybox = environmentHandle;
+								}
+							}
+							else
+							{
+								VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
+							}
+						}
+
+						Gui::EndDragDropTarget();
+					}
+
+					UI::EndPropertyGrid();
+
+					if (skybox->IsLoaded())
+					{
+						UI::BeginPropertyGrid();
+
+						UI::Property("Rotation", component.Rotation);
+
+						if (Gui::IsItemFocused())
+						{
+							// Nasty hack to reload skybox
+							if (Input::IsKeyPressed(KeyCode::Enter))
+							{
+								skybox->SetShouldReload(true);
+							}
+						}
+
+						UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+
+						UI::EndPropertyGrid();
 					}
 				}
-
-				UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
-
-				UI::EndPropertyGrid();
 			}
 		});
 
@@ -1392,10 +1386,10 @@ namespace Vortex {
 
 			std::string relativeMeshPath = "";
 			
-			if (component.Mesh)
+			if (AssetManager::IsHandleValid(component.Mesh))
 			{
-				std::string meshSourcePath = component.Mesh->GetPath();
-				relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Mesh);
+				relativeMeshPath = metadata.Filepath.string();
 			}
 
 			UI::Property("Mesh Source", relativeMeshPath, true);
@@ -1409,17 +1403,21 @@ namespace Vortex {
 					std::filesystem::path modelFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(modelFilepath); type == AssetType::MeshAsset || type == AssetType::StaticMeshAsset)
 					{
-						component.Mesh = Mesh::Create(modelFilepath.string(), entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
-
-						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && component.Mesh->HasAnimations())
+						AssetHandle meshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(modelFilepath);
+						if (AssetManager::IsHandleValid(meshHandle))
 						{
-							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+							component.Mesh = meshHandle;
 
-							animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
-							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+							if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && AssetManager::GetAsset<Mesh>(component.Mesh)->HasAnimations())
+							{
+								AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+								AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+
+								animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
+								animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+							}
 						}
 					}
 					else
@@ -1437,19 +1435,15 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string meshSourcePath = "";
+			std::string relativeStaticMeshPath = "";
 
-			if (component.StaticMesh)
+			if (AssetManager::IsHandleValid(component.StaticMesh))
 			{
-				meshSourcePath = component.StaticMesh->GetPath();
-				if (StaticMesh::IsDefaultMesh(meshSourcePath))
-					UI::Property("Mesh Source", meshSourcePath, true);
-				else
-				{
-					std::string relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
-					UI::Property("Mesh Source", relativeMeshPath, true);
-				}
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.StaticMesh);
+				relativeStaticMeshPath = metadata.Filepath.string();
 			}
+
+			UI::Property("Mesh Source", relativeStaticMeshPath, true);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1460,14 +1454,21 @@ namespace Vortex {
 					std::filesystem::path modelFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(modelFilepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
 					{
-						component.StaticMesh = StaticMesh::Create(modelFilepath.string(), entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
-						component.Type = MeshType::Custom;
+						AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(modelFilepath);
+						if (AssetManager::IsHandleValid(staticMeshHandle))
+						{
+							component.StaticMesh = staticMeshHandle;
+							component.Type = MeshType::Custom;
+						}
 					}
 					else
+					{
 						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
+					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
@@ -1477,16 +1478,15 @@ namespace Vortex {
 			{
 				component.Type = (MeshType)currentMeshType;
 
-				if (component.Type == MeshType::Capsule)
+				if (component.Type == MeshType::Custom)
 				{
-					MeshImportOptions importOptions = MeshImportOptions();
-					importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-					component.StaticMesh = StaticMesh::Create((StaticMesh::Default)currentMeshType, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+					// Temporary
+					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
 				}
-				else if (component.Type != MeshType::Custom)
-					component.StaticMesh = StaticMesh::Create((StaticMesh::Default)currentMeshType, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
 				else
-					component.StaticMesh = StaticMesh::Create(meshSourcePath, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+				{
+					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)component.Type);
+				}
 			}
 
 			UI::EndPropertyGrid();
@@ -1524,10 +1524,9 @@ namespace Vortex {
 						std::filesystem::path texturePath = std::filesystem::path(path);
 
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".jpeg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
+						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)
 						{
 							AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturePath);
-
 							if (AssetManager::IsHandleValid(textureHandle))
 							{
 								component.Texture = textureHandle;
@@ -1545,7 +1544,7 @@ namespace Vortex {
 			}
 
 			UI::Property("Color", &component.SpriteColor);
-			UI::Property("UV", component.Scale, 0.05f);
+			UI::Property("UV", component.TextureUV, 0.05f);
 
 			UI::EndPropertyGrid();
 		});
@@ -1609,15 +1608,15 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
+			std::string relativeFontPath = "";
 
-			if (Font::GetDefaultFont()->GetFontAtlas()->GetPath() == fontFilepath)
-				UI::Property("Font Source", fontFilepath, true);
-			else
+			if (AssetManager::IsHandleValid(component.FontAsset))
 			{
-				std::string relativeFontPath = FileSystem::Relative(fontFilepath, Project::GetAssetDirectory()).string();
-				UI::Property("Font Source", relativeFontPath, true);
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.FontAsset);
+				relativeFontPath = metadata.Filepath.string();
 			}
+
+			UI::Property("Font Source", relativeFontPath, true);
 
 			// Accept a Font from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1628,17 +1627,22 @@ namespace Vortex {
 					std::filesystem::path fontPath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual font otherwise we will have trouble opening it
-					if (fontPath.filename().extension() == ".ttf" || fontPath.filename().extension() == ".TTF")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(fontPath); type == AssetType::FontAsset)
 					{
-						SharedRef<Font> font = Font::Create(fontPath.string());
-
-						if (font->GetFontAtlas()->IsLoaded())
-							component.FontAsset = font;
+						AssetHandle fontAssetHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(fontPath);
+						if (AssetManager::IsHandleValid(fontAssetHandle))
+						{
+							component.FontAsset = fontAssetHandle;
+						}
 						else
+						{
 							VX_CONSOLE_LOG_WARN("Could not load font {}", fontPath.filename().string());
+						}
 					}
 					else
+					{
 						VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
+					}
 				}
 				Gui::EndDragDropTarget();
 			}
@@ -1752,7 +1756,7 @@ namespace Vortex {
 					std::filesystem::path audioSourcePath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
-					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
 					{
 						// If there is another file playing we need to stop it
 						if (component.Source->IsPlaying())
@@ -1763,8 +1767,11 @@ namespace Vortex {
 						audioSource->Reload();
 					}
 					else
+					{
 						VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 

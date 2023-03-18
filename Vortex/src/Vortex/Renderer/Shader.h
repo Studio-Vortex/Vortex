@@ -63,8 +63,6 @@ namespace Vortex {
 		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator begin() const { return m_Shaders.begin(); }
 		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator end() const { return m_Shaders.end(); }
 
-		static SharedRef<ShaderLibrary> Create();
-
 	private:
 		std::unordered_map<std::string, SharedRef<Shader>> m_Shaders;
 	};

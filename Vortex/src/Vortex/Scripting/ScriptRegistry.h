@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Scene/Components.h"
 
 extern "C"
 {

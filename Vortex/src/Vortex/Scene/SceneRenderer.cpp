@@ -166,9 +166,17 @@ namespace Vortex {
 					if (!entity.IsActive())
 						continue;
 
+					AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
+					if (!AssetManager::IsHandleValid(fontAssetHandle))
+						continue;
+
+					SharedReference<Font> font = AssetManager::GetAsset<Font>(fontAssetHandle);
+					if (!font)
+						continue;
+
 					Renderer2D::DrawString(
 						textMeshComponent.TextString,
-						textMeshComponent.FontAsset,
+						font,
 						scene->GetWorldSpaceTransformMatrix(entity),
 						textMeshComponent.MaxWidth,
 						textMeshComponent.Color,
@@ -277,7 +285,7 @@ namespace Vortex {
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 				Renderer::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
 
-				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
+				SceneRenderer::RenderEnvironment(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
 			}
 			else
 			{
@@ -287,7 +295,7 @@ namespace Vortex {
 				Math::mat4 view = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
 				Math::mat4 projection = sceneCamera.GetProjectionMatrix();
 
-				SceneRenderer::RenderSkybox(view, projection, scene);
+				SceneRenderer::RenderEnvironment(view, projection, scene);
 			}
 
 			// Light pass
@@ -403,14 +411,17 @@ namespace Vortex {
 
 						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
-						SharedRef<Mesh> mesh = meshRendererComponent.Mesh;
+						AssetHandle meshHandle = meshRendererComponent.Mesh;
+						if (!AssetManager::IsHandleValid(meshHandle))
+							continue;
+
+						SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 						if (!mesh)
 							continue;
 
 						const auto& submesh = mesh->GetSubmesh();
 
 						SharedRef<Material> material = submesh.GetMaterial();
-
 						if (!material)
 							continue;
 
@@ -455,7 +466,11 @@ namespace Vortex {
 
 						Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
-						SharedRef<StaticMesh> staticMesh = staticMeshRendererComponent.StaticMesh;
+						AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+						if (!AssetManager::IsHandleValid(staticMeshHandle))
+							continue;
+
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 						if (!staticMesh)
 							continue;
 
@@ -498,10 +513,11 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
+	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
 	{
 		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
-
+		
+		// Only render one environment per scene
 		for (const auto e : skyboxView)
 		{
 			Entity entity{ e, scene };
@@ -510,9 +526,15 @@ namespace Vortex {
 				continue;
 
 			SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			Renderer::DrawEnvironmentMap(view, projection, skyboxComponent);
+			AssetHandle environmentHandle = skyboxComponent.Skybox;
+			if (!AssetManager::IsHandleValid(environmentHandle))
+				continue;
 
-			// Only render one skybox per scene
+			SharedReference<Skybox> environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+			if (!environment)
+				continue;
+
+			Renderer::DrawEnvironmentMap(view, projection, skyboxComponent, environment);
 			break;
 		}
 	}
