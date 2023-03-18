@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
@@ -103,7 +105,7 @@ namespace Vortex {
 		uint32_t m_Stride = 0;
 	};
 
-	class VORTEX_API VertexBuffer
+	class VORTEX_API VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -116,13 +118,13 @@ namespace Vortex {
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 
-		static SharedRef<VertexBuffer> Create(float* vertices, uint32_t size);
-		static SharedRef<VertexBuffer> Create(const void* vertices, uint32_t size);
-		static SharedRef<VertexBuffer> Create(uint32_t size);
+		static SharedReference<VertexBuffer> Create(float* vertices, uint32_t size);
+		static SharedReference<VertexBuffer> Create(const void* vertices, uint32_t size);
+		static SharedReference<VertexBuffer> Create(uint32_t size);
 	};
 
 	// Only supports 32 bit unsigned integers
-	class VORTEX_API IndexBuffer
+	class VORTEX_API IndexBuffer : public RefCounted
 	{
 	public:
 		virtual ~IndexBuffer() = default;
@@ -132,8 +134,8 @@ namespace Vortex {
 
 		virtual uint32_t GetCount() const = 0;
 
-		static SharedRef<IndexBuffer> Create(uint32_t* indices, uint32_t count);
-		static SharedRef<IndexBuffer> Create(uint16_t* indices, uint32_t count);
+		static SharedReference<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static SharedReference<IndexBuffer> Create(uint16_t* indices, uint32_t count);
 	};
 
 }

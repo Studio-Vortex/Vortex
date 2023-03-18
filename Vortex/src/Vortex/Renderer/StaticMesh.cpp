@@ -155,9 +155,9 @@ namespace Vortex {
 		}
 	}
 
-	void StaticSubmesh::Render() const
+	void StaticSubmesh::Render()
 	{
-		SharedRef<Shader> shader = m_Material->GetShader();
+		SharedReference<Shader> shader = m_Material->GetShader();
 		m_Material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
@@ -168,7 +168,7 @@ namespace Vortex {
 
 	void StaticSubmesh::RenderToSkylightShadowMap()
 	{
-		SharedRef<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
+		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
@@ -331,7 +331,7 @@ namespace Vortex {
 			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
 			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
 			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
-			
+
 			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), materialProps);
 		}
 
@@ -384,7 +384,7 @@ namespace Vortex {
 			if (!isDirty)
 				continue;
 
-			SharedRef<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
+			SharedReference<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
 			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(StaticVertex));
 		}
 	}

@@ -55,7 +55,7 @@ namespace Vortex {
 		glBindVertexArray(NULL);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const SharedRef<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(SharedReference<VertexBuffer>& vertexBuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -129,7 +129,7 @@ namespace Vortex {
 		m_VertexBuffers.push_back(vertexBuffer);
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(const SharedRef<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(SharedReference<IndexBuffer>& indexBuffer)
 	{
 		VX_PROFILE_FUNCTION();
 

@@ -102,9 +102,9 @@ namespace Vortex {
 		}
 	}
 
-	void Submesh::Render() const
+	void Submesh::Render()
 	{
-		SharedRef<Shader> shader = m_Material->GetShader();
+		SharedReference<Shader> shader = m_Material->GetShader();
 		m_Material->Bind();
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
@@ -115,7 +115,7 @@ namespace Vortex {
 
 	void Submesh::RenderToSkylightShadowMap()
 	{
-		SharedRef<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
+		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 
 		Renderer::DrawIndexed(shader, m_VertexArray);
 	}
@@ -377,7 +377,7 @@ namespace Vortex {
 		if (!isDirty)
 			return;
 
-		SharedRef<VertexBuffer> vertexBuffer = m_Submesh.GetVertexBuffer();
+		SharedReference<VertexBuffer> vertexBuffer = m_Submesh.GetVertexBuffer();
 		vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(Vertex));
 	}
 

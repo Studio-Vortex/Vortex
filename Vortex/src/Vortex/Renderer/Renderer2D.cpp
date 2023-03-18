@@ -76,21 +76,21 @@ namespace Vortex
 
 		ShaderLibrary ShaderLibrary;
 
-		SharedRef<VertexArray> UnitQuadVA = nullptr;
-		SharedRef<VertexBuffer> UnitQuadVB = nullptr;
-		SharedRef<IndexBuffer> UnitQuadIB = nullptr;
+		SharedReference<VertexArray> UnitQuadVA = nullptr;
+		SharedReference<VertexBuffer> UnitQuadVB = nullptr;
+		SharedReference<IndexBuffer> UnitQuadIB = nullptr;
 
-		SharedRef<VertexArray> QuadVA = nullptr;
-		SharedRef<VertexBuffer> QuadVB = nullptr;
+		SharedReference<VertexArray> QuadVA = nullptr;
+		SharedReference<VertexBuffer> QuadVB = nullptr;
 
-		SharedRef<VertexArray> CircleVA = nullptr;
-		SharedRef<VertexBuffer> CircleVB = nullptr;
+		SharedReference<VertexArray> CircleVA = nullptr;
+		SharedReference<VertexBuffer> CircleVB = nullptr;
 
-		SharedRef<VertexArray> LineVA = nullptr;
-		SharedRef<VertexBuffer> LineVB = nullptr;
+		SharedReference<VertexArray> LineVA = nullptr;
+		SharedReference<VertexBuffer> LineVB = nullptr;
 
-		SharedRef<VertexArray> TextVA = nullptr;
-		SharedRef<VertexBuffer> TextVB = nullptr;
+		SharedReference<VertexArray> TextVA = nullptr;
+		SharedReference<VertexBuffer> TextVB = nullptr;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
@@ -178,7 +178,7 @@ namespace Vortex
 			offset += VERTICES_PER_QUAD;
 		}
 
-		SharedRef<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DInternalData::MaxIndices);
+		SharedReference<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DInternalData::MaxIndices);
 		s_Data.QuadVA->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
@@ -243,13 +243,13 @@ namespace Vortex
 		// Set the first texture slot to out default white texture
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary.Load("Quad", QUAD_SHADER_PATH);
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Load("Quad", QUAD_SHADER_PATH);
 		// Set the sampler2D array on the GPU
 		quadShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
 		s_Data.ShaderLibrary.Load("Circle", CIRCLE_SHADER_PATH);
 		s_Data.ShaderLibrary.Load("Line", LINE_SHADER_PATH);
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary.Load("Text", TEXT_SHADER_PATH);
+		SharedReference<Shader> textShader = s_Data.ShaderLibrary.Load("Text", TEXT_SHADER_PATH);
 		textShader->Enable();
 		textShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
@@ -299,19 +299,19 @@ namespace Vortex
 
 	void Renderer2D::SetShaderViewProjectionMatrix(const Math::mat4& viewProjection)
 	{
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 		quadShader->Enable();
 		quadShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
+		SharedReference<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
 		circleShader->Enable();
 		circleShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> lineShader = s_Data.ShaderLibrary.Get("Line");
+		SharedReference<Shader> lineShader = s_Data.ShaderLibrary.Get("Line");
 		lineShader->Enable();
 		lineShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary.Get("Text");
+		SharedReference<Shader> textShader = s_Data.ShaderLibrary.Get("Text");
 		textShader->Enable();
 		textShader->SetMat4("u_ViewProjection", viewProjection);
 
@@ -372,7 +372,7 @@ namespace Vortex
 				s_Data.TextureSlots[i]->Bind(i);
 
 			// Bind a shader and make a draw call
-			SharedRef<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
+			SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 			quadShader->Enable();
 			RenderCommand::DrawIndexed(s_Data.QuadVA, s_Data.QuadIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
@@ -430,13 +430,13 @@ namespace Vortex
 		SharedRef<LightSource2D> lightSource = lightSourceComponent.Source;
 		uint32_t& i = s_Data.LightSourceIndex;
 
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 		quadShader->Enable();
 		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
 		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
 		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
 
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
+		SharedReference<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
 		circleShader->Enable();
 		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
 		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);

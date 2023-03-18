@@ -17,10 +17,10 @@ namespace Vortex {
 
 		void Clear() const override;
 
-		void DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const override;
-		void DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount = 0) const override;
-		void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const override;
-		void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const override;
+		void DrawTriangles(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const override;
+		void DrawIndexed(SharedReference<VertexArray>& vertexArray, uint32_t indexCount = 0) const override;
+		void DrawLines(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const override;
+		void DrawTriangleStrip(SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const override;
 
 		void EnableDepthTest() const override;
 		void DisableDepthTest() const override;

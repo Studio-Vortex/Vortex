@@ -318,7 +318,7 @@ namespace Vortex {
 				{
 					if (shaderLibrary.Exists(currentShaderName))
 					{
-						SharedRef<Shader> shader = shaderLibrary.Get(currentShaderName);
+						SharedReference<Shader> shader = shaderLibrary.Get(currentShaderName);
 						material->SetShader(shader);
 					}
 				}
@@ -370,7 +370,7 @@ namespace Vortex {
 					{
 						if (shaderLibrary.Exists(currentShaderName))
 						{
-							SharedRef<Shader> shader = shaderLibrary.Get(currentShaderName);
+							SharedReference<Shader> shader = shaderLibrary.Get(currentShaderName);
 							material->SetShader(shader);
 						}
 					}

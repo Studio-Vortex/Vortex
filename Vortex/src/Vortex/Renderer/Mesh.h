@@ -39,11 +39,11 @@ namespace Vortex {
 
 		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
 
-		void Render() const;
+		void Render();
 		void RenderToSkylightShadowMap();
 
-		const SharedRef<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const SharedRef<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
+		const SharedReference<VertexArray>& GetVertexArray() const { return m_VertexArray; }
+		const SharedReference<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
 		const SharedRef<Material>& GetMaterial() const { return m_Material; }
 		void SetMaterial(const SharedRef<Material>& material);
 		
@@ -63,9 +63,9 @@ namespace Vortex {
 		std::vector<uint32_t> m_Indices;
 		SharedRef<Material> m_Material = nullptr;
 
-		SharedRef<VertexArray> m_VertexArray = nullptr;
-		SharedRef<VertexBuffer> m_VertexBuffer = nullptr;
-		SharedRef<IndexBuffer> m_IndexBuffer = nullptr;
+		SharedReference<VertexArray> m_VertexArray = nullptr;
+		SharedReference<VertexBuffer> m_VertexBuffer = nullptr;
+		SharedReference<IndexBuffer> m_IndexBuffer = nullptr;
 
 		Math::AABB m_BoundingBox;
 

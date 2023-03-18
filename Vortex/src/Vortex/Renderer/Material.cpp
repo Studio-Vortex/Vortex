@@ -5,7 +5,7 @@
 
 namespace Vortex {
 
-	Material::Material(const SharedRef<Shader>& shader, const MaterialProperties& props)
+	Material::Material(SharedReference<Shader>& shader, const MaterialProperties& props)
 		: m_Shader(shader), m_Properties(props) { }
 
 	void Material::Bind() const
@@ -105,12 +105,12 @@ namespace Vortex {
 
 	void Material::Unbind() const { }
 
-	const SharedRef<Shader>& Material::GetShader() const
+	const SharedReference<Shader>& Material::GetShader() const
 	{
 		return m_Shader;
 	}
 
-	void Material::SetShader(const SharedRef<Shader>& shader)
+	void Material::SetShader(SharedReference<Shader>& shader)
 	{
 		m_Shader = shader;
 	}
@@ -352,7 +352,7 @@ namespace Vortex {
 		dest->SetFlags(src->GetFlags());
 	}
 
-	SharedRef<Material> Material::Create(const SharedRef<Shader>& shader, const MaterialProperties& props)
+	SharedRef<Material> Material::Create(SharedReference<Shader>& shader, const MaterialProperties& props)
 	{
 		return CreateShared<Material>(shader, props);
 	}

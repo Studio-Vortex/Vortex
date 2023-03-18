@@ -34,22 +34,22 @@ namespace Vortex {
 			s_RendererAPI->Clear();
 		}
 
-		inline static void DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount)
+		inline static void DrawTriangles(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount)
 		{
 			s_RendererAPI->DrawTriangles(vertexArray, vertexCount);
 		}
 
-		inline static void DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount = 0)
+		inline static void DrawIndexed(SharedReference<VertexArray>& vertexArray, uint32_t indexCount = 0)
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
 
-		inline static void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount)
+		inline static void DrawLines(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount)
 		{
 			s_RendererAPI->DrawLines(vertexArray, vertexCount);
 		}
 
-		inline static void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount)
+		inline static void DrawTriangleStrip(SharedReference<VertexArray>& vertexArray, uint32_t indexCount)
 		{
 			s_RendererAPI->DrawTriangleStrip(vertexArray, indexCount);
 		}

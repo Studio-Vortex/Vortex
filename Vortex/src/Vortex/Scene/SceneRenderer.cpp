@@ -419,7 +419,7 @@ namespace Vortex {
 						if (!mesh)
 							continue;
 
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 
 						SharedRef<Material> material = submesh.GetMaterial();
 						if (!material)
@@ -427,7 +427,7 @@ namespace Vortex {
 
 						SetMaterialFlags(material);
 
-						SharedRef<Shader> shader = material->GetShader();
+						SharedReference<Shader> shader = material->GetShader();
 						shader->Enable();
 
 						shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
@@ -474,7 +474,7 @@ namespace Vortex {
 						if (!staticMesh)
 							continue;
 
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 
 						// render each submesh
 						for (auto& submesh : submeshes)
@@ -486,7 +486,7 @@ namespace Vortex {
 
 							SetMaterialFlags(material);
 
-							SharedRef<Shader> shader = material->GetShader();
+							SharedReference<Shader> shader = material->GetShader();
 							shader->Enable();
 
 							shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);

@@ -150,7 +150,7 @@ namespace Vortex {
 		s_Data.TargetFramebuffer = nullptr;
 	}
 
-	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
+	void Renderer::Submit(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -160,7 +160,7 @@ namespace Vortex {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
+	void Renderer::DrawIndexed(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -173,8 +173,8 @@ namespace Vortex {
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
 	{
 		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
-		SharedRef<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
+		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 
 		switch (lightSourceComponent.Type)
 		{
@@ -275,7 +275,7 @@ namespace Vortex {
 		{
 			RenderCommand::DisableDepthMask();
 
-			SharedRef<Shader> environmentShader = s_Data.ShaderLibrary.Get("Environment");
+			SharedReference<Shader> environmentShader = s_Data.ShaderLibrary.Get("Environment");
 			environmentShader->Enable();
 			environmentShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 			environmentShader->SetMat4("u_Projection", projection);
@@ -284,7 +284,7 @@ namespace Vortex {
 			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
+			SharedReference<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
 
 			skyboxMeshVA->Bind();
 			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
@@ -292,7 +292,7 @@ namespace Vortex {
 			RenderCommand::EnableDepthMask();
 		}
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
 		s_Data.HDRFramebuffer->BindIrradianceCubemap();
@@ -302,7 +302,7 @@ namespace Vortex {
 		s_Data.BRDF_LUT->Bind(3);
 		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-		SharedRef<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 		pbrStaticShader->Enable();
 		pbrStaticShader->SetInt("u_SceneProperties.IrradianceMap", 1);
 		s_Data.HDRFramebuffer->BindIrradianceCubemap();
@@ -368,13 +368,13 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->CreateEnvironmentCubemap(s_Data.EnvironmentMapResolution);
 
 		// convert HDR equirectangular environment map to cubemap equivalent
-		SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary.Get("EquirectangularToCubemap");
+		SharedReference<Shader> equirectToCubemapShader = s_Data.ShaderLibrary.Get("EquirectangularToCubemap");
 		equirectToCubemapShader->Enable();
 		equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
 		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
 		skybox->Bind();
 
-		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
+		SharedReference<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
 
 		{
 			// don't forget to configure the viewport to the capture dimensions.
@@ -408,7 +408,7 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->CreateIrradianceCubemap(irradianceTexSize);
 		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(irradianceTexSize, irradianceTexSize);
 
-		SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary.Get("IrradianceConvolution");
+		SharedReference<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary.Get("IrradianceConvolution");
 		irradianceConvolutionShader->Enable();
 		irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
 		irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
@@ -441,7 +441,7 @@ namespace Vortex {
 		// Create Prefiltered Envrionment Map
 		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap(s_Data.PrefilterMapResolution);
 
-		SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary.Get("IBL_Prefilter");
+		SharedReference<Shader> iblPrefilterShader = s_Data.ShaderLibrary.Get("IBL_Prefilter");
 		iblPrefilterShader->Enable();
 		iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
 		iblPrefilterShader->SetMat4("u_Projection", captureProjection);
@@ -611,7 +611,7 @@ namespace Vortex {
 			return;
 
 		{
-			SharedRef<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
+			SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 			pbrShader->Enable();
 
 			// TEMPORARY FIX
@@ -626,7 +626,7 @@ namespace Vortex {
 		}
 
 		{
-			SharedRef<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+			SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 			pbrStaticShader->Enable();
 
 			// TEMPORARY FIX
@@ -643,7 +643,7 @@ namespace Vortex {
 
 	void Renderer::BindPointLightDepthMaps()
 	{
-		/*SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		/*SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 
 		const uint32_t startSlot = 12;
@@ -660,7 +660,7 @@ namespace Vortex {
 
 	void Renderer::BindSpotLightDepthMaps()
 	{
-		/*SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		/*SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 
 		const uint32_t startSlot = 12;
@@ -681,7 +681,7 @@ namespace Vortex {
 
 		Math::mat4 viewProjection = projection * view;
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
@@ -689,7 +689,7 @@ namespace Vortex {
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomSettings);
 
-		SharedRef<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 		pbrStaticShader->Enable();
 		pbrStaticShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
@@ -704,7 +704,7 @@ namespace Vortex {
 
 	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes)
 	{
-		SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
 
 		// Configure shader
 		{
@@ -814,12 +814,12 @@ namespace Vortex {
 
 		uint32_t pointLightIndex = lightSourceComponent.Source->GetPointLightIndex();
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
 		pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].FarPlane", farPlane);
 
-		SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("PointLightShadowMap");
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("PointLightShadowMap");
 		shadowMapShader->Enable();
 		for (uint32_t i = 0; i < 6; i++)
 			shadowMapShader->SetMat4("u_ShadowTransforms[" + std::to_string(i) + "]", shadowTransforms[i]);
@@ -895,11 +895,11 @@ namespace Vortex {
 
 		uint32_t spotLightIndex = lightSourceComponent.Source->GetSpotLightIndex();
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
 
-		SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SpotLightShadowMap");
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SpotLightShadowMap");
 		shadowMapShader->Enable();
 
 		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
@@ -1029,7 +1029,7 @@ namespace Vortex {
 		}
 
 		bool horizontal = true;
-		SharedRef<Shader> blurShader = s_Data.ShaderLibrary.Get("Blur");
+		SharedReference<Shader> blurShader = s_Data.ShaderLibrary.Get("Blur");
 		blurShader->Enable();
 		blurShader->SetInt("u_Texture", 5);
 
@@ -1047,7 +1047,7 @@ namespace Vortex {
 		s_Data.BlurFramebuffer->Unbind();
 		RenderCommand::Clear();
 
-		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary.Get("BloomFinalComposite");
+		SharedReference<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary.Get("BloomFinalComposite");
 		bloomFinalCompositeShader->Enable();
 
 		sceneFramebuffer->BindColorTexture(0);
@@ -1246,7 +1246,7 @@ namespace Vortex {
 		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
 	}
 
-	const ShaderLibrary& Renderer::GetShaderLibrary()
+	ShaderLibrary& Renderer::GetShaderLibrary()
 	{
 		return s_Data.ShaderLibrary;
 	}

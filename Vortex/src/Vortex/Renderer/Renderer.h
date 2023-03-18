@@ -66,8 +66,8 @@ namespace Vortex {
 		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
-		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
-		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
+		static void Submit(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray);
+		static void DrawIndexed(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
@@ -138,7 +138,7 @@ namespace Vortex {
 		static bool IsFlagSet(RenderFlag flag);
 		static void ClearFlags();
 
-		static const ShaderLibrary& GetShaderLibrary();
+		static ShaderLibrary& GetShaderLibrary();
 
 	private:
 		// Helpers
