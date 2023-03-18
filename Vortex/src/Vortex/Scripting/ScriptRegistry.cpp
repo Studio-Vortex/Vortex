@@ -623,25 +623,19 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			contextScene->SubmitToPostUpdateQueue([=]()
-			{
-				contextScene->DestroyEntity(entity, excludeChildren);
-			});
+			contextScene->SubmitToDestroyEntity(entity, excludeChildren);
 		}
 
 		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
 
-			contextScene->SubmitToPostUpdateQueue([=]()
-			{
-				Scene::QueueFreeData queueFreeData;
-				queueFreeData.EntityUUID = entityUUID;
-				queueFreeData.ExcludeChildren = excludeChildren;
-				queueFreeData.WaitTime = waitTime;
+			Scene::QueueFreeData queueFreeData;
+			queueFreeData.EntityUUID = entityUUID;
+			queueFreeData.ExcludeChildren = excludeChildren;
+			queueFreeData.WaitTime = waitTime;
 
-				contextScene->DestroyEntity(queueFreeData);
-			});
+			contextScene->SubmitToDestroyEntity(queueFreeData);
 		}
 
 		void Entity_SetActive(UUID entityUUID, bool isActive)

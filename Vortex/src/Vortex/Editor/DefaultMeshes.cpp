@@ -19,6 +19,8 @@ namespace Vortex {
 			"Resources/Default/Meshes/Torus.fbx",
 		};
 
+		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+
 		for (const auto& sourcePath : sourcePaths)
 		{
 			MeshImportOptions importOptions = MeshImportOptions();
@@ -31,7 +33,11 @@ namespace Vortex {
 			SharedReference<StaticMesh> staticMesh = StaticMesh::Create(sourcePath, TransformComponent(), importOptions);
 			// Should we generate a handle here?
 			staticMesh->Handle = AssetHandle();
-			Project::GetEditorAssetManager()->AddMemoryOnlyAsset(staticMesh);
+
+			editorAssetManager->AddMemoryOnlyAsset(staticMesh);
+			AssetMetadata& metadata = editorAssetManager->GetMutableMetadata(staticMesh->Handle);
+			metadata.Filepath = sourcePath;
+
 			DefaultStaticMeshes.push_back(staticMesh->Handle);
 		}
 	}

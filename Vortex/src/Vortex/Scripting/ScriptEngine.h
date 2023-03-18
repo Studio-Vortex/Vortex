@@ -43,7 +43,9 @@ namespace Vortex {
 		MonoClassField* ClassField = nullptr;
 	};
 
-	struct VORTEX_API ScriptFieldInstance
+#define VX_SCRIPT_FIELD_MAX_BITS 16
+
+	struct ScriptFieldInstance
 	{
 		ScriptField Field;
 
@@ -52,29 +54,35 @@ namespace Vortex {
 			memset(m_Buffer, 0, sizeof(m_Buffer));
 		}
 
-		template <typename T>
-		T GetValue()
+		template <typename TFieldType>
+		TFieldType GetValue()
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
-			return *(T*)m_Buffer;
+			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
+			return *(TFieldType*)m_Buffer;
 		}
 
-		template <typename T>
-		void SetValue(T value)
+		template <typename TFieldType>
+		const TFieldType& GetValue() const
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
-			memcpy(m_Buffer, &value, sizeof(T));
+			return (const TFieldType&)GetValue<TFieldType>();
+		}
+
+		template <typename TFieldType>
+		void SetValue(TFieldType value)
+		{
+			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
+			memcpy(m_Buffer, &value, sizeof(TFieldType));
 		}
 
 	private:
-		uint8_t m_Buffer[16];
+		uint8_t m_Buffer[VX_SCRIPT_FIELD_MAX_BITS];
 
 	private:
 		friend class ScriptEngine;
 		friend class ScriptInstance;
 	};
 
-	class VORTEX_API ScriptClass
+	class ScriptClass
 	{
 	public:
 		ScriptClass() = default;
@@ -121,24 +129,24 @@ namespace Vortex {
 		void InvokeOnDisabled();
 		void InvokeOnGui();
 
-		inline SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
+		VX_FORCE_INLINE SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
-		template <typename T>
-		T GetFieldValue(const std::string& fieldName)
+		template <typename TFieldType>
+		TFieldType GetFieldValue(const std::string& fieldName)
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
+			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
 
-			bool success = GetFieldValueInternal(fieldName, s_FieldValueBuffer);
-			if (!success)
-				return T();
+			const bool found = GetFieldValueInternal(fieldName, s_FieldValueBuffer);
+			if (!found)
+				return TFieldType();
 
-			return *(T*)s_FieldValueBuffer;
+			return *(TFieldType*)s_FieldValueBuffer;
 		}
 
-		template <typename T>
-		void SetFieldValue(const std::string& fieldName, T value)
+		template <typename TFieldType>
+		void SetFieldValue(const std::string& fieldName, TFieldType value)
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
+			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
 
 			SetFieldValueInternal(fieldName, &value);
 		}
@@ -174,7 +182,7 @@ namespace Vortex {
 
 		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
 
-		inline static char s_FieldValueBuffer[16];
+		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BITS];
 
 #ifdef VX_DEBUG
 		std::string m_DebugName = "";
@@ -241,7 +249,8 @@ namespace Vortex {
 
 		static SharedRef<ScriptClass> GetEntityClass(const std::string& name);
 		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
-		static ScriptFieldMap& GetScriptFieldMap(Entity entity);
+		static const ScriptFieldMap& GetScriptFieldMap(Entity entity);
+		static ScriptFieldMap& GetMutableScriptFieldMap(Entity entity);
 
 		static MonoObject* GetManagedInstance(UUID uuid);
 

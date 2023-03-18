@@ -4,9 +4,9 @@
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Editor/EditorCamera.h"
-#include "Vortex/Renderer/Framebuffer.h"
 
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <entt/entt.hpp>
@@ -14,8 +14,8 @@
 namespace Vortex {
 
 	class Entity;
-	class Mesh;
-	class StaticMesh;
+	class Framebuffer;
+	class EditorCamera;
 
 	class Scene : public Asset
 	{
@@ -35,11 +35,17 @@ namespace Vortex {
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
+
+		void SubmitToDestroyEntity(Entity entity, bool excludeChildren = false);
+		void SubmitToDestroyEntity(const QueueFreeData& queueFreeData);
+
+	private:
 		void DestroyEntity(Entity entity, bool excludeChildren = false);
-		void DestroyEntity(const QueueFreeData& data);
+		void DestroyEntity(const QueueFreeData& queueFreeData);
 
 		void UpdateQueueFreeTimers(TimeStep delta);
 
+	public:
 		void OnRuntimeStart(bool muteAudio = false);
 		void OnRuntimeStop();
 
@@ -175,7 +181,7 @@ namespace Vortex {
 
 		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
 		QueueFreeMap m_QueueFreeMap;
-		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
+		std::unordered_set<UUID> m_EntitiesToBeRemovedFromQueue;
 
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 		std::mutex m_PostUpdateQueueMutex;
@@ -194,6 +200,7 @@ namespace Vortex {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 		friend class ECSDebugPanel;
+		friend class EditorLayer;
 	};
 
 }

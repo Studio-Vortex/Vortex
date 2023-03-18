@@ -42,6 +42,7 @@ namespace Vortex {
 		const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		const AssetMetadata& GetMetadata(AssetHandle handle);
 		const AssetMetadata& GetMetadata(SharedReference<Asset> asset);
+		AssetMetadata& GetMutableMetadata(AssetHandle handle);
 
 		std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata);
 
@@ -95,6 +96,7 @@ namespace Vortex {
 
 		AssetRegistry m_AssetRegistry;
 
+		// used only to prevent crashing when closing the editor
 		std::filesystem::path m_ProjectAssetDirectory;
 		std::filesystem::path m_ProjectAssetRegistryPath;
 	};

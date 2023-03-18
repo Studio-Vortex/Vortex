@@ -993,7 +993,7 @@ namespace Vortex {
 
 				if (fields.size() > 0)
 				{
-					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+					const auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
 
 					out << YAML::Key << "ScriptFields" << YAML::Value;
 					out << YAML::BeginSeq;
@@ -1009,27 +1009,27 @@ namespace Vortex {
 						VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
 						out << YAML::Key << "Data" << YAML::Value;
 
-						ScriptFieldInstance& scriptField = entityFields.at(name);
-
+						const ScriptFieldInstance& scriptField = entityFields.at(name);
+						
 						switch (field.Type)
 						{
 							WRITE_SCRIPT_FIELD(Float, float)
-								WRITE_SCRIPT_FIELD(Double, double)
-								WRITE_SCRIPT_FIELD(Bool, bool)
-								WRITE_SCRIPT_FIELD(Char, int8_t)
-								WRITE_SCRIPT_FIELD(Short, int16_t)
-								WRITE_SCRIPT_FIELD(Int, int32_t)
-								WRITE_SCRIPT_FIELD(Long, int64_t)
-								WRITE_SCRIPT_FIELD(Byte, uint8_t)
-								WRITE_SCRIPT_FIELD(UShort, uint16_t)
-								WRITE_SCRIPT_FIELD(UInt, uint32_t)
-								WRITE_SCRIPT_FIELD(ULong, uint64_t)
-								WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
-								WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
-								WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
-								WRITE_SCRIPT_FIELD(Color3, Math::vec3)
-								WRITE_SCRIPT_FIELD(Color4, Math::vec4)
-								WRITE_SCRIPT_FIELD(Entity, UUID)
+							WRITE_SCRIPT_FIELD(Double, double)
+							WRITE_SCRIPT_FIELD(Bool, bool)
+							WRITE_SCRIPT_FIELD(Char, int8_t)
+							WRITE_SCRIPT_FIELD(Short, int16_t)
+							WRITE_SCRIPT_FIELD(Int, int32_t)
+							WRITE_SCRIPT_FIELD(Long, int64_t)
+							WRITE_SCRIPT_FIELD(Byte, uint8_t)
+							WRITE_SCRIPT_FIELD(UShort, uint16_t)
+							WRITE_SCRIPT_FIELD(UInt, uint32_t)
+							WRITE_SCRIPT_FIELD(ULong, uint64_t)
+							WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
+							WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
+							WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
+							WRITE_SCRIPT_FIELD(Color3, Math::vec3)
+							WRITE_SCRIPT_FIELD(Color4, Math::vec4)
+							WRITE_SCRIPT_FIELD(Entity, UUID)
 						}
 
 						out << YAML::EndMap; // ScriptFields
@@ -1258,7 +1258,6 @@ namespace Vortex {
 			if (spriteComponent)
 			{
 				auto& spriteRendererComponent = deserializedEntity.AddComponent<SpriteRendererComponent>();
-
 				spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 
 				if (spriteComponent["TextureHandle"])
@@ -1268,10 +1267,10 @@ namespace Vortex {
 					{
 						spriteRendererComponent.Texture = assetHandle;
 					}
-				}
 
-				if (spriteComponent["TextureScale"])
-					spriteRendererComponent.TextureUV = spriteComponent["TextureScale"].as<Math::vec2>();
+					if (spriteComponent["TextureScale"])
+						spriteRendererComponent.TextureUV = spriteComponent["TextureScale"].as<Math::vec2>();
+				}
 			}
 
 			auto circleComponent = entity["CircleRendererComponent"];
@@ -1631,7 +1630,7 @@ namespace Vortex {
 					if (entityClass)
 					{
 						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
+						auto& entityFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
 
 						for (auto scriptField : scriptFields)
 						{

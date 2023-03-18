@@ -606,7 +606,12 @@ namespace Vortex {
 		return s_Data->EntityClasses;
 	}
 
-	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	const ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		return GetMutableScriptFieldMap(entity);
+	}
+
+	ScriptFieldMap& ScriptEngine::GetMutableScriptFieldMap(Entity entity)
 	{
 		std::string name = entity.GetName();
 		VX_CORE_ASSERT(entity, "Entity was invalid!");

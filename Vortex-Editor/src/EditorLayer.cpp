@@ -2066,7 +2066,10 @@ namespace Vortex {
 			case KeyCode::Delete:
 			{
 				if (selectedEntity)
-					m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+				{
+					m_ActiveScene->DestroyEntity(selectedEntity);
+					m_SceneHierarchyPanel.DeselectEntity();
+				}
 
 				break;
 			}

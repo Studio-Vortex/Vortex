@@ -15,10 +15,10 @@ namespace Vortex {
 		void SetProjectContext(SharedReference<Project>& project) {}
 		void SetSceneContext(const SharedReference<Scene>& scene);
 
-		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
-		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
+		Entity& GetSelectedEntity();
 
-		inline void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
+		void SetSelectedEntity(Entity entity);
+		void DeselectEntity();
 
 		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
 		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }

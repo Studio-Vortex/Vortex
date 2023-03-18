@@ -4,24 +4,34 @@
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Project/Project.h"
-#include "Vortex/Audio/AudioEngine.h"
+
+#include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Audio/AudioListener.h"
+
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
+
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
+#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Font/Font.h"
+
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Prefab.h"
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Scene/ScriptableEntity.h"
+
 #include "Vortex/Scripting/ScriptEngine.h"
+
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
+
+#include "Vortex/Editor/EditorCamera.h"
 
 namespace Vortex {
 
@@ -121,8 +131,8 @@ namespace Vortex {
 						// If we copy a script component, we should probably copy all of the script field values as well...
 						if constexpr (std::is_same<TComponent, ScriptComponent>())
 						{
-							const auto& sourceScriptFieldMap = ScriptEngine::GetScriptFieldMap(src);
-							auto& destinationScriptFieldMap = ScriptEngine::GetScriptFieldMap(dst);
+							const auto& sourceScriptFieldMap = ScriptEngine::GetMutableScriptFieldMap(src);
+							auto& destinationScriptFieldMap = ScriptEngine::GetMutableScriptFieldMap(dst);
 
 							for (const auto& [name, field] : sourceScriptFieldMap)
 							{
@@ -188,11 +198,21 @@ namespace Vortex {
 		return entity;
 	}
 
+	void Scene::SubmitToDestroyEntity(Entity entity, bool excludeChildren)
+	{
+		SubmitToPostUpdateQueue([&, this]() { DestroyEntity(entity, excludeChildren); });
+	}
+
+	void Scene::SubmitToDestroyEntity(const QueueFreeData& queueFreeData)
+	{
+		SubmitToPostUpdateQueue([&, this]() { DestroyEntity(queueFreeData); });
+	}
+
 	void Scene::DestroyEntity(Entity entity, bool excludeChildren)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (entity.GetContextScene() != this || !entity)
+		if (!entity || entity.GetContextScene() != this)
 			return;
 
 		if (m_IsRunning)
@@ -241,27 +261,27 @@ namespace Vortex {
 		SortEntities();
 	}
 
-	void Scene::DestroyEntity(const QueueFreeData& data)
+	void Scene::DestroyEntity(const QueueFreeData& queueFreeData)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(!m_QueueFreeMap.contains(data.EntityUUID), "Entity was already submitted to be destroyed!");
-		VX_CORE_ASSERT(m_EntityMap.contains(data.EntityUUID), "Entity was not found in Scene Entity Map!");
+		VX_CORE_ASSERT(!m_QueueFreeMap.contains(queueFreeData.EntityUUID), "Entity was already submitted to be destroyed!");
+		VX_CORE_ASSERT(m_EntityMap.contains(queueFreeData.EntityUUID), "Entity was not found in Scene Entity Map!");
 
-		const bool invalidTimer = data.WaitTime <= 0.0f;
+		const bool invalidTimer = queueFreeData.WaitTime <= 0.0f;
 
 		if (invalidTimer)
 		{
-			Entity entity = m_EntityMap[data.EntityUUID];
-			DestroyEntity(entity, data.ExcludeChildren);
+			Entity entity = m_EntityMap[queueFreeData.EntityUUID];
+			DestroyEntity(entity, queueFreeData.ExcludeChildren);
 			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with a wait time of 0, Use the regular method instead!");
 			return;
 		}
 
-		if (m_QueueFreeMap.contains(data.EntityUUID))
+		if (m_QueueFreeMap.contains(queueFreeData.EntityUUID))
 			return;
 
-		m_QueueFreeMap[data.EntityUUID] = data;
+		m_QueueFreeMap[queueFreeData.EntityUUID] = queueFreeData;
 	}
 
 	void Scene::UpdateQueueFreeTimers(TimeStep delta)
@@ -275,7 +295,8 @@ namespace Vortex {
 
 			if (queueFreeData.WaitTime <= 0.0f)
 			{
-				m_EntitiesToBeRemovedFromQueue.push_back(uuid);
+				VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity with UUID was already submitted to queue!");
+				m_EntitiesToBeRemovedFromQueue.insert(uuid);
 			}
 		}
 

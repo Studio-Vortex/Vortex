@@ -32,7 +32,7 @@ namespace Vortex {
 		for (const auto& [handle, metadata] : editorAssetManager->GetAssetRegistry())
 		{
 			std::string filepath = metadata.Filepath.string();
-			std::string typeAsString = Asset::GetAssetNameFromType(metadata.Type);
+			std::string typeAsString = Utils::StringFromAssetType(metadata.Type);
 			std::string handleAsString = std::to_string(metadata.Handle);
 
 			const bool matchingSearch = m_AssetSearchTextFilter.PassFilter(filepath.c_str())

@@ -228,6 +228,14 @@ namespace Vortex {
 		return GetMetadata(asset->Handle);
 	}
 
+	AssetMetadata& EditorAssetManager::GetMutableMetadata(AssetHandle handle)
+	{
+		if (m_AssetRegistry.Contains(handle))
+			return m_AssetRegistry[handle];
+
+		return s_NullMetadata;
+	}
+
 	std::filesystem::path EditorAssetManager::GetFileSystemPath(const AssetMetadata& metadata)
 	{
 		return m_ProjectAssetDirectory / metadata.Filepath;
@@ -290,7 +298,7 @@ namespace Vortex {
 		{
 			std::string filepath = entry["Filepath"].as<std::string>();
 			AssetHandle handle = entry["Handle"].as<uint64_t>();
-			AssetType type = Asset::GetAssetTypeFromString(entry["Type"].as<std::string>());
+			AssetType type = Utils::AssetTypeFromString(entry["Type"].as<std::string>());
 
 			if (type == AssetType::None)
 				continue;
@@ -431,14 +439,18 @@ namespace Vortex {
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::BeginSeq;
+		
 		for (const auto& [handle, entry] : sortedMap)
 		{
 			out << YAML::BeginMap;
+
 			VX_SERIALIZE_PROPERTY(Handle, handle, out);
 			VX_SERIALIZE_PROPERTY(Filepath, entry.Filepath, out);
-			VX_SERIALIZE_PROPERTY(Type, Asset::GetAssetNameFromType(entry.Type), out);
+			VX_SERIALIZE_PROPERTY(Type, Utils::StringFromAssetType(entry.Type), out);
+			
 			out << YAML::EndMap;
 		}
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 

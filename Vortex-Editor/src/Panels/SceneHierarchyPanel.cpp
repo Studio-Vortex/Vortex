@@ -26,14 +26,14 @@ namespace Vortex {
 			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
 
 			// Search Bar + Filtering
-			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
-			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search...", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
+			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 2.0f);
+			const bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search...", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
 			if (isSearching)
 				m_EntitySearchInputTextFilter.Build();
 
 			Gui::SameLine();
 
-			if (Gui::Button(" + "))
+			if (Gui::Button((const char*)VX_ICON_PLUS))
 				Gui::OpenPopup("CreateEntity");
 
 			if (Gui::BeginPopup("CreateEntity"))
@@ -50,20 +50,20 @@ namespace Vortex {
 			{
 				if (m_EntityShouldBeDestroyed && m_SelectedEntity)
 				{
-					Entity entityToBeDestroyed = m_SelectedEntity;
+					Entity entity = m_SelectedEntity;
 
-					m_SelectedEntity = {};
-					m_EntityShouldBeDestroyed = false;
+					DeselectEntity();
 
+					// TODO is this actually needed?
 					// If we are hovering on the entity we must reset it otherwise entt will complain
-					if (hoveredEntity == entityToBeDestroyed)
-						hoveredEntity = Entity{};
+					/*if (hoveredEntity == entity)
+						hoveredEntity = Entity{};*/
 
-					m_ContextScene->DestroyEntity(entityToBeDestroyed);
+					m_ContextScene->DestroyEntity(entity);
 				}
 
 				uint32_t searchDepth = 0;
-				const bool entitySearchBarInUse = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
+				const bool isSearching = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
 				std::vector<UUID> rootEntitiesInHierarchy;
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
@@ -88,7 +88,7 @@ namespace Vortex {
 					DrawEntityNode(entity, editorCamera);
 				});
 
-				if (entitySearchBarInUse)
+				if (isSearching)
 				{
 					for (const auto& rootEntity : rootEntitiesInHierarchy)
 					{
@@ -113,9 +113,7 @@ namespace Vortex {
 				// Left click anywhere on the panel to deselect entity
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 				{
-					m_SelectedEntity = {};
-					m_EntityShouldBeRenamed = false;
-					m_EntityShouldBeDestroyed = false;
+					DeselectEntity();
 				}
 
 				// Right-click on blank space in scene hierarchy panel
@@ -171,9 +169,7 @@ namespace Vortex {
     void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
     {
 		m_ContextScene = scene;
-		m_SelectedEntity = {};
-		m_EntityShouldBeRenamed = false;
-		m_EntityShouldBeDestroyed = false;
+		DeselectEntity();
 
 		// Clear all search bars
 		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
@@ -185,6 +181,23 @@ namespace Vortex {
 		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 		m_ComponentSearchInputTextFilter.Build();
     }
+
+	Entity& SceneHierarchyPanel::GetSelectedEntity()
+	{
+		return m_SelectedEntity;
+	}
+
+	void SceneHierarchyPanel::SetSelectedEntity(Entity entity)
+	{
+		m_SelectedEntity = entity;
+	}
+
+	void SceneHierarchyPanel::DeselectEntity()
+	{
+		m_SelectedEntity = {};
+		m_EntityShouldBeRenamed = false;
+		m_EntityShouldBeDestroyed = false;
+	}
 
 	inline static void LoadDefaultMesh(const std::string& entityName, DefaultMeshes::StaticMeshes defaultMesh, Entity& entity, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
@@ -202,7 +215,9 @@ namespace Vortex {
 			m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
 			m_SelectedEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
 		}
-
+		
+		Gui::Text((const char*)VX_ICON_CUBE);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
@@ -243,6 +258,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_SPINNER);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Create 2D"))
 		{
 			if (Gui::MenuItem("Quad"))
@@ -268,6 +285,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Camera"))
 		{
 			if (Gui::MenuItem("Perspective"))
@@ -288,6 +307,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Light"))
 		{
 			if (Gui::MenuItem("Directional"))
@@ -320,6 +341,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_CALCULATOR);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Physics"))
 		{
 			if (Gui::MenuItem("Box Collider"))
@@ -383,6 +406,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_VOLUME_UP);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Audio"))
 		{
 			if (Gui::MenuItem("Source Entity"))
@@ -402,6 +427,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_FONT);
+		Gui::SameLine();
 		if (Gui::BeginMenu("UI"))
 		{
 			if (Gui::MenuItem("Text"))
@@ -414,6 +441,8 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
+		Gui::Text((const char*)VX_ICON_BOMB);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Effects"))
 		{
 			if (Gui::MenuItem("Particles"))
@@ -475,6 +504,7 @@ namespace Vortex {
 					Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
 					Gui::SameLine();
 					Gui::AlignTextToFramePadding();
+
 					DisplayComponentMenuItem<CameraComponent>("Camera");
 
 					Gui::Text((const char*)VX_ICON_SKYATLAS);
@@ -884,9 +914,7 @@ namespace Vortex {
 		// Destroy the entity if requested
 		if (m_EntityShouldBeDestroyed && m_SelectedEntity == entity)
 		{
-			m_SelectedEntity = {};
-			m_EntityShouldBeDestroyed = false;
-
+			DeselectEntity();
 			m_ContextScene->DestroyEntity(entity);
 		}
 	}
@@ -2395,7 +2423,7 @@ namespace Vortex {
 					SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto& fields = entityClass->GetFields();
 
-					auto& entityClassFields = ScriptEngine::GetScriptFieldMap(entity);
+					auto& entityClassFields = ScriptEngine::GetMutableScriptFieldMap(entity);
 					for (const auto& [name, field] : fields)
 					{
 						auto it = entityClassFields.find(name);
