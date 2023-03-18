@@ -62,7 +62,7 @@ namespace Vortex {
 			}
 		}
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		m_EditorCamera = new EditorCamera(
@@ -104,7 +104,7 @@ namespace Vortex {
 		Renderer::RenderToDepthMap(m_ActiveScene);
 		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
@@ -386,7 +386,7 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (Gui::BeginMenuBar())
@@ -964,7 +964,7 @@ namespace Vortex {
 
 	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode)
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		// Render Gizmos
@@ -1162,7 +1162,7 @@ namespace Vortex {
 
 	void EditorLayer::UI_CentralToolbar()
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -1271,7 +1271,7 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -1443,7 +1443,7 @@ namespace Vortex {
 
 	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		Math::mat4 cameraView;
@@ -1962,7 +1962,7 @@ namespace Vortex {
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
-					SharedRef<Project> activeProject = Project::GetActive();
+					SharedReference<Project> activeProject = Project::GetActive();
 					ProjectProperties& projectProps = activeProject->GetProperties();
 					projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
 				}
@@ -2147,7 +2147,7 @@ namespace Vortex {
 		auto relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
 		OpenScene(relativePath);
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
 		m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
 		m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
@@ -2277,7 +2277,7 @@ namespace Vortex {
 	{
 		StopAudioSources();
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties projectProps = activeProject->GetProperties();
 
 		if (m_SceneState == SceneState::Simulate)
@@ -2325,7 +2325,7 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (m_SceneState == SceneState::Play)
@@ -2402,7 +2402,7 @@ namespace Vortex {
 
 	void EditorLayer::ResumeAudioSources()
 	{
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties projectProps = activeProject->GetProperties();
 		
 		if (projectProps.EditorProps.MuteAudioSources)

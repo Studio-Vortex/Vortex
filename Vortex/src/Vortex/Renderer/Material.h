@@ -42,7 +42,7 @@ namespace Vortex {
 		uint32_t Flags = 0;
 	};
 
-	class VORTEX_API Material
+	class VORTEX_API Material : public Asset
 	{
 	public:
 		Material() = default;
@@ -111,9 +111,11 @@ namespace Vortex {
 		void RemoveFlags(MaterialFlag* flags, uint32_t count);
 		void ClearFlags();
 
-		static void Copy(SharedRef<Material> dest, const SharedRef<Material>& src);
+		static void Copy(SharedReference<Material>& dest, const SharedReference<Material>& src);
 
-		static SharedRef<Material> Create(SharedReference<Shader>& shader, const MaterialProperties& props);
+		ASSET_CLASS_TYPE(MaterialAsset)
+
+		static SharedReference<Material> Create(SharedReference<Shader>& shader, const MaterialProperties& props);
 
 	protected:
 		MaterialProperties m_Properties;

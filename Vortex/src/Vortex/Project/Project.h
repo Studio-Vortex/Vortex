@@ -2,6 +2,8 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
@@ -111,14 +113,14 @@ namespace Vortex {
 		} GizmoProps;
 	};
 
-	class VORTEX_API Project
+	class VORTEX_API Project : public RefCounted
 	{
 	public:
 		inline ProjectProperties& GetProperties() { return m_Properties; }
 		inline const ProjectProperties& GetProperties() const { return m_Properties; }
 		inline const std::string& GetName() const { return m_Properties.General.Name; }
 
-		inline static SharedRef<Project> GetActive()
+		inline static SharedReference<Project> GetActive()
 		{
 			return s_ActiveProject;
 		}
@@ -157,14 +159,13 @@ namespace Vortex {
 		static SharedReference<EditorAssetManager> GetEditorAssetManager();
 		static SharedReference<RuntimeAssetManager> GetRuntimeAssetManager();
 
-		static SharedRef<Project> New();
-		static SharedRef<Project> Load(const std::filesystem::path& filepath);
-		static SharedRef<Project> LoadRuntime(const std::filesystem::path& filepath);
+		static SharedReference<Project> New();
+		static SharedReference<Project> Load(const std::filesystem::path& filepath);
+		static SharedReference<Project> LoadRuntime(const std::filesystem::path& filepath);
+		bool SaveToDisk();
 
 		static void SubmitSceneToBuild(const std::string& filepath);
 		static BuildIndexMap& GetScenesInBuild();
-
-		bool SaveToDisk();
 		
 	private:
 		bool OnSerialized();
@@ -176,7 +177,7 @@ namespace Vortex {
 		std::filesystem::path m_ProjectFilepath = "";
 
 		inline static SharedReference<IAssetManager> s_AssetManager = nullptr;
-		inline static SharedRef<Project> s_ActiveProject = nullptr;
+		inline static SharedReference<Project> s_ActiveProject = nullptr;
 	};
 
 }

@@ -2014,7 +2014,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetAlbedo(*albedo);
 					}
 				}
@@ -2027,7 +2027,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetAlbedo(*albedo);
 					}
@@ -2092,7 +2092,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetMetallic(metallic);
 					}
 				}
@@ -2105,7 +2105,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetMetallic(metallic);
 					}
@@ -2170,7 +2170,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetRoughness(roughness);
 					}
 				}
@@ -2183,7 +2183,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetRoughness(roughness);
 					}
@@ -2248,7 +2248,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetEmission(emission);
 					}
 				}
@@ -2261,7 +2261,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetEmission(emission);
 					}
@@ -2326,7 +2326,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetUV(*uv);
 					}
 				}
@@ -2339,7 +2339,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetUV(*uv);
 					}
@@ -2404,7 +2404,7 @@ namespace Vortex {
 					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
 					if (mesh)
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						auto& submesh = mesh->GetSubmesh();
 						submesh.GetMaterial()->SetOpacity(opacity);
 					}
 				}
@@ -2417,7 +2417,7 @@ namespace Vortex {
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
 					if (staticMesh)
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						auto& submeshes = staticMesh->GetSubmeshes();
 						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 						submeshes[submeshIndex].GetMaterial()->SetOpacity(opacity);
 					}

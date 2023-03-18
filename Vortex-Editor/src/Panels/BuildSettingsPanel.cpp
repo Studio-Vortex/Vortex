@@ -2,7 +2,7 @@
 
 namespace Vortex {
 
-	BuildSettingsPanel::BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& func)
+	BuildSettingsPanel::BuildSettingsPanel(SharedReference<Project>& project, const LaunchRuntimeFn& func)
 		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeFunc(func)
 	{
 		m_ProjectPath = Project::GetProjectFilepath();

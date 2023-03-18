@@ -10,12 +10,12 @@ namespace Vortex {
 		using LaunchRuntimeFn = std::function<void(const std::filesystem::path&)>;
 
 	public:
-		BuildSettingsPanel(const SharedRef<Project>& project, const LaunchRuntimeFn& func);
+		BuildSettingsPanel(SharedReference<Project>& project, const LaunchRuntimeFn& func);
 		~BuildSettingsPanel() = default;
 
 		void OnGuiRender();
-		void SetProjectContext(SharedRef<Project> project) {}
-		void SetSceneContext(const SharedReference<Scene>& scene) {}
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

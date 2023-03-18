@@ -12,7 +12,7 @@ namespace Vortex {
 		~SceneHierarchyPanel() = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
-		void SetProjectContext(SharedRef<Project> project) {}
+		void SetProjectContext(SharedReference<Project>& project) {}
 		void SetSceneContext(const SharedReference<Scene>& scene);
 
 		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }

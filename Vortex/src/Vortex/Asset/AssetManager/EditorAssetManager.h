@@ -78,8 +78,8 @@ namespace Vortex {
 			return asset;
 		}
 
-		bool OnSerialized();
-		bool OnDeserialized();
+		bool OnProjectSerialized();
+		bool OnProjectDeserialized();
 
 	private:
 		void LoadAssetRegistry();
@@ -94,6 +94,9 @@ namespace Vortex {
 		std::unordered_map<AssetHandle, SharedReference<Asset>> m_MemoryOnlyAssets;
 
 		AssetRegistry m_AssetRegistry;
+
+		std::filesystem::path m_ProjectAssetDirectory;
+		std::filesystem::path m_ProjectAssetRegistryPath;
 	};
 
 }

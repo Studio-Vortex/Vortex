@@ -33,7 +33,7 @@ namespace Vortex {
 
 	private:
 		static void RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, Scene* scene);
-		static void SetMaterialFlags(const SharedRef<Material>& material);
+		static void SetMaterialFlags(const SharedReference<Material>& material);
 		static void ResetAllMaterialFlags();
 	};
 

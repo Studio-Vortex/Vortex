@@ -28,7 +28,7 @@ namespace Vortex {
 	{
 		Scene* scene = renderPacket.Scene;
 		Camera activeCamera = *renderPacket.MainCamera;
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		// Render 2D
@@ -421,7 +421,7 @@ namespace Vortex {
 
 						auto& submesh = mesh->GetSubmesh();
 
-						SharedRef<Material> material = submesh.GetMaterial();
+						SharedReference<Material> material = submesh.GetMaterial();
 						if (!material)
 							continue;
 
@@ -479,7 +479,7 @@ namespace Vortex {
 						// render each submesh
 						for (auto& submesh : submeshes)
 						{
-							SharedRef<Material> material = submesh.GetMaterial();
+							SharedReference<Material> material = submesh.GetMaterial();
 
 							if (!material)
 								continue;
@@ -539,7 +539,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::SetMaterialFlags(const SharedRef<Material>& material)
+	void SceneRenderer::SetMaterialFlags(const SharedReference<Material>& material)
 	{
 		if (material->HasFlag(MaterialFlag::NoDepthTest))
 		{

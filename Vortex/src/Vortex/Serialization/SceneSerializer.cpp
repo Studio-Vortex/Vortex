@@ -231,7 +231,7 @@ namespace Vortex {
 			return CombineMode::Average;
 		}
 
-		static void SerializeSubmeshMaterial(SharedRef<Material> material, YAML::Emitter& out)
+		static void SerializeSubmeshMaterial(const SharedReference<Material>& material, YAML::Emitter& out)
 		{
 			AssetHandle albedoMapHandle = material->GetAlbedoMap();
 			AssetHandle normalMapHandle = material->GetNormalMap();
@@ -272,7 +272,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
 		}
 
-		static void LoadSubmeshMaterial(SharedRef<Material>& material, const YAML::Node& materialData)
+		static void LoadSubmeshMaterial(SharedReference<Material>& material, const YAML::Node& materialData)
 		{
 			TextureProperties imageProps;
 
@@ -582,7 +582,7 @@ namespace Vortex {
 
 						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-						SharedRef<Material> material = submesh.GetMaterial();
+						SharedReference<Material> material = submesh.GetMaterial();
 
 						Utils::SerializeSubmeshMaterial(material, out);
 
@@ -630,7 +630,7 @@ namespace Vortex {
 
 						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-						SharedRef<Material> material = submesh.GetMaterial();
+						SharedReference<Material> material = submesh.GetMaterial();
 
 						Utils::SerializeSubmeshMaterial(material, out);
 
@@ -1247,7 +1247,7 @@ namespace Vortex {
 					for (auto submeshData : submeshesData)
 					{
 						StaticSubmesh submesh = staticMeshRendererComponent.StaticMesh->GetSubmesh(i++);
-						SharedRef<Material> material = submesh.GetMaterial();
+						SharedReference<Material> material = submesh.GetMaterial();
 
 						Utils::LoadSubmeshMaterial(material, submeshData);
 					}

@@ -462,7 +462,7 @@ namespace Vortex {
 
 		sceneDescription.gravity = ToPhysXVector(s_PhysicsSceneGravity);
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		sceneDescription.broadPhaseType = Utils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);

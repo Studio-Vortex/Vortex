@@ -256,7 +256,7 @@ namespace Vortex {
 	{
 		s_Data = new ScriptEngineData();
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 		s_Data->DebuggingEnabled = projectProps.ScriptingProps.EnableMonoDebugging;
 
@@ -301,7 +301,7 @@ namespace Vortex {
 	{
 		mono_set_assemblies_path("mono/lib");
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (s_Data->DebuggingEnabled)

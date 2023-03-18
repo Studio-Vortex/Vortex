@@ -11,7 +11,7 @@ namespace Vortex {
 		~ContentBrowserPanel() = default;
 		
 		void OnGuiRender();
-		void SetProjectContext(SharedRef<Project> project) {}
+		void SetProjectContext(SharedReference<Project> project) {}
 		void SetSceneContext(const SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 

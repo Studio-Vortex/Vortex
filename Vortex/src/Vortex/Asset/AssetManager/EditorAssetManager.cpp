@@ -13,6 +13,7 @@ namespace Vortex {
 	static AssetMetadata s_NullMetadata;
 
 	EditorAssetManager::EditorAssetManager()
+		: m_ProjectAssetDirectory(Project::GetAssetDirectory()), m_ProjectAssetRegistryPath(Project::GetAssetRegistryPath())
 	{
 		AssetImporter::Init();
 	}
@@ -22,14 +23,14 @@ namespace Vortex {
 		WriteToRegistryFile();
 	}
 
-	bool EditorAssetManager::OnSerialized()
+	bool EditorAssetManager::OnProjectSerialized()
 	{
 		WriteToRegistryFile();
 
 		return true;
 	}
 
-	bool EditorAssetManager::OnDeserialized()
+	bool EditorAssetManager::OnProjectDeserialized()
 	{
 		LoadAssetRegistry();
 		ReloadAssets();
@@ -141,7 +142,7 @@ namespace Vortex {
 	std::filesystem::path EditorAssetManager::GetRelativePath(const std::filesystem::path& filepath)
 	{
 		std::filesystem::path relativePath = filepath.lexically_normal();
-		std::filesystem::path assetDirectory = Project::GetAssetDirectory();
+		std::filesystem::path assetDirectory = m_ProjectAssetDirectory;
 		std::string temp = filepath.string();
 
 		if (temp.find(assetDirectory.string()) == std::string::npos)
@@ -229,7 +230,7 @@ namespace Vortex {
 
 	std::filesystem::path EditorAssetManager::GetFileSystemPath(const AssetMetadata& metadata)
 	{
-		return Project::GetAssetDirectory() / metadata.Filepath;
+		return m_ProjectAssetDirectory / metadata.Filepath;
 	}
 
 	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
@@ -267,11 +268,10 @@ namespace Vortex {
 	{
 		VX_CORE_INFO("[Asset Manager] Loading Asset Registry");
 
-		const auto& assetRegistryPath = Project::GetAssetRegistryPath();
-		if (!FileSystem::Exists(assetRegistryPath))
+		if (!FileSystem::Exists(m_ProjectAssetRegistryPath))
 			return;
 
-		std::ifstream stream(assetRegistryPath);
+		std::ifstream stream(m_ProjectAssetRegistryPath);
 		VX_CORE_ASSERT(stream.is_open(), "Failed to open Asset Registry File!");
 		std::stringstream ss;
 		ss << stream.rdbuf();
@@ -313,7 +313,7 @@ namespace Vortex {
 				std::string mostLikelyCandidate;
 				uint32_t bestScore = 0;
 
-				for (const auto& pathEntry : std::filesystem::recursive_directory_iterator(Project::GetAssetDirectory()))
+				for (const auto& pathEntry : std::filesystem::recursive_directory_iterator(m_ProjectAssetDirectory))
 				{
 					const std::filesystem::path& path = pathEntry.path();
 
@@ -358,7 +358,7 @@ namespace Vortex {
 				}
 
 				std::replace(mostLikelyCandidate.begin(), mostLikelyCandidate.end(), '\\', '/');
-				metadata.Filepath = FileSystem::Relative(mostLikelyCandidate, Project::GetAssetDirectory());
+				metadata.Filepath = FileSystem::Relative(mostLikelyCandidate, m_ProjectAssetDirectory);
 				VX_CORE_WARN("[Asset Manager] Found most likely match '{}'", metadata.Filepath);
 			}
 
@@ -396,7 +396,7 @@ namespace Vortex {
 
 	void EditorAssetManager::ReloadAssets()
 	{
-		ProcessDirectory(Project::GetAssetDirectory());
+		ProcessDirectory(m_ProjectAssetDirectory);
 		WriteToRegistryFile();
 	}
 
@@ -442,8 +442,7 @@ namespace Vortex {
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		const std::string& assetRegistryPath = Project::GetAssetRegistryPath().string();
-		std::ofstream fout(assetRegistryPath);
+		std::ofstream fout(m_ProjectAssetRegistryPath);
 
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open asset registry file!");
 

@@ -11,8 +11,8 @@ namespace Vortex {
 		~PerformancePanel() = default;
 
 		void OnGuiRender(size_t entityCount);
-		void SetProjectContext(SharedRef<Project> project) {}
-		void SetSceneContext(const SharedReference<Scene>& scene) {}
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

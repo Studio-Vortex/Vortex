@@ -8,7 +8,7 @@ namespace Vortex {
 
 	namespace Utils {
 
-		static SharedReference<Texture2D> GetMaterialTexture(const SharedRef<Material>& material, uint32_t index)
+		static SharedReference<Texture2D> GetMaterialTexture(const SharedReference<Material>& material, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
@@ -28,7 +28,7 @@ namespace Vortex {
 			return AssetManager::GetAsset<Texture2D>(handle);
 		}
 
-		static void SetMaterialTexture(SharedRef<Material> material, const SharedReference<Texture2D>& texture, uint32_t index)
+		static void SetMaterialTexture(SharedReference<Material>& material, const SharedReference<Texture2D>& texture, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
@@ -44,7 +44,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialFlags(const SharedRef<Material>& material)
+		static void RenderMaterialFlags(SharedReference<Material>& material)
 		{
 			static const char* displayNames[] = { "No Depth Test" };
 			static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
@@ -59,7 +59,7 @@ namespace Vortex {
 			}
 		}
 
-		static void RenderMaterialProperties(const SharedRef<Material>& material)
+		static void RenderMaterialProperties(SharedReference<Material>& material)
 		{
 			Math::vec2 uv = material->GetUV();
 			if (UI::Property("UV", uv, 0.05f))
@@ -89,8 +89,8 @@ namespace Vortex {
 			return -1;
 		}
 
-		using MaterialParameterCallbackFunc = const std::function<void(const SharedRef<Material>&, uint32_t)>&;
-		static void RenderMaterialTexturesAndProperties(const SharedRef<Material>& material, MaterialParameterCallbackFunc parameterCallback)
+		using MaterialParameterCallbackFunc = const std::function<void(SharedReference<Material>&, uint32_t)>&;
+		static void RenderMaterialTexturesAndProperties(SharedReference<Material>& material, MaterialParameterCallbackFunc parameterCallback)
 		{
 			static const char* displayNames[] = {
 				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
@@ -299,7 +299,7 @@ namespace Vortex {
 
 			const auto& submesh = mesh->GetSubmesh();
 
-			SharedRef<Material> material = submesh.GetMaterial();
+			SharedReference<Material> material = submesh.GetMaterial();
 
 			if (!material)
 			{
@@ -352,7 +352,7 @@ namespace Vortex {
 
 			for (const auto& submesh : submeshes)
 			{
-				SharedRef<Material> material = submesh.GetMaterial();
+				SharedReference<Material> material = submesh.GetMaterial();
 
 				if (!material)
 				{
@@ -385,7 +385,7 @@ namespace Vortex {
 		}
 	}
 
-	void MaterialEditorPanel::ParameterCallback(SharedRef<Material> material, uint32_t materialIndex)
+	void MaterialEditorPanel::ParameterCallback(SharedReference<Material>& material, uint32_t materialIndex)
 	{
 		switch (materialIndex)
 		{

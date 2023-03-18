@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	ProjectSettingsPanel::ProjectSettingsPanel(SharedRef<Project> project)
+	ProjectSettingsPanel::ProjectSettingsPanel(SharedReference<Project>& project)
 		: m_ProjectProperties(project->GetProperties())
 	{
 		m_CallbackPanels = std::vector<std::function<void()>>
@@ -60,7 +60,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-    void ProjectSettingsPanel::SetProjectContext(SharedRef<Project> project)
+    void ProjectSettingsPanel::SetProjectContext(SharedReference<Project>& project)
     {
 		m_ProjectProperties = project->GetProperties();
     }

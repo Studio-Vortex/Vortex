@@ -21,7 +21,7 @@ namespace Vortex {
 		return s_AssetManager.As<RuntimeAssetManager>();
 	}
 
-    SharedRef<Project> Project::New()
+    SharedReference<Project> Project::New()
 	{
 		if (s_ActiveProject)
 		{
@@ -29,11 +29,11 @@ namespace Vortex {
 			s_AssetManager = nullptr;
 		}
 
-		s_ActiveProject = CreateShared<Project>();
+		s_ActiveProject = SharedReference<Project>::Create();
 		return s_ActiveProject;
 	}
 
-	SharedRef<Project> Project::Load(const std::filesystem::path& filepath)
+	SharedReference<Project> Project::Load(const std::filesystem::path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -47,14 +47,12 @@ namespace Vortex {
 			s_AssetManager = SharedReference<EditorAssetManager>::Create();
 
 			s_ActiveProject->OnDeserialized();
-
-			return s_ActiveProject;
 		}
 		
 		return s_ActiveProject;
 	}
 
-	SharedRef<Project> Project::LoadRuntime(const std::filesystem::path& filepath)
+	SharedReference<Project> Project::LoadRuntime(const std::filesystem::path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -67,6 +65,11 @@ namespace Vortex {
 		}*/
 
 		return s_ActiveProject;
+	}
+
+	bool Project::SaveToDisk()
+	{
+		return OnSerialized();
 	}
 
     void Project::SubmitSceneToBuild(const std::string& filepath)
@@ -86,11 +89,6 @@ namespace Vortex {
         return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
     }
 
-	bool Project::SaveToDisk()
-	{
-		return OnSerialized();
-	}
-
 	bool Project::OnSerialized()
 	{
 		VX_PROFILE_FUNCTION();
@@ -107,7 +105,7 @@ namespace Vortex {
 		s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(projectPath);
 		s_ActiveProject->m_ProjectFilepath = projectPath;
 
-		return s_AssetManager.As<EditorAssetManager>()->OnSerialized();
+		return s_AssetManager.As<EditorAssetManager>()->OnProjectSerialized();
 	}
 
 	bool Project::OnDeserialized()
@@ -116,7 +114,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
-		return s_AssetManager.As<EditorAssetManager>()->OnDeserialized();
+		return s_AssetManager.As<EditorAssetManager>()->OnProjectDeserialized();
 	}
 
 }

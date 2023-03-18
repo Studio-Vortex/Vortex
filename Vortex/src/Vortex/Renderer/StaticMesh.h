@@ -25,7 +25,7 @@ namespace Vortex {
 	{
 	public:
 		StaticSubmesh() = default;
-		StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material);
+		StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, SharedReference<Material>& material);
 		StaticSubmesh(bool skybox = true);
 		~StaticSubmesh() = default;
 
@@ -34,10 +34,11 @@ namespace Vortex {
 		void Render();
 		void RenderToSkylightShadowMap();
 
-		const SharedReference<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const SharedReference<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
-		const SharedRef<Material>& GetMaterial() const { return m_Material; }
-		void SetMaterial(const SharedRef<Material>& material);
+		VX_FORCE_INLINE const SharedReference<VertexArray>& GetVertexArray() const { return m_VertexArray; }
+		VX_FORCE_INLINE const SharedReference<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
+		VX_FORCE_INLINE const SharedReference<Material>& GetMaterial() const { return m_Material; }
+		VX_FORCE_INLINE SharedReference<Material>& GetMaterial() { return m_Material; }
+		void SetMaterial(SharedReference<Material>& material);
 		
 		const std::vector<StaticVertex>& GetVertices() const { return m_Vertices; }
 		std::vector<StaticVertex>& GetVertices() { return m_Vertices; }
@@ -54,7 +55,7 @@ namespace Vortex {
 		std::string m_MeshName;
 		std::vector<StaticVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		SharedRef<Material> m_Material = nullptr;
+		SharedReference<Material> m_Material = nullptr;
 
 		SharedReference<VertexArray> m_VertexArray = nullptr;
 		SharedReference<VertexBuffer> m_VertexBuffer = nullptr;

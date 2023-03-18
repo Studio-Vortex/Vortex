@@ -42,7 +42,7 @@ namespace Vortex {
 		}
 	};
 
-	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material)
+	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, SharedReference<Material>& material)
 		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
 	{
 		CreateAndUploadMesh();
@@ -105,7 +105,7 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void StaticSubmesh::SetMaterial(const SharedRef<Material>& material)
+	void StaticSubmesh::SetMaterial(SharedReference<Material>& material)
 	{
 		m_Material = material;
 	}
@@ -220,7 +220,7 @@ namespace Vortex {
 	{
 		std::vector<StaticVertex> vertices;
 		std::vector<uint32_t> indices;
-		SharedRef<Material> material = nullptr;
+		SharedReference<Material> material = nullptr;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -371,7 +371,7 @@ namespace Vortex {
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
 				StaticVertex& vertex = vertices[i];
-				SharedRef<Material> material = submesh.GetMaterial();
+				SharedReference<Material> material = submesh.GetMaterial();
 
 				isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
 				if (!isDirty)

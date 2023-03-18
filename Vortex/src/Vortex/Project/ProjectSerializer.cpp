@@ -63,7 +63,7 @@ namespace Vortex {
 
 	}
 
-	ProjectSerializer::ProjectSerializer(const SharedRef<Project>& project)
+	ProjectSerializer::ProjectSerializer(const SharedReference<Project>& project)
 		: m_Project(project) { }
 
 	bool ProjectSerializer::Serialize(const std::filesystem::path& path)

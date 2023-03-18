@@ -114,7 +114,7 @@ namespace Vortex {
 			static const char* cullModes[4] = { "None", "Front", "Back", "Front And Back" };
 			int32_t currentCullMode = (int32_t)Renderer::GetCullMode();
 
-			SharedRef<Project> activeProject = Project::GetActive();
+			SharedReference<Project> activeProject = Project::GetActive();
 			ProjectProperties& projectProps = activeProject->GetProperties();
 
 			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYCOUNT(cullModes), currentCullMode))
@@ -313,7 +313,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-    void SceneRendererPanel::SetSceneContext(const SharedReference<Scene>& scene)
+    void SceneRendererPanel::SetSceneContext(SharedReference<Scene>& scene)
     {
 		m_ContextScene = scene;
     }

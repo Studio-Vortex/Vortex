@@ -44,13 +44,13 @@ namespace Vortex {
 		}
 	};
 
-	Submesh::Submesh(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const SharedRef<Material>& material)
+	Submesh::Submesh(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, SharedReference<Material>& material)
 		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_Material(material)
 	{
 		CreateAndUploadMesh();
 	}
 
-	void Submesh::SetMaterial(const SharedRef<Material>& material)
+	void Submesh::SetMaterial(SharedReference<Material>& material)
 	{
 		m_Material = material;
 	}
@@ -162,7 +162,7 @@ namespace Vortex {
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
-		SharedRef<Material> material = nullptr;
+		SharedReference<Material> material = nullptr;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -364,7 +364,7 @@ namespace Vortex {
 		for (uint32_t i = 0; i < dataSize; i++)
 		{
 			Vertex& vertex = vertices[i];
-			SharedRef<Material> material = m_Submesh.GetMaterial();
+			SharedReference<Material> material = m_Submesh.GetMaterial();
 
 			isDirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
 			if (!isDirty)

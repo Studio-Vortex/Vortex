@@ -7,12 +7,12 @@ namespace Vortex {
 	class ProjectSettingsPanel
 	{
 	public:
-		ProjectSettingsPanel(SharedRef<Project> project);
+		ProjectSettingsPanel(SharedReference<Project>& project);
 		~ProjectSettingsPanel() = default;
 
 		void OnGuiRender();
-		void SetProjectContext(SharedRef<Project> project);
-		void SetSceneContext(const SharedReference<Scene>& scene) {}
+		void SetProjectContext(SharedReference<Project>& project);
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
