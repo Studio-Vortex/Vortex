@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Editor/ConsoleMessage.h"
-
-#include <imgui.h>
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
+
+	class Scene;
 
 	class ConsolePanel
 	{
@@ -12,7 +14,7 @@ namespace Vortex {
 		ConsolePanel();
 		~ConsolePanel();
 
-		void OnGuiRender();
+		void OnGuiRender(SharedReference<Scene>& contextScene);
 
 		bool& IsOpen() { return s_ShowPanel; }
 
@@ -20,11 +22,12 @@ namespace Vortex {
 		void ClearMessages();
 
 	private:
-		void RenderMenu(const ImVec2& size);
-		void RenderConsole(const ImVec2& size);
+		void RenderMenu(const Math::vec2& size);
+		void RenderConsole(const Math::vec2& size, SharedReference<Scene>& contextScene);
+
 		const char* GetMessageType(const ConsoleMessage& message) const;
-		const ImVec4& GetMessageColor(const ConsoleMessage& message) const;
-		ImVec4 GetToolbarButtonColor(const bool value) const;
+		const Math::vec4& GetMessageColor(const ConsoleMessage& message) const;
+		Math::vec4 GetToolbarButtonColor(const bool value) const;
 
 	private:
 		static void PushMessage(const ConsoleMessage& message);

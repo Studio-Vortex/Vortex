@@ -615,7 +615,6 @@ namespace Vortex {
 	{
 		std::string name = entity.GetName();
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
-		VX_CORE_ASSERT(s_Data->EntityScriptFields.contains(entity.GetUUID()), "Entity was not found in script field map!");
 
 		return s_Data->EntityScriptFields[entity.GetUUID()];
 	}

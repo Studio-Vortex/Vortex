@@ -344,7 +344,7 @@ namespace Vortex {
 			m_AssetRegistryPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
-			m_ConsolePanel.OnGuiRender();
+			m_ConsolePanel.OnGuiRender(m_ActiveScene);
 			m_AboutPanel.OnGuiRender();
 		}
 
