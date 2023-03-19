@@ -6,6 +6,8 @@
 #include <Vortex/Scripting/ScriptRegistry.h>
 #include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
+#include <Vortex/Editor/SelectionManager.h>
+
 #include <Vortex/Gui/Colors.h>
 
 #include <ImGuizmo.h>
@@ -331,7 +333,7 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+			Entity selectedEntity = SelectionManager::GetSelectedEntity();
 
 			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
@@ -459,12 +461,12 @@ namespace Vortex {
 			{
 				if (inEditMode)
 				{
-					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+					Entity selectedEntity = SelectionManager::GetSelectedEntity();
+
 					if (selectedEntity)
 					{
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
-							Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 							TransformComponent& transform = selectedEntity.GetTransform();
 							transform.Translation = m_EditorCamera->GetPosition();
 							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
@@ -507,7 +509,8 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Delete Entity", "Del"))
 						{
-							m_SceneHierarchyPanel.SetEntityToBeDestroyed(true);
+							SelectionManager::DeselectEntity();
+							m_ActiveScene->DestroyEntity(selectedEntity);
 							Gui::CloseCurrentPopup();
 						}
 					}
@@ -977,7 +980,7 @@ namespace Vortex {
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		// Render Gizmos
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selectedEntity = SelectionManager::GetSelectedEntity();
 
 		bool notInPlayMode = m_SceneState != SceneState::Play;
 		bool validGizmoTool = m_GizmoType != -1;
@@ -1675,7 +1678,7 @@ namespace Vortex {
 		}
 
 		// Draw selected entity outline + colliders
-		if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity(); selectedEntity)
+		if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
 		{
 			if (m_ShowSelectedEntityCollider)
 			{
@@ -1863,7 +1866,8 @@ namespace Vortex {
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+
 		const bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
 		const bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
 		const bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
@@ -2076,8 +2080,8 @@ namespace Vortex {
 			{
 				if (selectedEntity)
 				{
+					SelectionManager::DeselectEntity();
 					m_ActiveScene->DestroyEntity(selectedEntity);
-					m_SceneHierarchyPanel.DeselectEntity();
 				}
 
 				break;
@@ -2108,9 +2112,9 @@ namespace Vortex {
 
 				if (((m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered) && allowedToClick)
 				{
-					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+					SelectionManager::SetSelectedEntity(m_HoveredEntity);
 
-					if (m_SceneHierarchyPanel.GetSelectedEntity() != Entity{})
+					if (SelectionManager::GetSelectedEntity() != Entity{})
 						m_SceneHierarchyPanel.EditSelectedEntityName(false);
 				}
 
@@ -2494,13 +2498,13 @@ namespace Vortex {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		Entity selectedEntity = SelectionManager::GetSelectedEntity();
 
 		if (!selectedEntity)
 			return;
 
 		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
-		m_SceneHierarchyPanel.SetSelectedEntity(duplicatedEntity);
+		SelectionManager::SetSelectedEntity(duplicatedEntity);
 		// TODO should we keep this?
 		m_SceneHierarchyPanel.EditSelectedEntityName(true);
 	}

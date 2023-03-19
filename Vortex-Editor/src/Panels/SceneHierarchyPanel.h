@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Vortex.h>
+#include <Vortex/Editor/SelectionManager.h>
 
 namespace Vortex {
 	
@@ -15,15 +16,8 @@ namespace Vortex {
 		void SetProjectContext(SharedReference<Project>& project) {}
 		void SetSceneContext(const SharedReference<Scene>& scene);
 
-		Entity& GetSelectedEntity();
-
-		void SetSelectedEntity(Entity entity);
-		void DeselectEntity();
-
 		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
 		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
-
-		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
 
 		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
 
@@ -36,11 +30,13 @@ namespace Vortex {
 		template <typename TComponent>
 		void DisplayComponentMenuItem(const std::string& name)
 		{
-			if (!m_SelectedEntity.HasComponent<TComponent>())
+			Entity& selectedEntity = SelectionManager::GetSelectedEntity();
+
+			if (!selectedEntity.HasComponent<TComponent>())
 			{
 				if (Gui::MenuItem(name.c_str()))
 				{
-					m_SelectedEntity.AddComponent<TComponent>();
+					selectedEntity.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();
 				}
 			}
@@ -61,7 +57,6 @@ namespace Vortex {
 
 	private:
 		SharedReference<Scene> m_ContextScene = nullptr;
-		Entity m_SelectedEntity;
 		
 		// TODO think of a better way of doing this
 		TransformComponent m_TransformToCopy;
