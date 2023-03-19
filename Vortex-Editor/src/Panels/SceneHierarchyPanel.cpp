@@ -1083,6 +1083,7 @@ namespace Vortex {
 			if (shouldRename)
 			{
 				Gui::SetKeyboardFocusHere();
+				m_IsEditingEntityName = true;
 			}
 			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
 			{
@@ -1093,6 +1094,7 @@ namespace Vortex {
 					Gui::SetWindowFocus("Scene");
 
 				m_EntityShouldBeRenamed = false;
+				m_IsEditingEntityName = false;
 			}
 
 			Gui::SameLine();

@@ -1,11 +1,10 @@
 #include "vxpch.h"
 
 #include "Vortex/Editor/EditorConsoleSink.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
-
-#include <filesystem>
 
 namespace Vortex {
 
@@ -19,10 +18,9 @@ namespace Vortex {
 
 	void Log::Init()
 	{
-		// Create "logs" directory if doesn't exist
-		std::string logsDirectory = "logs";
-		if (!std::filesystem::exists(logsDirectory))
-			std::filesystem::create_directories(logsDirectory);
+		std::string logsDirectory = "Resources/Logs";
+		if (!FileSystem::Exists(logsDirectory))
+			FileSystem::CreateDirectoryV(logsDirectory);
 
 		std::vector<spdlog::sink_ptr> vortexSinks =
 		{

@@ -2078,7 +2078,7 @@ namespace Vortex {
 
 			case KeyCode::Delete:
 			{
-				if (selectedEntity)
+				if (selectedEntity && !m_SceneHierarchyPanel.IsEditingEntityName())
 				{
 					SelectionManager::DeselectEntity();
 					m_ActiveScene->DestroyEntity(selectedEntity);
