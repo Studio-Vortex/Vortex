@@ -55,16 +55,10 @@ namespace Vortex {
 		}
 
 		template <typename TFieldType>
-		TFieldType GetValue()
+		TFieldType GetValue() const
 		{
 			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
 			return *(TFieldType*)m_Buffer;
-		}
-
-		template <typename TFieldType>
-		const TFieldType& GetValue() const
-		{
-			return (const TFieldType&)GetValue<TFieldType>();
 		}
 
 		template <typename TFieldType>

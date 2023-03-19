@@ -1625,50 +1625,55 @@ namespace Vortex {
 				sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
 				auto scriptFields = scriptComponent["ScriptFields"];
+
 				if (scriptFields)
 				{
-					SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
-					if (entityClass)
+					if (ScriptEngine::EntityClassExists(sc.ClassName))
 					{
-						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
+						SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
 
-						for (auto scriptField : scriptFields)
+						if (entityClass)
 						{
-							std::string name = scriptField["Name"].as<std::string>();
+							const auto& fields = entityClass->GetFields();
+							auto& entityFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
 
-							ScriptFieldInstance& fieldInstance = entityFields[name];
-
-							if (fields.find(name) == fields.end())
+							for (auto scriptField : scriptFields)
 							{
-								VX_CONSOLE_LOG_WARN("Script Field '{}' was not found in Field Map!", name);
-								continue;
-							}
+								std::string name = scriptField["Name"].as<std::string>();
 
-							fieldInstance.Field = fields.at(name);
+								ScriptFieldInstance& fieldInstance = entityFields[name];
 
-							std::string typeString = scriptField["Type"].as<std::string>();
-							ScriptFieldType type = Utils::StringToScriptFieldType(typeString);
-							
-							switch (type)
-							{
-								READ_SCRIPT_FIELD(Float, float)
-								READ_SCRIPT_FIELD(Double, double)
-								READ_SCRIPT_FIELD(Bool, bool)
-								READ_SCRIPT_FIELD(Char, int8_t)
-								READ_SCRIPT_FIELD(Short, int16_t)
-								READ_SCRIPT_FIELD(Int, int32_t)
-								READ_SCRIPT_FIELD(Long, int64_t)
-								READ_SCRIPT_FIELD(Byte, uint8_t)
-								READ_SCRIPT_FIELD(UShort, uint16_t)
-								READ_SCRIPT_FIELD(UInt, uint32_t)
-								READ_SCRIPT_FIELD(ULong, uint64_t)
-								READ_SCRIPT_FIELD(Vector2, Math::vec2)
-								READ_SCRIPT_FIELD(Vector3, Math::vec3)
-								READ_SCRIPT_FIELD(Vector4, Math::vec4)
-								READ_SCRIPT_FIELD(Color3, Math::vec3)
-								READ_SCRIPT_FIELD(Color4, Math::vec4)
-								READ_SCRIPT_FIELD(Entity, UUID)
+								if (fields.find(name) == fields.end())
+								{
+									VX_CONSOLE_LOG_WARN("Script Field '{}' was not found in Field Map!", name);
+									continue;
+								}
+
+								fieldInstance.Field = fields.at(name);
+
+								std::string typeString = scriptField["Type"].as<std::string>();
+								ScriptFieldType type = Utils::StringToScriptFieldType(typeString);
+
+								switch (type)
+								{
+									READ_SCRIPT_FIELD(Float, float)
+									READ_SCRIPT_FIELD(Double, double)
+									READ_SCRIPT_FIELD(Bool, bool)
+									READ_SCRIPT_FIELD(Char, int8_t)
+									READ_SCRIPT_FIELD(Short, int16_t)
+									READ_SCRIPT_FIELD(Int, int32_t)
+									READ_SCRIPT_FIELD(Long, int64_t)
+									READ_SCRIPT_FIELD(Byte, uint8_t)
+									READ_SCRIPT_FIELD(UShort, uint16_t)
+									READ_SCRIPT_FIELD(UInt, uint32_t)
+									READ_SCRIPT_FIELD(ULong, uint64_t)
+									READ_SCRIPT_FIELD(Vector2, Math::vec2)
+									READ_SCRIPT_FIELD(Vector3, Math::vec3)
+									READ_SCRIPT_FIELD(Vector4, Math::vec4)
+									READ_SCRIPT_FIELD(Color3, Math::vec3)
+									READ_SCRIPT_FIELD(Color4, Math::vec4)
+									READ_SCRIPT_FIELD(Entity, UUID)
+								}
 							}
 						}
 					}
