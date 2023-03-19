@@ -104,7 +104,7 @@ namespace Vortex {
 		}
 
 		SharedReference<Asset> asset;
-		//metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
+		metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
 		if (metadata.IsDataLoaded)
 			m_LoadedAssets[assetHandle] = asset;
 

@@ -9,24 +9,30 @@
 
 namespace Vortex {
 
-	OpenGLSkybox::OpenGLSkybox(const std::string& filepath)
+	OpenGLSkybox::OpenGLSkybox(const std::filesystem::path& filepath)
 	{
-		LoadSkybox(filepath);
+		LoadEquirectangularMapFromPath(filepath);
 	}
 
 	OpenGLSkybox::~OpenGLSkybox() { }
 
-	void OpenGLSkybox::LoadFromFilepath(const std::string& filepath)
+	void OpenGLSkybox::LoadFromFilepath(const std::filesystem::path& filepath)
 	{
-		LoadSkybox(filepath);
+		m_HDREnvironmentMap.Reset();
+		LoadEquirectangularMapFromPath(filepath);
 	}
 
-    const std::string& OpenGLSkybox::GetFilepath() const
+    const std::filesystem::path& OpenGLSkybox::GetFilepath() const
     {
 		if (m_HDREnvironmentMap)
 			return m_HDREnvironmentMap->GetPath();
 
 		return "";
+    }
+
+    SharedReference<Texture2D> OpenGLSkybox::GetEnvironmentMap() const
+    {
+		return m_HDREnvironmentMap;
     }
 
 	void OpenGLSkybox::Bind() const
@@ -61,27 +67,23 @@ namespace Vortex {
 		return false;
 	}
 
-	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::string& filepath)
+	void OpenGLSkybox::LoadEquirectangularMapFromPath(const std::filesystem::path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
-		TextureProperties hdrImageProps;
-		hdrImageProps.Filepath = filepath;
-		hdrImageProps.WrapMode = ImageWrap::Clamp;
-		hdrImageProps.TextureFormat = ImageFormat::RGBA16F;
-
-		m_HDREnvironmentMap = Texture2D::Create(hdrImageProps);
-	}
-
-	void OpenGLSkybox::LoadSkybox(const std::string& filepath)
-	{
 		if (FileSystem::GetFileExtension(filepath) != ".hdr")
 		{
-			VX_CONSOLE_LOG_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.c_str());
+			VX_CONSOLE_LOG_WARN("Cannot load HDR Environment Map, not a '.hdr' {}", filepath.string().c_str());
 			return;
 		}
 
-		LoadEquirectangularMapFromPath(filepath);
+		TextureProperties imageProps;
+		imageProps.Filepath = filepath.string();
+		imageProps.WrapMode = ImageWrap::Clamp;
+		imageProps.TextureFormat = ImageFormat::RGBA16F;
+
+		m_HDREnvironmentMap = Texture2D::Create(imageProps);
+
 		m_ShouldReload = false;
 	}
 

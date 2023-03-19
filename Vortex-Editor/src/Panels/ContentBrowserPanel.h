@@ -21,8 +21,9 @@ namespace Vortex {
 		void RenderMenuBar();
 		void RenderRightClickItemPopup(const std::filesystem::path& currentPath);
 		void RenderThumbnailSlider();
-		SharedReference<Texture2D> FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath, const std::filesystem::path& extension);
+		SharedReference<Texture2D> FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath);
 		void FindTextureFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon);
+		void FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon);
 		void FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon);
 
 	private:

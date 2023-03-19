@@ -9,11 +9,13 @@ namespace Vortex {
 	{
 	public:
 		OpenGLSkybox() = default;
-		OpenGLSkybox(const std::string& filepath);
+		OpenGLSkybox(const std::filesystem::path& filepath);
 		~OpenGLSkybox() override;
 
-		void LoadFromFilepath(const std::string& filepath) override;
-		const std::string& GetFilepath() const override;
+		void LoadFromFilepath(const std::filesystem::path& filepath) override;
+		const std::filesystem::path& GetFilepath() const override;
+
+		SharedReference<Texture2D> GetEnvironmentMap() const override;
 
 		void Bind() const override;
 		void Unbind() const override;
@@ -26,8 +28,7 @@ namespace Vortex {
 		bool IsLoaded() const override;
 
 	private:
-		void LoadEquirectangularMapFromPath(const std::string& path);
-		void LoadSkybox(const std::string& filepath);
+		void LoadEquirectangularMapFromPath(const std::filesystem::path& path);
 
 	private:
 		SharedReference<Texture2D> m_HDREnvironmentMap = nullptr;

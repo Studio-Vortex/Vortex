@@ -71,6 +71,7 @@ namespace Vortex {
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
 		ImGuiTextFilter m_EntityClassNameInputTextFilter;
 		ImGuiTextFilter m_EntityFieldSearchInputTextFilter;
+		ImGuiTextFilter m_MaterialSearchInputTextFilter;
 
 		bool m_EntityShouldBeRenamed = false;
 		bool m_EntityShouldBeDestroyed = false;

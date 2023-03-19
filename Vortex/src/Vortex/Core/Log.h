@@ -34,7 +34,7 @@ namespace Vortex {
 		};
 
 	public:
-		static void Init(bool enableFileOutput = false);
+		static void Init();
 		static void Shutdown();
 
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }

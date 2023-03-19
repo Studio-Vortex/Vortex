@@ -37,7 +37,7 @@ namespace Vortex {
 
 	void AssetImporter::Serialize(const SharedReference<Asset>& asset)
 	{
-		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(asset);
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(asset->Handle);
 		Serialize(metadata, asset);
 	}
 

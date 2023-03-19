@@ -17,7 +17,7 @@ namespace Vortex {
 	std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
 	std::shared_ptr<spdlog::logger> Log::s_EditorConsoleLogger;
 
-	void Log::Init(bool enableFileOutput)
+	void Log::Init()
 	{
 		// Create "logs" directory if doesn't exist
 		std::string logsDirectory = "logs";

@@ -499,17 +499,15 @@ namespace Vortex {
 		if (entity.HasComponent<SkyboxComponent>())
 		{
 			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			AssetHandle assetHandle = skyboxComponent.Skybox;
-			if (AssetManager::IsHandleValid(assetHandle))
-			{
-				out << YAML::Key << "SkyboxComponent" << YAML::BeginMap; // SkyboxComponent
+			AssetHandle environmentHandle = skyboxComponent.Skybox;
+			
+			out << YAML::Key << "SkyboxComponent" << YAML::BeginMap; // SkyboxComponent
 
-				VX_SERIALIZE_PROPERTY(Skybox, assetHandle, out);
-				VX_SERIALIZE_PROPERTY(Rotation, skyboxComponent.Rotation, out);
-				VX_SERIALIZE_PROPERTY(Intensity, skyboxComponent.Intensity, out);
+			VX_SERIALIZE_PROPERTY(Skybox, environmentHandle, out);
+			VX_SERIALIZE_PROPERTY(Rotation, skyboxComponent.Rotation, out);
+			VX_SERIALIZE_PROPERTY(Intensity, skyboxComponent.Intensity, out);
 
-				out << YAML::EndMap; // SkyboxComponent
-			}
+			out << YAML::EndMap; // SkyboxComponent
 		}
 
 		if (entity.HasComponent<LightSourceComponent>())
@@ -705,22 +703,21 @@ namespace Vortex {
 		if (entity.HasComponent<TextMeshComponent>())
 		{
 			const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+
+			out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
+
 			AssetHandle fontHandle = textMeshComponent.FontAsset;
-			if (AssetManager::IsHandleValid(fontHandle))
-			{
-				out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
 
-				VX_SERIALIZE_PROPERTY(FontHandle, textMeshComponent.FontAsset, out);
-				VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
-				VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
-				VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
-				VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
-				VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
-				VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
-				VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
+			VX_SERIALIZE_PROPERTY(FontHandle, fontHandle, out);
+			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
+			VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
+			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
+			VX_SERIALIZE_PROPERTY(LineSpacing, textMeshComponent.LineSpacing, out);
+			VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
+			VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
+			VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
 
-				out << YAML::EndMap; // TextMeshComponent
-			}
+			out << YAML::EndMap; // TextMeshComponent
 		}
 
 		if (entity.HasComponent<AnimatorComponent>())
@@ -1127,17 +1124,17 @@ namespace Vortex {
 			{
 				auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-				AssetHandle assetHandle = skyboxComponent["Skybox"].as<uint64_t>();
-				if (AssetManager::IsHandleValid(assetHandle))
+				AssetHandle environmentHandle = skyboxComponent["Skybox"].as<uint64_t>();
+				if (AssetManager::IsHandleValid(environmentHandle))
 				{
-					skybox.Skybox = assetHandle;
-
-					if (skyboxComponent["Rotation"])
-						skybox.Rotation = skyboxComponent["Rotation"].as<float>();
-
-					if (skyboxComponent["Intensity"])
-						skybox.Intensity = skyboxComponent["Intensity"].as<float>();
+					skybox.Skybox = environmentHandle;
 				}
+
+				if (skyboxComponent["Rotation"])
+					skybox.Rotation = skyboxComponent["Rotation"].as<float>();
+
+				if (skyboxComponent["Intensity"])
+					skybox.Intensity = skyboxComponent["Intensity"].as<float>();
 			}
 
 			auto lightSourceComponent = entity["LightSourceComponent"];
@@ -1312,22 +1309,17 @@ namespace Vortex {
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
-				if (textMeshComponent["FontHandle"])
-				{
-					AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
-					if (AssetManager::IsHandleValid(fontHandle))
-					{
-						tmc.FontAsset = fontHandle;
-						tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
-						if (textMeshComponent["BgColor"])
-							tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();
-						tmc.Kerning = textMeshComponent["Kerning"].as<float>();
-						tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
-						tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
-						tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
-						tmc.TextString = textMeshComponent["TextString"].as<std::string>();
-					}
-				}
+				AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
+
+				tmc.FontAsset = fontHandle;
+				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
+				if (textMeshComponent["BgColor"])
+					tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();
+				tmc.Kerning = textMeshComponent["Kerning"].as<float>();
+				tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
+				tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
+				tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
+				tmc.TextString = textMeshComponent["TextString"].as<std::string>();
 			}
 
 			auto animationComponent = entity["AnimationComponent"];

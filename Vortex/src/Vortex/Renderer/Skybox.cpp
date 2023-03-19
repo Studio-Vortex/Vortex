@@ -33,7 +33,7 @@ namespace Vortex {
 		return nullptr;
     }
 
-    SharedReference<Skybox> Skybox::Create(const std::string& filepath)
+    SharedReference<Skybox> Skybox::Create(const std::filesystem::path& filepath)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{

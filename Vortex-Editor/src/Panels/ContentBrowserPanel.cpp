@@ -169,9 +169,7 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			const std::string& extension = currentPath.extension().string();
-
-			SharedReference<Texture2D> itemIcon = FindSuitableItemIcon(directoryEntry, currentPath, extension);
+			SharedReference<Texture2D> itemIcon = FindSuitableItemIcon(directoryEntry, currentPath);
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 			UI::ImageButtonEx(itemIcon, { m_ThumbnailSize, m_ThumbnailSize }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
@@ -186,7 +184,7 @@ public class Untitled : Entity
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
 				Gui::BeginTooltip();
 
-				SharedReference<Texture2D> icon = FindSuitableItemIcon(directoryEntry, currentPath, extension);
+				SharedReference<Texture2D> icon = FindSuitableItemIcon(directoryEntry, currentPath);
 
 				UI::ImageEx(icon, { 12.0f, 12.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 				Gui::SameLine();
@@ -538,8 +536,9 @@ public class Untitled : Entity
 		Gui::PopItemWidth();
 	}
 
-	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath, const std::filesystem::path& extension)
+	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath)
 	{
+		std::string extension = FileSystem::GetFileExtension(currentItemPath);
 		SharedReference<Texture2D> itemIcon = nullptr;
 
 		if (directoryEntry.is_directory())
@@ -549,10 +548,8 @@ public class Untitled : Entity
 		}
 
 		AssetType assetType = AssetType::None;
-		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension.string()); type != AssetType::None)
-		{
+		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension); type != AssetType::None)
 			assetType = type;
-		}
 		
 		if (assetType == AssetType::None)
 		{
@@ -562,18 +559,18 @@ public class Untitled : Entity
 
 		switch (assetType)
 		{
-			case Vortex::AssetType::MeshAsset:            FindMeshIcon(extension, itemIcon);                      break;
-			case Vortex::AssetType::FontAsset:            itemIcon = EditorResources::FontIcon;                   break;
-			case Vortex::AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon;              break;
-			case Vortex::AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon;                  break;
+			case Vortex::AssetType::MeshAsset:            FindMeshIcon(extension, itemIcon); break;
+			case Vortex::AssetType::FontAsset:            itemIcon = EditorResources::FontIcon; break;
+			case Vortex::AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon; break;
+			case Vortex::AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon; break;
 			case Vortex::AssetType::PrefabAsset:          break;
-			case Vortex::AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon;               break;
+			case Vortex::AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon; break;
 			case Vortex::AssetType::TextureAsset:         FindTextureFromAssetManager(currentItemPath, itemIcon); break;
 			case Vortex::AssetType::MaterialAsset:        break;
 			case Vortex::AssetType::AnimatorAsset:        break;
 			case Vortex::AssetType::AnimationAsset:       break;
-			case Vortex::AssetType::StaticMeshAsset:      FindMeshIcon(extension, itemIcon);                      break;
-			case Vortex::AssetType::EnvironmentAsset:     FindTextureFromAssetManager(currentItemPath, itemIcon); break;
+			case Vortex::AssetType::StaticMeshAsset:      FindMeshIcon(extension, itemIcon); break;
+			case Vortex::AssetType::EnvironmentAsset:     FindEnvironmentMapFromAssetManager(currentItemPath, itemIcon); break;
 			case Vortex::AssetType::PhysicsMaterialAsset: break;
 		}
 
@@ -589,6 +586,14 @@ public class Untitled : Entity
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
 			itemIcon = asset.As<Texture2D>();
+		}
+	}
+
+	void ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon)
+	{
+		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
+		{
+			itemIcon = asset.As<Skybox>()->GetEnvironmentMap();
 		}
 	}
 

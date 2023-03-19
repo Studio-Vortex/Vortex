@@ -4,7 +4,9 @@
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include <string>
+#include "Vortex/Renderer/Texture.h"
+
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 
@@ -13,8 +15,10 @@ namespace Vortex {
 	public:
 		virtual ~Skybox() = default;
 
-		virtual void LoadFromFilepath(const std::string& filepath) = 0;
-		virtual const std::string& GetFilepath() const = 0;
+		virtual void LoadFromFilepath(const std::filesystem::path& filepath) = 0;
+		virtual const std::filesystem::path& GetFilepath() const = 0;
+
+		virtual SharedReference<Texture2D> GetEnvironmentMap() const = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -31,7 +35,7 @@ namespace Vortex {
 		ASSET_CLASS_TYPE(EnvironmentAsset)
 
 		static SharedReference<Skybox> Create();
-		static SharedReference<Skybox> Create(const std::string& filepath);
+		static SharedReference<Skybox> Create(const std::filesystem::path& filepath);
 	};
 
 }

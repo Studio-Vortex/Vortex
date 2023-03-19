@@ -1259,71 +1259,70 @@ namespace Vortex {
 		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
 		{
 			AssetHandle environmentHandle = component.Skybox;
+			SharedReference<Skybox> skybox = nullptr;
 			if (AssetManager::IsHandleValid(environmentHandle))
 			{
-				SharedReference<Skybox> skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
-				if (skybox)
+				skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
+			}
+
+			UI::BeginPropertyGrid();
+
+			std::string relativeSkyboxPath = "None";
+
+			if (skybox && skybox->IsLoaded())
+			{
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Skybox);
+				relativeSkyboxPath = metadata.Filepath.string();
+			}
+
+			UI::Property("Environment Map", relativeSkyboxPath, true);
+
+			// Accept a Skybox Directory from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
-					UI::BeginPropertyGrid();
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path skyboxPath = std::filesystem::path(path);
 
-					std::string relativeSkyboxPath = "";
-
-					if (skybox->IsLoaded())
+					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(skyboxPath); type == AssetType::EnvironmentAsset)
 					{
-						const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Skybox);
-						relativeSkyboxPath = metadata.Filepath.string();
-					}
-
-					UI::Property("Source", relativeSkyboxPath, true);
-
-					// Accept a Skybox Directory from the content browser
-					if (Gui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(skyboxPath);
+						if (AssetManager::IsHandleValid(environmentHandle))
 						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path skyboxPath = std::filesystem::path(path);
-
-							// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
-							if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(skyboxPath); type == AssetType::EnvironmentAsset)
-							{
-								AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(skyboxPath);
-								if (AssetManager::IsHandleValid(environmentHandle))
-								{
-									component.Skybox = environmentHandle;
-								}
-							}
-							else
-							{
-								VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
-							}
+							component.Skybox = environmentHandle;
 						}
-
-						Gui::EndDragDropTarget();
 					}
-
-					UI::EndPropertyGrid();
-
-					if (skybox->IsLoaded())
+					else
 					{
-						UI::BeginPropertyGrid();
-
-						UI::Property("Rotation", component.Rotation);
-
-						if (Gui::IsItemFocused())
-						{
-							// Nasty hack to reload skybox
-							if (Input::IsKeyPressed(KeyCode::Enter))
-							{
-								skybox->SetShouldReload(true);
-							}
-						}
-
-						UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
-
-						UI::EndPropertyGrid();
+						VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
 					}
 				}
+
+				Gui::EndDragDropTarget();
+			}
+
+			UI::EndPropertyGrid();
+
+			if (skybox && skybox->IsLoaded())
+			{
+				UI::BeginPropertyGrid();
+
+				UI::Property("Rotation", component.Rotation);
+
+				if (Gui::IsItemFocused())
+				{
+					// Nasty hack to reload skybox
+					if (Input::IsKeyPressed(KeyCode::Enter))
+					{
+						skybox->SetShouldReload(true);
+					}
+				}
+
+				UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+
+				UI::EndPropertyGrid();
 			}
 		});
 
@@ -1423,12 +1422,12 @@ namespace Vortex {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path modelFilepath = std::filesystem::path(path);
+					std::filesystem::path meshFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(modelFilepath); type == AssetType::MeshAsset || type == AssetType::StaticMeshAsset)
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(meshFilepath); type == AssetType::MeshAsset || type == AssetType::StaticMeshAsset)
 					{
-						AssetHandle meshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(modelFilepath);
+						AssetHandle meshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(meshFilepath);
 						if (AssetManager::IsHandleValid(meshHandle))
 						{
 							component.Mesh = meshHandle;
@@ -1438,14 +1437,17 @@ namespace Vortex {
 								AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
 								AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
 
-								animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
+								animationComponent.Animation = Animation::Create(meshFilepath.string(), component.Mesh);
 								animatorComponent.Animator = Animator::Create(animationComponent.Animation);
 							}
 						}
 					}
 					else
-						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
+					{
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", meshFilepath.filename().string());
+					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
@@ -1474,12 +1476,12 @@ namespace Vortex {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path modelFilepath = std::filesystem::path(path);
+					std::filesystem::path staticMeshFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(modelFilepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(staticMeshFilepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
 					{
-						AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(modelFilepath);
+						AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(staticMeshFilepath);
 						if (AssetManager::IsHandleValid(staticMeshHandle))
 						{
 							component.StaticMesh = staticMeshHandle;
@@ -1488,7 +1490,7 @@ namespace Vortex {
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load model file - {}", modelFilepath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", staticMeshFilepath.filename().string());
 					}
 				}
 
@@ -1517,12 +1519,41 @@ namespace Vortex {
 			{
 				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
 				AssetHandle materialHandle = staticMesh->GetSubmesh(0).GetMaterial();
+
 				if (AssetManager::IsHandleValid(materialHandle))
 				{
 					SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-					std::string label = "Material1";
-					std::string name = material->GetName();
-					UI::Property(label.c_str(), name, true);
+
+					if (material)
+					{
+						auto materials = AssetManager::GetAllAssetsWithType<Material>();
+						std::vector<const char*> options;
+
+						for (auto& materialHandle : materials)
+						{
+							if (!AssetManager::IsHandleValid(materialHandle))
+								continue;
+
+							SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
+							if (!mat)
+								continue;
+
+							options.emplace_back(mat->GetName().c_str());
+						}
+
+						std::string currentMaterialName = material->GetName();
+						if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
+						{
+							auto it = std::find(options.begin(), options.end(), currentMaterialName.c_str());
+							if (it != options.end())
+							{
+								// TODO come back to this once we have actual material files
+								uint32_t materialIndex = 0;
+								AssetHandle newMaterialHandle = materials[materialIndex];
+								staticMesh->GetSubmesh(0).SetMaterial(newMaterialHandle);
+							}
+						}
+					}
 				}
 			}
 
@@ -1575,8 +1606,11 @@ namespace Vortex {
 							}
 						}
 						else
+						{
 							VX_CONSOLE_LOG_WARN("Could not load texture", texturePath.filename().string());
+						}
 					}
+
 					Gui::EndDragDropTarget();
 				}
 			}
@@ -1646,7 +1680,7 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string relativeFontPath = "";
+			std::string relativeFontPath = "Default Font";
 
 			if (AssetManager::IsHandleValid(component.FontAsset))
 			{
@@ -1682,6 +1716,7 @@ namespace Vortex {
 						VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
 					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
