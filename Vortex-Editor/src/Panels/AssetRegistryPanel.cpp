@@ -49,8 +49,8 @@ namespace Vortex {
 			Gui::Text("IsMemoryOnly: %s", metadata.IsMemoryOnly ? "true" : "false");
 
 			UI::Draw::Underline();
-
-			Gui::Spacing();
+			for (uint32_t i = 0; i < 2; i++)
+				Gui::Spacing();
 		}
 	}
 

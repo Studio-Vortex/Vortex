@@ -30,7 +30,7 @@ namespace Vortex {
 	public:
 		Scene() = default;
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
-		~Scene() = default;
+		~Scene() override = default;
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());

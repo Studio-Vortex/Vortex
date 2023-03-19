@@ -16,7 +16,7 @@ namespace Vortex {
 	public:
 		Font() = default;
 		Font(const std::filesystem::path& filepath);
-		virtual ~Font();
+		virtual ~Font() override;
 
 		const std::filesystem::path& GetFontPath() const { return m_Filepath; }
 

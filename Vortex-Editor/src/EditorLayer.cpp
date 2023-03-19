@@ -260,7 +260,8 @@ namespace Vortex {
 		if (!Input::IsMouseButtonDown(MouseButton::Right) && !(Input::IsKeyDown(KeyCode::LeftAlt) && (Input::IsMouseButtonDown(MouseButton::Left) || (Input::IsMouseButtonDown(MouseButton::Middle)))))
 			m_StartedClickInSecondViewport = false;
 
-		if (m_SceneState == SceneState::Play && ScriptRegistry::HasPendingTransitionQueued())
+		const bool pendingTransisiton = ScriptRegistry::HasPendingTransitionQueued();
+		if (m_SceneState == SceneState::Play && pendingTransisiton)
 		{
 			QueueSceneTransition();
 		}
@@ -333,15 +334,14 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			Entity selectedEntity = SelectionManager::GetSelectedEntity();
-
+			m_PhysicsMaterialEditorPanel.OnGuiRender();
 			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
-			m_ECSDebugPanel.OnGuiRender(selectedEntity);
+			m_ECSDebugPanel.OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialEditorPanel.OnGuiRender(selectedEntity);
+			m_MaterialEditorPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
@@ -666,6 +666,8 @@ namespace Vortex {
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
+				UI::Draw::Underline();
+				Gui::MenuItem("Physics Material Editor", nullptr, &m_PhysicsMaterialEditorPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();

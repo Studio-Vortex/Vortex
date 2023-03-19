@@ -1,6 +1,7 @@
 #include "MaterialEditorPanel.h"
 
 #include <Vortex/Editor/EditorResources.h>
+#include <Vortex/Editor/SelectionManager.h>
 
 namespace Vortex {
 
@@ -232,7 +233,7 @@ namespace Vortex {
 
 	}
 
-	void MaterialEditorPanel::OnGuiRender(Entity selectedEntity)
+	void MaterialEditorPanel::OnGuiRender()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -241,27 +242,17 @@ namespace Vortex {
 		if (!s_ShowPanel)
 			return;
 
+		Entity selected = SelectionManager::GetSelectedEntity();
+
 		Gui::Begin("Material Editor", &s_ShowPanel);
 
-		if (!selectedEntity)
+		if (!selected)
 		{
 			Gui::End();
 			return;
 		}
 
-		if (Gui::Button("Show Physics Material"))
-		{
-			s_ShowPhysicsMaterial = !s_ShowPhysicsMaterial;
-		}
-
-		if (s_ShowPhysicsMaterial)
-		{
-			RenderPhysicsMaterial(selectedEntity);
-		}
-		else
-		{
-			RenderMeshMaterial(selectedEntity);
-		}
+		RenderMeshMaterial(selected);
 
 		Gui::End();
 	}
@@ -352,8 +343,6 @@ namespace Vortex {
 
 			const auto& submeshes = staticMesh->GetSubmeshes();
 
-			UI::BeginPropertyGrid();
-
 			for (const auto& submesh : submeshes)
 			{
 				if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
@@ -367,6 +356,8 @@ namespace Vortex {
 
 				if (UI::PropertyGridHeader(name.c_str()))
 				{
+					UI::BeginPropertyGrid();
+
 					std::string currentShaderName = material->GetShader()->GetName();
 					if (UI::PropertyDropdownSearch("Shader", shaderNames.data(), shaderNames.size(), currentShaderName, s_ShaderDropdownTextFilter))
 					{
@@ -377,13 +368,14 @@ namespace Vortex {
 						}
 					}
 
-					Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::ParameterCallback));
+					UI::EndPropertyGrid();
 
+					Utils::RenderMaterialTexturesAndProperties(material, VX_BIND_CALLBACK(MaterialEditorPanel::ParameterCallback));
+					
 					UI::EndTreeNode();
 				}
 			}
 
-			UI::EndPropertyGrid();
 		}
 	}
 
@@ -440,76 +432,6 @@ namespace Vortex {
 				break;
 			}
 		}
-	}
-
-	void MaterialEditorPanel::RenderPhysicsMaterial(Entity selectedEntity)
-	{
-		UI::BeginPropertyGrid();
-
-		if (!selectedEntity.HasAny<BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent>())
-			return;
-		
-		AssetHandle physicsMaterialHandle = 0;
-
-		SharedReference<PhysicsMaterial> physicsMaterial = nullptr;
-
-		if (selectedEntity.HasComponent<BoxColliderComponent>())
-		{
-			physicsMaterialHandle = selectedEntity.GetComponent<BoxColliderComponent>().Material;
-			if (AssetManager::IsHandleValid(physicsMaterialHandle))
-				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
-		}
-		else if (selectedEntity.HasComponent<SphereColliderComponent>())
-		{
-			physicsMaterialHandle = selectedEntity.GetComponent<SphereColliderComponent>().Material;
-			if (AssetManager::IsHandleValid(physicsMaterialHandle))
-				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
-		}
-		else if (selectedEntity.HasComponent<CapsuleColliderComponent>())
-		{
-			physicsMaterialHandle = selectedEntity.GetComponent<CapsuleColliderComponent>().Material;
-			if (AssetManager::IsHandleValid(physicsMaterialHandle))
-				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
-		}
-		else if (selectedEntity.HasComponent<MeshColliderComponent>())
-		{
-			physicsMaterialHandle = selectedEntity.GetComponent<MeshColliderComponent>().Material;
-			if (AssetManager::IsHandleValid(physicsMaterialHandle))
-				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
-		}
-
-		if (physicsMaterial)
-		{
-			UI::Property("Static Friction", physicsMaterial->StaticFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Dynamic Friction", physicsMaterial->DynamicFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Bounciness", physicsMaterial->Bounciness, 0.01f, 0.01f, 1.0f);
-
-			const char* combineModes[] = { "Average", "Maximum", "Minimum", "Multiply" };
-			int32_t currentFrictionCombineMode = (uint32_t)physicsMaterial->FrictionCombineMode;
-			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentFrictionCombineMode))
-				physicsMaterial->FrictionCombineMode = (CombineMode)currentFrictionCombineMode;
-
-			int32_t currentBouncinessCombineMode = (uint32_t)physicsMaterial->BouncinessCombineMode;
-			if (UI::PropertyDropdown("Bounciness Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentBouncinessCombineMode))
-				physicsMaterial->BouncinessCombineMode = (CombineMode)currentBouncinessCombineMode;
-		}
-		else
-		{
-			std::string buffer;
-			UI::Property("Material Name", buffer);
-			Gui::BeginDisabled(buffer.size() == 0);
-			
-			if (Gui::Button("Create Physics Material"))
-			{
-				AssetHandle handle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>(0.6f, 0.6f, 0.0f);
-				physicsMaterial->Handle = handle;
-				VX_CONSOLE_LOG_INFO("MATERIAL CREATED: {}", buffer);
-			}
-
-			Gui::EndDisabled();
-		}
-
-		UI::EndPropertyGrid();
 	}
 
 }

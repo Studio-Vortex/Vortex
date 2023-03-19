@@ -10,7 +10,7 @@ namespace Vortex {
 		ECSDebugPanel() = default;
 		~ECSDebugPanel() = default;
 
-		void OnGuiRender(Entity selectedEntity);
+		void OnGuiRender();
 		void SetProjectContext(SharedReference<Project>& project) { }
 		void SetSceneContext(SharedReference<Scene>& scene) { m_ContextScene = scene; }
 		bool& IsOpen() { return s_ShowPanel; }

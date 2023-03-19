@@ -47,6 +47,7 @@ namespace Vortex {
 	public:
 		Material() = default;
 		Material(SharedReference<Shader>& shader, const MaterialProperties& props);
+		~Material() override = default;
 
 		void Bind() const;
 		void Unbind() const;

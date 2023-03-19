@@ -1,21 +1,26 @@
 #include "ECSDebugPanel.h"
 
+#include <Vortex/Editor/SelectionManager.h>
+
 namespace Vortex {
 
-	void ECSDebugPanel::OnGuiRender(Entity selectedEntity)
+	void ECSDebugPanel::OnGuiRender()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel || !m_ContextScene)
+		if (!s_ShowPanel)
+			return;
+
+		if (!m_ContextScene)
 			return;
 
 		Gui::Begin("ECS Registry View", &s_ShowPanel);
 
-		if (selectedEntity)
+		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{
-			RenderSelectedEntityView(selectedEntity);
+			RenderSelectedEntityView(selected);
 		}
 
 		RenderSceneEntityView();

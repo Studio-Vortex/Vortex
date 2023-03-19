@@ -79,7 +79,7 @@ namespace Vortex {
 	public:
 		Mesh() = default;
 		Mesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
-		~Mesh() = default;
+		~Mesh() override = default;
 
 		void OnUpdate(int entityID = -1);
 

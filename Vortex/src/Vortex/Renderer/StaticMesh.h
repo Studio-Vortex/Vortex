@@ -70,7 +70,7 @@ namespace Vortex {
 		StaticMesh() = default;
 		StaticMesh(const std::string& filepath, const TransformComponent& transform, const MeshImportOptions& importOptions, int entityID);
 		StaticMesh(MeshType meshType);
-		~StaticMesh() = default;
+		~StaticMesh() override = default;
 
 		void OnUpdate(int entityID = -1);
 
