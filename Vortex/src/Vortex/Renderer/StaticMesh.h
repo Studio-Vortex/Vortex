@@ -80,8 +80,8 @@ namespace Vortex {
 		std::vector<StaticSubmesh>& GetSubmeshes() { return m_Submeshes; }
 
 		const Math::AABB& GetBoundingBox() const { return m_BoundingBox; }
-
 		inline const MeshImportOptions& GetImportOptions() const { return m_ImportOptions; }
+		inline bool IsLoaded() const { return m_IsLoaded; }
 
 		ASSET_CLASS_TYPE(StaticMeshAsset)
 
@@ -100,6 +100,8 @@ namespace Vortex {
 		const aiScene* m_Scene;
 
 		Math::AABB m_BoundingBox;
+
+		bool m_IsLoaded = false;
 	};
 
 }

@@ -14,6 +14,8 @@
 namespace Vortex {
 
 	class Entity;
+	class Mesh;
+	class StaticMesh;
 	class Framebuffer;
 	class EditorCamera;
 
@@ -100,17 +102,17 @@ namespace Vortex {
 		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
 		TransformComponent GetWorldSpaceTransform(Entity entity);
 
-		struct SceneMeshes
+		struct SceneMeshes : public RefCounted
 		{
-			std::vector<AssetHandle> Meshes;
+			std::vector<SharedReference<Mesh>> Meshes;
 			std::vector<Math::mat4> WorldSpaceMeshTransforms;
 			std::vector<Entity> MeshEntities;
 
-			std::vector<AssetHandle> StaticMeshes;
+			std::vector<SharedReference<StaticMesh>> StaticMeshes;
 			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
 		};
 
-		const SceneMeshes& GetSceneMeshes();
+		SharedReference<SceneMeshes>& GetSceneMeshes();
 
 		template <typename TComponent>
 		inline void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
@@ -167,8 +169,11 @@ namespace Vortex {
 		void OnAnimatorUpdateRuntime(TimeStep delta);
 		void OnParticleEmitterUpdateRuntime(TimeStep delta);
 
+		void ClearSceneMeshes();
+
 	private:
 		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
+		SharedReference<SceneMeshes> m_SceneMeshes = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
@@ -181,7 +186,7 @@ namespace Vortex {
 
 		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
 		QueueFreeMap m_QueueFreeMap;
-		std::unordered_set<UUID> m_EntitiesToBeRemovedFromQueue;
+		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
 
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 		std::mutex m_PostUpdateQueueMutex;

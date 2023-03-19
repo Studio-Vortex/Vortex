@@ -90,9 +90,9 @@ namespace Vortex {
 		uint32_t& GetBoneCount() { return m_BoneCounter; }
 
 		const Math::AABB& GetBoundingBox() const { return m_BoundingBox; }
-
 		inline const MeshImportOptions& GetImportOptions() const { return m_ImportOptions; }
 		inline bool HasAnimations() const { return m_HasAnimations; }
+		inline bool IsLoaded() const { return m_IsLoaded; }
 
 		ASSET_CLASS_TYPE(MeshAsset)
 
@@ -120,6 +120,7 @@ namespace Vortex {
 		Math::AABB m_BoundingBox;
 
 		bool m_HasAnimations = false;
+		bool m_IsLoaded = false;
 	};
 
 }

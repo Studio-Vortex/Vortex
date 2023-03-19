@@ -200,6 +200,8 @@ namespace Vortex {
 
 		ProcessNode(filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
 		CreateBoundingBoxFromSubmeshes();
+
+		m_IsLoaded = true;
 	}
 
 	StaticMesh::StaticMesh(MeshType meshType)

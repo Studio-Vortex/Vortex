@@ -629,6 +629,7 @@ namespace Vortex {
 		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
 
 			Scene::QueueFreeData queueFreeData;
 			queueFreeData.EntityUUID = entityUUID;

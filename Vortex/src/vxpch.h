@@ -12,6 +12,7 @@
 #include <cstring>
 #include <memory>
 #include <random>
+#include <ranges>
 #include <cmath>
 #include <any>
 

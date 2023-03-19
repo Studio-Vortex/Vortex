@@ -3,9 +3,11 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Renderer/Skybox.h"
 
 #include "Vortex/Utils/FileSystem.h"
 
@@ -18,9 +20,12 @@ namespace Vortex {
 
 	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
-		return false;
+		asset = Mesh::Create(relatvePath.string(), TransformComponent(), MeshImportOptions());
+		asset->Handle = metadata.Handle;
+
+		return asset.As<Mesh>()->IsLoaded();
 	}
 
 	void FontSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -30,9 +35,9 @@ namespace Vortex {
 
 	bool FontSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
-		asset = Font::Create(fullyQualifiedPath);
+		asset = Font::Create(relatvePath);
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Font>()->GetFontAtlas()->IsLoaded();
@@ -45,7 +50,7 @@ namespace Vortex {
 
 	bool AudioSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -57,7 +62,7 @@ namespace Vortex {
 
 	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -69,7 +74,7 @@ namespace Vortex {
 
 	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -81,7 +86,7 @@ namespace Vortex {
 
 	bool ScriptSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -93,10 +98,10 @@ namespace Vortex {
 
 	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		TextureProperties imageProps;
-		imageProps.Filepath = fullyQualifiedPath.string();
+		imageProps.Filepath = relatvePath.string();
 		imageProps.WrapMode = ImageWrap::Repeat;
 
 		asset = Texture2D::Create(imageProps);
@@ -112,7 +117,7 @@ namespace Vortex {
 
 	bool MaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -124,7 +129,7 @@ namespace Vortex {
 
 	bool AnimatorSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -136,7 +141,7 @@ namespace Vortex {
 
 	bool AnimationSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}
@@ -148,9 +153,12 @@ namespace Vortex {
 
 	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
-		return false;
+		asset = StaticMesh::Create(relatvePath.string(), TransformComponent(), MeshImportOptions());
+		asset->Handle = metadata.Handle;
+
+		return asset.As<StaticMesh>()->IsLoaded();
 	}
 
 	void EnvironmentSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -160,9 +168,9 @@ namespace Vortex {
 
 	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
-		asset = Skybox::Create(fullyQualifiedPath);
+		asset = Skybox::Create(relatvePath);
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Skybox>()->IsLoaded();
@@ -175,7 +183,7 @@ namespace Vortex {
 
 	bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path fullyQualifiedPath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
 
 		return false;
 	}

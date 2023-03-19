@@ -140,6 +140,8 @@ namespace Vortex {
 
 		ProcessNode(filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
 		CreateBoundingBoxFromSubmeshes();
+
+		m_IsLoaded = true;
 	}
 
 	void Mesh::ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)

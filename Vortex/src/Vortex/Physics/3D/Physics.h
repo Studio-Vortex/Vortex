@@ -35,26 +35,31 @@ namespace Vortex {
 	class VORTEX_API Physics
 	{
 	public:
+		static void Init();
+		static void Shutdown();
+
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta);
 		static void OnSimulationStop(Scene* contextScene);
 
+		static void CreatePhysicsActor(Entity entity);
 		static void ReCreateActor(Entity entity);
-
-		static physx::PxScene* GetPhysicsScene();
-
-#ifndef VX_DIST
-		static physx::PxSimulationStatistics* GetSimulationStatistics();
-#endif
+		static void DestroyPhysicsActor(Entity entity);
 
 		static void WakeUpActor(Entity entity);
 		static void WakeUpActors();
 
 		static bool Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outHitInfo);
 
-		VX_FORCE_INLINE static const std::unordered_map<UUID, physx::PxRigidActor*>& GetActors() { return s_ActiveActors; }
-		VX_FORCE_INLINE static const std::unordered_map<UUID, physx::PxController*>& GetControllers() { return s_ActiveControllers; }
-		VX_FORCE_INLINE static const std::unordered_map<UUID, physx::PxFixedJoint*> GetFixedJoints() { return s_ActiveFixedJoints; }
+		static bool IsConstraintBroken(UUID entityUUID);
+		static void BreakJoint(UUID entityUUID);
+
+		static void OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement);
+
+	public:
+		static const std::unordered_map<UUID, physx::PxRigidActor*>& GetActors();
+		static const std::unordered_map<UUID, physx::PxController*>& GetControllers();
+		static const std::unordered_map<UUID, physx::PxFixedJoint*> GetFixedJoints();
 
 		static physx::PxRigidActor* GetActor(UUID entityUUID);
 		static const std::vector<SharedReference<ColliderShape>>& GetEntityColliders(UUID entityUUID);
@@ -66,37 +71,41 @@ namespace Vortex {
 		static const PhysicsBodyData* GetPhysicsBodyData(UUID entityUUID);
 		static const ConstrainedJointData* GetConstrainedJointData(UUID entityUUID);
 
-		static bool IsConstraintBroken(UUID entityUUID);
-		static void BreakJoint(UUID entityUUID);
-
-		static void OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement);
-
-		VX_FORCE_INLINE static uint32_t GetPhysicsScenePositionIterations() { return s_PhysicsSolverIterations; }
-		VX_FORCE_INLINE static void SetPhysicsScenePositionIterations(uint32_t positionIterations) { s_PhysicsSolverIterations = positionIterations; }
-
-		VX_FORCE_INLINE static uint32_t GetPhysicsSceneVelocityIterations() { return s_PhysicsSolverVelocityIterations; }
-		VX_FORCE_INLINE static void SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations) { s_PhysicsSolverVelocityIterations = veloctiyIterations; }
-
-		VX_FORCE_INLINE static Math::vec3 GetPhysicsSceneGravity() { return s_PhysicsSceneGravity; }
-		VX_FORCE_INLINE static void SetPhysicsSceneGravity(const Math::vec3& gravity) { s_PhysicsSceneGravity = gravity; }
-
 		static Scene* GetContextScene();
+
+	public:
+		static physx::PxScene* GetPhysicsScene();
+
+#ifndef VX_DIST
+		static physx::PxSimulationStatistics* GetSimulationStatistics();
+#endif
+
+		static uint32_t GetPhysicsScenePositionIterations();
+		static void SetPhysicsScenePositionIterations(uint32_t positionIterations);
+
+		static uint32_t GetPhysicsSceneVelocityIterations();
+		static void SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations);
+
+		static Math::vec3 GetPhysicsSceneGravity();
+		static void SetPhysicsSceneGravity(const Math::vec3& gravity);
 
 		static physx::PxPhysics* GetPhysicsSDK();
 		static physx::PxTolerancesScale* GetTolerancesScale();
 		static physx::PxFoundation* GetFoundation();
 
 	private:
-		static void Init();
 		static void InitPhysicsSDKInternal();
 		static void InitPhysicsSceneInternal();
 
-		static void Shutdown();
 		static void ShutdownPhysicsSDKInternal();
 		static void ShutdownPhysicsSceneInternal();
 
-		static void CreatePhysicsActor(Entity entity);
-		static void DestroyPhysicsActor(Entity entity);
+	private:
+		static void SimulationStep();
+
+		static void UpdateActors();
+		static void UpdateControllers();
+		static void UpdateFixedJoints();
 
 		static void CreateCollider(Entity entity);
 		static void AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
@@ -108,33 +117,12 @@ namespace Vortex {
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 		static void TraverseSceneForUninitializedActors();
 
-	private:
 		static void DestroyFixedJointInternal(UUID entityUUID);
 		static void DestroyCharacterControllerInternal(UUID entityUUID);
 		static void DestroyPhysicsActorInternal(UUID entityUUID);
-
-	private:
-		inline static std::unordered_map<UUID, physx::PxRigidActor*> s_ActiveActors;
-		inline static std::unordered_map<UUID, physx::PxController*> s_ActiveControllers;
-		inline static std::unordered_map<UUID, physx::PxFixedJoint*> s_ActiveFixedJoints;
-
-		using EntityColliderMap = std::unordered_map<UUID, std::vector<SharedReference<ColliderShape>>>;
-		inline static EntityColliderMap s_EntityColliders;
-
-		//                                                                               first - linear force, second - angular force
-		using LastReportedFixedJointForcesMap = std::unordered_map<physx::PxFixedJoint*, std::pair<Math::vec3, Math::vec3>>;
-		inline static LastReportedFixedJointForcesMap s_LastReportedJointForces;
-
-		inline static std::unordered_map<UUID, PhysicsBodyData*> s_PhysicsBodyData;
-		inline static std::unordered_map<UUID, ConstrainedJointData*> s_ConstrainedJointData;
-
-		inline constexpr static float s_FixedTimeStep = 1.0f / 100.0f;
-		inline static Math::vec3 s_PhysicsSceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);
-		inline static uint32_t s_PhysicsSolverIterations = 8;
-		inline static uint32_t s_PhysicsSolverVelocityIterations = 2;
-
-		friend class Application;
-		friend class Scene;
+		static void DestroyColliderShapesInternal(UUID entityUUID);
+		static void DestroyPhysicsBodyDataInternal(UUID entityUUID);
+		static void DestroyConstrainedJointDataInternal(UUID entityUUID);
 	};
 
 }

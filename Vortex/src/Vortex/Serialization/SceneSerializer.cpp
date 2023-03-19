@@ -1124,10 +1124,13 @@ namespace Vortex {
 			{
 				auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
 
-				AssetHandle environmentHandle = skyboxComponent["Skybox"].as<uint64_t>();
-				if (AssetManager::IsHandleValid(environmentHandle))
+				if (skyboxComponent["Skybox"])
 				{
-					skybox.Skybox = environmentHandle;
+					AssetHandle environmentHandle = skyboxComponent["Skybox"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(environmentHandle))
+					{
+						skybox.Skybox = environmentHandle;
+					}
 				}
 
 				if (skyboxComponent["Rotation"])
@@ -1309,9 +1312,15 @@ namespace Vortex {
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
 
-				AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
+				if (textMeshComponent["FontHandle"])
+				{
+					AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(fontHandle))
+					{
+						tmc.FontAsset = fontHandle;
+					}
+				}
 
-				tmc.FontAsset = fontHandle;
 				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
 				if (textMeshComponent["BgColor"])
 					tmc.BgColor = textMeshComponent["BgColor"].as<Math::vec4>();

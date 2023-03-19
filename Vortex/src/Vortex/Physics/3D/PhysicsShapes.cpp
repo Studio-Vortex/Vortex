@@ -44,7 +44,6 @@ namespace Vortex {
 		: ColliderShape(ColliderType::Box, entity)
 	{
 		SharedReference<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.Material);
-
 		if (!material)
 		{
 			component.Material = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>(0.6f, 0.6f, 0.0f);
@@ -125,7 +124,6 @@ namespace Vortex {
 		: ColliderShape(ColliderType::Sphere, entity)
 	{
 		SharedReference<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.Material);
-
 		if (!material)
 		{
 			component.Material = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
@@ -207,7 +205,6 @@ namespace Vortex {
 		: ColliderShape(ColliderType::Capsule, entity)
 	{
 		SharedReference<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.Material);
-
 		if (!material)
 		{
 			component.Material = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();

@@ -494,6 +494,7 @@ namespace Vortex {
 		{
 			case LightType::Directional:
 			{
+				s_Data.SkylightDepthMapFramebuffer.reset();
 				FramebufferProperties depthFramebufferProps{};
 				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
 				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
@@ -551,7 +552,7 @@ namespace Vortex {
 
 	void Renderer::RenderToDepthMap(SharedReference<Scene>& contextScene)
 	{
-		const Scene::SceneMeshes& sceneMeshes = contextScene->GetSceneMeshes();
+		auto& sceneMeshes = contextScene->GetSceneMeshes();
 
 		auto lightSourceView = contextScene->GetAllEntitiesWith<LightSourceComponent>();
 
@@ -707,7 +708,7 @@ namespace Vortex {
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
-	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes)
+	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
 	{
 		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
 
@@ -742,18 +743,16 @@ namespace Vortex {
 		uint32_t i = 0;
 
 		// Render Meshes
-		for (const auto& meshHandle : sceneMeshes.Meshes)
+		for (auto& mesh : sceneMeshes->Meshes)
 		{
-			SharedReference<Mesh> mesh = Project::GetEditorAssetManager()->GetAsset(meshHandle).As<Mesh>();
-
-			Math::mat4 worldSpaceTransform = sceneMeshes.WorldSpaceMeshTransforms[i];
+			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceMeshTransforms[i];
 			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
 
-			if (mesh->HasAnimations() && sceneMeshes.MeshEntities[i].HasComponent<AnimatorComponent>())
+			if (mesh->HasAnimations() && sceneMeshes->MeshEntities[i].HasComponent<AnimatorComponent>())
 			{
 				shadowMapShader->SetBool("u_HasAnimations", true);
 
-				const AnimatorComponent& animatorComponent = sceneMeshes.MeshEntities[i].GetComponent<AnimatorComponent>();
+				const AnimatorComponent& animatorComponent = sceneMeshes->MeshEntities[i].GetComponent<AnimatorComponent>();
 				const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
 
 				for (uint32_t c = 0; c < transforms.size(); c++)
@@ -766,7 +765,7 @@ namespace Vortex {
 				shadowMapShader->SetBool("u_HasAnimations", false);
 			}
 
-			auto& submesh = mesh->GetSubmesh();
+			Submesh& submesh = mesh->GetSubmesh();
 
 			submesh.RenderToSkylightShadowMap();
 
@@ -776,11 +775,9 @@ namespace Vortex {
 		i = 0;
 
 		// Render Static Meshes
-		for (const auto& staticMeshHandle : sceneMeshes.StaticMeshes)
+		for (auto& staticMesh : sceneMeshes->StaticMeshes)
 		{
-			SharedReference<StaticMesh> staticMesh = Project::GetEditorAssetManager()->GetAsset(staticMeshHandle).As<StaticMesh>();
-
-			Math::mat4 worldSpaceTransform = sceneMeshes.WorldSpaceStaticMeshTransforms[i++];
+			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceStaticMeshTransforms[i++];
 			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
 
 			auto& submeshes = staticMesh->GetSubmeshes();
@@ -795,7 +792,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
-	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes)
+	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
 	{
 		// Configure shader
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
@@ -883,7 +880,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);*/
 	}
 
-	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, const Scene::SceneMeshes& sceneMeshes)
+	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
 	{
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
 		float nearPlane = 0.01f;

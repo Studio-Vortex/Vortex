@@ -199,12 +199,14 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyEntity(Entity entity, bool excludeChildren)
 	{
-		SubmitToPostUpdateQueue([&, this]() { DestroyEntity(entity, excludeChildren); });
+		DestroyEntity(entity, excludeChildren);
+		//SubmitToPostUpdateQueue([&]() { DestroyEntity(entity, excludeChildren); });
 	}
 
 	void Scene::SubmitToDestroyEntity(const QueueFreeData& queueFreeData)
 	{
-		SubmitToPostUpdateQueue([&, this]() { DestroyEntity(queueFreeData); });
+		DestroyEntity(queueFreeData);
+		//SubmitToPostUpdateQueue([&]() { DestroyEntity(queueFreeData); });
 	}
 
 	void Scene::DestroyEntity(Entity entity, bool excludeChildren)
@@ -294,8 +296,11 @@ namespace Vortex {
 
 			if (queueFreeData.WaitTime <= 0.0f)
 			{
-				VX_CORE_ASSERT(!m_EntitiesToBeRemovedFromQueue.contains(uuid), "Entity with UUID was already submitted to queue!");
-				m_EntitiesToBeRemovedFromQueue.insert(uuid);
+				auto it = std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid);
+				if (it == m_EntitiesToBeRemovedFromQueue.end())
+				{
+					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
+				}
 			}
 		}
 
@@ -846,9 +851,12 @@ namespace Vortex {
 		return transformComponent;
 	}
 
-    const Scene::SceneMeshes& Scene::GetSceneMeshes()
+    SharedReference<Scene::SceneMeshes>& Scene::GetSceneMeshes()
 	{
-		SceneMeshes result;
+		if (!m_SceneMeshes)
+			m_SceneMeshes = SharedReference<SceneMeshes>::Create();
+
+		ClearSceneMeshes();
 
 		auto meshRendererView = GetAllEntitiesWith<MeshRendererComponent>();
 
@@ -870,12 +878,12 @@ namespace Vortex {
 			if (!mesh)
 				continue;
 
-			result.MeshEntities.push_back(entity);
+			m_SceneMeshes->MeshEntities.push_back(entity);
 
-			result.Meshes.push_back(mesh->Handle);
+			m_SceneMeshes->Meshes.push_back(mesh);
 
 			Math::mat4 worldSpaceTransform = GetWorldSpaceTransformMatrix(entity);
-			result.WorldSpaceMeshTransforms.push_back(worldSpaceTransform);
+			m_SceneMeshes->WorldSpaceMeshTransforms.push_back(worldSpaceTransform);
 		}
 
 		auto staticMeshRendererView = GetAllEntitiesWith<StaticMeshRendererComponent>();
@@ -898,13 +906,13 @@ namespace Vortex {
 			if (!staticMesh)
 				continue;
 
-			result.StaticMeshes.push_back(staticMesh->Handle);
+			m_SceneMeshes->StaticMeshes.push_back(staticMesh);
 
 			Math::mat4 worldSpaceTransform = GetWorldSpaceTransformMatrix(entity);
-			result.WorldSpaceStaticMeshTransforms.push_back(worldSpaceTransform);
+			m_SceneMeshes->WorldSpaceStaticMeshTransforms.push_back(worldSpaceTransform);
 		}
 
-		return result;
+		return m_SceneMeshes;
 	}
 
 	bool Scene::AreEntitiesRelated(Entity first, Entity second)
@@ -1138,6 +1146,15 @@ namespace Vortex {
 			
 			particleEmitter->EmitParticle();
 		}
+	}
+
+	void Scene::ClearSceneMeshes()
+	{
+		m_SceneMeshes->MeshEntities.clear();
+		m_SceneMeshes->Meshes.clear();
+		m_SceneMeshes->WorldSpaceMeshTransforms.clear();
+		m_SceneMeshes->StaticMeshes.clear();
+		m_SceneMeshes->WorldSpaceStaticMeshTransforms.clear();
 	}
 
 	template <typename TComponent>
