@@ -1212,19 +1212,23 @@ namespace Vortex {
 			auto staticMeshComponent = entity["StaticMeshRendererComponent"];
 			if (staticMeshComponent)
 			{
-				if (staticMeshComponent["MeshHandle"])
+				auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
+				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
+
+				if (staticMeshRendererComponent.Type != MeshType::Custom)
 				{
-					auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
-					AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint64_t>();
-					staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
-					if (AssetManager::IsHandleValid(staticMeshHandle))
+					staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type);
+				}
+				else
+				{
+					if (staticMeshComponent["MeshHandle"])
 					{
-						if (Project::GetEditorAssetManager()->IsDefaultStaticMesh(staticMeshHandle))
+						AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint16_t>();
+
+						if (AssetManager::IsHandleValid(staticMeshHandle))
 						{
-							staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type);
-						}
-						else
-						{
+							staticMeshRendererComponent.StaticMesh = staticMeshHandle;
+
 							MeshImportOptions importOptions = MeshImportOptions();
 							if (staticMeshComponent["MeshImportOptions"])
 							{
@@ -1233,8 +1237,6 @@ namespace Vortex {
 								importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 								importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 							}
-
-							staticMeshRendererComponent.StaticMesh = staticMeshHandle;
 						}
 					}
 				}
