@@ -2208,7 +2208,15 @@ namespace Vortex {
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
 
 		if (!filepath.empty())
+		{
+			std::string extension = FileSystem::GetFileExtension(filepath);
+			if (extension.empty() || extension != ".vortex")
+			{
+				FileSystem::ReplaceExtension(filepath, ".vortex");
+			}
+
 			OpenScene(filepath);
+		}
 	}
 
 	void EditorLayer::OpenScene(const std::filesystem::path& filepath)

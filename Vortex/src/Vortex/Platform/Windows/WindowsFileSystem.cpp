@@ -137,9 +137,14 @@ namespace Vortex {
 
 	std::string FileSystem::RemoveFileExtension(const std::filesystem::path& filepath)
 	{
-		std::string filename = filepath.stem().string();
-		return filename;
+		return filepath.stem().string();
 	}
+
+    std::filesystem::path& FileSystem::ReplaceExtension(const std::filesystem::path& filepath, std::string_view extension)
+    {
+		std::filesystem::path copy = filepath;
+		return copy.replace_extension(extension);
+    }
 
 	std::filesystem::path FileSystem::GetCurrentPath()
 	{
