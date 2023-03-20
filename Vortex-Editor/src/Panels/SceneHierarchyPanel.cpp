@@ -686,18 +686,18 @@ namespace Vortex {
 
 		if (marker.empty())
 		{
-			buffer.reserve(10);
+			buffer.reserve(25);
 		}
 		else
 		{
-			buffer.resize(markerSize);
-			memcpy(buffer.data(), marker.data(), markerSize);
+			buffer.resize(markerSize * 2);
+			memcpy(buffer.data(), marker.data(), markerSize * 2);
 		}
 
 		if (Gui::InputText("##Marker", buffer.data(), sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) && !buffer.empty())
 		{
 			tagComponent.Marker = buffer;
-			tagComponent.AddMarker(buffer);
+			TagComponent::AddMarker(buffer);
 			Gui::SetWindowFocus("Scene");
 		}
 	}
@@ -1016,30 +1016,38 @@ namespace Vortex {
 			Gui::SameLine();
 
 			auto& markers = tagComponent.Markers;
-			if (auto currentMarkerIt = std::find(markers.begin(), markers.end(), tagComponent.Marker);
-				currentMarkerIt != markers.end()
-			) {
-				const char* currentMarker = (*currentMarkerIt).c_str();
+			auto& current = tagComponent.Marker;
 
-				if (Gui::BeginCombo("##Marker", currentMarker, ImGuiComboFlags_HeightLarge))
+			if (auto it = std::find(markers.begin(), markers.end(), current); it != markers.end())
+			{
+				const char* currentIt = (*it).c_str();
+
+				if (Gui::BeginCombo("##Marker", currentIt, ImGuiComboFlags_HeightLarge))
 				{
 					uint32_t arraySize = markers.size();
 
 					for (uint32_t i = 0; i < arraySize; i++)
 					{
-						bool isSelected = strcmp(currentMarker, markers[i].c_str()) == 0;
+						const bool isSelected = strcmp(currentIt, markers[i].c_str()) == 0;
+
 						if (Gui::Selectable(markers[i].c_str(), isSelected))
 						{
-							currentMarker = markers[i].c_str();
-							tagComponent.Marker = markers[i];
+							currentIt = markers[i].c_str();
+							current = markers[i];
 						}
 
 						if (isSelected)
+						{
 							Gui::SetItemDefaultFocus();
+						}
 
+						// skip last item
 						if (i != arraySize - 1)
+						{
 							UI::Draw::Underline();
-						else // The last marker in the markers vector
+							Gui::Spacing();
+						}
+						else
 						{
 							UI::Draw::Underline();
 
@@ -1054,6 +1062,7 @@ namespace Vortex {
 								Gui::OpenPopup("AddMarker");
 								m_DisplayAddMarkerPopup = false;
 							}
+
 							if (Gui::BeginPopup("AddMarker"))
 							{
 								DisplayAddMarkerPopup(tagComponent);

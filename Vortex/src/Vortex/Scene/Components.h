@@ -40,7 +40,7 @@ namespace Vortex {
 		TagComponent(const std::string& tag)
 			: Tag(tag) { }
 
-		inline void AddMarker(const std::string& marker)
+		inline static void AddMarker(const std::string& marker)
 		{
 			Markers.push_back(marker);
 			s_AddedMarkers.push_back(marker);
