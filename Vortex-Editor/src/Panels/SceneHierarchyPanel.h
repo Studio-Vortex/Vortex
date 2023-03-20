@@ -30,17 +30,24 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayComponentMenuItem(const std::string& name)
+		void DisplayComponentMenuItem(const std::string& name, const char* icon)
 		{
 			Entity& selectedEntity = SelectionManager::GetSelectedEntity();
 
 			if (!selectedEntity.HasComponent<TComponent>())
 			{
+				Gui::Text(icon);
+				Gui::SameLine();
+				Gui::AlignTextToFramePadding();
+
 				if (Gui::MenuItem(name.c_str()))
 				{
 					selectedEntity.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();
 				}
+
+				UI::Draw::Underline();
+				Gui::Spacing();
 			}
 		}
 

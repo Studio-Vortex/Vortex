@@ -23,7 +23,7 @@ namespace Vortex {
 
 	void AudioSource::Play()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 		{
 			Reload();
 		}
@@ -34,7 +34,7 @@ namespace Vortex {
 
 	void AudioSource::PlayOneShot()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 		{
 			Reload();
 		}
@@ -47,7 +47,7 @@ namespace Vortex {
 
 	void AudioSource::Pause()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 			return;
 
 		AudioEngine::PauseSound(&m_Sound);
@@ -55,7 +55,7 @@ namespace Vortex {
 
 	void AudioSource::Restart()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 			return;
 
 		AudioEngine::RestartSound(&m_Sound);
@@ -63,18 +63,18 @@ namespace Vortex {
 
 	void AudioSource::Stop()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 			return;
 
 		AudioEngine::RestartSound(&m_Sound);
 		AudioEngine::StopSound(&m_Sound);
 		AudioEngine::ShutdownEngine(&m_Engine);
-		m_Initialized = false;
+		m_IsLoaded = false;
 	}
 
 	void AudioSource::Destroy()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 			return;
 		
 		AudioEngine::DestroySound(&m_Sound);
@@ -190,7 +190,7 @@ namespace Vortex {
 		return AudioEngine::GetSoundCursor(&m_Sound) / m_AudioClip.Length;
 	}
 
-	void AudioSource::Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src)
+	void AudioSource::Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
 		const AudioSource::SoundProperties& srcProps = src->GetProperties();
@@ -213,21 +213,21 @@ namespace Vortex {
 			m_Properties.Volume
 		);
 
-		m_Initialized = true;
+		m_IsLoaded = true;
 
 		size_t lastSlashPos = filepath.find_last_of("/\\");
 		std::string filename = filepath.substr(lastSlashPos + 1);
 		m_AudioClip.Name = filename;
 	}
 
-	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
+	SharedReference<AudioSource> AudioSource::Create(const std::string& filepath)
 	{
-		return CreateShared<AudioSource>(filepath);
+		return SharedReference<AudioSource>::Create(filepath);
 	}
 
-	SharedRef<AudioSource> AudioSource::Create()
+	SharedReference<AudioSource> AudioSource::Create()
 	{
-		return CreateShared<AudioSource>();
+		return SharedReference<AudioSource>::Create();
     }
 
 }

@@ -225,7 +225,7 @@ namespace Vortex {
 		bool AssemblyReloadPending = false;
 		bool DebuggingEnabled = false;
 
-		SharedRef<AudioSource> AppAssemblyReloadSound = nullptr;
+		SharedReference<AudioSource> AppAssemblyReloadSound = nullptr;
 
 		std::unordered_map<std::string, SharedReference<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, SharedReference<ScriptInstance>> EntityInstances;

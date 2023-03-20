@@ -82,8 +82,8 @@ namespace Vortex {
 							AssetHandle srcStaticMeshHandle = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
 							AssetHandle dstStaticMeshHandle = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
 							
-							SharedReference<StaticMesh> srcMesh = AssetManager::GetAsset<StaticMesh>(srcStaticMeshHandle);
-							SharedReference<StaticMesh> dstMesh = AssetManager::GetAsset<StaticMesh>(dstStaticMeshHandle);
+							auto srcMesh = AssetManager::GetAsset<StaticMesh>(srcStaticMeshHandle);
+							auto dstMesh = AssetManager::GetAsset<StaticMesh>(dstStaticMeshHandle);
 							
 							const auto& submeshes = srcMesh->GetSubmeshes();
 							uint32_t i = 0;
@@ -100,8 +100,8 @@ namespace Vortex {
 							AssetHandle srcSkyboxHandle = src.GetComponent<SkyboxComponent>().Skybox;
 							AssetHandle dstSkyboxHandle = dst.GetComponent<SkyboxComponent>().Skybox;
 
-							SharedReference<Skybox> srcSkybox = AssetManager::GetAsset<Skybox>(srcSkyboxHandle);
-							SharedReference<Skybox> dstSkybox = AssetManager::GetAsset<Skybox>(dstSkyboxHandle);
+							auto srcSkybox = AssetManager::GetAsset<Skybox>(srcSkyboxHandle);
+							auto dstSkybox = AssetManager::GetAsset<Skybox>(dstSkyboxHandle);
 
 							Skybox::Copy(dstSkybox, srcSkybox);
 						}
@@ -109,21 +109,21 @@ namespace Vortex {
 						if constexpr (std::is_same<TComponent, LightSourceComponent>())
 						{
 							const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
-							const auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
+							auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
 							LightSource::Copy(destinationLightSource, sourceLightSource);
 						}
 
 						if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 						{
 							const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
-							const auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
+							auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
 							AudioSource::Copy(destinationAudioSource, sourceAudioSource);
 						}
 
 						if constexpr (std::is_same<TComponent, ParticleEmitterComponent>())
 						{
 							const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
-							const auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
+							auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
 							ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
 						}
 
@@ -947,7 +947,7 @@ namespace Vortex {
 			if (!entity.IsActive())
 				continue;
 
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 			const auto& audioProps = audioSource->GetProperties();
 
 			if (!audioProps.PlayOnStart)
@@ -966,7 +966,7 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 			if (!audioSource->IsPlaying())
 				continue;

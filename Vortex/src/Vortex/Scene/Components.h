@@ -298,7 +298,7 @@ namespace Vortex {
 
 	struct AudioSourceComponent
 	{
-		SharedRef<AudioSource> Source = nullptr;
+		SharedReference<AudioSource> Source = nullptr;
 
 		AudioSourceComponent() = default;
 		AudioSourceComponent(const AudioSourceComponent&) = default;
@@ -306,7 +306,7 @@ namespace Vortex {
 	
 	struct AudioListenerComponent
 	{
-		SharedRef<AudioListener> Listener = nullptr;
+		SharedReference<AudioListener> Listener = nullptr;
 		
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;

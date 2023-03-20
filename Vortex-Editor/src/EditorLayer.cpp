@@ -2407,7 +2407,7 @@ namespace Vortex {
 			{
 				Entity entity{ e, m_ActiveScene.Raw() };
 
-				SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+				SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 				if (!audioSource->IsPlaying())
 					return;
@@ -2442,7 +2442,7 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, m_ActiveScene.Raw() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 
 			if (!audioSource->IsPlaying())
 				return;

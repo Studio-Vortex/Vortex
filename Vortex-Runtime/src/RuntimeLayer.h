@@ -36,7 +36,7 @@ namespace Vortex {
 		Math::vec2 m_ViewportSize = Math::vec2();
 		Entity m_HoveredEntity;
 
-		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
+		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume = std::vector<SharedReference<AudioSource>>();
 	};
 
 }

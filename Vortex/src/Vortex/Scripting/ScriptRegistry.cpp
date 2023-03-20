@@ -3062,7 +3062,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			*outPosition = audioSource->GetProperties().Position;
 		}
 
@@ -3077,7 +3077,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetPosition(*position);
 		}
 
@@ -3092,7 +3092,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			*outDirection = audioSource->GetProperties().Direction;
 		}
 
@@ -3107,7 +3107,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetDirection(*direction);
 		}
 
@@ -3122,7 +3122,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			*outVelocity = audioSource->GetProperties().Velocity;
 		}
 
@@ -3137,7 +3137,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetVelocity(*velocity);
 		}
 
@@ -3152,7 +3152,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Cone.InnerAngle;
 		}
 
@@ -3167,7 +3167,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.InnerAngle = innerAngle;
 			audioSource->SetCone(cone);
@@ -3184,7 +3184,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Cone.OuterAngle;
 		}
 
@@ -3199,7 +3199,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterAngle = outerAngle;
 			audioSource->SetCone(cone);
@@ -3216,7 +3216,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Cone.OuterGain;
 		}
 
@@ -3231,7 +3231,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterGain = outerGain;
 			audioSource->SetCone(cone);
@@ -3249,7 +3249,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().MinDistance;
 		}
 
@@ -3264,7 +3264,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetMinDistance(minDistance);
 		}
 
@@ -3279,7 +3279,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().MaxDistance;
 		}
 
@@ -3294,7 +3294,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetMaxDistance(maxDistance);
 		}
 
@@ -3309,7 +3309,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Pitch;
 		}
 
@@ -3324,7 +3324,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetPitch(pitch);
 		}
 
@@ -3339,7 +3339,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().DopplerFactor;
 		}
 
@@ -3354,7 +3354,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetDopplerFactor(dopplerFactor);
 		}
 
@@ -3369,7 +3369,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Volume;
 		}
 
@@ -3384,7 +3384,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetVolume(volume);
 		}
 
@@ -3399,7 +3399,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().PlayOnStart;
 		}
 
@@ -3414,7 +3414,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetPlayOnStart(playOnStart);
 		}
 
@@ -3429,7 +3429,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Spacialized;
 		}
 
@@ -3444,7 +3444,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetSpacialized(spacialized);
 		}
 
@@ -3459,7 +3459,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->GetProperties().Loop;
 		}
 
@@ -3474,7 +3474,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->SetLoop(loop);
 		}
 
@@ -3489,7 +3489,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			return audioSource->IsPlaying();
 		}
 
@@ -3504,7 +3504,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->Play();
 		}
 
@@ -3519,7 +3519,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->PlayOneShot();
 		}
 
@@ -3534,7 +3534,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->Restart();
 		}
 
@@ -3549,7 +3549,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			audioSource->Stop();
 		}
 
@@ -3568,7 +3568,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			const AudioClip& audioClip = audioSource->GetAudioClip();
 			std::string clipName = audioClip.Name;
 
@@ -3586,7 +3586,7 @@ namespace Vortex {
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedRef<AudioSource> audioSource = asc.Source;
+			SharedReference<AudioSource> audioSource = asc.Source;
 			const AudioClip& audioClip = audioSource->GetAudioClip();
 
 			return audioClip.Length;

@@ -187,13 +187,30 @@ namespace Vortex {
 		m_ComponentSearchInputTextFilter.Build();
 	}
 
-	inline static void LoadDefaultMesh(const std::string& entityName, DefaultMeshes::StaticMeshes defaultMesh, Entity& entity, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
+	inline static Entity CreateDefaultMesh(const std::string& entityName, DefaultMeshes::StaticMeshes defaultMesh, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
-		entity = contextScene->CreateEntity(entityName);
+		Entity entity = contextScene->CreateEntity(entityName);
 		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();
 		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
 		staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
 		entity.GetTransform().Translation = editorCamera->GetFocalPoint();
+
+		entity.AddComponent<RigidBodyComponent>();
+
+		switch (defaultMesh)
+		{
+			case DefaultMeshes::StaticMeshes::Cube:     entity.AddComponent<BoxColliderComponent>();     break;
+			case DefaultMeshes::StaticMeshes::Sphere:   entity.AddComponent<SphereColliderComponent>();  break;
+			case DefaultMeshes::StaticMeshes::Capsule:  entity.AddComponent<CapsuleColliderComponent>(); break;
+			case DefaultMeshes::StaticMeshes::Cone:     entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Cylinder: entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Plane:    entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Torus:    entity.AddComponent<MeshColliderComponent>();    break;
+		}
+
+		SelectionManager::SetSelectedEntity(entity);
+
+		return entity;
 	}
 
 	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera* editorCamera)
@@ -203,57 +220,64 @@ namespace Vortex {
 			SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Empty Entity"));
 			SelectionManager::GetSelectedEntity().GetTransform().Translation = editorCamera->GetFocalPoint();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 		
 		Gui::Text((const char*)VX_ICON_CUBE);
 		Gui::SameLine();
 		if (Gui::BeginMenu("Create 3D"))
 		{
-			Entity newEntity;
-
 			if (Gui::MenuItem("Cube"))
 			{
-				LoadDefaultMesh("Cube", DefaultMeshes::StaticMeshes::Cube, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Cube", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Sphere"))
 			{
-				LoadDefaultMesh("Sphere", DefaultMeshes::StaticMeshes::Sphere, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Sphere", DefaultMeshes::StaticMeshes::Sphere, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Capsule"))
 			{
-				LoadDefaultMesh("Capsule", DefaultMeshes::StaticMeshes::Capsule, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Capsule", DefaultMeshes::StaticMeshes::Capsule, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Cone"))
 			{
-				LoadDefaultMesh("Cone", DefaultMeshes::StaticMeshes::Cone, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Cone", DefaultMeshes::StaticMeshes::Cone, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Cylinder"))
 			{
-				LoadDefaultMesh("Cylinder", DefaultMeshes::StaticMeshes::Cylinder, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Cylinder", DefaultMeshes::StaticMeshes::Cylinder, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Plane"))
 			{
-				LoadDefaultMesh("Plane", DefaultMeshes::StaticMeshes::Plane, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Plane", DefaultMeshes::StaticMeshes::Plane, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Torus"))
 			{
-				LoadDefaultMesh("Torus", DefaultMeshes::StaticMeshes::Torus, newEntity, m_ContextScene, editorCamera);
-				SelectionManager::SetSelectedEntity(newEntity);
+				CreateDefaultMesh("Torus", DefaultMeshes::StaticMeshes::Torus, m_ContextScene, editorCamera);
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_SPINNER);
 		Gui::SameLine();
@@ -269,6 +293,8 @@ namespace Vortex {
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle"))
 			{
@@ -283,6 +309,8 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
 		Gui::SameLine();
@@ -296,6 +324,8 @@ namespace Vortex {
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
@@ -305,8 +335,11 @@ namespace Vortex {
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
 		Gui::SameLine();
@@ -320,6 +353,8 @@ namespace Vortex {
 				lightSourceComponent.Type = LightType::Directional;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Point"))
 			{
@@ -329,6 +364,8 @@ namespace Vortex {
 				lightSourceComponent.Type = LightType::Point;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Spot"))
 			{
@@ -341,52 +378,47 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_CALCULATOR);
 		Gui::SameLine();
 		if (Gui::BeginMenu("Physics"))
 		{
-			Entity newEntity;
-
 			if (Gui::MenuItem("Box Collider"))
 			{
-				LoadDefaultMesh("Box Collider", DefaultMeshes::StaticMeshes::Cube, newEntity, m_ContextScene, editorCamera);
-				newEntity.AddComponent<RigidBodyComponent>();
-				newEntity.AddComponent<BoxColliderComponent>();
-				newEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
+				CreateDefaultMesh("Box Collider", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				LoadDefaultMesh("Sphere Collider", DefaultMeshes::StaticMeshes::Sphere, newEntity, m_ContextScene, editorCamera);
-				newEntity.AddComponent<RigidBodyComponent>();
-				newEntity.AddComponent<SphereColliderComponent>();
-				newEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
+				CreateDefaultMesh("Sphere Collider", DefaultMeshes::StaticMeshes::Sphere, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				LoadDefaultMesh("Capsule Collider", DefaultMeshes::StaticMeshes::Capsule, newEntity, m_ContextScene, editorCamera);
-				newEntity.AddComponent<RigidBodyComponent>();
-				newEntity.AddComponent<CapsuleColliderComponent>();
-				newEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
+				CreateDefaultMesh("Capsule Collider", DefaultMeshes::StaticMeshes::Capsule, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Mesh Collider"))
 			{
-				LoadDefaultMesh("Mesh Collider", DefaultMeshes::StaticMeshes::Cube, newEntity, m_ContextScene, editorCamera);
-				newEntity.AddComponent<RigidBodyComponent>();
-				newEntity.AddComponent<MeshColliderComponent>();
-				newEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
+				CreateDefaultMesh("Mesh Collider", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Fixed Joint"))
 			{
-				LoadDefaultMesh("Fixed Joint", DefaultMeshes::StaticMeshes::Cube, newEntity, m_ContextScene, editorCamera);
-				newEntity.AddComponent<RigidBodyComponent>();
-				newEntity.AddComponent<FixedJointComponent>();
-				newEntity.GetTransform().Translation = editorCamera->GetFocalPoint();
+				CreateDefaultMesh("Fixed Joint", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
@@ -397,6 +429,8 @@ namespace Vortex {
 				selected.AddComponent<BoxCollider2DComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
@@ -410,6 +444,8 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_VOLUME_UP);
 		Gui::SameLine();
@@ -422,6 +458,8 @@ namespace Vortex {
 				selected.AddComponent<AudioSourceComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Listener Entity"))
 			{
@@ -433,6 +471,8 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_FONT);
 		Gui::SameLine();
@@ -448,6 +488,8 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
 		Gui::Text((const char*)VX_ICON_BOMB);
 		Gui::SameLine();
@@ -514,268 +556,117 @@ namespace Vortex {
 			{
 				if (Gui::BeginMenu("Rendering"))
 				{
-					Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-
-					DisplayComponentMenuItem<CameraComponent>("Camera");
-
-					Gui::Text((const char*)VX_ICON_SKYATLAS);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<SkyboxComponent>("Skybox");
-
-					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<LightSourceComponent>("Light Source");
-
-					Gui::Text((const char*)VX_ICON_HOME);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer");
-
-					Gui::Text((const char*)VX_ICON_CUBE);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer");
-
-					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D");
-
-					Gui::Text((const char*)VX_ICON_SPINNER);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer");
-
-					Gui::Text((const char*)VX_ICON_CIRCLE);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer");
-
-					Gui::Text((const char*)VX_ICON_BOMB);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter");
-
-					Gui::Text((const char*)VX_ICON_TEXT_HEIGHT);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh");
-
-					Gui::Text((const char*)VX_ICON_CLOCK_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AnimatorComponent>("Animator");
-
-					Gui::Text((const char*)VX_ICON_ADJUST);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AnimationComponent>("Animation");
+					DisplayComponentMenuItem<CameraComponent>("Camera", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<SkyboxComponent>("Skybox", (const char*)VX_ICON_SKYATLAS);
+					DisplayComponentMenuItem<LightSourceComponent>("Light Source", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer", (const char*)VX_ICON_HOME);
+					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer", (const char*)VX_ICON_CUBE);
+					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer", (const char*)VX_ICON_SPINNER);
+					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer", (const char*)VX_ICON_CIRCLE);
+					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter", (const char*)VX_ICON_BOMB);
+					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
+					DisplayComponentMenuItem<AnimatorComponent>("Animator", (const char*)VX_ICON_CLOCK_O);
+					DisplayComponentMenuItem<AnimationComponent>("Animation", (const char*)VX_ICON_ADJUST);
 
 					Gui::EndMenu();
 				}
+				UI::Draw::Underline();
+				Gui::Spacing();
 
 				if (Gui::BeginMenu("Physics"))
 				{
-					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody");
-					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller");
-					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint");
-					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider");
-					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider");
-					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider");
-					DisplayComponentMenuItem<MeshColliderComponent>("Mesh Collider");
-
-					DisplayComponentMenuItem<RigidBody2DComponent>("RigidBody 2D");
-					DisplayComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D");
-					DisplayComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D");
+					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<MeshColliderComponent>("Mesh Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<RigidBody2DComponent>("RigidBody 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
 
 					Gui::EndMenu();
 				}
+				UI::Draw::Underline();
+				Gui::Spacing();
 
 				if (Gui::BeginMenu("Audio"))
 				{
-					Gui::Text((const char*)VX_ICON_VOLUME_UP);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source");
-
-					Gui::Text((const char*)VX_ICON_HEADPHONES);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener");
+					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source", (const char*)VX_ICON_VOLUME_UP);
+					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener", (const char*)VX_ICON_HEADPHONES);
 
 					Gui::EndMenu();
 				}
+				UI::Draw::Underline();
+				Gui::Spacing();
 
 				if (Gui::BeginMenu("AI"))
 				{
-					Gui::Text((const char*)VX_ICON_LAPTOP);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent");
+					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent", (const char*)VX_ICON_LAPTOP);
 
 					Gui::EndMenu();
 				}
+				UI::Draw::Underline();
+				Gui::Spacing();
 
-				Gui::Text((const char*)VX_ICON_FILE_CODE_O);
-				Gui::SameLine();
-				Gui::AlignTextToFramePadding();
-				DisplayComponentMenuItem<ScriptComponent>("Script");
+				DisplayComponentMenuItem<ScriptComponent>("Script", (const char*)VX_ICON_FILE_CODE_O);
 			}
 			else
 			{
 				if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
-				{
-					Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<CameraComponent>(name);
-				}
-
+					DisplayComponentMenuItem<CameraComponent>(name, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_SKYATLAS);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<SkyboxComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<SkyboxComponent>(componentName, (const char*)VX_ICON_SKYATLAS);
 				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<LightSourceComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<LightSourceComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
 				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_HOME);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<MeshRendererComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<MeshRendererComponent>(componentName, (const char*)VX_ICON_HOME);
 				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_CUBE);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName, (const char*)VX_ICON_CUBE);
 				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<LightSource2DComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<LightSource2DComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
 				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_SPINNER);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<SpriteRendererComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<SpriteRendererComponent>(componentName, (const char*)VX_ICON_SPINNER);
 				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_CIRCLE);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<CircleRendererComponent>(componentName);
-				}
-				
+					DisplayComponentMenuItem<CircleRendererComponent>(componentName, (const char*)VX_ICON_CIRCLE);
 				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_BOMB);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName);
-				}
-				
+					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName, (const char*)VX_ICON_BOMB);
 				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_TEXT_HEIGHT);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<TextMeshComponent>(componentName);
-				}
-				
+					DisplayComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
 				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_CLOCK_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AnimatorComponent>(componentName);
-				}
-				
+					DisplayComponentMenuItem<AnimatorComponent>(componentName, (const char*)VX_ICON_CLOCK_O);
 				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_ADJUST);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AnimationComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<AnimationComponent>(componentName, (const char*)VX_ICON_ADJUST);
 				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<RigidBodyComponent>(componentName);
+					DisplayComponentMenuItem<RigidBodyComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CharacterControllerComponent>(componentName);
+					DisplayComponentMenuItem<CharacterControllerComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<FixedJointComponent>(componentName);
+					DisplayComponentMenuItem<FixedJointComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<BoxColliderComponent>(componentName);
+					DisplayComponentMenuItem<BoxColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<SphereColliderComponent>(componentName);
+					DisplayComponentMenuItem<SphereColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CapsuleColliderComponent>(componentName);
+					DisplayComponentMenuItem<CapsuleColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<MeshColliderComponent>(componentName);
-
+					DisplayComponentMenuItem<MeshColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_VOLUME_UP);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AudioSourceComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<AudioSourceComponent>(componentName, (const char*)VX_ICON_VOLUME_UP);
 				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_HEADPHONES);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<AudioListenerComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<AudioListenerComponent>(componentName, (const char*)VX_ICON_HEADPHONES);
 				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<RigidBody2DComponent>(componentName);
+					DisplayComponentMenuItem<RigidBody2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<BoxCollider2DComponent>(componentName);
+					DisplayComponentMenuItem<BoxCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName);
-
+					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_LAPTOP);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName);
-				}
-
+					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName, (const char*)VX_ICON_LAPTOP);
 				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				{
-					Gui::Text((const char*)VX_ICON_FILE_CODE_O);
-					Gui::SameLine();
-					Gui::AlignTextToFramePadding();
-					DisplayComponentMenuItem<ScriptComponent>(componentName);
-				}
+					DisplayComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O);
 			}
 
 			Gui::EndPopup();
@@ -987,7 +878,7 @@ namespace Vortex {
 					}
 					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 					{
-						SharedRef<AudioSource> audioSource = component.Source;
+						SharedReference<AudioSource> audioSource = component.Source;
 						component = AudioSourceComponent();
 						component.Source = audioSource;
 					}
@@ -1858,7 +1749,7 @@ namespace Vortex {
 						if (component.Source->IsPlaying())
 							component.Source->Stop();
 
-						SharedRef<AudioSource> audioSource = component.Source;
+						SharedReference<AudioSource> audioSource = component.Source;
 						audioSource->SetPath(audioSourcePath.string());
 						audioSource->Reload();
 					}

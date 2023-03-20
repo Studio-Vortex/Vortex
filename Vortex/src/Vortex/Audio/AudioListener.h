@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-
-#include <miniaudio/miniaudio.h>
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	class VORTEX_API AudioListener
+	class VORTEX_API AudioListener : public RefCounted
 	{
 	public:
 		struct VORTEX_API ListenerProperties
@@ -37,8 +36,8 @@ namespace Vortex {
 		inline const ListenerProperties& GetProperties() const { return m_Properties; }
 		inline ListenerProperties& GetProperties() { return m_Properties; }
 
-		static SharedRef<AudioListener> Create(const ListenerProperties& props);
-		static SharedRef<AudioListener> Create();
+		static SharedReference<AudioListener> Create(const ListenerProperties& props);
+		static SharedReference<AudioListener> Create();
 
 	private:
 		inline static uint32_t s_ListenerCount = 0;

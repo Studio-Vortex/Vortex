@@ -15,7 +15,7 @@ namespace Vortex {
 
 		Entity selected = SelectionManager::GetSelectedEntity();
 
-		Gui::Begin("Physics Materials", &s_ShowPanel);
+		Gui::Begin("Physics Material Editor", &s_ShowPanel);
 
 		if (!selected)
 		{

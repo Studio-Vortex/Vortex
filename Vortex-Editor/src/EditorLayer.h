@@ -148,7 +148,7 @@ namespace Vortex {
 		bool m_CaptureFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
 
-		std::vector<SharedRef<AudioSource>> m_AudioSourcesToResume = std::vector<SharedRef<AudioSource>>();
+		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume = std::vector<SharedReference<AudioSource>>();
 
 		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
 		PhysicsStatisticsPanel m_PhysicsStatsPanel;

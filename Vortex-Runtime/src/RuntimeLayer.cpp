@@ -164,7 +164,7 @@ namespace Vortex {
 		for (auto& e : view)
 		{
 			Entity entity{ e, m_RuntimeScene.Raw() };
-			SharedRef<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 			if (audioSource->IsPlaying())
 			{
 				audioSource->Pause();

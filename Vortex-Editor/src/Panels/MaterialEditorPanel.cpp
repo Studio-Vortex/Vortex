@@ -107,14 +107,10 @@ namespace Vortex {
 
 			for (uint32_t i = 0; i < count; i++)
 			{
-				SharedReference<Texture2D> texture = nullptr;
+				SharedReference<Texture2D> texture = EditorResources::CheckerboardIcon;
 				if (SharedReference<Texture2D> entry = GetMaterialTexture(material, i))
 				{
 					texture = entry;
-				}
-				else
-				{
-					texture = EditorResources::CheckerboardIcon;
 				}
 
 				bool hovered = false;
@@ -196,7 +192,7 @@ namespace Vortex {
 					{
 						Gui::OpenPopup("MaterialUtility");
 					}
-					if (texture && texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
+					if (texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
 					{
 						std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);
 						if (Gui::MenuItem(remove.c_str()))

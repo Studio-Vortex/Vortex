@@ -967,6 +967,13 @@ namespace Vortex::UI {
 
 				if (isSelected)
 					Gui::SetItemDefaultFocus();
+
+				// skip last item
+				if (i != count - 1)
+				{
+					UI::Draw::Underline();
+					Gui::Spacing();
+				}
 			}
 
 			Gui::EndCombo();
@@ -1021,6 +1028,13 @@ namespace Vortex::UI {
 				if (isSelected)
 				{
 					Gui::SetItemDefaultFocus();
+				}
+
+				// skip last item
+				if (i != count - 1)
+				{
+					UI::Draw::Underline();
+					Gui::Spacing();
 				}
 			}
 

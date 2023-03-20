@@ -18,8 +18,8 @@ namespace Vortex {
 		
 
 	private:
-		inline static std::unordered_map<UUID, SharedRef<AudioSource>> s_ActiveAudioSources;
-		inline static std::unordered_map<UUID, SharedRef<AudioListener>> s_ActiveAudioListeners;
+		inline static std::unordered_map<UUID, SharedReference<AudioSource>> s_ActiveAudioSources;
+		inline static std::unordered_map<UUID, SharedReference<AudioListener>> s_ActiveAudioListeners;
 	};
 
 }

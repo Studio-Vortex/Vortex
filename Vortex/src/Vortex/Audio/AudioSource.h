@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <miniaudio/miniaudio.h>
 
@@ -12,7 +14,7 @@ namespace Vortex {
 		float Length = 0.0f;
 	};
 
-	class VORTEX_API AudioSource
+	class VORTEX_API AudioSource : public Asset
 	{
 	public:
 		struct VORTEX_API SoundProperties
@@ -44,7 +46,7 @@ namespace Vortex {
 	public:
 		AudioSource() = default;
 		AudioSource(const std::string& filepath);
-		~AudioSource();
+		~AudioSource() override;
 
 		const AudioClip& GetAudioClip() const;
 
@@ -89,10 +91,12 @@ namespace Vortex {
 
 		float GetAmountComplete();
 
-		static void Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src);
+		static void Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src);
 
-		static SharedRef<AudioSource> Create(const std::string& filepath);
-		static SharedRef<AudioSource> Create();
+		ASSET_CLASS_TYPE(AudioAsset)
+
+		static SharedReference<AudioSource> Create(const std::string& filepath);
+		static SharedReference<AudioSource> Create();
 
 	private:
 		void LoadFromPathAndInitEngine(const std::string& filepath);
@@ -107,7 +111,7 @@ namespace Vortex {
 		SoundProperties m_Properties;
 		AudioClip m_AudioClip;
 
-		bool m_Initialized = false;
+		bool m_IsLoaded = false;
 	};
 
 }
