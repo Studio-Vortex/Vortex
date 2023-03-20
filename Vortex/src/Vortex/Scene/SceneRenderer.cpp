@@ -24,6 +24,8 @@
 
 namespace Vortex {
 
+	static AssetHandle s_EnvironmentHandle = 0;
+
 	void SceneRenderer::RenderScene(const SceneRenderPacket& renderPacket)
 	{
 		Scene* scene = renderPacket.Scene;
@@ -284,22 +286,72 @@ namespace Vortex {
 
 		// Render 3D
 		{
+			Math::mat4* view = nullptr;
+			Math::mat4* projection = nullptr;
+			SkyboxComponent skyboxComponent;
+			SharedReference<Skybox> environment = nullptr;
+
+			auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
+
+			// Only render one environment per scene
+			for (const auto e : skyboxView)
+			{
+				Entity entity{ e, scene };
+
+				if (!entity.IsActive())
+					continue;
+
+				skyboxComponent = entity.GetComponent<SkyboxComponent>();
+				AssetHandle environmentHandle = skyboxComponent.Skybox;
+				if (!AssetManager::IsHandleValid(environmentHandle))
+					continue;
+
+				environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+				if (!environment)
+					continue;
+
+				if (environmentHandle != s_EnvironmentHandle)
+				{
+					s_EnvironmentHandle = environmentHandle;
+					Renderer::CreateEnvironmentMap(skyboxComponent, environment);
+					Renderer::SetEnvironment(environment);
+				}
+
+				break;
+			}
+
 			if (renderPacket.EditorScene)
 			{
 				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
 				Renderer::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
 
-				SceneRenderer::RenderEnvironment(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
+				const auto& editorCameraView = editorCamera->GetViewMatrix();
+				const auto& editorCameraProjection = editorCamera->GetProjectionMatrix();
+				view = (Math::mat4*)&editorCameraView;
+				projection = (Math::mat4*)&editorCameraProjection;
 			}
 			else
 			{
 				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
 				Renderer::BeginScene(sceneCamera, renderPacket.MainCameraWorldSpaceTransform, renderPacket.TargetFramebuffer);
 
-				Math::mat4 view = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
-				Math::mat4 projection = sceneCamera.GetProjectionMatrix();
+				auto sceneCameraView = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
+				const auto& sceneCameraProjection = sceneCamera.GetProjectionMatrix();
 
-				SceneRenderer::RenderEnvironment(view, projection, scene);
+				view = &sceneCameraView;
+				projection = (Math::mat4*)&sceneCameraProjection;
+			}
+
+			const bool hasEnvironment = view && projection && environment;
+
+			if (s_EnvironmentHandle != 0 && hasEnvironment)
+			{
+				Renderer::DrawEnvironmentMap(*view, *projection, skyboxComponent, environment);
+			}
+			else
+			{
+				environment = nullptr;
+				Renderer::SetEnvironment(environment);
 			}
 
 			// Light pass
@@ -519,30 +571,9 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
+	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
-		
-		// Only render one environment per scene
-		for (const auto e : skyboxView)
-		{
-			Entity entity{ e, scene };
-
-			if (!entity.IsActive())
-				continue;
-
-			SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			AssetHandle environmentHandle = skyboxComponent.Skybox;
-			if (!AssetManager::IsHandleValid(environmentHandle))
-				continue;
-
-			SharedReference<Skybox> environment = AssetManager::GetAsset<Skybox>(environmentHandle);
-			if (!environment)
-				continue;
-
-			Renderer::DrawEnvironmentMap(view, projection, skyboxComponent, environment);
-			break;
-		}
+		Renderer::DrawEnvironmentMap(view, projection, skyboxComponent, environment);
 	}
 
 	void SceneRenderer::SetMaterialFlags(const SharedReference<Material>& material)

@@ -510,7 +510,7 @@ namespace Vortex {
 						if (Gui::MenuItem("Delete Entity", "Del"))
 						{
 							SelectionManager::DeselectEntity();
-							m_ActiveScene->DestroyEntity(selectedEntity);
+							m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
 							Gui::CloseCurrentPopup();
 						}
 					}
@@ -2085,7 +2085,7 @@ namespace Vortex {
 				if (selectedEntity && !m_SceneHierarchyPanel.IsEditingEntityName())
 				{
 					SelectionManager::DeselectEntity();
-					m_ActiveScene->DestroyEntity(selectedEntity);
+					m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
 				}
 
 				break;

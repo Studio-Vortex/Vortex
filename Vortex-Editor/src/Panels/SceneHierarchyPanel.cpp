@@ -124,7 +124,7 @@ namespace Vortex {
 					m_EntityShouldBeRenamed = false;
 					m_EntityShouldBeDestroyed = false;
 
-					m_ContextScene->DestroyEntity(entity);
+					m_ContextScene->SubmitToDestroyEntity(entity);
 				}
 			}
 
@@ -819,7 +819,7 @@ namespace Vortex {
 		if (m_EntityShouldBeDestroyed && SelectionManager::GetSelectedEntity() == entity)
 		{
 			SelectionManager::DeselectEntity();
-			m_ContextScene->DestroyEntity(entity);
+			m_ContextScene->SubmitToDestroyEntity(entity);
 		}
 	}
 
@@ -1183,6 +1183,7 @@ namespace Vortex {
 		{
 			AssetHandle environmentHandle = component.Skybox;
 			SharedReference<Skybox> skybox = nullptr;
+
 			if (AssetManager::IsHandleValid(environmentHandle))
 			{
 				skybox = AssetManager::GetAsset<Skybox>(environmentHandle);

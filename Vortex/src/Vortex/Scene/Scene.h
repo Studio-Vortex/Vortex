@@ -52,8 +52,8 @@ namespace Vortex {
 		void SubmitToDestroyEntity(const QueueFreeData& queueFreeData);
 
 	private:
-		void DestroyEntity(Entity entity, bool excludeChildren = false);
-		void DestroyEntity(const QueueFreeData& queueFreeData);
+		void DestroyEntityInternal(Entity entity, bool excludeChildren = false);
+		void DestroyEntityInternal(const QueueFreeData& queueFreeData);
 
 		void UpdateQueueFreeTimers(TimeStep delta);
 

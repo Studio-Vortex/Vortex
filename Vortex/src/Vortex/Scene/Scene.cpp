@@ -199,22 +199,26 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyEntity(Entity entity, bool excludeChildren)
 	{
-		DestroyEntity(entity, excludeChildren);
-		//SubmitToPostUpdateQueue([&]() { DestroyEntity(entity, excludeChildren); });
+		DestroyEntityInternal(entity, excludeChildren);
+
+		// TODO figure out why this doesn't work
+		//SubmitToPostUpdateQueue([&]() { DestroyEntityInternal(entity, excludeChildren); });
 	}
 
 	void Scene::SubmitToDestroyEntity(const QueueFreeData& queueFreeData)
 	{
-		DestroyEntity(queueFreeData);
-		//SubmitToPostUpdateQueue([&]() { DestroyEntity(queueFreeData); });
+		DestroyEntityInternal(queueFreeData);
 	}
 
-	void Scene::DestroyEntity(Entity entity, bool excludeChildren)
+	void Scene::DestroyEntityInternal(Entity entity, bool excludeChildren)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (!entity || entity.GetContextScene() != this)
+		if (!entity || !m_EntityMap.contains(entity.GetUUID()))
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with invalid Entity!");
 			return;
+		}
 
 		if (m_IsRunning)
 		{
@@ -247,7 +251,7 @@ namespace Vortex {
 			{
 				auto& childID = entity.Children()[i];
 				Entity child = TryGetEntityWithUUID(childID);
-				DestroyEntity(child, excludeChildren);
+				DestroyEntityInternal(child, excludeChildren);
 			}
 		}
 
@@ -262,25 +266,25 @@ namespace Vortex {
 		SortEntities();
 	}
 
-	void Scene::DestroyEntity(const QueueFreeData& queueFreeData)
+	void Scene::DestroyEntityInternal(const QueueFreeData& queueFreeData)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(!m_QueueFreeMap.contains(queueFreeData.EntityUUID), "Entity was already submitted to be destroyed!");
-		VX_CORE_ASSERT(m_EntityMap.contains(queueFreeData.EntityUUID), "Entity was not found in Scene Entity Map!");
+		if (!m_EntityMap.contains(queueFreeData.EntityUUID))
+			return;
+
+		if (m_QueueFreeMap.contains(queueFreeData.EntityUUID))
+			return;
 
 		const bool invalidTimer = queueFreeData.WaitTime <= 0.0f;
 
 		if (invalidTimer)
 		{
 			Entity entity = m_EntityMap[queueFreeData.EntityUUID];
-			DestroyEntity(entity, queueFreeData.ExcludeChildren);
+			SubmitToDestroyEntity(entity, queueFreeData.ExcludeChildren);
 			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with a wait time of 0, Use the regular method instead!");
 			return;
 		}
-
-		if (m_QueueFreeMap.contains(queueFreeData.EntityUUID))
-			return;
 
 		m_QueueFreeMap[queueFreeData.EntityUUID] = queueFreeData;
 	}
@@ -307,7 +311,7 @@ namespace Vortex {
 		for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
 		{
 			VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
-			DestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
+			SubmitToDestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
 			m_QueueFreeMap.erase(uuid);
 		}
 
@@ -447,10 +451,7 @@ namespace Vortex {
 
 		if (shouldUpdateCurrentFrame)
 		{
-			SubmitToPostUpdateQueue([=]()
-			{
-				UpdateQueueFreeTimers(delta);
-			});
+			UpdateQueueFreeTimers(delta);
 		}
 
 		ExecutePostUpdateQueue();

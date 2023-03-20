@@ -21,6 +21,7 @@ namespace Vortex {
 
 	struct VORTEX_API SceneLightDescription
 	{
+		bool HasEnvironment = false;
 		bool HasSkyLight = false;
 		uint32_t PointLightIndex = 0;
 		uint32_t ActivePointLights = 0;
@@ -70,13 +71,13 @@ namespace Vortex {
 		static void DrawIndexed(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
-		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
+		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
 		static void DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		static SceneLightDescription GetSceneLightDescription();
 
-		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox);
+		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 		static void CreateShadowMap(LightType type);
 
 		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
@@ -105,6 +106,8 @@ namespace Vortex {
 		static void AddToDrawCallCountStats(uint32_t drawCalls);
 
 		static void SetProperties(const ProjectProperties::RendererProperties& props);
+
+		static void SetEnvironment(SharedReference<Skybox>& environment);
 
 		static float GetEnvironmentMapResolution();
 		static void SetEnvironmentMapResolution(float resolution);

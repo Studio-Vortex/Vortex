@@ -51,6 +51,8 @@ namespace Vortex {
 
 		SharedRef<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
 
+		SharedReference<Skybox> CurrentEnvironment = nullptr;
+
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
 		float ShadowMapResolution = 1024.0f;
@@ -259,16 +261,14 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox)
+	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		const bool framebufferNotCreated = s_Data.HDRFramebuffer == nullptr;
-
 		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 		// TODO fix this hack!
-		if (skybox->ShouldReload() || framebufferNotCreated)
+		if (!s_Data.SceneLightDesc.HasEnvironment)
 		{
-			CreateEnvironmentMap(skyboxComponent, skybox);
+			return;
 		}
 
 		// Render Environment Map
@@ -348,9 +348,9 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
-	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& skybox)
+	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
+		s_Data.HDRFramebuffer = HDRFramebuffer::Create(FramebufferProperties{});
 
 		Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
 
@@ -372,7 +372,7 @@ namespace Vortex {
 		equirectToCubemapShader->Enable();
 		equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
 		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
-		skybox->Bind();
+		environment->Bind();
 
 		SharedReference<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
 
@@ -485,7 +485,7 @@ namespace Vortex {
 
 		s_Data.HDRFramebuffer->Unbind();
 
-		skybox->SetShouldReload(false);
+		environment->SetShouldReload(false);
 	}
 
 	void Renderer::CreateShadowMap(LightType type)
@@ -1120,6 +1120,12 @@ namespace Vortex {
 		{
 			s_Data.CullMode = Utils::TriangleCullModeFromString(props.TriangleCullMode);
 		}
+	}
+
+	void Renderer::SetEnvironment(SharedReference<Skybox>& environment)
+	{
+		s_Data.CurrentEnvironment = environment;
+		s_Data.SceneLightDesc.HasEnvironment = environment != nullptr;
 	}
 
 	float Renderer::GetEnvironmentMapResolution()

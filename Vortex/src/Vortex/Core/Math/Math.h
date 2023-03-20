@@ -33,6 +33,7 @@ namespace Vortex::Math {
 	static constexpr float PI = glm::pi<float>();
 	static constexpr float TWO_PI = glm::two_pi<float>();
 	static constexpr double PI_D = glm::pi<double>();
+	static constexpr float EPSILON = glm::epsilon<float>();
 
 	struct AABB
 	{

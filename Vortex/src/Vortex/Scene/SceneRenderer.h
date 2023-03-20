@@ -10,6 +10,7 @@ namespace Vortex {
 	// Forward declarations
 	class Scene;
 	class Camera;
+	class Skybox;
 	class Material;
 	class Framebuffer;
 	struct TransformComponent;
@@ -32,7 +33,7 @@ namespace Vortex {
 		void RenderScene(const SceneRenderPacket& renderPacket);
 
 	private:
-		static void RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, Scene* scene);
+		static void RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 		static void SetMaterialFlags(const SharedReference<Material>& material);
 		static void ResetAllMaterialFlags();
 	};
