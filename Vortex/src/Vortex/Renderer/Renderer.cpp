@@ -708,7 +708,7 @@ namespace Vortex {
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
-	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
+	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
 	{
 		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
 
@@ -792,7 +792,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
-	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
+	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
 	{
 		// Configure shader
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
@@ -880,7 +880,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);*/
 	}
 
-	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes)
+	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
 	{
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
 		float nearPlane = 0.01f;

@@ -4,7 +4,15 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Asset/Asset.h"
 
-#include <filesystem>
+#include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
+#include "Vortex/Scripting/ScriptFieldInstance.h"
+#include "Vortex/Scripting/ScriptFieldTypes.h"
+#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ScriptField.h"
+#include "Vortex/Scripting/ScriptClass.h"
+
+#include "Vortex/Utils/FileSystem.h"
+
 #include <string>
 
 extern "C"
@@ -20,179 +28,8 @@ extern "C"
 
 namespace Vortex {
 
-	// Forward declarations
 	class TimeStep;
 	struct Collision;
-
-	enum class VORTEX_API ScriptFieldType
-	{
-		None = 0,
-		Float, Double,
-		Bool, Char, Short, Int, Long,
-		Byte, UShort, UInt, ULong,
-		Vector2, Vector3, Vector4,
-		Color3, Color4,
-		Entity,
-	};
-
-	struct VORTEX_API ScriptField
-	{
-		ScriptFieldType Type = ScriptFieldType::None;
-		std::string Name = "";
-
-		MonoClassField* ClassField = nullptr;
-	};
-
-#define VX_SCRIPT_FIELD_MAX_BITS 16
-
-	struct ScriptFieldInstance
-	{
-		ScriptField Field;
-
-		ScriptFieldInstance()
-		{
-			memset(m_Buffer, 0, sizeof(m_Buffer));
-		}
-
-		template <typename TFieldType>
-		TFieldType GetValue() const
-		{
-			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
-			return *(TFieldType*)m_Buffer;
-		}
-
-		template <typename TFieldType>
-		void SetValue(TFieldType value)
-		{
-			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
-			memcpy(m_Buffer, &value, sizeof(TFieldType));
-		}
-
-	private:
-		uint8_t m_Buffer[VX_SCRIPT_FIELD_MAX_BITS];
-
-	private:
-		friend class ScriptEngine;
-		friend class ScriptInstance;
-	};
-
-	class ScriptClass
-	{
-	public:
-		ScriptClass() = default;
-		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
-		~ScriptClass() = default;
-
-		MonoObject* Instantiate();
-		MonoMethod* GetMethod(const std::string& name, int parameterCount);
-
-		inline std::map<std::string, ScriptField> GetFields() { return m_Fields; }
-
-		inline MonoClass* GetMonoClass() const { return m_MonoClass; }
-
-	private:
-		std::string m_ClassNamespace;
-		std::string m_ClassName;
-
-		std::map<std::string, ScriptField> m_Fields;
-
-		MonoClass* m_MonoClass = nullptr;
-
-	private:
-		friend class ScriptEngine;
-	};
-
-	class VORTEX_API ScriptInstance
-	{
-	public:
-		ScriptInstance() = default;
-		ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity);
-		~ScriptInstance() = default;
-
-		void InvokeOnAwake();
-		void InvokeOnCreate();
-		void InvokeOnUpdate(float delta);
-		void InvokeOnDestroy();
-		void InvokeOnCollisionEnter(Collision& collision);
-		void InvokeOnCollisionExit(Collision& collision);
-		void InvokeOnTriggerEnter(Collision& collision);
-		void InvokeOnTriggerExit(Collision& collision);
-		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		void InvokeOnRaycastCollision();
-		void InvokeOnEnabled();
-		void InvokeOnDisabled();
-		void InvokeOnGui();
-
-		VX_FORCE_INLINE SharedRef<ScriptClass> GetScriptClass() { return m_ScriptClass; }
-
-		template <typename TFieldType>
-		TFieldType GetFieldValue(const std::string& fieldName)
-		{
-			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
-
-			const bool found = GetFieldValueInternal(fieldName, s_FieldValueBuffer);
-			if (!found)
-				return TFieldType();
-
-			return *(TFieldType*)s_FieldValueBuffer;
-		}
-
-		template <typename TFieldType>
-		void SetFieldValue(const std::string& fieldName, TFieldType value)
-		{
-			static_assert(sizeof(TFieldType) <= VX_SCRIPT_FIELD_MAX_BITS, "Type too large!");
-
-			SetFieldValueInternal(fieldName, &value);
-		}
-
-		MonoObject* GetManagedObject() const { return m_Instance; }
-
-	private:
-		bool GetFieldValueInternal(const std::string& fieldName, void* buffer);
-		bool SetFieldValueInternal(const std::string& fieldName, const void* value);
-
-	private:
-		SharedRef<ScriptClass> m_ScriptClass;
-
-		enum class ManagedMethod
-		{
-			OnAwake,
-			OnCreate,
-			OnUpdateDelta,
-			OnUpdate,
-			OnDestroy,
-			OnCollisionEnter,
-			OnCollisionExit,
-			OnTriggerEnter,
-			OnTriggerExit,
-			OnFixedJointDisconnected,
-			OnRaycastCollision,
-			OnEnabled,
-			OnDisabled,
-			OnGui,
-		};
-
-		MonoObject* m_Instance = nullptr;
-
-		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
-
-		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BITS];
-
-#ifdef VX_DEBUG
-		std::string m_DebugName = "";
-#endif
-
-	private:
-		friend class ScriptEngine;
-		friend struct ScriptFieldInstance;
-	};
-
-	struct MonoAssemblyTypeInfo
-	{
-		const char* Namespace;
-		const char* Name;
-		uint32_t FieldCount;
-	};
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
@@ -231,7 +68,7 @@ namespace Vortex {
 		static void OnDisabled(Entity entity);
 		static void OnGuiEntity(Entity entity);
 
-		static SharedRef<ScriptClass> GetCoreEntityClass();
+		static SharedReference<ScriptClass> GetCoreEntityClass();
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
@@ -239,10 +76,10 @@ namespace Vortex {
 
 		static void DuplicateScriptInstance(Entity entity, Entity targetEntity);
 
-		static SharedRef<ScriptInstance> GetEntityScriptInstance(UUID uuid);
+		static SharedReference<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
-		static SharedRef<ScriptClass> GetEntityClass(const std::string& name);
-		static std::unordered_map<std::string, SharedRef<ScriptClass>> GetClasses();
+		static SharedReference<ScriptClass> GetEntityClass(const std::string& name);
+		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetClasses();
 		static const ScriptFieldMap& GetScriptFieldMap(Entity entity);
 		static ScriptFieldMap& GetMutableScriptFieldMap(Entity entity);
 

@@ -851,10 +851,10 @@ namespace Vortex {
 		return transformComponent;
 	}
 
-    SharedReference<Scene::SceneMeshes>& Scene::GetSceneMeshes()
+    SharedReference<Scene::SceneGeometry>& Scene::GetSceneMeshes()
 	{
 		if (!m_SceneMeshes)
-			m_SceneMeshes = SharedReference<SceneMeshes>::Create();
+			m_SceneMeshes = SharedReference<SceneGeometry>::Create();
 
 		ClearSceneMeshes();
 

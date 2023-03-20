@@ -29,6 +29,16 @@ namespace Vortex {
 			bool ExcludeChildren = false;
 		};
 
+		struct SceneGeometry : public RefCounted
+		{
+			std::vector<SharedReference<Mesh>> Meshes;
+			std::vector<Math::mat4> WorldSpaceMeshTransforms;
+			std::vector<Entity> MeshEntities;
+
+			std::vector<SharedReference<StaticMesh>> StaticMeshes;
+			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
+		};
+
 	public:
 		Scene() = default;
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
@@ -64,15 +74,15 @@ namespace Vortex {
 
 		void OnUpdateEntityGui();
 
-		inline SharedRef<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
-		inline void SetTargetFramebuffer(SharedRef<Framebuffer> target) { m_TargetFramebuffer = target; }
+		VX_FORCE_INLINE SharedRef<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
+		VX_FORCE_INLINE void SetTargetFramebuffer(SharedRef<Framebuffer> target) { m_TargetFramebuffer = target; }
 
-		inline bool IsRunning() const { return m_IsRunning; }
-		inline bool IsPaused() const { return m_IsPaused; }
-		inline void SetPaused(bool paused) { m_IsPaused = paused; }
+		VX_FORCE_INLINE bool IsRunning() const { return m_IsRunning; }
+		VX_FORCE_INLINE bool IsPaused() const { return m_IsPaused; }
+		VX_FORCE_INLINE void SetPaused(bool paused) { m_IsPaused = paused; }
 
-		inline const Math::ivec2& GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
-		inline size_t GetEntityCount() const { return m_Registry.alive(); }
+		VX_FORCE_INLINE Math::uvec2 GetViewportSize() const { return Math::uvec2(m_ViewportWidth, m_ViewportHeight); }
+		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
 
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
 
@@ -102,20 +112,10 @@ namespace Vortex {
 		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
 		TransformComponent GetWorldSpaceTransform(Entity entity);
 
-		struct SceneMeshes : public RefCounted
-		{
-			std::vector<SharedReference<Mesh>> Meshes;
-			std::vector<Math::mat4> WorldSpaceMeshTransforms;
-			std::vector<Entity> MeshEntities;
-
-			std::vector<SharedReference<StaticMesh>> StaticMeshes;
-			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
-		};
-
-		SharedReference<SceneMeshes>& GetSceneMeshes();
+		SharedReference<SceneGeometry>& GetSceneMeshes();
 
 		template <typename TComponent>
-		inline void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
+		VX_FORCE_INLINE void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
 		{
 			if (m_Registry.all_of<TComponent>(src))
 			{
@@ -125,7 +125,7 @@ namespace Vortex {
 		}
 
 		template <typename... TComponent>
-		inline auto GetAllEntitiesWith()
+		VX_FORCE_INLINE auto GetAllEntitiesWith()
 		{
 			return m_Registry.view<TComponent...>();
 		}
@@ -173,7 +173,7 @@ namespace Vortex {
 
 	private:
 		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
-		SharedReference<SceneMeshes> m_SceneMeshes = nullptr;
+		SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;

@@ -988,19 +988,19 @@ namespace Vortex {
 				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 				VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 
-				SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
+				SharedReference<ScriptClass> entityClass = ScriptEngine::GetEntityClass(scriptComponent.ClassName);
 				const auto& fields = entityClass->GetFields();
 
 				if (fields.size() > 0)
 				{
-					const auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+					const ScriptFieldMap& entityScriptFields = ScriptEngine::GetScriptFieldMap(entity);
 
 					out << YAML::Key << "ScriptFields" << YAML::Value;
 					out << YAML::BeginSeq;
 
 					for (const auto& [name, field] : fields)
 					{
-						if (entityFields.find(name) == entityFields.end())
+						if (entityScriptFields.find(name) == entityScriptFields.end())
 							continue;
 
 						out << YAML::BeginMap; // ScriptFields
@@ -1009,7 +1009,7 @@ namespace Vortex {
 						VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
 						out << YAML::Key << "Data" << YAML::Value;
 
-						const ScriptFieldInstance& scriptField = entityFields.at(name);
+						const ScriptFieldInstance& scriptField = entityScriptFields.at(name);
 						
 						switch (field.Type)
 						{
@@ -1030,6 +1030,7 @@ namespace Vortex {
 							WRITE_SCRIPT_FIELD(Color3, Math::vec3)
 							WRITE_SCRIPT_FIELD(Color4, Math::vec4)
 							WRITE_SCRIPT_FIELD(Entity, UUID)
+							WRITE_SCRIPT_FIELD(AssetHandle, UUID)
 						}
 
 						out << YAML::EndMap; // ScriptFields
@@ -1624,24 +1625,24 @@ namespace Vortex {
 				auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
 				sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
-				auto scriptFields = scriptComponent["ScriptFields"];
-
-				if (scriptFields)
+				if (ScriptEngine::EntityClassExists(sc.ClassName))
 				{
-					if (ScriptEngine::EntityClassExists(sc.ClassName))
+					auto scriptFields = scriptComponent["ScriptFields"];
+
+					if (scriptFields)
 					{
-						SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+						SharedReference<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
 
 						if (entityClass)
 						{
 							const auto& fields = entityClass->GetFields();
-							auto& entityFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
+							ScriptFieldMap& entityScriptFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
 
 							for (auto scriptField : scriptFields)
 							{
 								std::string name = scriptField["Name"].as<std::string>();
 
-								ScriptFieldInstance& fieldInstance = entityFields[name];
+								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 
 								if (fields.find(name) == fields.end())
 								{
@@ -1673,10 +1674,11 @@ namespace Vortex {
 									READ_SCRIPT_FIELD(Color3, Math::vec3)
 									READ_SCRIPT_FIELD(Color4, Math::vec4)
 									READ_SCRIPT_FIELD(Entity, UUID)
+									READ_SCRIPT_FIELD(AssetHandle, UUID)
 								}
 							}
 						}
-					}
+					}	
 				}
 			}
 		}

@@ -147,9 +147,9 @@ namespace Vortex {
 
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
 
-		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes);
-		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes);
-		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneMeshes>& sceneMeshes);
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
 
 		// Post Processing
 

@@ -26,23 +26,24 @@ namespace Vortex {
 
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
-		{ "System.Single",  ScriptFieldType::Float   },
-		{ "System.Double",  ScriptFieldType::Double  },
-		{ "System.Boolean", ScriptFieldType::Bool    },
-		{ "System.Char",    ScriptFieldType::Char    },
-		{ "System.Int16",   ScriptFieldType::Short   },
-		{ "System.Int32",   ScriptFieldType::Int     },
-		{ "System.Int64",   ScriptFieldType::Long    },
-		{ "System.Byte",    ScriptFieldType::Byte    },
-		{ "System.UInt16",  ScriptFieldType::UShort  },
-		{ "System.UInt32",  ScriptFieldType::UInt    },
-		{ "System.UInt64",  ScriptFieldType::ULong   },
-		{ "Vortex.Vector2", ScriptFieldType::Vector2 },
-		{ "Vortex.Vector3", ScriptFieldType::Vector3 },
-		{ "Vortex.Vector4", ScriptFieldType::Vector4 },
-		{ "Vortex.Color3",  ScriptFieldType::Color3  },
-		{ "Vortex.Color4",  ScriptFieldType::Color4  },
-		{ "Vortex.Entity",  ScriptFieldType::Entity  },
+		{ "System.Single",      ScriptFieldType::Float       },
+		{ "System.Double",      ScriptFieldType::Double      },
+		{ "System.Boolean",     ScriptFieldType::Bool        },
+		{ "System.Char",        ScriptFieldType::Char        },
+		{ "System.Int16",       ScriptFieldType::Short       },
+		{ "System.Int32",       ScriptFieldType::Int         },
+		{ "System.Int64",       ScriptFieldType::Long        },
+		{ "System.Byte",        ScriptFieldType::Byte        },
+		{ "System.UInt16",      ScriptFieldType::UShort      },
+		{ "System.UInt32",      ScriptFieldType::UInt        },
+		{ "System.UInt64",      ScriptFieldType::ULong       },
+		{ "Vortex.Vector2",     ScriptFieldType::Vector2     },
+		{ "Vortex.Vector3",     ScriptFieldType::Vector3     },
+		{ "Vortex.Vector4",     ScriptFieldType::Vector4     },
+		{ "Vortex.Color3",      ScriptFieldType::Color3      },
+		{ "Vortex.Color4",      ScriptFieldType::Color4      },
+		{ "Vortex.Entity",      ScriptFieldType::Entity      },
+		{ "Vortex.AssetHandle", ScriptFieldType::AssetHandle },
 	};
 
 	namespace Utils {
@@ -151,24 +152,25 @@ namespace Vortex {
 		{
 			switch (type)
 			{
-				case ScriptFieldType::None:    return "None";
-				case ScriptFieldType::Float:   return "Float";
-				case ScriptFieldType::Double:  return "Double";
-				case ScriptFieldType::Bool:    return "Bool";
-				case ScriptFieldType::Char:    return "Char";
-				case ScriptFieldType::Short:   return "Short";
-				case ScriptFieldType::Int:     return "Int";
-				case ScriptFieldType::Long:    return "Long";
-				case ScriptFieldType::Byte:    return "Byte";
-				case ScriptFieldType::UShort:  return "UShort";
-				case ScriptFieldType::UInt:    return "UInt";
-				case ScriptFieldType::ULong:   return "ULong";
-				case ScriptFieldType::Vector2: return "Vector2";
-				case ScriptFieldType::Vector3: return "Vector3";
-				case ScriptFieldType::Vector4: return "Vector4";
-				case ScriptFieldType::Color3:  return "Color3";
-				case ScriptFieldType::Color4:  return "Color4";
-				case ScriptFieldType::Entity:  return "Entity";
+				case ScriptFieldType::None:        return "None";
+				case ScriptFieldType::Float:       return "Float";
+				case ScriptFieldType::Double:      return "Double";
+				case ScriptFieldType::Bool:        return "Bool";
+				case ScriptFieldType::Char:        return "Char";
+				case ScriptFieldType::Short:       return "Short";
+				case ScriptFieldType::Int:         return "Int";
+				case ScriptFieldType::Long:        return "Long";
+				case ScriptFieldType::Byte:        return "Byte";
+				case ScriptFieldType::UShort:      return "UShort";
+				case ScriptFieldType::UInt:        return "UInt";
+				case ScriptFieldType::ULong:       return "ULong";
+				case ScriptFieldType::Vector2:     return "Vector2";
+				case ScriptFieldType::Vector3:     return "Vector3";
+				case ScriptFieldType::Vector4:     return "Vector4";
+				case ScriptFieldType::Color3:      return "Color3";
+				case ScriptFieldType::Color4:      return "Color4";
+				case ScriptFieldType::Entity:      return "Entity";
+				case ScriptFieldType::AssetHandle: return "AssetHandle";
 			}
 
 			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
@@ -177,24 +179,25 @@ namespace Vortex {
 
 		ScriptFieldType StringToScriptFieldType(std::string_view fieldType)
 		{
-			if (fieldType == "None")    return ScriptFieldType::None;
-			if (fieldType == "Float")   return ScriptFieldType::Float;
-			if (fieldType == "Double")  return ScriptFieldType::Double;
-			if (fieldType == "Bool")    return ScriptFieldType::Bool;
-			if (fieldType == "Char")    return ScriptFieldType::Char;
-			if (fieldType == "Short")   return ScriptFieldType::Short;
-			if (fieldType == "Int")     return ScriptFieldType::Int;
-			if (fieldType == "Long")    return ScriptFieldType::Long;
-			if (fieldType == "Byte")    return ScriptFieldType::Byte;
-			if (fieldType == "UShort")  return ScriptFieldType::UShort;
-			if (fieldType == "UInt")    return ScriptFieldType::UInt;
-			if (fieldType == "ULong")   return ScriptFieldType::ULong;
-			if (fieldType == "Vector2") return ScriptFieldType::Vector2;
-			if (fieldType == "Vector3") return ScriptFieldType::Vector3;
-			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
-			if (fieldType == "Color3")  return ScriptFieldType::Color3;
-			if (fieldType == "Color4")  return ScriptFieldType::Color4;
-			if (fieldType == "Entity")  return ScriptFieldType::Entity;
+			if (fieldType == "None")        return ScriptFieldType::None;
+			if (fieldType == "Float")       return ScriptFieldType::Float;
+			if (fieldType == "Double")      return ScriptFieldType::Double;
+			if (fieldType == "Bool")        return ScriptFieldType::Bool;
+			if (fieldType == "Char")        return ScriptFieldType::Char;
+			if (fieldType == "Short")       return ScriptFieldType::Short;
+			if (fieldType == "Int")         return ScriptFieldType::Int;
+			if (fieldType == "Long")        return ScriptFieldType::Long;
+			if (fieldType == "Byte")        return ScriptFieldType::Byte;
+			if (fieldType == "UShort")      return ScriptFieldType::UShort;
+			if (fieldType == "UInt")        return ScriptFieldType::UInt;
+			if (fieldType == "ULong")       return ScriptFieldType::ULong;
+			if (fieldType == "Vector2")     return ScriptFieldType::Vector2;
+			if (fieldType == "Vector3")     return ScriptFieldType::Vector3;
+			if (fieldType == "Vector4")     return ScriptFieldType::Vector4;
+			if (fieldType == "Color3")      return ScriptFieldType::Color3;
+			if (fieldType == "Color4")      return ScriptFieldType::Color4;
+			if (fieldType == "Entity")      return ScriptFieldType::Entity;
+			if (fieldType == "AssetHandle") return ScriptFieldType::AssetHandle;
 
 			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
 			return ScriptFieldType::None;
@@ -216,7 +219,7 @@ namespace Vortex {
 		std::filesystem::path CoreAssemblyFilepath;
 		std::filesystem::path AppAssemblyFilepath;
 
-		SharedRef<ScriptClass> EntityClass = nullptr;
+		SharedReference<ScriptClass> EntityClass = nullptr;
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
@@ -224,8 +227,8 @@ namespace Vortex {
 
 		SharedRef<AudioSource> AppAssemblyReloadSound = nullptr;
 
-		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
-		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
+		std::unordered_map<std::string, SharedReference<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, SharedReference<ScriptInstance>> EntityInstances;
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 
 		// Runtime
@@ -285,7 +288,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
+		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
 	}
 
@@ -390,7 +393,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = CreateShared<ScriptClass>("Vortex", "Entity", true);
+		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
@@ -431,8 +434,8 @@ namespace Vortex {
 		VX_CORE_ASSERT(!EntityInstanceExists(entityUUID), "Instance was already found with UUID!");
 		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Entity Class was not found in Entity Classes Map!");
 
-		SharedRef<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
-		SharedRef<ScriptInstance> instance = CreateShared<ScriptInstance>(scriptClass, entity);
+		SharedReference<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
+		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass, entity);
 		s_Data->EntityInstances[entityUUID] = instance;
 
 		// Copy field values
@@ -493,7 +496,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		SharedRef<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
+		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
 		instance->InvokeOnDestroy();
 
 		s_Data->EntityInstances.erase(entityUUID);
@@ -580,12 +583,12 @@ namespace Vortex {
 		GetEntityScriptInstance(entityUUID)->InvokeOnGui();
 	}
 
-	SharedRef<ScriptClass> ScriptEngine::GetCoreEntityClass()
+	SharedReference<ScriptClass> ScriptEngine::GetCoreEntityClass()
 	{
 		return s_Data->EntityClass;
 	}
 
-	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
+	SharedReference<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
 		if (s_Data->EntityInstances.contains(uuid))
 			return s_Data->EntityInstances[uuid];
@@ -593,7 +596,7 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	SharedRef<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	SharedReference<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
 		if (s_Data->EntityClasses.contains(name))
 			return s_Data->EntityClasses[name];
@@ -601,19 +604,20 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
+	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetClasses()
 	{
 		return s_Data->EntityClasses;
 	}
 
 	const ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
 	{
-		return GetMutableScriptFieldMap(entity);
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
+
+		return s_Data->EntityScriptFields[entity.GetUUID()];
 	}
 
 	ScriptFieldMap& ScriptEngine::GetMutableScriptFieldMap(Entity entity)
 	{
-		std::string name = entity.GetName();
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		return s_Data->EntityScriptFields[entity.GetUUID()];
@@ -700,7 +704,7 @@ namespace Vortex {
 			if (!isEntityClass)
 				continue;
 
-			SharedRef<ScriptClass> scriptClass = CreateShared<ScriptClass>(nameSpace, className);
+			SharedReference<ScriptClass> scriptClass = SharedReference<ScriptClass>::Create(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);
@@ -750,7 +754,7 @@ namespace Vortex {
 		return ScriptUtils::GetManagedMethodFromName(m_MonoClass, name.c_str(), parameterCount);
 	}
 
-	ScriptInstance::ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity)
+	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
 	{
 		m_Instance = m_ScriptClass->Instantiate();

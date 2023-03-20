@@ -2353,12 +2353,12 @@ namespace Vortex {
 			if (UI::PropertyDropdownSearch("Class", entityClassNameStrings.data(), entityClassNameStrings.size(), currentClassName, m_EntityClassNameInputTextFilter))
 				component.ClassName = currentClassName;
 
-			bool sceneRunning = m_ContextScene->IsRunning();
+			const bool sceneRunning = m_ContextScene->IsRunning();
 
 			// Fields
 			if (sceneRunning)
 			{
-				SharedRef<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+				SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
 
 				if (scriptInstance)
 				{
@@ -2481,6 +2481,26 @@ namespace Vortex {
 								Gui::EndDragDropTarget();
 							}
 						}
+						if (field.Type == ScriptFieldType::AssetHandle)
+						{
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (UI::Property(name.c_str(), data))
+							{
+								scriptInstance->SetFieldValue(name, data);
+							}
+
+							if (Gui::BeginDragDropTarget())
+							{
+								// TODO
+								/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Entity& droppedEntity = *((Entity*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}*/
+
+								Gui::EndDragDropTarget();
+							}
+						}
 					}
 				}
 			}
@@ -2488,16 +2508,17 @@ namespace Vortex {
 			{
 				if (scriptClassExists)
 				{
-					SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					SharedReference<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto& fields = entityClass->GetFields();
 
-					auto& entityClassFields = ScriptEngine::GetMutableScriptFieldMap(entity);
+					ScriptFieldMap& entityScriptFields = ScriptEngine::GetMutableScriptFieldMap(entity);
+
 					for (const auto& [name, field] : fields)
 					{
-						auto it = entityClassFields.find(name);
+						auto it = entityScriptFields.find(name);
 
 						// Field has been set in editor
-						if (it != entityClassFields.end())
+						if (it != entityScriptFields.end())
 						{
 							ScriptFieldInstance& scriptField = it->second;
 
@@ -2617,6 +2638,26 @@ namespace Vortex {
 									Gui::EndDragDropTarget();
 								}
 							}
+							if (field.Type == ScriptFieldType::AssetHandle)
+							{
+								uint64_t data = scriptField.GetValue<uint64_t>();
+								if (UI::Property(name.c_str(), data))
+								{
+									scriptField.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									// TODO
+									/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										scriptField.SetValue(droppedEntity.GetUUID());
+									}*/
+
+									Gui::EndDragDropTarget();
+								}
+							}
 						}
 						else
 						{
@@ -2626,7 +2667,7 @@ namespace Vortex {
 								float data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2636,7 +2677,7 @@ namespace Vortex {
 								double data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2646,7 +2687,7 @@ namespace Vortex {
 								Math::vec2 data = Math::vec2(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2656,7 +2697,7 @@ namespace Vortex {
 								Math::vec3 data = Math::vec3(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2666,7 +2707,7 @@ namespace Vortex {
 								Math::vec4 data = Math::vec4(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2676,7 +2717,7 @@ namespace Vortex {
 								Math::vec3 data = Math::vec3(0.0f);
 								if (UI::Property(name.c_str(), &data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2686,7 +2727,7 @@ namespace Vortex {
 								Math::vec4 data = Math::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 								if (UI::Property(name.c_str(), &data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2696,7 +2737,7 @@ namespace Vortex {
 								bool data = false;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2706,7 +2747,7 @@ namespace Vortex {
 								char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2716,7 +2757,7 @@ namespace Vortex {
 								short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2726,7 +2767,7 @@ namespace Vortex {
 								int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2736,7 +2777,7 @@ namespace Vortex {
 								long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2746,7 +2787,7 @@ namespace Vortex {
 								unsigned char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2756,7 +2797,7 @@ namespace Vortex {
 								unsigned short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2766,7 +2807,7 @@ namespace Vortex {
 								unsigned int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2776,7 +2817,7 @@ namespace Vortex {
 								unsigned long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2786,7 +2827,7 @@ namespace Vortex {
 								uint64_t data;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance fieldInstance = entityClassFields[name];
+									ScriptFieldInstance fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2796,10 +2837,34 @@ namespace Vortex {
 									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 									{
 										Entity& droppedEntity = *((Entity*)payload->Data);
-										ScriptFieldInstance fieldInstance = entityClassFields[name];
+										ScriptFieldInstance fieldInstance = entityScriptFields[name];
 										fieldInstance.Field = field;
 										fieldInstance.SetValue(droppedEntity.GetUUID());
 									}
+
+									Gui::EndDragDropTarget();
+								}
+							}
+							if (field.Type == ScriptFieldType::AssetHandle)
+							{
+								uint64_t data;
+								if (UI::Property(name.c_str(), data))
+								{
+									ScriptFieldInstance fieldInstance = entityScriptFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									// TODO
+									/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										ScriptFieldInstance fieldInstance = entityScriptFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue(droppedEntity.GetUUID());
+									}*/
 
 									Gui::EndDragDropTarget();
 								}

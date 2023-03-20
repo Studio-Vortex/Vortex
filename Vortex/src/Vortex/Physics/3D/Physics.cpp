@@ -940,7 +940,7 @@ namespace Vortex {
 			return s_Data->LastReportedJointForces[fixedJoint];
 		}
 
-		return std::make_pair(Math::vec3(), Math::vec3());
+		return {};
 	}
 
 	const PhysicsBodyData* Physics::GetPhysicsBodyData(UUID entityUUID)
