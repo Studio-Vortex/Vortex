@@ -135,7 +135,12 @@ namespace Vortex {
 		m_RuntimeScene->OnUpdateEntityGui();
 	}
 
-	void RuntimeLayer::OnEvent(Event& e) { }
+	void RuntimeLayer::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+
+		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(RuntimeLayer::OnWindowCloseEvent));
+	}
 
 	void RuntimeLayer::OnRuntimeScenePlay()
 	{
@@ -182,6 +187,16 @@ namespace Vortex {
 
 			m_AudioSourcesToResume.clear();
 		}
+	}
+
+	bool RuntimeLayer::OnWindowCloseEvent(WindowCloseEvent& e)
+	{
+		if (m_RuntimeScene->IsRunning())
+		{
+			OnRuntimeSceneStop();
+		}
+
+		return false;
 	}
 
 	bool RuntimeLayer::OpenProject(const std::filesystem::path& filepath)

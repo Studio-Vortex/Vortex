@@ -328,7 +328,7 @@ namespace Vortex {
 	void LauncherLayer::BuildProjectDLL()
 	{
 		auto projectSolutionFilename = std::filesystem::path(m_Properties.ProjectNameBuffer);
-		projectSolutionFilename.replace_extension(".sln");
+		FileSystem::ReplaceExtension(projectSolutionFilename, ".sln");
 		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
 		FileSystem::SetCurrentPath("Resources/HelperScripts");

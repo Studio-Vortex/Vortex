@@ -1864,6 +1864,8 @@ namespace Vortex {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
+		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowCloseEvent));
+
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
@@ -2127,6 +2129,16 @@ namespace Vortex {
 		return false;
 	}
 
+	bool EditorLayer::OnWindowCloseEvent(WindowCloseEvent& e)
+	{
+		if (m_SceneState != SceneState::Edit)
+		{
+			OnSceneStop();
+		}
+
+		return false;
+	}
+
 	void EditorLayer::CreateNewProject()
 	{
 		Project::New();
@@ -2269,7 +2281,7 @@ namespace Vortex {
 
 		if (!filepath.empty())
 		{
-			filepath = ReplaceSceneFileExtensionIfNeeded(filepath).string();
+			ReplaceSceneFileExtensionIfNeeded(filepath);
 
 			m_EditorScenePath = filepath;
 			
@@ -2567,15 +2579,15 @@ namespace Vortex {
 		sceneTexture->SaveToFile();
 	}
 
-	std::filesystem::path EditorLayer::ReplaceSceneFileExtensionIfNeeded(const std::filesystem::path& filepath)
+	void EditorLayer::ReplaceSceneFileExtensionIfNeeded(std::string& filepath)
 	{
-		std::string extension = FileSystem::GetFileExtension(filepath);
-		if (extension.empty() || extension != ".vortex")
+		std::filesystem::path copy = filepath;
+		
+		if (copy.extension() != ".vortex" || copy.extension().empty())
 		{
-			return FileSystem::ReplaceExtension(filepath, ".vortex");
+			FileSystem::ReplaceExtension(copy, ".vortex");
+			filepath = copy.string();
 		}
-
-		return filepath;
 	}
 
 	void EditorLayer::OnNoGizmoSelected()

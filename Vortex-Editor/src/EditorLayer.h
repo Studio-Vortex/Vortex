@@ -48,8 +48,10 @@ namespace Vortex {
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();
 		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
+
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
+		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
 		// Project
 
@@ -102,7 +104,7 @@ namespace Vortex {
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
 		void CaptureFramebufferImageToDisk();
-		std::filesystem::path ReplaceSceneFileExtensionIfNeeded(const std::filesystem::path& filepath);
+		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;

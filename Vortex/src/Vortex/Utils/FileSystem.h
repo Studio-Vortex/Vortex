@@ -30,7 +30,7 @@ namespace Vortex {
 
 		static std::string GetFileExtension(const std::filesystem::path& filepath);
 		static std::string RemoveFileExtension(const std::filesystem::path& filepath);
-		static std::filesystem::path& ReplaceExtension(const std::filesystem::path& filepath, std::string_view extension);
+		static void ReplaceExtension(std::filesystem::path& filepath, std::string_view extension);
 
 		static std::filesystem::path GetCurrentPath();
 		static void SetCurrentPath(const std::filesystem::path& filepath);

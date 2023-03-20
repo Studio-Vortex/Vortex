@@ -23,6 +23,8 @@ namespace Vortex {
 		void OnRuntimeScenePaused();
 		void OnRuntimeSceneResumed();
 
+		bool OnWindowCloseEvent(WindowCloseEvent& e);
+
 		bool OpenProject(const std::filesystem::path& filepath);
 		bool OpenScene(const AssetMetadata& sceneMetadata);
 
