@@ -102,6 +102,7 @@ namespace Vortex {
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
 		void CaptureFramebufferImageToDisk();
+		std::filesystem::path ReplaceSceneFileExtensionIfNeeded(const std::filesystem::path& filepath);
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;

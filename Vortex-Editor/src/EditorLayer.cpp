@@ -2209,12 +2209,6 @@ namespace Vortex {
 
 		if (!filepath.empty())
 		{
-			std::string extension = FileSystem::GetFileExtension(filepath);
-			if (extension.empty() || extension != ".vortex")
-			{
-				FileSystem::ReplaceExtension(filepath, ".vortex");
-			}
-
 			OpenScene(filepath);
 		}
 	}
@@ -2275,6 +2269,8 @@ namespace Vortex {
 
 		if (!filepath.empty())
 		{
+			filepath = ReplaceSceneFileExtensionIfNeeded(filepath).string();
+
 			m_EditorScenePath = filepath;
 			
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
@@ -2569,6 +2565,17 @@ namespace Vortex {
 
 		SharedReference<Texture2D> sceneTexture = Texture2D::Create(imageProps);
 		sceneTexture->SaveToFile();
+	}
+
+	std::filesystem::path EditorLayer::ReplaceSceneFileExtensionIfNeeded(const std::filesystem::path& filepath)
+	{
+		std::string extension = FileSystem::GetFileExtension(filepath);
+		if (extension.empty() || extension != ".vortex")
+		{
+			return FileSystem::ReplaceExtension(filepath, ".vortex");
+		}
+
+		return filepath;
 	}
 
 	void EditorLayer::OnNoGizmoSelected()
