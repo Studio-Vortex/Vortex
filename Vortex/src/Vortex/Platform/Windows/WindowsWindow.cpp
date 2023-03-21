@@ -144,8 +144,12 @@ namespace Vortex {
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
+			const bool invalidKeyCode = action < (uint32_t)KeyCode::StartingKey || action >(uint32_t)KeyCode::MaxKeys;
+			if (invalidKeyCode)
+				return;
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			
+
 			Input::UpdateKeyState((KeyCode)key, action);
 
 			switch (action)

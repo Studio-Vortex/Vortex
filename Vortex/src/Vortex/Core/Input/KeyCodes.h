@@ -138,6 +138,8 @@ namespace Vortex {
 		RightAlt           = 346,
 		RightSuper         = 347,
 		Menu               = 348,
+
+		StartingKey = Space,
 		MaxKeys            = 348,
 	};
 
