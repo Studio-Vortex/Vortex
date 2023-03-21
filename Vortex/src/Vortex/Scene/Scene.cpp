@@ -422,32 +422,31 @@ namespace Vortex {
 		}
 
 		// Locate the scene's primary camera
+		SceneCamera* primarySceneCamera = nullptr;
+		TransformComponent primarySceneCameraTransform;
+
+		Entity primaryCameraEntity = GetPrimaryCameraEntity();
+
+		if (primaryCameraEntity)
 		{
-			SceneCamera* primarySceneCamera = nullptr;
-			TransformComponent primarySceneCameraTransform;
+			auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+			primarySceneCamera = &cameraComponent.Camera;
+			primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
 
-			Entity primaryCameraEntity = GetPrimaryCameraEntity();
+			// Set clear color
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 
-			if (primaryCameraEntity)
+			if (primarySceneCamera)
 			{
-				auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
-				primarySceneCamera = &cameraComponent.Camera;
-				primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
-
-				// Set clear color
-				RenderCommand::SetClearColor(cameraComponent.ClearColor);
-
-				if (primarySceneCamera)
-				{
-					SceneRenderPacket renderPacket{};
-					renderPacket.MainCamera = primarySceneCamera;
-					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform.GetTransform();
-					renderPacket.MainCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
-					renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-					renderPacket.Scene = this;
-					renderPacket.EditorScene = false;
-					s_SceneRenderer.RenderScene(renderPacket);
-				}
+				SceneRenderPacket renderPacket{};
+				renderPacket.MainCamera = primarySceneCamera;
+				renderPacket.MainCameraViewMatrix = Math::Inverse(primarySceneCameraTransform.GetTransform());
+				renderPacket.MainCameraProjectionMatrix = primarySceneCamera->GetProjectionMatrix();
+				renderPacket.MainCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
+				renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+				renderPacket.Scene = this;
+				renderPacket.EditorScene = false;
+				s_SceneRenderer.RenderScene(renderPacket);
 			}
 		}
 
@@ -481,6 +480,8 @@ namespace Vortex {
 		// Render
 		SceneRenderPacket renderPacket{};
 		renderPacket.MainCamera = camera;
+		renderPacket.MainCameraViewMatrix = camera->GetViewMatrix();
+		renderPacket.MainCameraProjectionMatrix = camera->GetProjectionMatrix();
 		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
@@ -502,6 +503,8 @@ namespace Vortex {
 		{
 			SceneRenderPacket renderPacket{};
 			renderPacket.MainCamera = camera;
+			renderPacket.MainCameraViewMatrix = camera->GetViewMatrix();
+			renderPacket.MainCameraProjectionMatrix = camera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 			renderPacket.Scene = this;
 			renderPacket.EditorScene = true;

@@ -26,7 +26,8 @@ namespace Vortex {
 	struct SceneRenderPacket
 	{
 		Camera* MainCamera = nullptr;
-		Math::mat4 MainCameraWorldSpaceTransform = {};
+		Math::mat4 MainCameraViewMatrix = {};
+		Math::mat4 MainCameraProjectionMatrix = {};
 		Math::vec3 MainCameraWorldSpaceTranslation = {};
 		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
 		Scene* Scene = nullptr;
@@ -42,8 +43,22 @@ namespace Vortex {
 		void RenderScene(const SceneRenderPacket& renderPacket);
 
 	private:
+		void BeginSceneRenderer2D(const SceneRenderPacket& renderPacket);
+		void EndSceneRenderer2D();
+
+		void BeginSceneRenderer(const SceneRenderPacket& renderPacket);
+		void EndSceneRenderer();
+
+		void OnRenderScene2D(const SceneRenderPacket& renderPacket);
+		void OnRenderScene3D(const SceneRenderPacket& renderPacket);
+
+		void LightPass2D(const SceneRenderPacket& renderPacket);
+		void SpritePass(const SceneRenderPacket& renderPacket);
+		void ParticlePass(const SceneRenderPacket& renderPacket);
+		void TextPass(const SceneRenderPacket& renderPacket);
+		void SceneIconPass(const SceneRenderPacket& renderPacket);
 		void FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
-		void LightPass(const SceneRenderPacket& renderPacket);
+		void LightPass3D(const SceneRenderPacket& renderPacket);
 		std::map<float, Entity> SortMeshGeometry(const SceneRenderPacket& renderPacket);
 		void SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset = 0);
 		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedEntities);

@@ -176,6 +176,8 @@ namespace Vortex {
 
 			SceneRenderPacket renderPacket{};
 			renderPacket.MainCamera = m_SecondEditorCamera;
+			renderPacket.MainCameraViewMatrix = m_SecondEditorCamera->GetViewMatrix();
+			renderPacket.MainCameraProjectionMatrix = m_SecondEditorCamera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_SecondViewportFramebuffer;
 			renderPacket.Scene = m_ActiveScene.Raw();
 			renderPacket.EditorScene = true;
