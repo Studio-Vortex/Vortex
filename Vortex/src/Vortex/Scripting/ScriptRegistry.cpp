@@ -5166,9 +5166,13 @@ namespace Vortex {
 				return;
 			}
 
-			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			*outHalfSize = boxCollider.HalfSize;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				*outHalfSize = boxCollider->GetHalfSize();
+			}
 		}
 
 		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
@@ -5181,9 +5185,13 @@ namespace Vortex {
 				return;
 			}
 
-			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			boxCollider.HalfSize = *halfSize;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				boxCollider->SetHalfSize(*halfSize);
+			}
 		}
 
 		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
@@ -5196,9 +5204,13 @@ namespace Vortex {
 				return;
 			}
 
-			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			*outOffset = boxCollider.Offset;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				*outOffset = boxCollider->GetOffset();
+			}
 		}
 
 		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
@@ -5211,9 +5223,13 @@ namespace Vortex {
 				return;
 			}
 
-			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			boxCollider.Offset = *offset;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				boxCollider->SetOffset(*offset);
+			}
 		}
 
 		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
@@ -5226,9 +5242,15 @@ namespace Vortex {
 				return false;
 			}
 
-			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return boxCollider.IsTrigger;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				return boxCollider->IsTrigger();
+			}
+
+			return false;
 		}
 
 		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
@@ -5241,9 +5263,13 @@ namespace Vortex {
 				return;
 			}
 
-			BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			boxCollider.IsTrigger = isTrigger;
+			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
+			{
+				boxCollider->SetTrigger(isTrigger);
+			}
 		}
 
 #pragma endregion
@@ -5260,9 +5286,15 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return sphereCollider.Radius;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				return sphereCollider->GetRadius();
+			}
+
+			return 0.0f;
 		}
 
 		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
@@ -5275,9 +5307,13 @@ namespace Vortex {
 				return;
 			}
 
-			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			sphereCollider.Radius = radius;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				sphereCollider->SetRadius(radius);
+			}
 		}
 
 		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
@@ -5290,9 +5326,13 @@ namespace Vortex {
 				return;
 			}
 
-			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			*outOffset = sphereCollider.Offset;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				*outOffset = sphereCollider->GetOffset();
+			}
 		}
 
 		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
@@ -5305,9 +5345,13 @@ namespace Vortex {
 				return;
 			}
 
-			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			sphereCollider.Offset = *offset;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				sphereCollider->SetOffset(*offset);
+			}
 		}
 
 		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
@@ -5320,9 +5364,15 @@ namespace Vortex {
 				return false;
 			}
 
-			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return sphereCollider.IsTrigger;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				return sphereCollider->IsTrigger();
+			}
+
+			return false;
 		}
 
 		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
@@ -5335,9 +5385,13 @@ namespace Vortex {
 				return;
 			}
 
-			SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			sphereCollider.IsTrigger = isTrigger;
+			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
+			{
+				sphereCollider->SetTrigger(isTrigger);
+			}
 		}
 
 #pragma endregion
@@ -5354,9 +5408,15 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return capsuleCollider.Radius;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				return capsuleCollider->GetRadius();
+			}
+
+			return 0.0f;
 		}
 
 		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
@@ -5369,9 +5429,13 @@ namespace Vortex {
 				return;
 			}
 
-			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			capsuleCollider.Radius = radius;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				capsuleCollider->SetRadius(radius);
+			}
 		}
 
 		float CapsuleColliderComponent_GetHeight(UUID entityUUID)
@@ -5384,9 +5448,15 @@ namespace Vortex {
 				return 0.0f;
 			}
 
-			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return capsuleCollider.Height;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				return capsuleCollider->GetHeight();
+			}
+
+			return 0.0f;
 		}
 
 		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
@@ -5399,9 +5469,13 @@ namespace Vortex {
 				return;
 			}
 
-			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			capsuleCollider.Height = height;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				capsuleCollider->SetHeight(height);
+			}
 		}
 
 		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
@@ -5414,9 +5488,13 @@ namespace Vortex {
 				return;
 			}
 
-			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			*outOffset = capsuleCollider.Offset;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				*outOffset = capsuleCollider->GetOffset();
+			}
 		}
 
 		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
@@ -5429,9 +5507,13 @@ namespace Vortex {
 				return;
 			}
 
-			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			capsuleCollider.Offset = *offset;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				capsuleCollider->SetOffset(*offset);
+			}
 		}
 
 		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
@@ -5444,9 +5526,15 @@ namespace Vortex {
 				return false;
 			}
 
-			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& collider = colliders.back();
 
-			return capsuleCollider.IsTrigger;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				return capsuleCollider->IsTrigger();
+			}
+
+			return false;
 		}
 
 		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
@@ -5459,9 +5547,13 @@ namespace Vortex {
 				return;
 			}
 
-			CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			auto& collider = colliders.back();
 
-			capsuleCollider.IsTrigger = isTrigger;
+			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
+			{
+				capsuleCollider->SetTrigger(isTrigger);
+			}
 		}
 
 #pragma endregion
