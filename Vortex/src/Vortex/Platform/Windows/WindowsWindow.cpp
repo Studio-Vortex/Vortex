@@ -144,7 +144,7 @@ namespace Vortex {
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			const bool invalidKeyCode = action < (uint32_t)KeyCode::StartingKey || action >(uint32_t)KeyCode::MaxKeys;
+			const bool invalidKeyCode = key < (int32_t)KeyCode::StartingKey || key > (int32_t)KeyCode::MaxKeys;
 			if (invalidKeyCode)
 				return;
 
@@ -156,19 +156,19 @@ namespace Vortex {
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), 0);
+					KeyPressedEvent event((KeyCode)key, 0);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(static_cast<KeyCode>(key));
+					KeyReleasedEvent event((KeyCode)key);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), 1);
+					KeyPressedEvent event((KeyCode)key, 1);
 					data.EventCallback(event);
 					break;
 				}
@@ -179,7 +179,7 @@ namespace Vortex {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(static_cast<KeyCode>(keycode));
+			KeyTypedEvent event((KeyCode)keycode);
 			data.EventCallback(event);
 		});
 
@@ -193,13 +193,13 @@ namespace Vortex {
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(static_cast<MouseButton>(button));
+					MouseButtonPressedEvent event((MouseButton)button);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(static_cast<MouseButton>(button));
+					MouseButtonReleasedEvent event((MouseButton)button);
 					data.EventCallback(event);
 					break;
 				}

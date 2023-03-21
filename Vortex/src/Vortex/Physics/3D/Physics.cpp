@@ -770,6 +770,7 @@ namespace Vortex {
 			colliderShape->DetachFromActor(actor);
 		}
 
+		colliderShapes.clear();
 		s_Data->EntityColliders.erase(entityUUID);
 	}
 
