@@ -769,6 +769,8 @@ namespace Vortex {
 
 			colliderShape->DetachFromActor(actor);
 		}
+
+		s_Data->EntityColliders.erase(entityUUID);
 	}
 
 	void Physics::DestroyPhysicsBodyDataInternal(UUID entityUUID)
