@@ -50,6 +50,8 @@ namespace Vortex {
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Renderer::RenderToDepthMap(m_RuntimeScene);
 
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
@@ -67,14 +69,6 @@ namespace Vortex {
 
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
-
-		bool scenePaused = m_RuntimeScene->IsPaused();
-
-		if (scenePaused)
-			OnRuntimeScenePaused();
-		
-		if (!scenePaused && !m_AudioSourcesToResume.empty())
-			OnRuntimeSceneResumed();
 
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
@@ -101,7 +95,8 @@ namespace Vortex {
 		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
 		Renderer::BeginPostProcessingStages(postProcessProps);
 
-		if (ScriptRegistry::HasPendingTransitionQueued())
+		const bool pendingTransition = ScriptRegistry::HasPendingTransitionQueued();
+		if (pendingTransition)
 		{
 			QueueSceneTransition();
 		}
@@ -109,6 +104,8 @@ namespace Vortex {
 
 	void RuntimeLayer::OnGuiRender()
 	{
+		VX_PROFILE_FUNCTION();
+
 		ImGuiViewport* viewport = Gui::GetMainViewport();
 		Gui::SetNextWindowPos(viewport->WorkPos);
 		Gui::SetNextWindowSize(viewport->WorkSize);
@@ -144,6 +141,9 @@ namespace Vortex {
 
 	void RuntimeLayer::OnRuntimeScenePlay()
 	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must not be running!");
+
 		m_RuntimeScene->OnRuntimeStart();
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -151,6 +151,9 @@ namespace Vortex {
 
 	void RuntimeLayer::OnRuntimeSceneStop()
 	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running!");
+
 		m_RuntimeScene->OnRuntimeStop();
 
 		SharedReference<Scene> newScene = Scene::Create(m_Framebuffer);
@@ -159,34 +162,6 @@ namespace Vortex {
 
 		// Reset the mouse cursor in case a script turned it off
 		Input::SetCursorMode(CursorMode::Normal);
-	}
-
-	void RuntimeLayer::OnRuntimeScenePaused()
-	{
-		auto view = m_RuntimeScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		// Pause all audio sources in the scene
-		for (auto& e : view)
-		{
-			Entity entity{ e, m_RuntimeScene.Raw() };
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (audioSource->IsPlaying())
-			{
-				audioSource->Pause();
-				m_AudioSourcesToResume.push_back(audioSource);
-			}
-		}
-	}
-
-	void RuntimeLayer::OnRuntimeSceneResumed()
-	{
-		if (!m_AudioSourcesToResume.empty())
-		{
-			for (auto& audioSource : m_AudioSourcesToResume)
-				audioSource->Play();
-
-			m_AudioSourcesToResume.clear();
-		}
 	}
 
 	bool RuntimeLayer::OnWindowCloseEvent(WindowCloseEvent& e)
@@ -204,7 +179,8 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// TODO this should be changed to LoadRuntimeProject in the future
-		if (!ProjectLoader::LoadEditorProject(filepath))
+		const bool success = ProjectLoader::LoadEditorProject(filepath);
+		if (!success)
 			return false;
 
 		const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
@@ -263,6 +239,7 @@ namespace Vortex {
 	void RuntimeLayer::QueueSceneTransition()
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running to queue transition!");
 
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
@@ -273,6 +250,7 @@ namespace Vortex {
 			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
 			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
 
+			// TODO fix this
 			//OpenScene(nextSceneFilepath);
 
 			ScriptRegistry::ResetBuildIndex();

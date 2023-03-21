@@ -60,6 +60,15 @@ namespace Vortex {
 			return SharedReference<U>(*this);
 		}
 
+		template <typename U>
+		SharedReference<U> Is() const
+		{
+			if constexpr (std::is_base_of<T, U>::value)
+				return As<U>();
+
+			return nullptr;
+		}
+
 		void Swap(const SharedReference<T>& other)
 		{
 			T* temp = m_Instance;

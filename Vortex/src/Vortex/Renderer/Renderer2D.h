@@ -25,7 +25,7 @@ namespace Vortex {
 		static void Init(RendererAPI::TriangleCullMode cullMode = RendererAPI::TriangleCullMode::None);
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const Math::mat4& transform);
+		static void BeginScene(const Camera& camera, const Math::mat4& view);
 		static void BeginScene(const EditorCamera* camera);
 		static void EndScene();
 		static void Flush();

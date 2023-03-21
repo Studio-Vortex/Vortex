@@ -34,16 +34,19 @@ namespace Vortex {
 		void OnDetach() override;
 
 		void OnUpdate(TimeStep ts) override;
+		void OnUpdateSceneState(TimeStep delta);
 		void OnGuiRender() override;
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
 		void UIHandleAssetDrop(bool& meshImportPopupOpen);
 		void OnMeshImportPopupOpened(bool& meshImportPopupOpen);
 		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
-		void OnSecondViewportRender();
+		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
 
 	private:
+		void ResizeTargetFramebuffersIfNeeded();
+
 		void UI_GizmosToolbar();
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();
@@ -78,12 +81,6 @@ namespace Vortex {
 
 		void OnSceneSimulate();
 		void RestartSceneSimulation();
-
-		// Audio
-
-		void PauseAudioSources();
-		void ResumeAudioSources();
-		void StopAudioSources();
 
 		// Gizmos
 
@@ -150,8 +147,6 @@ namespace Vortex {
 		bool m_ShowSelectedEntityOutline = true;
 		bool m_CaptureFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
-
-		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume = std::vector<SharedReference<AudioSource>>();
 
 		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
 		PhysicsStatisticsPanel m_PhysicsStatsPanel;

@@ -26,6 +26,7 @@ namespace Vortex {
 		Gui::Text("FPS:  %.0f", io.Framerate);
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
+		Gui::Text("Pre Geometry Pass Sort: %.4fms", renderTime.PreGeometryPassSortTime);
 		Gui::Text("Geometry Pass: %.4fms", renderTime.GeometryPassRenderTime);
 		Gui::Text("Shadow Pass: %.4fms", renderTime.ShadowMapRenderTime);
 		Gui::Text("Bloom Pass: %.4fms", renderTime.BloomPassRenderTime);

@@ -1174,7 +1174,7 @@ namespace Vortex {
 
 			if (modified)
 			{
-				Math::ivec2 viewportSize = m_ContextScene->GetViewportSize();
+				Math::uvec2 viewportSize = m_ContextScene->GetViewportSize();
 				camera.SetViewportSize(viewportSize.x, viewportSize.y);
 			}
 		});

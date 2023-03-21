@@ -86,6 +86,8 @@ namespace Vortex {
 
 	void EditorLayer::OnDetach()
 	{
+		VX_PROFILE_FUNCTION();
+
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
 
@@ -111,25 +113,7 @@ namespace Vortex {
 
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		// Resize
-		if (FramebufferProperties props = m_Framebuffer->GetProperties();
-			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
-			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
-		{
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
-
-		if (m_ShowSecondViewport)
-		{
-			if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
-				m_SecondViewportSize.x > 0.0f && m_SecondViewportSize.y > 0.0f && // zero sized framebuffer is invalid
-				(props.Width != m_SecondViewportSize.x || props.Height != m_SecondViewportSize.y))
-			{
-				m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
-				m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
-			}
-		}
+		ResizeTargetFramebuffersIfNeeded();
 
 		// Bind Render Target and Clear Attachments
 		Renderer::ResetStats();
@@ -146,34 +130,7 @@ namespace Vortex {
 		m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
 		m_SecondEditorCamera->OnUpdate(delta);
 
-		// Update Scene
-		switch (m_SceneState)
-		{
-			case SceneState::Edit:
-			{
-				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
-				break;
-			}
-			case SceneState::Play:
-			{
-				bool scenePaused = m_ActiveScene->IsPaused();
-
-				if (scenePaused)
-					OnScenePause();
-
-				if (!scenePaused && !m_AudioSourcesToResume.empty())
-					OnSceneResume();
-
-				m_ActiveScene->OnUpdateRuntime(delta);
-
-				break;
-			}
-			case SceneState::Simulate:
-			{
-				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
-				break;
-			}
-		}
+		OnUpdateSceneState(delta);
 
 		// Scene Viewport Entity Selection
 		{
@@ -264,6 +221,39 @@ namespace Vortex {
 		if (m_SceneState == SceneState::Play && pendingTransisiton)
 		{
 			QueueSceneTransition();
+		}
+	}
+
+	void EditorLayer::OnUpdateSceneState(TimeStep delta)
+	{
+		VX_PROFILE_FUNCTION();
+
+		// Update Scene
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				const bool scenePaused = m_ActiveScene->IsPaused();
+
+				if (scenePaused)
+					OnScenePause();
+				else
+					OnSceneResume();
+
+				m_ActiveScene->OnUpdateRuntime(delta);
+
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
+				break;
+			}
 		}
 	}
 
@@ -360,7 +350,7 @@ namespace Vortex {
 			OnScenePanelRender();
 
 		if (m_ShowSecondViewport)
-			OnSecondViewportRender();
+			OnSecondViewportPanelRender();
 
 		if (m_ShowSceneCreateEntityMenu)
 		{
@@ -384,6 +374,8 @@ namespace Vortex {
 
 	void EditorLayer::OnMainMenuBarRender()
 	{
+		VX_PROFILE_FUNCTION();
+
 		ImGuiIO& io = Gui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
@@ -715,6 +707,8 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePanelRender()
 	{
+		VX_PROFILE_FUNCTION();
+
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene", &m_ShowScenePanel, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
@@ -978,6 +972,8 @@ namespace Vortex {
 
 	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode)
 	{
+		VX_PROFILE_FUNCTION();
+
 		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -1086,8 +1082,10 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OnSecondViewportRender()
+	void EditorLayer::OnSecondViewportPanelRender()
 	{
+		VX_PROFILE_FUNCTION();
+
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Second Viewport", &m_ShowSecondViewport, ImGuiWindowFlags_NoCollapse);
 		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
@@ -1117,8 +1115,35 @@ namespace Vortex {
 		Gui::End();
 	}
 
+	void EditorLayer::ResizeTargetFramebuffersIfNeeded()
+	{
+		VX_PROFILE_FUNCTION();
+
+		// Resize
+		if (FramebufferProperties props = m_Framebuffer->GetProperties();
+			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+			(props.Width != m_ViewportSize.x || props.Height != m_ViewportSize.y))
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
+
+		if (m_ShowSecondViewport)
+		{
+			if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
+				m_SecondViewportSize.x > 0.0f && m_SecondViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+				(props.Width != m_SecondViewportSize.x || props.Height != m_SecondViewportSize.y))
+			{
+				m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+				m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportSize.x, (uint32_t)m_SecondViewportSize.y);
+			}
+		}
+	}
+
 	void EditorLayer::UI_GizmosToolbar()
 	{
+		VX_PROFILE_FUNCTION();
+
 		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
@@ -1176,6 +1201,8 @@ namespace Vortex {
 
 	void EditorLayer::UI_CentralToolbar()
 	{
+		VX_PROFILE_FUNCTION();
+
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -1279,6 +1306,8 @@ namespace Vortex {
 
 	void EditorLayer::UI_SceneSettingsToolbar()
 	{
+		VX_PROFILE_FUNCTION();
+
 		UI::PushID();
 
 		ImGuiIO& io = Gui::GetIO();
@@ -1457,6 +1486,8 @@ namespace Vortex {
 
 	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
 	{
+		VX_PROFILE_FUNCTION();
+
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
@@ -2167,8 +2198,12 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{};
 
-		if (!ProjectLoader::LoadEditorProject(filepath))
+		const bool success = ProjectLoader::LoadEditorProject(filepath);
+		if (!success)
+		{
+			VX_CORE_FATAL("Failed to open project: '{}'", filepath.string());
 			return;
+		}
 		
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 		std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
@@ -2309,8 +2344,6 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePlay()
 	{
-		StopAudioSources();
-
 		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties projectProps = activeProject->GetProperties();
 
@@ -2340,24 +2373,25 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePause()
 	{
+		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 		if (m_SceneState == SceneState::Edit)
 			return;
-
-		PauseAudioSources();
 
 		m_ActiveScene->SetPaused(true);
 	}
 
 	void EditorLayer::OnSceneResume()
 	{
-		ResumeAudioSources();
+		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
+		if (m_SceneState == SceneState::Edit)
+			return;
 
 		m_ActiveScene->SetPaused(false);
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
-		VX_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "Invalid scene state!");
+		VX_CORE_ASSERT(m_SceneState != SceneState::Edit, "Invalid scene state!");
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
@@ -2413,63 +2447,10 @@ namespace Vortex {
 		OnSceneSimulate();
 	}
 
-	void EditorLayer::PauseAudioSources()
-	{
-		if (m_SceneState == SceneState::Play)
-		{
-			const auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, m_ActiveScene.Raw() };
-
-				SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-				if (!audioSource->IsPlaying())
-					return;
-				
-				audioSource->Pause();
-				m_AudioSourcesToResume.push_back(audioSource);
-			}
-		}
-	}
-
-	void EditorLayer::ResumeAudioSources()
-	{
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
-		
-		if (projectProps.EditorProps.MuteAudioSources)
-			return;
-
-		if (m_SceneState == SceneState::Play)
-		{
-			for (auto& audioSource : m_AudioSourcesToResume)
-				audioSource->Play();
-
-			m_AudioSourcesToResume.clear();
-		}
-	}
-
-	void EditorLayer::StopAudioSources()
-	{
-		const auto view = m_ActiveScene->GetAllEntitiesWith<AudioSourceComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, m_ActiveScene.Raw() };
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-			if (!audioSource->IsPlaying())
-				return;
-
-			audioSource->Stop();
-		}
-	}
-
 	void EditorLayer::QueueSceneTransition()
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running to queue transition");
 
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{

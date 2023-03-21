@@ -119,17 +119,13 @@ namespace Vortex {
 		RenderCommand::SetViewport(viewport);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedRef<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
+		BindRenderTarget(targetFramebuffer);
 
-		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjectionMatrix(), transform.Translation);
+		BindShaders(view, camera.GetProjectionMatrix(), translation);
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
@@ -137,11 +133,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
+		BindRenderTarget(targetFramebuffer);
 
 		BindShaders(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPosition());
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
@@ -679,6 +671,17 @@ namespace Vortex {
 			pbrShader->SetInt("u_SpotLightShadowMaps[" + std::to_string(index) + "]", currentSlot);
 			index++;
 		}*/
+	}
+
+	void Renderer::BindRenderTarget(SharedRef<Framebuffer>& renderTarget)
+	{
+		VX_CORE_ASSERT(renderTarget, "Invalid Render Target!");
+
+		if (renderTarget)
+		{
+			s_Data.TargetFramebuffer = renderTarget;
+			renderTarget->Bind();
+		}
 	}
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)

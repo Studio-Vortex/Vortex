@@ -1,17 +1,19 @@
 #pragma once
 
-#include "Vortex/Editor/EditorCamera.h"
-#include "Vortex/Renderer/RendererAPI.h"
-#include "Vortex/Renderer/Framebuffer.h"
-#include "Vortex/Renderer/RenderCommand.h"
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Components.h"
+
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Project/Project.h"
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/Scene.h"
+#include "Vortex/Renderer/RendererAPI.h"
+#include "Vortex/Renderer/Framebuffer.h"
+#include "Vortex/Renderer/RenderCommand.h"
 
-#include "Vortex/Scene/Components.h"
+#include "Vortex/Editor/EditorCamera.h"
 
 #include <vector>
 
@@ -32,6 +34,7 @@ namespace Vortex {
 	struct VORTEX_API RenderTime
 	{
 		float ShadowMapRenderTime = 0.0f;
+		float PreGeometryPassSortTime = 0.0f;
 		float GeometryPassRenderTime = 0.0f;
 		float BloomPassRenderTime = 0.0f;
 	};
@@ -63,7 +66,7 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer);
+		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedRef<Framebuffer> targetFramebuffer);
 		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
@@ -148,6 +151,7 @@ namespace Vortex {
 	private:
 		// Helpers
 
+		static void BindRenderTarget(SharedRef<Framebuffer>& renderTarget);
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
 
 		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);

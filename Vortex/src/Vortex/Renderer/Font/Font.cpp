@@ -373,7 +373,7 @@ namespace Vortex {
 		s_DefaultFont.Reset();
 	}
 
-	SharedReference<Font> Font::GetDefaultFont()
+	SharedReference<Font>& Font::GetDefaultFont()
 	{
 		return s_DefaultFont;
 	}

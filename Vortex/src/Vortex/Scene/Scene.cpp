@@ -331,10 +331,12 @@ namespace Vortex {
 
 		m_IsRunning = true;
 
+		SetSceneCameraViewportSize();
+
 		OnPhysicsSimulationStart();
 
 		// Audio Source - PlayOnStart
-		if (!muteAudio)
+		if (muteAudio == false)
 		{
 			StartAudioSourcesRuntime();
 		}
@@ -349,15 +351,11 @@ namespace Vortex {
 		m_IsRunning = false;
 
 		DestroyScriptInstancesRuntime();
-
 		ScriptEngine::OnRuntimeStop();
 
 		StopAudioSourcesRuntime();
-
 		StopAnimatorsRuntime();
-
 		StopParticleEmittersRuntime();
-
 		OnPhysicsSimulationStop();
 	}
 
@@ -443,7 +441,8 @@ namespace Vortex {
 				{
 					SceneRenderPacket renderPacket{};
 					renderPacket.MainCamera = primarySceneCamera;
-					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform;
+					renderPacket.MainCameraWorldSpaceTransform = primarySceneCameraTransform.GetTransform();
+					renderPacket.MainCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
 					renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 					renderPacket.Scene = this;
 					renderPacket.EditorScene = false;
@@ -562,6 +561,25 @@ namespace Vortex {
 		}
 	}
 
+	void Scene::SetPaused(bool paused)
+	{
+		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
+
+		if ((m_IsPaused && paused) || (!m_IsPaused && !paused))
+			return;
+
+		m_IsPaused = paused;
+
+		if (m_IsPaused)
+		{
+			PauseAudioSourcesRuntime();
+		}
+		else
+		{
+			ResumeAudioSourcesRuntime();
+		}
+	}
+
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		VX_PROFILE_FUNCTION();
@@ -589,6 +607,8 @@ namespace Vortex {
 	void Scene::ParentEntity(Entity entity, Entity parent)
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
+		VX_CORE_ASSERT(parent, "Parent was invalid!");
 
 		if (parent.IsDescendantOf(entity))
 		{
@@ -619,8 +639,10 @@ namespace Vortex {
 	void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		Entity parent = entity.GetParent();
+		VX_CORE_ASSERT(parent, "Parent was invalid!");
 		if (!parent)
 			return;
 
@@ -636,6 +658,7 @@ namespace Vortex {
 	void Scene::ActiveateChildren(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		const std::vector<UUID>& children = entity.Children();
 
@@ -656,6 +679,7 @@ namespace Vortex {
 	void Scene::DeactiveateChildren(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		const std::vector<UUID>& children = entity.Children();
 
@@ -673,7 +697,7 @@ namespace Vortex {
 		}
 	}
 
-	Entity Scene::TryGetRootEntityInHierarchy(Entity child) const
+	Entity Scene::GetRootEntityInHierarchy(Entity child) const
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -681,7 +705,7 @@ namespace Vortex {
 			return child;
 
 		Entity parent = child.GetParent();
-		return TryGetRootEntityInHierarchy(parent);
+		return GetRootEntityInHierarchy(parent);
 	}
 
 	Entity Scene::TryGetEntityWithUUID(UUID uuid)
@@ -716,7 +740,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (!entity)
-			return {};
+			return Entity{};
 
 		auto ParentNewEntityFunc = [&entity, scene = this](Entity newEntity)
 		{
@@ -796,7 +820,7 @@ namespace Vortex {
 				return Entity{ e, this };
 		});
 
-		return {};
+		return Entity{};
 	}
 
 	void Scene::ConvertToLocalSpace(Entity entity)
@@ -946,7 +970,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
+		auto view = GetAllEntitiesWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
@@ -965,11 +989,54 @@ namespace Vortex {
 		}
 	}
 
+	void Scene::PauseAudioSourcesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
+
+		const auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!audioSource)
+				continue;
+
+			if (!audioSource->IsPlaying())
+				continue;
+
+			audioSource->Pause();
+			m_AudioSourcesToResume.push_back(audioSource);
+		}
+	}
+
+	void Scene::ResumeAudioSourcesRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
+
+		SharedReference<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+
+		if (projectProps.EditorProps.MuteAudioSources)
+			return;
+
+		for (auto& audioSource : m_AudioSourcesToResume)
+			audioSource->Play();
+
+		m_AudioSourcesToResume.clear();
+	}
+
 	void Scene::StopAudioSourcesRuntime()
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<TransformComponent, AudioSourceComponent>();
+		auto view = GetAllEntitiesWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
@@ -980,6 +1047,20 @@ namespace Vortex {
 				continue;
 
 			audioSource->Stop();
+		}
+	}
+
+	void Scene::SetSceneCameraViewportSize()
+	{
+		auto view = GetAllEntitiesWith<CameraComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 	}
 

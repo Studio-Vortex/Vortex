@@ -20,8 +20,6 @@ namespace Vortex {
 	private:
 		void OnRuntimeScenePlay();
 		void OnRuntimeSceneStop();
-		void OnRuntimeScenePaused();
-		void OnRuntimeSceneResumed();
 
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
@@ -37,8 +35,6 @@ namespace Vortex {
 		SharedReference<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		Entity m_HoveredEntity;
-
-		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume = std::vector<SharedReference<AudioSource>>();
 	};
 
 }

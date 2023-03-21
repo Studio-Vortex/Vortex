@@ -28,7 +28,7 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(FontAsset)
 
-		static SharedReference<Font> GetDefaultFont();
+		static SharedReference<Font>& GetDefaultFont();
 		static SharedReference<Font> Create(const std::filesystem::path& filepath);
 
 	private:

@@ -277,11 +277,11 @@ namespace Vortex
 		delete[] s_Data.TextVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
+	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& view)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
+		Math::mat4 viewProjection = camera.GetProjectionMatrix() * view;
 		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();

@@ -79,7 +79,7 @@ namespace Vortex {
 
 		VX_FORCE_INLINE bool IsRunning() const { return m_IsRunning; }
 		VX_FORCE_INLINE bool IsPaused() const { return m_IsPaused; }
-		VX_FORCE_INLINE void SetPaused(bool paused) { m_IsPaused = paused; }
+		void SetPaused(bool paused);
 
 		VX_FORCE_INLINE Math::uvec2 GetViewportSize() const { return Math::uvec2(m_ViewportWidth, m_ViewportHeight); }
 		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
@@ -94,7 +94,7 @@ namespace Vortex {
 		void ActiveateChildren(Entity entity);
 		void DeactiveateChildren(Entity entity);
 
-		Entity TryGetRootEntityInHierarchy(Entity child) const;
+		Entity GetRootEntityInHierarchy(Entity child) const;
 		Entity TryGetEntityWithUUID(UUID uuid);
 		Entity GetPrimaryCameraEntity();
 
@@ -155,10 +155,14 @@ namespace Vortex {
 		template <typename TComponent>
 		void OnComponentAdded(Entity entity, TComponent& component);
 
+		void SetSceneCameraViewportSize();
+
 		void CreateScriptInstancesRuntime();
 		void DestroyScriptInstancesRuntime();
 
 		void StartAudioSourcesRuntime();
+		void PauseAudioSourcesRuntime();
+		void ResumeAudioSourcesRuntime();
 		void StopAudioSourcesRuntime();
 
 		void StopAnimatorsRuntime();
@@ -180,6 +184,8 @@ namespace Vortex {
 		uint32_t m_StepFrames = 0;
 
 		inline static uint32_t s_ActiveBuildIndex = 0;
+
+		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume;
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;

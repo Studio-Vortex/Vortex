@@ -111,14 +111,25 @@ namespace Vortex {
 
 		inline Math::mat4 GetTransform() const
 		{
-			return Math::Translate(Translation) * Math::ToMat4(Math::GetOrientation(RotationEuler)) * Math::Scale(Scale);
+			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
 		}
 
 		inline void SetTransform(const Math::mat4& transform)
 		{
-			glm::vec3 skew;
-			glm::vec4 perspective;
+			Math::vec3 skew;
+			Math::vec4 perspective;
 			Math::Decompose(transform, Scale, Rotation, Translation, skew, perspective);
+			RotationEuler = Math::EulerAngles(Rotation);
+		}
+
+		inline Math::quaternion GetRotation() const
+		{
+			return Rotation;
+		}
+
+		inline void SetRotation(const Math::quaternion& rotation)
+		{
+			Rotation = rotation;
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
@@ -131,17 +142,6 @@ namespace Vortex {
 		{
 			RotationEuler = euler;
 			Rotation = Math::quaternion(RotationEuler);
-		}
-
-		inline Math::quaternion GetRotation() const
-		{
-			return Rotation;
-		}
-
-		inline void SetRotation(const Math::quaternion& rotation)
-		{
-			Rotation = rotation;
-			RotationEuler = Math::EulerAngles(Rotation);
 		}
 	};
 
