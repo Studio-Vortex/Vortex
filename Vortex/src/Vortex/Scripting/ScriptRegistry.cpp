@@ -5272,6 +5272,21 @@ namespace Vortex {
 			}
 		}
 
+		bool BoxColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Material without a Box Collider!");
+				return false;
+			}
+
+			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			*outHandle = boxCollider.Material;
+			return AssetManager::IsHandleValid(boxCollider.Material);
+		}
+
 #pragma endregion
 
 #pragma region SphereCollider Component
@@ -5392,6 +5407,21 @@ namespace Vortex {
 			{
 				sphereCollider->SetTrigger(isTrigger);
 			}
+		}
+
+		bool SphereColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SphereColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Material without a Sphere Collider!");
+				return false;
+			}
+
+			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			*outHandle = sphereCollider.Material;
+			return AssetManager::IsHandleValid(sphereCollider.Material);
 		}
 
 #pragma endregion
@@ -5554,6 +5584,21 @@ namespace Vortex {
 			{
 				capsuleCollider->SetTrigger(isTrigger);
 			}
+		}
+
+		bool CapsuleColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CapsuleColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Material without a Capsule Collider!");
+				return false;
+			}
+
+			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			*outHandle = capsuleCollider.Material;
+			return AssetManager::IsHandleValid(capsuleCollider.Material);
 		}
 
 #pragma endregion
@@ -7311,6 +7356,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_SetOffset);
 		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_SetIsTrigger);
+		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetMaterialHandle);
 
 		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetRadius);
 		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetRadius);
@@ -7318,6 +7364,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetOffset);
 		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetIsTrigger);
+		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetMaterialHandle);
 
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);
@@ -7327,6 +7374,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetOffset);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
+		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetMaterialHandle);
 
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);

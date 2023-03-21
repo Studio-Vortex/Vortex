@@ -467,6 +467,7 @@ namespace Vortex {
 		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
 		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID);
 		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
+		bool BoxColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
@@ -478,6 +479,7 @@ namespace Vortex {
 		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
 		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID);
 		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
+		bool SphereColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
@@ -491,6 +493,13 @@ namespace Vortex {
 		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
 		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID);
 		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
+		bool CapsuleColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
+
+#pragma endregion
+
+#pragma region MeshCollider Component
+		
+
 
 #pragma endregion
 

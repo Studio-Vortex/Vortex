@@ -867,7 +867,7 @@ namespace Vortex {
 		internal extern static float PhysicsMaterial_GetBounciness(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void PhysicsMaterial_SetBounciness();
+		internal extern static void PhysicsMaterial_SetBounciness(ref AssetHandle assetHandle, float bounciness);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static CombineMode PhysicsMaterial_GetFrictionCombineMode(ref AssetHandle assetHandle);
@@ -1007,6 +1007,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void BoxColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool BoxColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
+
 		#endregion
 
 		#region SphereCollider
@@ -1028,6 +1031,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SphereColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SphereColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
 
 		#endregion
 
@@ -1056,6 +1062,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CapsuleColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool CapsuleColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
 
 		#endregion
 

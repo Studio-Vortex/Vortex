@@ -882,6 +882,15 @@ namespace Vortex {
 			get => InternalCalls.BoxColliderComponent_GetIsTrigger(Entity.ID);
 			set => InternalCalls.BoxColliderComponent_SetIsTrigger(Entity.ID, value);
 		}
+
+		public PhysicsMaterial Material
+		{
+			get
+			{
+				return InternalCalls.BoxColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+					? new PhysicsMaterial(materialHandle) : null;
+			}
+		}
 	}
 
 	public class SphereCollider: Component
@@ -907,6 +916,15 @@ namespace Vortex {
 		{
 			get => InternalCalls.SphereColliderComponent_GetIsTrigger(Entity.ID);
 			set => InternalCalls.SphereColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
+
+		public PhysicsMaterial Material
+		{
+			get
+			{
+				return InternalCalls.SphereColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+					? new PhysicsMaterial(materialHandle) : null;
+			}
 		}
 	}
 
@@ -939,6 +957,15 @@ namespace Vortex {
 		{
 			get => InternalCalls.CapsuleColliderComponent_GetIsTrigger(Entity.ID);
 			set => InternalCalls.CapsuleColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
+
+		public PhysicsMaterial Material
+		{
+			get
+			{
+				return InternalCalls.CapsuleColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+					? new PhysicsMaterial(materialHandle) : null;
+			}
 		}
 	}
 
