@@ -1070,6 +1070,27 @@ namespace Vortex {
 
 		#region MeshCollider
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_IsStaticMesh(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_IsColliderMeshValid(ulong entityID, ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetColliderMesh(ulong entityID, out AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshColliderComponent_SetColliderMesh(ulong entityID, ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetIsTrigger(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
+
 		#endregion
 
 		#region RigidBody2D

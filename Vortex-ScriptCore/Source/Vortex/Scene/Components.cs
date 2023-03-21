@@ -971,7 +971,25 @@ namespace Vortex {
 
 	public class MeshCollider: Component
 	{
+		public bool IsStaticMesh => InternalCalls.MeshColliderComponent_IsStaticMesh(Entity.ID);
 
+		public AssetHandle ColliderMeshHandle
+		{
+			get => InternalCalls.MeshColliderComponent_GetColliderMesh(Entity.ID, out AssetHandle colliderHandle)
+				? colliderHandle : AssetHandle.Invalid;
+		}
+
+		public bool IsTrigger
+		{
+			get => InternalCalls.MeshColliderComponent_GetIsTrigger(Entity.ID);
+			set => InternalCalls.MeshColliderComponent_SetIsTrigger(Entity.ID, value);
+		}
+
+		public PhysicsMaterial Material
+		{
+			get => InternalCalls.MeshColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+				? new PhysicsMaterial(materialHandle) : null;
+		}
 	}
 
 	public class RigidBody2D: Component

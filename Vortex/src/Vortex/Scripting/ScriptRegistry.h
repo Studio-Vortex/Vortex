@@ -499,7 +499,13 @@ namespace Vortex {
 
 #pragma region MeshCollider Component
 		
-
+		bool MeshColliderComponent_IsStaticMesh(UUID entityUUID);
+		bool MeshColliderComponent_IsColliderMeshValid(UUID entityUUID, AssetHandle* assetHandle);
+		bool MeshColliderComponent_GetColliderMesh(UUID entityUUID, AssetHandle* outHandle);
+		void MeshColliderComponent_SetColliderMesh(UUID entityUUID, AssetHandle assetHandle);
+		bool MeshColliderComponent_GetIsTrigger(UUID entityUUID);
+		void MeshColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
+		bool MeshColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
 
 #pragma endregion
 

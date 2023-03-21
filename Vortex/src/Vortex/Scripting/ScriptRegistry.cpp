@@ -5603,6 +5603,68 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region MeshCollider Component
+
+		// Finish these once we have collider assets
+
+		bool MeshColliderComponent_IsStaticMesh(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			
+			if (!entity.HasComponent<MeshColliderComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access MeshCollider.IsStaticMesh without a Mesh Collider!");
+				return false;
+			}
+
+			const MeshColliderComponent& meshCollider = entity.GetComponent<MeshColliderComponent>();
+			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			SharedReference<ColliderShape> colliderShape = colliders.back();
+
+			if (SharedReference<ConvexMeshShape> convexMeshShape = colliderShape.Is<ConvexMeshShape>())
+			{
+				//const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata();
+				//return metadata.Type == AssetType::StaticMeshAsset;
+			}
+			else if (SharedReference<TriangleMeshShape> triangleMeshShape = colliderShape.Is<TriangleMeshShape>())
+			{
+				//const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata();
+				//return metadata.Type == AssetType::StaticMeshAsset;
+			}
+
+			return false;
+		}
+
+		bool MeshColliderComponent_IsColliderMeshValid(UUID entityUUID, AssetHandle* assetHandle)
+		{
+			return false;
+		}
+
+		bool MeshColliderComponent_GetColliderMesh(UUID entityUUID, AssetHandle* outHandle)
+		{
+			return false;
+		}
+
+		void MeshColliderComponent_SetColliderMesh(UUID entityUUID, AssetHandle assetHandle)
+		{
+		}
+
+		bool MeshColliderComponent_GetIsTrigger(UUID entityUUID)
+		{
+			return false;
+		}
+
+		void MeshColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		{
+		}
+
+		bool MeshColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		{
+			return false;
+		}
+
+#pragma endregion
+
 #pragma region RigidBody2D Component
 
 		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
@@ -7375,6 +7437,14 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
 		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetMaterialHandle);
+
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_IsStaticMesh);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_IsColliderMeshValid);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetColliderMesh);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_SetColliderMesh);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetIsTrigger);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_SetIsTrigger);
+		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetMaterialHandle);
 
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
 		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
