@@ -32,6 +32,7 @@
 #include "Vortex/Physics/2D/Physics2D.h"
 
 #include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Editor/SelectionManager.h"
 
 namespace Vortex {
 
@@ -217,7 +218,13 @@ namespace Vortex {
 		if (!entity || !m_EntityMap.contains(entity.GetUUID()))
 		{
 			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with invalid Entity!");
+			VX_CORE_ASSERT(false, "Trying to free invalid Entity!");
 			return;
+		}
+
+		if (Entity selected = SelectionManager::GetSelectedEntity(); selected == entity)
+		{
+			SelectionManager::DeselectEntity();
 		}
 
 		if (m_IsRunning)
