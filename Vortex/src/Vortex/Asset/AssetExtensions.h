@@ -26,7 +26,11 @@ namespace Vortex {
 		{ ".vmaterial", AssetType::MaterialAsset },
 		{ ".vpm", AssetType::PhysicsMaterialAsset },
 
-		{ ".fbx", AssetType::MeshAsset },
+		// TODO once we have skinned meshes come back to this with a specific file format
+		// if we try to do it this way right now the asset system will get confused because
+		// we have multiple extensions with two different AssetTypes
+
+		/*{ ".fbx", AssetType::MeshAsset },
 		{ ".FBX", AssetType::MeshAsset },
 		{ ".dae", AssetType::MeshAsset },
 		{ ".DAE", AssetType::MeshAsset },
@@ -35,7 +39,7 @@ namespace Vortex {
 		{ ".glb", AssetType::MeshAsset },
 		{ ".GLB", AssetType::MeshAsset },
 		{ ".obj", AssetType::MeshAsset },
-		{ ".OBJ", AssetType::MeshAsset },
+		{ ".OBJ", AssetType::MeshAsset },*/
 
 		{ ".fbx", AssetType::StaticMeshAsset },
 		{ ".FBX", AssetType::StaticMeshAsset },
