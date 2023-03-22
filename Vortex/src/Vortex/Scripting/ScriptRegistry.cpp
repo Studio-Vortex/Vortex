@@ -1944,8 +1944,17 @@ namespace Vortex {
 
 			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			meshRenderer.Type = meshType;
-			//StaticMesh::Default defaultMesh = static_cast<StaticMesh::Default>(meshType);
-			//meshRenderer.StaticMesh = StaticMesh::Create(defaultMesh, entity.GetTransform(), MeshImportOptions(), (int)(entt::entity)entity);
+
+			if (meshType == MeshType::Custom)
+			{
+				// Should this even be an option?
+				// you could just set this through the asset handle, setting it to custom
+				// wouldn't accomplish much
+			}
+			else
+			{
+				meshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
+			}
 		}
 
 #pragma endregion
