@@ -160,6 +160,7 @@ namespace Vortex {
 #pragma region Rendering Components
 
 	// Forward declarations
+	class MaterialTable;
 	class LightSource;
 	class LightSource2D;
 	class ParticleEmitter;
@@ -211,6 +212,7 @@ namespace Vortex {
 	struct MeshRendererComponent
 	{
 		AssetHandle Mesh = 0;
+		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
@@ -222,6 +224,7 @@ namespace Vortex {
 	{
 		AssetHandle StaticMesh = 0;
 		MeshType Type = MeshType::Cube;
+		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
 
 		StaticMeshRendererComponent() = default;
 		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;

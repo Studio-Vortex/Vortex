@@ -23,9 +23,9 @@ namespace Vortex {
 
 	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		asset = Mesh::Create(relatvePath.string(), TransformComponent(), MeshImportOptions());
+		asset = Mesh::Create(relativePath, TransformComponent(), MeshImportOptions());
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Mesh>()->IsLoaded();
@@ -38,9 +38,9 @@ namespace Vortex {
 
 	bool FontSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		asset = Font::Create(relatvePath);
+		asset = Font::Create(relativePath);
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Font>()->GetFontAtlas()->IsLoaded();
@@ -53,7 +53,7 @@ namespace Vortex {
 
 	bool AudioSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -65,7 +65,7 @@ namespace Vortex {
 
 	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -77,7 +77,7 @@ namespace Vortex {
 
 	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -89,7 +89,7 @@ namespace Vortex {
 
 	bool ScriptSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -101,10 +101,10 @@ namespace Vortex {
 
 	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		TextureProperties imageProps;
-		imageProps.Filepath = relatvePath.string();
+		imageProps.Filepath = relativePath;
 		imageProps.WrapMode = ImageWrap::Repeat;
 
 		asset = Texture2D::Create(imageProps);
@@ -120,15 +120,10 @@ namespace Vortex {
 
 	bool MaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
-
 		asset = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), MaterialProperties());
 		asset->Handle = metadata.Handle;
 
-		std::string materialName = FileSystem::RemoveFileExtension(relatvePath.filename());
-		asset.As<Material>()->SetName(materialName);
-
-		return (bool)asset.Is<Material>();
+		return DeserializeFromYAML(metadata, asset);
 	}
 
 	void MaterialSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -164,7 +159,7 @@ namespace Vortex {
 			out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
 			out << YAML::Key << "MetallicMap" << YAML::Value << material->GetMetallicMap();
 			out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
-			out << YAML::Key << "RoguhnessMap" << YAML::Value << material->GetRoughnessMap();
+			out << YAML::Key << "RoughnessMap" << YAML::Value << material->GetRoughnessMap();
 			out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
 			out << YAML::Key << "EmissionMap" << YAML::Value << material->GetEmissionMap();
 			out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
@@ -177,7 +172,7 @@ namespace Vortex {
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
-		std::string outputFile = (Project::GetAssetDirectory() / metadata.Filepath).string();
+		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open file from path!");
 		
@@ -188,8 +183,38 @@ namespace Vortex {
 
 	bool MaterialSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		
+		YAML::Node materialData = YAML::LoadFile(relativePath);
+		if (!materialData)
+			return false;
 
-		return false;
+		std::string materialName = materialData["Material"].as<std::string>();
+
+		auto materialProperties = materialData["Properties"];
+		if (!materialProperties)
+			return false;
+
+		SharedReference<Material> material = asset.As<Material>();
+
+		material->SetName(materialName);
+		material->SetAlbedo(materialProperties["Albedo"].as<Math::vec3>());
+		material->SetAlbedoMap(materialProperties["AlbedoMap"].as<uint64_t>());
+		material->SetNormalMap(materialProperties["NormalMap"].as<uint64_t>());
+		material->SetMetallic(materialProperties["Metallic"].as<float>());
+		material->SetMetallicMap(materialProperties["MetallicMap"].as<uint64_t>());
+		material->SetRoughness(materialProperties["Roughness"].as<float>());
+		material->SetRoughnessMap(materialProperties["RoughnessMap"].as<uint64_t>());
+		material->SetEmission(materialProperties["Emission"].as<float>());
+		material->SetEmissionMap(materialProperties["EmissionMap"].as<uint64_t>());
+		material->SetParallaxHeightScale(materialProperties["ParallaxHeightScale"].as<float>());
+		material->SetParallaxOcclusionMap(materialProperties["ParallaxOcclusionMap"].as<uint64_t>());
+		material->SetAmbientOcclusionMap(materialProperties["AmbientOcclusionMap"].as<uint64_t>());
+		material->SetUV(materialProperties["UV"].as<Math::vec2>());
+		material->SetOpacity(materialProperties["Opacity"].as<float>());
+		material->SetFlags(materialProperties["Flags"].as<uint32_t>());
+
+		return true;
 	}
 
 	void AnimatorSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -199,7 +224,7 @@ namespace Vortex {
 
 	bool AnimatorSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -211,7 +236,7 @@ namespace Vortex {
 
 	bool AnimationSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -223,9 +248,9 @@ namespace Vortex {
 
 	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		asset = StaticMesh::Create(relatvePath.string(), TransformComponent(), MeshImportOptions());
+		asset = StaticMesh::Create(relativePath, TransformComponent(), MeshImportOptions());
 		asset->Handle = metadata.Handle;
 
 		return asset.As<StaticMesh>()->IsLoaded();
@@ -238,9 +263,9 @@ namespace Vortex {
 
 	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		asset = Skybox::Create(relatvePath);
+		asset = Skybox::Create(relativePath);
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Skybox>()->IsLoaded();
@@ -253,7 +278,7 @@ namespace Vortex {
 
 	bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::filesystem::path relatvePath = Project::GetAssetDirectory() / metadata.Filepath;
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}

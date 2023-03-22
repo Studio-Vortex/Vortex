@@ -11,6 +11,8 @@
 
 namespace Vortex {
 
+	class AssetRegistryPanel;
+
 	class EditorAssetManager : public IAssetManager
 	{
 	public:
@@ -99,6 +101,9 @@ namespace Vortex {
 		// used only to prevent crashing when closing the editor
 		std::filesystem::path m_ProjectAssetDirectory;
 		std::filesystem::path m_ProjectAssetRegistryPath;
+
+	private:
+		friend AssetRegistryPanel;
 	};
 
 }

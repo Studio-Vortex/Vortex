@@ -5,6 +5,8 @@
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Texture.h"
 
+#include <unordered_map>
+
 namespace Vortex {
 
 	enum class VORTEX_API MaterialFlag
@@ -121,6 +123,19 @@ namespace Vortex {
 	protected:
 		MaterialProperties m_Properties;
 		SharedReference<Shader> m_Shader = nullptr;
+	};
+
+	class MaterialTable : public RefCounted
+	{
+	public:
+		MaterialTable() = default;
+		~MaterialTable() = default;
+
+		AssetHandle GetMaterial(uint32_t submeshIndex) const;
+		void SetMaterial(uint32_t submeshIndex, AssetHandle materialHandle);
+
+	private:
+		std::unordered_map<uint32_t, AssetHandle> m_Materials;
 	};
 
 }

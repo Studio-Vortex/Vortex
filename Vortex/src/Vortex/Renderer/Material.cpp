@@ -357,4 +357,18 @@ namespace Vortex {
 		return SharedReference<Material>::Create(shader, props);
 	}
 
+    AssetHandle MaterialTable::GetMaterial(uint32_t submeshIndex) const
+    {
+		if (m_Materials.contains(submeshIndex))
+			return m_Materials.at(submeshIndex);
+
+		VX_CORE_ASSERT(false, "Index out of bounds!");
+		return 0;
+    }
+
+    void MaterialTable::SetMaterial(uint32_t submeshIndex, AssetHandle materialHandle)
+    {
+		m_Materials[submeshIndex] = materialHandle;
+    }
+
 }

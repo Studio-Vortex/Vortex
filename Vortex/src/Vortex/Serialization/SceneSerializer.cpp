@@ -584,9 +584,10 @@ namespace Vortex {
 
 						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-						SharedReference<Material> material = submesh.GetMaterial();
+						// this should be switched to an asset handle
+						//SharedReference<Material> material = submesh.GetMaterial();
 
-						Utils::SerializeSubmeshMaterial(material, out);
+						//AssetImporter::Serialize(material);
 
 						out << YAML::EndMap; // Submesh
 					}
@@ -640,6 +641,8 @@ namespace Vortex {
 								continue;
 
 							AssetImporter::Serialize(material);
+
+							VX_SERIALIZE_PROPERTY(MaterialHandle, material->Handle, out);
 
 							out << YAML::EndMap; // Submesh
 						}
@@ -1220,7 +1223,8 @@ namespace Vortex {
 
 				if (staticMeshRendererComponent.Type != MeshType::Custom)
 				{
-					staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type);
+					DefaultMeshes::StaticMeshes defaultMesh = (DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type;
+					staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
 				}
 				else
 				{
@@ -1244,20 +1248,33 @@ namespace Vortex {
 					}
 				}
 
-				// Do this in Asset Serializer
-				/*auto submeshesData = staticMeshComponent["Submeshes"];
-				if (submeshesData)
+				// Load materials
+				if (AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 				{
-					uint32_t i = 0;
-
-					for (auto submeshData : submeshesData)
+					// Do this in Asset Serializer
+					auto submeshesData = staticMeshComponent["Submeshes"];
+					if (submeshesData)
 					{
-						StaticSubmesh submesh = staticMeshRendererComponent.StaticMesh->GetSubmesh(i++);
-						SharedReference<Material> material = submesh.GetMaterial();
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
+						uint32_t i = 0;
 
-						Utils::LoadSubmeshMaterial(material, submeshData);
+						for (auto submeshData : submeshesData)
+						{
+							if (!submeshData["MaterialHandle"])
+								continue;
+
+							AssetHandle materialHandle = submeshData["MaterialHandle"].as<uint64_t>();
+							if (!AssetManager::IsHandleValid(materialHandle))
+								continue;
+							
+							StaticSubmesh& submesh = staticMesh->GetSubmesh(i++);
+							submesh.SetMaterial(materialHandle);
+
+							// This should load the actual material from disk
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						}
 					}
-				}*/
+				}
 			}
 
 			auto spriteComponent = entity["SpriteRendererComponent"];

@@ -1450,10 +1450,11 @@ namespace Vortex {
 
 					if (material)
 					{
-						auto materials = AssetManager::GetAllAssetsWithType<Material>();
-						std::vector<const char*> options;
+						const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
+						std::vector<const char*	> options;
+						std::vector<std::string> filepaths;
 
-						for (auto& materialHandle : materials)
+						for (const auto& materialHandle : allMaterials)
 						{
 							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
@@ -1462,19 +1463,40 @@ namespace Vortex {
 							if (!mat)
 								continue;
 
+							const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
+							if (!metadata.IsValid())
+								continue;
+
 							options.emplace_back(mat->GetName().c_str());
+							filepaths.emplace_back(metadata.Filepath.string());
 						}
 
 						std::string currentMaterialName = material->GetName();
 						if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
 						{
 							auto it = std::find(options.begin(), options.end(), currentMaterialName.c_str());
+
 							if (it != options.end())
 							{
-								// TODO come back to this once we have actual material files
-								uint32_t materialIndex = 0;
-								//AssetHandle newMaterialHandle = (AssetHandle)materials.;
-								staticMesh->GetSubmesh(0).SetMaterial(0);
+								uint32_t materialIndex = it - options.begin();
+								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepaths[materialIndex]); type == AssetType::MaterialAsset)
+								{
+									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepaths[materialIndex]);
+									if (AssetManager::IsHandleValid(materialHandle))
+									{
+										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+										if (material)
+											staticMesh->GetSubmesh(0).SetMaterial(material->Handle);
+									}
+									else
+									{
+										VX_CONSOLE_LOG_WARN("Could not load material {}", filepaths[materialIndex]);
+									}
+								}
+								else
+								{
+									VX_CONSOLE_LOG_WARN("Could not load material", filepaths[materialIndex]);
+								}
 							}
 						}
 
@@ -1485,13 +1507,15 @@ namespace Vortex {
 								const wchar_t* path = (const wchar_t*)payload->Data;
 								std::filesystem::path materialPath = std::filesystem::path(path);
 
-								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::TextureAsset)
+								// Make sure we are recieving an actual material otherwise we will have trouble opening it
+								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::MaterialAsset)
 								{
 									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
 									if (AssetManager::IsHandleValid(materialHandle))
 									{
-										staticMesh->GetSubmesh(0).SetMaterial(materialHandle);
+										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+										if (material)
+											staticMesh->GetSubmesh(0).SetMaterial(material->Handle);
 									}
 									else
 									{
