@@ -262,6 +262,32 @@ namespace Vortex {
 		return metadata.Handle;
 	}
 
+	bool EditorAssetManager::RenameAsset(SharedReference<Asset>& asset, const std::string& newName)
+	{
+		if (newName.empty())
+			return false;
+
+		if (!IsHandleValid(asset->Handle))
+			return false;
+
+		if (IsMemoryOnlyAsset(asset->Handle))
+		{
+
+		}
+		else
+		{
+			// TODO how should we handle this?
+			AssetMetadata& metadata = GetMutableMetadata(asset->Handle);
+			switch (metadata.Type)
+			{
+				default:
+					break;
+			}
+		}
+
+		return true;
+	}
+
 	AssetHandle EditorAssetManager::GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh)
 	{
 		return DefaultMeshes::DefaultStaticMeshes[(uint32_t)defaultMesh];

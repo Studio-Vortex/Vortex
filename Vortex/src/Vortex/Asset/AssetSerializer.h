@@ -5,6 +5,15 @@
 
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
+namespace YAML {
+	
+	class Emitter;
+	class Node;
+
+}
+
 namespace Vortex {
 
 	class AssetSerializer
@@ -68,6 +77,9 @@ namespace Vortex {
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
 	class AnimatorSerializer : public AssetSerializer

@@ -98,6 +98,23 @@ namespace Vortex {
 				}
 				UI::Draw::Underline();
 
+				if (Gui::MenuItem("Material"))
+				{
+					std::filesystem::path materialsDirectory = Project::GetAssetDirectory() / "Materials";
+					if (!FileSystem::Exists(materialsDirectory))
+						FileSystem::CreateDirectoryV(materialsDirectory);
+					m_ItemPathToRename = "NewMaterial.vmaterial";
+					SharedReference<Shader> pbrStaticShader = Renderer::GetShaderLibrary().Get("PBR_Static");
+					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", m_ItemPathToRename.string(), pbrStaticShader, MaterialProperties());
+					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
+					const AssetMetadata& metadata = editorAssetManager->GetMetadata(materialAsset->Handle);
+					AssetImporter::Serialize(materialAsset);
+
+					Gui::CloseCurrentPopup();
+				}
+				UI::Draw::Underline();
+
 				if (Gui::MenuItem("C# Script"))
 				{
 					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
@@ -434,9 +451,9 @@ public class Untitled : Entity
 			Gui::SetNextItemWidth(m_ThumbnailSize);
 			if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				bool inputTextWasNotEmpty = strlen(buffer) != 0;
+				const bool inputTextEmpty = strlen(buffer) == 0;
 
-				if (inputTextWasNotEmpty && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentItemPath)
+				if (!inputTextEmpty && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentItemPath)
 				{
 					// Get the new path from the input text buffer relative to the current directory
 					std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
@@ -444,6 +461,39 @@ public class Untitled : Entity
 					// Rename the current path to the new path
 					std::filesystem::rename(currentItemPath, newFilePath);
 
+					AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(newFilePath);
+
+					switch (type)
+					{
+						case AssetType::MeshAsset:
+							break;
+						case AssetType::FontAsset:
+							break;
+						case AssetType::AudioAsset:
+							break;
+						case AssetType::SceneAsset:
+							break;
+						case AssetType::PrefabAsset:
+							break;
+						case AssetType::ScriptAsset:
+							break;
+						case AssetType::TextureAsset:
+							break;
+						case AssetType::MaterialAsset:
+							break;
+						case AssetType::AnimatorAsset:
+							break;
+						case AssetType::AnimationAsset:
+							break;
+						case AssetType::StaticMeshAsset:
+							break;
+						case AssetType::EnvironmentAsset:
+							break;
+						case AssetType::PhysicsMaterialAsset:
+							break;
+					}
+
+					// TODO this should take place in asset manager
 					// Rename C# Class name in file
 					if (newFilePath.filename().extension() == ".cs")
 					{

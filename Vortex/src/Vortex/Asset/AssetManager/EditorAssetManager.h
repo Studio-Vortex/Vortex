@@ -48,22 +48,22 @@ namespace Vortex {
 
 		AssetHandle ImportAsset(const std::filesystem::path& filepath);
 
+		bool RenameAsset(SharedReference<Asset>& asset, const std::string& newName);
+
 		AssetHandle GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh);
 		bool IsDefaultStaticMesh(AssetHandle assetHandle);
 
 		template <typename TAsset, typename... Args>
-		VX_FORCE_INLINE SharedReference<TAsset> CreateNewAsset(const std::string& filename, Args&&... args)
+		VX_FORCE_INLINE SharedReference<TAsset> CreateNewAsset(const std::string& directory, const std::string& filename, Args&&... args)
 		{
 			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateNewAsset only works for types derived from Asset");
 
-			std::string directoryPath = FileSystem::GetParentDirectory(filename).string();
-
 			AssetMetadata metadata;
 			metadata.Handle = AssetHandle();
-			if (directoryPath.empty() || directoryPath == ".")
+			if (directory.empty() || directory == ".")
 				metadata.Filepath = filename;
 			else
-				metadata.Filepath = GetRelativePath(directoryPath + "/" + filename);
+				metadata.Filepath = GetRelativePath(directory + "/" + filename);
 			metadata.IsDataLoaded = true;
 			metadata.Type = TAsset::GetStaticType();
 

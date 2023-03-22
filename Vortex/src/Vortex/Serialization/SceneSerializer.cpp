@@ -4,10 +4,12 @@
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Scripting/ScriptEngine.h"
+
+#include "Vortex/Asset/AssetManager.h"
+#include "Vortex/Asset/AssetImporter.h"
+
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
-#include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Mesh.h"
@@ -16,6 +18,8 @@
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
+
+#include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Editor/EditorResources.h"
 
@@ -619,29 +623,28 @@ namespace Vortex {
 					}
 
 					out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
-
-					const auto& submeshes = staticMesh->GetSubmeshes();
-
-					for (const auto& submesh : submeshes)
 					{
-						out << YAML::BeginMap; // Submesh
+						const auto& submeshes = staticMesh->GetSubmeshes();
 
-						VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
+						for (const auto& submesh : submeshes)
+						{
+							out << YAML::BeginMap; // Submesh
 
-						if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
-							continue;
+							VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
-						if (!material)
-							continue;
+							if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+								continue;
 
-						Utils::SerializeSubmeshMaterial(material, out);
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+							if (!material)
+								continue;
 
-						out << YAML::EndMap; // Submesh
+							AssetImporter::Serialize(material);
+
+							out << YAML::EndMap; // Submesh
+						}
 					}
-
 					out << YAML::EndSeq; // Submeshes
-
 					out << YAML::EndMap; // StaticMeshRendererComponent
 				}
 			}

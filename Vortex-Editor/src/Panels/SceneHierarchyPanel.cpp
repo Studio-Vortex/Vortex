@@ -1477,6 +1477,35 @@ namespace Vortex {
 								staticMesh->GetSubmesh(0).SetMaterial(0);
 							}
 						}
+
+						if (Gui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path materialPath = std::filesystem::path(path);
+
+								// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::TextureAsset)
+								{
+									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
+									if (AssetManager::IsHandleValid(materialHandle))
+									{
+										staticMesh->GetSubmesh(0).SetMaterial(materialHandle);
+									}
+									else
+									{
+										VX_CONSOLE_LOG_WARN("Could not load material {}", materialPath.filename().string());
+									}
+								}
+								else
+								{
+									VX_CONSOLE_LOG_WARN("Could not load material", materialPath.filename().string());
+								}
+							}
+
+							Gui::EndDragDropTarget();
+						}
 					}
 				}
 			}
