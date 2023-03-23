@@ -1829,9 +1829,9 @@ namespace Vortex {
 					if (AssetManager::IsHandleValid(staticMeshHandle))
 					{
 						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-						// TODO
 						if (staticMesh)
 						{
+							// TODO not sure if this is required
 							switch (staticMeshRendererComponent.Type)
 							{
 								case MeshType::Cube:

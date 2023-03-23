@@ -1515,7 +1515,9 @@ namespace Vortex {
 								{
 									SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 									if (material)
+									{
 										materialTable->SetMaterial(submeshIndex, material->Handle);
+									}
 								}
 								else
 								{

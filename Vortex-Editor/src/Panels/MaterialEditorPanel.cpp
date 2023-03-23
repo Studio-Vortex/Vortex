@@ -13,35 +13,42 @@ namespace Vortex {
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
-			AssetHandle handle;
+			AssetHandle textureHandle;
 
 			switch (index)
 			{
-				case 0: handle =  material->GetAlbedoMap();
-				case 1: handle =  material->GetNormalMap();
-				case 2: handle =  material->GetMetallicMap();
-				case 3: handle =  material->GetRoughnessMap();
-				case 4: handle =  material->GetEmissionMap();
-				case 5: handle =  material->GetParallaxOcclusionMap();
-				case 6: handle =  material->GetAmbientOcclusionMap();
+				case 0: textureHandle = material->GetAlbedoMap();            break;
+				case 1: textureHandle = material->GetNormalMap();            break;
+				case 2: textureHandle = material->GetMetallicMap();          break;
+				case 3: textureHandle = material->GetRoughnessMap();         break;
+				case 4: textureHandle = material->GetEmissionMap();          break;
+				case 5: textureHandle = material->GetParallaxOcclusionMap(); break;
+				case 6: textureHandle = material->GetAmbientOcclusionMap();  break;
 			}
 
-			return AssetManager::GetAsset<Texture2D>(handle);
+			if (!AssetManager::IsHandleValid(textureHandle))
+				return nullptr;
+
+			SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+			if (!texture)
+				return nullptr;
+
+			return texture;
 		}
 
-		static void SetMaterialTexture(SharedReference<Material>& material, const SharedReference<Texture2D>& texture, uint32_t index)
+		static void SetMaterialTexture(SharedReference<Material>& material, AssetHandle textureHandle, uint32_t index)
 		{
 			VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
 			switch (index)
 			{
-				case 0: material->SetAlbedoMap(texture->Handle);            break;
-				case 1: material->SetNormalMap(texture->Handle);            break;
-				case 2: material->SetMetallicMap(texture->Handle);          break;
-				case 3: material->SetRoughnessMap(texture->Handle);         break;
-				case 4: material->SetEmissionMap(texture->Handle);          break;
-				case 5: material->SetParallaxOcclusionMap(texture->Handle); break;
-				case 6: material->SetAmbientOcclusionMap(texture->Handle);  break;
+				case 0: material->SetAlbedoMap(textureHandle);            break;
+				case 1: material->SetNormalMap(textureHandle);            break;
+				case 2: material->SetMetallicMap(textureHandle);          break;
+				case 3: material->SetRoughnessMap(textureHandle);         break;
+				case 4: material->SetEmissionMap(textureHandle);          break;
+				case 5: material->SetParallaxOcclusionMap(textureHandle); break;
+				case 6: material->SetAmbientOcclusionMap(textureHandle);  break;
 			}
 		}
 
@@ -93,8 +100,9 @@ namespace Vortex {
 		using MaterialParameterCallbackFunc = const std::function<void(SharedReference<Material>&, uint32_t)>&;
 		static void RenderMaterialTexturesAndProperties(SharedReference<Material>& material, MaterialParameterCallbackFunc parameterCallback)
 		{
-			static const char* displayNames[] = {
-				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion"
+			static const char* displayNames[] =
+			{
+				"Albedo", "Normal", "Metallic", "Roughness", "Emission", "Parallax Occlusion", "Ambient Occlusion",
 			};
 
 			ImVec2 textureSize = { 64, 64 };
@@ -105,6 +113,10 @@ namespace Vortex {
 
 			uint32_t count = VX_ARRAYCOUNT(displayNames);
 
+			bool hovered = false;
+			bool leftMouseButtonClicked = false;
+			bool rightMouseButtonClicked = false;
+
 			for (uint32_t i = 0; i < count; i++)
 			{
 				SharedReference<Texture2D> texture = EditorResources::CheckerboardIcon;
@@ -112,10 +124,6 @@ namespace Vortex {
 				{
 					texture = entry;
 				}
-
-				bool hovered = false;
-				bool leftMouseButtonClicked = false;
-				bool rightMouseButtonClicked = false;
 
 				std::string headerName = std::string(displayNames[i]) + "##" + material->GetName() + std::to_string(i);
 				if (Gui::CollapsingHeader(headerName.c_str()))
@@ -132,7 +140,9 @@ namespace Vortex {
 					leftMouseButtonClicked = Gui::IsItemClicked(ImGuiMouseButton_Left);
 					rightMouseButtonClicked = Gui::IsItemClicked(ImGuiMouseButton_Right);
 
-					UI::SetTooltip(texture->GetPath().c_str());
+					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(texture->GetPath());
+					std::string relativePath = metadata.Filepath.string();
+					UI::SetTooltip(relativePath.c_str());
 
 					if (Gui::BeginDragDropTarget())
 					{
@@ -142,26 +152,22 @@ namespace Vortex {
 							std::filesystem::path texturePath = std::filesystem::path(path);
 
 							// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-							if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".jpeg" || texturePath.filename().extension() == ".tga" || texturePath.filename().extension() == ".psd")
+							if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)
 							{
-								TextureProperties imageProps;
-								imageProps.Filepath = texturePath.string();
-								imageProps.WrapMode = ImageWrap::Repeat;
+								AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturePath);
 
-								SharedReference<Texture2D> newTexture = Texture2D::Create(imageProps);
-
-								if (newTexture->IsLoaded())
+								if (AssetManager::IsHandleValid(textureHandle))
 								{
-									SetMaterialTexture(material, newTexture, i);
+									SetMaterialTexture(material, textureHandle, i);
 								}
 								else
 								{
-									VX_WARN("Could not load texture {}", texturePath.filename().string());
+									VX_CONSOLE_LOG_WARN("Could not load texture {}", texturePath.filename().string());
 								}
 							}
 							else
 							{
-								VX_WARN("Could not load texture", texturePath.filename().string());
+								VX_CONSOLE_LOG_WARN("Could not load texture", texturePath.filename().string());
 							}
 						}
 
@@ -174,30 +180,27 @@ namespace Vortex {
 						
 						if (!filepath.empty())
 						{
-							std::string projectDir = Project::GetProjectDirectory().string();
-							std::string relativePath = FileSystem::Relative(filepath, projectDir).string();
-							
-							TextureProperties imageProps;
-							imageProps.Filepath = relativePath;
-							imageProps.WrapMode = ImageWrap::Repeat;
+							AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
 
-							SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
-
-							SetMaterialTexture(material, texture, i);
+							if (AssetManager::IsHandleValid(textureHandle))
+							{
+								SetMaterialTexture(material, textureHandle, i);
+							}
 						}
 					}
 
 					// right click for utilities
+					std::string utilityPopupName = std::string("MaterialUtility") + "##" + std::to_string(texture->Handle) + relativePath;
 					if (hovered && rightMouseButtonClicked)
 					{
-						Gui::OpenPopup("MaterialUtility");
+						Gui::OpenPopup(utilityPopupName.c_str());
 					}
-					if (texture != EditorResources::CheckerboardIcon && Gui::BeginPopup("MaterialUtility"))
+					if (texture != EditorResources::CheckerboardIcon && Gui::IsPopupOpen(utilityPopupName.c_str()) && Gui::BeginPopup(utilityPopupName.c_str()))
 					{
-						std::string remove = fmt::format("Remove##{}##{}", texture->GetPath(), i);
+						std::string remove = fmt::format("Remove##{} - {} - {}", texture->Handle, relativePath, i);
 						if (Gui::MenuItem(remove.c_str()))
 						{
-							SetMaterialTexture(material, nullptr, i);
+							SetMaterialTexture(material, (AssetHandle)0, i);
 							Gui::CloseCurrentPopup();
 						}
 
