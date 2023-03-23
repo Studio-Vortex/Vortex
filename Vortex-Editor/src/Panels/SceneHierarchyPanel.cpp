@@ -1438,99 +1438,96 @@ namespace Vortex {
 				}
 			}
 
-			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
 			if (AssetManager::IsHandleValid(component.StaticMesh))
 			{
 				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-				AssetHandle materialHandle = staticMesh->GetSubmesh(0).GetMaterial();
 
-				if (AssetManager::IsHandleValid(materialHandle))
+				SharedReference<MaterialTable>& materialTable = component.Materials;
+
+				uint32_t submeshIndex = 0;
+				for (;;)
 				{
-					SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-
-					if (material)
+					if (!materialTable->HasMaterial(submeshIndex))
 					{
-						const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
-						std::vector<const char*	> options;
-						std::vector<std::string> filepaths;
+						break;
+					}
 
-						for (const auto& materialHandle : allMaterials)
+					AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
+
+					if (AssetManager::IsHandleValid(materialHandle))
+					{
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+
+						if (material)
 						{
-							if (!AssetManager::IsHandleValid(materialHandle))
-								continue;
+							const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
+							std::vector<const char*> options;
+							std::vector<std::string> filepaths;
 
-							SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
-							if (!mat)
-								continue;
-
-							const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
-							if (!metadata.IsValid())
-								continue;
-
-							options.emplace_back(mat->GetName().c_str());
-							filepaths.emplace_back(metadata.Filepath.string());
-						}
-
-						std::string currentMaterialName = material->GetName();
-						if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
-						{
-							auto it = std::find(options.begin(), options.end(), currentMaterialName.c_str());
-
-							if (it != options.end())
+							auto LoadMaterialFunc = [&](auto materialFilepath)
 							{
-								uint32_t materialIndex = it - options.begin();
-								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepaths[materialIndex]); type == AssetType::MaterialAsset)
-								{
-									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepaths[materialIndex]);
-									if (AssetManager::IsHandleValid(materialHandle))
-									{
-										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-										if (material)
-											staticMesh->GetSubmesh(0).SetMaterial(material->Handle);
-									}
-									else
-									{
-										VX_CONSOLE_LOG_WARN("Could not load material {}", filepaths[materialIndex]);
-									}
-								}
-								else
-								{
-									VX_CONSOLE_LOG_WARN("Could not load material", filepaths[materialIndex]);
-								}
-							}
-						}
-
-						if (Gui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path materialPath = std::filesystem::path(path);
-
 								// Make sure we are recieving an actual material otherwise we will have trouble opening it
-								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::MaterialAsset)
+								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialFilepath); type == AssetType::MaterialAsset)
 								{
-									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
+									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialFilepath);
 									if (AssetManager::IsHandleValid(materialHandle))
 									{
 										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 										if (material)
-											staticMesh->GetSubmesh(0).SetMaterial(material->Handle);
+											materialTable->SetMaterial(submeshIndex, material->Handle);
 									}
 									else
 									{
-										VX_CONSOLE_LOG_WARN("Could not load material {}", materialPath.filename().string());
+										VX_CONSOLE_LOG_WARN("Could not load material {}", materialFilepath);
 									}
 								}
 								else
 								{
-									VX_CONSOLE_LOG_WARN("Could not load material", materialPath.filename().string());
+									VX_CONSOLE_LOG_WARN("Could not load material", materialFilepath);
 								}
+							};
+
+							for (const auto& materialHandle : allMaterials)
+							{
+								if (!AssetManager::IsHandleValid(materialHandle))
+									continue;
+
+								SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
+								if (!mat)
+									continue;
+
+								const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
+								if (!metadata.IsValid())
+									continue;
+
+								options.emplace_back(mat->GetName().c_str());
+								filepaths.emplace_back(metadata.Filepath.string());
 							}
 
-							Gui::EndDragDropTarget();
+							std::string currentMaterialName = material->GetName();
+							if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
+							{
+								uint32_t index = std::find(options.begin(), options.end(), currentMaterialName) - options.begin();
+								material->Handle = *std::next(allMaterials.begin(), index);
+								materialTable->SetMaterial(submeshIndex, material->Handle);
+							}
+
+							if (Gui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+								{
+									const wchar_t* path = (const wchar_t*)payload->Data;
+									std::filesystem::path materialPath = std::filesystem::path(path);
+
+									LoadMaterialFunc(materialPath.string());
+								}
+
+								Gui::EndDragDropTarget();
+							}
 						}
 					}
+
+					submeshIndex++;
 				}
 			}
 

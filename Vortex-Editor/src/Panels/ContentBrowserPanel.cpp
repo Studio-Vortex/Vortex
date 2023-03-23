@@ -103,10 +103,11 @@ namespace Vortex {
 					std::filesystem::path materialsDirectory = Project::GetAssetDirectory() / "Materials";
 					if (!FileSystem::Exists(materialsDirectory))
 						FileSystem::CreateDirectoryV(materialsDirectory);
-					m_ItemPathToRename = "NewMaterial.vmaterial";
+
+					m_ItemPathToRename = m_CurrentDirectory / "NewMaterial.vmaterial";
 					SharedReference<Shader> pbrStaticShader = Renderer::GetShaderLibrary().Get("PBR_Static");
 					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
-					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", m_ItemPathToRename.string(), pbrStaticShader, MaterialProperties());
+					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", "NewMaterial.vmaterial", pbrStaticShader, MaterialProperties());
 					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
 					const AssetMetadata& metadata = editorAssetManager->GetMetadata(materialAsset->Handle);
 					AssetImporter::Serialize(materialAsset);
@@ -452,45 +453,28 @@ public class Untitled : Entity
 			if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				const bool inputTextEmpty = strlen(buffer) == 0;
+				const bool consistentPaths = (m_CurrentDirectory / std::filesystem::path(buffer)) == currentItemPath;
 
-				if (!inputTextEmpty && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentItemPath)
+				if (!inputTextEmpty && !consistentPaths)
 				{
 					// Get the new path from the input text buffer relative to the current directory
 					std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
 
-					// Rename the current path to the new path
+					// Temporary until asset manager is sorted
+					std::string oldFilepath = currentItemPath.string();
 					std::filesystem::rename(currentItemPath, newFilePath);
 
-					AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(newFilePath);
+					SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
+					Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
 
-					switch (type)
+					// TODO this should take place in asset manager
+					if (newFilePath.filename().extension() == ".vmaterial")
 					{
-						case AssetType::MeshAsset:
-							break;
-						case AssetType::FontAsset:
-							break;
-						case AssetType::AudioAsset:
-							break;
-						case AssetType::SceneAsset:
-							break;
-						case AssetType::PrefabAsset:
-							break;
-						case AssetType::ScriptAsset:
-							break;
-						case AssetType::TextureAsset:
-							break;
-						case AssetType::MaterialAsset:
-							break;
-						case AssetType::AnimatorAsset:
-							break;
-						case AssetType::AnimationAsset:
-							break;
-						case AssetType::StaticMeshAsset:
-							break;
-						case AssetType::EnvironmentAsset:
-							break;
-						case AssetType::PhysicsMaterialAsset:
-							break;
+						SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
+						if (material)
+						{
+							material->SetName(FileSystem::RemoveFileExtension(newFilePath));
+						}
 					}
 
 					// TODO this should take place in asset manager
@@ -569,7 +553,7 @@ public class Untitled : Entity
 					}
 				}
 
-				m_ItemPathToRename = "";
+				m_ItemPathToRename.clear();
 			}
 		}
 	}
@@ -635,6 +619,7 @@ public class Untitled : Entity
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
+			VX_CORE_ASSERT(asset.Is<Texture2D>(), "Invalid Texture!");
 			itemIcon = asset.As<Texture2D>();
 		}
 	}
@@ -643,6 +628,7 @@ public class Untitled : Entity
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
+			VX_CORE_ASSERT(asset.Is<Skybox>(), "Invalid Environment!");
 			itemIcon = asset.As<Skybox>()->GetEnvironmentMap();
 		}
 	}

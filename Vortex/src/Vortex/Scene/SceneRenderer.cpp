@@ -646,13 +646,19 @@ namespace Vortex {
 		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 		auto& submeshes = staticMesh->GetSubmeshes();
 
+		auto& materialTable = staticMeshRendererComponent.Materials;
+
 		// render each submesh
+		uint32_t submeshIndex = 0;
 		for (auto& submesh : submeshes)
 		{
-			if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material table not synchronized with mesh!");
+
+			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+			if (!AssetManager::IsHandleValid(materialHandle))
 				continue;
 
-			SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 			if (!material)
 				continue;
 
@@ -670,7 +676,7 @@ namespace Vortex {
 			Renderer::BindPointLightDepthMaps();
 			Renderer::BindSpotLightDepthMaps();
 
-			submesh.Render();
+			submesh.Render(materialHandle);
 
 			ResetAllMaterialFlags();
 		}

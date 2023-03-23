@@ -80,19 +80,20 @@ namespace Vortex {
 					{
 						if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 						{
-							AssetHandle srcStaticMeshHandle = src.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-							AssetHandle dstStaticMeshHandle = dst.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+							auto& srcStaticMesh = src.GetComponent<StaticMeshRendererComponent>();
+							auto& dstStaticMesh = dst.GetComponent<StaticMeshRendererComponent>();
+
+							AssetHandle srcStaticMeshHandle = srcStaticMesh.StaticMesh;
+							AssetHandle dstStaticMeshHandle = dstStaticMesh.StaticMesh;
 							
 							auto srcMesh = AssetManager::GetAsset<StaticMesh>(srcStaticMeshHandle);
 							auto dstMesh = AssetManager::GetAsset<StaticMesh>(dstStaticMeshHandle);
 							
 							const auto& submeshes = srcMesh->GetSubmeshes();
-							uint32_t i = 0;
 
-							for (const auto& srcSubmesh : submeshes)
+							for (uint32_t submeshIndex = 0; submeshIndex < submeshes.size(); submeshIndex++)
 							{
-								StaticSubmesh& submesh = dstMesh->GetSubmesh(i++);
-								submesh.SetMaterial(srcSubmesh.GetMaterial());
+								dstStaticMesh.Materials->SetMaterial(submeshIndex, srcStaticMesh.Materials->GetMaterial(submeshIndex));
 							}
 						}
 
@@ -1194,7 +1195,9 @@ namespace Vortex {
 				if (!staticMesh)
 					continue;
 
-				staticMesh->OnUpdate((int)(entt::entity)e);
+				auto& materialTable = staticMeshRendererComponent.Materials;
+
+				staticMesh->OnUpdate(materialTable, (int)(entt::entity)e);
 			}
 		}
 	}

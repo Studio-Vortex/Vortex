@@ -627,22 +627,24 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 
+						uint32_t submeshIndex = 0;
 						for (const auto& submesh : submeshes)
 						{
 							out << YAML::BeginMap; // Submesh
 
 							VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-							if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex++);
+							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
 
-							SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 							if (!material)
 								continue;
 
 							AssetImporter::Serialize(material);
 
-							VX_SERIALIZE_PROPERTY(MaterialHandle, material->Handle, out);
+							VX_SERIALIZE_PROPERTY(MaterialHandle, materialHandle, out);
 
 							out << YAML::EndMap; // Submesh
 						}
@@ -1256,8 +1258,8 @@ namespace Vortex {
 					if (submeshesData)
 					{
 						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
-						uint32_t i = 0;
 
+						uint32_t submeshIndex = 0;
 						for (auto submeshData : submeshesData)
 						{
 							if (!submeshData["MaterialHandle"])
@@ -1267,11 +1269,7 @@ namespace Vortex {
 							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
 							
-							StaticSubmesh& submesh = staticMesh->GetSubmesh(i++);
-							submesh.SetMaterial(materialHandle);
-
-							// This should load the actual material from disk
-							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+							staticMeshRendererComponent.Materials->SetMaterial(submeshIndex++, materialHandle);
 						}
 					}
 				}

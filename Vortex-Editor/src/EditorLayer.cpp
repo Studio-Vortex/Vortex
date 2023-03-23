@@ -802,6 +802,9 @@ namespace Vortex {
 					}
 					case AssetType::TextureAsset:
 					{
+						if (!m_HoveredEntity.HasAny<SpriteRendererComponent, StaticMeshRendererComponent>())
+							break;
+
 						std::filesystem::path textureFilepath = filepath;
 
 						AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
@@ -816,12 +819,16 @@ namespace Vortex {
 							}
 							else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 							{
-								AssetHandle staticMeshHandle = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+								auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
+								AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+
+								auto& materialTable = staticMeshRendererComponent.Materials;
 
 								if (AssetManager::IsHandleValid(staticMeshHandle))
 								{
 									std::string filename = textureFilepath.filename().string();
-									AssetHandle materialHandle = staticMesh->GetSubmesh(0).GetMaterial();
+									// TODO this should be dynamic
+									AssetHandle materialHandle = materialTable->GetMaterial(0);
 
 									if (AssetManager::IsHandleValid(materialHandle))
 									{
@@ -857,6 +864,42 @@ namespace Vortex {
 					}
 					case AssetType::MaterialAsset:
 					{
+						if (!m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+							break;
+
+						std::filesystem::path materialFilepath = filepath;
+
+						AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialFilepath);
+
+						if (AssetManager::IsHandleValid(materialHandle))
+						{
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+
+							if (material)
+							{
+								// TODO we should be able to set an actual index here eventually instead of being hardcoded
+
+								if (m_HoveredEntity.HasComponent<MeshRendererComponent>())
+								{
+									auto& meshRendererComponent = m_HoveredEntity.GetComponent<MeshRendererComponent>();
+									auto& materialTable = meshRendererComponent.Materials;
+									
+									materialTable->SetMaterial(0, materialHandle);
+								}
+								else if (m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+								{
+									auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
+									auto& materialTable = staticMeshRendererComponent.Materials;
+									
+									materialTable->SetMaterial(0, materialHandle);
+								}
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_WARN("Could not load material - {}", materialFilepath.filename().string());
+						}
+
 						break;
 					}
 					case AssetType::AnimatorAsset:

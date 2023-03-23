@@ -134,6 +134,10 @@ namespace Vortex {
 		AssetHandle GetMaterial(uint32_t submeshIndex) const;
 		void SetMaterial(uint32_t submeshIndex, AssetHandle materialHandle);
 
+		bool HasMaterial(uint32_t submeshIndex) const;
+
+		uint32_t GetMaterialCount() const;
+
 	private:
 		std::unordered_map<uint32_t, AssetHandle> m_Materials;
 	};

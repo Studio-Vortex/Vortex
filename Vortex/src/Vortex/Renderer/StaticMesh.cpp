@@ -45,8 +45,8 @@ namespace Vortex {
 		}
 	};
 
-	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, AssetHandle materialHandle)
-		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices), m_MaterialHandle(materialHandle)
+	StaticSubmesh::StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices)
+		: m_MeshName(name), m_Vertices(vertices), m_Indices(indices)
 	{
 		CreateAndUploadMesh();
 	}
@@ -108,11 +108,6 @@ namespace Vortex {
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 	}
 
-	void StaticSubmesh::SetMaterial(AssetHandle materialHandle)
-	{
-		m_MaterialHandle = materialHandle;
-	}
-
 	void StaticSubmesh::CreateAndUploadMesh()
 	{
 		m_VertexArray = VertexArray::Create();
@@ -158,12 +153,17 @@ namespace Vortex {
 		}
 	}
 
-	void StaticSubmesh::Render()
+	void StaticSubmesh::Render(AssetHandle materialHandle)
 	{
-		if (!AssetManager::IsHandleValid(m_MaterialHandle))
-			return;
+		VX_CORE_ASSERT(AssetManager::IsHandleValid(materialHandle), "Invalid Material!");
 
-		SharedReference<Material> material = AssetManager::GetAsset<Material>(m_MaterialHandle);
+		SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+		if (!material)
+		{
+			VX_CORE_ASSERT(false, "Invalid Material!");
+			return;
+		}
+
 		SharedReference<Shader> shader = material->GetShader();
 		material->Bind();
 
@@ -345,7 +345,7 @@ namespace Vortex {
 			materialHandle = material->Handle;
 		}
 
-		return { meshName, vertices, indices, materialHandle };
+		return { meshName, vertices, indices };
 	}
 
 	void StaticMesh::CreateBoundingBoxFromSubmeshes()
@@ -369,24 +369,26 @@ namespace Vortex {
 		}
 	}
 
-	void StaticMesh::OnUpdate(int entityID)
+	void StaticMesh::OnUpdate(const SharedReference<MaterialTable>& materialTable, int entityID)
 	{
 		bool dirty = false;
 
+		uint32_t submeshIndex = 0;
 		for (auto& submesh : m_Submeshes)
 		{
+			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+			if (!AssetManager::IsHandleValid(materialHandle))
+				continue;
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+			if (!material)
+				continue;
+
 			std::vector<StaticVertex>& vertices = submesh.GetVertices();
-			
+
 			size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
-				if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
-					continue;
-
-				SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
-				if (!material)
-					continue;
-
 				StaticVertex& vertex = vertices[i];
 
 				dirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;

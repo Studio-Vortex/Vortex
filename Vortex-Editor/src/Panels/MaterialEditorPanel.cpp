@@ -323,7 +323,8 @@ namespace Vortex {
 		}
 		else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
 		{
-			AssetHandle staticMeshHandle = selectedEntity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
+			auto& staticMeshRendererComponent = selectedEntity.GetComponent<StaticMeshRendererComponent>();
+			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
 			{
 				Gui::End();
@@ -339,12 +340,16 @@ namespace Vortex {
 
 			const auto& submeshes = staticMesh->GetSubmeshes();
 
+			auto& materialTable = staticMeshRendererComponent.Materials;
+
+			uint32_t submeshIndex = 0;
 			for (const auto& submesh : submeshes)
 			{
-				if (!AssetManager::IsHandleValid(submesh.GetMaterial()))
+				AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+				if (!AssetManager::IsHandleValid(materialHandle))
 					continue;
 
-				SharedReference<Material> material = AssetManager::GetAsset<Material>(submesh.GetMaterial());
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 				if (!material)
 					continue;
 

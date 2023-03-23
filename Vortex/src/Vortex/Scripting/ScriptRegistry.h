@@ -240,7 +240,7 @@ namespace Vortex {
 
 #pragma region Material
 
-		void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo);
+		/*void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo);
 		void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo);
 		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex);
 		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic);
@@ -251,7 +251,7 @@ namespace Vortex {
 		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV);
 		void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv);
 		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex);
-		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity);
+		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity);*/
 
 #pragma endregion
 

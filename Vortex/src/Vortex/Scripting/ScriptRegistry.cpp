@@ -1961,7 +1961,7 @@ namespace Vortex {
 
 #pragma region Material
 
-		void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
+		/*void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2535,7 +2535,7 @@ namespace Vortex {
 					}
 				}
 			}
-		}
+		}*/
 
 #pragma endregion
 
@@ -7267,7 +7267,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
 
-		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
+		/*VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
 		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedo);
 		VX_REGISTER_INTERNAL_CALL(Material_GetMetallic);
 		VX_REGISTER_INTERNAL_CALL(Material_SetMetallic);
@@ -7278,7 +7278,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Material_GetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_SetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_GetOpacity);
-		VX_REGISTER_INTERNAL_CALL(Material_SetOpacity);
+		VX_REGISTER_INTERNAL_CALL(Material_SetOpacity);*/
 
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetColor);

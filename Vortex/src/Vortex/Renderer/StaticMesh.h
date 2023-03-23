@@ -25,19 +25,17 @@ namespace Vortex {
 	{
 	public:
 		StaticSubmesh() = default;
-		StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices, AssetHandle materialHandle);
+		StaticSubmesh(const std::string& name, const std::vector<StaticVertex>& vertices, const std::vector<uint32_t>& indices);
 		StaticSubmesh(bool skybox = true);
 		~StaticSubmesh() = default;
 
 		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
 
-		void Render();
+		void Render(AssetHandle materialHandle);
 		void RenderToSkylightShadowMap();
 
 		VX_FORCE_INLINE const SharedReference<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		VX_FORCE_INLINE const SharedReference<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
-		VX_FORCE_INLINE AssetHandle GetMaterial() const { return m_MaterialHandle; }
-		void SetMaterial(AssetHandle materialHandle);
 		
 		const std::vector<StaticVertex>& GetVertices() const { return m_Vertices; }
 		std::vector<StaticVertex>& GetVertices() { return m_Vertices; }
@@ -51,8 +49,6 @@ namespace Vortex {
 		void CreateBoundingBoxFromVertices();
 
 	private:
-		AssetHandle m_MaterialHandle = 0;
-
 		std::vector<StaticVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 
@@ -72,7 +68,7 @@ namespace Vortex {
 		StaticMesh(MeshType meshType);
 		~StaticMesh() override = default;
 
-		void OnUpdate(int entityID = -1);
+		void OnUpdate(const SharedReference<MaterialTable>& materialTable, int entityID = -1);
 
 		const StaticSubmesh& GetSubmesh(uint32_t index) const;
 		StaticSubmesh& GetSubmesh(uint32_t index);
