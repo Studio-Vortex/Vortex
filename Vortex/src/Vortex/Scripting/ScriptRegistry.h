@@ -22,6 +22,7 @@ namespace Vortex {
 	enum class CursorMode : uint16_t;
 	enum class GamepadButton : uint16_t;
 	enum class GamepadAxis : uint16_t;
+	enum class MaterialFlag;
 	class Texture2D;
 	class Noise;
 	enum class NoiseType;
@@ -227,7 +228,7 @@ namespace Vortex {
 
 #pragma region Mesh Renderer Component
 
-
+		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
@@ -235,23 +236,26 @@ namespace Vortex {
 
 		MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID);
 		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType);
+		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
 #pragma region Material
 
-		/*void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo);
-		void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo);
-		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex);
-		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic);
-		float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex);
-		void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness);
-		float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex);
-		void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission);
-		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV);
-		void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv);
-		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex);
-		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity);*/
+		void Material_GetAlbedo(AssetHandle* assetHandle, Math::vec3* outAlbedo);
+		void Material_SetAlbedo(AssetHandle* assetHandle, Math::vec3* albedo);
+		float Material_GetMetallic(AssetHandle* assetHandle);
+		void Material_SetMetallic(AssetHandle* assetHandle, float metallic);
+		float Material_GetRoughness(AssetHandle* assetHandle);
+		void Material_SetRoughness(AssetHandle* assetHandle, float roughness);
+		float Material_GetEmission(AssetHandle* assetHandle);
+		void Material_SetEmission(AssetHandle* assetHandle, float emission);
+		void Material_GetUV(AssetHandle* assetHandle, Math::vec2* outUV);
+		void Material_SetUV(AssetHandle* assetHandle, Math::vec2* uv);
+		float Material_GetOpacity(AssetHandle* assetHandle);
+		void Material_SetOpacity(AssetHandle* assetHandle, float opacity);
+		bool Material_IsFlagSet(AssetHandle* assetHandle, MaterialFlag flag);
+		void Material_SetFlag(AssetHandle* assetHandle, MaterialFlag flag, bool value);
 
 #pragma endregion
 

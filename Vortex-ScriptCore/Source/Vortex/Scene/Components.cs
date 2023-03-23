@@ -391,7 +391,13 @@ namespace Vortex {
 	public class MeshRenderer: Component
 	{
 		public Submesh BaseMesh => GetSubmesh(0);
-		public Submesh GetSubmesh(uint index) => new Submesh(index, Entity);
+		public Submesh GetSubmesh(uint index) => new Submesh(GetMaterialHandle(index));
+
+		AssetHandle GetMaterialHandle(uint submeshIndex)
+		{
+			return InternalCalls.MeshRendererComponent_GetMaterialHandle(submeshIndex, Entity.ID, out AssetHandle materialHandle)
+				? materialHandle : AssetHandle.Invalid;
+		}
 	}
 
 	public class StaticMeshRenderer: Component
@@ -403,7 +409,13 @@ namespace Vortex {
 		}
 
 		public Submesh BaseMesh => GetSubmesh(0);
-		public Submesh GetSubmesh(uint index) => new Submesh(index, Entity);
+		public Submesh GetSubmesh(uint index) => new Submesh(GetMaterialHandle(index));
+
+		AssetHandle GetMaterialHandle(uint submeshIndex)
+		{
+			return InternalCalls.StaticMeshRendererComponent_GetMaterialHandle(submeshIndex, Entity.ID, out AssetHandle materialHandle)
+				? materialHandle : AssetHandle.Invalid;
+		}
 	}
 
 	public class SpriteRenderer: Component

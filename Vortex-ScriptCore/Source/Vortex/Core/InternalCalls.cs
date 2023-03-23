@@ -433,6 +433,9 @@ namespace Vortex {
 
 		#region MeshRenderer
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);
+
 		#endregion
 
 		#region StaticMeshRenderer
@@ -443,45 +446,54 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void StaticMeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool StaticMeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);
+
 		#endregion
 
 		#region Material
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_GetAlbedo(ulong entityID, uint submeshIndex, out Vector3 result);
+		internal extern static void Material_GetAlbedo(ref AssetHandle assetHandle, out Vector3 outAlbedo);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetAlbedo(ulong entityID, uint submeshIndex, ref Vector3 albedo);
+		internal extern static void Material_SetAlbedo(ref AssetHandle assetHandle, ref Vector3 albedo);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetMetallic(ulong entityID, uint submeshIndex);
+		internal extern static float Material_GetMetallic(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetMetallic(ulong entityID, uint submeshIndex, float metallic);
+		internal extern static void Material_SetMetallic(ref AssetHandle assetHandle, float metallic);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetRoughness(ulong entityID, uint submeshIndex);
+		internal extern static float Material_GetRoughness(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetRoughness(ulong entityID, uint submeshIndex, float roughness);
+		internal extern static void Material_SetRoughness(ref AssetHandle assetHandle, float roughness);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetEmission(ulong entityID, uint submeshIndex);
+		internal extern static float Material_GetEmission(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetEmission(ulong entityID, uint submeshIndex, float emission);
+		internal extern static void Material_SetEmission(ref AssetHandle assetHandle, float emission);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_GetUV(ulong entityID, uint submeshIndex, out Vector2 result);
+		internal extern static void Material_GetUV(ref AssetHandle assetHandle, out Vector2 outUV);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetUV(ulong entityID, uint submeshIndex, ref Vector2 uv);
+		internal extern static void Material_SetUV(ref AssetHandle assetHandle, ref Vector2 uv);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetOpacity(ulong entityID, uint submeshIndex);
+		internal extern static float Material_GetOpacity(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetOpacity(ulong entityID, uint submeshIndex, float opacity);
+		internal extern static void Material_SetOpacity(ref AssetHandle assetHandle, float opacity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_IsFlagSet(ref AssetHandle assetHandle, MaterialFlag flag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetFlag(ref AssetHandle assetHandle, MaterialFlag flag, bool value);
 
 		#endregion
 

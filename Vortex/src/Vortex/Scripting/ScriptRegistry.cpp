@@ -1911,7 +1911,11 @@ namespace Vortex {
 
 #pragma region Mesh Renderer Component
 
-
+		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)
+		{
+			VX_CORE_ASSERT(false, "Not implemented yet!");
+			return false;
+		}
 
 #pragma endregion
 
@@ -1942,600 +1946,292 @@ namespace Vortex {
 				return;
 			}
 
-			StaticMeshRendererComponent& meshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-			meshRenderer.Type = meshType;
+			StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			staticMeshRenderer.Type = meshType;
 
-			if (meshType == MeshType::Custom)
+			staticMeshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
+		}
+
+		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<StaticMeshRendererComponent>())
 			{
-				// Should this even be an option?
-				// you could just set this through the asset handle, setting it to custom
-				// wouldn't accomplish much
+				VX_CONSOLE_LOG_ERROR("Calling StaticMeshRenderer.GetMaterialHandle without a Static Mesh Renderer!");
+				return false;
 			}
-			else
-			{
-				meshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
-			}
+
+			const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			SharedReference<MaterialTable> materialTable = staticMeshRenderer.Materials;
+			VX_CORE_ASSERT(!materialTable->Empty(), "Material table not synchronized with component!");
+			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Index out of bounds!");
+
+			if (!materialTable->HasMaterial(submeshIndex))
+				return false;
+
+			*outHandle = materialTable->GetMaterial(submeshIndex);
+			return true;
 		}
 
 #pragma endregion
 
 #pragma region Material
 
-		/*void Material_GetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* outAlbedo)
+		void Material_GetAlbedo(AssetHandle* assetHandle, Math::vec3* outAlbedo)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.Albedo without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
 				return;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
 			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						*outAlbedo = submesh.GetMaterial()->GetAlbedo();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-						
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						*outAlbedo = material->GetAlbedo();
-					}
-				}
-			}
-		}
-
-		void Material_SetAlbedo(UUID entityUUID, uint32_t submeshIndex, Math::vec3* albedo)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.Albedo without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
 				return;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetAlbedo(*albedo);
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetAlbedo(*albedo);
-					}
-				}
-			}
+			*outAlbedo = material->GetAlbedo();
 		}
 
-		float Material_GetMetallic(UUID entityUUID, uint32_t submeshIndex)
+		void Material_SetAlbedo(AssetHandle* assetHandle, Math::vec3* albedo)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.Metallic without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			material->SetAlbedo(*albedo);
+		}
+
+		float Material_GetMetallic(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
 			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						return submesh.GetMaterial()->GetMetallic();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return 0.0f;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return 0.0f;
-
-						return material->GetMetallic();
-					}
-				}
-			}
-		}
-
-		void Material_SetMetallic(UUID entityUUID, uint32_t submeshIndex, float metallic)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.Metallic without a Mesh!");
-				return;
-			}
-
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetMetallic(metallic);
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetMetallic(metallic);
-					}
-				}
-			}
-		}
-
-		float Material_GetRoughness(UUID entityUUID, uint32_t submeshIndex)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.Roughness without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						return submesh.GetMaterial()->GetRoughness();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return 0.0f;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return 0.0f;
-
-						return material->GetRoughness();
-					}
-				}
-			}
+			return material->GetMetallic();
 		}
 
-		void Material_SetRoughness(UUID entityUUID, uint32_t submeshIndex, float roughness)
+		void Material_SetMetallic(AssetHandle* assetHandle, float metallic)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.Roughness without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
 				return;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
 			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetRoughness(roughness);
-					}
-				}
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
 			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
 
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetRoughness(roughness);
-					}
-				}
-			}
+			material->SetMetallic(metallic);
 		}
 
-		float Material_GetEmission(UUID entityUUID, uint32_t submeshIndex)
+		float Material_GetRoughness(AssetHandle* assetHandle)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.Emission without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
 			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						return submesh.GetMaterial()->GetEmission();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return 0.0f;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return 0.0f;
-
-						return material->GetEmission();
-					}
-				}
-			}
-		}
-
-		void Material_SetEmission(UUID entityUUID, uint32_t submeshIndex, float emission)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.Emission without a Mesh!");
-				return;
-			}
-
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetEmission(emission);
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetEmission(emission);
-					}
-				}
-			}
-		}
-
-		void Material_GetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* outUV)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.UV without a Mesh!");
-				return;
-			}
-
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						*outUV = submesh.GetMaterial()->GetUV();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						*outUV = material->GetUV();
-					}
-				}
-			}
-		}
-
-		void Material_SetUV(UUID entityUUID, uint32_t submeshIndex, Math::vec2* uv)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.UV without a Mesh!");
-				return;
-			}
-
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetUV(*uv);
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetUV(*uv);
-					}
-				}
-			}
-		}
-
-		float Material_GetOpacity(UUID entityUUID, uint32_t submeshIndex)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Material.Opacity without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
-			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						const auto& submesh = mesh->GetSubmesh();
-						return submesh.GetMaterial()->GetOpacity();
-					}
-				}
-			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
-			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return 0.0f;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return 0.0f;
-
-						return material->GetOpacity();
-					}
-				}
-			}
+			return material->GetRoughness();
 		}
 
-		void Material_SetOpacity(UUID entityUUID, uint32_t submeshIndex, float opacity)
+		void Material_SetRoughness(AssetHandle* assetHandle, float roughness)
 		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<MeshRendererComponent>() && !entity.HasComponent<StaticMeshRendererComponent>())
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Material.Opacity without a Mesh!");
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
 				return;
 			}
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
 			{
-				AssetHandle meshHandle = entity.GetComponent<MeshRendererComponent>().Mesh;
-				if (AssetManager::IsHandleValid(meshHandle))
-				{
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (mesh)
-					{
-						auto& submesh = mesh->GetSubmesh();
-						submesh.GetMaterial()->SetOpacity(opacity);
-					}
-				}
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
 			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
+
+			material->SetRoughness(roughness);
+		}
+
+		float Material_GetEmission(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				AssetHandle staticMeshHandle = entity.GetComponent<StaticMeshRendererComponent>().StaticMesh;
-				if (AssetManager::IsHandleValid(staticMeshHandle))
-				{
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (staticMesh)
-					{
-						auto& submeshes = staticMesh->GetSubmeshes();
-						VX_CORE_ASSERT(submeshIndex < submeshes.size(), "Index out of bounds!");
-
-						AssetHandle materialHandle = submeshes[submeshIndex].GetMaterial();
-						if (!AssetManager::IsHandleValid(materialHandle))
-							return;
-
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (!material)
-							return;
-
-						material->SetOpacity(opacity);
-					}
-				}
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return 0.0f;
 			}
-		}*/
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return 0.0f;
+			}
+
+			return material->GetEmission();
+		}
+
+		void Material_SetEmission(AssetHandle* assetHandle, float emission)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			material->SetEmission(emission);
+		}
+
+		void Material_GetUV(AssetHandle* assetHandle, Math::vec2* outUV)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			*outUV = material->GetUV();
+		}
+
+		void Material_SetUV(AssetHandle* assetHandle, Math::vec2* uv)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			material->SetUV(*uv);
+		}
+
+		float Material_GetOpacity(AssetHandle* assetHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return 0.0f;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return 0.0f;
+			}
+
+			return material->GetOpacity();
+		}
+
+		void Material_SetOpacity(AssetHandle* assetHandle, float opacity)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			material->SetOpacity(opacity);
+		}
+
+		bool Material_IsFlagSet(AssetHandle* assetHandle, MaterialFlag flag)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			return material->HasFlag(flag);
+		}
+
+		void Material_SetFlag(AssetHandle* assetHandle, MaterialFlag flag, bool value)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (value)
+				material->RemoveFlag(flag);
+			else
+				material->SetFlag(flag);
+		}
 
 #pragma endregion
 
@@ -6576,10 +6272,10 @@ namespace Vortex {
 			return Math::Sqrt(in);
 		}
 
-        float Mathf_Pow(float base, float power)
-        {
-            return Math::Pow(base, power);
-        }
+		float Mathf_Pow(float base, float power)
+		{
+			return Math::Pow(base, power);
+		}
 
 		float Mathf_Sin(float in)
 		{
@@ -7264,10 +6960,13 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Play);
 		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Stop);
 
+		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_GetMaterialHandle);
+
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
+		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMaterialHandle);
 
-		/*VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
+		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
 		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedo);
 		VX_REGISTER_INTERNAL_CALL(Material_GetMetallic);
 		VX_REGISTER_INTERNAL_CALL(Material_SetMetallic);
@@ -7278,7 +6977,9 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Material_GetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_SetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_GetOpacity);
-		VX_REGISTER_INTERNAL_CALL(Material_SetOpacity);*/
+		VX_REGISTER_INTERNAL_CALL(Material_SetOpacity);
+		VX_REGISTER_INTERNAL_CALL(Material_IsFlagSet);
+		VX_REGISTER_INTERNAL_CALL(Material_SetFlag);
 
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetColor);

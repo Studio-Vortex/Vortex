@@ -376,6 +376,11 @@ namespace Vortex {
         return m_Materials.contains(submeshIndex);
     }
 
+	bool MaterialTable::Empty() const
+	{
+		return m_Materials.empty();
+	}
+
 	uint32_t MaterialTable::GetMaterialCount() const
 	{
 		return m_Materials.size();
