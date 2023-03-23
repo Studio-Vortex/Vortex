@@ -1300,6 +1300,9 @@ namespace Vortex {
 		DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)(component.Type == MeshType::Custom ? MeshType::Cube : component.Type);
 
 		component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
+
+		if (component.Materials->GetMaterialCount() == 0)
+			component.Materials->SetMaterial(0, Renderer::GetWhiteMaterial()->Handle);
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

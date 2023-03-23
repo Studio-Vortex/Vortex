@@ -83,26 +83,26 @@ namespace Vortex {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawTriangles(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
+	void OpenGLRendererAPI::DrawTriangles(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
+	void OpenGLRendererAPI::DrawIndexed(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 	
-	void OpenGLRendererAPI::DrawLines(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
+	void OpenGLRendererAPI::DrawLines(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
 
-	void OpenGLRendererAPI::DrawTriangleStrip(SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
+	void OpenGLRendererAPI::DrawTriangleStrip(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, indexCount);

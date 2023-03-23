@@ -644,17 +644,16 @@ namespace Vortex {
 			return;
 
 		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-		auto& submeshes = staticMesh->GetSubmeshes();
+		const auto& submeshes = staticMesh->GetSubmeshes();
 
 		auto& materialTable = staticMeshRendererComponent.Materials;
 
 		// render each submesh
-		uint32_t submeshIndex = 0;
-		for (auto& submesh : submeshes)
+		for (const auto& [submeshIndex, submesh] : submeshes)
 		{
 			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material table not synchronized with mesh!");
 
-			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
 			if (!AssetManager::IsHandleValid(materialHandle))
 				continue;
 

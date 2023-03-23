@@ -272,7 +272,7 @@ namespace Vortex {
 
 		if (IsMemoryOnlyAsset(asset->Handle))
 		{
-
+			
 		}
 		else
 		{

@@ -271,6 +271,8 @@ namespace Vortex
 	{
 		VX_PROFILE_FUNCTION();
 
+		s_Data.WhiteTexture.Reset();
+
 		delete[] s_Data.QuadVertexBufferBase;
 		delete[] s_Data.CircleVertexBufferBase;
 		delete[] s_Data.LineVertexBufferBase;

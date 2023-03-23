@@ -1747,7 +1747,7 @@ namespace Vortex {
 
 					const auto& submeshes = staticMesh->GetSubmeshes();
 
-					for (const auto& submesh : submeshes)
+					for (const auto& [submeshIndex, submesh] : submeshes)
 					{
 						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 					}
@@ -1859,7 +1859,7 @@ namespace Vortex {
 									break;
 								case SelectionMode::Submesh:
 									const auto& submeshes = staticMesh->GetSubmeshes();
-									for (const auto& submesh : submeshes)
+									for (const auto& [submeshIndex, submesh] :submeshes)
 									{
 										Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
 									}

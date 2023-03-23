@@ -78,10 +78,10 @@ namespace Vortex {
 
 		virtual void Clear() const = 0;
 
-		virtual void DrawTriangles(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
-		virtual void DrawIndexed(SharedReference<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;
-		virtual void DrawLines(SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
-		virtual void DrawTriangleStrip(SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
+		virtual void DrawTriangles(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
+		virtual void DrawIndexed(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;
+		virtual void DrawLines(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
+		virtual void DrawTriangleStrip(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
 
 		virtual void EnableDepthTest() const = 0;
 		virtual void DisableDepthTest() const = 0;

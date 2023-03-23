@@ -48,7 +48,7 @@ namespace Vortex {
 
 	private:
 
-		inline static bool s_ShowPanel = false;
+		inline static bool s_ShowPanel = true;
 
 		friend class EditorConsoleSink;
 	};

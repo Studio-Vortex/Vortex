@@ -153,7 +153,7 @@ namespace Vortex {
 		}
 	}
 
-	void StaticSubmesh::Render(AssetHandle materialHandle)
+	void StaticSubmesh::Render(AssetHandle materialHandle) const
 	{
 		VX_CORE_ASSERT(AssetManager::IsHandleValid(materialHandle), "Invalid Material!");
 
@@ -173,7 +173,7 @@ namespace Vortex {
 		Renderer::AddToQuadCountStats(triangleCount / 2);
 	}
 
-	void StaticSubmesh::RenderToSkylightShadowMap()
+	void StaticSubmesh::RenderToSkylightShadowMap() const
 	{
 		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 
@@ -206,16 +206,18 @@ namespace Vortex {
 
 	StaticMesh::StaticMesh(MeshType meshType)
 	{
-		m_Submeshes.push_back(StaticSubmesh(true));
+		// Create cube from vertices
+		StaticSubmesh submesh(true);
+		m_Submeshes.insert({ 0, submesh });
 	}
 
 	void StaticMesh::ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		for (uint32_t submeshIndex = 0; submeshIndex < node->mNumMeshes; submeshIndex++)
 		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Submeshes.push_back(ProcessMesh(filepath, mesh, scene, importOptions, entityID));
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[submeshIndex]];
+			m_Submeshes[submeshIndex] = ProcessMesh(filepath, mesh, scene, importOptions, entityID);
 		}
 
 		// do the same for children nodes
@@ -247,46 +249,10 @@ namespace Vortex {
 		{
 			StaticVertex vertex;
 
-			VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
-			VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
-
-			vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z }, 1.0f)) * 0.5f;
-
-			for (uint32_t j = 0; j < AI_MAX_NUMBER_OF_COLOR_SETS; j++)
-			{
-				if (mesh->HasVertexColors(j))
-				{
-					vertex.Color = { mesh->mColors[j][0].r, mesh->mColors[j][1].g, mesh->mColors[j][2].b, mesh->mColors[j][3].a };
-				}
-				else
-				{
-					vertex.Color = Math::vec4(1.0f);
-				}
-			}
-
-			if (mesh->HasNormals())
-			{
-				Math::vec3 normal(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-				Math::vec4 normalXYZW(normal, 1.0f);
- 				vertex.Normal = Math::vec3(transform * normalXYZW);
-			}
-
-			if (mesh->HasTangentsAndBitangents())
-			{
-				vertex.Tangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z}, 1.0f));
-				vertex.BiTangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z }, 1.0f));
-			}
-
-			vertex.TexScale = Math::vec2(1.0f);
-
-			vertex.TexCoord = Math::vec2(0.0f);
-			// does it contain texture coords?
-			if (mesh->mTextureCoords[0])
-			{
-				vertex.TexCoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-			}
+			ProcessVertex(mesh, vertex, transform, i);
 
 			vertex.EntityID = entityID;
+			
 			vertices.push_back(vertex);
 		}
 
@@ -308,44 +274,84 @@ namespace Vortex {
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
 
-			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(filepath));
+			std::filesystem::path directory = FileSystem::GetParentDirectory(filepath);
 
-			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
-			{
-				AssetHandle result = 0;
+			materialProps.AlbedoMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_DIFFUSE, 0);
+			materialProps.NormalMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_NORMALS, 0);
+			materialProps.MetallicMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_METALNESS, 0);
+			materialProps.RoughnessMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_REFLECTION, 0);
+			materialProps.EmissionMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_EMISSIVE, 0);
+			materialProps.AmbientOcclusionMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_AMBIENT_OCCLUSION, 0);
 
-				aiString textureFilepath;
-
-				if (mat->GetTexture(textureType, index, &textureFilepath) != AI_SUCCESS)
-					return result;
-
-				const char* pathCStr = textureFilepath.C_Str();
-				std::filesystem::path filepath = std::filesystem::path(pathCStr);
-				std::filesystem::path relativePath = directoryPath / filepath;
-
-				if (FileSystem::Exists(relativePath))
-				{
-					result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
-				}
-
-				return result;
-			};
-
-			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
-			materialProps.NormalMap = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
-			materialProps.MetallicMap = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
-			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
-			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
-			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
-
-			SharedReference<Material> material = Material::Create(Renderer::GetShaderLibrary().Get("PBR_Static"), materialProps);
-
-			// This is temporary until we have material files
-			Project::GetEditorAssetManager()->AddMemoryOnlyAsset(material);
-			materialHandle = material->Handle;
+			std::string materialPath = materialProps.Name + ".vmaterial";
+			SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
+			Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", materialPath, shader, materialProps);
 		}
 
 		return { meshName, vertices, indices };
+	}
+
+	void StaticMesh::ProcessVertex(aiMesh* mesh, StaticVertex& vertex, const Math::mat4& transform, uint32_t index)
+	{
+		VX_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions!");
+		VX_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals!");
+
+		vertex.Position = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mVertices[index].x, mesh->mVertices[index].y, mesh->mVertices[index].z }, 1.0f)) * 0.5f;
+
+		for (uint32_t j = 0; j < AI_MAX_NUMBER_OF_COLOR_SETS; j++)
+		{
+			if (mesh->HasVertexColors(j))
+			{
+				vertex.Color = { mesh->mColors[j][0].r, mesh->mColors[j][1].g, mesh->mColors[j][2].b, mesh->mColors[j][3].a };
+			}
+			else
+			{
+				vertex.Color = Math::vec4(1.0f);
+			}
+		}
+
+		if (mesh->HasNormals())
+		{
+			Math::vec3 normal(mesh->mNormals[index].x, mesh->mNormals[index].y, mesh->mNormals[index].z);
+			Math::vec4 normalXYZW(normal, 1.0f);
+			vertex.Normal = Math::vec3(transform * normalXYZW);
+		}
+
+		if (mesh->HasTangentsAndBitangents())
+		{
+			vertex.Tangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mTangents[index].x, mesh->mTangents[index].y, mesh->mTangents[index].z }, 1.0f));
+			vertex.BiTangent = Math::vec3(transform * Math::vec4(Math::vec3{ mesh->mBitangents[index].x, mesh->mBitangents[index].y, mesh->mBitangents[index].z }, 1.0f));
+		}
+
+		vertex.TexScale = Math::vec2(1.0f);
+
+		vertex.TexCoord = Math::vec2(0.0f);
+		// does it contain texture coords?
+		if (mesh->mTextureCoords[0])
+		{
+			vertex.TexCoord = { mesh->mTextureCoords[0][index].x, mesh->mTextureCoords[0][index].y };
+		}
+	}
+
+	AssetHandle StaticMesh::LoadMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index)
+	{
+		AssetHandle result = 0;
+
+		aiString textureFilepath;
+
+		if (material->GetTexture((aiTextureType)textureType, index, &textureFilepath) != AI_SUCCESS)
+			return result;
+
+		const char* pathCStr = textureFilepath.C_Str();
+		std::filesystem::path filepath = std::filesystem::path(pathCStr);
+		std::filesystem::path relativePath = directory / filepath;
+
+		if (FileSystem::Exists(relativePath))
+		{
+			result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
+		}
+
+		return result;
 	}
 
 	void StaticMesh::CreateBoundingBoxFromSubmeshes()
@@ -354,7 +360,7 @@ namespace Vortex {
 		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
 		m_BoundingBox = firstBoundingBox;
 
-		for (const auto& submesh : m_Submeshes)
+		for (const auto& [submeshIndex, submesh] : m_Submeshes)
 		{
 			const Math::AABB& boundingBox = submesh.GetBoundingBox();
 
@@ -373,10 +379,9 @@ namespace Vortex {
 	{
 		bool dirty = false;
 
-		uint32_t submeshIndex = 0;
-		for (auto& submesh : m_Submeshes)
+		for (auto& [submeshIndex, submesh] : m_Submeshes)
 		{
-			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
 			if (!AssetManager::IsHandleValid(materialHandle))
 				continue;
 
@@ -407,15 +412,20 @@ namespace Vortex {
 		}
 	}
 
+	bool StaticMesh::HasSubmesh(uint32_t index) const
+	{
+		return m_Submeshes.contains(index);
+	}
+
 	const StaticSubmesh& StaticMesh::GetSubmesh(uint32_t index) const
 	{
-		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
-		return m_Submeshes[index];
+		VX_CORE_ASSERT(HasSubmesh(index), "Index out of bounds!");
+		return m_Submeshes.at(index);
 	}
 
 	StaticSubmesh& StaticMesh::GetSubmesh(uint32_t index)
 	{
-		VX_CORE_ASSERT(index < m_Submeshes.size(), "Index out of bounds!");
+		VX_CORE_ASSERT(HasSubmesh(index), "Index out of bounds!");
 		return m_Submeshes[index];
 	}
 

@@ -627,14 +627,13 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 
-						uint32_t submeshIndex = 0;
-						for (const auto& submesh : submeshes)
+						for (const auto& [submeshIndex, submesh] :submeshes)
 						{
 							out << YAML::BeginMap; // Submesh
 
 							VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 
-							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex++);
+							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex);
 							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
 

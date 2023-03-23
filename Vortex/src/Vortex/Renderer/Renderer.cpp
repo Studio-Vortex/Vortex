@@ -5,11 +5,6 @@
 #include "Vortex/Core/Application.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/Mesh.h"
-#include "Vortex/Renderer/StaticMesh.h"
-#include "Vortex/Renderer/Material.h"
-#include "Vortex/Animation/Animator.h"
 
 #include <unordered_map>
 
@@ -36,6 +31,9 @@ namespace Vortex {
 		ShaderLibrary ShaderLibrary;
 
 		SharedReference<StaticMesh> SkyboxMesh = nullptr;
+		SharedReference<Skybox> CurrentEnvironment = nullptr;
+
+		SharedReference<Material> WhiteMaterial = nullptr;
 
 		static constexpr inline uint32_t MaxPointLights = 50;
 		static constexpr inline uint32_t MaxSpotLights = 50;
@@ -50,8 +48,6 @@ namespace Vortex {
 		std::vector<SharedRef<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
 
 		SharedRef<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
-
-		SharedReference<Skybox> CurrentEnvironment = nullptr;
 
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
@@ -98,6 +94,11 @@ namespace Vortex {
 
 		s_Data.BRDF_LUT = Texture2D::Create(brdfImageProps);
 
+		SharedReference<Shader> shader = s_Data.ShaderLibrary.Get("PBR_Static");
+		MaterialProperties materialProps{};
+		materialProps.Albedo = Math::vec3(1.0f, 1.0f, 1.0f);
+		s_Data.WhiteMaterial = Material::Create(shader, materialProps);
+
 		s_Data.SkyboxMesh = StaticMesh::Create(MeshType::Cube);
 
 #if VX_RENDERER_STATISTICS
@@ -110,6 +111,11 @@ namespace Vortex {
 	void Renderer::Shutdown()
 	{
 		VX_PROFILE_FUNCTION();
+
+		s_Data.SkyboxMesh.Reset();
+		s_Data.WhiteMaterial.Reset();
+
+		s_Data.BRDF_LUT.Reset();
 
 		Renderer2D::Shutdown();
 	}
@@ -144,7 +150,7 @@ namespace Vortex {
 		s_Data.TargetFramebuffer = nullptr;
 	}
 
-	void Renderer::Submit(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray)
+	void Renderer::Submit(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -154,7 +160,7 @@ namespace Vortex {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::DrawIndexed(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray)
+	void Renderer::DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -276,7 +282,7 @@ namespace Vortex {
 			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-			SharedReference<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
+			SharedReference<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes().at(0).GetVertexArray();
 
 			skyboxMeshVA->Bind();
 			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
@@ -366,7 +372,7 @@ namespace Vortex {
 		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
 		environment->Bind();
 
-		SharedReference<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes()[0].GetVertexArray();
+		SharedReference<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes().at(0).GetVertexArray();
 
 		{
 			// don't forget to configure the viewport to the capture dimensions.
@@ -746,7 +752,7 @@ namespace Vortex {
 		uint32_t i = 0;
 
 		// Render Meshes
-		for (auto& mesh : sceneMeshes->Meshes)
+		for (const auto& mesh : sceneMeshes->Meshes)
 		{
 			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceMeshTransforms[i];
 			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
@@ -768,7 +774,7 @@ namespace Vortex {
 				shadowMapShader->SetBool("u_HasAnimations", false);
 			}
 
-			Submesh& submesh = mesh->GetSubmesh();
+			const Submesh& submesh = mesh->GetSubmesh();
 
 			submesh.RenderToSkylightShadowMap();
 
@@ -778,14 +784,14 @@ namespace Vortex {
 		i = 0;
 
 		// Render Static Meshes
-		for (auto& staticMesh : sceneMeshes->StaticMeshes)
+		for (const auto& staticMesh : sceneMeshes->StaticMeshes)
 		{
 			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceStaticMeshTransforms[i++];
 			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
 
-			auto& submeshes = staticMesh->GetSubmeshes();
+			const auto& submeshes = staticMesh->GetSubmeshes();
 
-			for (auto& submesh : submeshes)
+			for (const auto& [submeshIndex, submesh] : submeshes)
 			{
 				submesh.RenderToSkylightShadowMap();
 			}
@@ -1250,6 +1256,11 @@ namespace Vortex {
 	void Renderer::ClearFlags()
 	{
 		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
+	}
+
+	SharedReference<Material> Renderer::GetWhiteMaterial()
+	{
+		return s_Data.WhiteMaterial;
 	}
 
 	SharedReference<Texture2D> Renderer::GetWhiteTexture()

@@ -461,95 +461,97 @@ public class Untitled : Entity
 					std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
 
 					// Temporary until asset manager is sorted
-					std::string oldFilepath = currentItemPath.string();
 					std::filesystem::rename(currentItemPath, newFilePath);
 
-					SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
-					Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
-
-					// TODO this should take place in asset manager
-					if (newFilePath.filename().extension() == ".vmaterial")
+					if (FileSystem::HasFileExtension(currentItemPath))
 					{
-						SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
-						if (material)
+						SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
+						Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
+
+						// TODO this should take place in asset manager
+						if (newFilePath.filename().extension() == ".vmaterial")
 						{
-							material->SetName(FileSystem::RemoveFileExtension(newFilePath));
-						}
-					}
-
-					// TODO this should take place in asset manager
-					// Rename C# Class name in file
-					if (newFilePath.filename().extension() == ".cs")
-					{
-						std::ifstream cSharpScriptFile(newFilePath);
-
-						if (cSharpScriptFile.is_open())
-						{
-							// Make sure we start at the beginning of the file
-							cSharpScriptFile.seekg(0);
-
-							std::vector<std::string> fileLineBuffer;
-							std::string currentLine;
-
-							// Get the old class name from the old filename - i.e. "Player.cs" -> "Player"
-							std::string oldClassName = oldFilenameWithExtension.substr(0, oldFilenameWithExtension.find_last_of('.'));
-							bool classNameFound = false;
-
-							while (std::getline(cSharpScriptFile, currentLine))
+							SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
+							if (material)
 							{
-								fileLineBuffer.push_back(currentLine);
-
-								if (currentLine.find(oldClassName) != std::string::npos)
-									classNameFound = true;
+								material->SetName(FileSystem::RemoveFileExtension(newFilePath));
 							}
+						}
 
-							cSharpScriptFile.close();
+						// TODO this should take place in asset manager
+						// Rename C# Class name in file
+						if (newFilePath.filename().extension() == ".cs")
+						{
+							std::ifstream cSharpScriptFile(newFilePath);
 
-							VX_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
-
-							// Find the line with the class name and replace it
-							for (auto& line : fileLineBuffer)
+							if (cSharpScriptFile.is_open())
 							{
-								if (line.find(oldClassName) != std::string::npos)
+								// Make sure we start at the beginning of the file
+								cSharpScriptFile.seekg(0);
+
+								std::vector<std::string> fileLineBuffer;
+								std::string currentLine;
+
+								// Get the old class name from the old filename - i.e. "Player.cs" -> "Player"
+								std::string oldClassName = oldFilenameWithExtension.substr(0, oldFilenameWithExtension.find_last_of('.'));
+								bool classNameFound = false;
+
+								while (std::getline(cSharpScriptFile, currentLine))
 								{
-									// Get the new name of the file to rename the C# class
-									std::string newClassName = newFilePath.filename().string().substr(0, newFilePath.filename().string().find_first_of('.'));
-									std::string formattedLine = std::format("public class {} : Entity", newClassName);
-									// Modify the class name line
-									line = formattedLine;
+									fileLineBuffer.push_back(currentLine);
 
-									// Replace the contents of the file
-									std::ofstream fout(newFilePath, std::ios::trunc);
+									if (currentLine.find(oldClassName) != std::string::npos)
+										classNameFound = true;
+								}
 
-									for (auto& editedLine : fileLineBuffer)
-										fout << editedLine << '\n';
+								cSharpScriptFile.close();
 
-									// Close the edited file
-									fout.close();
+								VX_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
 
-									// Since we edited the file already we can skip the rest of the lines;
-									break;
+								// Find the line with the class name and replace it
+								for (auto& line : fileLineBuffer)
+								{
+									if (line.find(oldClassName) != std::string::npos)
+									{
+										// Get the new name of the file to rename the C# class
+										std::string newClassName = newFilePath.filename().string().substr(0, newFilePath.filename().string().find_first_of('.'));
+										std::string formattedLine = std::format("public class {} : Entity", newClassName);
+										// Modify the class name line
+										line = formattedLine;
+
+										// Replace the contents of the file
+										std::ofstream fout(newFilePath, std::ios::trunc);
+
+										for (auto& editedLine : fileLineBuffer)
+											fout << editedLine << '\n';
+
+										// Close the edited file
+										fout.close();
+
+										// Since we edited the file already we can skip the rest of the lines;
+										break;
+									}
 								}
 							}
 						}
-					}
 
-					// Rename AudioSourceComponent Source path
-					if (newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3")
-					{
-						// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
-						// we have the old filename
-						//oldFilenameWithExtension
-						// we also have the newFilePath
-					}
+						// Rename AudioSourceComponent Source path
+						if (newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3")
+						{
+							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
+							// we have the old filename
+							//oldFilenameWithExtension
+							// we also have the newFilePath
+						}
 
-					// Rename SpriteRendererComponent Texture path
-					if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
-					{
-						// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
-						// we have the old filename
-						//oldFilenameWithExtension
-						// we also have the newFilePath
+						// Rename SpriteRendererComponent Texture path
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
+						{
+							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
+							// we have the old filename
+							//oldFilenameWithExtension
+							// we also have the newFilePath
+						}
 					}
 				}
 

@@ -1449,82 +1449,86 @@ namespace Vortex {
 				{
 					if (!materialTable->HasMaterial(submeshIndex))
 					{
+						if (materialTable->GetMaterialCount() == 0)
+						{
+							if (!AssetManager::IsHandleValid(Renderer::GetWhiteMaterial()->Handle))
+							{
+								Renderer::GetWhiteMaterial()->Handle = AssetHandle();
+								Project::GetEditorAssetManager()->AddMemoryOnlyAsset(Renderer::GetWhiteMaterial());
+							}
+
+							materialTable->SetMaterial(0, Renderer::GetWhiteMaterial()->Handle);
+						}
+
 						break;
 					}
 
 					AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
-
+					SharedReference<Material> material = nullptr;
 					if (AssetManager::IsHandleValid(materialHandle))
 					{
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						material = AssetManager::GetAsset<Material>(materialHandle);
+					}
 
-						if (material)
+					const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
+					std::vector<const char*> options;
+					std::vector<std::string> filepaths;
+
+					for (const auto& materialHandle : allMaterials)
+					{
+						if (!AssetManager::IsHandleValid(materialHandle))
+							continue;
+
+						SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
+						if (!mat)
+							continue;
+
+						const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
+						if (!metadata.IsValid())
+							continue;
+
+						options.emplace_back(mat->GetName().c_str());
+						filepaths.emplace_back(metadata.Filepath.string());
+					}
+
+					std::string currentMaterialName = material ? material->GetName() : "Default Material";
+					if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
+					{
+						uint32_t index = std::find(options.begin(), options.end(), currentMaterialName) - options.begin();
+						material->Handle = *std::next(allMaterials.begin(), index);
+						materialTable->SetMaterial(submeshIndex, material->Handle);
+					}
+
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
-							std::vector<const char*> options;
-							std::vector<std::string> filepaths;
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path materialPath = std::filesystem::path(path);
 
-							auto LoadMaterialFunc = [&](auto materialFilepath)
+							// Make sure we are recieving an actual material otherwise we will have trouble opening it
+							if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::MaterialAsset)
 							{
-								// Make sure we are recieving an actual material otherwise we will have trouble opening it
-								if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialFilepath); type == AssetType::MaterialAsset)
+								AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
+
+								if (AssetManager::IsHandleValid(materialHandle))
 								{
-									AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialFilepath);
-									if (AssetManager::IsHandleValid(materialHandle))
-									{
-										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-										if (material)
-											materialTable->SetMaterial(submeshIndex, material->Handle);
-									}
-									else
-									{
-										VX_CONSOLE_LOG_WARN("Could not load material {}", materialFilepath);
-									}
+									SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+									if (material)
+										materialTable->SetMaterial(submeshIndex, material->Handle);
 								}
 								else
 								{
-									VX_CONSOLE_LOG_WARN("Could not load material", materialFilepath);
+									VX_CONSOLE_LOG_WARN("Could not load material {}", materialPath.filename().string());
 								}
-							};
-
-							for (const auto& materialHandle : allMaterials)
-							{
-								if (!AssetManager::IsHandleValid(materialHandle))
-									continue;
-
-								SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
-								if (!mat)
-									continue;
-
-								const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
-								if (!metadata.IsValid())
-									continue;
-
-								options.emplace_back(mat->GetName().c_str());
-								filepaths.emplace_back(metadata.Filepath.string());
 							}
-
-							std::string currentMaterialName = material->GetName();
-							if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
+							else
 							{
-								uint32_t index = std::find(options.begin(), options.end(), currentMaterialName) - options.begin();
-								material->Handle = *std::next(allMaterials.begin(), index);
-								materialTable->SetMaterial(submeshIndex, material->Handle);
-							}
-
-							if (Gui::BeginDragDropTarget())
-							{
-								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-								{
-									const wchar_t* path = (const wchar_t*)payload->Data;
-									std::filesystem::path materialPath = std::filesystem::path(path);
-
-									LoadMaterialFunc(materialPath.string());
-								}
-
-								Gui::EndDragDropTarget();
+								VX_CONSOLE_LOG_WARN("Could not load material", materialPath.filename().string());
 							}
 						}
+
+						Gui::EndDragDropTarget();
 					}
 
 					submeshIndex++;

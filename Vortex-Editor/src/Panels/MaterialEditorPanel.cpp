@@ -343,9 +343,11 @@ namespace Vortex {
 			auto& materialTable = staticMeshRendererComponent.Materials;
 
 			uint32_t submeshIndex = 0;
-			for (const auto& submesh : submeshes)
+			for (const auto& [submeshIndex, submesh] : submeshes)
 			{
-				AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex++);
+				VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material Table not synchronized with component!");
+
+				AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
 				if (!AssetManager::IsHandleValid(materialHandle))
 					continue;
 

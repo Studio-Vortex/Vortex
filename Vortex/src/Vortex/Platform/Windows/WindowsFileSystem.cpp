@@ -72,6 +72,11 @@ namespace Vortex {
 		return std::filesystem::equivalent(first, second);
     }
 
+    bool FileSystem::IsDirectory(const std::filesystem::path& filepath)
+    {
+        return std::filesystem::is_directory(filepath);
+    }
+
 	bool FileSystem::CreateDirectoryV(const std::filesystem::path& directory)
 	{
 		return std::filesystem::create_directory(directory);
@@ -125,7 +130,12 @@ namespace Vortex {
 		return std::filesystem::relative(path, base);
 	}
 
-    std::string FileSystem::GetFileExtension(const std::filesystem::path& filepath)
+	bool FileSystem::HasFileExtension(const std::filesystem::path& filepath)
+	{
+		return filepath.has_extension();
+	}
+
+	std::string FileSystem::GetFileExtension(const std::filesystem::path& filepath)
     {
 		if (filepath.has_extension())
 		{

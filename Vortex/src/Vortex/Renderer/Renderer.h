@@ -9,6 +9,11 @@
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/LightSource.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Material.h"
+#include "Vortex/Animation/Animator.h"
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/RenderCommand.h"
@@ -70,8 +75,8 @@ namespace Vortex {
 		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
-		static void Submit(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray);
-		static void DrawIndexed(SharedReference<Shader>& shader, SharedReference<VertexArray>& vertexArray);
+		static void Submit(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
+		static void DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
@@ -144,6 +149,7 @@ namespace Vortex {
 		static bool IsFlagSet(RenderFlag flag);
 		static void ClearFlags();
 
+		static SharedReference<Material> GetWhiteMaterial();
 		static SharedReference<Texture2D> GetWhiteTexture();
 
 		static ShaderLibrary& GetShaderLibrary();

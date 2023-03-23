@@ -113,7 +113,7 @@ namespace Vortex {
 		Renderer::AddToQuadCountStats(triangleCount / 2);
 	}
 
-	void Submesh::RenderToSkylightShadowMap()
+	void Submesh::RenderToSkylightShadowMap() const
 	{
 		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("SkyLightShadowMap");
 

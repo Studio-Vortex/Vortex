@@ -31,6 +31,7 @@ namespace Vortex {
 			}
 
 			SharedReference<StaticMesh> staticMesh = StaticMesh::Create(sourcePath, TransformComponent(), importOptions);
+			
 			// Should we generate a handle here?
 			staticMesh->Handle = AssetHandle();
 
