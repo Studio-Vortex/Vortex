@@ -70,6 +70,8 @@ namespace Vortex {
 
 		void OnUpdate(const SharedReference<MaterialTable>& materialTable, int entityID = -1);
 
+		void LoadMaterialTable(SharedReference<MaterialTable>& materialTable);
+
 		bool HasSubmesh(uint32_t index) const;
 
 		const StaticSubmesh& GetSubmesh(uint32_t index) const;
@@ -86,15 +88,23 @@ namespace Vortex {
 		static SharedReference<StaticMesh> Create(MeshType meshType);
 
 	private:
-		void ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
-		StaticSubmesh ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		void ProcessNode(uint32_t& submeshIndex, const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
+		StaticSubmesh ProcessMesh(uint32_t& submeshIndex, const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 		void ProcessVertex(aiMesh* mesh, StaticVertex& vertex, const Math::mat4& transform, uint32_t index);
-		AssetHandle LoadMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index);
+		AssetHandle GetMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index);
 
 		void CreateBoundingBoxFromSubmeshes();
 
 	private:
 		std::unordered_map<uint32_t, StaticSubmesh> m_Submeshes;
+		std::unordered_map<uint32_t, std::vector<AssetHandle>> m_InitialMaterialTextureHandles;
+
+#ifndef VX_DIST
+
+		std::unordered_map<uint32_t, std::string> m_MaterialNames;
+
+#endif
+
 		MeshImportOptions m_ImportOptions;
 		const aiScene* m_Scene;
 

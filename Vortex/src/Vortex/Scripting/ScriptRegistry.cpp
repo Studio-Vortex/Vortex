@@ -1950,6 +1950,12 @@ namespace Vortex {
 			staticMeshRenderer.Type = meshType;
 
 			staticMeshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
+
+			if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh) && staticMeshRenderer.Materials->Empty())
+			{
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+				staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
+			}
 		}
 
 		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)

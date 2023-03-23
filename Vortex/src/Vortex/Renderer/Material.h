@@ -132,8 +132,9 @@ namespace Vortex {
 
 		AssetHandle GetMaterial(uint32_t submeshIndex) const;
 		void SetMaterial(uint32_t submeshIndex, AssetHandle materialHandle);
-
 		bool HasMaterial(uint32_t submeshIndex) const;
+
+		void Clear();
 		bool Empty() const;
 
 		uint32_t GetMaterialCount() const;

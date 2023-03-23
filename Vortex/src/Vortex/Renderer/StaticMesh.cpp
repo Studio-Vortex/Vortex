@@ -198,7 +198,8 @@ namespace Vortex {
 
 		m_Scene = scene;
 
-		ProcessNode(filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
+		uint32_t submeshIndex = 0;
+		ProcessNode(submeshIndex, filepath, m_Scene->mRootNode, m_Scene, importOptions, entityID);
 		CreateBoundingBoxFromSubmeshes();
 
 		m_IsLoaded = true;
@@ -207,31 +208,30 @@ namespace Vortex {
 	StaticMesh::StaticMesh(MeshType meshType)
 	{
 		// Create cube from vertices
-		StaticSubmesh submesh(true);
-		m_Submeshes.insert({ 0, submesh });
+		m_Submeshes[0] = StaticSubmesh(true);
 	}
 
-	void StaticMesh::ProcessNode(const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	void StaticMesh::ProcessNode(uint32_t& submeshIndex, const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		// process all node meshes
-		for (uint32_t submeshIndex = 0; submeshIndex < node->mNumMeshes; submeshIndex++)
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[submeshIndex]];
-			m_Submeshes[submeshIndex] = ProcessMesh(filepath, mesh, scene, importOptions, entityID);
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			uint32_t currentSubmesh = submeshIndex;
+			m_Submeshes[currentSubmesh] = ProcessMesh(submeshIndex, filepath, mesh, scene, importOptions, entityID);
 		}
 
 		// do the same for children nodes
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(filepath, node->mChildren[i], scene, importOptions, entityID);
+			ProcessNode(submeshIndex, filepath, node->mChildren[i], scene, importOptions, entityID);
 		}
 	}
 
-	StaticSubmesh StaticMesh::ProcessMesh(const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
+	StaticSubmesh StaticMesh::ProcessMesh(uint32_t& submeshIndex, const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID)
 	{
 		std::vector<StaticVertex> vertices;
 		std::vector<uint32_t> indices;
-		AssetHandle materialHandle = 0;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
 		Math::vec3 rotation = importTransform.GetRotationEuler();
@@ -242,7 +242,7 @@ namespace Vortex {
 			Math::Scale(importTransform.Scale);
 
 		const char* nameCStr = mesh->mName.C_Str();
-		std::string meshName = std::string(nameCStr);
+		std::string submeshName = std::string(nameCStr);
 
 		// process vertices
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -260,35 +260,46 @@ namespace Vortex {
 		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
+
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
 			{
 				indices.push_back(face.mIndices[j]);
 			}
 		}
 
+		std::vector<AssetHandle> materialTextures =
+		{
+			0, 0, 0, 0, 0, 0,
+		};
+
 		// process materials
 		if (mesh->mMaterialIndex >= 0)
 		{
-			aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-			MaterialProperties materialProps;
-			materialProps.Name = std::string(mat->GetName().C_Str());
+#ifndef VX_DIST
 
-			std::filesystem::path directory = FileSystem::GetParentDirectory(filepath);
+			m_MaterialNames[submeshIndex] = std::string(material->GetName().C_Str());
 
-			materialProps.AlbedoMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_DIFFUSE, 0);
-			materialProps.NormalMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_NORMALS, 0);
-			materialProps.MetallicMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_METALNESS, 0);
-			materialProps.RoughnessMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_REFLECTION, 0);
-			materialProps.EmissionMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_EMISSIVE, 0);
-			materialProps.AmbientOcclusionMap = LoadMaterialTexture(mat, directory, (uint32_t)aiTextureType_AMBIENT_OCCLUSION, 0);
+#endif
 
-			std::string materialPath = materialProps.Name + ".vmaterial";
-			SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
-			Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", materialPath, shader, materialProps);
+			std::string directory = FileSystem::GetParentDirectory(filepath).string();
+
+			materialTextures = 
+			{
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_DIFFUSE, 0),
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_NORMALS, 0),
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_METALNESS, 0),
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_REFLECTION, 0),
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_EMISSIVE, 0),
+				GetMaterialTexture(material, directory, (uint32_t)aiTextureType_AMBIENT_OCCLUSION, 0),
+			};
 		}
 
-		return { meshName, vertices, indices };
+		m_InitialMaterialTextureHandles[submeshIndex] = materialTextures;
+		submeshIndex++;
+
+		return { submeshName, vertices, indices };
 	}
 
 	void StaticMesh::ProcessVertex(aiMesh* mesh, StaticVertex& vertex, const Math::mat4& transform, uint32_t index)
@@ -333,10 +344,9 @@ namespace Vortex {
 		}
 	}
 
-	AssetHandle StaticMesh::LoadMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index)
+	AssetHandle StaticMesh::GetMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index)
 	{
 		AssetHandle result = 0;
-
 		aiString textureFilepath;
 
 		if (material->GetTexture((aiTextureType)textureType, index, &textureFilepath) != AI_SUCCESS)
@@ -346,17 +356,12 @@ namespace Vortex {
 		std::filesystem::path filepath = std::filesystem::path(pathCStr);
 		std::filesystem::path relativePath = directory / filepath;
 
-		if (FileSystem::Exists(relativePath))
-		{
-			result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
-		}
-
+		result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
 		return result;
 	}
 
 	void StaticMesh::CreateBoundingBoxFromSubmeshes()
 	{
-		// initialize bounding box to default
 		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
 		m_BoundingBox = firstBoundingBox;
 
@@ -381,6 +386,8 @@ namespace Vortex {
 
 		for (auto& [submeshIndex, submesh] : m_Submeshes)
 		{
+			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material Table not synchronized with component!");
+
 			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
 			if (!AssetManager::IsHandleValid(materialHandle))
 				continue;
@@ -409,6 +416,42 @@ namespace Vortex {
 
 			SharedReference<VertexBuffer> vertexBuffer = submesh.GetVertexBuffer();
 			vertexBuffer->SetData(vertices.data(), vertices.size() * sizeof(StaticVertex));
+		}
+	}
+
+	void StaticMesh::LoadMaterialTable(SharedReference<MaterialTable>& materialTable)
+	{
+		std::vector<AssetHandle> materialHandles;
+		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
+
+		for (const auto& [submeshIndex, textureHandles] : m_InitialMaterialTextureHandles)
+		{
+			AssetHandle materialHandle = 0;
+
+			MaterialProperties materialProps;
+			materialProps.AlbedoMap = textureHandles[0];
+			materialProps.NormalMap = textureHandles[1];
+			materialProps.MetallicMap = textureHandles[2];
+			materialProps.RoughnessMap = textureHandles[3];
+			materialProps.EmissionMap = textureHandles[4];
+			materialProps.AmbientOcclusionMap = textureHandles[5];
+
+			std::string filename = m_MaterialNames[submeshIndex] + ".vmaterial";
+			SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, materialProps);
+			materialHandle = material->Handle;
+
+			if (!AssetManager::IsHandleValid(materialHandle))
+			{
+				materialHandle = Renderer::GetWhiteMaterial()->Handle;
+			}
+
+			materialHandles.push_back(materialHandle);
+		}
+
+		uint32_t submeshIndex = 0;
+		for (const auto& materialHandle : materialHandles)
+		{
+			materialTable->SetMaterial(submeshIndex++, materialHandle);
 		}
 	}
 

@@ -1301,8 +1301,11 @@ namespace Vortex {
 
 		component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
 
-		if (component.Materials->GetMaterialCount() == 0)
-			component.Materials->SetMaterial(0, Renderer::GetWhiteMaterial()->Handle);
+		if (AssetManager::IsHandleValid(component.StaticMesh) && component.Materials->Empty())
+		{
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+			staticMesh->LoadMaterialTable(component.Materials);
+		}
 	}
 
 	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }

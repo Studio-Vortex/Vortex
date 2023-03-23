@@ -1231,7 +1231,7 @@ namespace Vortex {
 				{
 					if (staticMeshComponent["MeshHandle"])
 					{
-						AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint16_t>();
+						AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint64_t>();
 
 						if (AssetManager::IsHandleValid(staticMeshHandle))
 						{

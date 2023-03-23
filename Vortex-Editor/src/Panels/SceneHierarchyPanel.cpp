@@ -1384,15 +1384,15 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string relativeStaticMeshPath = "";
+			std::string relativePath = "";
 
 			if (AssetManager::IsHandleValid(component.StaticMesh))
 			{
 				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.StaticMesh);
-				relativeStaticMeshPath = metadata.Filepath.string();
+				relativePath = metadata.Filepath.string();
 			}
 
-			UI::Property("Mesh Source", relativeStaticMeshPath, true);
+			UI::Property("Mesh Source", relativePath, true);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1410,6 +1410,13 @@ namespace Vortex {
 						{
 							component.StaticMesh = staticMeshHandle;
 							component.Type = MeshType::Custom;
+
+							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+							if (staticMesh)
+							{
+								component.Materials->Clear();
+								staticMesh->LoadMaterialTable(component.Materials);
+							}
 						}
 					}
 					else
@@ -1431,10 +1438,24 @@ namespace Vortex {
 				{
 					// Temporary
 					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
+					
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+					if (staticMesh)
+					{
+						component.Materials->Clear();
+						staticMesh->LoadMaterialTable(component.Materials);
+					}
 				}
 				else
 				{
 					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)component.Type);
+					
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+					if (staticMesh)
+					{
+						component.Materials->Clear();
+						staticMesh->LoadMaterialTable(component.Materials);
+					}
 				}
 			}
 

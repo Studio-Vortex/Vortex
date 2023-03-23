@@ -272,13 +272,11 @@ namespace Vortex {
 
 	bool Material::HasFlag(MaterialFlag flag) const
 	{
-		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
 		return m_Properties.Flags & (uint32_t)flag;
 	}
 
 	void Material::SetFlag(MaterialFlag flag)
 	{
-		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
 		m_Properties.Flags |= (uint32_t)flag;
 	}
 
@@ -286,7 +284,6 @@ namespace Vortex {
 	{
 		for (uint32_t i = 0; i < count; i++)
 		{
-			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
 			SetFlag(flags[i]);
 		}
 	}
@@ -299,7 +296,6 @@ namespace Vortex {
 
 	void Material::ToggleFlag(MaterialFlag flag)
 	{
-		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
 		m_Properties.Flags ^= (uint32_t)flag;
 	}
 
@@ -307,14 +303,12 @@ namespace Vortex {
 	{
 		for (uint32_t i = 0; i < count; i++)
 		{
-			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
 			ToggleFlag(flags[i]);
 		}
 	}
 
 	void Material::RemoveFlag(MaterialFlag flag)
 	{
-		VX_CORE_ASSERT(flag != MaterialFlag::None, "Unknown Material Flag!");
 		m_Properties.Flags &= (uint32_t)flag;
 	}
 
@@ -322,7 +316,6 @@ namespace Vortex {
 	{
 		for (uint32_t i = 0; i < count; i++)
 		{
-			VX_CORE_ASSERT(flags[i] != MaterialFlag::None, "Unknown Material Flag!");
 			RemoveFlag(flags[i]);
 		}
 	}
@@ -362,7 +355,7 @@ namespace Vortex {
 		if (m_Materials.contains(submeshIndex))
 			return m_Materials.at(submeshIndex);
 
-		VX_CORE_ASSERT(false, "Index out of bounds!");
+		//VX_CORE_ASSERT(false, "Index out of bounds!");
 		return 0;
     }
 
@@ -375,6 +368,11 @@ namespace Vortex {
     {
         return m_Materials.contains(submeshIndex);
     }
+
+	void MaterialTable::Clear()
+	{
+		m_Materials.clear();
+	}
 
 	bool MaterialTable::Empty() const
 	{

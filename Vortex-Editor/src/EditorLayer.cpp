@@ -993,6 +993,13 @@ namespace Vortex {
 					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
 
 					staticMeshRenderer.Type = MeshType::Custom;
+
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+					if (staticMesh)
+					{
+						staticMeshRenderer.Materials->Clear();
+						staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
+					}
 				}
 
 				m_MeshFilepath = "";
