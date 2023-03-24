@@ -893,6 +893,8 @@ namespace Vortex {
 									
 									materialTable->SetMaterial(0, materialHandle);
 								}
+
+								material->SetName(FileSystem::RemoveFileExtension(materialFilepath));
 							}
 						}
 						else

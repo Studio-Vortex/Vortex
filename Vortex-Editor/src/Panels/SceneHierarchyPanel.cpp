@@ -1538,6 +1538,7 @@ namespace Vortex {
 									if (material)
 									{
 										materialTable->SetMaterial(submeshIndex, material->Handle);
+										material->SetName(FileSystem::RemoveFileExtension(materialPath));
 									}
 								}
 								else

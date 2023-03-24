@@ -424,11 +424,11 @@ namespace Vortex {
 		{
 			get
 			{
-				IntPtr unmanagedInstance = InternalCalls.SpriteRendererComponent_GetTexture(Entity.ID);
-				return new Texture2D(unmanagedInstance);
+				return InternalCalls.SpriteRendererComponent_GetTextureHandle(Entity.ID, out AssetHandle textureHandle)
+					? new Texture2D(textureHandle) : null;
 			}
 
-			set => InternalCalls.SpriteRendererComponent_SetTexture(Entity.ID, value.m_UnmanagedInstance);
+			set => InternalCalls.SpriteRendererComponent_SetTextureHandle(Entity.ID, ref value.m_Handle);
 		}
 
 		public Vector4 Color
@@ -446,11 +446,11 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.SpriteRendererComponent_GetScale(Entity.ID, out Vector2 scale);
+				InternalCalls.SpriteRendererComponent_GetUV(Entity.ID, out Vector2 scale);
 				return scale;
 			}
 
-			set => InternalCalls.SpriteRendererComponent_SetScale(Entity.ID, ref value);
+			set => InternalCalls.SpriteRendererComponent_SetUV(Entity.ID, ref value);
 		}
 	}
 

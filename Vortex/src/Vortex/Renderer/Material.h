@@ -11,6 +11,7 @@ namespace Vortex {
 
 	enum class VORTEX_API MaterialFlag
 	{
+		None = 0,
 		NoDepthTest = BIT(1),
 	};
 

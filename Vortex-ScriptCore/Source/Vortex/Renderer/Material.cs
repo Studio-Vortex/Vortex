@@ -2,7 +2,8 @@
 
 	public enum MaterialFlag
 	{
-		NoDepthTest,
+		None = 0,
+		NoDepthTest = 1 << 1,
 	}
 
 	public class Material

@@ -355,7 +355,7 @@ namespace Vortex {
 		if (m_Materials.contains(submeshIndex))
 			return m_Materials.at(submeshIndex);
 
-		//VX_CORE_ASSERT(false, "Index out of bounds!");
+		VX_CORE_ASSERT(false, "Index out of bounds!");
 		return 0;
     }
 

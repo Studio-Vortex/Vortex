@@ -21,6 +21,9 @@ namespace Vortex {
 		static bool CreateDirectoryV(const std::filesystem::path& directory);
 		static bool CreateDirectoriesV(const std::filesystem::path& directories);
 		static bool Remove(const std::filesystem::path& filepath);
+
+		static bool CreateFileV(const std::filesystem::path& filepath);
+
 		static void Copy(const std::filesystem::path& from, const std::filesystem::path& to);
 		static bool CopyFileV(const std::filesystem::path& from, const std::filesystem::path& to);
 		static void RecursiveDirectoryCopy(const std::filesystem::path& from, const std::filesystem::path& to);

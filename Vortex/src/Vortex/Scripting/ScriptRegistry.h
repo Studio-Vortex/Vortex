@@ -261,12 +261,12 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		Texture2D* SpriteRendererComponent_GetTexture(UUID entityUUID);
-		void SpriteRendererComponent_SetTexture(UUID entityUUID, Texture2D* unmanagedInstance);
+		bool SpriteRendererComponent_GetTextureHandle(UUID entityUUID, AssetHandle* outHandle);
+		void SpriteRendererComponent_SetTextureHandle(UUID entityUUID, AssetHandle* textureHandle);
 		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
-		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale);
-		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale);
+		void SpriteRendererComponent_GetUV(UUID entityUUID, Math::vec2* outScale);
+		void SpriteRendererComponent_SetUV(UUID entityUUID, Math::vec2* scale);
 
 #pragma endregion
 
@@ -584,11 +584,11 @@ namespace Vortex {
 
 #pragma region Texture2D
 
-		Texture2D* Texture2D_LoadFromPath(MonoString* filepath);
-		Texture2D* Texture2D_Constructor(uint32_t width, uint32_t height);
-		uint32_t Texture2D_GetWidth(Texture2D* _this);
-		uint32_t Texture2D_GetHeight(Texture2D* _this);
-		void Texture2D_SetPixel(Texture2D* _this, uint32_t x, uint32_t y, Math::vec4* color);
+		bool Texture2D_LoadFromPath(MonoString* filepath, AssetHandle* outHandle);
+		void Texture2D_Constructor(uint32_t width, uint32_t height, AssetHandle* outHandle);
+		uint32_t Texture2D_GetWidth(AssetHandle* textureHandle);
+		uint32_t Texture2D_GetHeight(AssetHandle* textureHandle);
+		void Texture2D_SetPixel(AssetHandle* textureHandle, uint32_t x, uint32_t y, Math::vec4* color);
 
 #pragma endregion
 

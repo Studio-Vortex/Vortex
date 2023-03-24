@@ -92,6 +92,13 @@ namespace Vortex {
 		return std::filesystem::remove(filepath);
 	}
 
+    bool FileSystem::CreateFileV(const std::filesystem::path& filepath)
+    {
+		std::ofstream fout(filepath);
+
+		return true;
+    }
+
 	void FileSystem::Copy(const std::filesystem::path& from, const std::filesystem::path& to)
 	{
 		std::filesystem::copy(from, to);

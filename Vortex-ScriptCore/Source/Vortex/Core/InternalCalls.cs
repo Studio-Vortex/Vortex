@@ -500,22 +500,22 @@ namespace Vortex {
 		#region SpriteRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SpriteRendererComponent_GetTextureHandle(ulong entityID, out AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetTextureHandle(ulong entityID, ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_GetColor(ulong entityID, out Vector4 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static IntPtr SpriteRendererComponent_GetTexture(ulong entityID);
+		internal extern static void SpriteRendererComponent_GetUV(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, IntPtr unmanagedInstance);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out Vector2 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
+		internal extern static void SpriteRendererComponent_SetUV(ulong entityID, ref Vector2 uv);
 
 		#endregion
 
@@ -1271,19 +1271,19 @@ namespace Vortex {
 		#region Texture2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static IntPtr Texture2D_LoadFromPath(string filepath);
+		internal extern static bool Texture2D_LoadFromPath(string filepath, out AssetHandle assetHandle);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static IntPtr Texture2D_Constructor(uint width, uint height);
+		internal extern static void Texture2D_Constructor(uint width, uint height, out AssetHandle assetHandle);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static uint Texture2D_GetWidth(IntPtr unmanagedInstance);
+		internal extern static uint Texture2D_GetWidth(ref AssetHandle assetHandle);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static uint Texture2D_GetHeight(IntPtr unmanagedInstance);
+		internal extern static uint Texture2D_GetHeight(ref AssetHandle assetHandle);
 		
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Texture2D_SetPixel(IntPtr unmanagedInstance, uint xOffset, uint yOffset, ref Color4 color);
+		internal extern static void Texture2D_SetPixel(ref AssetHandle assetHandle, uint xOffset, uint yOffset, ref Color4 color);
 
 		#endregion
 

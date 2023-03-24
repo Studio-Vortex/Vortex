@@ -1,6 +1,7 @@
 #include "LauncherLayer.h"
 
 #include <Vortex/Serialization/SceneSerializer.h>
+#include <Vortex/Project/ProjectLoader.h>
 
 namespace Vortex {
 
@@ -291,15 +292,9 @@ namespace Vortex {
 	
 	void LauncherLayer::CreateStartingScene()
 	{
-		SharedReference<Scene> startScene = Scene::Create();
-
-		if (m_Properties.ProjectType == ProjectType::e2D)
-			Scene::Create2DSampleScene(startScene);
-		else
-			Scene::Create3DSampleScene(startScene);
-
-		SceneSerializer serializer(startScene);
-		serializer.Serialize((m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes/SampleScene.vortex")).string());
+		FileSystem::SetCurrentPath("Resources/Default");
+		std::filesystem::path scenePath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes");
+		FileSystem::CopyFileV("SampleScene.vortex", scenePath);
 	}
 
 	void LauncherLayer::CreatePremakeBuildScript()
@@ -342,10 +337,10 @@ namespace Vortex {
 
 		CreateProjectFilesAndDirectories();
 		CreateStartingScene();
+		ResetWorkingDirectory();
 		CreatePremakeBuildScript();
 
 		VX_CORE_ASSERT(Project::GetActive(), "Project wasn't created properly!");
-		Project::GetActive()->SaveToDisk();
 
 		GenerateSolutionFromBatchScript();
 		ResetWorkingDirectory();

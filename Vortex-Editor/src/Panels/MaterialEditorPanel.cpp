@@ -345,7 +345,6 @@ namespace Vortex {
 
 			auto& materialTable = staticMeshRendererComponent.Materials;
 
-			uint32_t submeshIndex = 0;
 			for (const auto& [submeshIndex, submesh] : submeshes)
 			{
 				VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material Table not synchronized with component!");

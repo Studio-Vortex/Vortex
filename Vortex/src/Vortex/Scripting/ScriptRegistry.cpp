@@ -2243,29 +2243,28 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		Texture2D* SpriteRendererComponent_GetTexture(UUID entityUUID)
-		{
+        bool SpriteRendererComponent_GetTextureHandle(UUID entityUUID, AssetHandle* outHandle)
+        {
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
-				return nullptr;
+				return false;
 			}
 
 			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-			
-			if (spriteRenderer.Texture)
+
+			if (AssetManager::IsHandleValid(spriteRenderer.Texture))
 			{
-				SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRenderer.Texture);
-				return texture.Raw();
+				*outHandle = spriteRenderer.Texture;
 			}
 
-			return nullptr;
-		}
+			return true;
+        }
 
-		void SpriteRendererComponent_SetTexture(UUID entityUUID, Texture2D* unmanagedInstance)
-		{
+        void SpriteRendererComponent_SetTextureHandle(UUID entityUUID, AssetHandle* textureHandle)
+        {
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<SpriteRendererComponent>())
@@ -2276,11 +2275,13 @@ namespace Vortex {
 
 			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
-			// TODO
-			//spriteRenderer.Texture = SharedReference<Texture2D>(unmanagedInstance);
-		}
+			if (AssetManager::IsHandleValid(*textureHandle))
+			{
+				spriteRenderer.Texture = *textureHandle;
+			}
+        }
 
-		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+        void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2308,7 +2309,7 @@ namespace Vortex {
 			spriteRenderer.SpriteColor = *color;
 		}
 
-		void SpriteRendererComponent_GetScale(UUID entityUUID, Math::vec2* outScale)
+		void SpriteRendererComponent_GetUV(UUID entityUUID, Math::vec2* outScale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -2322,7 +2323,7 @@ namespace Vortex {
 			*outScale = spriteRenderer.TextureUV;
 		}
 
-		void SpriteRendererComponent_SetScale(UUID entityUUID, Math::vec2* scale)
+		void SpriteRendererComponent_SetUV(UUID entityUUID, Math::vec2* scale)
 		{
 			Entity entity = GetEntity(entityUUID);
 
@@ -6159,24 +6160,18 @@ namespace Vortex {
 
 #pragma region Texture2D
 
-		// TODO all texture functions should use the asset system in the future
-		// We should have already loaded all textures in the project
-		Texture2D* Texture2D_LoadFromPath(MonoString* filepath)
+		bool Texture2D_LoadFromPath(MonoString* filepath, AssetHandle* outHandle)
 		{
 			char* filepathCStr = mono_string_to_utf8(filepath);
 
-			TextureProperties imageProps;
-			//imageProps.Filepath = Project::GetAssetFileSystemPath(filepathCStr).string();
-			imageProps.WrapMode = ImageWrap::Repeat;
-			
-			SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
+			*outHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepathCStr);
 
 			mono_free(filepathCStr);
 
-			return texture.Raw();
+			return AssetManager::IsHandleValid(*outHandle);
 		}
 
-		Texture2D* Texture2D_Constructor(uint32_t width, uint32_t height)
+		void Texture2D_Constructor(uint32_t width, uint32_t height, AssetHandle* outHandle)
 		{
 			TextureProperties imageProps;
 			imageProps.Width = width;
@@ -6184,23 +6179,49 @@ namespace Vortex {
 			imageProps.WrapMode = ImageWrap::Repeat;
 
 			SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
+			texture->Handle = AssetHandle();
 
-			return texture.Raw();
+			Project::GetEditorAssetManager()->AddMemoryOnlyAsset(texture);
+			*outHandle = texture->Handle;
 		}
 
-		uint32_t Texture2D_GetWidth(Texture2D* _this)
+		uint32_t Texture2D_GetWidth(AssetHandle* textureHandle)
 		{
-			return _this->GetWidth();
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Texture2D.Width with invalid asset handle!");
+				return 0;
+			}
+
+			SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(*textureHandle);
+
+			return texture->GetWidth();
 		}
 
-		uint32_t Texture2D_GetHeight(Texture2D* _this)
+		uint32_t Texture2D_GetHeight(AssetHandle* textureHandle)
 		{
-			return _this->GetHeight();
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access Texture2D.Height with invalid asset handle!");
+				return 0;
+			}
+
+			SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(*textureHandle);
+
+			return texture->GetHeight();
 		}
 
-		void Texture2D_SetPixel(Texture2D* _this, uint32_t x, uint32_t y, Math::vec4* color)
+		void Texture2D_SetPixel(AssetHandle* textureHandle, uint32_t x, uint32_t y, Math::vec4* color)
 		{
-			_this->SetPixel(x, y, (void*)color);
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Texture2D.SetPixel with invalid asset handle!");
+				return;
+			}
+
+			SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(*textureHandle);
+
+			texture->SetPixel(x, y, (void*)color);
 		}
 
 #pragma endregion
@@ -6987,12 +7008,12 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Material_IsFlagSet);
 		VX_REGISTER_INTERNAL_CALL(Material_SetFlag);
 
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetTextureHandle);
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetTextureHandle);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetColor);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetTexture);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetTexture);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetScale);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetScale);
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetUV);
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetUV);
 
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetColor);

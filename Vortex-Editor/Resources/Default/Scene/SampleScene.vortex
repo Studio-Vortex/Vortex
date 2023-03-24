@@ -1,0 +1,80 @@
+Scene: SampleScene
+Entities:
+  - Entity: 5579836721600744424
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-4, 3, 4]
+      Rotation: [-0.436332315, -0.785398185, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 14214116795321838775
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-1, 5, 1]
+      Rotation: [0, -0.994837642, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0.200000003
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 13854109824103286982
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshRendererComponent:
+      MeshHandle: 17595806368877973115
+      MeshType: Cube
+      Submeshes:
+        - Name: Cube.003
+          MaterialHandle: 14364111373339688735
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      MaxAngularVelocity: 100
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      MaxLinearVelocity: 100
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
