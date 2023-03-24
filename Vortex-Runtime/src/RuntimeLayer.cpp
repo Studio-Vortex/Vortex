@@ -251,7 +251,9 @@ namespace Vortex {
 			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
 
 			// TODO fix this
-			//OpenScene(nextSceneFilepath);
+			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(nextSceneFilepath);
+
+			OpenScene(sceneMetadata);
 
 			ScriptRegistry::ResetBuildIndex();
 		});
