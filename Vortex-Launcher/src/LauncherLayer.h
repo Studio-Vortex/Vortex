@@ -36,12 +36,12 @@ namespace Vortex {
 		void DisplayCreateProjectPopup();
 		
 		void CreateProjectFilesAndDirectories();
-		void CreateStartingScene();
 		void CreatePremakeBuildScript();
 		void GenerateSolutionFromBatchScript();
 		void BuildProjectDLL();
 
 		void CreateProject();
+		void SaveProjectToDisk();
 		void LaunchEditor();
 
 		void ReplaceToken(std::string& str, const char* token, const std::string& value);

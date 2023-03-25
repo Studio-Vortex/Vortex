@@ -1,7 +1,7 @@
 #include "LauncherLayer.h"
 
 #include <Vortex/Serialization/SceneSerializer.h>
-#include <Vortex/Project/ProjectLoader.h>
+#include <Vortex/Project/ProjectSerializer.h>
 
 namespace Vortex {
 
@@ -276,7 +276,7 @@ namespace Vortex {
 
 		projectProps.General.Name = std::string(m_Properties.ProjectNameBuffer);
 		projectProps.General.AssetDirectory = "Assets";
-		projectProps.General.AssetRegistryPath = projectProps.General.AssetDirectory / "AssetRegistry.vxr";
+		projectProps.General.AssetRegistryPath = "AssetRegistry.vxr";
 		projectProps.General.StartScene = "Scenes/SampleScene.vortex";
 		projectProps.ScriptingProps.ScriptBinaryPath = std::format("Scripts/Binaries/{}.dll", m_Properties.ProjectNameBuffer);
 
@@ -284,24 +284,17 @@ namespace Vortex {
 		m_Properties.ProjectPath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path(projectFilename);
 		std::filesystem::path projectDirectoryPath = FileSystem::GetParentDirectory(m_Properties.ProjectPath);
 
-		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scenes");
 		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Binaries");
 		FileSystem::CreateDirectoriesV(projectDirectoryPath / "Assets/Scripts/Source");
-		FileSystem::RecursiveDirectoryCopy("Resources/NewProjectTemplate", projectDirectoryPath / std::filesystem::path("Assets/Scripts"));
-	}
-	
-	void LauncherLayer::CreateStartingScene()
-	{
-		FileSystem::SetCurrentPath("Resources/Default");
-		std::filesystem::path scenePath = m_Properties.ProjectDirectoryBuffer / std::filesystem::path("Assets/Scenes");
-		FileSystem::CopyFileV("SampleScene.vortex", scenePath);
+		FileSystem::RecursiveDirectoryCopy("Resources/NewProjectTemplate", projectDirectoryPath / std::filesystem::path("Assets"));
 	}
 
 	void LauncherLayer::CreatePremakeBuildScript()
 	{
-		std::filesystem::path premakeFilepath = Project::GetAssetDirectory() / "Scripts/premake5.lua";
+		std::filesystem::path premakeFilepath = std::filesystem::path("Projects") / m_Properties.ProjectNameBuffer / Project::GetProjectDirectory() / Project::GetAssetDirectory() / "Scripts/premake5.lua";
 
 		std::ifstream premakeFile(premakeFilepath);
+		VX_CORE_ASSERT(premakeFile.is_open(), "Failed to open premake file!");
 		std::stringstream ss;
 		ss << premakeFile.rdbuf();
 
@@ -316,8 +309,10 @@ namespace Vortex {
 
 	void LauncherLayer::GenerateSolutionFromBatchScript()
 	{
-		FileSystem::SetCurrentPath("Projects/" + std::string(m_Properties.ProjectNameBuffer) + "/Assets/Scripts");
+		std::string projectName = m_Properties.ProjectNameBuffer;
+		FileSystem::SetCurrentPath("Projects/" + projectName + "/Assets/Scripts");
 		FileSystem::LaunchApplication("Win64Gen.bat", "");
+		ResetWorkingDirectory();
 	}
 
 	void LauncherLayer::BuildProjectDLL()
@@ -328,6 +323,7 @@ namespace Vortex {
 
 		FileSystem::SetCurrentPath("Resources/HelperScripts");
 		FileSystem::LaunchApplication("BuildSolution.bat", solutionPath.string().c_str());
+		ResetWorkingDirectory();
 	}
 
 	void LauncherLayer::CreateProject()
@@ -336,22 +332,27 @@ namespace Vortex {
 			FileSystem::CreateDirectoriesV(m_Properties.ProjectDirectoryBuffer);
 
 		CreateProjectFilesAndDirectories();
-		CreateStartingScene();
-		ResetWorkingDirectory();
-		CreatePremakeBuildScript();
-
 		VX_CORE_ASSERT(Project::GetActive(), "Project wasn't created properly!");
+		CreatePremakeBuildScript();
+		
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(10ms);
 
 		GenerateSolutionFromBatchScript();
-		ResetWorkingDirectory();
+		std::this_thread::sleep_for(10ms);
+
 		BuildProjectDLL();
+		SaveProjectToDisk();
 
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(250ms);
-
-		ResetWorkingDirectory();
 		LaunchEditor();
 		ResetInputFields();
+	}
+
+	void LauncherLayer::SaveProjectToDisk()
+	{
+		ProjectSerializer serializer(Project::GetActive());
+		const bool success = serializer.Serialize(m_Properties.ProjectPath);
+		VX_CORE_ASSERT(success, "Failed to serialize project!");
 	}
 
 	void LauncherLayer::LaunchEditor()
