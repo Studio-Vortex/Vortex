@@ -480,11 +480,11 @@ namespace Vortex {
 	{
 		UUID entityUUID = entity.GetUUID();
 
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+		
 		if (EntityInstanceExists(entityUUID))
 		{
-			SharedReference<ScriptInstance> scriptInstance = GetEntityScriptInstance(entityUUID);
-			VX_CORE_ASSERT(scriptInstance, "Invalid Script Instance!");
-			scriptInstance->InvokeOnUpdate(delta);
+			GetEntityScriptInstance(entityUUID)->InvokeOnUpdate(delta);
 		}
 		else
 		{

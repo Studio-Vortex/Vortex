@@ -4293,6 +4293,11 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity)
+			{
+				return;
+			}
+
 			if (!entity.HasComponent<RigidBodyComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");

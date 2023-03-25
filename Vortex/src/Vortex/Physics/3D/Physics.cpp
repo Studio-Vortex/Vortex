@@ -293,26 +293,23 @@ namespace Vortex {
 		physx::PxControllerFilters filters; // TODO
 		physx::PxController* controller = s_Data->ActiveControllers[entityUUID];
 
-		auto gravity = Physics::GetPhysicsSceneGravity();
+		float gravity = Math::Length(Physics::GetPhysicsSceneGravity());
 
 		if (!characterControllerComponent.DisableGravity)
 		{
-			characterControllerComponent.SpeedDown -= gravity.y * Time::GetDeltaTime();
+			characterControllerComponent.SpeedDown += gravity * Time::GetDeltaTime();
 		}
 
 		Math::vec3 upDirection = FromPhysXVector(controller->getUpDirection());
-		Math::vec3 movement = (displacement - upDirection) * (characterControllerComponent.SpeedDown * Time::GetDeltaTime());
+		Math::vec3 movement = displacement - upDirection * characterControllerComponent.SpeedDown * (float)Time::GetDeltaTime();
 
-		controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
+		physx::PxControllerCollisionFlags collisionFlags = controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
 		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
 
-		physx::PxControllerState state;
-		controller->getState(state);
-
 		// test if grounded
-		if (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+		if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 		{
-			characterControllerComponent.SpeedDown = gravity.y * 0.01f;
+			characterControllerComponent.SpeedDown = gravity * 0.01f;
 		}
     }
 

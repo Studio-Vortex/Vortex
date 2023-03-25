@@ -222,6 +222,12 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Length(T v)
+	{
+		return glm::length(v);
+	}
+
+	template <typename T>
 	static auto Distance(T v0, T v1)
 	{
 		return glm::distance(v0, v1);
