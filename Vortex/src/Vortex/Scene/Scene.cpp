@@ -1297,14 +1297,17 @@ namespace Vortex {
 
 	template <> void Scene::OnComponentAdded<StaticMeshRendererComponent>(Entity entity, StaticMeshRendererComponent& component)
 	{
-		DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)(component.Type == MeshType::Custom ? MeshType::Cube : component.Type);
-
-		component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
-
-		if (AssetManager::IsHandleValid(component.StaticMesh) && component.Materials->Empty())
+		if (component.Type != MeshType::Custom)
 		{
-			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-			staticMesh->LoadMaterialTable(component.Materials);
+			DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)component.Type;
+
+			component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
+
+			if (AssetManager::IsHandleValid(component.StaticMesh) && component.Materials->Empty())
+			{
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+				staticMesh->LoadMaterialTable(component.Materials);
+			}
 		}
 	}
 

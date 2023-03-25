@@ -280,6 +280,10 @@ namespace Vortex {
 #ifndef VX_DIST
 
 			m_MaterialNames[submeshIndex] = std::string(material->GetName().C_Str());
+			if (m_MaterialNames[submeshIndex].empty())
+				m_MaterialNames[submeshIndex] = submeshName;
+			if (m_MaterialNames[submeshIndex].size() > 25)
+				m_MaterialNames[submeshIndex].erase(25, m_MaterialNames[submeshIndex].size() - 25);
 
 #endif
 
@@ -296,7 +300,42 @@ namespace Vortex {
 			};
 		}
 
-		m_InitialMaterialTextureHandles[submeshIndex] = materialTextures;
+		// Get or Create Material
+		AssetHandle materialHandle = 0;
+		std::string materialName = m_MaterialNames[submeshIndex];
+
+		std::string filename = materialName + ".vmaterial";
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filename);
+		if (metadata.IsValid())
+		{
+			materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filename);
+		}
+
+		if (!AssetManager::IsHandleValid(materialHandle))
+		{
+			MaterialProperties materialProps;
+			materialProps.AlbedoMap = materialTextures[0];
+			materialProps.NormalMap = materialTextures[1];
+			materialProps.MetallicMap = materialTextures[2];
+			materialProps.RoughnessMap = materialTextures[3];
+			materialProps.EmissionMap = materialTextures[4];
+			materialProps.AmbientOcclusionMap = materialTextures[5];
+
+			SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
+
+			SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, materialProps);
+			VX_CORE_ASSERT(AssetManager::IsHandleValid(material->Handle), "Invalid asset handle!");
+			material->SetName(materialName);
+			AssetImporter::Serialize(material);
+			materialHandle = material->Handle;
+		}
+
+		/*if (!AssetManager::IsHandleValid(materialHandle))
+		{
+			materialHandle = Renderer::GetWhiteMaterial()->Handle;
+		}*/
+
+		m_InitialMaterialHandles[submeshIndex] = materialHandle;
 		submeshIndex++;
 
 		return { submeshName, vertices, indices };
@@ -421,37 +460,9 @@ namespace Vortex {
 
 	void StaticMesh::LoadMaterialTable(SharedReference<MaterialTable>& materialTable)
 	{
-		std::vector<AssetHandle> materialHandles;
-		SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
-
-		for (const auto& [submeshIndex, textureHandles] : m_InitialMaterialTextureHandles)
+		for (const auto& [submeshIndex, materialHandle] : m_InitialMaterialHandles)
 		{
-			AssetHandle materialHandle = 0;
-
-			MaterialProperties materialProps;
-			materialProps.AlbedoMap = textureHandles[0];
-			materialProps.NormalMap = textureHandles[1];
-			materialProps.MetallicMap = textureHandles[2];
-			materialProps.RoughnessMap = textureHandles[3];
-			materialProps.EmissionMap = textureHandles[4];
-			materialProps.AmbientOcclusionMap = textureHandles[5];
-
-			std::string filename = m_MaterialNames[submeshIndex] + ".vmaterial";
-			SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, materialProps);
-			materialHandle = material->Handle;
-
-			if (!AssetManager::IsHandleValid(materialHandle))
-			{
-				materialHandle = Renderer::GetWhiteMaterial()->Handle;
-			}
-
-			materialHandles.push_back(materialHandle);
-		}
-
-		uint32_t submeshIndex = 0;
-		for (const auto& materialHandle : materialHandles)
-		{
-			materialTable->SetMaterial(submeshIndex++, materialHandle);
+			materialTable->SetMaterial(submeshIndex, materialHandle);
 		}
 	}
 

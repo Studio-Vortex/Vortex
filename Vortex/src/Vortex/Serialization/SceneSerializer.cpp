@@ -1258,17 +1258,29 @@ namespace Vortex {
 					{
 						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
 
-						uint32_t submeshIndex = 0;
-						for (auto submeshData : submeshesData)
+						if (staticMesh)
 						{
-							if (!submeshData["MaterialHandle"])
-								continue;
+							SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
-							AssetHandle materialHandle = submeshData["MaterialHandle"].as<uint64_t>();
-							if (!AssetManager::IsHandleValid(materialHandle))
-								continue;
+							materialTable->Clear();
+
+							uint32_t submeshIndex = 0;
+							for (auto submeshData : submeshesData)
+							{
+								if (!submeshData["MaterialHandle"])
+									continue;
+
+								AssetHandle materialHandle = submeshData["MaterialHandle"].as<uint64_t>();
+								if (!AssetManager::IsHandleValid(materialHandle))
+									continue;
 							
-							staticMeshRendererComponent.Materials->SetMaterial(submeshIndex++, materialHandle);
+								materialTable->SetMaterial(submeshIndex++, materialHandle);
+							}
+
+							if (materialTable->Empty())
+							{
+								staticMesh->LoadMaterialTable(materialTable);
+							}
 						}
 					}
 				}

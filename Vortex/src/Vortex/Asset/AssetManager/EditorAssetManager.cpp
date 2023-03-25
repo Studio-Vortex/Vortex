@@ -264,11 +264,23 @@ namespace Vortex {
 
 	bool EditorAssetManager::RenameAsset(SharedReference<Asset>& asset, const std::string& newName)
 	{
-		if (newName.empty())
+		if (!asset)
+		{
+			VX_CORE_ASSERT(false, "Trying to rename invalid asset!");
 			return false;
+		}
+
+		if (newName.empty())
+		{
+			VX_CORE_ASSERT(false, "Trying to rename asset with empty name!")
+			return false;
+		}
 
 		if (!IsHandleValid(asset->Handle))
+		{
+			VX_CORE_ASSERT(false, "Trying to rename asset with invalid handle!");
 			return false;
+		}
 
 		if (IsMemoryOnlyAsset(asset->Handle))
 		{

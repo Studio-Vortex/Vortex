@@ -482,7 +482,9 @@ namespace Vortex {
 
 		if (EntityInstanceExists(entityUUID))
 		{
-			GetEntityScriptInstance(entityUUID)->InvokeOnUpdate(delta);
+			SharedReference<ScriptInstance> scriptInstance = GetEntityScriptInstance(entityUUID);
+			VX_CORE_ASSERT(scriptInstance, "Invalid Script Instance!");
+			scriptInstance->InvokeOnUpdate(delta);
 		}
 		else
 		{

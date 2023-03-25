@@ -109,7 +109,6 @@ namespace Vortex {
 					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", "NewMaterial.vmaterial", pbrStaticShader, MaterialProperties());
 					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
-					const AssetMetadata& metadata = editorAssetManager->GetMetadata(materialAsset->Handle);
 					AssetImporter::Serialize(materialAsset);
 
 					Gui::CloseCurrentPopup();
@@ -466,7 +465,8 @@ public class Untitled : Entity
 					if (FileSystem::HasFileExtension(currentItemPath))
 					{
 						SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
-						Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
+						// TODO make this work
+						//Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
 
 						// TODO this should take place in asset manager
 						if (newFilePath.filename().extension() == ".vmaterial")
