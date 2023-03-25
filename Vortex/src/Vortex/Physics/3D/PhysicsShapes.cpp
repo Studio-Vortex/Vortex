@@ -207,7 +207,7 @@ namespace Vortex {
 		SharedReference<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.Material);
 		if (!material)
 		{
-			component.Material = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
+			component.Material = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>(0.6f, 0.6f, 0.0f);
 			material = AssetManager::GetAsset<PhysicsMaterial>(component.Material);
 		}
 

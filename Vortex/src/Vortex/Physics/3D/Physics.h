@@ -107,11 +107,16 @@ namespace Vortex {
 		static void UpdateControllers();
 		static void UpdateFixedJoints();
 
-		static void CreateCollider(Entity entity);
+		static void RegisterPhysicsActor(Entity entity, physx::PxRigidActor* actor);
+		static physx::PxRigidActor* CreateRuntimeActor(Entity entity, RigidBodyComponent& rigidbody);
+		static void CreatePhysicsActorInternal(Entity entity);
+		static void CreateCharacterControllerInternal(Entity entity);
+
+		static void CreateCollider(Entity entity, physx::PxRigidActor* actor);
 		static void AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
 		static physx::PxMaterial* AddControllerColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
 		static void CreateFixedJoint(Entity entity);
-		static physx::PxController* CreateController(Entity entity);
+		static physx::PxController* CreateController(Entity entity, physx::PxRigidActor* actor);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
