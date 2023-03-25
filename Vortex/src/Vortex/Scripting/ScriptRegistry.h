@@ -244,12 +244,24 @@ namespace Vortex {
 
 		void Material_GetAlbedo(AssetHandle* assetHandle, Math::vec3* outAlbedo);
 		void Material_SetAlbedo(AssetHandle* assetHandle, Math::vec3* albedo);
+		bool Material_GetAlbedoMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetAlbedoMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
+		bool Material_GetNormalMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetNormalMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
 		float Material_GetMetallic(AssetHandle* assetHandle);
 		void Material_SetMetallic(AssetHandle* assetHandle, float metallic);
+		bool Material_GetMetallicMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetMetallicMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
 		float Material_GetRoughness(AssetHandle* assetHandle);
 		void Material_SetRoughness(AssetHandle* assetHandle, float roughness);
+		bool Material_GetRoughnessMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetRoughnessMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
 		float Material_GetEmission(AssetHandle* assetHandle);
 		void Material_SetEmission(AssetHandle* assetHandle, float emission);
+		bool Material_GetEmissionMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetEmissionMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
+		bool Material_GetAmbientOcclusionMap(AssetHandle* assetHandle, AssetHandle* outHandle);
+		void Material_SetAmbientOcclusionMap(AssetHandle* assetHandle, AssetHandle* textureHandle);
 		void Material_GetUV(AssetHandle* assetHandle, Math::vec2* outUV);
 		void Material_SetUV(AssetHandle* assetHandle, Math::vec2* uv);
 		float Material_GetOpacity(AssetHandle* assetHandle);

@@ -458,12 +458,30 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetAlbedo(ref AssetHandle assetHandle, ref Vector3 albedo);
-		
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetAlbedoMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetAlbedoMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetNormalMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetNormalMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Material_GetMetallic(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetMetallic(ref AssetHandle assetHandle, float metallic);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetMetallicMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetMetallicMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Material_GetRoughness(ref AssetHandle assetHandle);
@@ -472,10 +490,28 @@ namespace Vortex {
 		internal extern static void Material_SetRoughness(ref AssetHandle assetHandle, float roughness);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetRoughnessMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetRoughnessMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Material_GetEmission(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_SetEmission(ref AssetHandle assetHandle, float emission);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetEmissionMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetEmissionMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetAmbientOcclusionMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetAmbientOcclusionMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Material_GetUV(ref AssetHandle assetHandle, out Vector2 outUV);

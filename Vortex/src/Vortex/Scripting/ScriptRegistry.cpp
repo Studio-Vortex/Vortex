@@ -2020,6 +2020,92 @@ namespace Vortex {
 			material->SetAlbedo(*albedo);
 		}
 
+		bool Material_GetAlbedoMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetAlbedoMap();
+			return true;
+		}
+
+		void Material_SetAlbedoMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			material->SetAlbedoMap(*textureHandle);
+		}
+
+		bool Material_GetNormalMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetNormalMap();
+			return true;
+		}
+
+		void Material_SetNormalMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			material->SetNormalMap(*textureHandle);
+		}
+
 		float Material_GetMetallic(AssetHandle* assetHandle)
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
@@ -2054,6 +2140,49 @@ namespace Vortex {
 			}
 
 			material->SetMetallic(metallic);
+		}
+
+		bool Material_GetMetallicMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetMetallicMap();
+			return true;
+		}
+
+		void Material_SetMetallicMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			material->SetMetallicMap(*textureHandle);
 		}
 
 		float Material_GetRoughness(AssetHandle* assetHandle)
@@ -2092,6 +2221,49 @@ namespace Vortex {
 			material->SetRoughness(roughness);
 		}
 
+		bool Material_GetRoughnessMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetRoughnessMap();
+			return true;
+		}
+
+		void Material_SetRoughnessMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			material->SetRoughnessMap(*textureHandle);
+		}
+
 		float Material_GetEmission(AssetHandle* assetHandle)
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
@@ -2126,6 +2298,92 @@ namespace Vortex {
 			}
 
 			material->SetEmission(emission);
+		}
+
+		bool Material_GetEmissionMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetEmissionMap();
+			return true;
+		}
+
+		void Material_SetEmissionMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invlaid Asset Handle!");
+				return;
+			}
+
+			material->SetEmissionMap(*textureHandle);
+		}
+
+		bool Material_GetAmbientOcclusionMap(AssetHandle* assetHandle, AssetHandle* outHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return false;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return false;
+			}
+
+			*outHandle = material->GetAmbientOcclusionMap();
+			return true;
+		}
+
+		void Material_SetAmbientOcclusionMap(AssetHandle* assetHandle, AssetHandle* textureHandle)
+		{
+			if (!AssetManager::IsHandleValid(*assetHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(*assetHandle);
+			if (!material)
+			{
+				VX_CORE_ASSERT(false, "Invalid Material Asset!");
+				return;
+			}
+
+			if (!AssetManager::IsHandleValid(*textureHandle))
+			{
+				VX_CORE_ASSERT(false, "Invalid Asset Handle!");
+				return;
+			}
+
+			material->SetAmbientOcclusionMap(*textureHandle);
 		}
 
 		void Material_GetUV(AssetHandle* assetHandle, Math::vec2* outUV)
@@ -6995,12 +7253,24 @@ namespace Vortex {
 
 		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
 		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedo);
+		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedoMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedoMap);
+		VX_REGISTER_INTERNAL_CALL(Material_GetNormalMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetNormalMap);
 		VX_REGISTER_INTERNAL_CALL(Material_GetMetallic);
 		VX_REGISTER_INTERNAL_CALL(Material_SetMetallic);
+		VX_REGISTER_INTERNAL_CALL(Material_GetMetallicMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetMetallicMap);
 		VX_REGISTER_INTERNAL_CALL(Material_GetRoughness);
 		VX_REGISTER_INTERNAL_CALL(Material_SetRoughness);
+		VX_REGISTER_INTERNAL_CALL(Material_GetRoughnessMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetRoughnessMap);
 		VX_REGISTER_INTERNAL_CALL(Material_GetEmission);
 		VX_REGISTER_INTERNAL_CALL(Material_SetEmission);
+		VX_REGISTER_INTERNAL_CALL(Material_GetEmissionMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetEmissionMap);
+		VX_REGISTER_INTERNAL_CALL(Material_GetAmbientOcclusionMap);
+		VX_REGISTER_INTERNAL_CALL(Material_SetAmbientOcclusionMap);
 		VX_REGISTER_INTERNAL_CALL(Material_GetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_SetUV);
 		VX_REGISTER_INTERNAL_CALL(Material_GetOpacity);
