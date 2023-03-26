@@ -392,10 +392,29 @@ namespace Vortex {
 			return result;
 
 		const char* pathCStr = textureFilepath.C_Str();
-		std::filesystem::path filepath = std::filesystem::path(pathCStr);
+		std::filesystem::path filepath = std::filesystem::path(pathCStr).filename();
 		std::filesystem::path relativePath = directory / filepath;
+		std::filesystem::path directoryName = directory.filename();
 
-		result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
+		if (FileSystem::Exists(relativePath))
+		{
+			result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(relativePath);
+		}
+
+		if (!AssetManager::IsHandleValid(result))
+		{
+			std::filesystem::path texturesPath = "Assets/Textures" / filepath;
+			if (FileSystem::Exists(texturesPath))
+				result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPath);
+
+			if (!AssetManager::IsHandleValid(result))
+			{
+				std::filesystem::path texturesPathWithDirectory = "Assets/Textures" / directoryName / filepath;
+				if (FileSystem::Exists(texturesPathWithDirectory))
+					result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPathWithDirectory);
+			}
+		}
+
 		return result;
 	}
 
