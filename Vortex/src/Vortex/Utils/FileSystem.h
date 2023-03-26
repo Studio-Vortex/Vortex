@@ -40,8 +40,6 @@ namespace Vortex {
 
 		static std::filesystem::path GetCurrentPath();
 		static void SetCurrentPath(const std::filesystem::path& filepath);
-
-		static void LaunchApplication(const char* binaryPath, const char* args);
 	};
 
 }

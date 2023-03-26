@@ -370,7 +370,7 @@ public class Untitled : Entity
 
 			if (isCSharpFile && Gui::MenuItem("Open with VsCode"))
 			{
-				FileSystem::LaunchApplication("code", std::format("{} {}", currentItemPath.parent_path().string(), currentItemPath.string()).c_str());
+				Platform::LaunchProcess("code", std::format("{} {}", currentItemPath.parent_path().string(), currentItemPath.string()).c_str());
 				Gui::CloseCurrentPopup();
 			}
 			if (isCSharpFile)

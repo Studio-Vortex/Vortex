@@ -13,6 +13,8 @@ namespace Vortex {
 		static std::string GetName();
 
 		static void HideConsoleWindow();
+
+		static void LaunchProcess(const char* binaryPath, const char* args);
 	};
 
 }

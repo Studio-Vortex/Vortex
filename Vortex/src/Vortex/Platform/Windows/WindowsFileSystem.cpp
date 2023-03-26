@@ -1,9 +1,6 @@
 #include "vxpch.h"
 #include "Vortex/Utils/FileSystem.h"
 
-#include <ShlObj.h>
-#include <shellapi.h>
-
 #include <fstream>
 
 namespace Vortex {
@@ -170,11 +167,6 @@ namespace Vortex {
 	void FileSystem::SetCurrentPath(const std::filesystem::path& filepath)
 	{
 		std::filesystem::current_path(filepath);
-	}
-
-	void FileSystem::LaunchApplication(const char* binaryPath, const char* args)
-	{
-		ShellExecuteA(NULL, "open", binaryPath, args, NULL, SWP_SHOWWINDOW);
 	}
 
 }

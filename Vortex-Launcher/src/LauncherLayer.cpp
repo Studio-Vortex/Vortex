@@ -311,7 +311,7 @@ namespace Vortex {
 	{
 		std::string projectName = m_Properties.ProjectNameBuffer;
 		FileSystem::SetCurrentPath("Projects/" + projectName + "/Assets/Scripts");
-		FileSystem::LaunchApplication("Win64Gen.bat", "");
+		Platform::LaunchProcess("Win64Gen.bat", "");
 		ResetWorkingDirectory();
 	}
 
@@ -322,7 +322,7 @@ namespace Vortex {
 		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
 		FileSystem::SetCurrentPath("Resources/HelperScripts");
-		FileSystem::LaunchApplication("BuildSolution.bat", solutionPath.string().c_str());
+		Platform::LaunchProcess("BuildSolution.bat", solutionPath.string().c_str());
 		ResetWorkingDirectory();
 	}
 
@@ -358,7 +358,7 @@ namespace Vortex {
 	void LauncherLayer::LaunchEditor()
 	{
 		std::string projectPath = FileSystem::Relative(m_Properties.ProjectPath, m_Properties.WorkingDirectory).string();
-		FileSystem::LaunchApplication(m_Properties.EditorPath.string().c_str(), projectPath.c_str());
+		Platform::LaunchProcess(m_Properties.EditorPath.string().c_str(), projectPath.c_str());
 	}
 
 	void LauncherLayer::ReplaceToken(std::string& str, const char* token, const std::string& value)

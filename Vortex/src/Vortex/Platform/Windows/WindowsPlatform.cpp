@@ -21,4 +21,9 @@ namespace Vortex {
 		ShowWindow(GetConsoleWindow(), SW_HIDE);
     }
 
+	void Platform::LaunchProcess(const char* binaryPath, const char* args)
+	{
+		ShellExecuteA(NULL, "open", binaryPath, args, NULL, SWP_SHOWWINDOW);
+	}
+
 }

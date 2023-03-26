@@ -614,7 +614,7 @@ namespace Vortex {
 				{
 					std::filesystem::current_path(scriptsFolder);
 
-					FileSystem::LaunchApplication(projectSolutionFilename.string().c_str(), "");
+					Platform::LaunchProcess(projectSolutionFilename.string().c_str(), "");
 
 					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
 				}
@@ -624,7 +624,7 @@ namespace Vortex {
 				{
 					std::filesystem::current_path("Resources/HelperScripts");
 
-					FileSystem::LaunchApplication("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
+					Platform::LaunchProcess("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
 
 					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
 				}
@@ -1535,7 +1535,7 @@ namespace Vortex {
 		SaveProject();
 
 		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
-		FileSystem::LaunchApplication(runtimeApplicationPath.c_str(), filepath.string().c_str());
+		Platform::LaunchProcess(runtimeApplicationPath.c_str(), filepath.string().c_str());
 	}
 
 	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
