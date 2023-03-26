@@ -336,12 +336,12 @@ namespace Vortex {
 		CreatePremakeBuildScript();
 		
 		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(10ms);
 
 		GenerateSolutionFromBatchScript();
-		std::this_thread::sleep_for(10ms);
+		std::this_thread::sleep_for(25ms);
 
 		BuildProjectDLL();
+		std::this_thread::sleep_for(25ms);
 		SaveProjectToDisk();
 
 		LaunchEditor();
