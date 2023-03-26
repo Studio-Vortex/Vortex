@@ -73,6 +73,7 @@ namespace Vortex {
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
 		static MonoDomain* GetAppDomain();
+		static MonoImage* GetAppAssemblyImage();
 
 		static void DuplicateScriptInstance(Entity entity, Entity targetEntity);
 
@@ -98,12 +99,5 @@ namespace Vortex {
 		friend class ScriptClass;
 		friend class ScriptRegistry;
 	};
-
-	namespace Utils {
-
-		const char* ScriptFieldTypeToString(ScriptFieldType type);
-		ScriptFieldType StringToScriptFieldType(std::string_view fieldType);
-
-	}
 
 }

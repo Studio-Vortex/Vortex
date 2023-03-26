@@ -13,8 +13,6 @@
 #include "Vortex/Utils/FileSystem.h"
 
 #include <mono/jit/jit.h>
-#include <mono/metadata/class.h>
-#include <mono/metadata/object.h>
 #include <mono/metadata/threads.h>
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/assembly.h>
@@ -23,187 +21,6 @@
 #include <Filewatch.hpp>
 
 namespace Vortex {
-
-	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
-	{
-		{ "System.Single",      ScriptFieldType::Float       },
-		{ "System.Double",      ScriptFieldType::Double      },
-		{ "System.Boolean",     ScriptFieldType::Bool        },
-		{ "System.Char",        ScriptFieldType::Char        },
-		{ "System.Int16",       ScriptFieldType::Short       },
-		{ "System.Int32",       ScriptFieldType::Int         },
-		{ "System.Int64",       ScriptFieldType::Long        },
-		{ "System.Byte",        ScriptFieldType::Byte        },
-		{ "System.UInt16",      ScriptFieldType::UShort      },
-		{ "System.UInt32",      ScriptFieldType::UInt        },
-		{ "System.UInt64",      ScriptFieldType::ULong       },
-		{ "Vortex.Vector2",     ScriptFieldType::Vector2     },
-		{ "Vortex.Vector3",     ScriptFieldType::Vector3     },
-		{ "Vortex.Vector4",     ScriptFieldType::Vector4     },
-		{ "Vortex.Color3",      ScriptFieldType::Color3      },
-		{ "Vortex.Color4",      ScriptFieldType::Color4      },
-		{ "Vortex.Entity",      ScriptFieldType::Entity      },
-		{ "Vortex.AssetHandle", ScriptFieldType::AssetHandle },
-	};
-
-	namespace Utils {
-
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false)
-		{
-			UniqueBuffer fileData = FileSystem::ReadBinary(filepath);
-
-			if (!fileData)
-			{
-				return nullptr;
-			}
-
-			// NOTE: We can't use this image for anything other than loading the assembly
-			//       because this image doesn't have a reference to the assembly
-			MonoImageOpenStatus status;
-			MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
-
-			if (status != MONO_IMAGE_OK)
-			{
-				const char* errorMessage = mono_image_strerror(status);
-				VX_CONSOLE_LOG_ERROR("Mono Assembly Error: {}", errorMessage);
-				return nullptr;
-			}
-
-			if (loadPdb)
-			{
-				std::filesystem::path assemblyPath = filepath;
-				std::filesystem::path pdbPath = assemblyPath.replace_extension(".pdb");
-
-				if (FileSystem::Exists(pdbPath))
-				{
-					UniqueBuffer pdbFileData = FileSystem::ReadBinary(pdbPath);
-
-					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
-
-					VX_CONSOLE_LOG_INFO("PDB Loaded : {}", pdbPath);
-				}
-			}
-
-			std::string pathString = filepath.string();
-			MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
-			mono_image_close(image);
-
-			return assembly;
-		}
-
-		static void PrintAssemblyTypes(MonoAssembly* assembly)
-		{
-			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-			for (int32_t i = 0; i < numTypes; i++)
-			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
-				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-				VX_CONSOLE_LOG_TRACE("{}.{}", nameSpace, name);
-			}
-		}
-
-		static std::vector<MonoAssemblyTypeInfo> GetAssemblyTypeInfo(MonoAssembly* assembly)
-		{
-			std::vector<MonoAssemblyTypeInfo> result;
-
-			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-			for (int32_t i = 0; i < numTypes; i++)
-			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
-				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-				MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
-
-				if (name[0] == '<' || !monoClass)
-					continue;
-
-				int fieldCount = mono_class_num_fields(monoClass);
-
-				result.emplace_back(nameSpace, name, fieldCount);
-			}
-
-			return result;
-		}
-
-		static ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
-		{
-			std::string typeName = mono_type_get_name(monoType);
-
-			auto it = s_ScriptFieldTypeMap.find(typeName);
-			if (it == s_ScriptFieldTypeMap.end())
-				return ScriptFieldType::None;
-
-			return it->second;
-		}
-
-        const char* ScriptFieldTypeToString(ScriptFieldType type)
-		{
-			switch (type)
-			{
-				case ScriptFieldType::None:        return "None";
-				case ScriptFieldType::Float:       return "Float";
-				case ScriptFieldType::Double:      return "Double";
-				case ScriptFieldType::Bool:        return "Bool";
-				case ScriptFieldType::Char:        return "Char";
-				case ScriptFieldType::Short:       return "Short";
-				case ScriptFieldType::Int:         return "Int";
-				case ScriptFieldType::Long:        return "Long";
-				case ScriptFieldType::Byte:        return "Byte";
-				case ScriptFieldType::UShort:      return "UShort";
-				case ScriptFieldType::UInt:        return "UInt";
-				case ScriptFieldType::ULong:       return "ULong";
-				case ScriptFieldType::Vector2:     return "Vector2";
-				case ScriptFieldType::Vector3:     return "Vector3";
-				case ScriptFieldType::Vector4:     return "Vector4";
-				case ScriptFieldType::Color3:      return "Color3";
-				case ScriptFieldType::Color4:      return "Color4";
-				case ScriptFieldType::Entity:      return "Entity";
-				case ScriptFieldType::AssetHandle: return "AssetHandle";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
-			return "None";
-		}
-
-		ScriptFieldType StringToScriptFieldType(std::string_view fieldType)
-		{
-			if (fieldType == "None")        return ScriptFieldType::None;
-			if (fieldType == "Float")       return ScriptFieldType::Float;
-			if (fieldType == "Double")      return ScriptFieldType::Double;
-			if (fieldType == "Bool")        return ScriptFieldType::Bool;
-			if (fieldType == "Char")        return ScriptFieldType::Char;
-			if (fieldType == "Short")       return ScriptFieldType::Short;
-			if (fieldType == "Int")         return ScriptFieldType::Int;
-			if (fieldType == "Long")        return ScriptFieldType::Long;
-			if (fieldType == "Byte")        return ScriptFieldType::Byte;
-			if (fieldType == "UShort")      return ScriptFieldType::UShort;
-			if (fieldType == "UInt")        return ScriptFieldType::UInt;
-			if (fieldType == "ULong")       return ScriptFieldType::ULong;
-			if (fieldType == "Vector2")     return ScriptFieldType::Vector2;
-			if (fieldType == "Vector3")     return ScriptFieldType::Vector3;
-			if (fieldType == "Vector4")     return ScriptFieldType::Vector4;
-			if (fieldType == "Color3")      return ScriptFieldType::Color3;
-			if (fieldType == "Color4")      return ScriptFieldType::Color4;
-			if (fieldType == "Entity")      return ScriptFieldType::Entity;
-			if (fieldType == "AssetHandle") return ScriptFieldType::AssetHandle;
-
-			VX_CORE_ASSERT(false, "Unknown Script Field Type!");
-			return ScriptFieldType::None;
-		}
-
-	}
 
 	struct ScriptEngineData
 	{
@@ -353,7 +170,7 @@ namespace Vortex {
 		mono_domain_set_config(s_Data->AppDomain, ".", "");
 
 		s_Data->CoreAssemblyFilepath = filepath;
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
+		s_Data->CoreAssembly = ScriptUtils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 
 		if (s_Data->CoreAssembly == nullptr)
 			return false;
@@ -366,7 +183,7 @@ namespace Vortex {
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		s_Data->AppAssemblyFilepath = filepath;
-		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
+		s_Data->AppAssembly = ScriptUtils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 
 		if (s_Data->AppAssembly == nullptr)
 			return false;
@@ -641,7 +458,7 @@ namespace Vortex {
 
 	std::vector<MonoAssemblyTypeInfo> ScriptEngine::GetCoreAssemblyTypeInfo()
 	{
-		return Utils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
+		return ScriptUtils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
 
 	Scene* ScriptEngine::GetContextScene()
@@ -657,6 +474,11 @@ namespace Vortex {
 	MonoDomain* ScriptEngine::GetAppDomain()
 	{
 		return s_Data->AppDomain;
+	}
+
+	MonoImage* ScriptEngine::GetAppAssemblyImage()
+	{
+		return s_Data->AppAssemblyImage;
 	}
 
 	void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
@@ -724,10 +546,10 @@ namespace Vortex {
 				if (flags & MONO_FIELD_ATTR_PUBLIC)
 				{
 					MonoType* type = mono_field_get_type(classField);
-					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+					ScriptFieldType fieldType = ScriptUtils::MonoTypeToScriptFieldType(type);
 
 					if (displayClassNames)
-						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, ScriptUtils::ScriptFieldTypeToString(fieldType));
 
 					scriptClass->m_Fields[fieldName] = ScriptField(fieldType, fieldName, classField);
 				}
@@ -738,188 +560,6 @@ namespace Vortex {
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
 		return ScriptUtils::InstantiateClass(monoClass);
-	}
-
-	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
-		: m_ClassNamespace(classNamespace), m_ClassName(className)
-	{
-		m_MonoClass = mono_class_from_name(isCore ? s_Data->CoreAssemblyImage : s_Data->AppAssemblyImage, classNamespace.c_str(), className.c_str());
-	}
-
-	MonoObject* ScriptClass::Instantiate()
-	{
-		return ScriptEngine::InstantiateClass(m_MonoClass);
-	}
-
-	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)
-	{
-		return ScriptUtils::GetManagedMethodFromName(m_MonoClass, name.c_str(), parameterCount);
-	}
-
-	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity)
-		: m_ScriptClass(scriptClass)
-	{
-		m_Instance = m_ScriptClass->Instantiate();
-
-		m_ManagedMethods[ManagedMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
-		m_ManagedMethods[ManagedMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_ManagedMethods[ManagedMethod::OnUpdateDelta] = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_ManagedMethods[ManagedMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
-		m_ManagedMethods[ManagedMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_ManagedMethods[ManagedMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
-		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_ManagedMethods[ManagedMethod::OnRaycastCollision] = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
-		m_ManagedMethods[ManagedMethod::OnEnabled] = m_ScriptClass->GetMethod("OnEnabled", 0);
-		m_ManagedMethods[ManagedMethod::OnDisabled] = m_ScriptClass->GetMethod("OnDisabled", 0);
-		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
-
-		// Call C# Entity constructor
-		ScriptEngine::ConstructEntityRuntime(entity.GetUUID(), m_Instance);
-	}
-
-	void ScriptInstance::InvokeOnAwake()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnAwake])
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnAwake]);
-	}
-
-	void ScriptInstance::InvokeOnCreate()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnCreate])
-			return;
-		
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCreate]);
-	}
-
-	void ScriptInstance::InvokeOnUpdate(float delta)
-	{
-		MonoMethod* onUpdateMethod = nullptr;
-
-		if (m_ManagedMethods[ManagedMethod::OnUpdateDelta])
-		{
-			void* param = &delta;
-			ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnUpdateDelta], &param);
-		}
-		else if (m_ManagedMethods[ManagedMethod::OnUpdate])
-		{
-			ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnUpdate]);
-		}
-	}
-
-	void ScriptInstance::InvokeOnDestroy()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnDestroy])
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDestroy]);
-	}
-
-	void ScriptInstance::InvokeOnCollisionEnter(Collision& collision)
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnCollisionEnter])
-			return;
-
-		void* param = &collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionEnter], &param);
-	}
-
-	void ScriptInstance::InvokeOnCollisionExit(Collision& collision)
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnCollisionExit])
-			return;
-
-		void* param = &collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionExit], &param);
-	}
-
-	void ScriptInstance::InvokeOnTriggerEnter(Collision& collision)
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnTriggerEnter])
-			return;
-
-		void* param = &collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerEnter], &param);
-	}
-
-	void ScriptInstance::InvokeOnTriggerExit(Collision& collision)
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnTriggerExit])
-			return;
-
-		void* param = &collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerExit], &param);
-	}
-
-	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected])
-			return;
-
-		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected], params);
-	}
-
-	void ScriptInstance::InvokeOnRaycastCollision()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnRaycastCollision])
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnRaycastCollision]);
-	}
-
-	void ScriptInstance::InvokeOnEnabled()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnEnabled])
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnEnabled]);
-	}
-
-	void ScriptInstance::InvokeOnDisabled()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnDisabled])
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDisabled]);
-	}
-
-	void ScriptInstance::InvokeOnGui()
-	{
-		if (!m_ManagedMethods[ManagedMethod::OnGui])
-			return;
-		
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnGui]);
-	}
-
-	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
-	{
-		const auto& fields = m_ScriptClass->GetFields();
-		auto it = fields.find(fieldName);
-
-		if (it == fields.end())
-			return false;
-
-		const ScriptField& field = it->second;
-		mono_field_get_value(m_Instance, field.ClassField, buffer);
-		return true;
-	}
-
-	bool ScriptInstance::SetFieldValueInternal(const std::string& fieldName, const void* value)
-	{
-		const auto& fields = m_ScriptClass->GetFields();
-		auto it = fields.find(fieldName);
-
-		if (it == fields.end())
-			return false;
-
-		const ScriptField& field = it->second;
-		mono_field_set_value(m_Instance, field.ClassField, (void*)value);
-		return true;
 	}
 
 }

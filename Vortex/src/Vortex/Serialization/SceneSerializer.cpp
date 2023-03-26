@@ -20,6 +20,7 @@
 #include "Vortex/Renderer/Font/Font.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Scripting/ScriptUtils.h"
 
 #include "Vortex/Editor/EditorResources.h"
 
@@ -1013,7 +1014,7 @@ namespace Vortex {
 						out << YAML::BeginMap; // ScriptFields
 
 						VX_SERIALIZE_PROPERTY(Name, name, out);
-						VX_SERIALIZE_PROPERTY(Type, Utils::ScriptFieldTypeToString(field.Type), out);
+						VX_SERIALIZE_PROPERTY(Type, ScriptUtils::ScriptFieldTypeToString(field.Type), out);
 						out << YAML::Key << "Data" << YAML::Value;
 
 						const ScriptFieldInstance& scriptField = entityScriptFields.at(name);
@@ -1684,7 +1685,7 @@ namespace Vortex {
 								fieldInstance.Field = fields.at(name);
 
 								std::string typeString = scriptField["Type"].as<std::string>();
-								ScriptFieldType type = Utils::StringToScriptFieldType(typeString);
+								ScriptFieldType type = ScriptUtils::StringToScriptFieldType(typeString);
 
 								switch (type)
 								{
