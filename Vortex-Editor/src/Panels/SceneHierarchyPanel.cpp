@@ -1439,17 +1439,22 @@ namespace Vortex {
 					// Temporary
 					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
 					
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-					if (staticMesh)
+					if (AssetManager::IsHandleValid(component.StaticMesh))
 					{
-						component.Materials->Clear();
-						staticMesh->LoadMaterialTable(component.Materials);
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+						if (staticMesh)
+						{
+							component.Materials->Clear();
+							staticMesh->LoadMaterialTable(component.Materials);
+						}
 					}
 				}
 				else
 				{
 					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)component.Type);
 					
+					VX_CORE_ASSERT(AssetManager::IsHandleValid(component.StaticMesh), "Invalid Default Mesh Handle!");
+
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
 					if (staticMesh)
 					{

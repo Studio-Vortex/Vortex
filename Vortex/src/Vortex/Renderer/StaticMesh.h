@@ -98,6 +98,7 @@ namespace Vortex {
 	private:
 		std::unordered_map<uint32_t, StaticSubmesh> m_Submeshes;
 		std::unordered_map<uint32_t, AssetHandle> m_InitialMaterialHandles;
+		std::unordered_map<uint32_t, AssetHandle> m_MaterialHandles;
 
 #ifndef VX_DIST
 

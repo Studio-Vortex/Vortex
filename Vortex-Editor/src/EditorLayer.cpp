@@ -994,13 +994,16 @@ namespace Vortex {
 					StaticMeshRendererComponent& staticMeshRenderer = m_MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
 					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
 
-					staticMeshRenderer.Type = MeshType::Custom;
-
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
-					if (staticMesh)
+					if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
 					{
-						staticMeshRenderer.Materials->Clear();
-						staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
+						staticMeshRenderer.Type = MeshType::Custom;
+
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+						if (staticMesh)
+						{
+							staticMeshRenderer.Materials->Clear();
+							staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
+						}
 					}
 				}
 

@@ -304,11 +304,12 @@ namespace Vortex {
 		AssetHandle materialHandle = 0;
 		std::string materialName = m_MaterialNames[submeshIndex];
 
-		std::string filename = materialName + ".vmaterial";
+		std::string filename = "Materials/" + materialName + ".vmaterial";
 		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filename);
 		if (metadata.IsValid())
 		{
 			materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filename);
+			m_MaterialHandles[submeshIndex] = materialHandle;
 		}
 
 		if (!AssetManager::IsHandleValid(materialHandle))
@@ -328,14 +329,9 @@ namespace Vortex {
 			material->SetName(materialName);
 			AssetImporter::Serialize(material);
 			materialHandle = material->Handle;
+			m_InitialMaterialHandles[submeshIndex] = materialHandle;
 		}
 
-		/*if (!AssetManager::IsHandleValid(materialHandle))
-		{
-			materialHandle = Renderer::GetWhiteMaterial()->Handle;
-		}*/
-
-		m_InitialMaterialHandles[submeshIndex] = materialHandle;
 		submeshIndex++;
 
 		return { submeshName, vertices, indices };
@@ -479,7 +475,18 @@ namespace Vortex {
 
 	void StaticMesh::LoadMaterialTable(SharedReference<MaterialTable>& materialTable)
 	{
-		for (const auto& [submeshIndex, materialHandle] : m_InitialMaterialHandles)
+		std::unordered_map<uint32_t, AssetHandle> materialHandles;
+
+		if (m_MaterialHandles.empty())
+		{
+			materialHandles = m_InitialMaterialHandles;
+		}
+		else
+		{
+			materialHandles = m_MaterialHandles;
+		}
+
+		for (const auto& [submeshIndex, materialHandle] : materialHandles)
 		{
 			materialTable->SetMaterial(submeshIndex, materialHandle);
 		}

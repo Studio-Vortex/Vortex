@@ -1269,18 +1269,19 @@ namespace Vortex {
 							for (auto submeshData : submeshesData)
 							{
 								if (!submeshData["MaterialHandle"])
+								{
+									submeshIndex++;
 									continue;
+								}
 
 								AssetHandle materialHandle = submeshData["MaterialHandle"].as<uint64_t>();
 								if (!AssetManager::IsHandleValid(materialHandle))
+								{
+									submeshIndex++;
 									continue;
+								}
 							
-								materialTable->SetMaterial(submeshIndex++, materialHandle);
-							}
-
-							if (materialTable->Empty())
-							{
-								staticMesh->LoadMaterialTable(materialTable);
+								materialTable->SetMaterial(submeshIndex, materialHandle);
 							}
 						}
 					}
