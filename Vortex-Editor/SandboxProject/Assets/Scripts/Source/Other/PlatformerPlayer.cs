@@ -22,8 +22,8 @@ namespace Sandbox {
 		public bool ShowRaycast;
 		public bool GameOver;
 
-		private const string m_NormalTextureString = "Assets/Textures/game/Platformer/Characters/character_0000.png";
-		private const string m_JumpTextureString = "Assets/Textures/game/Platformer/Characters/character_0001.png";
+		private Texture2D m_NormalTexture;
+		private Texture2D m_JumpTexture;
 		
 		private RigidBody2D m_Rigidbody;
 		private BoxCollider2D m_BoxCollider;
@@ -42,6 +42,9 @@ namespace Sandbox {
 			StartPosition = transform.Translation;
 
 			m_CameraEntity = Scene.FindEntityByName("Camera").As<Camera2D>();
+
+			m_NormalTexture = new Texture2D("Textures/game/Platformer/Characters/character_0000.png");
+
 			Log.Info("Platformer Player is loose!");
 		}
 
@@ -51,7 +54,7 @@ namespace Sandbox {
 			Vector2 groundPoint = playerFootPoint;
 			groundPoint.Y -= 0.1f;
 
-			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RayCastHit2D hit, ShowRaycast);
+			Entity entity = Physics2D.Raycast(transform.Translation.XY, groundPoint, out RaycastHit2D hit, ShowRaycast);
 			IsGrounded = hit.Hit;
 
 			if (IsGrounded && hit.Tag == "Grass Collider")
@@ -63,25 +66,25 @@ namespace Sandbox {
 			if (transform.Translation.Y <= PlayerResetYAxis)
 				SceneManager.LoadScene("Platformer");
 
-			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(GamepadButton.Start))
 				Application.Quit();
 
-			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
+			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(GamepadAxis.LeftX) < -ControllerDeadzone)
 			{
 				IsRunning = true;
-				transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
-				float axisModifier = -Input.GetGamepadAxis(Gamepad.AxisLeftX);
+				transform.Rotation = Quaternion.Identity;
+				float axisModifier = -Input.GetGamepadAxis(GamepadAxis.LeftX);
 				Velocity.X = -1.0f;
 				if (axisModifier != 0.0f)
 					Velocity.X *= axisModifier;
 
 				PlayRunningAnimation(delta);
 			}
-			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
+			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(GamepadAxis.LeftX) > ControllerDeadzone)
 			{
 				IsRunning = true;
-				transform.Rotation = new Vector3(0.0f, 180.0f, 0.0f);
-				float axisModifier = Input.GetGamepadAxis(Gamepad.AxisLeftX);
+				transform.Rotation = Quaternion.Identity;
+				float axisModifier = Input.GetGamepadAxis(GamepadAxis.LeftX);
 				Velocity.X = 1.0f;
 				if (axisModifier != 0.0f)
 					Velocity.X *= axisModifier;
@@ -102,7 +105,7 @@ namespace Sandbox {
 					SceneManager.LoadScene("Platformer");
 			}
 
-			if ((Input.IsKeyDown(KeyCode.Space) || Input.IsGamepadButtonDown(Gamepad.ButtonA)) && IsGrounded)
+			if ((Input.IsKeyDown(KeyCode.Space) || Input.IsGamepadButtonDown(GamepadButton.Start)) && IsGrounded)
 			{
 				m_JumpSound.Play();
 				Velocity.Y = 1.0f;
@@ -110,11 +113,11 @@ namespace Sandbox {
 
 			if (!IsGrounded)
 			{
-				m_Sprite.Texture = m_JumpTextureString;
+				m_Sprite.Texture = m_JumpTexture;
 				Velocity.X /= HorizontalFriction;
 			}
 			else
-				m_Sprite.Texture = m_NormalTextureString;
+				m_Sprite.Texture = m_NormalTexture;
 
 			Velocity.X *= Speed * delta;
 			Velocity.Y *= JumpForce * delta;
@@ -135,13 +138,14 @@ namespace Sandbox {
 			if (!IsGrounded && !AnimationReady)
 				return;
 
-			if (m_Sprite.Texture == m_NormalTextureString)
+			if (m_Sprite.Texture.Handle == m_NormalTexture.Handle)
 			{
-				m_Sprite.Texture = m_JumpTextureString;
-				Log.Print("setting texture");
+				m_Sprite.Texture = m_JumpTexture;
 			}
 			else
-				m_Sprite.Texture = m_NormalTextureString;
+			{
+				m_Sprite.Texture = m_NormalTexture;
+			}
 
 			AnimationReady = false;
 		}

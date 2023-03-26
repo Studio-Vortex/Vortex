@@ -35,8 +35,8 @@ namespace Sandbox.Shooter {
 			capsuleCollider = GetComponent<CapsuleCollider>();
 			eyes = Scene.FindEntityByName("Eyes");
 			Input.SetCursorMode(CursorMode.Locked);
-			rigidbody.Rotation = Vector3.Zero;
-			eyes.transform.Rotation = Vector3.Zero;
+			transform.Rotation = Quaternion.Identity;
+			eyes.transform.Rotation = Quaternion.Identity;
 			footstepSounds = new AudioSource[2];
 			footstepSounds[0] = Scene.FindEntityByName("Footstep 1").GetComponent<AudioSource>();
 			footstepSounds[1] = Scene.FindEntityByName("Footstep 2").GetComponent<AudioSource>();
@@ -51,12 +51,12 @@ namespace Sandbox.Shooter {
 
 		static void QuitOrReloadLevelIfNeeded()
 		{
-			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+			if (Input.IsKeyDown(KeyCode.Escape) || Input.IsGamepadButtonDown(GamepadButton.Start))
 			{
 				Application.Quit();
 			}
 
-			if (Input.IsKeyDown(KeyCode.F1) || Input.IsGamepadButtonDown(Gamepad.ButtonGuide))
+			if (Input.IsKeyDown(KeyCode.F1) || Input.IsGamepadButtonDown(GamepadButton.Guide))
 			{
 				SceneManager.LoadScene("Shooter - Level01");
 			}
@@ -69,12 +69,12 @@ namespace Sandbox.Shooter {
 			mousePosLastFrame = mousePosThisFrame;
 
 			// Horizontal
-			rigidbody.Rotate(0f, -mouseDelta.X * mouseHorizontalRotationSpeed * Time.DeltaTime, 0f);
+			transform.Rotate(0f, -mouseDelta.X * mouseHorizontalRotationSpeed * Time.DeltaTime, 0f);
 
-			float rightAxisX = Input.GetGamepadAxis(Gamepad.AxisRightX);
+			float rightAxisX = Input.GetGamepadAxis(GamepadAxis.RightX);
 			if (rightAxisX < -controllerDeadzone || rightAxisX > controllerDeadzone)
 			{
-				rigidbody.Rotate(0f, -rightAxisX * controllerHorizontalRotationSpeed * Time.DeltaTime, 0f);
+				transform.Rotate(0f, -rightAxisX * controllerHorizontalRotationSpeed * Time.DeltaTime, 0f);
 			}
 
 			// Vertical
@@ -83,18 +83,18 @@ namespace Sandbox.Shooter {
 				float deltaRoll = mouseDelta.Y * mouseVerticalRotationSpeed * Time.DeltaTime;
 				eyeTransform.Rotate(deltaRoll, 0f, 0f);
 				float clampedRoll = Mathf.Clamp(eyeTransform.Rotation.X, maxLookDown, maxLookUp);
-				eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
+				eyeTransform.Rotation = new Quaternion(new Vector3(clampedRoll, eyeTransform.EulerAngles.YZ));
 			}
 
 			{
-				float rightAxisY = Input.GetGamepadAxis(Gamepad.AxisRightY);
+				float rightAxisY = Input.GetGamepadAxis(GamepadAxis.RightY);
 				if (rightAxisY < -controllerDeadzone || rightAxisY > controllerDeadzone)
 				{
 					Transform eyeTransform = eyes.transform;
 					float deltaRoll = -rightAxisY * controllerVerticalRotationSpeed * Time.DeltaTime;
 					eyeTransform.Rotate(deltaRoll, 0f, 0f);
 					float clampedRoll = Mathf.Clamp(eyeTransform.Rotation.X, maxLookDown, maxLookUp);
-					eyeTransform.Rotation = new Vector3(clampedRoll, eyeTransform.Rotation.YZ);
+					eyeTransform.Rotation = new Quaternion(new Vector3(clampedRoll, eyeTransform.EulerAngles.YZ));
 				}
 			}
 		}
@@ -113,7 +113,7 @@ namespace Sandbox.Shooter {
 
 		void MoveForwardBackward()
 		{
-			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			float axisLeftY = Input.GetGamepadAxis(GamepadAxis.LeftY);
 			Vector3 speed = Vector3.Zero;
 
 			int randomInt = Random.Int(0, 1);
@@ -134,7 +134,7 @@ namespace Sandbox.Shooter {
 			}
 
 			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
-			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+			bool leftStickPressed = Input.IsGamepadButtonDown(GamepadButton.LeftStick);
 
 			float modifier = (leftShiftPressed || leftStickPressed) ? runSpeed : walkSpeed;
 			controller.Move(speed * modifier * Time.DeltaTime);
@@ -142,7 +142,7 @@ namespace Sandbox.Shooter {
 
 		void Strafe()
 		{
-			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			float axisLeftX = Input.GetGamepadAxis(GamepadAxis.LeftX);
 			Vector3 speed = Vector3.Zero;
 
 			int randomInt = Random.Int(0, 1);
@@ -163,7 +163,7 @@ namespace Sandbox.Shooter {
 			}
 
 			bool leftShiftPressed = Input.IsKeyDown(KeyCode.LeftShift);
-			bool leftStickPressed = Input.IsGamepadButtonDown(Gamepad.LeftStick);
+			bool leftStickPressed = Input.IsGamepadButtonDown(GamepadButton.LeftStick);
 
 			float modifier = (leftShiftPressed || leftStickPressed) ? runStrafeSpeed : strafeSpeed;
 			controller.Move(speed * modifier * Time.DeltaTime);
@@ -172,7 +172,7 @@ namespace Sandbox.Shooter {
 		void Jump()
 		{
 			bool spacePressed = Input.IsKeyDown(KeyCode.Space);
-			bool aButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonA);
+			bool aButtonPressed = Input.IsGamepadButtonDown(GamepadButton.A);
 
 			isGrounded = Physics.Raycast(transform.Translation + Vector3.Down * capsuleCollider.Height, Vector3.Down, 0.05f, out RaycastHit hitInfo);
 

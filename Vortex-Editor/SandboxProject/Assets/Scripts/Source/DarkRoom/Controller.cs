@@ -104,10 +104,10 @@ namespace Sandbox.DarkRoom {
 
 			float deltaRoll = mouseDelta.Y * verticalRotationSpeed * Time.DeltaTime;
 			float deltaPitch = -mouseDelta.X * horizontalRotationSpeed * Time.DeltaTime;
-			rigidbody.Rotate(0, deltaPitch, 0);
+			transform.Rotate(0, deltaPitch, 0);
 			eyes.transform.Rotate(deltaRoll, 0, 0);
-			float clampedRoll = Mathf.Clamp(eyes.transform.Rotation.X, maxLookDown, maxLookUp);
-			eyes.transform.Rotation = new Vector3(clampedRoll, eyes.transform.Rotation.YZ);
+			float clampedRoll = Mathf.Clamp(eyes.transform.EulerAngles.X, maxLookDown, maxLookUp);
+			eyes.transform.Rotation = new Quaternion(new Vector3(clampedRoll, eyes.transform.EulerAngles.YZ));
 		}
 
 		void Jump()

@@ -7,7 +7,7 @@ namespace Sandbox {
 	{
 		protected override void OnUpdate(float delta)
 		{
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonY))
+			if (Input.IsGamepadButtonDown(GamepadButton.A))
 				SceneManager.LoadScene("Platformer2");
 		}
 

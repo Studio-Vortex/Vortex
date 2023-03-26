@@ -59,7 +59,7 @@ namespace Sandbox {
 
 		void ProcessDelivery()
 		{
-			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + transform.Up.XY, out RayCastHit2D hit);
+			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + transform.Up.XY, out RaycastHit2D hit);
 			
 			if (other.Marker == "Package" && !hasPackage)
 			{

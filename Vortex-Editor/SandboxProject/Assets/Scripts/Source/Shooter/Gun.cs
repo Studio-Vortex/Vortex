@@ -22,9 +22,9 @@ namespace Sandbox.Shooter.Weapons {
 		static BulletPool bulletPool;
 
 		Vector3 startPosition;
-		Vector3 startRotation;
+		Quaternion startRotation;
 		Vector3 zoomedPosition;
-		Vector3 zoomedRotation;
+		Quaternion zoomedRotation;
 
 		Camera camera;
 
@@ -89,7 +89,7 @@ namespace Sandbox.Shooter.Weapons {
 		void ProcessZoom()
 		{
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
-			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
+			bool leftTriggerPressed = Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > 0f;
 
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
@@ -111,8 +111,8 @@ namespace Sandbox.Shooter.Weapons {
 		{
 			bool leftMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Left);
 			bool leftMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Left);
-			bool rightTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > 0f;
-			bool rightTriggerReleased = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) == -1;
+			bool rightTriggerPressed = Input.GetGamepadAxis(GamepadAxis.RightTrigger) > 0f;
+			bool rightTriggerReleased = Input.GetGamepadAxis(GamepadAxis.RightTrigger) == -1;
 			bool waitTimeOver = timeToWait <= 0f;
 
 			if ((leftMouseButtonPressed || rightTriggerPressed) && waitTimeOver)
@@ -176,8 +176,8 @@ namespace Sandbox.Shooter.Weapons {
 			bullet.transform.Translation = transform.worldTransform.Translation;
 			bullet.transform.Scale *= 0.25f;
 
-			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
-			meshRenderer.Type = MeshType.Sphere;
+			StaticMeshRenderer meshRenderer = bullet.AddComponent<StaticMeshRenderer>();
+			meshRenderer.MeshType = MeshType.Sphere;
 			Material material = meshRenderer.GetSubmesh(0).Material;
 			material.Albedo = Color.Red;
 
@@ -209,7 +209,7 @@ namespace Sandbox.Shooter.Weapons {
 				return;
 
 			bool rKeyPressed = Input.IsKeyDown(KeyCode.R);
-			bool yButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonY);
+			bool yButtonPressed = Input.IsGamepadButtonDown(GamepadButton.Y);
 
 			if (rKeyPressed || yButtonPressed)
 			{

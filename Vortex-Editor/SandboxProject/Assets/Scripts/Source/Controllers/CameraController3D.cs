@@ -14,56 +14,52 @@ namespace Sandbox {
 		
 		public bool FixedRotation;
 
-		private Vector3 m_Velocity;
-		private Vector3 m_Rotation;
+		private Vector3 Velocity;
+		private Vector3 Rotation;
 
 		void OnUpdate(float delta)
 		{
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? RunSpeed : WalkSpeed;
+			Vector3 speed = Input.IsGamepadButtonDown(GamepadButton.LeftStick) ? RunSpeed : WalkSpeed;
 
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonStart))
+			if (Input.IsGamepadButtonDown(GamepadButton.Start))
 				Application.Quit();
 
-			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+			if (Input.GetGamepadAxis(GamepadAxis.LeftY) < -ControllerDeadzone)
+				Velocity += -transform.Forward * Input.GetGamepadAxis(GamepadAxis.LeftY);
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftY) > ControllerDeadzone)
+				Velocity += -transform.Forward * Input.GetGamepadAxis(GamepadAxis.LeftY);
 
-			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				transform.Translate(transform.Right * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				transform.Translate(transform.Right * speed * delta * Input.GetGamepadAxis(Gamepad.AxisLeftX));
+			if (Input.GetGamepadAxis(GamepadAxis.LeftX) < -ControllerDeadzone)
+				Velocity += transform.Right * Input.GetGamepadAxis(GamepadAxis.LeftX);
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftX) > ControllerDeadzone)
+				Velocity += transform.Right * Input.GetGamepadAxis(GamepadAxis.LeftX);
 
-			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
-				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > ControllerDeadzone)
-				m_Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
+			if (Input.GetGamepadAxis(GamepadAxis.RightTrigger) > ControllerDeadzone)
+				Velocity.Y += 1.0f * Input.GetGamepadAxis(GamepadAxis.RightTrigger);
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > ControllerDeadzone)
+				Velocity.Y += -1.0f * Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 
-			if (!FixedRotation)
-				ProcessRotation();
+			ProcessRotation();
 
-			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
-				m_Velocity *= ShiftModifer;
+			Velocity *= speed * delta;
+			Rotation *= RotationSpeed * delta;
 
-			m_Velocity *= speed * delta;
-			m_Rotation *= RotationSpeed * delta;
-
-			transform.Translation += m_Velocity;
-			transform.Rotation += m_Rotation;
+			transform.Translation += Velocity;
+			transform.Rotation *= new Quaternion(Rotation);
 		}
 
 		void ProcessRotation()
 		{
-			float rightAxisX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
+			float rightAxisX = -Input.GetGamepadAxis(GamepadAxis.RightX);
 			if (rightAxisX < -ControllerDeadzone || rightAxisX > ControllerDeadzone)
-				m_Rotation.Y = rightAxisX;
+				Rotation.Y = rightAxisX;
 
-			float rightAxisY = -Input.GetGamepadAxis(Gamepad.AxisRightY);
+			float rightAxisY = -Input.GetGamepadAxis(GamepadAxis.RightY);
 			if (rightAxisY < -ControllerDeadzone || rightAxisY > ControllerDeadzone)
-				m_Rotation.X = rightAxisY;
+				Rotation.X = rightAxisY;
 
 			float roll = Mathf.Clamp(transform.Rotation.X, MaxRoll_Down, MaxRoll_Up);
-			transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
+			transform.Rotation *= new Quaternion(new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z));
 		}
 	}
 

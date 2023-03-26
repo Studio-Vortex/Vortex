@@ -26,7 +26,7 @@ namespace Sandbox.Shooter.Menu {
 		void OnGameStart()
 		{
 			bool enterKeyPressed = Input.IsKeyDown(KeyCode.Enter);
-			bool startButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonStart);
+			bool startButtonPressed = Input.IsGamepadButtonDown(GamepadButton.Start);
 
 			if (enterKeyPressed || startButtonPressed && !started)
 			{

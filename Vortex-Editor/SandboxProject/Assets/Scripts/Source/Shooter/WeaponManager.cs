@@ -66,7 +66,7 @@ namespace Sandbox.Shooter.Weapons {
 
 		void SwitchWeaponOnScroll()
 		{
-			Vector2 scrollDelta = Input.GetMouseScrollDelta();
+			Vector2 scrollDelta = Input.GetMouseWheelMovement();
 
 			if (scrollDelta.Y > 0)
 			{
@@ -82,17 +82,17 @@ namespace Sandbox.Shooter.Weapons {
 
 		void SwitchWeaponGamepad()
 		{
-			if (Input.IsGamepadButtonDown(Gamepad.Up))
+			if (Input.IsGamepadButtonDown(GamepadButton.Up))
 			{
 				SwitchWeapon(WeaponType.None);
 				currentWeapon = (int)WeaponType.None;
 			}
-			if (Input.IsGamepadButtonDown(Gamepad.Left))
+			if (Input.IsGamepadButtonDown(GamepadButton.Left))
 			{
 				SwitchWeapon(WeaponType.Pistol);
 				currentWeapon = (int)WeaponType.Pistol;
 			}
-			if (Input.IsGamepadButtonDown(Gamepad.Right))
+			if (Input.IsGamepadButtonDown(GamepadButton.Right))
 			{
 				SwitchWeapon(WeaponType.Rifle);
 				currentWeapon = (int)WeaponType.Rifle;

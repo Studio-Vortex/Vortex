@@ -25,11 +25,11 @@ namespace Sandbox {
 
 		void ProcessMovement(float delta)
 		{
-			float axisLeftTrigger = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
+			float axisLeftTrigger = Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 			if (axisLeftTrigger > Deadzone)
 				Velocity = transform.Forward * MoveSpeed * delta * axisLeftTrigger;
 
-			float axisRightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
+			float axisRightTrigger = Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 			if (axisRightTrigger > Deadzone)
 				Velocity = transform.Forward * MoveSpeed * delta * axisRightTrigger;
 		}
@@ -37,18 +37,18 @@ namespace Sandbox {
 		void ProcessRotation(float delta)
 		{
 			// left right rotation
-			float axisLeftX = Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			float axisLeftX = Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 			if (axisLeftX > Deadzone || axisLeftX < -Deadzone)
 				Rotation = transform.Forward * RotationSpeed * delta * axisLeftX;
 
 			// up down rotation
-			float axisLeftY = Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			float axisLeftY = Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 			if (axisLeftY > Deadzone || axisLeftY < -Deadzone)
 				Rotation = transform.Right * RotationSpeed * delta * axisLeftY;
 
-			if (Input.IsGamepadButtonDown(Gamepad.LeftBumper))
+			if (Input.IsGamepadButtonDown(GamepadButton.LeftBumper))
 				Rotation = transform.Up * RotationSpeed * delta;
-			if (Input.IsGamepadButtonDown(Gamepad.RightBumper))
+			if (Input.IsGamepadButtonDown(GamepadButton.RightBumper))
 				Rotation = transform.Up * -RotationSpeed * delta;
 		}
 	}

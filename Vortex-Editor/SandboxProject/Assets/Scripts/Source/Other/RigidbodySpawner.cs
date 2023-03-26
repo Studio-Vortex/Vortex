@@ -8,7 +8,7 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float deltaTime)
 		{
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonA) && !m_Done)
+			if (Input.IsGamepadButtonDown(GamepadButton.A) && !m_Done)
 			{
 				CreateRigidbodies();
 				m_Done = true;

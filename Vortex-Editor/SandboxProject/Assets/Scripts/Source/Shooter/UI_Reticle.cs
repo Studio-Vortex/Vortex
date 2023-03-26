@@ -26,7 +26,7 @@ namespace Sandbox.Shooter {
 				return;
 
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
-			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
+			bool leftTriggerPressed = Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > 0f;
 
 			if (!rightMouseButtonPressed && !leftTriggerPressed)
 			{

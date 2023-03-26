@@ -26,7 +26,7 @@ namespace Sandbox {
 			ProcessInput(delta);
 		}
 
-		protected override void OnCollisionBegin()
+		protected override void OnCollisionEnter(Collision other)
 		{
 			Log.Info("Collision Occurred!");
 		}

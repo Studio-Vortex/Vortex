@@ -49,7 +49,7 @@ namespace Sandbox {
 			if (Input.IsKeyDown(KeyCode.E))
 				m_Camera.DistanceToPlayer -= 2.0f * delta;
 
-			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + Vector2.Down, out RayCastHit2D hit, ShowRaycast);
+			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + Vector2.Down, out RaycastHit2D hit, ShowRaycast);
 
 			if (hit.Hit)
 			{

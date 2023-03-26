@@ -30,7 +30,7 @@ namespace Sandbox {
 			float circleRadius = m_CircleCollider.Radius;
 
 			float upPoint = currentY + circleRadius;
-			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), out RayCastHit2D hit, ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, upPoint), out RaycastHit2D hit, ShowRaycasts);
 
 			if (hit.Hit)
 			{
@@ -39,7 +39,7 @@ namespace Sandbox {
 			}
 
 			float downPoint = currentY - circleRadius;
-			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), out RayCastHit2D hit1, ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(currentX, downPoint), out RaycastHit2D hit1, ShowRaycasts);
 
 			if (hit1.Hit)
 			{
@@ -48,7 +48,7 @@ namespace Sandbox {
 			}
 
 			float leftPoint = currentX - circleRadius;
-			Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), out RayCastHit2D hit2, ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(leftPoint, currentY), out RaycastHit2D hit2, ShowRaycasts);
 
 			if (hit2.Hit)
 			{
@@ -57,7 +57,7 @@ namespace Sandbox {
 			}
 
 			float rightPoint = currentX + circleRadius;
-			Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), out RayCastHit2D hit3, ShowRaycasts);
+			Physics2D.Raycast(transform.Translation.XY, new Vector2(rightPoint, currentY), out RaycastHit2D hit3, ShowRaycasts);
 
 			if (hit3.Hit)
 			{

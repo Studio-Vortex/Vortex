@@ -52,9 +52,9 @@ namespace Sandbox.SuperCapsule {
 
 		void ResetPlayerIfNeeded()
 		{
-			if (rigidbody.Translation.Y < resetPoint)
+			if (transform.Translation.Y < resetPoint)
 			{
-				rigidbody.Translation = startPosition;
+				transform.Translation = startPosition;
 			}
 		}
 	}
