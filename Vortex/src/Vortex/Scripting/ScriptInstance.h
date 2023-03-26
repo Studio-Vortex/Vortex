@@ -4,16 +4,18 @@
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 #include "Vortex/Core/Math/Math.h"
 
-#include "Vortex/Scripting/ScriptFieldInstance.h"
-#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scene/Entity.h"
+
 #include "Vortex/Scripting/ScriptClass.h"
+#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scripting/ScriptFieldInstance.h"
 
 #include <unordered_map>
 #include <string>
 
 namespace Vortex {
 
-	class Entity;
+	class ScriptEngine;
 	struct Collision;
 
 	class VORTEX_API ScriptInstance : public RefCounted
@@ -80,7 +82,6 @@ namespace Vortex {
 
 	private:
 		friend class ScriptEngine;
-		friend struct ScriptFieldInstance;
 	};
 
 }

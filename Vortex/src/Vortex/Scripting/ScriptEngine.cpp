@@ -5,6 +5,9 @@
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Buffer.h"
 #include "Vortex/Scripting/ScriptRegistry.h"
+#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ScriptFieldInstance.h"
+#include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Scene/Components.h"
@@ -22,7 +25,7 @@
 
 namespace Vortex {
 
-	struct ScriptEngineData
+	struct ScriptEngineInternalData
 	{
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
@@ -52,16 +55,15 @@ namespace Vortex {
 		Scene* ContextScene = nullptr;
 	};
 
-	static ScriptEngineData* s_Data = nullptr;
+	static ScriptEngineInternalData* s_Data = nullptr;
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
 	{
 		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
 		{
-			// Add reload to main thread queue
-
 			s_Data->AssemblyReloadPending = true;
 
+			// Add reload to main thread queue
 			Application::Get().SubmitToMainThreadQueue([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
@@ -74,7 +76,7 @@ namespace Vortex {
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScriptEngineData();
+		s_Data = new ScriptEngineInternalData();
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
@@ -265,7 +267,7 @@ namespace Vortex {
 
 		for (const auto& [name, fieldInstance] : fields)
 		{
-			instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+			instance->SetFieldValueInternal(name, fieldInstance.GetDataBuffer());
 		}
 	}
 
@@ -551,7 +553,8 @@ namespace Vortex {
 					if (displayClassNames)
 						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, ScriptUtils::ScriptFieldTypeToString(fieldType));
 
-					scriptClass->m_Fields[fieldName] = ScriptField(fieldType, fieldName, classField);
+					ScriptField scriptField = { fieldType, fieldName, classField };
+					scriptClass->SetField(fieldName, scriptField);
 				}
 			}
 		}

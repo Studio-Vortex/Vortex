@@ -30,12 +30,15 @@ namespace Vortex {
 			memcpy(m_Buffer, &value, sizeof(TFieldType));
 		}
 
-	private:
-		uint8_t m_Buffer[VX_SCRIPT_FIELD_MAX_BYTES];
+		const void* GetDataBuffer() const
+		{
+			return (const void*)m_Buffer;
+		}
+
+		constexpr size_t BufferSize() const { return VX_SCRIPT_FIELD_MAX_BYTES; }
 
 	private:
-		friend class ScriptEngine;
-		friend class ScriptInstance;
+		uint8_t m_Buffer[VX_SCRIPT_FIELD_MAX_BYTES];
 	};
 
 }

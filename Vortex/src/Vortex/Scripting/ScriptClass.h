@@ -27,7 +27,14 @@ namespace Vortex {
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
 
-		VX_FORCE_INLINE std::map<std::string, ScriptField> GetFields() { return m_Fields; }
+		const std::string& GetClassNamespace() const;
+		const std::string& GetClassName() const;
+
+		VX_FORCE_INLINE const std::map<std::string, ScriptField>& GetFields() const { return m_Fields; }
+		VX_FORCE_INLINE std::map<std::string, ScriptField>& GetFields() { return m_Fields; }
+		ScriptField& GetField(const std::string& fieldName);
+		const ScriptField& GetField(const std::string& fieldName) const;
+		void SetField(const std::string& fieldName, const ScriptField& scriptField);
 		VX_FORCE_INLINE MonoClass* GetMonoClass() const { return m_MonoClass; }
 
 	private:
@@ -37,9 +44,6 @@ namespace Vortex {
 		std::map<std::string, ScriptField> m_Fields;
 
 		MonoClass* m_MonoClass = nullptr;
-
-	private:
-		friend class ScriptEngine;
 	};
 
 }
