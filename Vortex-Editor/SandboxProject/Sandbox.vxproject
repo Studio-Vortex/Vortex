@@ -2,24 +2,46 @@ Project:
   General:
     Name: Sandbox
     AssetDirectory: Assets
-    StartScene: Scenes\TestScene2.vortex
+    AssetRegistry: AssetRegistry.vxr
+    StartScene: Scenes\Sponza.vortex
+  BuildProperties:
+    Window:
+      Size: [800, 600]
+      ForceSixteenByNine: false
+      Maximized: false
+      Decorated: false
+      Resizeable: false
+    ScenesInBuild:
+      []
   RendererProperties:
     TriangleCullMode: Back
-    EnvironmentMapResolution: 1024
-    PrefilterMapResolution: 128
+    EnvironmentMapResolution: 512
+    PrefilterMapResolution: 512
     ShadowMapResolution: 8192
     Exposure: 1
-    Gamma: 1.5
+    Gamma: 2.20000005
+    BloomThreshold: [0.212599993, 0.715200007, 0.0722000003]
+    BloomSampleSize: 5
+    RenderFlags: 2
     UseVSync: true
-    DisplaySceneIconsInEditor: true
+    DisplaySceneIconsInEditor: false
   PhysicsProperties:
-    Physics3DColliderColor: [0, 1, 0, 1]
-    BroadphaseModel: AutomaticBoxPrune
-    FrictionModel: Patch
-    Physics2DColliderColor: [0.172549024, 0.592156887, 0.654901981, 1]
     ShowPhysicsColliders: false
+    Physics3D:
+      BroadphaseModel: AutomaticBoxPrune
+      FrictionModel: Patch
+      ColliderColor: [0, 1, 0, 1]
+      Gravity: [0, -9.81000042, 0]
+      SolverPositionIterations: 8
+      SolverVelocityIterations: 2
+    Physics2D:
+      ColliderColor: [0.172549024, 0.592156887, 0.654901981, 1]
+      Gravity: [0, -9.81000042]
+      PositionIterations: 2
+      VelocityIterations: 6
   ScriptingProperties:
     ScriptBinaryPath: Scripts/Binaries/Sandbox.dll
+    DebugListenerPort: 2550
     EnableMonoDebugging: false
     ReloadAssemblyOnPlay: false
   EditorProperties:
@@ -28,11 +50,13 @@ Project:
     DrawGridAxes: true
     DrawGrid: false
     MaximizeOnPlay: false
+    ShowBoundingBoxes: false
     MuteAudioSources: false
   GizmoProperties:
     DrawGrid: false
     Enabled: true
     GridSize: 1
+    GizmoSize: 1
     IsOrthographic: false
     RotationSnapValue: 45
     SnapEnabled: true
