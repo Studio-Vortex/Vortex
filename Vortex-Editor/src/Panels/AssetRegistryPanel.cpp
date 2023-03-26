@@ -26,6 +26,13 @@ namespace Vortex {
 			{
 				m_AssetSearchTextFilter.Build();
 			}
+			Gui::SameLine();
+			if (Gui::Button("Reload All Assets"))
+			{
+				Project::GetEditorAssetManager()->ReloadAssets();
+				VX_CONSOLE_LOG_INFO("All assets reloaded sucessfully");
+			}
+
 			UI::Draw::Underline();
 			Gui::Spacing();
 
@@ -45,30 +52,21 @@ namespace Vortex {
 					continue;
 
 				Gui::Text("AssetHandle: %s", handleAsString.c_str());
-				Gui::Text("Filepath: %s", filepath.c_str());
-				Gui::Text("Type: %s", typeAsString.c_str());
-				Gui::Text("IsDataLoaded: %s", metadata.IsDataLoaded ? "true" : "false");
-				Gui::Text("IsMemoryOnly: %s", metadata.IsMemoryOnly ? "true" : "false");
+				Gui::SameLine();
 				std::string buttonName = "Reload##" + handleAsString + typeAsString;
 				if (Gui::Button(buttonName.c_str()))
 				{
 					Project::GetEditorAssetManager()->ReloadData(metadata.Handle);
 					VX_CONSOLE_LOG_INFO("Asset Reloaded: Handle: '{}', Path: '{}'", handleAsString, filepath);
 				}
+				Gui::Text("Filepath: %s", filepath.c_str());
+				Gui::Text("Type: %s", typeAsString.c_str());
+				Gui::Text("IsDataLoaded: %s", metadata.IsDataLoaded ? "true" : "false");
+				Gui::Text("IsMemoryOnly: %s", metadata.IsMemoryOnly ? "true" : "false");
 
 				UI::Draw::Underline();
 				for (uint32_t i = 0; i < 2; i++)
 					Gui::Spacing();
-			}
-
-			Gui::EndChild();
-		}
-		
-		if (Gui::BeginChild("Debug Tools"))
-		{
-			if (Gui::Button("Reload All Assets"))
-			{
-				Project::GetEditorAssetManager()->ReloadAssets();
 			}
 
 			Gui::EndChild();

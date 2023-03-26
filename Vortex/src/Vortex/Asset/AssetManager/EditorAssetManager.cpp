@@ -312,7 +312,7 @@ namespace Vortex {
 
 	void EditorAssetManager::LoadAssetRegistry()
 	{
-		VX_CORE_INFO("[Asset Manager] Loading Asset Registry");
+		VX_CONSOLE_LOG_INFO("[Asset Manager] Loading Asset Registry");
 
 		if (!FileSystem::Exists(m_ProjectAssetRegistryPath))
 			return;
@@ -327,7 +327,7 @@ namespace Vortex {
 		auto assetHandles = data["Assets"];
 		if (!assetHandles)
 		{
-			VX_CORE_ERROR("Asset Registry was corrupted!");
+			VX_CONSOLE_LOG_ERROR("Asset Registry was corrupted!");
 			VX_CORE_ASSERT(false, "");
 			return;
 		}
@@ -354,7 +354,7 @@ namespace Vortex {
 
 			if (!FileSystem::Exists(GetFileSystemPath(metadata)))
 			{
-				VX_CORE_INFO("[Asset Manager] Missing Asset '{}' detected in registry file, trying to locate...", metadata.Filepath);
+				VX_CONSOLE_LOG_INFO("[Asset Manager] Missing Asset '{}' detected in registry file, trying to locate...", metadata.Filepath);
 
 				std::string mostLikelyCandidate;
 				uint32_t bestScore = 0;
@@ -370,7 +370,7 @@ namespace Vortex {
 
 					if (bestScore > 0)
 					{
-						VX_CORE_WARN("[Asset Manager] Multiple candidates found...");
+						VX_CONSOLE_LOG_WARN("[Asset Manager] Multiple candidates found...");
 					}
 
 					std::vector<std::string> candidateParts = String::SplitString(path.string(), "/\\");
@@ -383,7 +383,7 @@ namespace Vortex {
 							score++;
 					}
 
-					VX_CORE_WARN("'{}' has a score of {}, best score is {}", path.string(), score, bestScore);
+					VX_CONSOLE_LOG_WARN("'{}' has a score of {}, best score is {}", path.string(), score, bestScore);
 
 					if (bestScore > 0 && score == bestScore)
 					{
@@ -399,25 +399,25 @@ namespace Vortex {
 
 				if (mostLikelyCandidate.empty() && bestScore == 0)
 				{
-					VX_CORE_ERROR("[Asset Manager] Failed to locate a potential match for '{}'", metadata.Filepath);
+					VX_CONSOLE_LOG_ERROR("[Asset Manager] Failed to locate a potential match for '{}'", metadata.Filepath);
 					continue;
 				}
 
 				std::replace(mostLikelyCandidate.begin(), mostLikelyCandidate.end(), '\\', '/');
 				metadata.Filepath = FileSystem::Relative(mostLikelyCandidate, m_ProjectAssetDirectory);
-				VX_CORE_WARN("[Asset Manager] Found most likely match '{}'", metadata.Filepath);
+				VX_CONSOLE_LOG_WARN("[Asset Manager] Found most likely match '{}'", metadata.Filepath);
 			}
 
 			if (metadata.Handle == 0)
 			{
-				VX_CORE_WARN("[Asset Manager] AssetHandle for '{}' is 0, this shouldn't happen", metadata.Filepath);
+				VX_CONSOLE_LOG_WARN("[Asset Manager] AssetHandle for '{}' is 0, this shouldn't happen", metadata.Filepath);
 				continue;
 			}
 
 			m_AssetRegistry[metadata.Handle] = metadata;
 		}
 
-		VX_CORE_INFO("[Asset Manager] Loaded {} asset entries", m_AssetRegistry.Count());
+		VX_CONSOLE_LOG_INFO("[Asset Manager] Loaded {} asset entries", m_AssetRegistry.Count());
 	}
 
 	void EditorAssetManager::ProcessDirectory(const std::filesystem::path& directory)

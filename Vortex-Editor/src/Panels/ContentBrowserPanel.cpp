@@ -109,7 +109,6 @@ namespace Vortex {
 					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", "NewMaterial.vmaterial", pbrStaticShader, MaterialProperties());
 					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
-					AssetImporter::Serialize(materialAsset);
 
 					Gui::CloseCurrentPopup();
 				}

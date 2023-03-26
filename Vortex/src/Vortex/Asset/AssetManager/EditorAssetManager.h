@@ -78,6 +78,8 @@ namespace Vortex {
 			m_LoadedAssets[metadata.Handle] = asset;
 			AssetImporter::Serialize(asset);
 
+			VX_CONSOLE_LOG_INFO("New Asset Created: Handle: '{}', Path: '{}'", metadata.Handle, metadata.Filepath.string());
+
 			return asset;
 		}
 

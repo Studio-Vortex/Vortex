@@ -304,16 +304,16 @@ namespace Vortex {
 		AssetHandle materialHandle = 0;
 		std::string materialName = m_MaterialNames[submeshIndex];
 
-		std::string filename = "Materials/" + materialName + ".vmaterial";
-		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filename);
-		if (metadata.IsValid())
+		std::string filename = materialName + ".vmaterial";
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata("Materials/" + filename);
+		if (AssetManager::IsHandleValid(metadata.Handle))
 		{
-			materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filename);
-			m_MaterialHandles[submeshIndex] = materialHandle;
+			materialHandle = metadata.Handle;
+			m_MaterialHandles[submeshIndex] = metadata.Handle;
 		}
-
-		if (!AssetManager::IsHandleValid(materialHandle))
+		else
 		{
+			// Create new asset
 			MaterialProperties materialProps;
 			materialProps.AlbedoMap = materialTextures[0];
 			materialProps.NormalMap = materialTextures[1];
@@ -323,11 +323,10 @@ namespace Vortex {
 			materialProps.AmbientOcclusionMap = materialTextures[5];
 
 			SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
-
 			SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, materialProps);
 			VX_CORE_ASSERT(AssetManager::IsHandleValid(material->Handle), "Invalid asset handle!");
+			
 			material->SetName(materialName);
-			AssetImporter::Serialize(material);
 			materialHandle = material->Handle;
 			m_InitialMaterialHandles[submeshIndex] = materialHandle;
 		}
@@ -475,18 +474,40 @@ namespace Vortex {
 
 	void StaticMesh::LoadMaterialTable(SharedReference<MaterialTable>& materialTable)
 	{
-		std::unordered_map<uint32_t, AssetHandle> materialHandles;
+		uint32_t currentSubmeshIndex = 0;
+		uint32_t materialCount = m_InitialMaterialHandles.size() + m_MaterialHandles.size();
 
-		if (m_MaterialHandles.empty())
+		// TODO how should we handle this?
+		VX_CORE_ASSERT(materialCount == m_Submeshes.size(), "Size mismatch!");
+
+		const bool sizeMismatch = materialCount != m_Submeshes.size();
+		if (sizeMismatch)
 		{
-			materialHandles = m_InitialMaterialHandles;
-		}
-		else
-		{
-			materialHandles = m_MaterialHandles;
+			if (!m_MaterialHandles.empty())
+			{
+				m_InitialMaterialHandles.clear();
+				materialCount = m_MaterialHandles.size();
+			}
 		}
 
-		for (const auto& [submeshIndex, materialHandle] : materialHandles)
+		std::unordered_map<uint32_t, AssetHandle> handles;
+
+		while (currentSubmeshIndex < materialCount)
+		{
+			AssetHandle initalHandle = m_InitialMaterialHandles[currentSubmeshIndex];
+			AssetHandle userSetHandle = m_MaterialHandles[currentSubmeshIndex];
+
+			if (AssetManager::IsHandleValid(initalHandle))
+				handles[currentSubmeshIndex] = initalHandle;
+			else if (AssetManager::IsHandleValid(userSetHandle))
+				handles[currentSubmeshIndex] = userSetHandle;
+
+			VX_CORE_ASSERT(handles.contains(currentSubmeshIndex), "Failed to find material for submesh!");
+
+			currentSubmeshIndex++;
+		}
+
+		for (const auto& [submeshIndex, materialHandle] : handles)
 		{
 			materialTable->SetMaterial(submeshIndex, materialHandle);
 		}
