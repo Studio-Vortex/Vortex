@@ -1031,7 +1031,9 @@ namespace Vortex {
 					Math::mat4 result = Math::LookAt(FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
 					Math::vec3 translation, scale;
 					Math::quaternion rotation;
-					Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
+					Math::vec3 skew;
+					Math::vec4 perspective;
+					Math::Decompose(Math::Inverse(result), scale, rotation, translation, skew, perspective);
 					physxTransform.q = ToPhysXQuat(rotation);
 
 					actor->setGlobalPose(physxTransform);
@@ -1045,7 +1047,9 @@ namespace Vortex {
 			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
 			Math::vec3 translation, scale;
 			Math::quaternion rotation;
-			Math::DecomposeTransform(Math::Inverse(result), translation, rotation, scale);
+			Math::vec3 skew;
+			Math::vec4 perspective;
+			Math::Decompose(Math::Inverse(result), scale, rotation, translation, skew, perspective);
 			transform.SetRotation(rotation);
 		}
 
@@ -1089,9 +1093,13 @@ namespace Vortex {
 		{
 			Math::mat4 transform = a->GetTransform() * b->GetTransform();
 			TransformComponent& out = *outTransform;
-			Math::quaternion orientation;
-			Math::DecomposeTransform(transform, out.Translation, orientation, out.Scale);
-			outTransform->SetRotation(orientation);
+
+			Math::vec3 translation, scale;
+			Math::quaternion rotation;
+			Math::vec3 skew;
+			Math::vec4 perspective;
+			Math::Decompose(transform, out.Scale, rotation, out.Translation, skew, perspective);
+			outTransform->SetRotation(rotation);
 		}
 
 #pragma endregion
@@ -6630,9 +6638,13 @@ namespace Vortex {
 		{
 			Math::vec3 up{ 0.0f, 1.0f, 0.0f };
 			Math::mat4 transform = Math::LookAt(*eyePos, *worldPoint, up);
-			Math::vec3 translation, rotation, scale;
-			Math::DecomposeTransform(transform, translation, rotation, scale);
-			*outRotation = rotation;
+
+			Math::vec3 translation, scale;
+			Math::quaternion rotation;
+			Math::vec3 skew;
+			Math::vec4 perspective;
+			Math::Decompose(transform, scale, rotation, translation, skew, perspective);
+			*outRotation = Math::EulerAngles(rotation);
 		}
 
 		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result)
