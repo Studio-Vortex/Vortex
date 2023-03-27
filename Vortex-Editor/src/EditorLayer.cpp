@@ -2193,24 +2193,97 @@ namespace Vortex {
 
 	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
 	{
+		if (!m_SceneViewportHovered && !m_SecondViewportHovered)
+			return false;
+
+		if (ImGuizmo::IsOver())
+			return false;
+
+		if (e.GetMouseButton() != MouseButton::Left)
+			return false;
+
 		const bool altPressed = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
-		const bool rightMouseButtonPressed = Input::IsMouseButtonDown(MouseButton::Right);
 
-		switch (e.GetMouseButton())
+		if (altPressed)
+			return false;
+
+		// TODO we should handle this in a better way
+		if (m_HoveredEntity && m_HoveredEntity.HasAny<SpriteRendererComponent, CircleRendererComponent, TextMeshComponent, CameraComponent, LightSourceComponent, AudioSourceComponent>())
 		{
-			case MouseButton::Left:
+			SelectionManager::SetSelectedEntity(m_HoveredEntity);
+			return false;
+		}
+
+		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		{
+			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
+
+			std::vector<UUID> selectedEntities;
+
+			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
+			for (const auto e : meshView)
 			{
-				const bool allowedToClick = !ImGuizmo::IsOver() && !altPressed && !rightMouseButtonPressed;
+				Entity entity{ e, m_ActiveScene.Raw() };
 
-				if (((m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered) && allowedToClick)
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			}
+
+			auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
+			for (const auto e : staticMeshView)
+			{
+				Entity entity{ e, m_ActiveScene.Raw() };
+				
+				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
+					continue;
+
+				auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+				if (!staticMesh)
+					continue;
+
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				uint32_t submeshIndex = 0;
+
+				while (staticMesh->HasSubmesh(submeshIndex))
 				{
-					SelectionManager::SetSelectedEntity(m_HoveredEntity);
+					const auto& submesh = submeshes.at(submeshIndex++);
 
-					if (SelectionManager::GetSelectedEntity() != Entity{})
-						m_SceneHierarchyPanel.EditSelectedEntityName(false);
+					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+					Math::Ray ray{
+						Math::Inverse(transform) * Math::vec4(origin, 1.0f),
+						Math::Inverse((Math::mat3(transform))) * direction
+					};
+
+					const Math::AABB& aabb = submesh.GetBoundingBox();
+
+					float t;
+					const bool intersects = ray.IntersectsAABB(aabb, t);
+					if (intersects)
+					{
+						selectedEntities.emplace_back(entity.GetUUID());
+						break;
+					}
 				}
+			}
 
-				break;
+			if (selectedEntities.empty())
+			{
+				SelectionManager::DeselectEntity();
+				return false;
+			}
+
+			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
+			if (anyViewportHovered)
+			{
+				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedEntities.front());
+				SelectionManager::SetSelectedEntity(selected);
+
+				if (SelectionManager::GetSelectedEntity() != Entity{})
+				{
+					m_SceneHierarchyPanel.EditSelectedEntityName(false);
+				}
 			}
 		}
 
@@ -2626,6 +2699,32 @@ namespace Vortex {
 			FileSystem::ReplaceExtension(copy, ".vortex");
 			filepath = copy.string();
 		}
+	}
+
+	std::pair<float, float> EditorLayer::GetMouseViewportSpace(bool mainViewport)
+	{
+		auto [mx, my] = Gui::GetMousePos();
+		const auto& viewportBounds = mainViewport ? m_ViewportBounds : m_SecondViewportBounds;
+		mx -= viewportBounds[0].x;
+		my -= viewportBounds[0].y;
+		auto viewportWidth = viewportBounds[1].x - viewportBounds[0].x;
+		auto viewportHeight = viewportBounds[1].y - viewportBounds[0].y;
+
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+	}
+
+	std::pair<Math::vec3, Math::vec3> EditorLayer::CastRay(EditorCamera* editorCamera, float mx, float my)
+	{
+		Math::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		auto inverseProj = Math::Inverse(editorCamera->GetProjectionMatrix());
+		auto inverseView = Math::Inverse(Math::mat3(editorCamera->GetViewMatrix()));
+
+		Math::vec4 ray = inverseProj * mouseClipPos;
+		Math::vec3 rayPos = editorCamera->GetPosition();
+		Math::vec3 rayDir = inverseView * Math::vec3(ray);
+
+		return { rayPos, rayDir };
 	}
 
 	void EditorLayer::OnNoGizmoSelected()

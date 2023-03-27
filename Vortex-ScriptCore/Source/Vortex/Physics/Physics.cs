@@ -37,6 +37,11 @@
 			set => InternalCalls.Physics_SetSceneVelocityIterations(value);
 		}
 
+		public static bool Raycast(Ray ray, float maxDistance, out RaycastHit hit)
+		{
+			return Raycast(ray.Origin, ray.Direction, maxDistance, out hit);
+		}
+
 		public static bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out RaycastHit hit)
 		{
 			return InternalCalls.Physics_Raycast(ref origin, ref direction, maxDistance, out hit);

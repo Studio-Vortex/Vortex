@@ -103,6 +103,9 @@ namespace Vortex {
 		void CaptureFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
+		std::pair<float, float> GetMouseViewportSpace(bool mainViewport);
+		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
+
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
 		EditorCamera* m_SecondEditorCamera = nullptr;

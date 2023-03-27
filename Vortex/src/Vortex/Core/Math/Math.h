@@ -34,18 +34,6 @@ namespace Vortex::Math {
 	static constexpr double PI_D = glm::pi<double>();
 	static constexpr float EPSILON = glm::epsilon<float>();
 
-	struct AABB
-	{
-		vec3 Min;
-		vec3 Max;
-
-		AABB()
-			: Min(0.0f), Max(0.0f) { }
-
-		AABB(const vec3& min, const vec3& max)
-			: Min(min), Max(max) { }
-	};
-
 	template <typename T>
 	static auto Deg2Rad(T degrees)
 	{

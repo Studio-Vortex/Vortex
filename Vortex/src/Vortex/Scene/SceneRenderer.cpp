@@ -455,7 +455,6 @@ namespace Vortex {
 			if (!lightSourceComponent.Visible)
 				continue;
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
 		}
 	}

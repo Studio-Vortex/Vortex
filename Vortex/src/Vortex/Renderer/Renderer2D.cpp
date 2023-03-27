@@ -1002,7 +1002,7 @@ namespace Vortex
 
 	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, SharedReference<Texture2D> texture, int entityID)
 	{
-		if (sprite.Texture)
+		if (texture)
 			DrawQuad(transform, texture, sprite.TextureUV, sprite.SpriteColor, entityID);
 		else
 			DrawQuad(transform, sprite.SpriteColor, entityID);

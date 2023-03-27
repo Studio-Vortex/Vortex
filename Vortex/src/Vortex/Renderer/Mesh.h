@@ -2,6 +2,7 @@
 
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/Math/AABB.h"
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Material.h"

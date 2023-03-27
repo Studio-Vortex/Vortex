@@ -483,7 +483,8 @@ namespace Vortex {
 		const bool sizeMismatch = materialCount != m_Submeshes.size();
 		if (sizeMismatch)
 		{
-			if (!m_MaterialHandles.empty())
+			const bool hasUserSetMaterials = !m_MaterialHandles.empty();
+			if (hasUserSetMaterials)
 			{
 				m_InitialMaterialHandles.clear();
 				materialCount = m_MaterialHandles.size();
@@ -499,7 +500,7 @@ namespace Vortex {
 
 			if (AssetManager::IsHandleValid(initalHandle))
 				handles[currentSubmeshIndex] = initalHandle;
-			else if (AssetManager::IsHandleValid(userSetHandle))
+			if (AssetManager::IsHandleValid(userSetHandle))
 				handles[currentSubmeshIndex] = userSetHandle;
 
 			VX_CORE_ASSERT(handles.contains(currentSubmeshIndex), "Failed to find material for submesh!");

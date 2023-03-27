@@ -29,6 +29,8 @@
 
 /// Math
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/Math/Ray.h"
+#include "Vortex/Core/Math/AABB.h"
 #include "Vortex/Core/Math/Noise.h"
 
 namespace Math = Vortex::Math;
