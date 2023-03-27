@@ -22,6 +22,8 @@ namespace Vortex {
 		{ ".TTF", AssetType::FontAsset },
 		{ ".otc", AssetType::FontAsset },
 		{ ".OTC", AssetType::FontAsset },
+		{ ".otf", AssetType::FontAsset },
+		{ ".OTF", AssetType::FontAsset },
 
 		{ ".vmaterial", AssetType::MaterialAsset },
 		{ ".vpm", AssetType::PhysicsMaterialAsset },
