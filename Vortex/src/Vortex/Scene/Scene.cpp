@@ -986,6 +986,9 @@ namespace Vortex {
 			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 			const auto& audioProps = audioSource->GetProperties();
 
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+
 			if (!audioProps.PlayOnStart)
 				continue;
 
