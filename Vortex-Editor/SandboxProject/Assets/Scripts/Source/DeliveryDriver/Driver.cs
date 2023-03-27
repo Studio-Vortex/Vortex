@@ -29,8 +29,26 @@ namespace Sandbox {
 			ProcessMovement();
 			
 			UpdateCamera();
+		}
 
-			ProcessDelivery();
+		protected override void OnCollisionEnter(Collision other)
+		{
+			HandleCollision(other);
+		}
+
+		protected override void OnTriggerEnter(Collision other)
+		{
+			HandleTrigger(other);
+		}
+
+		void HandleCollision(Collision other)
+		{
+			ProcessDelivery(other);
+		}
+
+		void HandleTrigger(Collision other)
+		{
+			ProcessDelivery(other);
 		}
 
 		void ProcessRotation()
@@ -57,31 +75,38 @@ namespace Sandbox {
 			transform.Translate(velocity * moveSpeed * Time.DeltaTime);
 		}
 
-		void ProcessDelivery()
+		void ProcessDelivery(Collision other)
 		{
-			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + transform.Up.XY, out RaycastHit2D hit);
-			
-			if (other.Marker == "Package" && !hasPackage)
+			Entity entity = other.Entity;
+
+			switch (entity.Marker)
 			{
-				hasPackage = true;
-				spriteRenderer.Color = hasPackageColor;
-				Destroy(other);
-			}
-			else if (other.Marker == "Customer" && hasPackage)
-			{
-				hasPackage = false;
-				spriteRenderer.Color = noPackageColor;
-				int packagesLeft = int.Parse(packagesLeftText.Text);
-				packagesLeftText.Text = (--packagesLeft).ToString();
-			}
-			else if (other.Marker == "Boost")
-			{
-				moveSpeed = boostSpeed;
-				Destroy(other);
-			}
-			else if (other.Marker == "UnTagged")
-			{
-				moveSpeed = slowSpeed;
+				case "Package":
+					if (!hasPackage)
+					{
+						hasPackage = true;
+						spriteRenderer.Color = hasPackageColor;
+						Destroy(entity);
+					}
+
+					break;
+				case "Customer":
+					if (hasPackage)
+					{
+						hasPackage = false;
+						spriteRenderer.Color = noPackageColor;
+						int packagesLeft = int.Parse(packagesLeftText.Text);
+						packagesLeftText.Text = (--packagesLeft).ToString();
+					}
+
+					break;
+				case "Boost":
+					moveSpeed = boostSpeed;
+					Destroy(entity);
+					break;
+				case "UnTagged":
+					moveSpeed = slowSpeed;
+					break;
 			}
 		}
 

@@ -245,7 +245,7 @@ void main()
 	vec2 textureCoords = ((u_Material.HasPOMap) ? ParallaxOcclusionMapping(fragmentIn.TexCoord * fragmentIn.TexScale, viewDir) : fragmentIn.TexCoord * fragmentIn.TexScale);
 
 	FragmentProperties properties;
-	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureCoords).rgb, vec3(u_SceneProperties.Gamma)) : u_Material.Albedo);
+	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureCoords).rgb, vec3(u_SceneProperties.Gamma)) * u_Material.Albedo : u_Material.Albedo);
 	properties.Color = fragmentIn.Color;
 	properties.Normal = ((u_Material.HasNormalMap) ? normalize(fragmentIn.TBN * (texture(u_Material.NormalMap, textureCoords).rgb * 2.0 - 1.0)) : normalize(fragmentIn.Normal));
 	properties.Metallic = ((u_Material.HasMetallicMap) ? texture(u_Material.MetallicMap, textureCoords).r : u_Material.Metallic);

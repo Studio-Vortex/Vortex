@@ -1330,8 +1330,10 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string relativeMeshPath = "";
+			UI::Property("Visible", component.Visible);
 			
+			std::string relativeMeshPath = "";
+
 			if (AssetManager::IsHandleValid(component.Mesh))
 			{
 				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Mesh);
@@ -1383,6 +1385,8 @@ namespace Vortex {
 		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
+
+			UI::Property("Visible", component.Visible);
 
 			std::string relativePath = "";
 

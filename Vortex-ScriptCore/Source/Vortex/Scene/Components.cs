@@ -391,12 +391,25 @@ namespace Vortex {
 	public class MeshRenderer: Component
 	{
 		public Submesh BaseMesh => GetSubmesh(0);
-		public Submesh GetSubmesh(uint index) => new Submesh(GetMaterialHandle(index));
+		public Submesh GetSubmesh(uint index)
+		{
+			AssetHandle materialHandle = GetMaterialHandle(index);
+			if (!materialHandle)
+				return null;
+
+			return new Submesh(materialHandle, index);
+		}
 
 		AssetHandle GetMaterialHandle(uint submeshIndex)
 		{
 			return InternalCalls.MeshRendererComponent_GetMaterialHandle(submeshIndex, Entity.ID, out AssetHandle materialHandle)
 				? materialHandle : AssetHandle.Invalid;
+		}
+
+		public bool Visible
+		{
+			get => InternalCalls.MeshRendererComponent_IsVisible(Entity.ID);
+			set => InternalCalls.MeshRendererComponent_SetVisible(Entity.ID, value);
 		}
 	}
 
@@ -409,7 +422,34 @@ namespace Vortex {
 		}
 
 		public Submesh BaseMesh => GetSubmesh(0);
-		public Submesh GetSubmesh(uint index) => new Submesh(GetMaterialHandle(index));
+		public Submesh GetSubmesh(uint index)
+		{
+			AssetHandle materialHandle = GetMaterialHandle(index);
+			if (!materialHandle)
+				return null;
+
+			return new Submesh(materialHandle, index);
+		}
+
+		public void SetMaterial(Submesh submesh, Material material)
+		{
+			SetMaterial(submesh.Index, material);
+		}
+
+		public void SetMaterial(uint index, Material material)
+		{
+			AssetHandle materialHandle = material.Handle;
+			if (!materialHandle)
+				return;
+
+			InternalCalls.StaticMeshRendererComponent_SetMaterialHandle(index, Entity.ID, ref materialHandle);
+		}
+
+		public bool Visible
+		{
+			get => InternalCalls.StaticMeshRendererComponent_IsVisible(Entity.ID);
+			set => InternalCalls.StaticMeshRendererComponent_SetVisible(Entity.ID, value);
+		}
 
 		AssetHandle GetMaterialHandle(uint submeshIndex)
 		{

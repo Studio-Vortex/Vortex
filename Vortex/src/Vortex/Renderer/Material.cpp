@@ -21,6 +21,7 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasNormalMap", false);
 
+		m_Shader->SetFloat3("u_Material.Albedo", m_Properties.Albedo);
 		if (AssetHandle handle = m_Properties.AlbedoMap)
 		{
 			uint32_t albedoMapTextureSlot = 7;
@@ -30,11 +31,9 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasAlbedoMap", true);
 		}
 		else
-		{
-			m_Shader->SetFloat3("u_Material.Albedo", m_Properties.Albedo);
 			m_Shader->SetBool("u_Material.HasAlbedoMap", false);
-		}
 
+		m_Shader->SetFloat("u_Material.Metallic", m_Properties.Metallic);
 		if (AssetHandle handle = m_Properties.MetallicMap)
 		{
 			uint32_t metallicMapTextureSlot = 8;
@@ -44,11 +43,9 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasMetallicMap", true);
 		}
 		else
-		{
-			m_Shader->SetFloat("u_Material.Metallic", m_Properties.Metallic);
 			m_Shader->SetBool("u_Material.HasMetallicMap", false);
-		}
 
+		m_Shader->SetFloat("u_Material.Roughness", m_Properties.Roughness);
 		if (AssetHandle handle = m_Properties.RoughnessMap)
 		{
 			uint32_t roughnessMapTextureSlot = 9;
@@ -58,11 +55,9 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasRoughnessMap", true);
 		}
 		else
-		{
-			m_Shader->SetFloat("u_Material.Roughness", m_Properties.Roughness);
 			m_Shader->SetBool("u_Material.HasRoughnessMap", false);
-		}
 
+		m_Shader->SetFloat("u_Material.Emission", m_Properties.Emission);
 		if (AssetHandle handle = m_Properties.EmissionMap)
 		{
 			uint32_t emissionMapTextureSlot = 10;
@@ -72,10 +67,7 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasEmissionMap", true);
 		}
 		else
-		{
-			m_Shader->SetFloat("u_Material.Emission", m_Properties.Emission);
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
-		}
 
 		if (AssetHandle handle = m_Properties.ParallaxOcclusionMap)
 		{

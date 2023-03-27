@@ -4,11 +4,13 @@
 	{
 		internal AssetHandle m_MaterialHandle;
 		internal Material m_Material;
+		internal uint m_SubmeshIndex;
 
 		internal Submesh() { m_MaterialHandle = AssetHandle.Invalid; }
-		internal Submesh(AssetHandle materialHandle)
+		internal Submesh(AssetHandle materialHandle, uint submeshIndex)
 		{
 			m_MaterialHandle = materialHandle;
+			m_SubmeshIndex = submeshIndex;
 
 			InternalCalls.Material_GetAlbedo(ref m_MaterialHandle, out Vector3 albedo);
 			InternalCalls.Material_GetUV(ref m_MaterialHandle, out Vector2 uv);
@@ -25,6 +27,7 @@
 		}
 
 		public Material Material => m_Material;
+		public uint Index => m_SubmeshIndex;
 	}
 
 }

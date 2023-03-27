@@ -436,6 +436,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool MeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetVisible(ulong entityID, bool visible);
+
 		#endregion
 
 		#region StaticMeshRenderer
@@ -445,6 +451,15 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void StaticMeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetMaterialHandle(uint submeshIndex, ulong entityID, ref AssetHandle materialHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool StaticMeshRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetVisible(ulong entityID, bool visible);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool StaticMeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);

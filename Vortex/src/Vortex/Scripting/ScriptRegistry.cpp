@@ -1925,6 +1925,20 @@ namespace Vortex {
 			return false;
 		}
 
+		bool MeshRendererComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			return meshRendererComponent.Visible;
+		}
+
+		void MeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			meshRendererComponent.Visible = visible;
+		}
+
 #pragma endregion
 
 #pragma region Static Mesh Renderer Component
@@ -1964,6 +1978,53 @@ namespace Vortex {
 				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
 				staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
 			}
+		}
+
+		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* materialHandle)
+		{
+			if (!AssetManager::IsHandleValid(*materialHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set material handle with invalid material!");
+				return;
+			}
+
+			Entity entity = GetEntity(entityUUID);
+			StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
+			{
+				VX_CONSOLE_LOG_ERROR("Cannot set material of invalid mesh asset!");
+				return;
+			}
+
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
+			if (!staticMesh)
+			{
+				VX_CONSOLE_LOG_ERROR("Cannot set material of invalid mesh asset!");
+			}
+
+			if (!staticMesh->HasSubmesh(submeshIndex))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set submesh material with out of bounds index!");
+				return;
+			}
+
+			SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+
+			materialTable->SetMaterial(submeshIndex, *materialHandle);
+		}
+
+		bool StaticMeshRendererComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			return staticMeshRendererComponent.Visible;
+		}
+
+		void StaticMeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			staticMeshRendererComponent.Visible = visible;
 		}
 
 		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)
@@ -7272,9 +7333,14 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Stop);
 
 		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_GetMaterialHandle);
+		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_SetVisible);
 
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
+		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMaterialHandle);
+		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetVisible);
 		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMaterialHandle);
 
 		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);

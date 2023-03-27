@@ -566,6 +566,7 @@ namespace Vortex {
 					out << YAML::Key << "MeshRendererComponent" << YAML::Value << YAML::BeginMap; // MeshRendererComponent
 
 					VX_SERIALIZE_PROPERTY(MeshHandle, meshHandle, out);
+					VX_SERIALIZE_PROPERTY(Visible, meshRendererComponent.Visible, out);
 
 					if (MeshImportOptions importOptions = mesh->GetImportOptions(); importOptions != MeshImportOptions{})
 					{
@@ -611,7 +612,7 @@ namespace Vortex {
 
 					VX_SERIALIZE_PROPERTY(MeshHandle, staticMeshHandle, out);
 					VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+					VX_SERIALIZE_PROPERTY(Visible, staticMeshRenderer.Visible, out);
 
 					if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
 					{
@@ -650,6 +651,7 @@ namespace Vortex {
 						}
 					}
 					out << YAML::EndSeq; // Submeshes
+					
 					out << YAML::EndMap; // StaticMeshRendererComponent
 				}
 			}
@@ -1203,16 +1205,20 @@ namespace Vortex {
 					AssetHandle meshHandle = meshComponent["MeshHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(meshHandle))
 					{
-						MeshImportOptions importOptions = MeshImportOptions();
+						meshRendererComponent.Mesh = meshHandle;
+
+						// Move this to asset serializer
+						/*MeshImportOptions importOptions = MeshImportOptions();
 						if (meshComponent["MeshImportOptions"])
 						{
 							auto modelImportOptions = meshComponent["ModelImportOptions"];
 							importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
 							importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 							importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
-						}
+						}*/
 
-						meshRendererComponent.Mesh = meshHandle;
+						if (meshComponent["Visible"])
+							meshRendererComponent.Visible = meshComponent["Visible"].as<bool>();
 					}
 				}
 			}
@@ -1238,14 +1244,18 @@ namespace Vortex {
 						{
 							staticMeshRendererComponent.StaticMesh = staticMeshHandle;
 
-							MeshImportOptions importOptions = MeshImportOptions();
+							// Move this to asset serializer
+							/*MeshImportOptions importOptions = MeshImportOptions();
 							if (staticMeshComponent["MeshImportOptions"])
 							{
 								auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
 								importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
 								importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 								importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
-							}
+							}*/
+
+							if (staticMeshComponent["Visible"])
+								staticMeshRendererComponent.Visible = staticMeshComponent["Visible"].as<bool>();
 						}
 					}
 				}
@@ -1282,6 +1292,11 @@ namespace Vortex {
 								}
 							
 								materialTable->SetMaterial(submeshIndex, materialHandle);
+							}
+
+							if (materialTable->Empty())
+							{
+								staticMesh->LoadMaterialTable(materialTable);
 							}
 						}
 					}

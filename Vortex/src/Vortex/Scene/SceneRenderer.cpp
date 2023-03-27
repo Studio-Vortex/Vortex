@@ -464,7 +464,12 @@ namespace Vortex {
 			for (const auto e : meshRendererView)
 			{
 				Entity entity{ e, scene };
+				const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
 				if (!entity.IsActive())
+					continue;
+
+				if (!meshRendererComponent.Visible)
 					continue;
 
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
@@ -497,8 +502,12 @@ namespace Vortex {
 			for (const auto e : staticMeshRendererView)
 			{
 				Entity entity{ e, scene };
+				const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
 				if (!entity.IsActive())
+					continue;
+
+				if (!staticMeshRendererComponent.Visible)
 					continue;
 
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
@@ -554,7 +563,7 @@ namespace Vortex {
 		for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 		{
 			Entity entity = it->second;
-
+			
 			VX_CORE_ASSERT(entity.HasComponent<MeshRendererComponent>() || entity.HasComponent<StaticMeshRendererComponent>(), "Entity doesn't have mesh component!");
 
 			if (entity.HasComponent<MeshRendererComponent>())

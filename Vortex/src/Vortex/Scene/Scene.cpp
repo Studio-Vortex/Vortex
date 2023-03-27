@@ -894,17 +894,19 @@ namespace Vortex {
 
 		ClearSceneMeshes();
 
-		auto meshRendererView = GetAllEntitiesWith<MeshRendererComponent>();
+		auto meshView = GetAllEntitiesWith<MeshRendererComponent>();
 
-		for (const auto& meshRenderer : meshRendererView)
+		for (const auto meshRenderer : meshView)
 		{
 			Entity entity{ meshRenderer, this };
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 			// Skip if not active
 			if (!entity.IsActive())
 				continue;
 
-			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			if (!meshRendererComponent.Visible)
+				continue;
 
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (!AssetManager::IsHandleValid(meshHandle))
@@ -922,17 +924,19 @@ namespace Vortex {
 			m_SceneMeshes->WorldSpaceMeshTransforms.push_back(worldSpaceTransform);
 		}
 
-		auto staticMeshRendererView = GetAllEntitiesWith<StaticMeshRendererComponent>();
+		auto staticMeshView = GetAllEntitiesWith<StaticMeshRendererComponent>();
 
-		for (const auto& staticMeshRenderer : staticMeshRendererView)
+		for (const auto staticMeshRenderer : staticMeshView)
 		{
 			Entity entity{ staticMeshRenderer, this };
+			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
 			// Skip if not active
 			if (!entity.IsActive())
 				continue;
 
-			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			if (!staticMeshRendererComponent.Visible)
+				continue;
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))

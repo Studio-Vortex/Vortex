@@ -213,6 +213,7 @@ namespace Vortex {
 	{
 		AssetHandle Mesh = 0;
 		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
+		bool Visible = true;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
@@ -225,6 +226,7 @@ namespace Vortex {
 		AssetHandle StaticMesh = 0;
 		MeshType Type = MeshType::Cube;
 		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
+		bool Visible = true;
 
 		StaticMeshRendererComponent() = default;
 		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;
