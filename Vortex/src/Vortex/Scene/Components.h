@@ -191,6 +191,7 @@ namespace Vortex {
 	struct LightSource2DComponent
 	{
 		SharedRef<LightSource2D> Source = nullptr;
+		bool Visible = true;
 
 		LightSource2DComponent() = default;
 		LightSource2DComponent(const LightSource2DComponent&) = default;
@@ -202,6 +203,7 @@ namespace Vortex {
 	{
 		LightType Type = LightType::Directional;
 		SharedRef<LightSource> Source = nullptr;
+		bool Visible = true;
 
 		LightSourceComponent() = default;
 		LightSourceComponent(const LightSourceComponent&) = default;
@@ -237,6 +239,7 @@ namespace Vortex {
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 		AssetHandle Texture = 0;
 		Math::vec2 TextureUV = Math::vec2(1.0f);
+		bool Visible = true;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -249,6 +252,7 @@ namespace Vortex {
 		Math::vec4 Color = Math::vec4(1.0f);
 		float Thickness = 1.0f;
 		float Fade = 0.005f;
+		bool Visible = true;
 
 		CircleRendererComponent() = default;
 		CircleRendererComponent(const CircleRendererComponent&) = default;
@@ -267,6 +271,7 @@ namespace Vortex {
 		AssetHandle FontAsset = 0;
 		std::string TextString = "";
 		size_t TextHash = 0;
+		bool Visible = true;
 
 		// Font
 		Math::vec4 Color = Math::vec4(1.0f);

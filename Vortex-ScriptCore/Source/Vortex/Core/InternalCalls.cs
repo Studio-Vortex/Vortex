@@ -376,6 +376,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_SetSoftShadows(ulong entityID, bool softShadows);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool LightSourceComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetVisible(ulong entityID, bool visible);
+
 		#endregion
 
 		#region TextMesh
@@ -415,6 +421,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TextMeshComponent_SetMaxWidth(ulong entityID, float maxWidth);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool TextMeshRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshRendererComponent_SetVisible(ulong entityID, bool visible);
 
 		#endregion
 
@@ -568,6 +580,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_SetUV(ulong entityID, ref Vector2 uv);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SpriteRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetVisible(ulong entityID, bool visible);
+
 		#endregion
 
 		#region CircleRenderer
@@ -589,6 +607,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CircleRendererComponent_SetFade(ulong entityID, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool CircleRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleRendererComponent_SetVisible(ulong entityID, bool visible);
 
 		#endregion
 

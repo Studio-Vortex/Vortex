@@ -1668,6 +1668,20 @@ namespace Vortex {
 			lightSource->SetSoftShadows(softShadows);
 		}
 
+		bool LightSourceComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			return lightSourceComponent.Visible;
+		}
+
+		void LightSourceComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.Visible = visible;
+		}
+
 #pragma endregion
 
 #pragma region TextMesh Component
@@ -1841,6 +1855,20 @@ namespace Vortex {
 
 			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 			textMeshComponent.MaxWidth = maxWidth;
+		}
+
+		bool TextMeshComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			return textMeshComponent.Visible;
+		}
+
+		void TextMeshComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			textMeshComponent.Visible = visible;
 		}
 
 #pragma endregion
@@ -2664,6 +2692,20 @@ namespace Vortex {
 			spriteRenderer.TextureUV = *scale;
 		}
 
+		bool SpriteRendererComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
+			return spriteRendererComponent.Visible;
+		}
+
+		void SpriteRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
+			spriteRendererComponent.Visible = visible;
+		}
+
 #pragma endregion
 
 #pragma region Circle Renderer Component
@@ -2750,6 +2792,20 @@ namespace Vortex {
 
 			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
 			circleRenderer.Fade = fade;
+		}
+
+		bool CircleRendererComponent_IsVisible(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+			const CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
+			return circleRendererComponent.Visible;
+		}
+
+		void CircleRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		{
+			Entity entity = GetEntity(entityUUID);
+			CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
+			circleRendererComponent.Visible = visible;
 		}
 
 #pragma endregion
@@ -7314,6 +7370,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetCastShadows);
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetSoftShadows);
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetSoftShadows);
+		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetVisible);
 
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetTextString);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetTextString);
@@ -7327,6 +7385,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetKerning);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetMaxWidth);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
+		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetVisible);
 
 		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_IsPlaying);
 		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Play);
@@ -7376,6 +7436,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetColor);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetUV);
 		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetUV);
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetVisible);
 
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetColor);
@@ -7383,6 +7445,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetThickness);
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetFade);
 		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetFade);
+		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_IsVisible);
+		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetVisible);
 
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPosition);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPosition);

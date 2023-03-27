@@ -522,6 +522,7 @@ namespace Vortex {
 
 			const auto& lightComponent = entity.GetComponent<LightSourceComponent>();
 
+			VX_SERIALIZE_PROPERTY(Visible, lightComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightComponent.Type), out);
 
 			SharedRef<LightSource> lightSource = lightComponent.Source;
@@ -665,6 +666,7 @@ namespace Vortex {
 
 			AssetHandle spriteHandle = spriteComponent.Texture;
 			VX_SERIALIZE_PROPERTY(TextureHandle, spriteHandle, out);
+			VX_SERIALIZE_PROPERTY(Visible, spriteComponent.Visible, out);
 
 			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
 			VX_SERIALIZE_PROPERTY(TextureUV, spriteComponent.TextureUV, out);
@@ -678,6 +680,7 @@ namespace Vortex {
 
 			const auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
 
+			VX_SERIALIZE_PROPERTY(Visible, circleComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(Color, circleComponent.Color, out);
 			VX_SERIALIZE_PROPERTY(Thickness, circleComponent.Thickness, out);
 			VX_SERIALIZE_PROPERTY(Fade, circleComponent.Fade, out);
@@ -719,6 +722,7 @@ namespace Vortex {
 			AssetHandle fontHandle = textMeshComponent.FontAsset;
 
 			VX_SERIALIZE_PROPERTY(FontHandle, fontHandle, out);
+			VX_SERIALIZE_PROPERTY(Visible, textMeshComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(Color, textMeshComponent.Color, out);
 			VX_SERIALIZE_PROPERTY(BgColor, textMeshComponent.BgColor, out);
 			VX_SERIALIZE_PROPERTY(Kerning, textMeshComponent.Kerning, out);
@@ -1157,6 +1161,10 @@ namespace Vortex {
 				auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
 
 				lightComponent.Source = LightSource::Create(LightSourceProperties());
+				
+				if (lightSourceComponent["Visible"])
+					lightComponent.Visible = lightSourceComponent["Visible"].as<bool>();
+
 				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
 
 				if (lightSourceComponent["Radiance"])
@@ -1309,6 +1317,9 @@ namespace Vortex {
 				auto& spriteRendererComponent = deserializedEntity.AddComponent<SpriteRendererComponent>();
 				spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 
+				if (spriteComponent["Visible"])
+					spriteRendererComponent.Visible = spriteComponent["Visible"].as<bool>();
+
 				if (spriteComponent["TextureHandle"])
 				{
 					AssetHandle assetHandle = spriteComponent["TextureHandle"].as<uint64_t>();
@@ -1326,6 +1337,9 @@ namespace Vortex {
 			if (circleComponent)
 			{
 				auto& circleRendererComponent = deserializedEntity.AddComponent<CircleRendererComponent>();
+
+				if (circleComponent["Visible"])
+					circleRendererComponent.Visible = circleComponent["Visible"].as<bool>();
 
 				circleRendererComponent.Color = circleComponent["Color"].as<Math::vec4>();
 				circleRendererComponent.Thickness = circleComponent["Thickness"].as<float>();
@@ -1360,6 +1374,9 @@ namespace Vortex {
 			if (textMeshComponent)
 			{
 				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
+
+				if (textMeshComponent["Visible"])
+					tmc.Visible = textMeshComponent["Visible"].as<bool>();
 
 				if (textMeshComponent["FontHandle"])
 				{

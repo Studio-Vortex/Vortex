@@ -198,6 +198,8 @@ namespace Vortex {
 		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows);
 		bool LightSourceComponent_GetSoftShadows(UUID entityUUID);
 		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows);
+		bool LightSourceComponent_IsVisible(UUID entityUUID);
+		void LightSourceComponent_SetVisible(UUID entityUUID, bool visible);
 
 #pragma endregion
 
@@ -215,6 +217,8 @@ namespace Vortex {
 		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning);
 		float TextMeshComponent_GetMaxWidth(UUID entityUUID);
 		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth);
+		bool TextMeshComponent_IsVisible(UUID entityUUID);
+		void TextMeshComponent_SetVisible(UUID entityUUID, bool visible);
 
 #pragma endregion
 
@@ -284,6 +288,8 @@ namespace Vortex {
 		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
 		void SpriteRendererComponent_GetUV(UUID entityUUID, Math::vec2* outScale);
 		void SpriteRendererComponent_SetUV(UUID entityUUID, Math::vec2* scale);
+		bool SpriteRendererComponent_IsVisible(UUID entityUUID);
+		void SpriteRendererComponent_SetVisible(UUID entityUUID, bool visible);
 
 #pragma endregion
 
@@ -295,6 +301,8 @@ namespace Vortex {
 		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness);
 		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade);
 		void CircleRendererComponent_SetFade(UUID entityUUID, float fade);
+		bool CircleRendererComponent_IsVisible(UUID entityUUID);
+		void CircleRendererComponent_SetVisible(UUID entityUUID, bool visible);
 
 #pragma endregion
 		

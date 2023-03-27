@@ -142,8 +142,8 @@ namespace Vortex {
 
 		for (const auto e : view)
 		{
-			auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
 			Entity entity{ e, scene };
+			const auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
 
 			if (!entity.IsActive())
 				continue;
@@ -164,10 +164,13 @@ namespace Vortex {
 
 			for (const auto e : view)
 			{
-				auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
 				Entity entity{ e, scene };
+				const auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
 
 				if (!entity.IsActive())
+					continue;
+
+				if (!spriteRendererComponent.Visible)
 					continue;
 
 				AssetHandle textureHandle = spriteRendererComponent.Texture;
@@ -191,10 +194,13 @@ namespace Vortex {
 
 			for (const auto e : group)
 			{
-				auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
 				Entity entity{ e, scene };
+				const auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
 
 				if (!entity.IsActive())
+					continue;
+
+				if (!circleRendererComponent.Visible)
 					continue;
 
 				Renderer2D::DrawCircle(
@@ -219,8 +225,8 @@ namespace Vortex {
 
 		for (const auto e : view)
 		{
-			auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
 			Entity entity{ e, scene };
+			const auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
 
 			if (!entity.IsActive())
 				continue;
@@ -269,14 +275,18 @@ namespace Vortex {
 
 		for (const auto e : view)
 		{
-			auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 			Entity entity{ e, scene };
+			const auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 
 			if (!entity.IsActive())
 				continue;
 
+			if (!textMeshComponent.Visible)
+				continue;
+
 			AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
 			SharedReference<Font> font = nullptr;
+
 			if (AssetManager::IsHandleValid(fontAssetHandle))
 				font = AssetManager::GetAsset<Font>(fontAssetHandle);
 			else
@@ -317,8 +327,8 @@ namespace Vortex {
 
 			for (const auto e : view)
 			{
-				const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
 				Entity entity{ e, scene };
+				const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
 
 				if (!entity.IsActive())
 					continue;
@@ -342,8 +352,8 @@ namespace Vortex {
 
 			for (const auto e : view)
 			{
-				const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
 				Entity entity{ e, scene };
+				const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
 
 				if (!entity.IsActive())
 					continue;
@@ -374,8 +384,8 @@ namespace Vortex {
 
 			for (const auto e : view)
 			{
-				const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
 				Entity entity{ e, scene };
+				const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
 
 				if (!entity.IsActive())
 					continue;
@@ -437,8 +447,12 @@ namespace Vortex {
 		for (const auto e : lightSourceView)
 		{
 			Entity entity{ e, scene };
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 
 			if (!entity.IsActive())
+				continue;
+
+			if (!lightSourceComponent.Visible)
 				continue;
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();

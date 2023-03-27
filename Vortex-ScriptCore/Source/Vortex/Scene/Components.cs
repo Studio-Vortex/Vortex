@@ -324,6 +324,12 @@ namespace Vortex {
 			get => InternalCalls.LightSourceComponent_GetSoftShadows(Entity.ID);
 			set => InternalCalls.LightSourceComponent_SetSoftShadows(Entity.ID, value);
 		}
+
+		public bool Visible
+		{
+			get => InternalCalls.LightSourceComponent_IsVisible(Entity.ID);
+			set => InternalCalls.LightSourceComponent_SetVisible(Entity.ID, value);
+		}
 	}
 
 	public class TextMesh: Component
@@ -372,6 +378,12 @@ namespace Vortex {
 		{
 			get => InternalCalls.TextMeshComponent_GetMaxWidth(Entity.ID);
 			set => InternalCalls.TextMeshComponent_SetMaxWidth(Entity.ID, value);
+		}
+
+		public bool Visible
+		{
+			get => InternalCalls.TextMeshRendererComponent_IsVisible(Entity.ID);
+			set => InternalCalls.TextMeshRendererComponent_SetVisible(Entity.ID, value);
 		}
 	}
 
@@ -492,6 +504,12 @@ namespace Vortex {
 
 			set => InternalCalls.SpriteRendererComponent_SetUV(Entity.ID, ref value);
 		}
+
+		public bool Visible
+		{
+			get => InternalCalls.SpriteRendererComponent_IsVisible(Entity.ID);
+			set => InternalCalls.SpriteRendererComponent_SetVisible(Entity.ID, value);
+		}
 	}
 
 	public class CircleRenderer: Component
@@ -527,6 +545,12 @@ namespace Vortex {
 			}
 
 			set => InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
+		}
+
+		public bool Visible
+		{
+			get => InternalCalls.CircleRendererComponent_IsVisible(Entity.ID);
+			set => InternalCalls.CircleRendererComponent_SetVisible(Entity.ID, value);
 		}
 	}
 

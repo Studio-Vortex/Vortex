@@ -1254,6 +1254,8 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
+			UI::Property("Visible", component.Visible);
+
 			static const char* lightTypes[] = { "Directional", "Point", "Spot" };
 			int32_t currentLightType = (int32_t)component.Type;
 			if (UI::PropertyDropdown("Light Type", lightTypes, VX_ARRAYCOUNT(lightTypes), currentLightType))
@@ -1575,6 +1577,8 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
+			UI::Property("Visible", component.Visible);
+
 			ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
 
 			// Texture
@@ -1636,6 +1640,8 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
+			UI::Property("Visible", component.Visible);
+
 			UI::Property("Color", &component.Color);
 			UI::Property("Thickness", component.Thickness, 0.025f, 0.0f, 1.0f);
 			UI::Property("Fade", component.Fade, 0.00025f, 0.0f, 1.0f);
@@ -1690,6 +1696,8 @@ namespace Vortex {
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
+
+			UI::Property("Visible", component.Visible);
 
 			std::string relativeFontPath = "Default Font";
 
