@@ -276,12 +276,11 @@ namespace Vortex {
 				continue;
 
 			AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
-			if (!AssetManager::IsHandleValid(fontAssetHandle))
-				continue;
-
-			SharedReference<Font> font = AssetManager::GetAsset<Font>(fontAssetHandle);
-			if (!font)
-				continue;
+			SharedReference<Font> font = nullptr;
+			if (AssetManager::IsHandleValid(fontAssetHandle))
+				font = AssetManager::GetAsset<Font>(fontAssetHandle);
+			else
+				font = Font::GetDefaultFont();
 
 			Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
