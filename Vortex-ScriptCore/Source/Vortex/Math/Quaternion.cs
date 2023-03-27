@@ -243,5 +243,11 @@ namespace Vortex
 			return Identity;
 		}
 
+		public static Quaternion Inverse(Quaternion quat)
+		{
+			InternalCalls.Quaternion_Inverse(ref quat, out Quaternion result);
+			return result;
+		}
+
 	}
 }

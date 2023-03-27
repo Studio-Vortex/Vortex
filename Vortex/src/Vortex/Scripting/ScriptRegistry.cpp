@@ -6516,6 +6516,15 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Quaternion
+
+		void Quaternion_Inverse(Math::quaternion* quat, Math::quaternion* result)
+		{
+			*result = Math::Inverse(*quat);
+		}
+
+#pragma endregion
+
 #pragma region Matrix4
 
 		void Matrix4_Rotate(float angleDeg, Math::vec3* axis, Math::mat4* outResult)
@@ -7543,6 +7552,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Random_RangedInt32);
 		VX_REGISTER_INTERNAL_CALL(Random_RangedFloat);
 		VX_REGISTER_INTERNAL_CALL(Random_Float);
+
+		VX_REGISTER_INTERNAL_CALL(Quaternion_Inverse);
 
 		VX_REGISTER_INTERNAL_CALL(Matrix4_Rotate);
 		VX_REGISTER_INTERNAL_CALL(Matrix4_LookAt);

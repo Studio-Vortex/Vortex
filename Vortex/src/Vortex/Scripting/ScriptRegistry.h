@@ -612,6 +612,12 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Quaternion
+
+		void Quaternion_Inverse(Math::quaternion* quat, Math::quaternion* result);
+
+#pragma endregion
+
 #pragma region Matrix4
 		
 		void Matrix4_Rotate(float angleDeg, Math::vec3* axis, Math::mat4* outResult);

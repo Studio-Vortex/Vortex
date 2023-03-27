@@ -1336,6 +1336,13 @@ namespace Vortex {
 
 		#endregion
 
+		#region Quaternion
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Quaternion_Inverse(ref Quaternion quat, out Quaternion result);
+
+		#endregion
+
 		#region Matrix4
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
