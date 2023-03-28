@@ -2,8 +2,6 @@
 
 #include "Vortex/Core/Math/Math.h"
 
-#include "Vortex/Audio/SoundProperties.h"
-
 #include <miniaudio/miniaudio.h>
 
 #include <string>

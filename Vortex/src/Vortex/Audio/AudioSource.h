@@ -4,7 +4,7 @@
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include "Vortex/Audio/SoundProperties.h"
+#include "Vortex/Audio/PlaybackDeviceProperties.h"
 #include "Vortex/Audio/PlaybackDevice.h"
 #include "Vortex/Audio/AudioClip.h"
 
@@ -55,9 +55,9 @@ namespace Vortex {
 		PlaybackDevice& GetPlaybackDevice();
 		const PlaybackDevice& GetPlaybackDevice() const;
 
-		const SoundProperties& GetProperties() const;
-		SoundProperties& GetProperties();
-		void SetProperties(const SoundProperties& soundProps);
+		const PlaybackDeviceProperties& GetProperties() const;
+		PlaybackDeviceProperties& GetProperties();
+		void SetProperties(const PlaybackDeviceProperties& soundProps);
 
 		static void Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src);
 
@@ -71,7 +71,7 @@ namespace Vortex {
 
 	private:
 		PlaybackDevice m_PlaybackDevice;
-		SoundProperties m_Properties;
+		PlaybackDeviceProperties m_Properties;
 		AudioClip m_AudioClip;
 
 		bool m_IsLoaded = false;

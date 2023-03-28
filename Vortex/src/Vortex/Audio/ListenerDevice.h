@@ -1,17 +1,21 @@
 #pragma once
 
 #include "Vortex/Core/Math/Math.h"
-#include "Vortex/Audio/PlaybackDevice.h"
 
 #include <cstdint>
 
 namespace Vortex {
+
+	class PlaybackDevice;
 
 	class ListenerDevice
 	{
 	public:
 		ListenerDevice() = default;
 		~ListenerDevice() = default;
+
+		void Init(PlaybackDevice& playbackDevice, uint32_t listenerIndex);
+		void Shutdown();
 
 		void SetPlaybackDevice(PlaybackDevice& playbackDevice);
 

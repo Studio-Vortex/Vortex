@@ -2,9 +2,27 @@
 #include "ListenerDevice.h"
 
 #include "Vortex/Audio/AudioEngine.h"
+#include "Vortex/Audio/PlaybackDevice.h"
 
 namespace Vortex {
-	
+
+	void ListenerDevice::Init(PlaybackDevice& playbackDevice, uint32_t listenerIndex)
+	{
+		m_PlaybackDevice = &playbackDevice;
+		m_ListenerIndex = listenerIndex;
+
+		playbackDevice.AddDeviceListener(m_ListenerIndex);
+
+		SetPlaybackDevice(playbackDevice);
+		SetWorldUp({ 0.0f, 1.0f, 0.0f });
+	}
+
+	void ListenerDevice::Shutdown()
+	{
+		VX_CORE_ASSERT(m_PlaybackDevice, "Device not initialized!");
+		m_PlaybackDevice->RemoveDeviceListener(m_ListenerIndex);
+	}
+
 	void ListenerDevice::SetPlaybackDevice(PlaybackDevice& playbackDevice)
 	{
 		m_PlaybackDevice = &playbackDevice;

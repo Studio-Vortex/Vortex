@@ -1879,7 +1879,7 @@ namespace Vortex {
 
 			if (component.Source != nullptr)
 			{
-				SoundProperties& props = component.Source->GetProperties();
+				AudioDeviceProperties& props = component.Source->GetProperties();
 
 				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
 					component.Source->SetPitch(props.Pitch);
@@ -1969,7 +1969,7 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			ListenerProperties& props = component.Listener->GetProperties();
+			ListenerDeviceProperties& props = component.Listener->GetProperties();
 			SharedReference<AudioListener> listener = component.Listener;
 
 			const uint32_t listenerIndex = listener->GetListenerIndex();

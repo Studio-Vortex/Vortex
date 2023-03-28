@@ -7,7 +7,7 @@
 
 namespace Vortex {
 
-	struct VORTEX_API SoundProperties
+	struct VORTEX_API PlaybackDeviceProperties
 	{
 		Math::vec3 Position = Math::vec3(0.0f);
 		Math::vec3 Direction = Math::vec3(0.0f);

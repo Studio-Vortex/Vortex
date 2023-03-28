@@ -1,22 +1,19 @@
 #include "vxpch.h"
 #include "AudioListener.h"
 
+#include "Vortex/Audio/PlaybackDevice.h"
+
 namespace Vortex {
 
-	AudioListener::AudioListener(const ListenerProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex)
-		: m_Properties(props), m_PlaybackDevice(playbackDevice), m_ListenerIndex(listenerIndex)
+	AudioListener::AudioListener(const ListenerDeviceProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex)
+		: m_Properties(props), m_ListenerIndex(listenerIndex)
 	{
-		m_PlaybackDevice.AddDeviceListener(m_ListenerIndex);
-
-		m_ListenerDevice.SetPlaybackDevice(m_PlaybackDevice);
-		m_ListenerDevice.SetListenerIndex(m_ListenerIndex);
-
-		m_ListenerDevice.SetWorldUp({ 0.0f, 1.0f, 0.0f });
+		m_ListenerDevice.Init(playbackDevice, listenerIndex);
 	}
 
 	AudioListener::~AudioListener()
 	{
-		m_PlaybackDevice.RemoveDeviceListener(m_ListenerDevice.GetListenerIndex());
+		m_ListenerDevice.Shutdown();
 	}
 
 	void AudioListener::SetPosition(const Math::vec3& position)
@@ -39,12 +36,12 @@ namespace Vortex {
 		m_ListenerDevice.SetCone(cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
 	}
 
-	ListenerProperties& AudioListener::GetProperties()
+	ListenerDeviceProperties& AudioListener::GetProperties()
 	{
 		return m_Properties;
 	}
 
-	const ListenerProperties& AudioListener::GetProperties() const
+	const ListenerDeviceProperties& AudioListener::GetProperties() const
 	{
 		return m_Properties;
 	}
@@ -54,7 +51,7 @@ namespace Vortex {
 		return m_ListenerIndex;
 	}
 
-	SharedReference<AudioListener> AudioListener::Create(const ListenerProperties& props, PlaybackDevice& device, uint32_t listenerIndex)
+	SharedReference<AudioListener> AudioListener::Create(const ListenerDeviceProperties& props, PlaybackDevice& device, uint32_t listenerIndex)
 	{
 		return SharedReference<AudioListener>::Create(props, device, listenerIndex);
 	}

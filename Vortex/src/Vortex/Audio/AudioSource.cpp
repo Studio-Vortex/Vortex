@@ -203,17 +203,17 @@ namespace Vortex {
 		return m_PlaybackDevice;
 	}
 
-	const SoundProperties& AudioSource::GetProperties() const
+	const PlaybackDeviceProperties& AudioSource::GetProperties() const
 	{
 		return m_Properties;
 	}
 
-	SoundProperties& AudioSource::GetProperties()
+	PlaybackDeviceProperties& AudioSource::GetProperties()
 	{
 		return m_Properties;
 	}
 
-	void AudioSource::SetProperties(const SoundProperties& soundProps)
+	void AudioSource::SetProperties(const PlaybackDeviceProperties& soundProps)
     {
 		SetDirection(soundProps.Direction);
 		SetVelocity(soundProps.Velocity);
@@ -232,7 +232,7 @@ namespace Vortex {
 	void AudioSource::Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
-		const SoundProperties& srcProps = src->GetProperties();
+		const PlaybackDeviceProperties& srcProps = src->GetProperties();
 		dest->SetProperties(srcProps);
 	}
 
