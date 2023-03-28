@@ -11,7 +11,7 @@ namespace Vortex {
 
 	void AudioEngine::InitEngine(ma_engine* engine)
 	{
-		// Init the audio engine
+		// Init the engine
 		VX_CHECK_AUDIO_RESULT(ma_engine_init(nullptr, engine), "Failed to initialize Audio Engine!");
 	}
 
@@ -20,10 +20,11 @@ namespace Vortex {
 		ma_engine_uninit(engine);
 	}
 
-	void AudioEngine::InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, float* length, bool loop, bool spacialized, float volume)
+	void AudioEngine::InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, float* length)
 	{
 		if (!FileSystem::Exists(filepath))
 		{
+			VX_CORE_ASSERT(false, "Cannot load sound that doesn't exist!");
 			return;
 		}
 
@@ -32,17 +33,13 @@ namespace Vortex {
 				preInitializedEngine,
 				filepath.c_str(),
 				MA_SOUND_FLAG_ASYNC,
-				nullptr,
-				nullptr,
+				nullptr, nullptr,
 				sound
 			),
 			"Failed to initialize sound file from {}", filepath
 		);
 
-		ma_sound_set_looping(sound, (ma_bool32)loop);
-		ma_sound_set_spatialization_enabled(sound, (ma_bool32)spacialized);
 		ma_sound_get_length_in_seconds(sound, length);
-		ma_sound_set_volume(sound, volume);
 	}
 
 	void AudioEngine::DestroySound(ma_sound* sound)
@@ -152,7 +149,7 @@ namespace Vortex {
 		ma_sound_set_spatialization_enabled(sound, spacialized);
 	}
 
-	void AudioEngine::SetLoop(ma_sound* sound, bool loop)
+	void AudioEngine::SetLooping(ma_sound* sound, bool loop)
 	{
 		ma_sound_set_looping(sound, loop);
 	}

@@ -766,7 +766,7 @@ namespace Vortex {
 
 			if (audioSourceComponent.Source)
 			{
-				const AudioSource::SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
+				const SoundProperties& soundProperties = audioSourceComponent.Source->GetProperties();
 				
 				const std::string& audioSourcePath = audioSourceComponent.Source->GetPath();
 				VX_SERIALIZE_PROPERTY(AudioSourcePath, audioSourcePath, out);

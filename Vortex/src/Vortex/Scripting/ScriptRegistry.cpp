@@ -3263,7 +3263,7 @@ namespace Vortex {
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
+			SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.InnerAngle = innerAngle;
 			audioSource->SetCone(cone);
 		}
@@ -3295,7 +3295,7 @@ namespace Vortex {
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
+			SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterAngle = outerAngle;
 			audioSource->SetCone(cone);
 		}
@@ -3327,7 +3327,7 @@ namespace Vortex {
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioSource::SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
+			SoundProperties::AudioCone& cone = audioSource->GetProperties().Cone;
 			cone.OuterGain = outerGain;
 			audioSource->SetCone(cone);
 		}

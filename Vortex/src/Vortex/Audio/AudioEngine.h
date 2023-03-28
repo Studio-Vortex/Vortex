@@ -2,6 +2,8 @@
 
 #include "Vortex/Core/Math/Math.h"
 
+#include "Vortex/Audio/SoundProperties.h"
+
 #include <string>
 
 struct ma_engine;
@@ -15,7 +17,7 @@ namespace Vortex {
 		static void InitEngine(ma_engine* engine);
 		static void ShutdownEngine(ma_engine* engine);
 
-		static void InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, float* length, bool loop, bool spacialized = true, float volume = 1.0f);
+		static void InitSoundFromPath(ma_engine* preInitializedEngine, const std::string& filepath, ma_sound* sound, float* length);
 		static void DestroySound(ma_sound* sound);
 
 		static void PlayFromSound(ma_sound* sound);
@@ -41,7 +43,7 @@ namespace Vortex {
 		static void SetVolume(ma_sound* sound, float volume);
 
 		static void SetSpacialized(ma_sound* sound, bool spacialized);
-		static void SetLoop(ma_sound* sound, bool loop);
+		static void SetLooping(ma_sound* sound, bool loop);
 
 		static float GetSoundCursor(ma_sound* sound);
 

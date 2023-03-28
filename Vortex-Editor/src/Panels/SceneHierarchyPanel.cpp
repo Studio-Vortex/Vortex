@@ -1879,7 +1879,7 @@ namespace Vortex {
 
 			if (component.Source != nullptr)
 			{
-				AudioSource::SoundProperties& props = component.Source->GetProperties();
+				SoundProperties& props = component.Source->GetProperties();
 
 				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
 					component.Source->SetPitch(props.Pitch);
