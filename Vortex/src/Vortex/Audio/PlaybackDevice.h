@@ -39,6 +39,8 @@ namespace Vortex {
 		void SetVelocity(const Math::vec3& velocity);
 
 		void SetCone(float innerAngleRad, float outerAngleRad, float outerGain);
+		void SetMinGain(float minGain);
+		void SetMaxGain(float maxGain);
 		void SetAttenuationModel(AttenuationModel attenuationModel);
 		void SetFalloff(float falloff);
 		void SetMinDistance(float minDistance);

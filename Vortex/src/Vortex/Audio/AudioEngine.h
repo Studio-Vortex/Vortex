@@ -38,6 +38,8 @@ namespace Vortex {
 		static void SetSoundVeloctiy(ma_sound* sound, const Math::vec3& veloctiy);
 
 		static void SetSoundCone(ma_sound* sound, float innerAngleRadians, float outerAngleRadians, float outerGain);
+		static void SetSoundMinGain(ma_sound* sound, float minGain);
+		static void SetSoundMaxGain(ma_sound* sound, float maxGain);
 		static void SetSoundAttenuationModel(ma_sound* sound, AttenuationModel attenuationModel);
 		static void SetSoundFalloff(ma_sound* sound, float falloff);
 		static void SetSoundMinDistance(ma_sound* sound, float minDistance);

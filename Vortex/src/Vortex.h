@@ -64,7 +64,9 @@ namespace Gui = ImGui;
 
 /// Audio
 #include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Audio/PlaybackDevice.h"
 #include "Vortex/Audio/AudioListener.h"
+#include "Vortex/Audio/ListenerDevice.h"
 /// ---------------------------------------------------
 
 /// Animation

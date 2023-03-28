@@ -699,6 +699,9 @@ namespace Vortex {
 				VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
 				out << YAML::EndMap; // Cone
 
+				VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
+				VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
+
 				VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
 				VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
 
@@ -1377,6 +1380,11 @@ namespace Vortex {
 						deviceProperties.Cone.OuterAngle = cone["OuterAngle"].as<float>();
 						deviceProperties.Cone.OuterGain = cone["OuterGain"].as<float>();
 					}
+
+					if (soundProps["MinGain"])
+						deviceProperties.MinGain = soundProps["MinGain"].as<float>();
+					if (soundProps["MaxGain"])
+						deviceProperties.MaxGain = soundProps["MaxGain"].as<float>();
 
 					if (soundProps["AttenuationModel"])
 						deviceProperties.AttenuationModel = Utils::AttenuationModelTypeFromString(soundProps["AttenuationModel"].as<std::string>());

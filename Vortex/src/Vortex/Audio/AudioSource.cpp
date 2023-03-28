@@ -121,6 +121,18 @@ namespace Vortex {
 		m_Properties.Cone = cone;
 	}
 
+	void AudioSource::SetMinGain(float minGain)
+	{
+		m_PlaybackDevice.SetMinGain(minGain);
+		m_Properties.MinGain = minGain;
+	}
+
+	void AudioSource::SetMaxGain(float maxGain)
+	{
+		m_PlaybackDevice.SetMaxGain(maxGain);
+		m_Properties.MaxGain = maxGain;
+	}
+
 	void AudioSource::SetAttenuationModel(AttenuationModel attenuationModel)
 	{
 		m_PlaybackDevice.SetAttenuationModel(attenuationModel);

@@ -15,6 +15,8 @@ namespace Vortex {
 		Math::vec3 Velocity = Math::vec3(0.0f);
 
 		AudioCone Cone;
+		float MinGain = 1.0f;
+		float MaxGain = 1.0f;
 		AttenuationModel AttenuationModel = AttenuationModel::Inverse;
 		float Falloff = 1.0f;
 		float MinDistance = 1.0f;

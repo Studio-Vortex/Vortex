@@ -156,6 +156,18 @@ namespace Vortex {
 		ma_sound_set_cone(sound, innerAngleRadians, outerAngleRadians, outerGain);
 	}
 
+	void AudioEngine::SetSoundMinGain(ma_sound* sound, float minGain)
+	{
+		VX_CORE_ASSERT(sound, "Invalid Sound!");
+		ma_sound_set_min_gain(sound, minGain);
+	}
+
+	void AudioEngine::SetSoundMaxGain(ma_sound* sound, float maxGain)
+	{
+		VX_CORE_ASSERT(sound, "Invalid Sound!");
+		ma_sound_set_max_gain(sound, maxGain);
+	}
+
 	void AudioEngine::SetSoundAttenuationModel(ma_sound* sound, AttenuationModel attenuationModel)
 	{
 		VX_CORE_ASSERT(sound, "Invalid Sound!");

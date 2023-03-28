@@ -1926,30 +1926,20 @@ namespace Vortex {
 					{
 						UI::BeginPropertyGrid();
 
-						static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
-						AttenuationModel selectedAttenuationModel = props.AttenuationModel;
-						if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), selectedAttenuationModel))
-						{
-							component.Source->SetAttenuationModel(selectedAttenuationModel);
-						}
-
-						if (UI::Property("Falloff", props.Falloff))
-						{
-							component.Source->SetFalloff(props.Falloff);
-						}
-
 						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
 						if (UI::Property("Inner Angle", innerAngle, 0.5f))
 						{
 							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
 							component.Source->SetCone(props.Cone);
 						}
+
 						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
 						if (UI::Property("Outer Angle", outerAngle, 0.5f))
 						{
 							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
 							component.Source->SetCone(props.Cone);
 						}
+
 						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
 						if (UI::Property("Outer Gain", outerGain, 0.5f))
 						{
@@ -1957,20 +1947,28 @@ namespace Vortex {
 							component.Source->SetCone(props.Cone);
 						}
 
+						if (UI::Property("Min Gain", props.MinGain))
+							component.Source->SetMinGain(props.MinGain);
+						if (UI::Property("Max Gain", props.MaxGain))
+							component.Source->SetMaxGain(props.MaxGain);
+
+						static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
+
+						AttenuationModel selectedAttenuationModel = props.AttenuationModel;
+						if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), selectedAttenuationModel))
+							component.Source->SetAttenuationModel(selectedAttenuationModel);
+
+						if (UI::Property("Falloff", props.Falloff))
+							component.Source->SetFalloff(props.Falloff);
+
 						if (UI::Property("Min Distance", props.MinDistance, 0.1f))
-						{
 							component.Source->SetMinDistance(props.MinDistance);
-						}
 
 						if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
-						{
 							component.Source->SetMaxDistance(props.MaxDistance);
-						}
 
 						if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
-						{
 							component.Source->SetDopplerFactor(props.DopplerFactor);
-						}
 
 						UI::EndPropertyGrid();
 						UI::EndTreeNode();
