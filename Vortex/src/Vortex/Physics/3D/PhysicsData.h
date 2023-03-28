@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/Math/Math.h"
 

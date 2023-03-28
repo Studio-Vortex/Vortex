@@ -3,48 +3,38 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
+#include "Vortex/Audio/ListenerProperties.h"
+#include "Vortex/Audio/ListenerDevice.h"
+#include "Vortex/Audio/PlaybackDevice.h"
+
 namespace Vortex {
 
 	class VORTEX_API AudioListener : public RefCounted
 	{
 	public:
-		struct VORTEX_API ListenerProperties
-		{
-			Math::vec3 Position = Math::vec3(0.0f);
-			Math::vec3 Direction = Math::vec3(0.0f);
-			Math::vec3 Veloctiy = Math::vec3(0.0f);
-
-			struct VORTEX_API AudioCone
-			{
-				float InnerAngle = Math::Deg2Rad(10.0f);
-				float OuterAngle = Math::Deg2Rad(45.0f);
-				float OuterGain = 0.0f;
-			} Cone;
-		};
-
-	public:
 		AudioListener() = default;
-		AudioListener(const ListenerProperties& props);
+		AudioListener(const ListenerProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex);
 		~AudioListener();
 
 		void SetPosition(const Math::vec3& position);
 		void SetDirection(const Math::vec3& direction);
 		void SetVelocity(const Math::vec3& velocity);
 
-		void SetCone(const ListenerProperties::AudioCone& cone);
+		void SetCone(const AudioCone& cone);
 
-		inline const ListenerProperties& GetProperties() const { return m_Properties; }
-		inline ListenerProperties& GetProperties() { return m_Properties; }
+		ListenerProperties& GetProperties();
+		const ListenerProperties& GetProperties() const;
 
-		static SharedReference<AudioListener> Create(const ListenerProperties& props);
+		uint32_t GetListenerIndex() const;
+
+		static SharedReference<AudioListener> Create(const ListenerProperties& props, PlaybackDevice& device, uint32_t listenerIndex);
 		static SharedReference<AudioListener> Create();
 
 	private:
-		inline static uint32_t s_ListenerCount = 0;
-
-	private:
+		uint32_t m_ListenerIndex = -1;
 		ListenerProperties m_Properties;
-		uint32_t m_ListenerIndex = 0;
+		ListenerDevice m_ListenerDevice;
+		PlaybackDevice m_PlaybackDevice;
 	};
 
 }

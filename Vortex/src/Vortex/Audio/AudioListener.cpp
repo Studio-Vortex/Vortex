@@ -1,42 +1,62 @@
 #include "vxpch.h"
 #include "AudioListener.h"
 
-#include "Vortex/Audio/AudioEngine.h"
-
 namespace Vortex {
 
-	AudioListener::AudioListener(const ListenerProperties& props)
-		: m_Properties(props)
+	AudioListener::AudioListener(const ListenerProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex)
+		: m_Properties(props), m_PlaybackDevice(playbackDevice), m_ListenerIndex(listenerIndex)
 	{
-		s_ListenerCount++;
-		m_ListenerIndex = s_ListenerCount;
+		m_PlaybackDevice.AddDeviceListener(m_ListenerIndex);
+
+		m_ListenerDevice.SetPlaybackDevice(m_PlaybackDevice);
+		m_ListenerDevice.SetListenerIndex(m_ListenerIndex);
+
+		m_ListenerDevice.SetWorldUp({ 0.0f, 1.0f, 0.0f });
 	}
 
 	AudioListener::~AudioListener()
 	{
-		s_ListenerCount--;
+		m_PlaybackDevice.RemoveDeviceListener(m_ListenerDevice.GetListenerIndex());
 	}
 
 	void AudioListener::SetPosition(const Math::vec3& position)
 	{
-		
+		m_ListenerDevice.SetPosition(position);
 	}
 
 	void AudioListener::SetDirection(const Math::vec3& direction)
 	{
+		m_ListenerDevice.SetDirection(direction);
 	}
 
 	void AudioListener::SetVelocity(const Math::vec3& velocity)
 	{
+		m_ListenerDevice.SetVelocity(velocity);
 	}
 
-	void AudioListener::SetCone(const ListenerProperties::AudioCone& cone)
+	void AudioListener::SetCone(const AudioCone& cone)
 	{
+		m_ListenerDevice.SetCone(cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
 	}
 
-	SharedReference<AudioListener> AudioListener::Create(const ListenerProperties& props)
+	ListenerProperties& AudioListener::GetProperties()
 	{
-		return SharedReference<AudioListener>::Create(props);
+		return m_Properties;
+	}
+
+	const ListenerProperties& AudioListener::GetProperties() const
+	{
+		return m_Properties;
+	}
+
+	uint32_t AudioListener::GetListenerIndex() const
+	{
+		return m_ListenerIndex;
+	}
+
+	SharedReference<AudioListener> AudioListener::Create(const ListenerProperties& props, PlaybackDevice& device, uint32_t listenerIndex)
+	{
+		return SharedReference<AudioListener>::Create(props, device, listenerIndex);
 	}
 
 	SharedReference<AudioListener> AudioListener::Create()

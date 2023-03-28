@@ -1787,6 +1787,7 @@ namespace Vortex {
 
 			Gui::BeginDisabled(component.Source == nullptr);
 
+			Gui::BeginDisabled(component.Source->IsPlaying());
 			if (Gui::Button("Play"))
 			{
 				if (component.Source->GetProperties().PlayOneShot)
@@ -1798,6 +1799,7 @@ namespace Vortex {
 					component.Source->Play();
 				}
 			}
+			Gui::EndDisabled();
 
 			Gui::SameLine();
 
@@ -1813,14 +1815,12 @@ namespace Vortex {
 				if (Gui::Button("Restart"))
 					component.Source->Restart();
 
+				Gui::SameLine();
+
+				if (Gui::Button("Stop"))
+					component.Source->Stop();
+
 				Gui::EndDisabled();
-			}
-
-			Gui::SameLine();
-
-			if (Gui::Button("Stop"))
-			{
-				component.Source->Stop();
 			}
 
 			Gui::EndDisabled();
@@ -1969,8 +1969,13 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			AudioListener::ListenerProperties& props = component.Listener->GetProperties();
+			ListenerProperties& props = component.Listener->GetProperties();
+			SharedReference<AudioListener> listener = component.Listener;
 
+			const uint32_t listenerIndex = listener->GetListenerIndex();
+			const bool invalidListener = listenerIndex < 0 || (listenerIndex > PlaybackDevice::MaxDeviceListeners - 1);
+
+			Gui::BeginDisabled(invalidListener);
 			UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 			{
 				component.Listener->SetPosition(props.Position);
@@ -2014,6 +2019,7 @@ namespace Vortex {
 				UI::EndPropertyGrid();
 				UI::EndTreeNode();
 			}
+			Gui::EndDisabled();
 		});
 
 		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&, scene = m_ContextScene](auto& component)

@@ -1,38 +1,17 @@
 #pragma once
 
+#include "Vortex/Core/TimeStep.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Core/TimeStep.h"
 
-// Forward declarations
-
-extern "C"
-{
-	typedef struct _MonoString MonoString;
-}
+#include "Vortex/Physics/2D/Physics2DData.h"
 
 class b2World;
 class b2Fixture;
 
 namespace Vortex {
-
-	class RaycastCallback2D;
-
-	struct VORTEX_API RaycastHit2D
-	{
-		Math::vec2 Point;
-		Math::vec2 Normal;
-		MonoString* Tag;
-		bool Hit;
-
-		RaycastHit2D(const RaycastCallback2D* raycastInfo, Scene* contextScene);
-	};
-
-	struct VORTEX_API PhysicsBody2DData
-	{
-		UUID EntityUUID;
-	};
 
 	class VORTEX_API Physics2D
 	{

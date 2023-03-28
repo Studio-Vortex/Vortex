@@ -9,6 +9,7 @@
 #include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/2D/Physics2D.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Networking/Networking.h"

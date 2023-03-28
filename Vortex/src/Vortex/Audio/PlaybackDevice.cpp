@@ -48,69 +48,86 @@ namespace Vortex {
 		ShutdownEngine();
 	}
 
-	float PlaybackDevice::GetSoundCursor()
+	float PlaybackDevice::GetSoundCursor() const
 	{
 		return AudioEngine::GetSoundCursor(&m_Sound);
 	}
 
-	bool PlaybackDevice::IsPlaying()
+	bool PlaybackDevice::IsPlaying() const
 	{
-		return AudioEngine::IsPlaying(&m_Sound);
+		return AudioEngine::IsSoundPlaying(&m_Sound);
 	}
 
 	void PlaybackDevice::SetPosition(const Math::vec3& position)
 	{
-		AudioEngine::SetPosition(&m_Sound, position);
+		AudioEngine::SetSoundPosition(&m_Sound, position);
 	}
 
 	void PlaybackDevice::SetDirection(const Math::vec3& direction)
 	{
-		AudioEngine::SetDirection(&m_Sound, direction);
+		AudioEngine::SetSoundDirection(&m_Sound, direction);
 	}
 
 	void PlaybackDevice::SetVelocity(const Math::vec3& velocity)
 	{
-		AudioEngine::SetVeloctiy(&m_Sound, velocity);
+		AudioEngine::SetSoundVeloctiy(&m_Sound, velocity);
 	}
 
 	void PlaybackDevice::SetCone(float innerAngleRad, float outerAngleRad, float outerGain)
 	{
-		AudioEngine::SetCone(&m_Sound, innerAngleRad, outerAngleRad, outerGain);
+		AudioEngine::SetSoundCone(&m_Sound, innerAngleRad, outerAngleRad, outerGain);
 	}
 
 	void PlaybackDevice::SetMinDistance(float minDistance)
 	{
-		AudioEngine::SetMinDistance(&m_Sound, minDistance);
+		AudioEngine::SetSoundMinDistance(&m_Sound, minDistance);
 	}
 
 	void PlaybackDevice::SetMaxDistance(float maxDistance)
 	{
-		AudioEngine::SetMaxDistance(&m_Sound, maxDistance);
+		AudioEngine::SetSoundMaxDistance(&m_Sound, maxDistance);
 	}
 
 	void PlaybackDevice::SetPitch(float pitch)
 	{
-		AudioEngine::SetPitch(&m_Sound, pitch);
+		AudioEngine::SetSoundPitch(&m_Sound, pitch);
 	}
 
 	void PlaybackDevice::SetDopplerFactor(float dopplerFactor)
 	{
-		AudioEngine::SetDopplerFactor(&m_Sound, dopplerFactor);
+		AudioEngine::SetSoundDopplerFactor(&m_Sound, dopplerFactor);
 	}
 
 	void PlaybackDevice::SetVolume(float volume)
 	{
-		AudioEngine::SetVolume(&m_Sound, volume);
+		AudioEngine::SetSoundVolume(&m_Sound, volume);
 	}
 
 	void PlaybackDevice::SetSpacialized(bool spacialized)
 	{
-		AudioEngine::SetSpacialized(&m_Sound, spacialized);
+		AudioEngine::SetSoundSpacialized(&m_Sound, spacialized);
 	}
 
 	void PlaybackDevice::SetLooping(bool looping)
 	{
-		AudioEngine::SetLooping(&m_Sound, looping);
+		AudioEngine::SetSoundLooping(&m_Sound, looping);
+	}
+
+	uint32_t PlaybackDevice::GetDeviceListenerCount() const
+	{
+		return AudioEngine::GetDeviceListenerCount(&m_Engine);
+	}
+
+	void PlaybackDevice::AddDeviceListener(uint32_t listenerIndex)
+	{
+		VX_CORE_ASSERT(listenerIndex < MaxDeviceListeners - 1, "Listener Index out of bounds!");
+		AudioEngine::AddDeviceListener(&m_Engine, listenerIndex);
+	}
+
+	void PlaybackDevice::RemoveDeviceListener(uint32_t listenerIndex)
+	{
+		VX_CORE_ASSERT(listenerIndex < MaxDeviceListeners - 1, "Listener Index out of bounds!");
+		AudioEngine::RemoveDeviceListener(&m_Engine, listenerIndex);
 	}
 
 	ma_engine* PlaybackDevice::GetEngine()

@@ -1,11 +1,13 @@
 #include "vxpch.h"
 #include "AudioSource.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
 namespace Vortex {
 
 	AudioSource::AudioSource(const std::string& filepath)
-		: m_Path(filepath)
 	{
+		m_AudioClip.Filepath = filepath;
 		Reload();
 	}
 
@@ -14,9 +16,22 @@ namespace Vortex {
 		Destroy();
 	}
 
-	const AudioClip& AudioSource::GetAudioClip() const
+	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
 	{
-		return m_AudioClip;
+		VX_CORE_ASSERT(!filepath.empty(), "Cannot load empty file!");
+
+		m_IsLoaded = m_PlaybackDevice.Init(filepath, &m_AudioClip.Length);
+
+		if (!m_IsLoaded)
+			return;
+
+		m_AudioClip.Name = FileSystem::RemoveFileExtension(filepath);
+	}
+
+	void AudioSource::Reload()
+	{
+		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot load sound from empty filepath!");
+		LoadFromPathAndInitEngine(m_AudioClip.Filepath);
 	}
 
 	void AudioSource::Play()
@@ -36,8 +51,8 @@ namespace Vortex {
 			Reload();
 		}
 
-		VX_CORE_ASSERT(!m_Path.empty(), "Cannot play sound from empty filepath!");
-		m_PlaybackDevice.PlayOneShot(m_Path);
+		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot play sound from empty filepath!");
+		m_PlaybackDevice.PlayOneShot(m_AudioClip.Filepath);
 	}
 
 	void AudioSource::Pause()
@@ -76,6 +91,9 @@ namespace Vortex {
 
 	bool AudioSource::IsPlaying()
 	{
+		if (!m_IsLoaded)
+			return false;
+
 		return m_PlaybackDevice.IsPlaying();
 	}
 
@@ -97,7 +115,7 @@ namespace Vortex {
 		m_Properties.Velocity = velocity;
 	}
 
-	void AudioSource::SetCone(const SoundProperties::AudioCone& cone)
+	void AudioSource::SetCone(const AudioCone& cone)
 	{
 		m_PlaybackDevice.SetCone(cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
 		m_Properties.Cone = cone;
@@ -155,15 +173,48 @@ namespace Vortex {
 		m_Properties.PlayOneShot = playOneShot;
 	}
 
-	void AudioSource::Reload()
+	const std::string& AudioSource::GetPath() const
 	{
-		VX_CORE_ASSERT(!m_Path.empty(), "Cannot load sound from empty filepath!");
-		LoadFromPathAndInitEngine(m_Path);
+		return m_AudioClip.Filepath;
+	}
+
+	void AudioSource::SetPath(const std::string& filepath)
+	{
+		m_AudioClip.Filepath = filepath;
+	}
+
+	const AudioClip& AudioSource::GetAudioClip() const
+	{
+		return m_AudioClip;
+	}
+
+	float AudioSource::GetAmountComplete()
+	{
+		return m_PlaybackDevice.GetSoundCursor() / m_AudioClip.Length;
+	}
+
+	PlaybackDevice& AudioSource::GetPlaybackDevice()
+	{
+		return m_PlaybackDevice;
+	}
+
+	const PlaybackDevice& AudioSource::GetPlaybackDevice() const
+	{
+		return m_PlaybackDevice;
+	}
+
+	const SoundProperties& AudioSource::GetProperties() const
+	{
+		return m_Properties;
+	}
+
+	SoundProperties& AudioSource::GetProperties()
+	{
+		return m_Properties;
 	}
 
 	void AudioSource::SetProperties(const SoundProperties& soundProps)
     {
-		m_Properties = soundProps;
 		SetDirection(soundProps.Direction);
 		SetVelocity(soundProps.Velocity);
 		SetCone(soundProps.Cone);
@@ -178,30 +229,11 @@ namespace Vortex {
 		SetLoop(soundProps.Loop);
     }
 
-    float AudioSource::GetAmountComplete()
-	{
-		return m_PlaybackDevice.GetSoundCursor() / m_AudioClip.Length;
-	}
-
 	void AudioSource::Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
 		const SoundProperties& srcProps = src->GetProperties();
 		dest->SetProperties(srcProps);
-	}
-
-	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
-	{
-		VX_CORE_ASSERT(!filepath.empty(), "Cannot load empty file!");
-
-		m_IsLoaded = m_PlaybackDevice.Init(filepath, &m_AudioClip.Length);
-
-		if (!m_IsLoaded)
-			return;
-
-		size_t lastSlashPos = filepath.find_last_of("/\\");
-		std::string filename = filepath.substr(lastSlashPos + 1);
-		m_AudioClip.Name = filename;
 	}
 
 	SharedReference<AudioSource> AudioSource::Create(const std::string& filepath)

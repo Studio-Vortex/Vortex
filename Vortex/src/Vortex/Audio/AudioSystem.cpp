@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	struct AudioEngineInternalData
+	struct AudioSystemInternalData
 	{
 		ma_result Result;
 		ma_context Context;
@@ -14,7 +14,7 @@ namespace Vortex {
 		ma_device_info* pPlaybackDeviceInfos;
 	};
 
-	static AudioEngineInternalData s_Data;
+	static AudioSystemInternalData s_Data;
 
 	void AudioSystem::Init()
 	{

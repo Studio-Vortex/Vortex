@@ -1362,12 +1362,13 @@ namespace Vortex {
 	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
 	{
 		component.Source = AudioSource::Create();
+		// TODO register audio source here
 	}
 
 	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)
 	{
 		component.Listener = AudioListener::Create();
-		AudioSource::AddAudioListener();
+		// TODO add audio listener here
 	}
 	
 	template <> void Scene::OnComponentAdded<RigidBodyComponent>(Entity entity, RigidBodyComponent& component) { }

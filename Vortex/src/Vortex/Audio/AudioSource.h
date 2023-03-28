@@ -5,8 +5,8 @@
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Audio/SoundProperties.h"
-#include "Vortex/Audio/AudioClip.h"
 #include "Vortex/Audio/PlaybackDevice.h"
+#include "Vortex/Audio/AudioClip.h"
 
 namespace Vortex {
 
@@ -17,7 +17,7 @@ namespace Vortex {
 		AudioSource(const std::string& filepath);
 		~AudioSource() override;
 
-		const AudioClip& GetAudioClip() const;
+		void Reload();
 
 		void Play();
 		void PlayOneShot();
@@ -33,7 +33,7 @@ namespace Vortex {
 		void SetDirection(const Math::vec3& direction);
 		void SetVelocity(const Math::vec3& velocity);
 
-		void SetCone(const SoundProperties::AudioCone& cone);
+		void SetCone(const AudioCone& cone);
 
 		void SetMinDistance(float minDistance);
 		void SetMaxDistance(float maxDistance);
@@ -46,19 +46,18 @@ namespace Vortex {
 		void SetPlayOnStart(bool playOnStart);
 		void SetPlayOneShot(bool playOneShot);
 
-		inline const std::string& GetPath() const { return m_Path; }
-		inline void SetPath(const std::string& filepath) { m_Path = filepath; }
+		const std::string& GetPath() const;
+		void SetPath(const std::string& filepath);
 
-		void Reload();
-
-		inline const SoundProperties& GetProperties() const { return m_Properties; }
-		inline SoundProperties& GetProperties() { return m_Properties; }
-		void SetProperties(const SoundProperties& soundProps);
-
-		inline static uint32_t AddAudioListener() { return ++s_ListenerCount; }
-		inline static void RemoveAudioListener() { --s_ListenerCount; }
-
+		const AudioClip& GetAudioClip() const;
 		float GetAmountComplete();
+
+		PlaybackDevice& GetPlaybackDevice();
+		const PlaybackDevice& GetPlaybackDevice() const;
+
+		const SoundProperties& GetProperties() const;
+		SoundProperties& GetProperties();
+		void SetProperties(const SoundProperties& soundProps);
 
 		static void Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src);
 
@@ -71,10 +70,6 @@ namespace Vortex {
 		void LoadFromPathAndInitEngine(const std::string& filepath);
 
 	private:
-		inline static uint32_t s_ListenerCount = 0;
-
-	private:
-		std::string m_Path;
 		PlaybackDevice m_PlaybackDevice;
 		SoundProperties m_Properties;
 		AudioClip m_AudioClip;
