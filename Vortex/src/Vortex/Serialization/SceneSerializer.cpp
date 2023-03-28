@@ -14,7 +14,6 @@
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
-#include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
@@ -440,8 +439,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Visible, lightComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightComponent.Type), out);
 
-			SharedRef<LightSource> lightSource = lightComponent.Source;
-			VX_SERIALIZE_PROPERTY(Radiance, lightSource->GetRadiance(), out);
+			VX_SERIALIZE_PROPERTY(Radiance, lightComponent.Radiance, out);
 
 			switch (lightComponent.Type)
 			{
@@ -455,17 +453,17 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					VX_SERIALIZE_PROPERTY(CutOff, lightSource->GetCutOff(),  out);
-					VX_SERIALIZE_PROPERTY(OuterCutOff, lightSource->GetOuterCutOff(), out);
+					VX_SERIALIZE_PROPERTY(CutOff, lightComponent.Cutoff,  out);
+					VX_SERIALIZE_PROPERTY(OuterCutOff, lightComponent.OuterCutoff, out);
 
 					break;
 				}
 			}
 
-			VX_SERIALIZE_PROPERTY(Intensity, lightSource->GetIntensity(), out);
-			VX_SERIALIZE_PROPERTY(ShadowBias, lightSource->GetShadowBias(), out);
-			VX_SERIALIZE_PROPERTY(CastShadows, lightSource->GetCastShadows(), out);
-			VX_SERIALIZE_PROPERTY(SoftShadows, lightSource->GetSoftShadows(), out);
+			VX_SERIALIZE_PROPERTY(Intensity, lightComponent.Intensity, out);
+			VX_SERIALIZE_PROPERTY(ShadowBias, lightComponent.ShadowBias, out);
+			VX_SERIALIZE_PROPERTY(CastShadows, lightComponent.CastShadows, out);
+			VX_SERIALIZE_PROPERTY(SoftShadows, lightComponent.SoftShadows, out);
 
 			out << YAML::EndMap; // LightSourceComponent
 		}
@@ -1080,8 +1078,6 @@ namespace Vortex {
 			if (lightSourceComponent)
 			{
 				auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
-
-				lightComponent.Source = LightSource::Create(LightSourceProperties());
 				
 				if (lightSourceComponent["Visible"])
 					lightComponent.Visible = lightSourceComponent["Visible"].as<bool>();
@@ -1089,7 +1085,7 @@ namespace Vortex {
 				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
 
 				if (lightSourceComponent["Radiance"])
-					lightComponent.Source->SetRadiance(lightSourceComponent["Radiance"].as<Math::vec3>());
+					lightComponent.Radiance = lightSourceComponent["Radiance"].as<Math::vec3>();
 
 				switch (lightComponent.Type)
 				{
@@ -1104,25 +1100,25 @@ namespace Vortex {
 					case LightType::Spot:
 					{
 						if (lightSourceComponent["CutOff"])
-							lightComponent.Source->SetCutOff(lightSourceComponent["CutOff"].as<float>());
+							lightComponent.Cutoff = lightSourceComponent["CutOff"].as<float>();
 						if (lightSourceComponent["OuterCutOff"])
-							lightComponent.Source->SetOuterCutOff(lightSourceComponent["OuterCutOff"].as<float>());
+							lightComponent.OuterCutoff = lightSourceComponent["OuterCutOff"].as<float>();
 
 						break;
 					}
 				}
 
 				if (lightSourceComponent["Intensity"])
-					lightComponent.Source->SetIntensity(lightSourceComponent["Intensity"].as<float>());
+					lightComponent.Intensity = lightSourceComponent["Intensity"].as<float>();
 
 				if (lightSourceComponent["ShadowBias"])
-					lightComponent.Source->SetShadowBias(lightSourceComponent["ShadowBias"].as<float>());
+					lightComponent.ShadowBias = lightSourceComponent["ShadowBias"].as<float>();
 
 				if (lightSourceComponent["CastShadows"])
-					lightComponent.Source->SetCastShadows(lightSourceComponent["CastShadows"].as<bool>());
+					lightComponent.CastShadows = lightSourceComponent["CastShadows"].as<bool>();
 
 				if (lightSourceComponent["SoftShadows"])
-					lightComponent.Source->SetSoftShadows(lightSourceComponent["SoftShadows"].as<bool>());
+					lightComponent.SoftShadows = lightSourceComponent["SoftShadows"].as<bool>();
 			}
 
 			auto meshComponent = entity["MeshRendererComponent"];

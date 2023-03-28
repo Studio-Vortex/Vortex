@@ -42,7 +42,7 @@ namespace Vortex {
 	public:
 		Scene() = default;
 		Scene(SharedRef<Framebuffer> targetFramebuffer);
-		~Scene() override = default;
+		~Scene() override;
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
 		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
@@ -152,8 +152,14 @@ namespace Vortex {
 		static SharedReference<Scene> Create();
 
 	private:
-		template <typename TComponent>
-		void OnComponentAdded(Entity entity, TComponent& component);
+		void OnCameraConstruct(entt::registry& registry, entt::entity e);
+		void OnStaticMeshConstruct(entt::registry& registry, entt::entity e);
+		void OnParticleEmitterConstruct(entt::registry& registry, entt::entity e);
+		void OnTextMeshConstruct(entt::registry& registry, entt::entity e);
+		void OnAnimatorConstruct(entt::registry& registry, entt::entity e);
+		void OnAnimationConstruct(entt::registry& registry, entt::entity e);
+		void OnAudioSourceConstruct(entt::registry& registry, entt::entity e);
+		void OnAudioListenerConstruct(entt::registry& registry, entt::entity e);
 
 		void SetSceneCameraViewportSize();
 

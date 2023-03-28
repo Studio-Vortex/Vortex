@@ -106,8 +106,6 @@ namespace Gui = ImGui;
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Material.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Font/Font.h"
 /// ---------------------------------------------------

@@ -61,7 +61,6 @@ namespace Vortex {
 		YAML::Node prefabNode = data["Prefab"];
 		SharedRef<Prefab> prefab = Prefab::Create(FileSystem::Relative(filepath, Project::GetProjectDirectory()));
 		SceneSerializer::DeserializeEntities(prefabNode, prefab->m_Scene);
-		prefabComponent.EntityPrefab = prefab;
 
 		return true;
 	}

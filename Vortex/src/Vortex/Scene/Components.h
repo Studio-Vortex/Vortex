@@ -2,13 +2,16 @@
 
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Scene/SceneCamera.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
-#include "Vortex/Physics/3D/PhysicsMaterial.h"
-#include "Vortex/Renderer/Texture.h"
+
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
-#include "Vortex/Renderer/LightSource.h"
+
+#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
+
+#include "Vortex/Scene/SceneCamera.h"
+
+#include "Vortex/Renderer/Texture.h"
 
 namespace Vortex {
 
@@ -71,10 +74,7 @@ namespace Vortex {
 			: ParentUUID(parentUUID) { }
 	};
 
-	enum class Space
-	{
-		Local, World,
-	};
+	enum class Space { Local, World, };
 
 	struct TransformComponent
 	{
@@ -147,7 +147,6 @@ namespace Vortex {
 
 	struct PrefabComponent
 	{
-		SharedRef<Prefab> EntityPrefab = nullptr;
 		UUID PrefabUUID = 0;
 		UUID EntityUUID = 0;
 
@@ -161,8 +160,6 @@ namespace Vortex {
 
 	// Forward declarations
 	class MaterialTable;
-	class LightSource;
-	class LightSource2D;
 	class ParticleEmitter;
 	class Animator;
 	class Animation;
@@ -190,7 +187,9 @@ namespace Vortex {
 
 	struct LightSource2DComponent
 	{
-		SharedRef<LightSource2D> Source = nullptr;
+		Math::vec3 Color = Math::vec3(1.0f);
+		float Intensity = 1.0f;
+
 		bool Visible = true;
 
 		LightSource2DComponent() = default;
@@ -202,13 +201,25 @@ namespace Vortex {
 	struct LightSourceComponent
 	{
 		LightType Type = LightType::Directional;
-		SharedRef<LightSource> Source = nullptr;
+
+		Math::vec3 Radiance = Math::vec3(1.0f);
+		float Intensity = 1.0f;
+
+		// Spotlight Only
+		float Cutoff = 12.5f;
+		float OuterCutoff = 17.5f;
+
+		// Shadow Settings
+		float ShadowBias = 0.2f;
+		bool CastShadows = true;
+		bool SoftShadows = true;
+		
 		bool Visible = true;
 
 		LightSourceComponent() = default;
 		LightSourceComponent(const LightSourceComponent&) = default;
-		LightSourceComponent(LightType type, SharedRef<LightSource> source)
-			: Type(type), Source(source) { }
+		LightSourceComponent(LightType type)
+			: Type(type) { }
 	};
 
 	struct MeshRendererComponent

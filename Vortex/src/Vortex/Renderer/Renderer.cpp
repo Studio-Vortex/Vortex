@@ -172,9 +172,8 @@ namespace Vortex {
 
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
 	{
-		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
-		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYCOUNT(shaders);
 
 		switch (lightSourceComponent.Type)
 		{
@@ -184,21 +183,18 @@ namespace Vortex {
 				Math::mat4 lightView = Math::LookAt(transform.Translation, transform.GetRotationEuler(), Math::vec3(0.0f, 1.0f, 0.0f));
 				Math::mat4 lightProjection = orthogonalProjection * lightView;
 
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_SkyLight.Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
-				pbrShader->SetFloat("u_SkyLight.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
-				pbrShader->SetBool("u_SkyLight.SoftShadows", lightSource->GetSoftShadows());
-				pbrShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
-				pbrShader->SetMat4("u_SkyLightProjection", lightProjection);
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
 
-				pbrStaticShader->Enable();
-				pbrStaticShader->SetFloat3("u_SkyLight.Radiance", lightSource->GetRadiance());
-				pbrStaticShader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
-				pbrStaticShader->SetFloat("u_SkyLight.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
-				pbrStaticShader->SetBool("u_SkyLight.SoftShadows", lightSource->GetSoftShadows());
-				pbrStaticShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
-				pbrStaticShader->SetMat4("u_SkyLightProjection", lightProjection);
+					shader->Enable();
+					shader->SetFloat3("u_SkyLight.Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
+					shader->SetFloat("u_SkyLight.ShadowBias", lightSourceComponent.ShadowBias / 1'000.0f);
+					shader->SetBool("u_SkyLight.SoftShadows", lightSourceComponent.SoftShadows);
+					shader->SetFloat("u_SkyLight.Intensity", lightSourceComponent.Intensity);
+					shader->SetMat4("u_SkyLightProjection", lightProjection);
+				}
 
 				s_Data.SceneLightDesc.HasSkyLight = true;
 
@@ -206,53 +202,46 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.PointLightIndex;
+				uint32_t& pointLightIndex = s_Data.SceneLightDesc.PointLightIndex;
 
-				if (i + 1 > RendererInternalData::MaxPointLights)
+				if (pointLightIndex > RendererInternalData::MaxPointLights - 1)
 					break;
 
-				lightSource->SetPointLightIndex(i);
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
 
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Position", transform.Translation);
-				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Intensity", lightSource->GetIntensity());
+					shader->Enable();
+					shader->SetFloat3("u_PointLights[" + std::to_string(pointLightIndex) + "].Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_PointLights[" + std::to_string(pointLightIndex) + "].Position", transform.Translation);
+					shader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].Intensity", lightSourceComponent.Intensity);
+				}
 
-				pbrStaticShader->Enable();
-				pbrStaticShader->SetFloat3("u_PointLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
-				pbrStaticShader->SetFloat3("u_PointLights[" + std::to_string(i) + "].Position", transform.Translation);
-				pbrStaticShader->SetFloat("u_PointLights[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
-
-				i++;
+				pointLightIndex++;
 
 				break;
 			}
 			case LightType::Spot:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.SpotLightIndex;
+				uint32_t& spotLightIndex = s_Data.SceneLightDesc.SpotLightIndex;
 
-				if (i + 1 > RendererInternalData::MaxSpotLights)
+				if (spotLightIndex > RendererInternalData::MaxSpotLights - 1)
 					break;
 
-				lightSource->SetSpotLightIndex(i);
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
 
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Position", transform.Translation);
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Direction", transform.GetRotationEuler());
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+					shader->Enable();
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Position", transform.Translation);
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Direction", transform.GetRotationEuler());
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].Intensity", lightSourceComponent.Intensity);
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSourceComponent.Cutoff)));
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSourceComponent.OuterCutoff)));
+				}
 
-				pbrStaticShader->Enable();
-				pbrStaticShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
-				pbrStaticShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Position", transform.Translation);
-				pbrStaticShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Direction", transform.GetRotationEuler());
-				pbrStaticShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
-				pbrStaticShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				pbrStaticShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
-
-				i++;
+				spotLightIndex++;
 
 				break;
 			}
@@ -568,7 +557,7 @@ namespace Vortex {
 			{
 				case LightType::Directional:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
 					{
 						s_Data.SkylightDepthMapFramebuffer.reset();
 						continue;
@@ -580,7 +569,7 @@ namespace Vortex {
 				}
 				case LightType::Point:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
 					{
 						continue;
 					}
@@ -591,7 +580,7 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
 					{
 						continue;
 					}

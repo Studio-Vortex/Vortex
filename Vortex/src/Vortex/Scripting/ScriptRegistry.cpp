@@ -29,7 +29,6 @@
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Renderer/LightSource.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
@@ -1469,8 +1468,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			*outRadiance = lightSource->GetRadiance();
+			*outRadiance = lightSourceComponent.Radiance;
 		}
 
 		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
@@ -1483,9 +1481,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetRadiance(*radiance);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.Radiance = *radiance;
 		}
 
 		float LightSourceComponent_GetIntensity(UUID entityUUID)
@@ -1499,8 +1496,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetIntensity();
+			return lightSourceComponent.Intensity;
 		}
 
 		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
@@ -1513,9 +1509,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetIntensity(intensity);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.Intensity = intensity;
 		}
 
 		float LightSourceComponent_GetCutoff(UUID entityUUID)
@@ -1529,8 +1524,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetCutOff();
+			return lightSourceComponent.Cutoff;
 		}
 
 		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
@@ -1543,9 +1537,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetCutOff(cutoff);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.Cutoff = cutoff;
 		}
 
 		float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
@@ -1559,8 +1552,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetOuterCutOff();
+			return lightSourceComponent.OuterCutoff;
 		}
 
 		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
@@ -1573,9 +1565,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetOuterCutOff(outerCutoff);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.OuterCutoff = outerCutoff;
 		}
 
 		float LightSourceComponent_GetShadowBias(UUID entityUUID)
@@ -1589,8 +1580,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetShadowBias();
+			return lightSourceComponent.ShadowBias;
 		}
 
 		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
@@ -1603,9 +1593,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetShadowBias(shadowBias);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.ShadowBias = shadowBias;
 		}
 
 		bool LightSourceComponent_GetCastShadows(UUID entityUUID)
@@ -1619,8 +1608,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetCastShadows();
+			return lightSourceComponent.CastShadows;
 		}
 
 		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
@@ -1633,9 +1621,8 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetCastShadows(castShadows);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.CastShadows = castShadows;
 		}
 
 		bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
@@ -1649,8 +1636,7 @@ namespace Vortex {
 			}
 
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			return lightSource->GetSoftShadows();
+			return lightSourceComponent.SoftShadows;
 		}
 
 		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
@@ -1663,14 +1649,20 @@ namespace Vortex {
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-			SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-			lightSource->SetSoftShadows(softShadows);
+			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			lightSourceComponent.SoftShadows = softShadows;
 		}
 
 		bool LightSourceComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Visible without a Light Source!");
+				return false;
+			}
+
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.Visible;
 		}
@@ -1678,6 +1670,13 @@ namespace Vortex {
 		void LightSourceComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<LightSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Visible without a Light Source!");
+				return;
+			}
+
 			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Visible = visible;
 		}
@@ -1860,6 +1859,13 @@ namespace Vortex {
 		bool TextMeshComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Visible without a Text Mesh!");
+				return false;
+			}
+
 			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 			return textMeshComponent.Visible;
 		}
@@ -1867,6 +1873,13 @@ namespace Vortex {
 		void TextMeshComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Visible without a Text Mesh!");
+				return;
+			}
+
 			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 			textMeshComponent.Visible = visible;
 		}
@@ -1956,6 +1969,13 @@ namespace Vortex {
 		bool MeshRendererComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access MeshRenderer.Visible without a Mesh Renderer!");
+				return false;
+			}
+
 			const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 			return meshRendererComponent.Visible;
 		}
@@ -1963,6 +1983,13 @@ namespace Vortex {
 		void MeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<MeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set MeshRenderer.Visible without a Mesh Renderer!");
+				return;
+			}
+
 			MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 			meshRendererComponent.Visible = visible;
 		}
@@ -2044,6 +2071,13 @@ namespace Vortex {
 		bool StaticMeshRendererComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+			
+			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				return false;
+			}
+
 			const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 			return staticMeshRendererComponent.Visible;
 		}
@@ -2051,6 +2085,13 @@ namespace Vortex {
 		void StaticMeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				return;
+			}
+
 			StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRendererComponent.Visible = visible;
 		}
@@ -2695,6 +2736,13 @@ namespace Vortex {
 		bool SpriteRendererComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Visible without a Sprite Renderer!");
+				return false;
+			}
+
 			const SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
 			return spriteRendererComponent.Visible;
 		}
@@ -2702,6 +2750,13 @@ namespace Vortex {
 		void SpriteRendererComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<SpriteRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Visible without a Sprite Renderer!");
+				return;
+			}
+
 			SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
 			spriteRendererComponent.Visible = visible;
 		}
@@ -2797,6 +2852,13 @@ namespace Vortex {
 		bool CircleRendererComponent_IsVisible(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Visible without a Circle Renderer!");
+				return false;
+			}
+
 			const CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
 			return circleRendererComponent.Visible;
 		}
@@ -2804,6 +2866,13 @@ namespace Vortex {
 		void CircleRendererComponent_SetVisible(UUID entityUUID, bool visible)
 		{
 			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CircleRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Visible without a Circle Renderer!");
+				return;
+			}
+
 			CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
 			circleRendererComponent.Visible = visible;
 		}

@@ -16,8 +16,6 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/LightSource2D.h"
 
 #include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Editor/EditorResources.h"

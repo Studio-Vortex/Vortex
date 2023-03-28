@@ -242,6 +242,10 @@ namespace Vortex {
 		SetDirection(soundProps.Direction);
 		SetVelocity(soundProps.Velocity);
 		SetCone(soundProps.Cone);
+		SetMinGain(soundProps.MinGain);
+		SetMaxGain(soundProps.MaxGain);
+		SetAttenuationModel(soundProps.AttenuationModel);
+		SetFalloff(soundProps.Falloff);
 		SetMinDistance(soundProps.MinDistance);
 		SetMaxDistance(soundProps.MaxDistance);
 		SetPitch(soundProps.Pitch);

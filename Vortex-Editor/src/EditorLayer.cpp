@@ -1926,14 +1926,14 @@ namespace Vortex {
 
 					if (lightSourceComponent.Type == LightType::Point)
 					{
-						Math::vec4 color = { lightSourceComponent.Source->GetRadiance(), 1.0f };
+						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
 
 						Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-						const float intensity = lightSourceComponent.Source->GetIntensity() * 0.5f;
+						const float radius = lightSourceComponent.Intensity * 0.5f;
 
-						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, intensity, color);
-						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, intensity, color);
-						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, intensity, color);
+						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
 					}
 				}
 			}

@@ -2,7 +2,6 @@
 #include "Renderer2D.h"
 
 #include "Vortex/Renderer/RenderCommand.h"
-#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
@@ -429,20 +428,19 @@ namespace Vortex
 
 	void Renderer2D::RenderLightSource(const TransformComponent& transform, const LightSource2DComponent& lightSourceComponent)
 	{
-		SharedRef<LightSource2D> lightSource = lightSourceComponent.Source;
 		uint32_t& i = s_Data.LightSourceIndex;
 
 		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 		quadShader->Enable();
-		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSourceComponent.Color);
 		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
-		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSourceComponent.Intensity);
 
 		SharedReference<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
 		circleShader->Enable();
-		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSourceComponent.Color);
 		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
-		circleShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+		circleShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSourceComponent.Intensity);
 
 		i++;
 	}

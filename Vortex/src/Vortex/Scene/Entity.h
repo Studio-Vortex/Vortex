@@ -25,8 +25,6 @@ namespace Vortex {
 		{
 			VX_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already has this Component!");
 			TComponent& component = m_Scene->m_Registry.emplace<TComponent>(m_EntityID, std::forward<Args>(args)...);
-			m_Scene->OnComponentAdded<TComponent>(*this, component);
-
 			return component;
 		}
 
@@ -34,8 +32,6 @@ namespace Vortex {
 		inline TComponent& AddOrReplaceComponent(Args&&... args) const
 		{
 			TComponent& component = m_Scene->m_Registry.emplace_or_replace<TComponent>(m_EntityID, std::forward<Args>(args)...);
-			m_Scene->OnComponentAdded<TComponent>(*this, component);
-
 			return component;
 		}
 
@@ -43,7 +39,6 @@ namespace Vortex {
 		inline void RemoveComponent() const
 		{
 			VX_CORE_ASSERT(HasComponent<TComponent...>(), "Entity does not have this Component!");
-
 			m_Scene->m_Registry.remove<TComponent...>(m_EntityID);
 		}
 
@@ -51,7 +46,6 @@ namespace Vortex {
 		inline TComponent& GetComponent() const
 		{
 			VX_CORE_ASSERT(HasComponent<TComponent>(), "Entity does not have this Component!");
-
 			return m_Scene->m_Registry.get<TComponent>(m_EntityID);
 		}
 
@@ -145,6 +139,7 @@ namespace Vortex {
 		entt::entity m_EntityID = entt::null;
 		Scene* m_Scene = nullptr;
 
+	private:
 		friend class Prefab;
 	};
 

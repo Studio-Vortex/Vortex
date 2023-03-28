@@ -886,9 +886,7 @@ namespace Vortex {
 					{
 						auto ResetLightFunc = [&](auto type)
 						{
-							component = LightSourceComponent();
-							component.Source = LightSource::Create(LightSourceProperties());
-							component.Type = type;
+							component = LightSourceComponent(type);
 						};
 
 						switch (component.Type)
@@ -1261,8 +1259,6 @@ namespace Vortex {
 			if (UI::PropertyDropdown("Light Type", lightTypes, VX_ARRAYCOUNT(lightTypes), currentLightType))
 				component.Type = (LightType)currentLightType;
 
-			SharedRef<LightSource> lightSource = component.Source;
-
 			switch (component.Type)
 			{
 				case LightType::Directional:
@@ -1275,25 +1271,15 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					float cutoff = lightSource->GetCutOff();
-					if (UI::Property("CutOff", cutoff))
-						lightSource->SetCutOff(cutoff);
-
-					float outerCutoff = lightSource->GetOuterCutOff();
-					if (UI::Property("Outer CutOff", outerCutoff))
-						lightSource->SetOuterCutOff(outerCutoff);
+					UI::Property("CutOff", component.Cutoff);
+					UI::Property("Outer CutOff", component.OuterCutoff);
 
 					break;
 				}
 			}
 
-			Math::vec3 radiance = lightSource->GetRadiance();
-			if (UI::Property("Radiance", &radiance))
-				lightSource->SetRadiance(radiance);
-
-			float intensity = lightSource->GetIntensity();
-			if (UI::Property("Intensity", intensity, 0.05f, 0.05f))
-				lightSource->SetIntensity(intensity);
+			UI::Property("Radiance", &component.Radiance);
+			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
 
 			UI::EndPropertyGrid();
 
@@ -1301,26 +1287,18 @@ namespace Vortex {
 			{
 				UI::BeginPropertyGrid();
 
-				bool castShadows = lightSource->GetCastShadows();
-				if (UI::Property("Cast Shadows", castShadows))
+				if (UI::Property("Cast Shadows", component.CastShadows))
 				{
-					lightSource->SetCastShadows(castShadows);
-
-					if (castShadows)
+					if (component.CastShadows)
 					{
 						Renderer::CreateShadowMap(component.Type);
 					}
 				}
 
-				if (castShadows)
+				if (component.CastShadows)
 				{
-					bool softShadows = lightSource->GetSoftShadows();
-					if (UI::Property("Soft Shadows", softShadows))
-						lightSource->SetSoftShadows(softShadows);
-
-					float shadowBias = lightSource->GetShadowBias();
-					if (UI::Property("Shadow Bias", shadowBias, 1.0f, 0.0f, 1000.0f))
-						lightSource->SetShadowBias(shadowBias);
+					UI::Property("Soft Shadows", component.SoftShadows);
+					UI::Property("Shadow Bias", component.ShadowBias, 1.0f, 0.0f, 1000.0f);
 				}
 
 				UI::EndPropertyGrid();

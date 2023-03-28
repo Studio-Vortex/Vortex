@@ -8,7 +8,6 @@
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Renderer/LightSource.h"
 
 namespace Vortex {
 

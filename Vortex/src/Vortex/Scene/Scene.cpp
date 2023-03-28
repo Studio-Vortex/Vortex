@@ -14,8 +14,6 @@
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/Framebuffer.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
@@ -49,10 +47,6 @@ namespace Vortex {
 				{
 					entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-					// Copy the entity's marker
-					auto& srcTagComponent = src.get<TagComponent>(srcEntity);
-					dst.emplace_or_replace<TagComponent>(dstEntity, srcTagComponent);
-
 					auto& srcComponent = src.get<TComponent>(srcEntity);
 					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
 				}
@@ -75,72 +69,6 @@ namespace Vortex {
 				if (src.HasComponent<TComponent>())
 				{
 					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
-
-					// Copy Resources
-					{
-						if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
-						{
-							auto& srcStaticMesh = src.GetComponent<StaticMeshRendererComponent>();
-							auto& dstStaticMesh = dst.GetComponent<StaticMeshRendererComponent>();
-
-							AssetHandle srcStaticMeshHandle = srcStaticMesh.StaticMesh;
-							AssetHandle dstStaticMeshHandle = dstStaticMesh.StaticMesh;
-							
-							auto srcMesh = AssetManager::GetAsset<StaticMesh>(srcStaticMeshHandle);
-							auto dstMesh = AssetManager::GetAsset<StaticMesh>(dstStaticMeshHandle);
-							
-							const auto& submeshes = srcMesh->GetSubmeshes();
-
-							for (uint32_t submeshIndex = 0; submeshIndex < submeshes.size(); submeshIndex++)
-							{
-								dstStaticMesh.Materials->SetMaterial(submeshIndex, srcStaticMesh.Materials->GetMaterial(submeshIndex));
-							}
-						}
-
-						if constexpr (std::is_same<TComponent, SkyboxComponent>())
-						{
-							AssetHandle srcSkyboxHandle = src.GetComponent<SkyboxComponent>().Skybox;
-							AssetHandle dstSkyboxHandle = dst.GetComponent<SkyboxComponent>().Skybox;
-
-							auto srcSkybox = AssetManager::GetAsset<Skybox>(srcSkyboxHandle);
-							auto dstSkybox = AssetManager::GetAsset<Skybox>(dstSkyboxHandle);
-
-							Skybox::Copy(dstSkybox, srcSkybox);
-						}
-
-						if constexpr (std::is_same<TComponent, LightSourceComponent>())
-						{
-							const auto& sourceLightSource = src.GetComponent<LightSourceComponent>().Source;
-							auto& destinationLightSource = dst.GetComponent<LightSourceComponent>().Source;
-							LightSource::Copy(destinationLightSource, sourceLightSource);
-						}
-
-						if constexpr (std::is_same<TComponent, AudioSourceComponent>())
-						{
-							const auto& sourceAudioSource = src.GetComponent<AudioSourceComponent>().Source;
-							auto& destinationAudioSource = dst.GetComponent<AudioSourceComponent>().Source;
-							AudioSource::Copy(destinationAudioSource, sourceAudioSource);
-						}
-
-						if constexpr (std::is_same<TComponent, ParticleEmitterComponent>())
-						{
-							const auto& sourceEmitter = src.GetComponent<ParticleEmitterComponent>().Emitter;
-							auto& destinationEmitter = dst.GetComponent<ParticleEmitterComponent>().Emitter;
-							ParticleEmitter::Copy(destinationEmitter, sourceEmitter);
-						}
-
-						// If we copy a script component, we should probably copy all of the script field values as well...
-						if constexpr (std::is_same<TComponent, ScriptComponent>())
-						{
-							const auto& sourceScriptFieldMap = ScriptEngine::GetMutableScriptFieldMap(src);
-							auto& destinationScriptFieldMap = ScriptEngine::GetMutableScriptFieldMap(dst);
-
-							for (const auto& [name, field] : sourceScriptFieldMap)
-							{
-								destinationScriptFieldMap[name] = field;
-							}
-						}
-					}
 				}
 			}(), ...);
 		}
@@ -156,7 +84,29 @@ namespace Vortex {
 	static SceneRenderer s_SceneRenderer;
 
 	Scene::Scene(SharedRef<Framebuffer> targetFramebuffer)
-		: m_TargetFramebuffer(targetFramebuffer) { }
+		: m_TargetFramebuffer(targetFramebuffer)
+	{
+		m_Registry.on_construct<CameraComponent>().connect<&Scene::OnCameraConstruct>(this);
+		m_Registry.on_construct<StaticMeshRendererComponent>().connect<&Scene::OnStaticMeshConstruct>(this);
+		m_Registry.on_construct<ParticleEmitterComponent>().connect<&Scene::OnParticleEmitterConstruct>(this);
+		m_Registry.on_construct<TextMeshComponent>().connect<&Scene::OnTextMeshConstruct>(this);
+		m_Registry.on_construct<AnimatorComponent>().connect<&Scene::OnAnimatorConstruct>(this);
+		m_Registry.on_construct<AnimationComponent>().connect<&Scene::OnAnimationConstruct>(this);
+		m_Registry.on_construct<AudioSourceComponent>().connect<&Scene::OnAudioSourceConstruct>(this);
+		m_Registry.on_construct<AudioListenerComponent>().connect<&Scene::OnAudioListenerConstruct>(this);
+	}
+
+	Scene::~Scene()
+	{
+		m_Registry.on_construct<CameraComponent>().disconnect();
+		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
+		m_Registry.on_construct<ParticleEmitterComponent>().disconnect();
+		m_Registry.on_construct<TextMeshComponent>().disconnect();
+		m_Registry.on_construct<AnimatorComponent>().disconnect();
+		m_Registry.on_construct<AnimationComponent>().disconnect();
+		m_Registry.on_construct<AudioSourceComponent>().disconnect();
+		m_Registry.on_construct<AudioListenerComponent>().disconnect();
+	}
 
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
 	{
@@ -1259,97 +1209,84 @@ namespace Vortex {
 		m_SceneMeshes->WorldSpaceStaticMeshTransforms.clear();
 	}
 
-	template <typename TComponent>
-	void Scene::OnComponentAdded(Entity entity, TComponent& component)
+	void Scene::OnCameraConstruct(entt::registry& registry, entt::entity e)
 	{
-		static_assert(sizeof(TComponent) != 0);
-	}
+		Entity entity = { e, this };
+		CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
-	template <> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
-	
-	template <> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<HierarchyComponent>(Entity entity, HierarchyComponent& component) { }
-	
-	template <> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<PrefabComponent>(Entity entity, PrefabComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
 		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			cameraComponent.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
-		if (component.Primary)
-			RenderCommand::SetClearColor(component.ClearColor);
+		if (cameraComponent.Primary)
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 	}
 
-	template <> void Scene::OnComponentAdded<SkyboxComponent>(Entity entity, SkyboxComponent& component)
+	void Scene::OnStaticMeshConstruct(entt::registry& registry, entt::entity e)
 	{
-		// TODO fix this with some kind of default
-		component.Skybox = 0;
-	}
+		Entity entity = { e, this };
+		StaticMeshRendererComponent& staticMeshComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
-	template <> void Scene::OnComponentAdded<LightSourceComponent>(Entity entity, LightSourceComponent& component)
-	{
-		component.Source = LightSource::Create(LightSourceProperties());
-	}
-
-	template <> void Scene::OnComponentAdded<LightSource2DComponent>(Entity entity, LightSource2DComponent& component)
-	{
-		component.Source = LightSource2D::Create(LightSource2DProperties());
-	}
-
-	template <> void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<StaticMeshRendererComponent>(Entity entity, StaticMeshRendererComponent& component)
-	{
-		if (component.Type != MeshType::Custom)
+		if (staticMeshComponent.Type != MeshType::Custom)
 		{
-			DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)component.Type;
+			DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)staticMeshComponent.Type;
 
-			component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
+			staticMeshComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
 
-			if (AssetManager::IsHandleValid(component.StaticMesh) && component.Materials->Empty())
+			SharedReference<MaterialTable> materialTable = staticMeshComponent.Materials;
+
+			if (AssetManager::IsHandleValid(staticMeshComponent.StaticMesh) && materialTable->Empty())
 			{
-				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-				staticMesh->LoadMaterialTable(component.Materials);
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshComponent.StaticMesh);
+				staticMesh->LoadMaterialTable(materialTable);
 			}
 		}
 	}
 
-	template <> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent& component)
+	void Scene::OnParticleEmitterConstruct(entt::registry& registry, entt::entity e)
 	{
-		component.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
+		Entity entity = { e, this };
+		ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+
+		particleEmitterComponent.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
 	}
 
-	template <> void Scene::OnComponentAdded<TextMeshComponent>(Entity entity, TextMeshComponent& component)
+	void Scene::OnTextMeshConstruct(entt::registry& registry, entt::entity e)
 	{
-		if (!AssetManager::IsHandleValid(component.FontAsset))
-			component.FontAsset = Font::GetDefaultFont()->Handle;
-	}
-	
-	template <> void Scene::OnComponentAdded<AnimatorComponent>(Entity entity, AnimatorComponent& component)
-	{
-		if (entity.HasComponent<AnimationComponent>())
+		Entity entity = { e, this };
+		TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+
+		if (!AssetManager::IsHandleValid(textMeshComponent.FontAsset))
 		{
-			component.Animator = Animator::Create(entity.GetComponent<AnimationComponent>().Animation);
+			textMeshComponent.FontAsset = Font::GetDefaultFont()->Handle;
 		}
 	}
 
-	template <> void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
+	void Scene::OnAnimatorConstruct(entt::registry& registry, entt::entity e)
 	{
+		Entity entity = { e, this };
+		AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+			animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+		}
+	}
+
+	void Scene::OnAnimationConstruct(entt::registry& registry, entt::entity e)
+	{
+		Entity entity = { e, this };
+		const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+
 		if (entity.HasComponent<MeshRendererComponent>())
 		{
 			auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
+
 			if (AssetManager::IsHandleValid(meshHandle))
 			{
 				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+
 				if (mesh)
 				{
 					// TODO fix this
@@ -1359,43 +1296,22 @@ namespace Vortex {
 		}
 	}
 
-	template <> void Scene::OnComponentAdded<AudioSourceComponent>(Entity entity, AudioSourceComponent& component)
+	void Scene::OnAudioSourceConstruct(entt::registry& registry, entt::entity e)
 	{
-		component.Source = AudioSource::Create();
-		// TODO register audio source here
+		Entity entity = { e, this };
+		AudioSourceComponent& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+
+		audioSourceComponent.Source = AudioSource::Create();
 	}
 
-	template <> void Scene::OnComponentAdded<AudioListenerComponent>(Entity entity, AudioListenerComponent& component)
+	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)
 	{
-		component.Listener = AudioListener::Create();
-		// TODO add audio listener here
+		Entity entity = { e, this };
+		AudioListenerComponent& audioListenerComponent = entity.GetComponent<AudioListenerComponent>();
+
+		// TODO handle listener index here?
+		audioListenerComponent.Listener = AudioListener::Create();
 	}
-	
-	template <> void Scene::OnComponentAdded<RigidBodyComponent>(Entity entity, RigidBodyComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<CharacterControllerComponent>(Entity entity, CharacterControllerComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<FixedJointComponent>(Entity entity, FixedJointComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<BoxColliderComponent>(Entity entity, BoxColliderComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<SphereColliderComponent>(Entity entity, SphereColliderComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<CapsuleColliderComponent>(Entity entity, CapsuleColliderComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<MeshColliderComponent>(Entity entity, MeshColliderComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<NavMeshAgentComponent>(Entity entity, NavMeshAgentComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) { }
-
-	template <> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) { }
 
 	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)
 	{
@@ -1448,12 +1364,14 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
-			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name);
+			const auto& tagComponent = srcSceneRegistry.get<TagComponent>(e);
+			const auto& name = tagComponent.Tag;
+			const auto& marker = tagComponent.Marker;
+			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name, marker);
 			enttMap[uuid] = (entt::entity)copiedEntity;
 		}
 
-		// Copy components (except IDComponent and TagComponent)
+		// Copy all components (except IDComponent and TagComponent)
 		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		destination->SortEntities();
