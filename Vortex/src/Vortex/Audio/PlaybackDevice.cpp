@@ -78,6 +78,16 @@ namespace Vortex {
 		AudioEngine::SetSoundCone(&m_Sound, innerAngleRad, outerAngleRad, outerGain);
 	}
 
+	void PlaybackDevice::SetAttenuationModel(AttenuationModel attenuationModel)
+	{
+		AudioEngine::SetSoundAttenuationModel(&m_Sound, attenuationModel);
+	}
+
+	void PlaybackDevice::SetFalloff(float falloff)
+	{
+		AudioEngine::SetSoundFalloff(&m_Sound, falloff);
+	}
+
 	void PlaybackDevice::SetMinDistance(float minDistance)
 	{
 		AudioEngine::SetSoundMinDistance(&m_Sound, minDistance);

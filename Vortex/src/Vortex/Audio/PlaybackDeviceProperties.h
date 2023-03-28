@@ -4,6 +4,7 @@
 #include "Vortex/Core/Math/Math.h"
 
 #include "Vortex/Audio/AudioCone.h"
+#include "Vortex/Audio/AttenuationModel.h"
 
 namespace Vortex {
 
@@ -14,7 +15,8 @@ namespace Vortex {
 		Math::vec3 Velocity = Math::vec3(0.0f);
 
 		AudioCone Cone;
-
+		AttenuationModel AttenuationModel = AttenuationModel::Inverse;
+		float Falloff = 1.0f;
 		float MinDistance = 1.0f;
 		float MaxDistance = 10.0f;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Audio/AttenuationModel.h"
 
 #include <string>
 
@@ -37,6 +38,8 @@ namespace Vortex {
 		static void SetSoundVeloctiy(ma_sound* sound, const Math::vec3& veloctiy);
 
 		static void SetSoundCone(ma_sound* sound, float innerAngleRadians, float outerAngleRadians, float outerGain);
+		static void SetSoundAttenuationModel(ma_sound* sound, AttenuationModel attenuationModel);
+		static void SetSoundFalloff(ma_sound* sound, float falloff);
 		static void SetSoundMinDistance(ma_sound* sound, float minDistance);
 		static void SetSoundMaxDistance(ma_sound* sound, float maxDistance);
 

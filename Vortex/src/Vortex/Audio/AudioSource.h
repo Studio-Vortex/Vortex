@@ -4,6 +4,7 @@
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
+#include "Vortex/Audio/AttenuationModel.h"
 #include "Vortex/Audio/PlaybackDeviceProperties.h"
 #include "Vortex/Audio/PlaybackDevice.h"
 #include "Vortex/Audio/AudioClip.h"
@@ -34,15 +35,17 @@ namespace Vortex {
 		void SetVelocity(const Math::vec3& velocity);
 
 		void SetCone(const AudioCone& cone);
-
+		void SetAttenuationModel(AttenuationModel attenuationModel);
+		void SetFalloff(float falloff);
 		void SetMinDistance(float minDistance);
 		void SetMaxDistance(float maxDistance);
+
 		void SetPitch(float pitch);
 		void SetDopplerFactor(float dopplerFactor);
 		void SetVolume(float volume);
-
 		void SetSpacialized(bool spacialized);
-		void SetLoop(bool loop);
+		void SetLooping(bool loop);
+
 		void SetPlayOnStart(bool playOnStart);
 		void SetPlayOneShot(bool playOneShot);
 

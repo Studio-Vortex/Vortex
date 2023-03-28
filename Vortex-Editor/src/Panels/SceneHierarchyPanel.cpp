@@ -1879,7 +1879,7 @@ namespace Vortex {
 
 			if (component.Source != nullptr)
 			{
-				AudioDeviceProperties& props = component.Source->GetProperties();
+				PlaybackDeviceProperties& props = component.Source->GetProperties();
 
 				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
 					component.Source->SetPitch(props.Pitch);
@@ -1894,7 +1894,7 @@ namespace Vortex {
 					component.Source->SetPlayOneShot(props.PlayOneShot);
 
 				if (UI::Property("Loop", props.Loop))
-					component.Source->SetLoop(props.Loop);
+					component.Source->SetLooping(props.Loop);
 
 				if (UI::Property("Spacialized", props.Spacialized))
 					component.Source->SetSpacialized(props.Spacialized);
@@ -1926,6 +1926,18 @@ namespace Vortex {
 					{
 						UI::BeginPropertyGrid();
 
+						static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
+						AttenuationModel selectedAttenuationModel = props.AttenuationModel;
+						if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), selectedAttenuationModel))
+						{
+							component.Source->SetAttenuationModel(selectedAttenuationModel);
+						}
+
+						if (UI::Property("Falloff", props.Falloff))
+						{
+							component.Source->SetFalloff(props.Falloff);
+						}
+
 						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
 						if (UI::Property("Inner Angle", innerAngle, 0.5f))
 						{
@@ -1946,13 +1958,19 @@ namespace Vortex {
 						}
 
 						if (UI::Property("Min Distance", props.MinDistance, 0.1f))
+						{
 							component.Source->SetMinDistance(props.MinDistance);
+						}
 
 						if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
+						{
 							component.Source->SetMaxDistance(props.MaxDistance);
+						}
 
 						if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
+						{
 							component.Source->SetDopplerFactor(props.DopplerFactor);
+						}
 
 						UI::EndPropertyGrid();
 						UI::EndTreeNode();

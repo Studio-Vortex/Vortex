@@ -102,6 +102,31 @@ namespace Vortex {
 			return MeshType::Cube;
 		}
 
+		static std::string AttenuationModelTypeToString(AttenuationModel attenuationModel)
+		{
+			switch (attenuationModel)
+			{
+				case AttenuationModel::None:        return "None";
+				case AttenuationModel::Inverse:     return "Inverse";
+				case AttenuationModel::Linear:      return "Linear";
+				case AttenuationModel::Exponential: return "Exponential";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
+			return "None";
+		}
+
+		static AttenuationModel AttenuationModelTypeFromString(const std::string& attenuationModel)
+		{
+			if (attenuationModel == "None")        return AttenuationModel::None;
+			if (attenuationModel == "Inverse")     return AttenuationModel::Inverse;
+			if (attenuationModel == "Linear")      return AttenuationModel::Linear;
+			if (attenuationModel == "Exponential") return AttenuationModel::Exponential;
+
+			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
+			return AttenuationModel::None;
+		}
+
 		static std::string RigidBody2DBodyTypeToString(RigidBody2DType bodyType)
 		{
 			switch (bodyType)
@@ -234,116 +259,6 @@ namespace Vortex {
 
 			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
 			return CombineMode::Average;
-		}
-
-		static void SerializeSubmeshMaterial(const SharedReference<Material>& material, YAML::Emitter& out)
-		{
-			AssetHandle albedoMapHandle = material->GetAlbedoMap();
-			AssetHandle normalMapHandle = material->GetNormalMap();
-			AssetHandle metallicMapHandle = material->GetMetallicMap();
-			AssetHandle roughnessMapHandle = material->GetRoughnessMap();
-			AssetHandle emissionMapHandle = material->GetEmissionMap();
-			AssetHandle parallaxOcclusionMapHandle = material->GetParallaxOcclusionMap();
-			AssetHandle ambientOcclusionMapHandle = material->GetAmbientOcclusionMap();
-
-			if (albedoMapHandle)
-				VX_SERIALIZE_PROPERTY(AlbedoMapHandle, albedoMapHandle, out);
-			else
-				VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
-			if (normalMapHandle)
-				VX_SERIALIZE_PROPERTY(NormalMapHandle, normalMapHandle, out);
-			if (metallicMapHandle)
-				VX_SERIALIZE_PROPERTY(MetallicMapHandle, metallicMapHandle, out);
-			else
-				VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
-			if (roughnessMapHandle)
-				VX_SERIALIZE_PROPERTY(RoughnessMapHandle, roughnessMapHandle, out);
-			else
-				VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
-			if (emissionMapHandle)
-				VX_SERIALIZE_PROPERTY(EmissionMapHandle, emissionMapHandle, out);
-			else
-				VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
-			if (parallaxOcclusionMapHandle)
-			{
-				VX_SERIALIZE_PROPERTY(ParallaxOcclusionMapHandle, parallaxOcclusionMapHandle, out);
-				VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
-			}
-			if (ambientOcclusionMapHandle)
-				VX_SERIALIZE_PROPERTY(AmbientOcclusionMapHandle, ambientOcclusionMapHandle, out);
-
-			VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
-			VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
-			VX_SERIALIZE_PROPERTY(MaterialFlags, material->GetFlags(), out);
-		}
-
-		static void LoadSubmeshMaterial(SharedReference<Material>& material, const YAML::Node& materialData)
-		{
-			TextureProperties imageProps;
-
-			if (materialData["AlbedoMapHandle"])
-			{
-				material->SetAlbedoMap(materialData["AlbedoMapHandle"].as<uint64_t>());
-			}
-			if (materialData["Albedo"])
-			{
-				material->SetAlbedo(materialData["Albedo"].as<Math::vec3>());
-			}
-			if (materialData["NormalMapHandle"])
-			{
-				material->SetNormalMap(materialData["NormalMapHandle"].as<uint64_t>());
-			}
-			if (materialData["MetallicMapHandle"])
-			{
-				material->SetMetallicMap(materialData["MetallicMapHandle"].as<uint64_t>());
-			}
-			if (materialData["Metallic"])
-			{
-				material->SetMetallic(materialData["Metallic"].as<float>());
-			}
-			if (materialData["RoughnessMapHandle"])
-			{
-				material->SetRoughnessMap(materialData["RoughnessMapHandle"].as<uint64_t>());
-			}
-			if (materialData["Roughness"])
-			{
-				material->SetRoughness(materialData["Roughness"].as<float>());
-			}
-			if (materialData["EmissionMapHandle"])
-			{
-				material->SetEmissionMap(materialData["EmissionMapHandle"].as<uint64_t>());
-			}
-			if (materialData["Emission"])
-			{
-				material->SetEmission(materialData["Emission"].as<float>());
-			}
-			if (materialData["ParallaxOcclusionMapHandle"])
-			{
-				material->SetParallaxOcclusionMap(materialData["ParallaxOcclusionMapHandle"].as<uint64_t>());
-			}
-			if (materialData["ParallaxHeightScale"])
-			{
-				material->SetParallaxHeightScale(materialData["ParallaxHeightScale"].as<float>());
-			}
-			if (materialData["AmbientOcclusionMapHandle"])
-			{
-				material->SetAmbientOcclusionMap(materialData["AmbientOcclusionMapHandle"].as<uint64_t>());
-			}
-
-			if (materialData["UV"])
-			{
-				material->SetUV(materialData["UV"].as<Math::vec2>());
-			}
-
-			if (materialData["Opacity"])
-			{
-				material->SetOpacity(materialData["Opacity"].as<float>());
-			}
-
-			if (materialData["MaterialFlags"])
-			{
-				material->SetFlags(materialData["MaterialFlags"].as<uint32_t>());
-			}
 		}
 
 	}
@@ -766,34 +681,37 @@ namespace Vortex {
 
 			if (audioSourceComponent.Source)
 			{
-				const PlaybackDeviceProperties& soundProperties = audioSourceComponent.Source->GetProperties();
+				const PlaybackDeviceProperties& deviceProperties = audioSourceComponent.Source->GetProperties();
 				
 				const std::string& audioSourcePath = audioSourceComponent.Source->GetPath();
 				VX_SERIALIZE_PROPERTY(AudioSourcePath, audioSourcePath, out);
 
 				out << YAML::Key << "SoundSettings" << YAML::Value;
 				out << YAML::BeginMap; // SoundSettings
-				VX_SERIALIZE_PROPERTY(Position, soundProperties.Position, out);
-				VX_SERIALIZE_PROPERTY(Direction, soundProperties.Direction, out);
-				VX_SERIALIZE_PROPERTY(Velocity, soundProperties.Velocity, out);
+				VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
+				VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
+				VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
 
 				out << YAML::Key << "Cone" << YAML::Value;
 				out << YAML::BeginMap; // Cone
-				VX_SERIALIZE_PROPERTY(InnerAngle, soundProperties.Cone.InnerAngle, out);
-				VX_SERIALIZE_PROPERTY(OuterAngle, soundProperties.Cone.OuterAngle, out);
-				VX_SERIALIZE_PROPERTY(OuterGain, soundProperties.Cone.OuterGain, out);
+				VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
+				VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
+				VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
 				out << YAML::EndMap; // Cone
 
-				VX_SERIALIZE_PROPERTY(MinDistance, soundProperties.MinDistance, out);
-				VX_SERIALIZE_PROPERTY(MaxDistance, soundProperties.MaxDistance, out);
-				VX_SERIALIZE_PROPERTY(Pitch, soundProperties.Pitch, out);
-				VX_SERIALIZE_PROPERTY(DopplerFactor, soundProperties.DopplerFactor, out);
-				VX_SERIALIZE_PROPERTY(Volume, soundProperties.Volume, out);
+				VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
+				VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
 
-				VX_SERIALIZE_PROPERTY(PlayOnStart, soundProperties.PlayOnStart, out);
-				VX_SERIALIZE_PROPERTY(PlayOneShot, soundProperties.PlayOneShot, out);
-				VX_SERIALIZE_PROPERTY(Spacialized, soundProperties.Spacialized, out);
-				VX_SERIALIZE_PROPERTY(Loop, soundProperties.Loop, out);
+				VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
+				VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
+				VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
+				VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
+				VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
+
+				VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
+				VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
+				VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
+				VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
 				out << YAML::EndMap; // SoundSettings
 			}
 
@@ -1433,7 +1351,7 @@ namespace Vortex {
 
 				if (audioSourceComponent["AudioSourcePath"])
 				{
-					std::string audioSourcePath= audioSourceComponent["AudioSourcePath"].as<std::string>();
+					std::string audioSourcePath = audioSourceComponent["AudioSourcePath"].as<std::string>();
 					if (FileSystem::Exists(audioSourcePath))
 					{
 						asc.Source = AudioSource::Create(audioSourcePath);
@@ -1444,44 +1362,49 @@ namespace Vortex {
 
 				if (soundProps)
 				{
-					auto& soundProperties = asc.Source->GetProperties();
+					auto& deviceProperties = asc.Source->GetProperties();
 					if (soundProps["Position"])
-						soundProperties.Position = soundProps["Position"].as<Math::vec3>();
+						deviceProperties.Position = soundProps["Position"].as<Math::vec3>();
 					if (soundProps["Direction"])
-						soundProperties.Direction = soundProps["Direction"].as<Math::vec3>();
+						deviceProperties.Direction = soundProps["Direction"].as<Math::vec3>();
 					if (soundProps["Velocity"])
-						soundProperties.Velocity = soundProps["Velocity"].as<Math::vec3>();
+						deviceProperties.Velocity = soundProps["Velocity"].as<Math::vec3>();
 
 					if (soundProps["Cone"])
 					{
 						auto cone = soundProps["Cone"];
-						soundProperties.Cone.InnerAngle = cone["InnerAngle"].as<float>();
-						soundProperties.Cone.OuterAngle = cone["OuterAngle"].as<float>();
-						soundProperties.Cone.OuterGain = cone["OuterGain"].as<float>();
+						deviceProperties.Cone.InnerAngle = cone["InnerAngle"].as<float>();
+						deviceProperties.Cone.OuterAngle = cone["OuterAngle"].as<float>();
+						deviceProperties.Cone.OuterGain = cone["OuterGain"].as<float>();
 					}
 
+					if (soundProps["AttenuationModel"])
+						deviceProperties.AttenuationModel = Utils::AttenuationModelTypeFromString(soundProps["AttenuationModel"].as<std::string>());
+					if (soundProps["Falloff"])
+						deviceProperties.Falloff = soundProps["Falloff"].as<float>();
+
 					if (soundProps["MinDistance"])
-						soundProperties.MinDistance = soundProps["MinDistance"].as<float>();
+						deviceProperties.MinDistance = soundProps["MinDistance"].as<float>();
 					if (soundProps["MaxDistance"])
-						soundProperties.MaxDistance = soundProps["MaxDistance"].as<float>();
+						deviceProperties.MaxDistance = soundProps["MaxDistance"].as<float>();
 
 					if (soundProps["Pitch"])
-						soundProperties.Pitch = soundProps["Pitch"].as<float>();
+						deviceProperties.Pitch = soundProps["Pitch"].as<float>();
 					if (soundProps["DopplerFactor"])
-						soundProperties.DopplerFactor = soundProps["DopplerFactor"].as<float>();
+						deviceProperties.DopplerFactor = soundProps["DopplerFactor"].as<float>();
 					if (soundProps["Volume"])
-						soundProperties.Volume = soundProps["Volume"].as<float>();
+						deviceProperties.Volume = soundProps["Volume"].as<float>();
 
 					if (soundProps["PlayOnStart"])
-						soundProperties.PlayOnStart = soundProps["PlayOnStart"].as<bool>();
+						deviceProperties.PlayOnStart = soundProps["PlayOnStart"].as<bool>();
 					if (soundProps["PlayOneShot"])
-						soundProperties.PlayOneShot = soundProps["PlayOneShot"].as<bool>();
+						deviceProperties.PlayOneShot = soundProps["PlayOneShot"].as<bool>();
 					if (soundProps["Spacialized"])
-						soundProperties.Spacialized = soundProps["Spacialized"].as<bool>();
+						deviceProperties.Spacialized = soundProps["Spacialized"].as<bool>();
 					if (soundProps["Loop"])
-						soundProperties.Loop = soundProps["Loop"].as<bool>();
+						deviceProperties.Loop = soundProps["Loop"].as<bool>();
 
-					asc.Source->SetProperties(soundProperties);
+					asc.Source->SetProperties(deviceProperties);
 				}
 			}
 

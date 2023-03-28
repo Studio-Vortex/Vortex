@@ -121,6 +121,18 @@ namespace Vortex {
 		m_Properties.Cone = cone;
 	}
 
+	void AudioSource::SetAttenuationModel(AttenuationModel attenuationModel)
+	{
+		m_PlaybackDevice.SetAttenuationModel(attenuationModel);
+		m_Properties.AttenuationModel = attenuationModel;
+	}
+
+	void AudioSource::SetFalloff(float falloff)
+	{
+		m_PlaybackDevice.SetFalloff(falloff);
+		m_Properties.Falloff = falloff;
+	}
+
 	void AudioSource::SetMinDistance(float minDistance)
 	{
 		m_PlaybackDevice.SetMinDistance(minDistance);
@@ -157,7 +169,7 @@ namespace Vortex {
 		m_Properties.Spacialized = spacialized;
 	}
 
-	void AudioSource::SetLoop(bool loop)
+	void AudioSource::SetLooping(bool loop)
 	{
 		m_PlaybackDevice.SetLooping(loop);
 		m_Properties.Loop = loop;
@@ -226,7 +238,7 @@ namespace Vortex {
 		SetPlayOnStart(soundProps.PlayOnStart);
 		SetPlayOneShot(soundProps.PlayOneShot);
 		SetSpacialized(soundProps.Spacialized);
-		SetLoop(soundProps.Loop);
+		SetLooping(soundProps.Loop);
     }
 
 	void AudioSource::Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src)

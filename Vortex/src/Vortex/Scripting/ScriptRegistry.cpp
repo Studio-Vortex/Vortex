@@ -3570,7 +3570,7 @@ namespace Vortex {
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			SharedReference<AudioSource> audioSource = asc.Source;
-			audioSource->SetLoop(loop);
+			audioSource->SetLooping(loop);
 		}
 
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
