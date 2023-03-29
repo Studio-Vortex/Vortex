@@ -130,7 +130,33 @@ namespace Vortex {
 		m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
 		m_SecondEditorCamera->OnUpdate(delta);
 
-		OnUpdateSceneState(delta);
+		// Update Scene
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				const bool scenePaused = m_ActiveScene->IsPaused();
+
+				if (scenePaused)
+					OnScenePause();
+				else
+					OnSceneResume();
+
+				m_ActiveScene->OnUpdateRuntime(delta);
+
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
+				break;
+			}
+		}
 
 		// Scene Viewport Entity Selection
 		{
@@ -226,37 +252,17 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OnUpdateSceneState(TimeStep delta)
+	void EditorLayer::OnEvent(Event& e)
 	{
-		VX_PROFILE_FUNCTION();
+		if (m_AllowViewportCameraEvents)
+			m_EditorCamera->OnEvent(e);
+		if (m_AllowSecondViewportCameraEvents)
+			m_SecondEditorCamera->OnEvent(e);
 
-		// Update Scene
-		switch (m_SceneState)
-		{
-			case SceneState::Edit:
-			{
-				m_ActiveScene->OnUpdateEditor(delta, m_EditorCamera);
-				break;
-			}
-			case SceneState::Play:
-			{
-				const bool scenePaused = m_ActiveScene->IsPaused();
-
-				if (scenePaused)
-					OnScenePause();
-				else
-					OnSceneResume();
-
-				m_ActiveScene->OnUpdateRuntime(delta);
-
-				break;
-			}
-			case SceneState::Simulate:
-			{
-				m_ActiveScene->OnUpdateSimulation(delta, m_EditorCamera);
-				break;
-			}
-		}
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
+		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowCloseEvent));
 	}
 
 	void EditorLayer::OnGuiRender()
@@ -1548,8 +1554,6 @@ namespace Vortex {
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		Math::mat4 cameraView;
-
 		if (m_SceneState == SceneState::Play && !renderInPlayMode)
 		{
 			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
@@ -1558,344 +1562,60 @@ namespace Vortex {
 			{
 				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(cameraEntity);
 				SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-				Renderer2D::BeginScene(camera, transform);
-				cameraView = Math::Inverse(transform);
+				Math::mat4 view = Math::Inverse(transform);
+				Renderer2D::BeginScene(camera, view);
 			}
 		}
 		else
 		{
 			Renderer2D::BeginScene(editorCamera);
-			cameraView = editorCamera->GetViewMatrix();
 		}
 
 		// Render Editor Grid
 		if (m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid)
 		{
-			static constexpr float axisLineLength = 1'000.0f;
-			static constexpr float gridLineLength = 750.0f;
-			static constexpr float gridWidth = 750.0f;
-			static constexpr float gridLength = 750.0f;
-
-			float originalLineWidth = Renderer2D::GetLineWidth();
-
-			// Render Axes
-			if (projectProps.EditorProps.DrawEditorAxes)
-			{
-				Renderer2D::SetLineWidth(5.0f);
-				Renderer2D::DrawLine({ -axisLineLength, 0.0f + 0.02f, 0.0f }, { axisLineLength, 0.0f + 0.02f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
-				Renderer2D::DrawLine({ 0.0f, -axisLineLength + 0.02f, 0.0f }, { 0.0f, axisLineLength + 0.02f, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
-				Renderer2D::DrawLine({ 0.0f, 0.0f + 0.02f, -axisLineLength }, { 0.0f, 0.0f + 0.02f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
-				Renderer2D::Flush();
-				Renderer2D::SetLineWidth(originalLineWidth);
-			}
-
-			Math::vec4 gridColor = { 0.2f, 0.2f, 0.2f, 1.0f };
-
-			// X Grid Lines
-			for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
-			{
-				// Skip the origin lines
-				if (x == 0 && projectProps.EditorProps.DrawEditorAxes)
-					continue;
-
-				Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
-			}
-			
-			// Z Grid Lines
-			for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
-			{
-				// Skip the origin lines
-				if (z == 0 && projectProps.EditorProps.DrawEditorAxes)
-					continue;
-
-				Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
-			}
-
-			Renderer2D::Flush();
+			OverlayRenderGrid(projectProps.EditorProps.DrawEditorAxes);
 		}
 		
+		const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
+		const auto spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
+		const auto boundingBoxColor = ColorToVec4(Color::Orange);
+		const auto outlineColor = ColorToVec4(Color::Orange);
+
 		// Render Physics Colliders
 		if (projectProps.PhysicsProps.ShowColliders)
 		{
-			const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
-
-			{
-				{
-					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-
-					for (const auto e : view)
-					{
-						auto [tc, bc] = view.get<TransformComponent, BoxColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
-
-						Math::AABB aabb = {
-							- Math::vec3(0.501f),
-							+ Math::vec3(0.501f)
-						};
-
-						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
-							* Math::Translate(bc.Offset)
-							* Math::Scale(bc.HalfSize * 2.0f);
-
-						Renderer2D::DrawAABB(aabb, transform, colliderColor);
-					}
-				}
-
-				{
-					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
-
-					for (const auto e : view)
-					{
-						auto [tc, sc] = view.get<TransformComponent, SphereColliderComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
-
-						const auto& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
-						Math::vec3 translation = worldSpaceTransform.Translation + sc.Offset;
-						Math::vec3 scale = worldSpaceTransform.Scale;
-
-						const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
-						const float radius = (largestComponent * sc.Radius) * 1.005f;
-
-						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(-45.0f), 0.0f, 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(45.0f), 0.0f, 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(-45.0f), 0.0f }, radius, colliderColor);
-						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(45.0f), 0.0f }, radius, colliderColor);
-					}
-				}
-			}
-
-			{
-				float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
-				if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
-					colliderDistance = -colliderDistance;
-
-				{
-					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-
-					for (const auto e : view)
-					{
-						auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
-
-						Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
-
-						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
-							* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
-							* Math::Scale(scale);
-
-						Renderer2D::DrawRect(transform, projectProps.PhysicsProps.Physics2DColliderColor);
-					}
-				}
-
-				{
-					auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-
-					for (const auto e : view)
-					{
-						auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(e);
-						Entity entity{ e, m_ActiveScene.Raw() };
-
-						Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
-
-						Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
-							* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
-							* Math::Scale(scale);
-
-						Renderer2D::DrawCircle(transform, projectProps.PhysicsProps.Physics3DColliderColor, Renderer2D::GetLineWidth() / 100.0f);
-					}
-				}
-			}
+			OverlayRenderMeshColliders(colliderColor);
+			OverlayRenderSpriteColliders(editorCamera, spriteColliderColor);
 		}
-
-		const auto boundingBoxColor = ColorToVec4(Color::Orange);
-		const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
 
 		if (projectProps.EditorProps.ShowBoundingBoxes)
 		{
-			{
-				auto meshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
-
-				for (const auto e : meshView)
-				{
-					Entity entity{ e, m_ActiveScene.Raw() };
-					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
-
-					const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
-					
-					AssetHandle meshHandle = meshRendererComponent.Mesh;
-					if (!AssetManager::IsHandleValid(meshHandle))
-						continue;
-
-					SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-					if (!mesh)
-						continue;
-
-					const auto& submesh = mesh->GetSubmesh();
-
-					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-				}
-			}
-
-			{
-				auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
-
-				for (const auto e : staticMeshView)
-				{
-					Entity entity{ e, m_ActiveScene.Raw() };
-					const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
-
-					const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
-
-					AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
-					if (!AssetManager::IsHandleValid(staticMeshHandle))
-						continue;
-
-					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-					if (!staticMesh)
-						continue;
-
-					const auto& submeshes = staticMesh->GetSubmeshes();
-
-					for (const auto& [submeshIndex, submesh] : submeshes)
-					{
-						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-					}
-				}
-			}
+			OverlayRenderMeshBoundingBoxes(boundingBoxColor);
+			OverlayRenderSpriteBoundingBoxes(boundingBoxColor);
 		}
 
 		// Draw selected entity outline + colliders
 		if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
 		{
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+
 			if (m_ShowSelectedEntityCollider)
 			{
-				if (selectedEntity.HasComponent<BoxColliderComponent>())
-				{
-					const auto& bc = selectedEntity.GetComponent<BoxColliderComponent>();
-
-					Math::AABB aabb = {
-						-Math::vec3(0.503f),
-						+Math::vec3(0.503f)
-					};
-
-					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity)
-						* Math::Translate(bc.Offset)
-						* Math::Scale(bc.HalfSize * 2.0f);
-
-					Renderer2D::DrawAABB(aabb, transform, colliderColor);
-				}
-
-				if (selectedEntity.HasComponent<SphereColliderComponent>())
-				{
-					const auto& sc = selectedEntity.GetComponent<SphereColliderComponent>();
-					const auto& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-					Math::vec3 translation = worldSpaceTransform.Translation + sc.Offset;
-					Math::vec3 scale = worldSpaceTransform.Scale;
-
-					const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
-					const float radius = (largestComponent * sc.Radius) * 1.005f;
-
-					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(-45.0f), 0.0f, 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(45.0f), 0.0f, 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(-45.0f), 0.0f }, radius, colliderColor);
-					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(45.0f), 0.0f }, radius, colliderColor);
-				}
+				OverlayRenderMeshCollider(selectedEntity, transform, colliderColor);
+				OverlayRenderSpriteCollider(editorCamera, selectedEntity, transform, spriteColliderColor);
 			}
 
 			if (m_ShowSelectedEntityOutline)
 			{
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity) * Math::Scale(Math::vec3(1.001f));
+				Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
-				if (selectedEntity.HasComponent<MeshRendererComponent>())
-				{
-					const auto& meshRendererComponent = selectedEntity.GetComponent<MeshRendererComponent>();
-					AssetHandle meshHandle = meshRendererComponent.Mesh;
-					if (AssetManager::IsHandleValid(meshHandle))
-					{
-						SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-						if (mesh)
-						{
-							switch (m_SelectionMode)
-							{
-								case SelectionMode::Entity:
-									Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, boundingBoxColor);
-									break;
-								case SelectionMode::Submesh:
-									const auto& submesh = mesh->GetSubmesh();
-									Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-									break;
-							}
-						}
-					}
-				}
-				else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
-				{
-					const auto& staticMeshRendererComponent = selectedEntity.GetComponent<StaticMeshRendererComponent>();
-					AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
-					if (AssetManager::IsHandleValid(staticMeshHandle))
-					{
-						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-						if (staticMesh)
-						{
-							// TODO not sure if this is required
-							switch (staticMeshRendererComponent.Type)
-							{
-								case MeshType::Cube:
-									break;
-								case MeshType::Sphere:
-									break;
-								case MeshType::Capsule:
-									break;
-								case MeshType::Cone:
-									break;
-								case MeshType::Cylinder:
-									break;
-								case MeshType::Torus:
-									break;
-								case MeshType::Plane:
-									break;
-								case MeshType::Custom:
-									break;
-							}
-
-							switch (m_SelectionMode)
-							{
-								case SelectionMode::Entity:
-									Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, boundingBoxColor);
-									break;
-								case SelectionMode::Submesh:
-									const auto& submeshes = staticMesh->GetSubmeshes();
-									for (const auto& [submeshIndex, submesh] :submeshes)
-									{
-										Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
-									}
-									break;
-							}
-						}
-					}
-				}
+				if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+					OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
 				
-				if (selectedEntity.HasComponent<SpriteRendererComponent>())
-				{
-					const auto& spriteRenderer = selectedEntity.GetComponent<SpriteRendererComponent>();
-
-					Renderer2D::DrawRect(transform, boundingBoxColor);
-				}
-
-				if (selectedEntity.HasComponent<CircleRendererComponent>())
-				{
-					const auto& circleRenderer = selectedEntity.GetComponent<CircleRendererComponent>();
-
-					Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
-
-					Renderer2D::DrawCircle(scaledTransform, boundingBoxColor);
-				}
+				if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
+					OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
+				
 				if (selectedEntity.HasComponent<TextMeshComponent>())
 				{
 					const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
@@ -1903,8 +1623,9 @@ namespace Vortex {
 					const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
 					Math::mat4 transform = worldSpaceTransform.GetTransform();
 
-					Renderer2D::DrawRect(transform, boundingBoxColor);
+					Renderer2D::DrawRect(transform, outlineColor);
 				}
+				
 				if (selectedEntity.HasComponent<CameraComponent>())
 				{
 					const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
@@ -1913,13 +1634,14 @@ namespace Vortex {
 					{
 						// TODO fix this
 						//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
-						Renderer2D::DrawRect(transform, boundingBoxColor);
+						Renderer2D::DrawRect(transform, outlineColor);
 					}
 					else
 					{
-						Renderer2D::DrawRect(transform, boundingBoxColor);
+						Renderer2D::DrawRect(transform, outlineColor);
 					}
 				}
+				
 				if (selectedEntity.HasComponent<LightSourceComponent>())
 				{
 					const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
@@ -1942,18 +1664,312 @@ namespace Vortex {
 		Renderer2D::EndScene();
 	}
 
-	void EditorLayer::OnEvent(Event& e)
+	void EditorLayer::OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor)
 	{
-		if (m_AllowViewportCameraEvents)
-			m_EditorCamera->OnEvent(e);
-		if (m_AllowSecondViewportCameraEvents)
-			m_SecondEditorCamera->OnEvent(e);
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			const auto& scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowCloseEvent));
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
+			AssetHandle meshHandle = meshRendererComponent.Mesh;
+			if (!AssetManager::IsHandleValid(meshHandle))
+				return;
+
+			SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+			if (!mesh)
+				return;
+
+			const auto& submesh = mesh->GetSubmesh();
+
+			Renderer2D::DrawAABB(submesh.GetBoundingBox(), scaledTransform, boundingBoxColor);
+		}
+
+		if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
+
+			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+			if (!AssetManager::IsHandleValid(staticMeshHandle))
+				return;
+
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+			if (!staticMesh)
+				return;
+
+			const auto& submeshes = staticMesh->GetSubmeshes();
+
+			for (const auto& [submeshIndex, submesh] : submeshes)
+			{
+				Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, boundingBoxColor);
+			}
+		}
+	}
+
+	void EditorLayer::OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor)
+	{
+		std::vector<Entity> entities;
+
+		auto meshRendererView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
+		auto staticMeshRendererView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
+
+		for (const auto e : meshRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+		for (const auto e : staticMeshRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+
+		for (auto& entity : entities)
+		{
+			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			OverlayRenderMeshBoundingBox(entity, transform, boundingBoxColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderMeshCollider(Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor)
+	{
+		if (entity.HasComponent<BoxColliderComponent>())
+		{
+			const auto& bc = entity.GetComponent<BoxColliderComponent>();
+
+			const Math::AABB aabb = {
+				-Math::vec3(0.503f),
+				+Math::vec3(0.503f)
+			};
+
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+				* Math::Translate(bc.Offset)
+				* Math::Scale(bc.HalfSize * 2.0f);
+
+			Renderer2D::DrawAABB(aabb, transform, colliderColor);
+		}
+
+		if (entity.HasComponent<SphereColliderComponent>())
+		{
+			const auto& sc = entity.GetComponent<SphereColliderComponent>();
+			auto transform = m_ActiveScene->GetWorldSpaceTransform(entity);
+			Math::vec3 translation = transform.Translation + sc.Offset;
+			Math::vec3 scale = transform.Scale;
+
+			const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
+			const float radius = (largestComponent * sc.Radius) * 1.005f;
+
+			Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { Math::Deg2Rad(-45.0f), 0.0f, 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { Math::Deg2Rad(45.0f), 0.0f, 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(-45.0f), 0.0f }, radius, colliderColor);
+			Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(45.0f), 0.0f }, radius, colliderColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderMeshColliders(const Math::vec4& colliderColor)
+	{
+		std::vector<Entity> entities;
+
+		auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxColliderComponent>();
+		auto sphereColliderView = m_ActiveScene->GetAllEntitiesWith<SphereColliderComponent>();
+
+		for (const auto e : boxColliderView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+		for (const auto e : sphereColliderView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+
+		for (auto& entity : entities)
+		{
+			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			OverlayRenderMeshCollider(entity, transform, colliderColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor)
+	{
+		if (!entity.IsActive())
+			return;
+
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+			AssetHandle meshHandle = meshRendererComponent.Mesh;
+			if (AssetManager::IsHandleValid(meshHandle))
+				return;
+
+			SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+			if (!mesh)
+				return;
+
+			switch (m_SelectionMode)
+			{
+				case SelectionMode::Entity:
+					Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, outlineColor);
+					break;
+				case SelectionMode::Submesh:
+					const auto& submesh = mesh->GetSubmesh();
+					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
+					break;
+			}
+		}
+
+		if (entity.HasComponent<StaticMeshRendererComponent>())
+		{
+			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+			if (!AssetManager::IsHandleValid(staticMeshHandle))
+				return;
+
+			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+			if (!staticMesh)
+				return;
+
+			switch (m_SelectionMode)
+			{
+				case SelectionMode::Entity:
+					Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, outlineColor);
+					break;
+				case SelectionMode::Submesh:
+					const auto& submeshes = staticMesh->GetSubmeshes();
+					for (const auto& [submeshIndex, submesh] : submeshes)
+					{
+						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
+					}
+					break;
+			}
+		}
+	}
+
+	void EditorLayer::OverlayRenderSpriteCollider(EditorCamera* editorCamera, Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor)
+	{
+		float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
+		if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
+			colliderDistance = -colliderDistance;
+
+		if (entity.HasComponent<BoxCollider2DComponent>())
+		{
+			const auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+
+			Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
+
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+				* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
+				* Math::Scale(scale);
+
+			Renderer2D::DrawRect(transform, colliderColor);
+		}
+
+		if (entity.HasComponent<CircleCollider2DComponent>())
+		{
+			const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+
+			Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
+
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+				* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
+				* Math::Scale(scale);
+
+			Renderer2D::DrawCircle(transform, colliderColor, Renderer2D::GetLineWidth() / 100.0f);
+		}
+	}
+
+	void EditorLayer::OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor)
+	{
+		std::vector<Entity> entities;
+
+		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<SpriteRendererComponent>();
+		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<CircleRendererComponent>();
+
+		for (const auto e : spriteRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+		for (const auto e : circleRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+
+		for (auto& entity : entities)
+		{
+			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor)
+	{
+		std::vector<Entity> entities;
+
+		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<SpriteRendererComponent>();
+		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<CircleRendererComponent>();
+
+		for (const auto e : spriteRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+		for (const auto e : circleRendererView)
+			entities.emplace_back(e, m_ActiveScene.Raw());
+
+		for (auto& entity : entities)
+		{
+			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			OverlayRenderSpriteOutline(entity, transform, boundingBoxColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor)
+	{
+		if (entity.HasComponent<SpriteRendererComponent>())
+		{
+			Renderer2D::DrawRect(transform, outlineColor);
+		}
+
+		if (entity.HasComponent<CircleRendererComponent>())
+		{
+			Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
+
+			Renderer2D::DrawCircle(scaledTransform, outlineColor);
+		}
+	}
+
+	void EditorLayer::OverlayRenderGrid(bool drawAxis)
+	{
+		static constexpr float axisLineLength = 1'000.0f;
+		static constexpr float gridLineLength = 750.0f;
+		static constexpr float gridWidth = 750.0f;
+		static constexpr float gridLength = 750.0f;
+
+		float originalLineWidth = Renderer2D::GetLineWidth();
+
+		// Render Axes
+		if (drawAxis)
+		{
+			Renderer2D::SetLineWidth(5.0f);
+			Renderer2D::DrawLine({ -axisLineLength, 0.0f + 0.02f, 0.0f }, { axisLineLength, 0.0f + 0.02f, 0.0f }, ColorToVec4(Color::Red));   // X Axis
+			Renderer2D::DrawLine({ 0.0f, -axisLineLength + 0.02f, 0.0f }, { 0.0f, axisLineLength + 0.02f, 0.0f }, ColorToVec4(Color::Green)); // Y Axis
+			Renderer2D::DrawLine({ 0.0f, 0.0f + 0.02f, -axisLineLength }, { 0.0f, 0.0f + 0.02f, axisLineLength }, ColorToVec4(Color::Blue));  // Z Axis
+			Renderer2D::Flush();
+			Renderer2D::SetLineWidth(originalLineWidth);
+		}
+
+		Math::vec4 gridColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+		// X Grid Lines
+		for (int32_t x = -gridWidth; x <= (int32_t)gridWidth; x++)
+		{
+			// Skip the origin lines
+			if (x == 0 && drawAxis)
+				continue;
+
+			Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
+		}
+
+		// Z Grid Lines
+		for (int32_t z = -gridLength; z <= (int32_t)gridLength; z++)
+		{
+			// Skip the origin lines
+			if (z == 0 && drawAxis)
+				continue;
+
+			Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
+		}
+
+		Renderer2D::Flush();
 	}
 
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)

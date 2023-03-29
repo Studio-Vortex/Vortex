@@ -34,7 +34,6 @@ namespace Vortex {
 		void OnDetach() override;
 
 		void OnUpdate(TimeStep ts) override;
-		void OnUpdateSceneState(TimeStep delta);
 		void OnGuiRender() override;
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
@@ -88,6 +87,18 @@ namespace Vortex {
 		void OnTranslationToolSelected();
 		void OnRotationToolSelected();
 		void OnScaleToolSelected();
+
+		// Overlay
+		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
+		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);
+		void OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderMeshCollider(Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderMeshColliders(const Math::vec4& colliderColor);
+		void OverlayRenderSpriteCollider(EditorCamera* editorCamera, Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor);
+		void OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor);
+		void OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderGrid(bool drawAxis);
 
 		// Editor Callbacks
 
