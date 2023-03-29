@@ -266,7 +266,7 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ProjectionType CameraComponent_GetProjectionType(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetProjectionType(ulong entityID, ProjectionType type);
 
@@ -284,28 +284,28 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float CameraComponent_GetNearClip(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetNearClip(ulong entityID, float nearClip);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float CameraComponent_GetFarClip(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFarClip(ulong entityID, float farClip);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float CameraComponent_GetOrthographicSize(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetOrthographicSize(ulong entityID, float orthographicSize);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float CameraComponent_GetOrthographicNear(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetOrthographicNear(ulong entityID, float orthographicNear);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float CameraComponent_GetOrthographicFar(ulong entityID);
 
@@ -722,29 +722,11 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_SetVelocity(ulong entityID, ref Vector3 velocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float AudioSourceComponent_GetConeInnerAngle(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_SetConeInnerAngle(ulong entityID, float innerAngle);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float AudioSourceComponent_GetConeOuterAngle(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_SetConeOuterAngle(ulong entityID, float outerAngle);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float AudioSourceComponent_GetConeOuterGain(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_SetConeOuterGain(ulong entityID, float outerGain);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float AudioSourceComponent_GetMinGain(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_SetMinGain(ulong entityID, float minGain);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float AudioSourceComponent_GetMaxGain(ulong entityID);
 
@@ -798,13 +780,13 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_SetPlayOnStart(ulong entityID, bool playOnStart);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool AudioSourceComponent_GetIsSpacialized(ulong entityID);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_SetIsSpacialized(ulong entityID, bool spacialized);
-		
+
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool AudioSourceComponent_GetIsLooping(ulong entityID);
 
@@ -820,6 +802,32 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float AudioClip_GetLength(ulong entityID);
+
+		#endregion
+
+		#region AudioCone
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetInnerAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetInnerAngle(ulong entityID, float innerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetOuterAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetOuterAngle(ulong entityID, float outerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetOuterGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetOuterGain(ulong entityID, float outerGain);
+
+		#endregion
+
+		#region AudioListener
 
 		#endregion
 

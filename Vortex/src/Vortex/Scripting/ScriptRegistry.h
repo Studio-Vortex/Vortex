@@ -342,12 +342,6 @@ namespace Vortex {
 		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* position);
 		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* velocity);
 		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity);
-		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID);
-		void AudioSourceComponent_SetConeInnerAngle(UUID entityUUID, float innerAngle);
-		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID);
-		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle);
-		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID);
-		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain);
 		float AudioSourceComponent_GetMinGain(UUID entityUUID);
 		void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain);
 		float AudioSourceComponent_GetMaxGain(UUID entityUUID);
@@ -384,6 +378,17 @@ namespace Vortex {
 
 		MonoString* AudioClip_GetName(UUID entityUUID);
 		float AudioClip_GetLength(UUID entityUUID);
+
+#pragma endregion
+
+#pragma region Audio Cone
+
+		float AudioCone_GetInnerAngle(UUID entityUUID);
+		void AudioCone_SetInnerAngle(UUID entityUUID, float innerAngle);
+		float AudioCone_GetOuterAngle(UUID entityUUID);
+		void AudioCone_SetOuterAngle(UUID entityUUID, float outerAngle);
+		float AudioCone_GetOuterGain(UUID entityUUID);
+		void AudioCone_SetOuterGain(UUID entityUUID, float outerGain);
 
 #pragma endregion
 

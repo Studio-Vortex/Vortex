@@ -3305,102 +3305,6 @@ namespace Vortex {
 			audioSource->SetVelocity(*velocity);
 		}
 
-		float AudioSourceComponent_GetConeInnerAngle(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.InnerAngle without a Audio Source!");
-				return 0.0f;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			return audioSource->GetProperties().Cone.InnerAngle;
-		}
-
-		void AudioSourceComponent_SetConeInnerAngle(UUID entityUUID, float innerAngle)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.InnerAngle without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioCone& cone = audioSource->GetProperties().Cone;
-			cone.InnerAngle = innerAngle;
-			audioSource->SetCone(cone);
-		}
-
-		float AudioSourceComponent_GetConeOuterAngle(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.OuterAngle without a Audio Source!");
-				return 0.0f;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			return audioSource->GetProperties().Cone.OuterAngle;
-		}
-
-		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.OuterAngle without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioCone& cone = audioSource->GetProperties().Cone;
-			cone.OuterAngle = outerAngle;
-			audioSource->SetCone(cone);
-		}
-
-		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.OuterGain without a Audio Source!");
-				return 0.0f;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			return audioSource->GetProperties().Cone.OuterGain;
-		}
-
-		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain)
-		{
-			Entity entity = GetEntity(entityUUID);
-
-			if (!entity.HasComponent<AudioSourceComponent>())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.OuterGain without a Audio Source!");
-				return;
-			}
-
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-			SharedReference<AudioSource> audioSource = asc.Source;
-			AudioCone& cone = audioSource->GetProperties().Cone;
-			cone.OuterGain = outerGain;
-			audioSource->SetCone(cone);
-		}
-
         float AudioSourceComponent_GetMinGain(UUID entityUUID)
         {
 			Entity entity = GetEntity(entityUUID);
@@ -3873,6 +3777,157 @@ namespace Vortex {
 			const AudioClip& audioClip = audioSource->GetAudioClip();
 
 			return audioClip.Length;
+		}
+
+#pragma endregion
+
+#pragma region Audio Cone
+
+		float AudioCone_GetInnerAngle(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle without a Audio Component!");
+				return 0.0f;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				return audioSource->GetProperties().Cone.InnerAngle;
+			}
+
+			const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioListener> audioListener = alc.Listener;
+			return audioListener->GetProperties().Cone.InnerAngle;
+		}
+
+		void AudioCone_SetInnerAngle(UUID entityUUID, float innerAngle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle without a Audio Component!");
+				return;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				AudioCone& cone = audioSource->GetProperties().Cone;
+				cone.InnerAngle = innerAngle;
+				audioSource->SetCone(cone);
+				return;
+			}
+
+			const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioListener> audioListener = alc.Listener;
+			AudioCone& cone = audioListener->GetProperties().Cone;
+			cone.InnerAngle = innerAngle;
+			audioListener->SetCone(cone);
+		}
+
+		float AudioCone_GetOuterAngle(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle without a Audio Component!");
+				return 0.0f;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				return audioSource->GetProperties().Cone.OuterAngle;
+			}
+
+			const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioListener> audioListener = alc.Listener;
+			return audioListener->GetProperties().Cone.OuterAngle;
+		}
+
+		void AudioCone_SetOuterAngle(UUID entityUUID, float outerAngle)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle without a Audio Component!");
+				return;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				AudioCone& cone = audioSource->GetProperties().Cone;
+				cone.OuterAngle = outerAngle;
+				audioSource->SetCone(cone);
+				return;
+			}
+
+			const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioSource> audioListener = alc.Listener;
+			AudioCone& cone = audioListener->GetProperties().Cone;
+			cone.OuterAngle = outerAngle;
+			audioListener->SetCone(cone);
+		}
+
+		float AudioCone_GetOuterGain(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain without a Audio Component!");
+				return 0.0f;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				return audioSource->GetProperties().Cone.OuterGain;
+			}
+
+			const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioListener> audioListener = alc.Listener;
+			return audioListener->GetProperties().Cone.OuterGain;
+		}
+
+		void AudioCone_SetOuterGain(UUID entityUUID, float outerGain)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain without a Audio Component!");
+				return;
+			}
+
+			if (entity.HasComponent<AudioSourceComponent>())
+			{
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				SharedReference<AudioSource> audioSource = asc.Source;
+				AudioCone& cone = audioSource->GetProperties().Cone;
+				cone.OuterGain = outerGain;
+				audioSource->SetCone(cone);
+				return;
+			}
+
+			const AudioListenerComponent& asc = entity.GetComponent<AudioListenerComponent>();
+			SharedReference<AudioListener> audioListener = asc.Listener;
+			AudioCone& cone = audioListener->GetProperties().Cone;
+			cone.OuterGain = outerGain;
+			audioListener->SetCone(cone);
 		}
 
 #pragma endregion
@@ -7642,12 +7697,6 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDirection);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetVelocity);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetVelocity);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetConeInnerAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetConeInnerAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetConeOuterAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetConeOuterAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetConeOuterGain);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetConeOuterGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxGain);
@@ -7680,6 +7729,13 @@ namespace Vortex {
 
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetName);
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetLength);
+
+		VX_REGISTER_INTERNAL_CALL(AudioCone_GetInnerAngle);
+		VX_REGISTER_INTERNAL_CALL(AudioCone_SetInnerAngle);
+		VX_REGISTER_INTERNAL_CALL(AudioCone_GetOuterAngle);
+		VX_REGISTER_INTERNAL_CALL(AudioCone_SetOuterAngle);
+		VX_REGISTER_INTERNAL_CALL(AudioCone_GetOuterGain);
+		VX_REGISTER_INTERNAL_CALL(AudioCone_SetOuterGain);
 		
 		VX_REGISTER_INTERNAL_CALL(Physics_Raycast);
 		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneGravity);

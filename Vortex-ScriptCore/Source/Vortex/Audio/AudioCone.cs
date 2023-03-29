@@ -1,30 +1,33 @@
 ﻿namespace Vortex {
 
-	public struct AudioCone
+	public struct AudioCone<AudioComponent>
+		where AudioComponent: Component, new()
 	{
-		internal AudioSource Source;
+		public readonly AudioComponent Source;
+		public readonly Entity Entity;
 
-		internal AudioCone(AudioSource source)
+		internal AudioCone(AudioComponent data)
 		{
-			Source = source;
+			Source = data;
+			Entity = Source.Entity;
 		}
 
 		public float InnerAngle
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeInnerAngle(Source.Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeInnerAngle(Source.Entity.ID, value);
+			get => InternalCalls.AudioCone_GetInnerAngle(Entity.ID);
+			set => InternalCalls.AudioCone_SetInnerAngle(Entity.ID, value);
 		}
 
 		public float OuterAngle
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeOuterAngle(Source.Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeOuterAngle(Source.Entity.ID, value);
+			get => InternalCalls.AudioCone_GetOuterAngle(Entity.ID);
+			set => InternalCalls.AudioCone_SetOuterAngle(Entity.ID, value);
 		}
 
 		public float OuterGain
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeOuterGain(Source.Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeOuterGain(Source.Entity.ID, value);
+			get => InternalCalls.AudioCone_GetOuterGain(Entity.ID);
+			set => InternalCalls.AudioCone_SetOuterGain(Entity.ID, value);
 		}
 	}
 

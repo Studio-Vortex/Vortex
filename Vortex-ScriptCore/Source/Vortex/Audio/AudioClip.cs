@@ -2,12 +2,12 @@
 
 	public struct AudioClip
 	{
-		internal AudioClip(AudioSource src)
-		{
-			Source = src;
-		}
+		public readonly AudioSource Source;
 
-		public AudioSource Source;
+		internal AudioClip(AudioSource source)
+		{
+			Source = source;
+		}
 
 		public string Name => InternalCalls.AudioClip_GetName(Source.Entity.ID);
 

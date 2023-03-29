@@ -593,7 +593,7 @@ namespace Vortex {
 			set => InternalCalls.AudioSourceComponent_SetVelocity(Entity.ID, ref value);
 		}
 
-		public AudioCone Cone => new AudioCone(this);
+		public AudioCone<AudioSource> Cone => new AudioCone<AudioSource>(Entity);
 
 		public float MinGain
 		{
