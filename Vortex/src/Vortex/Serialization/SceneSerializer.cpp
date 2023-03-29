@@ -8,6 +8,9 @@
 #include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Asset/AssetImporter.h"
 
+#include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Audio/AudioListener.h"
+
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
 
@@ -17,6 +20,9 @@
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
+
+#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsMaterial.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
@@ -770,7 +776,7 @@ namespace Vortex {
 
 			out << YAML::EndMap; // FixedJointComponent
 		}
-
+		
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent

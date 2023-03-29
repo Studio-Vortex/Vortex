@@ -3,24 +3,22 @@
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Asset/Asset.h"
 
+#include "Vortex/Scene/SceneCamera.h"
+
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
 
+#include "Vortex/Renderer/Material.h"
+
 #include "Vortex/Physics/3D/PhysXTypes.h"
-#include "Vortex/Physics/3D/PhysicsMaterial.h"
-
-#include "Vortex/Scene/SceneCamera.h"
-
-#include "Vortex/Renderer/Texture.h"
 
 namespace Vortex {
 
 #pragma region Core Components
 
-	// Forward declarations
 	class Prefab;
 
-	struct IDComponent
+	struct VORTEX_API IDComponent
 	{
 		UUID ID;
 
@@ -30,7 +28,7 @@ namespace Vortex {
 			: ID(uuid) { }
 	};
 
-	struct TagComponent
+	struct VORTEX_API TagComponent
 	{
 		inline static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
 
@@ -63,7 +61,7 @@ namespace Vortex {
 		inline static std::vector<std::string> s_AddedMarkers;
 	};
 
-	struct HierarchyComponent
+	struct VORTEX_API HierarchyComponent
 	{
 		UUID ParentUUID = 0;
 		std::vector<UUID> Children;
@@ -76,32 +74,12 @@ namespace Vortex {
 
 	enum class Space { Local, World, };
 
-	struct TransformComponent
+	struct VORTEX_API TransformComponent
 	{
+	public:
 		Math::vec3 Translation = Math::vec3(0.0f);
 		Math::vec3 Scale = Math::vec3(1.0f);
-	private:
-		// These are private so that you are forced to set them via
-		// SetRotation() or SetRotationEuler()
-		// This avoids situation where one of them gets set and the other is forgotten.
-		//
-		// Why do we need both a quat and Euler angle representation for rotation?
-		// Because Euler suffers from gimbal lock -> rotations should be stored as quaternions.
-		//
-		// BUT: quaternions are confusing, and humans like to work with Euler angles.
-		// We cannot store just the quaternions and translate to/from Euler because the conversion
-		// Euler -> quat -> Euler is not invariant.
-		//
-		// It's also sometimes useful to be able to store rotations > 360 degrees which
-		// quats do not support.
-		//
-		// Accordingly, we store Euler for "editor" stuff that humans work with, 
-		// and quats for everything else.  The two are maintained in-sync via the SetRotation()
-		// methods.
-		Math::vec3 RotationEuler = Math::vec3(0.0f);
-		Math::quaternion Rotation = Math::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
 
-	public:
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const Math::vec3& translation)
@@ -143,10 +121,15 @@ namespace Vortex {
 			RotationEuler = euler;
 			Rotation = Math::quaternion(RotationEuler);
 		}
+
+	private:
+		Math::vec3 RotationEuler = Math::vec3(0.0f);
+		Math::quaternion Rotation = Math::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	};
 
-	struct PrefabComponent
+	struct VORTEX_API PrefabComponent
 	{
+		AssetHandle PrefabAsset = 0;
 		UUID PrefabUUID = 0;
 		UUID EntityUUID = 0;
 
@@ -158,13 +141,11 @@ namespace Vortex {
 
 #pragma region Rendering Components
 
-	// Forward declarations
-	class MaterialTable;
 	class ParticleEmitter;
 	class Animator;
 	class Animation;
 
-	struct CameraComponent
+	struct VORTEX_API CameraComponent
 	{
 		SceneCamera Camera;
 		Math::vec3 ClearColor = Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)); // Dark blue
@@ -175,7 +156,7 @@ namespace Vortex {
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	struct SkyboxComponent
+	struct VORTEX_API SkyboxComponent
 	{
 		AssetHandle Skybox = 0;
 		float Rotation = 0.0f;
@@ -185,7 +166,7 @@ namespace Vortex {
 		SkyboxComponent(const SkyboxComponent&) = default;
 	};
 
-	struct LightSource2DComponent
+	struct VORTEX_API LightSource2DComponent
 	{
 		Math::vec3 Color = Math::vec3(1.0f);
 		float Intensity = 1.0f;
@@ -198,7 +179,7 @@ namespace Vortex {
 
 	enum class LightType { Directional = 0, Point, Spot };
 
-	struct LightSourceComponent
+	struct VORTEX_API LightSourceComponent
 	{
 		LightType Type = LightType::Directional;
 
@@ -222,7 +203,7 @@ namespace Vortex {
 			: Type(type) { }
 	};
 
-	struct MeshRendererComponent
+	struct VORTEX_API MeshRendererComponent
 	{
 		AssetHandle Mesh = 0;
 		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
@@ -234,7 +215,7 @@ namespace Vortex {
 
 	enum class MeshType { Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus, Custom };
 
-	struct StaticMeshRendererComponent
+	struct VORTEX_API StaticMeshRendererComponent
 	{
 		AssetHandle StaticMesh = 0;
 		MeshType Type = MeshType::Cube;
@@ -245,7 +226,7 @@ namespace Vortex {
 		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;
 	};
 
-	struct SpriteRendererComponent
+	struct VORTEX_API SpriteRendererComponent
 	{
 		Math::vec4 SpriteColor = Math::vec4(1.0f);
 		AssetHandle Texture = 0;
@@ -258,7 +239,7 @@ namespace Vortex {
 			: SpriteColor(color) { }
 	};
 
-	struct CircleRendererComponent
+	struct VORTEX_API CircleRendererComponent
 	{
 		Math::vec4 Color = Math::vec4(1.0f);
 		float Thickness = 1.0f;
@@ -269,7 +250,7 @@ namespace Vortex {
 		CircleRendererComponent(const CircleRendererComponent&) = default;
 	};
 
-	struct ParticleEmitterComponent
+	struct VORTEX_API ParticleEmitterComponent
 	{
 		SharedRef<ParticleEmitter> Emitter = nullptr;
 
@@ -277,7 +258,7 @@ namespace Vortex {
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
 	};
 
-	struct TextMeshComponent
+	struct VORTEX_API TextMeshComponent
 	{
 		AssetHandle FontAsset = 0;
 		std::string TextString = "";
@@ -297,7 +278,7 @@ namespace Vortex {
 		TextMeshComponent(const TextMeshComponent&) = default;
 	};
 
-	struct AnimatorComponent
+	struct VORTEX_API AnimatorComponent
 	{
 		SharedRef<Animator> Animator = nullptr;
 
@@ -305,7 +286,7 @@ namespace Vortex {
 		AnimatorComponent(const AnimatorComponent&) = default;
 	};
 
-	struct AnimationComponent
+	struct VORTEX_API AnimationComponent
 	{
 		SharedRef<Animation> Animation = nullptr;
 
@@ -317,7 +298,7 @@ namespace Vortex {
 
 #pragma region Audio Components
 
-	struct AudioSourceComponent
+	struct VORTEX_API AudioSourceComponent
 	{
 		SharedReference<AudioSource> Source = nullptr;
 
@@ -325,7 +306,7 @@ namespace Vortex {
 		AudioSourceComponent(const AudioSourceComponent&) = default;
 	};
 	
-	struct AudioListenerComponent
+	struct VORTEX_API AudioListenerComponent
 	{
 		SharedReference<AudioListener> Listener = nullptr;
 		
@@ -339,7 +320,7 @@ namespace Vortex {
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
-	struct RigidBodyComponent
+	struct VORTEX_API RigidBodyComponent
 	{
 		RigidBodyType Type = RigidBodyType::Static;
 		uint32_t LayerID = 0;
@@ -364,7 +345,7 @@ namespace Vortex {
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 	};
 
-	struct CharacterControllerComponent
+	struct VORTEX_API CharacterControllerComponent
 	{
 		NonWalkableMode NonWalkMode = NonWalkableMode::PreventClimbing;
 		CapsuleClimbMode ClimbMode = CapsuleClimbMode::Constrained;
@@ -382,7 +363,7 @@ namespace Vortex {
 		CharacterControllerComponent(const CharacterControllerComponent&) = default;
 	};
 
-	struct FixedJointComponent
+	struct VORTEX_API FixedJointComponent
 	{
 		UUID ConnectedEntity;
 
@@ -394,7 +375,7 @@ namespace Vortex {
 		bool EnablePreProcessing = true;
 	};
 
-	struct BoxColliderComponent
+	struct VORTEX_API BoxColliderComponent
 	{
 		Math::vec3 HalfSize = Math::vec3(0.5f);
 		Math::vec3 Offset = Math::vec3(0.0f);
@@ -406,7 +387,7 @@ namespace Vortex {
 		BoxColliderComponent(const BoxColliderComponent&) = default;
 	};
 
-	struct SphereColliderComponent
+	struct VORTEX_API SphereColliderComponent
 	{
 		float Radius = 0.5f;
 		Math::vec3 Offset = Math::vec3(0.0f);
@@ -418,7 +399,7 @@ namespace Vortex {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 	};
 
-	struct CapsuleColliderComponent
+	struct VORTEX_API CapsuleColliderComponent
 	{
 		float Radius = 0.5f;
 		float Height = 1.0f;
@@ -431,7 +412,7 @@ namespace Vortex {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 	};
 
-	struct MeshColliderComponent
+	struct VORTEX_API MeshColliderComponent
 	{
 		AssetHandle ColliderAsset = 0;
 		uint32_t SubmeshIndex = 0;
@@ -446,7 +427,7 @@ namespace Vortex {
 
 	enum class RigidBody2DType { Static = 0, Dynamic, Kinematic };
 
-	struct RigidBody2DComponent
+	struct VORTEX_API RigidBody2DComponent
 	{
 		RigidBody2DType Type = RigidBody2DType::Static;
 		bool FixedRotation = false;
@@ -464,7 +445,7 @@ namespace Vortex {
 		RigidBody2DComponent(const RigidBody2DComponent&) = default;
 	};
 
-	struct BoxCollider2DComponent
+	struct VORTEX_API BoxCollider2DComponent
 	{
 		Math::vec2 Offset = Math::vec2(0.0f);
 		Math::vec2 Size = Math::vec2(0.5f);
@@ -484,7 +465,7 @@ namespace Vortex {
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	};
 
-	struct CircleCollider2DComponent
+	struct VORTEX_API CircleCollider2DComponent
 	{
 		Math::vec2 Offset = Math::vec2(0.0f);
 		float Radius = 0.5f;
@@ -506,7 +487,7 @@ namespace Vortex {
 
 #pragma region AI Components
 
-	struct NavMeshAgentComponent
+	struct VORTEX_API NavMeshAgentComponent
 	{
 		uint64_t Unknown = 0;
 
@@ -518,10 +499,9 @@ namespace Vortex {
 
 #pragma region Script Components
 
-	// Forward declaration
 	class ScriptableEntity;
 
-	struct ScriptComponent
+	struct VORTEX_API ScriptComponent
 	{
 		std::string ClassName;
 
@@ -529,7 +509,7 @@ namespace Vortex {
 		ScriptComponent(const ScriptComponent&) = default;
 	};
 
-	struct NativeScriptComponent
+	struct VORTEX_API NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;
 
@@ -547,26 +527,30 @@ namespace Vortex {
 #pragma endregion
 
 	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
+	struct ComponentGroup { };
 
 	using AllComponents =
 		ComponentGroup<
+
 		// Core
 		HierarchyComponent, TransformComponent,
+
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, StaticMeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
 		TextMeshComponent, AnimatorComponent, AnimationComponent,
+
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,
+
 		// Physics
 		RigidBodyComponent, CharacterControllerComponent, FixedJointComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent, MeshColliderComponent,
 		RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+
 		// AI
 		NavMeshAgentComponent,
+
 		// Script
 		ScriptComponent, NativeScriptComponent>;
 

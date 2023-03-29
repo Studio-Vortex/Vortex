@@ -48,7 +48,7 @@ namespace Vortex {
 
 	struct VORTEX_API PostProcessProperties
 	{
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Viewport ViewportSize = {};
 		PostProcessStage* Stages = nullptr;
 		uint32_t StageCount = 0;
@@ -68,8 +68,8 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedRef<Framebuffer> targetFramebuffer);
-		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
+		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer);
+		static void BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
 		static void Submit(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
@@ -88,7 +88,7 @@ namespace Vortex {
 		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
 
 		static void RenderToDepthMap(SharedReference<Scene>& contextScene);
-		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
+		static const SharedReference<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
 
 		static void BindSkyLightDepthMap();
 		static void BindPointLightDepthMaps();
@@ -154,7 +154,7 @@ namespace Vortex {
 	private:
 		// Helpers
 
-		static void BindRenderTarget(SharedRef<Framebuffer>& renderTarget);
+		static void BindRenderTarget(SharedReference<Framebuffer>& renderTarget);
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
 
 		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
@@ -168,7 +168,7 @@ namespace Vortex {
 		static uint32_t GetPostProcessStageScore(PostProcessStage stage);
 		static PostProcessStage FindHighestPriortyStage(PostProcessStage* stages, uint32_t count);
 		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
-		static void BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer);
+		static void BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer);
 	};
 
 }

@@ -109,8 +109,8 @@ namespace Vortex {
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
 		EditorCamera* m_SecondEditorCamera = nullptr;
-		SharedRef<Framebuffer> m_Framebuffer = nullptr;
-		SharedRef<Framebuffer> m_SecondViewportFramebuffer = nullptr;
+		SharedReference<Framebuffer> m_Framebuffer = nullptr;
+		SharedReference<Framebuffer> m_SecondViewportFramebuffer = nullptr;
 		SceneRenderer m_SecondViewportRenderer;
 
 		SharedReference<Scene> m_ActiveScene = nullptr;

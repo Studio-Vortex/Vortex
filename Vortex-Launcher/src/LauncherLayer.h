@@ -51,7 +51,7 @@ namespace Vortex {
 
 	private:
 		LauncherProperties m_Properties;
-		SharedRef<Framebuffer> m_Framebuffer = nullptr;
+		SharedReference<Framebuffer> m_Framebuffer = nullptr;
 		SharedReference<Texture2D> m_SelectedProjectIcon = nullptr;
 
 		Math::vec2 m_ViewportSize = Math::vec2();

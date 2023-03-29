@@ -1,6 +1,11 @@
 #include "vxpch.h"
 #include "AudioSystem.h"
 
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Entity.h"
+
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio/miniaudio.h>
 
@@ -34,6 +39,93 @@ namespace Vortex {
 	void AudioSystem::Shutdown()
 	{
 		ma_context_uninit(&s_Data.Context);
+	}
+
+	void AudioSystem::StartAudioSources(Scene* contextScene)
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, contextScene };
+
+			if (!entity.IsActive())
+				continue;
+
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+			const auto& audioProps = audioSource->GetProperties();
+
+			if (audioSource->IsPlaying())
+				audioSource->Stop();
+
+			if (!audioProps.PlayOnStart)
+				continue;
+
+			audioSource->Play();
+		}
+	}
+
+	void AudioSystem::PauseAudioSources(Scene* contextScene)
+	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(contextScene->IsRunning(), "Scene must be running!");
+
+		const auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, contextScene };
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!audioSource)
+				continue;
+
+			if (!audioSource->IsPlaying())
+				continue;
+
+			audioSource->Pause();
+			s_AudioSourcesToResume.push_back(audioSource);
+		}
+	}
+
+	void AudioSystem::ResumeAudioSources(Scene* contextScene)
+	{
+		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(contextScene->IsRunning(), "Scene must be running!");
+
+		SharedReference<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
+
+		if (projectProps.EditorProps.MuteAudioSources)
+			return;
+
+		for (auto& audioSource : s_AudioSourcesToResume)
+			audioSource->Play();
+
+		s_AudioSourcesToResume.clear();
+	}
+
+	void AudioSystem::StopAudioSources(Scene* contextScene)
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, contextScene };
+			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
+
+			if (!audioSource->IsPlaying())
+				continue;
+
+			audioSource->Stop();
+		}
 	}
 
 }

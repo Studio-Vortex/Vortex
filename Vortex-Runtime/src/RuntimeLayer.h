@@ -31,7 +31,7 @@ namespace Vortex {
 		void QueueSceneTransition();
 
 	private:
-		SharedRef<Framebuffer> m_Framebuffer;
+		SharedReference<Framebuffer> m_Framebuffer = nullptr;
 		SharedReference<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		Entity m_HoveredEntity;

@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
-#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/TimeStep.h"
+
+#include "Vortex/Asset/Asset.h"
+
 #include "Vortex/Scene/Components.h"
 
+#include "Vortex/Renderer/Framebuffer.h"
+
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <entt/entt.hpp>
@@ -16,7 +19,6 @@ namespace Vortex {
 	class Entity;
 	class Mesh;
 	class StaticMesh;
-	class Framebuffer;
 	class EditorCamera;
 
 	class Scene : public Asset
@@ -41,7 +43,7 @@ namespace Vortex {
 
 	public:
 		Scene() = default;
-		Scene(SharedRef<Framebuffer> targetFramebuffer);
+		Scene(SharedReference<Framebuffer>& targetFramebuffer);
 		~Scene() override;
 
 		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
@@ -74,8 +76,8 @@ namespace Vortex {
 
 		void OnUpdateEntityGui();
 
-		VX_FORCE_INLINE SharedRef<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
-		VX_FORCE_INLINE void SetTargetFramebuffer(SharedRef<Framebuffer> target) { m_TargetFramebuffer = target; }
+		VX_FORCE_INLINE SharedReference<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
+		VX_FORCE_INLINE void SetTargetFramebuffer(SharedReference<Framebuffer> target) { m_TargetFramebuffer = target; }
 
 		VX_FORCE_INLINE bool IsRunning() const { return m_IsRunning; }
 		VX_FORCE_INLINE bool IsPaused() const { return m_IsPaused; }
@@ -148,7 +150,7 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(SceneAsset)
 
-		static SharedReference<Scene> Create(SharedRef<Framebuffer> targetFramebuffer);
+		static SharedReference<Scene> Create(SharedReference<Framebuffer>& targetFramebuffer);
 		static SharedReference<Scene> Create();
 
 	private:
@@ -166,11 +168,6 @@ namespace Vortex {
 		void CreateScriptInstancesRuntime();
 		void DestroyScriptInstancesRuntime();
 
-		void StartAudioSourcesRuntime();
-		void PauseAudioSourcesRuntime();
-		void ResumeAudioSourcesRuntime();
-		void StopAudioSourcesRuntime();
-
 		void StopAnimatorsRuntime();
 
 		void StopParticleEmittersRuntime();
@@ -182,7 +179,7 @@ namespace Vortex {
 		void ClearSceneMeshes();
 
 	private:
-		SharedRef<Framebuffer> m_TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> m_TargetFramebuffer = nullptr;
 		SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
@@ -190,8 +187,6 @@ namespace Vortex {
 		uint32_t m_StepFrames = 0;
 
 		inline static uint32_t s_ActiveBuildIndex = 0;
-
-		std::vector<SharedReference<AudioSource>> m_AudioSourcesToResume;
 
 		using EntityMap = std::unordered_map<UUID, Entity>;
 		EntityMap m_EntityMap;

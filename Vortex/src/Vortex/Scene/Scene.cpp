@@ -5,6 +5,7 @@
 #include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
 
@@ -13,7 +14,6 @@
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
@@ -83,7 +83,7 @@ namespace Vortex {
 
 	static SceneRenderer s_SceneRenderer;
 
-	Scene::Scene(SharedRef<Framebuffer> targetFramebuffer)
+	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
 	{
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::OnCameraConstruct>(this);
@@ -289,7 +289,7 @@ namespace Vortex {
 		// Audio Source - PlayOnStart
 		if (muteAudio == false)
 		{
-			StartAudioSourcesRuntime();
+			AudioSystem::StartAudioSources(this);
 		}
 
 		CreateScriptInstancesRuntime();
@@ -304,7 +304,7 @@ namespace Vortex {
 		DestroyScriptInstancesRuntime();
 		ScriptEngine::OnRuntimeStop();
 
-		StopAudioSourcesRuntime();
+		AudioSystem::StopAudioSources(this);
 		StopAnimatorsRuntime();
 		StopParticleEmittersRuntime();
 		OnPhysicsSimulationStop();
@@ -526,11 +526,11 @@ namespace Vortex {
 
 		if (m_IsPaused)
 		{
-			PauseAudioSourcesRuntime();
+			AudioSystem::PauseAudioSources(this);
 		}
 		else
 		{
-			ResumeAudioSourcesRuntime();
+			AudioSystem::ResumeAudioSources(this);
 		}
 	}
 
@@ -922,93 +922,6 @@ namespace Vortex {
 			auto rhsEntity = m_EntityMap.find(rhs.ID);
 			return static_cast<uint32_t>(lhsEntity->second) < static_cast<uint32_t>(rhsEntity->second);
 		});
-	}
-
-	void Scene::StartAudioSourcesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-
-		auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-
-			if (!entity.IsActive())
-				continue;
-
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			const auto& audioProps = audioSource->GetProperties();
-
-			if (audioSource->IsPlaying())
-				audioSource->Stop();
-
-			if (!audioProps.PlayOnStart)
-				continue;
-
-			audioSource->Play();
-		}
-	}
-
-	void Scene::PauseAudioSourcesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
-
-		const auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-			if (!entity.IsActive())
-				continue;
-
-			if (!audioSource)
-				continue;
-
-			if (!audioSource->IsPlaying())
-				continue;
-
-			audioSource->Pause();
-			m_AudioSourcesToResume.push_back(audioSource);
-		}
-	}
-
-	void Scene::ResumeAudioSourcesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
-
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
-
-		if (projectProps.EditorProps.MuteAudioSources)
-			return;
-
-		for (auto& audioSource : m_AudioSourcesToResume)
-			audioSource->Play();
-
-		m_AudioSourcesToResume.clear();
-	}
-
-	void Scene::StopAudioSourcesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-
-		auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-
-			if (!audioSource->IsPlaying())
-				continue;
-
-			audioSource->Stop();
-		}
 	}
 
 	void Scene::SetSceneCameraViewportSize()
@@ -1414,7 +1327,7 @@ namespace Vortex {
 		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
 	}
 
-	SharedReference<Scene> Scene::Create(SharedRef<Framebuffer> targetFramebuffer)
+	SharedReference<Scene> Scene::Create(SharedReference<Framebuffer>& targetFramebuffer)
 	{
 		return SharedReference<Scene>::Create(targetFramebuffer);
 	}

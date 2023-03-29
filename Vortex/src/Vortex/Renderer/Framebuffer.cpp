@@ -12,12 +12,12 @@
 
 namespace Vortex {
 
-	SharedRef<Framebuffer> Framebuffer::Create(const FramebufferProperties& props)
+	SharedReference<Framebuffer> Framebuffer::Create(const FramebufferProperties& props)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -28,12 +28,12 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	SharedRef<HDRFramebuffer> HDRFramebuffer::Create(const FramebufferProperties& props)
+	SharedReference<HDRFramebuffer> HDRFramebuffer::Create(const FramebufferProperties& props)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLHDRFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLHDRFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -43,28 +43,12 @@ namespace Vortex {
 		VX_CORE_ASSERT(false, "Unknown Renderer API!");
 	}
 
-	SharedRef<DepthMapFramebuffer> DepthMapFramebuffer::Create(const FramebufferProperties& props)
+	SharedReference<DepthMapFramebuffer> DepthMapFramebuffer::Create(const FramebufferProperties& props)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLDepthMapFramebuffer>(props);
-#ifdef VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Direct3D: return nullptr;
-#endif // VX_PLATFORM_WINDOWS
-			case RendererAPI::API::Vulkan:   return nullptr;
-		}
-
-		VX_CORE_ASSERT(false, "Unknown Renderer API!");
-		return nullptr;
-	}
-
-	SharedRef<DepthCubemapFramebuffer> DepthCubemapFramebuffer::Create(const FramebufferProperties& props)
-	{
-		switch (Renderer::GetGraphicsAPI())
-		{
-			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLDepthCubeMapFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLDepthMapFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -75,12 +59,28 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	SharedRef<GaussianBlurFramebuffer> GaussianBlurFramebuffer::Create(const FramebufferProperties& props)
+	SharedReference<DepthCubemapFramebuffer> DepthCubemapFramebuffer::Create(const FramebufferProperties& props)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return CreateShared<OpenGLGaussianBlurFramebuffer>(props);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLDepthCubeMapFramebuffer>::Create(props);
+#ifdef VX_PLATFORM_WINDOWS
+			case RendererAPI::API::Direct3D: return nullptr;
+#endif // VX_PLATFORM_WINDOWS
+			case RendererAPI::API::Vulkan:   return nullptr;
+		}
+
+		VX_CORE_ASSERT(false, "Unknown Renderer API!");
+		return nullptr;
+	}
+
+	SharedReference<GaussianBlurFramebuffer> GaussianBlurFramebuffer::Create(const FramebufferProperties& props)
+	{
+		switch (Renderer::GetGraphicsAPI())
+		{
+			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLGaussianBlurFramebuffer>::Create(props);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

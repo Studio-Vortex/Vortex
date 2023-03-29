@@ -40,14 +40,14 @@ namespace Vortex {
 		
 		SceneLightDescription SceneLightDesc{};
 
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 
-		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
-		SharedRef<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
-		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
-		std::vector<SharedRef<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
+		SharedReference<HDRFramebuffer> HDRFramebuffer = nullptr;
+		SharedReference<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
+		std::vector<SharedReference<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
+		std::vector<SharedReference<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
 
-		SharedRef<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
+		SharedReference<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
 
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
@@ -125,7 +125,7 @@ namespace Vortex {
 		RenderCommand::SetViewport(viewport);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedRef<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -135,7 +135,7 @@ namespace Vortex {
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
-	void Renderer::BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -481,7 +481,7 @@ namespace Vortex {
 		{
 			case LightType::Directional:
 			{
-				s_Data.SkylightDepthMapFramebuffer.reset();
+				s_Data.SkylightDepthMapFramebuffer.Reset();
 				FramebufferProperties depthFramebufferProps{};
 				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
 				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
@@ -559,7 +559,7 @@ namespace Vortex {
 				{
 					if (!lightSourceComponent.CastShadows)
 					{
-						s_Data.SkylightDepthMapFramebuffer.reset();
+						s_Data.SkylightDepthMapFramebuffer.Reset();
 						continue;
 					}
 
@@ -593,7 +593,7 @@ namespace Vortex {
 		}
 	}
 
-	const SharedRef<DepthMapFramebuffer>& Renderer::GetSkyLightDepthFramebuffer()
+	const SharedReference<DepthMapFramebuffer>& Renderer::GetSkyLightDepthFramebuffer()
 	{
 		return s_Data.SkylightDepthMapFramebuffer;
 	}
@@ -668,7 +668,7 @@ namespace Vortex {
 		}*/
 	}
 
-	void Renderer::BindRenderTarget(SharedRef<Framebuffer>& renderTarget)
+	void Renderer::BindRenderTarget(SharedReference<Framebuffer>& renderTarget)
 	{
 		VX_CORE_ASSERT(renderTarget, "Invalid Render Target!");
 
@@ -1015,7 +1015,7 @@ namespace Vortex {
 		s_Data.BlurFramebuffer = GaussianBlurFramebuffer::Create(props);
 	}
 
-	void Renderer::BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer)
+	void Renderer::BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer)
 	{
 		if (!s_Data.BlurFramebuffer)
 		{

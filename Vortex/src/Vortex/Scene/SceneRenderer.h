@@ -29,7 +29,7 @@ namespace Vortex {
 		Math::mat4 MainCameraViewMatrix = {};
 		Math::mat4 MainCameraProjectionMatrix = {};
 		Math::vec3 MainCameraWorldSpaceTranslation = {};
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Scene* Scene = nullptr;
 		bool EditorScene = false;
 	};
