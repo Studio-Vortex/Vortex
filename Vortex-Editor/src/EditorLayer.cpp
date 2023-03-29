@@ -1668,9 +1668,11 @@ namespace Vortex {
 	{
 		if (entity.HasComponent<MeshRendererComponent>())
 		{
+			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 			const auto& scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
-			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			if (!meshRendererComponent.Visible)
+				return;
 
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (!AssetManager::IsHandleValid(meshHandle))
@@ -1687,9 +1689,11 @@ namespace Vortex {
 
 		if (entity.HasComponent<StaticMeshRendererComponent>())
 		{
+			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 			const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
 
-			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			if (!staticMeshRendererComponent.Visible)
+				return;
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
@@ -1722,6 +1726,9 @@ namespace Vortex {
 
 		for (auto& entity : entities)
 		{
+			if (!entity.IsActive())
+				continue;
+
 			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 			OverlayRenderMeshBoundingBox(entity, transform, boundingBoxColor);
 		}
@@ -1916,11 +1923,25 @@ namespace Vortex {
 	{
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
+			if (!entity.IsActive())
+				return;
+
+			const auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			if (!spriteRenderer.Visible)
+				return;
+
 			Renderer2D::DrawRect(transform, outlineColor);
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
 		{
+			if (!entity.IsActive())
+				return;
+
+			const auto& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			if (!circleRenderer.Visible)
+				return;
+
 			Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(0.505f));
 
 			Renderer2D::DrawCircle(scaledTransform, outlineColor);
