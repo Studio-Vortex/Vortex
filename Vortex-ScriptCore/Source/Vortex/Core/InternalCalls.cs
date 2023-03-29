@@ -740,6 +740,30 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_SetConeOuterGain(ulong entityID, float outerGain);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMinGain(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMinGain(ulong entityID, float minGain);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMaxGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMaxGain(ulong entityID, float maxGain);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static AttenuationModel AudioSourceComponent_GetAttenuationModel(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetAttenuationModel(ulong entityID, AttenuationModel model);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetFalloff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFalloff(ulong entityID, float falloff);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float AudioSourceComponent_GetMinDistance(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

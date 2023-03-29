@@ -22,6 +22,7 @@ namespace Vortex {
 	enum class CursorMode : uint16_t;
 	enum class GamepadButton : uint16_t;
 	enum class GamepadAxis : uint16_t;
+	enum class AttenuationModel : uint8_t;
 	enum class MaterialFlag;
 	class Texture2D;
 	class Noise;
@@ -347,6 +348,14 @@ namespace Vortex {
 		void AudioSourceComponent_SetConeOuterAngle(UUID entityUUID, float outerAngle);
 		float AudioSourceComponent_GetConeOuterGain(UUID entityUUID);
 		void AudioSourceComponent_SetConeOuterGain(UUID entityUUID, float outerGain);
+		float AudioSourceComponent_GetMinGain(UUID entityUUID);
+		void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain);
+		float AudioSourceComponent_GetMaxGain(UUID entityUUID);
+		void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain);
+		AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID);
+		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model);
+		float AudioSourceComponent_GetFalloff(UUID entityUUID);
+		void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff);
 		float AudioSourceComponent_GetMinDistance(UUID entityUUID);
 		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance);
 		float AudioSourceComponent_GetMaxDistance(UUID entityUUID);

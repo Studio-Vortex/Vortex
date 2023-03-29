@@ -593,22 +593,30 @@ namespace Vortex {
 			set => InternalCalls.AudioSourceComponent_SetVelocity(Entity.ID, ref value);
 		}
 
-		public float ConeInnerAngle
+		public AudioCone Cone => new AudioCone(this);
+
+		public float MinGain
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeInnerAngle(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeInnerAngle(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMinGain(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetMinGain(Entity.ID, value);
 		}
 
-		public float ConeOuterAngle
+		public float MaxGain
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeOuterAngle(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeOuterAngle(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMaxGain(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetMaxGain(Entity.ID, value);
 		}
 
-		public float ConeOuterGain
+		public AttenuationModel Attenuation
 		{
-			get => InternalCalls.AudioSourceComponent_GetConeOuterGain(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetConeOuterGain(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetAttenuationModel(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetAttenuationModel(Entity.ID, value);
+		}
+
+		public float Falloff
+		{
+			get => InternalCalls.AudioSourceComponent_GetFalloff(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetFalloff(Entity.ID, value);
 		}
 
 		public float MinDistance

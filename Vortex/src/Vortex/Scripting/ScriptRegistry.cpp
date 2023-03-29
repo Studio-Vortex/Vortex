@@ -3401,6 +3401,125 @@ namespace Vortex {
 			audioSource->SetCone(cone);
 		}
 
+        float AudioSourceComponent_GetMinGain(UUID entityUUID)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinGain without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().MinGain;
+        }
+
+        void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinGain without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			audioSource->SetMinGain(minGain);
+        }
+
+        float AudioSourceComponent_GetMaxGain(UUID entityUUID)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxGain without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().MaxGain;
+        }
+
+        void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxGain without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			audioSource->SetMaxGain(maxGain);
+        }
+
+        AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Attenuation without a Audio Source!");
+				return AttenuationModel::None;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().AttenuationModel;
+        }
+
+        void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Attenuation without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			audioSource->SetAttenuationModel(model);
+        }
+
+        float AudioSourceComponent_GetFalloff(UUID entityUUID)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Falloff without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			return audioSource->GetProperties().Falloff;
+        }
+
+        void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff)
+        {
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Falloff without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			SharedReference<AudioSource> audioSource = asc.Source;
+			audioSource->SetFalloff(falloff);
+        }
 
 		float AudioSourceComponent_GetMinDistance(UUID entityUUID)
 		{
@@ -7529,6 +7648,14 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetConeOuterAngle);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetConeOuterGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetConeOuterGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMaxGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetAttenuationModel);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetAttenuationModel);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetFalloff);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFalloff);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinDistance);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinDistance);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxDistance);
