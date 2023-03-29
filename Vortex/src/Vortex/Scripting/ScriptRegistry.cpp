@@ -7403,19 +7403,19 @@ namespace Vortex {
 
 			switch (type)
 			{
-				case Vortex::Log::LogLevel::Trace:
+				case Log::LogLevel::Trace:
 					VX_CONSOLE_LOG_TRACE("{}", managedString);
 					break;
-				case Vortex::Log::LogLevel::Info:
+				case Log::LogLevel::Info:
 					VX_CONSOLE_LOG_INFO("{}", managedString);
 					break;
-				case Vortex::Log::LogLevel::Warn:
+				case Log::LogLevel::Warn:
 					VX_CONSOLE_LOG_WARN("{}", managedString);
 					break;
-				case Vortex::Log::LogLevel::Error:
+				case Log::LogLevel::Error:
 					VX_CONSOLE_LOG_ERROR("{}", managedString);
 					break;
-				case Vortex::Log::LogLevel::Fatal:
+				case Log::LogLevel::Fatal:
 					VX_CONSOLE_LOG_FATAL("{}", managedString);
 					break;
 			}

@@ -523,9 +523,11 @@ namespace Vortex {
 		{
 			const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			AssetHandle staticMeshHandle = staticMeshRenderer.StaticMesh;
+			
 			if (AssetManager::IsHandleValid(staticMeshHandle))
 			{
 				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+				
 				if (staticMesh)
 				{
 					out << YAML::Key << "StaticMeshRendererComponent" << YAML::Value << YAML::BeginMap; // StaticMeshRendererComponent
@@ -551,10 +553,6 @@ namespace Vortex {
 
 						for (const auto& [submeshIndex, submesh] :submeshes)
 						{
-							out << YAML::BeginMap; // Submesh
-
-							VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
-
 							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex);
 							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
@@ -565,6 +563,9 @@ namespace Vortex {
 
 							AssetImporter::Serialize(material);
 
+							out << YAML::BeginMap; // Submesh
+							
+							VX_SERIALIZE_PROPERTY(Name, submesh.GetName(), out);
 							VX_SERIALIZE_PROPERTY(MaterialHandle, materialHandle, out);
 
 							out << YAML::EndMap; // Submesh
@@ -1204,8 +1205,6 @@ namespace Vortex {
 						{
 							SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
-							materialTable->Clear();
-
 							uint32_t submeshIndex = 0;
 							for (auto submeshData : submeshesData)
 							{
@@ -1221,13 +1220,17 @@ namespace Vortex {
 									submeshIndex++;
 									continue;
 								}
-							
-								materialTable->SetMaterial(submeshIndex, materialHandle);
-							}
 
-							if (materialTable->Empty())
-							{
-								staticMesh->LoadMaterialTable(materialTable);
+								// Load material textures so it is ready to go for rendering
+								auto material = AssetManager::GetAsset<Material>(materialHandle);
+								AssetManager::GetAsset<Texture2D>(material->GetAlbedoMap());
+								AssetManager::GetAsset<Texture2D>(material->GetNormalMap());
+								AssetManager::GetAsset<Texture2D>(material->GetMetallicMap());
+								AssetManager::GetAsset<Texture2D>(material->GetRoughnessMap());
+								AssetManager::GetAsset<Texture2D>(material->GetEmissionMap());
+								AssetManager::GetAsset<Texture2D>(material->GetAmbientOcclusionMap());
+
+								materialTable->SetMaterial(submeshIndex++, materialHandle);
 							}
 						}
 					}

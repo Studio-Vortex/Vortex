@@ -477,17 +477,23 @@ namespace Vortex {
 		uint32_t currentSubmeshIndex = 0;
 		uint32_t materialCount = m_InitialMaterialHandles.size() + m_MaterialHandles.size();
 
-		// TODO how should we handle this?
-		VX_CORE_ASSERT(materialCount == m_Submeshes.size(), "Size mismatch!");
-
 		const bool sizeMismatch = materialCount != m_Submeshes.size();
+
 		if (sizeMismatch)
 		{
-			const bool hasUserSetMaterials = !m_MaterialHandles.empty();
-			if (hasUserSetMaterials)
+			if (AssetManager::IsHandleValid(m_InitialMaterialHandles[0]))
 			{
-				m_InitialMaterialHandles.clear();
-				materialCount = m_MaterialHandles.size();
+				m_MaterialHandles.clear();
+				materialCount = m_InitialMaterialHandles.size();
+			}
+			else
+			{
+				const bool hasUserSetMaterials = !m_MaterialHandles.empty();
+				if (hasUserSetMaterials)
+				{
+					m_InitialMaterialHandles.clear();
+					materialCount = m_MaterialHandles.size();
+				}
 			}
 		}
 

@@ -286,6 +286,7 @@ namespace Vortex {
 				InternalCalls.LightSourceComponent_GetRadiance(Entity.ID, out Vector3 result);
 				return result;
 			}
+
 			set => InternalCalls.LightSourceComponent_SetRadiance(Entity.ID, ref value);
 		}
 
