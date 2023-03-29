@@ -133,18 +133,18 @@ namespace Vortex {
 		AudioEngine::SetSoundLooping(&m_Sound, looping);
 	}
 
-	uint32_t PlaybackDevice::GetDeviceListenerCount() const
+	uint8_t PlaybackDevice::GetDeviceListenerCount() const
 	{
 		return AudioEngine::GetDeviceListenerCount(&m_Engine);
 	}
 
-	void PlaybackDevice::AddDeviceListener(uint32_t listenerIndex)
+	void PlaybackDevice::AddDeviceListener(uint8_t listenerIndex)
 	{
 		VX_CORE_ASSERT(listenerIndex < MaxDeviceListeners - 1, "Listener Index out of bounds!");
 		AudioEngine::AddDeviceListener(&m_Engine, listenerIndex);
 	}
 
-	void PlaybackDevice::RemoveDeviceListener(uint32_t listenerIndex)
+	void PlaybackDevice::RemoveDeviceListener(uint8_t listenerIndex)
 	{
 		VX_CORE_ASSERT(listenerIndex < MaxDeviceListeners - 1, "Listener Index out of bounds!");
 		AudioEngine::RemoveDeviceListener(&m_Engine, listenerIndex);

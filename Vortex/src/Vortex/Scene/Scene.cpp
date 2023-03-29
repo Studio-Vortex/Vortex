@@ -49,6 +49,16 @@ namespace Vortex {
 
 					auto& srcComponent = src.get<TComponent>(srcEntity);
 					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
+
+					if constexpr (std::is_same<TComponent, AudioSourceComponent>())
+					{
+						auto& srcAsc = srcComponent.Source;
+						auto& dstAsc = dst.get<AudioSourceComponent>(dstEntity);
+
+						dstAsc.Source->SetPath(srcAsc->GetPath());
+						dstAsc.Source->Reload();
+						dstAsc.Source->SetProperties(srcAsc->GetProperties());
+					}
 				}
 			}(), ...);
 		}
@@ -1223,7 +1233,35 @@ namespace Vortex {
 		AudioListenerComponent& audioListenerComponent = entity.GetComponent<AudioListenerComponent>();
 
 		// TODO handle listener index here?
-		audioListenerComponent.Listener = AudioListener::Create();
+		uint8_t nextListenerIndex;
+		SharedReference<AudioSource> availableAudioSource;
+		
+		auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+		std::map<float, SharedReference<AudioSource>> audioSourceDistances;
+
+		for (const auto& entityID : view)
+		{
+			Entity audioSourceEntity = { entityID, this };
+			AudioSourceComponent& audioSourceComponent = audioSourceEntity.GetComponent<AudioSourceComponent>();
+			const uint8_t deviceListeners = audioSourceComponent.Source->GetPlaybackDevice().GetDeviceListenerCount();
+
+			if (deviceListeners >= PlaybackDevice::MaxDeviceListeners)
+				continue;
+
+			float distance = Math::Distance(entity.GetTransform().Translation, audioSourceEntity.GetTransform().Translation);
+			audioSourceDistances[distance] = audioSourceComponent.Source;
+		}
+
+		for (auto& [distance, audioSource] : audioSourceDistances)
+		{
+			nextListenerIndex = audioSource->GetPlaybackDevice().GetDeviceListenerCount();
+			availableAudioSource = audioSource;
+			break;
+		}
+
+		if (!audioSourceDistances.empty())
+			audioListenerComponent.Listener = AudioListener::Create(ListenerDeviceProperties(), availableAudioSource->GetPlaybackDevice(), nextListenerIndex);
 	}
 
 	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)

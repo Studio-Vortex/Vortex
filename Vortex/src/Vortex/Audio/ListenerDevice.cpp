@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	void ListenerDevice::Init(PlaybackDevice& playbackDevice, uint32_t listenerIndex)
+	void ListenerDevice::Init(PlaybackDevice& playbackDevice, uint8_t listenerIndex)
 	{
 		m_PlaybackDevice = &playbackDevice;
 		m_ListenerIndex = listenerIndex;
@@ -28,16 +28,21 @@ namespace Vortex {
 		m_PlaybackDevice = &playbackDevice;
 	}
 
-	uint32_t ListenerDevice::GetListenerIndex() const
+	uint8_t ListenerDevice::GetListenerIndex() const
 	{
 		VX_CORE_ASSERT(m_PlaybackDevice, "Device not initialized!");
 		return m_ListenerIndex;
 	}
 
-	void ListenerDevice::SetListenerIndex(uint32_t listenerIndex)
+	void ListenerDevice::SetListenerIndex(uint8_t listenerIndex)
 	{
 		VX_CORE_ASSERT(m_PlaybackDevice, "Device not initialized!");
 		m_ListenerIndex = listenerIndex;
+	}
+
+	bool ListenerDevice::IsListening() const
+	{
+		return m_PlaybackDevice != nullptr && m_ListenerIndex > -1;
 	}
 
 	void ListenerDevice::SetPosition(const Math::vec3& position)

@@ -26,6 +26,8 @@ namespace Vortex {
 			return;
 
 		m_AudioClip.Name = FileSystem::RemoveFileExtension(filepath);
+
+		SetProperties(m_Properties);
 	}
 
 	void AudioSource::Reload()
@@ -212,7 +214,7 @@ namespace Vortex {
 		return m_AudioClip;
 	}
 
-	float AudioSource::GetAmountComplete()
+	float AudioSource::GetAmountComplete() const
 	{
 		return m_PlaybackDevice.GetSoundCursor() / m_AudioClip.Length;
 	}

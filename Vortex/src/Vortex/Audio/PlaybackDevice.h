@@ -12,7 +12,7 @@ namespace Vortex {
 	class PlaybackDevice
 	{
 	public:
-		inline static uint32_t MaxDeviceListeners = MA_ENGINE_MAX_LISTENERS;
+		inline static uint8_t MaxDeviceListeners = MA_ENGINE_MAX_LISTENERS;
 
 	public:
 		PlaybackDevice() = default;
@@ -52,9 +52,9 @@ namespace Vortex {
 		void SetSpacialized(bool spacialized);
 		void SetLooping(bool looping);
 
-		uint32_t GetDeviceListenerCount() const;
-		void AddDeviceListener(uint32_t listenerIndex);
-		void RemoveDeviceListener(uint32_t listenerIndex);
+		uint8_t GetDeviceListenerCount() const;
+		void AddDeviceListener(uint8_t listenerIndex);
+		void RemoveDeviceListener(uint8_t listenerIndex);
 
 		// Internal
 

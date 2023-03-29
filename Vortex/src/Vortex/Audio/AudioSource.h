@@ -55,7 +55,7 @@ namespace Vortex {
 		void SetPath(const std::string& filepath);
 
 		const AudioClip& GetAudioClip() const;
-		float GetAmountComplete();
+		float GetAmountComplete() const;
 
 		PlaybackDevice& GetPlaybackDevice();
 		const PlaybackDevice& GetPlaybackDevice() const;

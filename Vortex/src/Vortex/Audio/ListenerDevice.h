@@ -14,13 +14,15 @@ namespace Vortex {
 		ListenerDevice() = default;
 		~ListenerDevice() = default;
 
-		void Init(PlaybackDevice& playbackDevice, uint32_t listenerIndex);
+		void Init(PlaybackDevice& playbackDevice, uint8_t listenerIndex);
 		void Shutdown();
 
 		void SetPlaybackDevice(PlaybackDevice& playbackDevice);
 
-		uint32_t GetListenerIndex() const;
-		void SetListenerIndex(uint32_t listenerIndex);
+		uint8_t GetListenerIndex() const;
+		void SetListenerIndex(uint8_t listenerIndex);
+
+		bool IsListening() const;
 
 		void SetPosition(const Math::vec3& position);
 		void SetDirection(const Math::vec3& direction);
@@ -31,7 +33,7 @@ namespace Vortex {
 		void SetWorldUp(const Math::vec3& up);
 
 	private:
-		uint32_t m_ListenerIndex = -1;
+		int8_t m_ListenerIndex = -1;
 		PlaybackDevice* m_PlaybackDevice = nullptr;
 	};
 
