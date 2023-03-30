@@ -297,7 +297,7 @@ namespace Vortex {
 		OnPhysicsSimulationStart();
 
 		// Audio Source - PlayOnStart
-		if (muteAudio == false)
+		if (!muteAudio)
 		{
 			AudioSystem::StartAudioSources(this);
 		}

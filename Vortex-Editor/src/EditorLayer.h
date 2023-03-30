@@ -61,6 +61,7 @@ namespace Vortex {
 		bool OpenExistingProject();
 		void OpenProject(const std::filesystem::path& filepath);
 		void SaveProject();
+		void CloseProject();
 
 		// Scene
 

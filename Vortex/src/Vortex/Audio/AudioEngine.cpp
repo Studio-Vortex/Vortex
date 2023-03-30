@@ -1,13 +1,13 @@
 #include "vxpch.h"
 #include "AudioEngine.h"
 
+#include "Vortex/Audio/AudioAssert.h"
+
 #include "Vortex/Utils/FileSystem.h"
 
 #include <miniaudio/miniaudio.h>
 
 namespace Vortex {
-
-#define VX_CHECK_AUDIO_RESULT(res, msg, ...) { if((res) != MA_SUCCESS) { VX_CORE_ASSERT(false, msg, __VA_ARGS__) } }
 
 	void AudioEngine::InitEngine(ma_engine* engine)
 	{

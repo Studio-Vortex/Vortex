@@ -88,11 +88,10 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		CloseProject();
+
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
-
-		// TODO should this really be here?
-		ScriptEngine::Shutdown();
 
 		EditorResources::Shutdown();
 	}
@@ -2346,8 +2345,8 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
-		// Script engine needs to be shutdown before we can open a new project
-		ScriptEngine::Shutdown();
+		if (Project::GetActive())
+			CloseProject();
 
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
@@ -2395,6 +2394,18 @@ namespace Vortex {
 		}
 
 		ProjectLoader::SaveActiveEditorProject();
+	}
+
+	void EditorLayer::CloseProject()
+	{
+		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
+
+		if (m_ActiveScene->IsRunning())
+			OnSceneStop();
+
+		ScriptEngine::Shutdown();
+
+		// Should we save the project?
 	}
 
 	void EditorLayer::CreateNewScene()

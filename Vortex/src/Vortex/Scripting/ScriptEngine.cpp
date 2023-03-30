@@ -25,6 +25,8 @@
 
 namespace Vortex {
 
+	static constexpr const char* APP_ASSEMBLY_RELOAD_SOUND_PATH = "Resources/Sounds/Compile.wav";
+
 	struct ScriptEngineInternalData
 	{
 		MonoDomain* RootDomain = nullptr;
@@ -108,7 +110,7 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
-		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
+		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
 	}
 
 	void ScriptEngine::Shutdown()
