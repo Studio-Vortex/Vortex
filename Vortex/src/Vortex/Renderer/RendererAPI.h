@@ -7,11 +7,11 @@
 
 namespace Vortex {
 
-#ifdef VX_DEBUG
-	#define SP_RENDERER_STATISTICS 1;
-#elif VX_RELEASE
-	#define VX_RENDERER_STATISTICS 1; // Temporary
-#endif // VX_DEBUG
+#ifndef VX_DIST
+	#define VX_RENDERER_STATISTICS 1;
+#else
+	#define VX_RENDERER_STATISTICS 0;
+#endif // VX_DIST
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;

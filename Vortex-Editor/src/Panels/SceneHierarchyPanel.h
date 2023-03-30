@@ -17,8 +17,6 @@ namespace Vortex {
 		void SetSceneContext(const SharedReference<Scene>& scene);
 
 		inline bool IsEditingEntityName() const { return m_IsEditingEntityName; }
-
-		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
 		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
 		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);

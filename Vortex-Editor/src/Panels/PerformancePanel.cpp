@@ -17,11 +17,9 @@ namespace Vortex {
 		Gui::Text("Active Panel ID: %u", activeID);
 
 		DrawHeading("Scene");
-
 		Gui::Text("Entity Count: %u", entityCount);
 
 		DrawHeading("Renderer Frame Time");
-
 		Gui::Text("Average Frame Time: %.3fms", 1000.0f / io.Framerate);
 		Gui::Text("FPS:  %.0f", io.Framerate);
 
@@ -31,31 +29,22 @@ namespace Vortex {
 		Gui::Text("Shadow Pass: %.4fms", renderTime.ShadowMapRenderTime);
 		Gui::Text("Bloom Pass: %.4fms", renderTime.BloomPassRenderTime);
 
-		static const char* columns[] = {"Renderer", "Renderer2D"};
+		// intential copy because we modify below
+		auto stats = Renderer::GetStats();
+		const auto& temp = Renderer2D::GetStats();
 
-		UI::Table("Input Assembly Info", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), []()
-		{
-			Gui::TableNextColumn();
-			auto stats = Renderer::GetStats();
-			Gui::Text("Draw Calls: %i", stats.DrawCalls);
-			Gui::Text("Quads:      %i", stats.QuadCount);
-			Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-			Gui::Text("Lines:      %i", stats.LineCount);
-			Gui::Text("Vertices:   %i", stats.GetVertexCount());
-			Gui::Text("Indices:    %i", stats.GetIndexCount());
+		stats.DrawCalls += temp.DrawCalls;
+		stats.QuadCount += temp.QuadCount;
+		stats.LineCount += temp.LineCount;
 
-			Gui::TableNextColumn();
-			stats = Renderer2D::GetStats();
-			Gui::Text("Draw Calls: %i", stats.DrawCalls);
-			Gui::Text("Quads:      %i", stats.QuadCount);
-			Gui::Text("Triangles:  %i", stats.GetTriangleCount());
-			Gui::Text("Lines:      %i", stats.LineCount);
-			Gui::Text("Vertices:   %i", stats.GetVertexCount());
-			Gui::Text("Indices:    %i", stats.GetIndexCount());
-		});
+		DrawHeading("Input Assembly");
+		Gui::Text("Draw Calls: %i", stats.DrawCalls);
+		Gui::Text("Quads:      %i", stats.QuadCount);
+		Gui::Text("Triangles:  %i", stats.GetTriangleCount());
+		Gui::Text("Vertices:   %i", stats.GetVertexCount());
+		Gui::Text("Indices:    %i", stats.GetIndexCount());
 
 		DrawHeading("Graphics API");
-
 		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
 		Gui::Text("API:     %s", rendererInfo.Name);
 		Gui::Text("GPU:     %s", rendererInfo.GPU);
@@ -68,7 +57,7 @@ namespace Vortex {
 
 	void PerformancePanel::DrawHeading(const char* title)
 	{
-		auto boldFont = Gui::GetIO().Fonts->Fonts[0];
+		static const auto boldFont = Gui::GetIO().Fonts->Fonts[0];
 
 		Gui::Spacing();
 		Gui::PushFont(boldFont);
