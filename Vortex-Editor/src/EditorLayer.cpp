@@ -2330,10 +2330,7 @@ namespace Vortex {
 
 	bool EditorLayer::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		if (m_SceneState != SceneState::Edit)
-		{
-			OnSceneStop();
-		}
+		CloseProject();
 
 		return false;
 	}
@@ -2400,12 +2397,13 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
 
+		if (!Project::GetActive())
+			return;
+
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
 
 		ScriptEngine::Shutdown();
-
-		// Should we save the project?
 	}
 
 	void EditorLayer::CreateNewScene()
