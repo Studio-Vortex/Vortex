@@ -55,13 +55,13 @@ namespace Vortex {
 		}
 
 		template <typename U>
-		SharedReference<U> As() const
+		constexpr SharedReference<U> As() const
 		{
 			return SharedReference<U>(*this);
 		}
 
 		template <typename U>
-		SharedReference<U> Is() const
+		constexpr SharedReference<U> Is() const
 		{
 			if constexpr (std::is_base_of<T, U>::value)
 				return As<U>();

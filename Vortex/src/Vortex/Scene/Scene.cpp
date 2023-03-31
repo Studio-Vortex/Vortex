@@ -3,7 +3,13 @@
 
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Prefab.h"
+#include "Vortex/Scene/SceneRenderer.h"
+#include "Vortex/Scene/ScriptableEntity.h"
 
 #include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Audio/AudioSource.h"
@@ -14,15 +20,10 @@
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Font/Font.h"
-
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/Prefab.h"
-#include "Vortex/Scene/SceneRenderer.h"
-#include "Vortex/Scene/ScriptableEntity.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
 
@@ -1041,7 +1042,14 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
+			auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
+			if (!particleEmitter)
+				continue;
 
 			if (!particleEmitter->IsActive())
 				continue;
@@ -1124,11 +1132,20 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			SharedRef<ParticleEmitter> particleEmitter = entity.GetComponent<ParticleEmitterComponent>().Emitter;
+			if (!entity.IsActive())
+				continue;
+
+			auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
+			if (!particleEmitter)
+				continue;
 
 			// Set the starting particle position to the entity's translation
-			Math::vec3 worldSpaceTranslation = GetWorldSpaceTransform(entity).Translation;
-			particleEmitter->GetProperties().Position = worldSpaceTranslation;
+			Math::vec3 entityTranslation = GetWorldSpaceTransform(entity).Translation;
+			particleEmitter->GetProperties().Position = entityTranslation;
 			particleEmitter->OnUpdate(delta);
 
 			if (!particleEmitter->IsActive())
@@ -1185,7 +1202,8 @@ namespace Vortex {
 		Entity entity = { e, this };
 		ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
 
-		particleEmitterComponent.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
+		// TOOD fix this
+		//particleEmitterComponent.Emitter = ParticleEmitter::Create(ParticleEmitterProperties());
 	}
 
 	void Scene::OnTextMeshConstruct(entt::registry& registry, entt::entity e)

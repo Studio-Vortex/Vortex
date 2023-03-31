@@ -17,6 +17,7 @@ namespace Vortex {
 		PrefabAsset,
 		ScriptAsset,
 		TextureAsset,
+		ParticleAsset,
 		MaterialAsset,
 		AnimatorAsset,
 		AnimationAsset,

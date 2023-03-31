@@ -17,7 +17,7 @@
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
 
 #include "Vortex/Physics/3D/PhysXTypes.h"
@@ -609,27 +609,22 @@ namespace Vortex {
 
 		if (entity.HasComponent<ParticleEmitterComponent>())
 		{
-			out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
+			const auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			AssetHandle emitterHandle = pmc.EmitterHandle;
 
-			const auto& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
-			const SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			if (AssetManager::IsHandleValid(emitterHandle))
+			{
+				SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(emitterHandle);
 
-			const ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
+				if (particleEmitter)
+				{
+					AssetImporter::Serialize(particleEmitter);
 
-			VX_SERIALIZE_PROPERTY(ColorBegin, emitterProperties.ColorBegin, out);
-			VX_SERIALIZE_PROPERTY(ColorEnd, emitterProperties.ColorEnd, out);
-			VX_SERIALIZE_PROPERTY(LifeTime, emitterProperties.LifeTime, out);
-			VX_SERIALIZE_PROPERTY(Position, emitterProperties.Position, out);
-			VX_SERIALIZE_PROPERTY(Offset, emitterProperties.Offset, out);
-			VX_SERIALIZE_PROPERTY(Rotation, emitterProperties.Rotation, out);
-			VX_SERIALIZE_PROPERTY(SizeBegin, emitterProperties.SizeBegin, out);
-			VX_SERIALIZE_PROPERTY(SizeEnd, emitterProperties.SizeEnd, out);
-			VX_SERIALIZE_PROPERTY(SizeVariation, emitterProperties.SizeVariation, out);
-			VX_SERIALIZE_PROPERTY(Velocity, emitterProperties.Velocity, out);
-			VX_SERIALIZE_PROPERTY(VelocityVariation, emitterProperties.VelocityVariation, out);
-			VX_SERIALIZE_PROPERTY(GenerateRandomColors, emitterProperties.GenerateRandomColors, out);
-
-			out << YAML::EndMap; // ParticleEmitterComponent
+					out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap;
+					VX_SERIALIZE_PROPERTY(EmitterHandle, particleEmitter->Handle, out);
+					out << YAML::EndMap;
+				}
+			}
 		}
 
 		if (entity.HasComponent<TextMeshComponent>())
@@ -659,8 +654,6 @@ namespace Vortex {
 
 			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
 			SharedRef<Animator> animator = animatorComponent.Animator;
-
-			
 
 			out << YAML::EndMap; // AnimatorComponent
 		}
@@ -1274,25 +1267,10 @@ namespace Vortex {
 			auto particleEmitterComponent = entity["ParticleEmitterComponent"];
 			if (particleEmitterComponent)
 			{
-				auto& particleEmitter = deserializedEntity.AddComponent<ParticleEmitterComponent>();
+				auto& pmc = deserializedEntity.AddComponent<ParticleEmitterComponent>();
 
-				ParticleEmitterProperties emitterProperties;
-				emitterProperties.ColorBegin = particleEmitterComponent["ColorBegin"].as<Math::vec4>();
-				emitterProperties.ColorEnd = particleEmitterComponent["ColorEnd"].as<Math::vec4>();
-				emitterProperties.LifeTime = particleEmitterComponent["LifeTime"].as<float>();
-				emitterProperties.Position = particleEmitterComponent["Position"].as<Math::vec3>();
-				if (particleEmitterComponent["Offset"])
-					emitterProperties.Offset = particleEmitterComponent["Offset"].as<Math::vec3>();
-				emitterProperties.Rotation = particleEmitterComponent["Rotation"].as<float>();
-				emitterProperties.SizeBegin = particleEmitterComponent["SizeBegin"].as<Math::vec2>();
-				emitterProperties.SizeEnd = particleEmitterComponent["SizeEnd"].as<Math::vec2>();
-				emitterProperties.SizeVariation = particleEmitterComponent["SizeVariation"].as<Math::vec2>();
-				emitterProperties.Velocity = particleEmitterComponent["Velocity"].as<Math::vec3>();
-				emitterProperties.VelocityVariation = particleEmitterComponent["VelocityVariation"].as<Math::vec3>();
-				if (particleEmitterComponent["GenerateRandomColors"])
-					emitterProperties.GenerateRandomColors = particleEmitterComponent["GenerateRandomColors"].as<bool>();
-
-				particleEmitter.Emitter = ParticleEmitter::Create(emitterProperties);
+				if (particleEmitterComponent["EmitterHandle"])
+					pmc.EmitterHandle = particleEmitterComponent["EmitterHandle"].as<uint64_t>();
 			}
 
 			auto textMeshComponent = entity["TextMeshComponent"];

@@ -141,7 +141,6 @@ namespace Vortex {
 
 #pragma region Rendering Components
 
-	class ParticleEmitter;
 	class Animator;
 	class Animation;
 
@@ -252,7 +251,7 @@ namespace Vortex {
 
 	struct VORTEX_API ParticleEmitterComponent
 	{
-		SharedRef<ParticleEmitter> Emitter = nullptr;
+		AssetHandle EmitterHandle = 0;
 
 		ParticleEmitterComponent() = default;
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;

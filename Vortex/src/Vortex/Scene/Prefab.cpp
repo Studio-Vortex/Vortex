@@ -2,12 +2,15 @@
 #include "Prefab.h"
 
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Serialization/SceneSerializer.h"
-#include "Vortex/Scripting/ScriptEngine.h"
+
 #include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
+
+#include "Vortex/Serialization/SceneSerializer.h"
+
+#include "Vortex/Scripting/ScriptEngine.h"
 
 namespace Vortex {
 

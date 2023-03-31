@@ -9,6 +9,7 @@
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
@@ -113,6 +114,95 @@ namespace Vortex {
 		return asset.As<Texture2D>()->IsLoaded();
 	}
 
+	void ParticleEmitterSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		SerializeToYAML(metadata, asset);
+	}
+
+	bool ParticleEmitterSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
+		asset = ParticleEmitter::Create({});
+		asset->Handle = metadata.Handle;
+
+		return DeserializeFromYAML(metadata, asset);
+	}
+
+	void ParticleEmitterSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		YAML::Emitter out;
+
+		SharedReference<ParticleEmitter> particleEmitter = asset.Is<ParticleEmitter>();
+		if (!particleEmitter)
+		{
+			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid particle emitter asset!");
+			return;
+		}
+
+		const std::string& particleEmitterName = particleEmitter->GetName();
+		const ParticleEmitterProperties emitterProperties = particleEmitter->GetProperties();
+
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "ParticleEmitter" << YAML::Value << particleEmitterName;
+		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
+		{
+			VX_SERIALIZE_PROPERTY(AssetHandle, particleEmitter->Handle, out);
+			VX_SERIALIZE_PROPERTY(ColorBegin, emitterProperties.ColorBegin, out);
+			VX_SERIALIZE_PROPERTY(ColorEnd, emitterProperties.ColorEnd, out);
+			VX_SERIALIZE_PROPERTY(LifeTime, emitterProperties.LifeTime, out);
+			VX_SERIALIZE_PROPERTY(Position, emitterProperties.Position, out);
+			VX_SERIALIZE_PROPERTY(Offset, emitterProperties.Offset, out);
+			VX_SERIALIZE_PROPERTY(Rotation, emitterProperties.Rotation, out);
+			VX_SERIALIZE_PROPERTY(SizeBegin, emitterProperties.SizeBegin, out);
+			VX_SERIALIZE_PROPERTY(SizeEnd, emitterProperties.SizeEnd, out);
+			VX_SERIALIZE_PROPERTY(SizeVariation, emitterProperties.SizeVariation, out);
+			VX_SERIALIZE_PROPERTY(Velocity, emitterProperties.Velocity, out);
+			VX_SERIALIZE_PROPERTY(VelocityVariation, emitterProperties.VelocityVariation, out);
+			VX_SERIALIZE_PROPERTY(GenerateRandomColors, emitterProperties.GenerateRandomColors, out);
+		}
+		out << YAML::EndMap;
+		out << YAML::EndMap;
+
+		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		std::ofstream fout(outputFile);
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
+
+		fout << out.c_str();
+
+		fout.close();
+	}
+
+	bool ParticleEmitterSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+
+		YAML::Node emitterData = YAML::LoadFile(relativePath);
+		if (!emitterData)
+			return false;
+
+		std::string emitterName = emitterData["ParticleEmitter"].as<std::string>();
+
+		SharedReference<ParticleEmitter> particleEmitter = asset.Is<ParticleEmitter>();
+		particleEmitter->SetName(emitterName);
+
+		ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+
+		VX_DESERIALIZE_PROPERTY(ColorBegin, Math::vec4, emitterProperties.ColorBegin, emitterData);
+		VX_DESERIALIZE_PROPERTY(ColorEnd, Math::vec4, emitterProperties.ColorEnd, emitterData);
+		VX_DESERIALIZE_PROPERTY(LifeTime, float, emitterProperties.LifeTime, emitterData);
+		VX_DESERIALIZE_PROPERTY(Position, Math::vec3, emitterProperties.Position, emitterData);
+		VX_DESERIALIZE_PROPERTY(Offset, Math::vec3, emitterProperties.Offset, emitterData);
+		VX_DESERIALIZE_PROPERTY(Rotation, float, emitterProperties.Rotation, emitterData);
+		VX_DESERIALIZE_PROPERTY(SizeBegin, Math::vec2, emitterProperties.SizeBegin, emitterData);
+		VX_DESERIALIZE_PROPERTY(SizeEnd, Math::vec2, emitterProperties.SizeEnd, emitterData);
+		VX_DESERIALIZE_PROPERTY(SizeVariation, Math::vec2, emitterProperties.SizeVariation, emitterData);
+		VX_DESERIALIZE_PROPERTY(Velocity, Math::vec3, emitterProperties.Velocity, emitterData);
+		VX_DESERIALIZE_PROPERTY(VelocityVariation, Math::vec3, emitterProperties.VelocityVariation, emitterData);
+		VX_DESERIALIZE_PROPERTY(GenerateRandomColors, bool, emitterProperties.GenerateRandomColors, emitterData);
+
+		return false;
+	}
+
 	void MaterialSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
 		SerializeToYAML(metadata, asset);
@@ -130,9 +220,6 @@ namespace Vortex {
 	{
 		YAML::Emitter out;
 
-		size_t length = metadata.Filepath.string().length();
-		VX_CORE_ASSERT(length > 0, "Attempting to serialize material asset with invalid filepath!");
-
 		SharedReference<Material> material = asset.Is<Material>();
 		if (!material)
 		{
@@ -140,7 +227,7 @@ namespace Vortex {
 			return;
 		}
 
-		std::string materialName = material->GetName();
+		const std::string& materialName = material->GetName();
 		if (materialName.empty())
 		{
 			VX_CONSOLE_LOG_ERROR("Failed to serialize material with no name!");
@@ -152,29 +239,29 @@ namespace Vortex {
 		out << YAML::Key << "Material" << YAML::Value << materialName;
 		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
 		{
-			out << YAML::Key << "AssetHandle" << YAML::Value << material->Handle;
-			out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
-			out << YAML::Key << "AlbedoMap" << YAML::Value << material->GetAlbedoMap();
-			out << YAML::Key << "NormalMap" << YAML::Value << material->GetNormalMap();
-			out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
-			out << YAML::Key << "MetallicMap" << YAML::Value << material->GetMetallicMap();
-			out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
-			out << YAML::Key << "RoughnessMap" << YAML::Value << material->GetRoughnessMap();
-			out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
-			out << YAML::Key << "EmissionMap" << YAML::Value << material->GetEmissionMap();
-			out << YAML::Key << "ParallaxHeightScale" << YAML::Value << material->GetParallaxHeightScale();
-			out << YAML::Key << "ParallaxOcclusionMap" << YAML::Value << material->GetParallaxOcclusionMap();
-			out << YAML::Key << "AmbientOcclusionMap" << YAML::Value << material->GetAmbientOcclusionMap();
-			out << YAML::Key << "UV" << YAML::Value << material->GetUV();
-			out << YAML::Key << "Opacity" << YAML::Value << material->GetOpacity();
-			out << YAML::Key << "Flags" << YAML::Value << material->GetFlags();
+			VX_SERIALIZE_PROPERTY(AssetHandle, material->Handle, out);
+			VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
+			VX_SERIALIZE_PROPERTY(AlbedoMap, material->GetAlbedoMap(), out);
+			VX_SERIALIZE_PROPERTY(NormalMap, material->GetNormalMap(), out);
+			VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
+			VX_SERIALIZE_PROPERTY(MetallicMap, material->GetMetallicMap(), out);
+			VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
+			VX_SERIALIZE_PROPERTY(RoughnessMap, material->GetRoughnessMap(), out);
+			VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
+			VX_SERIALIZE_PROPERTY(EmissionMap, material->GetEmissionMap(), out);
+			VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
+			VX_SERIALIZE_PROPERTY(ParallaxOcclusionMap, material->GetParallaxOcclusionMap(), out);
+			VX_SERIALIZE_PROPERTY(AmbientOcclusionMap, material->GetAmbientOcclusionMap(), out);
+			VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
+			VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
+			VX_SERIALIZE_PROPERTY(Flags, material->GetFlags(), out);
 		}
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
 		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
-		VX_CORE_ASSERT(fout.is_open(), "Failed to open file from path!");
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
 		
 		fout << out.c_str();
 

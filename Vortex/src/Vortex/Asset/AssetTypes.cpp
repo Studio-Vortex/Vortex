@@ -14,6 +14,7 @@ namespace Vortex {
 			if (type == "PrefabAsset")          return AssetType::PrefabAsset;
 			if (type == "ScriptAsset")          return AssetType::ScriptAsset;
 			if (type == "TextureAsset")         return AssetType::TextureAsset;
+			if (type == "ParticleAsset")        return AssetType::ParticleAsset;
 			if (type == "MaterialAsset")        return AssetType::MaterialAsset;
 			if (type == "AnimatorAsset")        return AssetType::AnimatorAsset;
 			if (type == "AnimationAsset")       return AssetType::AnimationAsset;
@@ -36,6 +37,7 @@ namespace Vortex {
 				case AssetType::PrefabAsset:          return "PrefabAsset";
 				case AssetType::ScriptAsset:          return "ScriptAsset";
 				case AssetType::TextureAsset:         return "TextureAsset";
+				case AssetType::ParticleAsset:        return "ParticleAsset";
 				case AssetType::MaterialAsset:        return "MaterialAsset";
 				case AssetType::AnimatorAsset:        return "AnimatorAsset";
 				case AssetType::AnimationAsset:       return "AnimationAsset";

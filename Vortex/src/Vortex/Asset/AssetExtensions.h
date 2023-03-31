@@ -59,6 +59,8 @@ namespace Vortex {
 
 		{ ".cs", AssetType::ScriptAsset },
 
+		{ ".vparticle", AssetType::ParticleAsset },
+
 		{ ".png", AssetType::TextureAsset },
 		{ ".jpg", AssetType::TextureAsset },
 		{ ".jpeg", AssetType::TextureAsset },

@@ -1,18 +1,23 @@
 #include "vxpch.h"
 #include "ScriptEngine.h"
 
-#include "Vortex/Project/Project.h"
-#include "Vortex/Core/Application.h"
 #include "Vortex/Core/Buffer.h"
+#include "Vortex/Core/Application.h"
+
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Components.h"
+#include "Vortex/Scene/Entity.h"
+
 #include "Vortex/Scripting/ScriptRegistry.h"
 #include "Vortex/Scripting/ScriptInstance.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Scene/Components.h"
-#include "Vortex/Scene/Entity.h"
+
 #include "Vortex/Physics/3D/Physics.h"
+
 #include "Vortex/Utils/FileSystem.h"
 
 #include <mono/jit/jit.h>

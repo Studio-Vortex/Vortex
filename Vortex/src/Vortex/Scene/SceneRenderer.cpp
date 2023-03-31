@@ -15,7 +15,7 @@
 #include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Framebuffer.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
 #include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Editor/EditorResources.h"
@@ -224,19 +224,24 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, scene };
-			const auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
-
 			if (!entity.IsActive())
 				continue;
 
-			SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
+			const auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
+			if (!particleEmitter)
+				continue;
 
 			const auto& particles = particleEmitter->GetParticles();
+			const bool random = particleEmitter->GetProperties().GenerateRandomColors;
 
 			// Render the particles in reverse to blend correctly
 			for (auto it = particles.crbegin(); it != particles.crend(); it++)
 			{
-				const ParticleEmitter::Particle& particle = *it;
+				const Particle& particle = *it;
 
 				if (!particle.Active)
 					continue;
@@ -245,17 +250,12 @@ namespace Vortex {
 				Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
 				Math::vec4 color;
 
-				if (particleEmitter->GetProperties().GenerateRandomColors)
+				if (random)
 					color = particle.RandomColor;
 				else
 					color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
 
-				Renderer2D::DrawQuadBillboard(
-					cameraView,
-					particle.Position,
-					size,
-					color
-				);
+				Renderer2D::DrawQuadBillboard(cameraView, particle.Position, size, color);
 			}
 		}
 	}

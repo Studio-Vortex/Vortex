@@ -12,6 +12,12 @@ namespace Vortex {
 		m_ParticlePool.resize(s_MaxParticles);
 	}
 
+	ParticleEmitter::ParticleEmitter(const ParticleEmitter& other)
+	{
+		SetProperties(other.m_Properties);
+		m_ParticlePool.resize(s_MaxParticles);
+	}
+
 	void ParticleEmitter::Start()
 	{
 		m_IsActive = true;
@@ -73,20 +79,14 @@ namespace Vortex {
 		m_PoolIndex = --m_PoolIndex % m_ParticlePool.size();
 	}
 
-	void ParticleEmitter::Copy(SharedRef<ParticleEmitter> dstEmitter, const SharedRef<ParticleEmitter>& srcEmitter)
-	{
-		const auto& props = srcEmitter->GetProperties();
-		dstEmitter->SetProperties(props);
-	}
-
 	void ParticleEmitter::SetProperties(const ParticleEmitterProperties& props)
 	{
 		m_Properties = props;
 	}
 
-	SharedRef<ParticleEmitter> ParticleEmitter::Create(const ParticleEmitterProperties& props)
+	SharedReference<ParticleEmitter> ParticleEmitter::Create(const ParticleEmitterProperties& props)
 	{
-		return CreateShared<ParticleEmitter>(props);
+		return SharedReference<ParticleEmitter>::Create(props);
 	}
 
 }
