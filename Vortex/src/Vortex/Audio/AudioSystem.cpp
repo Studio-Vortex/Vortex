@@ -18,7 +18,7 @@ namespace Vortex {
 
 	struct AudioSystemInternalData
 	{
-		ma_context Context;
+		ma_context AudioContext;
 		
 #ifndef VX_DIST
 
@@ -27,10 +27,15 @@ namespace Vortex {
 
 #endif // !VX_DIST
 
-		std::unordered_map<UUID, SharedReference<AudioSource>> ActiveAudioSources;
-		std::unordered_map<UUID, SharedReference<AudioListener>> ActiveAudioListeners;
+		struct SceneAudioData
+		{
+			std::unordered_map<UUID, SharedReference<AudioSource>> ActiveAudioSources;
+			std::unordered_map<UUID, SharedReference<AudioListener>> ActiveAudioListeners;
 
-		std::vector<SharedReference<AudioSource>> PausedAudioSources;
+			std::vector<SharedReference<AudioSource>> PausedAudioSources;
+		};
+
+		std::unordered_map<Scene*, SceneAudioData> ActiveScenes;
 	};
 
 	static AudioSystemInternalData* s_Data;
@@ -40,14 +45,14 @@ namespace Vortex {
 		s_Data = new AudioSystemInternalData();
 
 		VX_CHECK_AUDIO_RESULT(
-			ma_context_init(NULL, 0, NULL, &s_Data->Context),
+			ma_context_init(NULL, 0, NULL, &s_Data->AudioContext),
 			"Failed to initialize Audio Context!"
 		);
 
 #ifndef VX_DIST
 		
 		VX_CHECK_AUDIO_RESULT(
-			ma_context_get_devices(&s_Data->Context, &s_Data->PlaybackDeviceInfos, &s_Data->PlaybackDeviceCount, nullptr, nullptr),
+			ma_context_get_devices(&s_Data->AudioContext, &s_Data->PlaybackDeviceInfos, &s_Data->PlaybackDeviceCount, nullptr, nullptr),
 			"Failed to retrieve Audio Hardware Information!"
 		);
 		
@@ -66,8 +71,10 @@ namespace Vortex {
 
 	void AudioSystem::Shutdown()
 	{
+		s_Data->ActiveScenes.clear();
+
 		VX_CHECK_AUDIO_RESULT(
-			ma_context_uninit(&s_Data->Context),
+			ma_context_uninit(&s_Data->AudioContext),
 			"Failed to shutdown audio context!"
 		);
 
@@ -75,20 +82,148 @@ namespace Vortex {
 		s_Data = nullptr;
 	}
 
-	void AudioSystem::StartAudioSources(Scene* contextScene)
+	void AudioSystem::SubmitContextScene(Scene* context)
+	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(!s_Data->ActiveScenes.contains(context), "Scene was already added to audio system!");
+		
+		s_Data->ActiveScenes[context] = AudioSystemInternalData::SceneAudioData{};
+	}
+
+	void AudioSystem::RemoveContextScene(Scene* context)
+	{
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid Scene!");
+
+		auto& audioData = s_Data->ActiveScenes[context];
+
+		audioData.ActiveAudioSources.clear();
+		audioData.PausedAudioSources.clear();
+		audioData.ActiveAudioListeners.clear();
+
+		s_Data->ActiveScenes.erase(context);
+	}
+
+    void AudioSystem::CreateAudioSource(Entity& entity, Scene* context, const std::string& filepath)
+    {
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid Scene!");
+		VX_CORE_ASSERT(entity.HasComponent<AudioSourceComponent>(), "Entity doesn't have audio source component!");
+		
+		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+
+		if (filepath.empty())
+			asc.Source = AudioSource::Create();
+		else
+			asc.Source = AudioSource::Create(filepath);
+
+		VX_CORE_ASSERT(asc.Source, "Failed to create audio source!");
+
+		auto& audioData = s_Data->ActiveScenes[context];
+
+		VX_CORE_ASSERT(!audioData.ActiveAudioSources.contains(entity.GetUUID()), "Entities can only have one audio source component!");
+
+		audioData.ActiveAudioSources[entity.GetUUID()] = asc.Source;
+    }
+
+    void AudioSystem::DestroyAudioSource(Entity& entity, Scene* context)
+    {
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid Scene!");
+		VX_CORE_ASSERT(entity.HasComponent<AudioSourceComponent>(), "Entity doesn't have audio source component!");
+
+		auto& audioData = s_Data->ActiveScenes[context];
+		VX_CORE_ASSERT(audioData.ActiveAudioSources.contains(entity.GetUUID()), "Entity was not found in scene audio data map!");
+
+		audioData.ActiveAudioSources.erase(entity.GetUUID());
+    }
+
+    void AudioSystem::CreateAudioListener(Entity& entity, Scene* context)
+    {
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
+		VX_CORE_ASSERT(entity.HasComponent<AudioListenerComponent>(), "Entity doesn't have audio listener component!");
+
+		// TODO handle listener index here?
+		uint8_t nextListenerIndex;
+		SharedReference<AudioSource> availableAudioSource;
+
+		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+
+		std::map<float, SharedReference<AudioSource>> audioSourceDistances;
+
+		for (const auto& entityID : view)
+		{
+			Entity audioSourceEntity = { entityID, context };
+			const AudioSourceComponent& audioSourceComponent = audioSourceEntity.GetComponent<AudioSourceComponent>();
+			const uint8_t deviceListeners = audioSourceComponent.Source->GetPlaybackDevice().GetDeviceListenerCount();
+
+			if (deviceListeners >= PlaybackDevice::MaxDeviceListeners)
+				continue;
+
+			float distance = Math::Distance(entity.GetTransform().Translation, audioSourceEntity.GetTransform().Translation);
+			audioSourceDistances[distance] = audioSourceComponent.Source;
+		}
+
+		for (const auto& [distance, audioSource] : audioSourceDistances)
+		{
+			nextListenerIndex = audioSource->GetPlaybackDevice().GetDeviceListenerCount();
+			availableAudioSource = audioSource;
+			break;
+		}
+
+		AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+		if (!audioSourceDistances.empty())
+			alc.Listener = AudioListener::Create(ListenerDeviceProperties{}, availableAudioSource->GetPlaybackDevice(), nextListenerIndex);
+
+		VX_CORE_ASSERT(alc.Listener, "Failed to create audio listener!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
+
+		// TODO fix this
+		if (!alc.Listener)
+			return;
+
+		auto& audioData = s_Data->ActiveScenes[context];
+		VX_CORE_ASSERT(!audioData.ActiveAudioListeners.contains(entity.GetUUID()), "Entities can only have one audio listener component!");
+
+		audioData.ActiveAudioListeners[entity.GetUUID()] = alc.Listener;
+    }
+
+    void AudioSystem::DestroyAudioListener(Entity& entity, Scene* context)
+    {
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
+		VX_CORE_ASSERT(entity.HasComponent<AudioListenerComponent>(), "Entity doesn't have audio listener component!");
+
+		auto& audioData = s_Data->ActiveScenes[context];
+		VX_CORE_ASSERT(audioData.ActiveAudioListeners.contains(entity.GetUUID()), "Entity was not found in scene audio data map!");
+
+		audioData.ActiveAudioListeners.erase(entity.GetUUID());
+    }
+
+    void AudioSystem::StartAudioSourcesRuntime(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
-		VX_CORE_ASSERT(contextScene->IsRunning(), "Scene must be running!");
 
-		auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(context->IsRunning(), "Scene must be running!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
 
-		for (const auto e : view)
+		auto& audioData = s_Data->ActiveScenes[context];
+
+		for (auto& [entityUUID, audioSource] : audioData.ActiveAudioSources)
 		{
-			Entity entity{ e, contextScene };
+			Entity entity = context->TryGetEntityWithUUID(entityUUID);
 			if (!entity.IsActive())
 				continue;
 
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
 			const auto& audioProps = audioSource->GetProperties();
 
 			if (audioSource->IsPlaying())
@@ -101,61 +236,64 @@ namespace Vortex {
 		}
 	}
 
-	void AudioSystem::PauseAudioSources(Scene* contextScene)
+	void AudioSystem::PauseAudioSourcesRuntime(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
-		VX_CORE_ASSERT(contextScene->IsRunning(), "Scene must be running!");
 
-		auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(context->IsRunning(), "Scene must be running!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
 
-		for (const auto e : view)
+		auto& audioData = s_Data->ActiveScenes[context];
+		auto& pausedAudioSources = audioData.PausedAudioSources;
+
+		for (auto& [entityUUID, audioSource] : audioData.ActiveAudioSources)
 		{
-			Entity entity{ e, contextScene };
+			Entity entity = context->TryGetEntityWithUUID(entityUUID);
 			if (!entity.IsActive())
-				continue;
-
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (!audioSource)
 				continue;
 
 			if (!audioSource->IsPlaying())
 				continue;
 
 			audioSource->Pause();
-			s_Data->PausedAudioSources.emplace_back(audioSource);
+			pausedAudioSources.push_back(audioSource);
 		}
 	}
 
-	void AudioSystem::ResumeAudioSources(Scene* contextScene)
+	void AudioSystem::ResumeAudioSourcesRuntime(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
-		VX_CORE_ASSERT(contextScene->IsRunning(), "Scene must be running!");
+
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(context->IsRunning(), "Scene must be running!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
-
 		if (projectProps.EditorProps.MuteAudioSources)
 			return;
 
-		for (auto& audioSource : s_Data->PausedAudioSources)
+		auto& pausedAudioSources = s_Data->ActiveScenes[context].PausedAudioSources;
+
+		for (auto& audioSource : pausedAudioSources)
 			audioSource->Play();
 
-		s_Data->PausedAudioSources.clear();
+		pausedAudioSources.clear();
 	}
 
-	void AudioSystem::StopAudioSources(Scene* contextScene)
+	void AudioSystem::StopAudioSourcesRuntime(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = contextScene->GetAllEntitiesWith<AudioSourceComponent>();
+		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_Data->ActiveScenes.contains(context), "Invalid scene!");
 
-		for (const auto e : view)
+		auto& audioData = s_Data->ActiveScenes[context];
+
+		for (auto& [entityUUID, audioSource] : audioData.ActiveAudioSources)
 		{
-			Entity entity{ e, contextScene };
-			
-			SharedReference<AudioSource> audioSource = entity.GetComponent<AudioSourceComponent>().Source;
-			if (!audioSource)
-				continue;
+			Entity entity = context->TryGetEntityWithUUID(entityUUID);
 
 			if (!audioSource->IsPlaying())
 				continue;

@@ -41,7 +41,7 @@ namespace Vortex {
 
 		EditorResources::Init();
 
-		m_EditorScene = Scene::Create(m_Framebuffer);
+		m_EditorScene = nullptr;
 		m_ActiveScene = m_EditorScene;
 
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
@@ -87,8 +87,6 @@ namespace Vortex {
 	void EditorLayer::OnDetach()
 	{
 		VX_PROFILE_FUNCTION();
-
-		CloseProject();
 
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
@@ -2395,15 +2393,10 @@ namespace Vortex {
 
 	void EditorLayer::CloseProject()
 	{
-		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
-
-		if (!Project::GetActive())
-			return;
-
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
 
-		ScriptEngine::Shutdown();
+		ProjectLoader::CloseActiveProject();
 	}
 
 	void EditorLayer::CreateNewScene()

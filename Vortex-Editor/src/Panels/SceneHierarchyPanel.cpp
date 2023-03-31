@@ -1756,16 +1756,14 @@ namespace Vortex {
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
 		{
-			if (component.Source)
+			if (component.Source && !component.Source->GetPath().empty() && (component.Source->IsPlaying() || component.Source->IsPaused()))
 			{
 				Gui::BeginDisabled(!component.Source->IsPlaying());
 				Gui::ProgressBar(component.Source->GetAmountComplete());
 				Gui::EndDisabled();
 			}
 
-			Gui::BeginDisabled(component.Source == nullptr);
-
-			Gui::BeginDisabled(component.Source->IsPlaying());
+			Gui::BeginDisabled(component.Source == nullptr || component.Source->IsPlaying());
 			if (Gui::Button("Play"))
 			{
 				if (component.Source->GetProperties().PlayOneShot)
@@ -1801,8 +1799,6 @@ namespace Vortex {
 				Gui::EndDisabled();
 			}
 
-			Gui::EndDisabled();
-
 			UI::BeginPropertyGrid();
 
 			std::string audioSourcePath = "";
@@ -1832,9 +1828,8 @@ namespace Vortex {
 						if (component.Source->IsPlaying())
 							component.Source->Stop();
 
-						SharedReference<AudioSource> audioSource = component.Source;
-						audioSource->SetPath(audioSourcePath.string());
-						audioSource->Reload();
+						component.Source->SetPath(audioSourcePath.string());
+						component.Source->Reload();
 					}
 					else
 					{

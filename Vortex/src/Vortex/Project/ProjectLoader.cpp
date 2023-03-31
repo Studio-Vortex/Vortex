@@ -3,6 +3,7 @@
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Components.h"
+#include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 namespace Vortex {
@@ -38,5 +39,16 @@ namespace Vortex {
 		VX_CORE_ASSERT(false, "Not Implemented Yet!");
 		return false;
 	}
+
+    void ProjectLoader::CloseActiveProject()
+    {
+		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
+
+		if (!Project::GetActive())
+			return;
+
+		ScriptEngine::Shutdown();
+		AudioSystem::Shutdown();
+    }
 
 }

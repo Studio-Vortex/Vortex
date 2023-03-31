@@ -96,14 +96,21 @@ namespace Vortex {
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
 	{
+		AudioSystem::SubmitContextScene(this);
+
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::OnCameraConstruct>(this);
 		m_Registry.on_construct<StaticMeshRendererComponent>().connect<&Scene::OnStaticMeshConstruct>(this);
 		m_Registry.on_construct<ParticleEmitterComponent>().connect<&Scene::OnParticleEmitterConstruct>(this);
 		m_Registry.on_construct<TextMeshComponent>().connect<&Scene::OnTextMeshConstruct>(this);
+		
 		m_Registry.on_construct<AnimatorComponent>().connect<&Scene::OnAnimatorConstruct>(this);
 		m_Registry.on_construct<AnimationComponent>().connect<&Scene::OnAnimationConstruct>(this);
+
 		m_Registry.on_construct<AudioSourceComponent>().connect<&Scene::OnAudioSourceConstruct>(this);
+		m_Registry.on_destroy<AudioSourceComponent>().connect<&Scene::OnAudioSourceDestruct>(this);
+		
 		m_Registry.on_construct<AudioListenerComponent>().connect<&Scene::OnAudioListenerConstruct>(this);
+		m_Registry.on_destroy<AudioListenerComponent>().connect<&Scene::OnAudioListenerDestruct>(this);
 	}
 
 	Scene::~Scene()
@@ -112,10 +119,17 @@ namespace Vortex {
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
 		m_Registry.on_construct<ParticleEmitterComponent>().disconnect();
 		m_Registry.on_construct<TextMeshComponent>().disconnect();
+		
 		m_Registry.on_construct<AnimatorComponent>().disconnect();
 		m_Registry.on_construct<AnimationComponent>().disconnect();
+		
 		m_Registry.on_construct<AudioSourceComponent>().disconnect();
+		m_Registry.on_destroy<AudioSourceComponent>().disconnect();
+		
 		m_Registry.on_construct<AudioListenerComponent>().disconnect();
+		m_Registry.on_destroy<AudioListenerComponent>().disconnect();
+
+		AudioSystem::RemoveContextScene(this);
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
@@ -299,7 +313,7 @@ namespace Vortex {
 		// Audio Source - PlayOnStart
 		if (!muteAudio)
 		{
-			AudioSystem::StartAudioSources(this);
+			AudioSystem::StartAudioSourcesRuntime(this);
 		}
 
 		CreateScriptInstancesRuntime();
@@ -314,7 +328,8 @@ namespace Vortex {
 		DestroyScriptInstancesRuntime();
 		ScriptEngine::OnRuntimeStop();
 
-		AudioSystem::StopAudioSources(this);
+		AudioSystem::StopAudioSourcesRuntime(this);
+
 		StopAnimatorsRuntime();
 		StopParticleEmittersRuntime();
 		OnPhysicsSimulationStop();
@@ -536,11 +551,11 @@ namespace Vortex {
 
 		if (m_IsPaused)
 		{
-			AudioSystem::PauseAudioSources(this);
+			AudioSystem::PauseAudioSourcesRuntime(this);
 		}
 		else
 		{
-			AudioSystem::ResumeAudioSources(this);
+			AudioSystem::ResumeAudioSourcesRuntime(this);
 		}
 	}
 
@@ -1222,46 +1237,29 @@ namespace Vortex {
 	void Scene::OnAudioSourceConstruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		AudioSourceComponent& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+		const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+		if (!asc.Source)
+			AudioSystem::CreateAudioSource(entity, this);
+	}
 
-		audioSourceComponent.Source = AudioSource::Create();
+	void Scene::OnAudioSourceDestruct(entt::registry& registry, entt::entity e)
+	{
+		Entity entity = { e, this };
+		AudioSystem::DestroyAudioSource(entity, this);
 	}
 
 	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		AudioListenerComponent& audioListenerComponent = entity.GetComponent<AudioListenerComponent>();
+		const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
+		if (!alc.Listener)
+			AudioSystem::CreateAudioListener(entity, this);
+	}
 
-		// TODO handle listener index here?
-		uint8_t nextListenerIndex;
-		SharedReference<AudioSource> availableAudioSource;
-		
-		auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-		std::map<float, SharedReference<AudioSource>> audioSourceDistances;
-
-		for (const auto& entityID : view)
-		{
-			Entity audioSourceEntity = { entityID, this };
-			AudioSourceComponent& audioSourceComponent = audioSourceEntity.GetComponent<AudioSourceComponent>();
-			const uint8_t deviceListeners = audioSourceComponent.Source->GetPlaybackDevice().GetDeviceListenerCount();
-
-			if (deviceListeners >= PlaybackDevice::MaxDeviceListeners)
-				continue;
-
-			float distance = Math::Distance(entity.GetTransform().Translation, audioSourceEntity.GetTransform().Translation);
-			audioSourceDistances[distance] = audioSourceComponent.Source;
-		}
-
-		for (auto& [distance, audioSource] : audioSourceDistances)
-		{
-			nextListenerIndex = audioSource->GetPlaybackDevice().GetDeviceListenerCount();
-			availableAudioSource = audioSource;
-			break;
-		}
-
-		if (!audioSourceDistances.empty())
-			audioListenerComponent.Listener = AudioListener::Create(ListenerDeviceProperties(), availableAudioSource->GetPlaybackDevice(), nextListenerIndex);
+	void Scene::OnAudioListenerDestruct(entt::registry& registry, entt::entity e)
+	{
+		Entity entity = { e, this };
+		AudioSystem::DestroyAudioSource(entity, this);
 	}
 
 	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)

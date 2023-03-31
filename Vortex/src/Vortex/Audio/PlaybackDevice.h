@@ -15,13 +15,12 @@ namespace Vortex {
 		inline static uint8_t MaxDeviceListeners = MA_ENGINE_MAX_LISTENERS;
 
 	public:
-		PlaybackDevice() = default;
-		~PlaybackDevice() = default;
+		PlaybackDevice();
+		~PlaybackDevice();
 
 		// Controls
 
-		bool Init(const std::string& filepath, float* length);
-		void Shutdown();
+		bool Load(const std::string& filepath, float* length);
 
 		void Play();
 		void PlayOneShot(const std::string& filepath);
@@ -31,8 +30,9 @@ namespace Vortex {
 
 		// Properties
 
-		float GetSoundCursor() const;
 		bool IsPlaying() const;
+		bool IsPaused() const;
+		float GetSoundCursor() const;
 
 		void SetPosition(const Math::vec3& position);
 		void SetDirection(const Math::vec3& direction);
@@ -62,19 +62,10 @@ namespace Vortex {
 		ma_sound* GetSound();
 
 	private:
-		void PlaySound();
-		void PlayOneShotFromFilepath(const std::string& filepath);
-		void PauseSound();
-		void RestartSound();
-		void StopSound();
-		void DestroySound();
-
-		void StartEngine();
-		void ShutdownEngine();
-
-	private:
 		mutable ma_engine m_Engine;
 		mutable ma_sound m_Sound;
+
+		bool m_IsPaused = false;
 	};
 
 }

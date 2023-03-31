@@ -24,6 +24,7 @@ namespace Vortex {
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
 		bool OpenProject(const std::filesystem::path& filepath);
+		void CloseProject();
 		bool OpenScene(const AssetMetadata& sceneMetadata);
 
 		void SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata);

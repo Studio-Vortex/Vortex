@@ -8,8 +8,7 @@
 #include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Asset/AssetImporter.h"
 
-#include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AudioListener.h"
+#include "Vortex/Audio/AudioSystem.h"
 
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
@@ -1362,7 +1361,8 @@ namespace Vortex {
 					std::string audioSourcePath = audioSourceComponent["AudioSourcePath"].as<std::string>();
 					if (FileSystem::Exists(audioSourcePath))
 					{
-						asc.Source = AudioSource::Create(audioSourcePath);
+						asc.Source->SetPath(audioSourcePath);
+						asc.Source->Reload();
 					}
 				}
 

@@ -5,57 +5,70 @@
 
 namespace Vortex {
 
-	bool PlaybackDevice::Init(const std::string& filepath, float* length)
+	PlaybackDevice::PlaybackDevice()
 	{
 		AudioEngine::InitEngine(&m_Engine);
+	}
+	
+	PlaybackDevice::~PlaybackDevice()
+	{
+		AudioEngine::DestroySound(&m_Sound);
+		AudioEngine::ShutdownEngine(&m_Engine);
+	}
+	
+	bool PlaybackDevice::Load(const std::string& filepath, float* length)
+	{
 		AudioEngine::InitSoundFromPath(&m_Engine, filepath, &m_Sound, length);
 
-		return true;
-	}
-
-	void PlaybackDevice::Shutdown()
-	{
-		DestroySound();
-		ShutdownEngine();
+		return (bool)(&m_Sound && &m_Engine);
 	}
 
 	void PlaybackDevice::Play()
 	{
-		StartEngine();
-		PlaySound();
+		AudioEngine::StartEngine(&m_Engine);
+		AudioEngine::PlayFromSound(&m_Sound);
+		m_IsPaused = false;
 	}
 
 	void PlaybackDevice::PlayOneShot(const std::string& filepath)
 	{
-		StartEngine();
-		PlayOneShotFromFilepath(filepath);
+		AudioEngine::StartEngine(&m_Engine);
+		AudioEngine::PlayOneShot(&m_Engine, filepath.c_str());
 		// Engine will be shutdown automatically
 	}
 
 	void PlaybackDevice::Pause()
 	{
-		PauseSound();
+		AudioEngine::PauseSound(&m_Sound);
+		m_IsPaused = true;
 	}
 
 	void PlaybackDevice::Restart()
 	{
-		RestartSound();
+		AudioEngine::RestartSound(&m_Sound);
+		m_IsPaused = false;
 	}
 
 	void PlaybackDevice::Stop()
 	{
-		StopSound();
-		ShutdownEngine();
-	}
-
-	float PlaybackDevice::GetSoundCursor() const
-	{
-		return AudioEngine::GetSoundCursor(&m_Sound);
+		AudioEngine::StopSound(&m_Sound);
+		m_IsPaused = false;
+		AudioEngine::StopEngine(&m_Engine);
 	}
 
 	bool PlaybackDevice::IsPlaying() const
 	{
 		return AudioEngine::IsSoundPlaying(&m_Sound);
+	}
+
+    bool PlaybackDevice::IsPaused() const
+    {
+        return m_IsPaused;
+    }
+
+	float PlaybackDevice::GetSoundCursor() const
+	{
+		return AudioEngine::GetSoundCursor(&m_Sound);
 	}
 
 	void PlaybackDevice::SetPosition(const Math::vec3& position)
@@ -158,46 +171,6 @@ namespace Vortex {
 	ma_sound* PlaybackDevice::GetSound()
 	{
 		return &m_Sound;
-	}
-
-	void PlaybackDevice::PlaySound()
-	{
-		AudioEngine::PlayFromSound(&m_Sound);
-	}
-
-	void PlaybackDevice::PlayOneShotFromFilepath(const std::string& filepath)
-	{
-		AudioEngine::PlayOneShot(&m_Engine, filepath.c_str());
-	}
-
-	void PlaybackDevice::PauseSound()
-	{
-		AudioEngine::PauseSound(&m_Sound);
-	}
-
-	void PlaybackDevice::RestartSound()
-	{
-		AudioEngine::RestartSound(&m_Sound);
-	}
-
-	void PlaybackDevice::StopSound()
-	{
-		AudioEngine::StopSound(&m_Sound);
-	}
-
-	void PlaybackDevice::DestroySound()
-	{
-		AudioEngine::DestroySound(&m_Sound);
-	}
-
-	void PlaybackDevice::StartEngine()
-	{
-		AudioEngine::StartEngine(&m_Engine);
-	}
-
-	void PlaybackDevice::ShutdownEngine()
-	{
-		AudioEngine::ShutdownEngine(&m_Engine);
 	}
 
 }

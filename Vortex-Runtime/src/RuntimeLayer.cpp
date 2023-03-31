@@ -166,10 +166,7 @@ namespace Vortex {
 
 	bool RuntimeLayer::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		if (m_RuntimeScene->IsRunning())
-		{
-			OnRuntimeSceneStop();
-		}
+		CloseProject();
 
 		return false;
 	}
@@ -187,6 +184,14 @@ namespace Vortex {
 		VX_CORE_VERIFY(sceneMetadata.IsValid());
 
 		return OpenScene(sceneMetadata);
+	}
+
+	void RuntimeLayer::CloseProject()
+	{
+		if (m_RuntimeScene->IsRunning())
+			OnRuntimeSceneStop();
+
+		ProjectLoader::CloseActiveProject();
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)

@@ -5,10 +5,10 @@
 
 namespace Vortex {
 
-	AudioSource::AudioSource(const std::string& filepath)
+	AudioSource::AudioSource(const std::string& filepath, bool isDefault)
 	{
-		m_AudioClip.Filepath = filepath;
-		Reload();
+		SetPath(filepath);
+		Reload(isDefault);
 	}
 
 	AudioSource::~AudioSource()
@@ -16,24 +16,18 @@ namespace Vortex {
 		Destroy();
 	}
 
-	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
+	void AudioSource::Reload(bool isDefault)
 	{
-		VX_CORE_ASSERT(!filepath.empty(), "Cannot load empty file!");
+		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot load empty file!");
 
-		m_IsLoaded = m_PlaybackDevice.Init(filepath, &m_AudioClip.Length);
-
+		m_IsLoaded = m_PlaybackDevice.Load(m_AudioClip.Filepath, &m_AudioClip.Length);
 		if (!m_IsLoaded)
 			return;
 
-		m_AudioClip.Name = FileSystem::RemoveFileExtension(filepath);
+		if (isDefault)
+			return;
 
 		SetProperties(m_Properties);
-	}
-
-	void AudioSource::Reload()
-	{
-		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot load sound from empty filepath!");
-		LoadFromPathAndInitEngine(m_AudioClip.Filepath);
 	}
 
 	void AudioSource::Play()
@@ -88,15 +82,23 @@ namespace Vortex {
 		if (!m_IsLoaded)
 			return;
 		
-		m_PlaybackDevice.Shutdown();
+		if (IsPlaying())
+			m_PlaybackDevice.Stop();
+
+		m_IsLoaded = false;
 	}
 
-	bool AudioSource::IsPlaying()
+	bool AudioSource::IsPlaying() const
 	{
 		if (!m_IsLoaded)
 			return false;
 
 		return m_PlaybackDevice.IsPlaying();
+	}
+
+	bool AudioSource::IsPaused() const
+	{
+		return m_PlaybackDevice.IsPaused();
 	}
 
 	void AudioSource::SetPosition(const Math::vec3& position)
@@ -207,6 +209,7 @@ namespace Vortex {
 	void AudioSource::SetPath(const std::string& filepath)
 	{
 		m_AudioClip.Filepath = filepath;
+		m_AudioClip.Name = FileSystem::RemoveFileExtension(filepath);
 	}
 
 	const AudioClip& AudioSource::GetAudioClip() const
@@ -266,9 +269,9 @@ namespace Vortex {
 		dest->SetProperties(srcProps);
 	}
 
-	SharedReference<AudioSource> AudioSource::Create(const std::string& filepath)
+	SharedReference<AudioSource> AudioSource::Create(const std::string& filepath, bool isDefault)
 	{
-		return SharedReference<AudioSource>::Create(filepath);
+		return SharedReference<AudioSource>::Create(filepath, isDefault);
 	}
 
 	SharedReference<AudioSource> AudioSource::Create()

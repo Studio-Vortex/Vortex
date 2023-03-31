@@ -161,7 +161,9 @@ namespace Vortex {
 		void OnAnimatorConstruct(entt::registry& registry, entt::entity e);
 		void OnAnimationConstruct(entt::registry& registry, entt::entity e);
 		void OnAudioSourceConstruct(entt::registry& registry, entt::entity e);
+		void OnAudioSourceDestruct(entt::registry& registry, entt::entity e);
 		void OnAudioListenerConstruct(entt::registry& registry, entt::entity e);
+		void OnAudioListenerDestruct(entt::registry& registry, entt::entity e);
 
 		void SetSceneCameraViewportSize();
 

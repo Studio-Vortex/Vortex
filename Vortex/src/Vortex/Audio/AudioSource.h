@@ -15,10 +15,10 @@ namespace Vortex {
 	{
 	public:
 		AudioSource() = default;
-		AudioSource(const std::string& filepath);
+		AudioSource(const std::string& filepath, bool isDefault = false);
 		~AudioSource() override;
 
-		void Reload();
+		void Reload(bool isDefault = false);
 
 		void Play();
 		void PlayOneShot();
@@ -28,7 +28,8 @@ namespace Vortex {
 
 		void Destroy();
 
-		bool IsPlaying();
+		bool IsPlaying() const;
+		bool IsPaused() const;
 
 		void SetPosition(const Math::vec3& position);
 		void SetDirection(const Math::vec3& direction);
@@ -68,11 +69,8 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(AudioAsset)
 
-		static SharedReference<AudioSource> Create(const std::string& filepath);
+		static SharedReference<AudioSource> Create(const std::string& filepath, bool isDefault = false);
 		static SharedReference<AudioSource> Create();
-
-	private:
-		void LoadFromPathAndInitEngine(const std::string& filepath);
 
 	private:
 		PlaybackDevice m_PlaybackDevice;

@@ -61,7 +61,10 @@ namespace Vortex {
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
 	{
-		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
+		const bool assemblyModified = changeType == filewatch::Event::modified;
+		const bool reloadNotPending = !s_Data->AssemblyReloadPending;
+
+		if (assemblyModified && reloadNotPending)
 		{
 			s_Data->AssemblyReloadPending = true;
 
@@ -110,7 +113,8 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
-		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
+		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH, true);
+		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
 	}
 
 	void ScriptEngine::Shutdown()

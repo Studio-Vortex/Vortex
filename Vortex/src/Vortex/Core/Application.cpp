@@ -76,7 +76,6 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
-		AudioSystem::Shutdown();
 		Physics::Shutdown();
 		Renderer::Shutdown();
 		//ThreadPool::Shutdown();
@@ -104,13 +103,6 @@ namespace Vortex {
 		g_ApplicationRunning = false;
 	}
 
-	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-
-		m_MainThreadQueue.emplace_back(func);
-	}
-
 	void Application::OnEvent(Event& e)
 	{
 		VX_PROFILE_FUNCTION();
@@ -129,6 +121,13 @@ namespace Vortex {
 
 			(*it)->OnEvent(e);
 		}
+	}
+
+	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		m_MainThreadQueue.emplace_back(func);
 	}
 
 	void Application::ExecuteMainThreadQueue()
