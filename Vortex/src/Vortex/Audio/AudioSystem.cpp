@@ -6,26 +6,17 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 
+#include "Vortex/Audio/AudioContext.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioListener.h"
-
-#define MINIAUDIO_IMPLEMENTATION
-#include <miniaudio/miniaudio.h>
-
 #include "Vortex/Audio/AudioAssert.h"
 
 namespace Vortex {
 
 	struct AudioSystemInternalData
 	{
-		ma_context AudioContext;
-		
-#ifndef VX_DIST
-
-		ma_uint32 PlaybackDeviceCount;
-		ma_device_info* PlaybackDeviceInfos = nullptr;
-
-#endif // !VX_DIST
+		SharedReference<AudioContext> Context = nullptr;
+		AudioSystem::AudioAPI AudioAPI = AudioSystem::AudioAPI::MiniAudio;
 
 		struct SceneAudioData
 		{
@@ -44,39 +35,15 @@ namespace Vortex {
 	{
 		s_Data = new AudioSystemInternalData();
 
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_init(NULL, 0, NULL, &s_Data->AudioContext),
-			"Failed to initialize Audio Context!"
-		);
-
-#ifndef VX_DIST
-		
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_get_devices(&s_Data->AudioContext, &s_Data->PlaybackDeviceInfos, &s_Data->PlaybackDeviceCount, nullptr, nullptr),
-			"Failed to retrieve Audio Hardware Information!"
-		);
-		
-		const bool hasMultipleDevices = s_Data->PlaybackDeviceCount > 1;
-		VX_CONSOLE_LOG_INFO("[Audio] Located {} hardware device{}", s_Data->PlaybackDeviceCount, hasMultipleDevices ? "(s)" : "");
-
-		for (uint32_t i = 0; i < s_Data->PlaybackDeviceCount; i++)
-		{
-			VX_CONSOLE_LOG_INFO("[Audio] Device {}: {}", i + 1, s_Data->PlaybackDeviceInfos[i].name);
-			VX_CONSOLE_LOG_INFO("[Audio]        Default - {}", s_Data->PlaybackDeviceInfos[i].isDefault ? "true" : "false");
-		}
-
-#endif // !VX_DIST
-
+		s_Data->Context = AudioContext::Create();
+		s_Data->Context->Init();
 	}
 
 	void AudioSystem::Shutdown()
 	{
 		s_Data->ActiveScenes.clear();
 
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_uninit(&s_Data->AudioContext),
-			"Failed to shutdown audio context!"
-		);
+		s_Data->Context->Shutdown();
 
 		delete s_Data;
 		s_Data = nullptr;
@@ -300,6 +267,16 @@ namespace Vortex {
 
 			audioSource->Stop();
 		}
+	}
+
+	AudioSystem::AudioAPI AudioSystem::GetAudioAPI()
+	{
+		return s_Data->AudioAPI;
+	}
+
+	SharedReference<AudioContext> AudioSystem::GetAudioContext()
+	{
+		return s_Data->Context;
 	}
 
 }

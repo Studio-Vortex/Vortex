@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <string>
 
@@ -8,9 +9,16 @@ namespace Vortex {
 
 	class Scene;
 	class Entity;
+	class AudioContext;
 
 	class VORTEX_API AudioSystem
 	{
+	public:
+		enum class AudioAPI
+		{
+			None = 0, MiniAudio = 1,
+		};
+
 	public:
 		static void Init();
 		static void Shutdown();
@@ -28,6 +36,10 @@ namespace Vortex {
 		static void PauseAudioSourcesRuntime(Scene* context);
 		static void ResumeAudioSourcesRuntime(Scene* context);
 		static void StopAudioSourcesRuntime(Scene* context);
+
+		static AudioAPI GetAudioAPI();
+
+		static SharedReference<AudioContext> GetAudioContext();
 	};
 
 }

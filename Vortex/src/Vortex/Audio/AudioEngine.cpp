@@ -2,6 +2,10 @@
 #include "AudioEngine.h"
 
 #include "Vortex/Audio/AudioAssert.h"
+#include "Vortex/Audio/PlaybackDevice.h"
+#include "Vortex/Audio/AudioSystem.h"
+#include "Vortex/Audio/AudioLogger.h"
+#include "Vortex/Audio/AudioContext.h"
 
 #include "Vortex/Utils/FileSystem.h"
 
@@ -11,17 +15,47 @@ namespace Vortex {
 
 	void AudioEngine::InitEngine(ma_engine* engine)
 	{
+		ma_engine_config engineConfig = ma_engine_config_init();
+		engineConfig.channels = 0; // use the device's native channel count
+		engineConfig.noAutoStart = (ma_bool32)true;
+
+#ifdef VX_DEBUG
+
+		// register log callback
+		ma_log* logger = (ma_log*)AudioSystem::GetAudioContext()->GetLogger();
+
+		ma_log_callback callback;
+		callback.onLog = AudioLogger::AudioLogCallback;
+
+		ma_log_register_callback(logger, callback);
+
+		engineConfig.pLog = logger;
+
+#endif // VX_DEBUG
+		
+		engineConfig.listenerCount = PlaybackDevice::MaxDeviceListeners;
+
 		VX_CHECK_AUDIO_RESULT(
-			ma_engine_init(nullptr, engine),
+			ma_engine_init(&engineConfig, engine),
 			"Failed to initialize Audio Engine!"
 		);
-
-		VX_CORE_ASSERT(engine, "Failed to create Audio Engine!");
 	}
 
 	void AudioEngine::ShutdownEngine(ma_engine* engine)
 	{
 		VX_CORE_ASSERT(engine, "Invalid Audio Engine!");
+
+#ifdef VX_DEBUG
+		
+		ma_log* logger = ma_engine_get_log(engine);
+
+		ma_log_callback callback;
+		callback.onLog = AudioLogger::AudioLogCallback;
+
+		ma_log_unregister_callback(logger, callback);
+
+#endif // VX_DEBUG
+
 		ma_engine_uninit(engine);
 	}
 
@@ -29,15 +63,16 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(FileSystem::Exists(filepath), "Cannot load audio track that doesn't exist!");
 
+		ma_sound_config soundConfig = ma_sound_config_init();
+		soundConfig.pFilePath = filepath.c_str();
+		soundConfig.pDataSource = nullptr;
+		soundConfig.channelsIn = 1;
+		soundConfig.channelsOut = 0;
+		soundConfig.flags = MA_SOUND_FLAG_ASYNC;
+
 		VX_CHECK_AUDIO_RESULT(
-			ma_sound_init_from_file(
-				initializedEngine,
-				filepath.c_str(),
-				MA_SOUND_FLAG_ASYNC,
-				nullptr, nullptr,
-				sound
-			),
-			"Failed to initialize audio source file from {}", filepath
+			ma_sound_init_ex(initializedEngine, &soundConfig, sound),
+			"Failed to load audio track from file!"
 		);
 
 		VX_CHECK_AUDIO_RESULT(
