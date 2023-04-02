@@ -878,22 +878,19 @@ namespace Vortex {
 					}
 					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 					{
-						SharedReference<AudioSource> audioSource = component.Source;
-						component = AudioSourceComponent();
-						component.Source = audioSource;
+						if (AssetManager::IsHandleValid(component.AudioHandle))
+						{
+							SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
+							audioSource->SetProperties(PlaybackDeviceProperties{});
+						}
 					}
 					else if constexpr (std::is_same<TComponent, LightSourceComponent>())
 					{
-						auto ResetLightFunc = [&](auto type)
-						{
-							component = LightSourceComponent(type);
-						};
-
 						switch (component.Type)
 						{
-							case LightType::Directional: ResetLightFunc(LightType::Directional); break;
-							case LightType::Point:       ResetLightFunc(LightType::Point);       break;
-							case LightType::Spot:        ResetLightFunc(LightType::Spot);        break;
+							case LightType::Directional: component = LightSourceComponent(LightType::Directional); break;
+							case LightType::Point:       component = LightSourceComponent(LightType::Point);       break;
+							case LightType::Spot:        component = LightSourceComponent(LightType::Spot);        break;
 						}
 					}
 					else if constexpr (std::is_same<TComponent, CameraComponent>())
@@ -1271,15 +1268,15 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					UI::Property("CutOff", component.Cutoff);
-					UI::Property("Outer CutOff", component.OuterCutoff);
+					UI::Property("CutOff", component.Cutoff, 0.5f, 0.5f, component.OuterCutoff);
+					UI::Property("Outer CutOff", component.OuterCutoff, 0.5f, component.Cutoff, 100.0f);
 
 					break;
 				}
 			}
 
 			UI::Property("Radiance", &component.Radiance);
-			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+			UI::Property("Intensity", component.Intensity, 0.05f, 0.0f);
 
 			UI::EndPropertyGrid();
 
@@ -1629,46 +1626,66 @@ namespace Vortex {
 
 		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, [](auto& component)
 		{
-			SharedRef<ParticleEmitter> particleEmitter = component.Emitter;
+			SharedReference<ParticleEmitter> particleEmitter = nullptr;
 
-			ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
-
-			if (Gui::Button("Start"))
-				particleEmitter->Start();
-			Gui::SameLine();
-
-			if (Gui::Button("Stop"))
-				particleEmitter->Stop();
-
-			UI::BeginPropertyGrid();
-
-			UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
-			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
-			UI::Property("Offset", emitterProperties.Offset, 0.25f);
-			UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
-			UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
-			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
-
-			UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
-			
-			if (!emitterProperties.GenerateRandomColors)
+			std::string emitterName = "Default";
+		
+			if (AssetManager::IsHandleValid(component.EmitterHandle))
 			{
-				UI::Property("Color Start", &emitterProperties.ColorBegin);
-				UI::Property("Color End", &emitterProperties.ColorEnd);
+				particleEmitter = AssetManager::GetAsset<ParticleEmitter>(component.EmitterHandle);
+				emitterName = particleEmitter->GetName();
 			}
-			
-			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
-			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
 
-			UI::EndPropertyGrid();
+			UI::Property("Name", emitterName);
+
+			if (particleEmitter)
+			{
+				ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+
+				if (Gui::Button("Start"))
+					particleEmitter->Start();
+				Gui::SameLine();
+
+				if (Gui::Button("Stop"))
+					particleEmitter->Stop();
+
+				UI::BeginPropertyGrid();
+
+				UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
+				UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
+				UI::Property("Offset", emitterProperties.Offset, 0.25f);
+				UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
+				UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
+				UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
+
+				UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
+
+				if (!emitterProperties.GenerateRandomColors)
+				{
+					UI::Property("Color Start", &emitterProperties.ColorBegin);
+					UI::Property("Color End", &emitterProperties.ColorEnd);
+				}
+
+				UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
+				UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
+
+				UI::EndPropertyGrid();
+			}
 		},
 		[&](const auto& component)
 		{
-			m_ParticleEmitterToCopy = component.Emitter->GetProperties();
+			AssetHandle emitterHandle = component.EmitterHandle;
+			if (AssetManager::IsHandleValid(emitterHandle))
+				m_ParticleEmitterToCopy = AssetManager::GetAsset<ParticleEmitter>(emitterHandle)->GetProperties();
 		},
 		[&](const auto& component)
 		{
-			component.Emitter->SetProperties(m_ParticleEmitterToCopy);
+			AssetHandle emitterHandle = component.EmitterHandle;
+			if (AssetManager::IsHandleValid(emitterHandle))
+			{
+				SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(emitterHandle);
+				particleEmitter->SetProperties(m_ParticleEmitterToCopy);
+			}
 		});
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
@@ -1756,259 +1773,274 @@ namespace Vortex {
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
 		{
-			if (component.Source && !component.Source->GetPath().empty() && (component.Source->IsPlaying() || component.Source->IsPaused()))
-			{
-				Gui::BeginDisabled(!component.Source->IsPlaying());
-				Gui::ProgressBar(component.Source->GetAmountComplete());
-				Gui::EndDisabled();
-			}
+			SharedReference<AudioSource> audioSource = nullptr;
+			if (AssetManager::IsHandleValid(component.AudioHandle))
+				audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
 
-			Gui::BeginDisabled(component.Source == nullptr || component.Source->IsPlaying());
-			if (Gui::Button("Play"))
+			if (audioSource)
 			{
-				if (component.Source->GetProperties().PlayOneShot)
+				if (audioSource && !audioSource->GetPath().empty() && (audioSource->IsPlaying() || audioSource->IsPaused()))
 				{
-					component.Source->PlayOneShot();
+					Gui::BeginDisabled(!audioSource->IsPlaying());
+					Gui::ProgressBar(audioSource->GetAmountComplete());
+					Gui::EndDisabled();
 				}
-				else
+
+				Gui::BeginDisabled(audioSource == nullptr || audioSource->IsPlaying());
+				if (Gui::Button("Play"))
 				{
-					component.Source->Play();
-				}
-			}
-			Gui::EndDisabled();
-
-			Gui::SameLine();
-
-			{
-				const bool disabled = component.Source != nullptr && !component.Source->IsPlaying();
-				Gui::BeginDisabled(disabled);
-
-				if (Gui::Button("Pause"))
-					component.Source->Pause();
-
-				Gui::SameLine();
-
-				if (Gui::Button("Restart"))
-					component.Source->Restart();
-
-				Gui::SameLine();
-
-				if (Gui::Button("Stop"))
-					component.Source->Stop();
-
-				Gui::EndDisabled();
-			}
-
-			UI::BeginPropertyGrid();
-
-			std::string audioSourcePath = "";
-			if (component.Source)
-			{
-				audioSourcePath = component.Source->GetPath();
-
-				std::string relativeAudioSourcePath = "";
-				if (component.Source && !audioSourcePath.empty())
-					relativeAudioSourcePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
-
-				UI::Property("Source", relativeAudioSourcePath, true);
-			}
-
-			// Accept a Audio File from the content browser
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path audioSourcePath = std::filesystem::path(path);
-
-					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
-					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
+					if (audioSource->GetProperties().PlayOneShot)
 					{
-						// If there is another file playing we need to stop it
-						if (component.Source->IsPlaying())
-							component.Source->Stop();
-
-						component.Source->SetPath(audioSourcePath.string());
-						component.Source->Reload();
+						audioSource->PlayOneShot();
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						audioSource->Play();
 					}
 				}
-
-				Gui::EndDragDropTarget();
-			}
-
-			Gui::BeginDisabled(component.Source == nullptr);
-
-			{
-				Gui::BeginDisabled(true);
-				const AudioClip& audioClip = component.Source->GetAudioClip();
-				float length = audioClip.Length;
-				UI::Property("Length", length);
 				Gui::EndDisabled();
-			}
 
-			if (component.Source != nullptr)
-			{
-				PlaybackDeviceProperties& props = component.Source->GetProperties();
+				Gui::SameLine();
 
-				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
-					component.Source->SetPitch(props.Pitch);
-
-				if (UI::Property("Volume", props.Volume, 0.1f))
-					component.Source->SetVolume(props.Volume);
-
-				if (UI::Property("Play On Start", props.PlayOnStart))
-					component.Source->SetPlayOnStart(props.PlayOnStart);
-
-				if (UI::Property("Play One Shot", props.PlayOneShot))
-					component.Source->SetPlayOneShot(props.PlayOneShot);
-
-				if (UI::Property("Loop", props.Loop))
-					component.Source->SetLooping(props.Loop);
-
-				if (UI::Property("Spacialized", props.Spacialized))
-					component.Source->SetSpacialized(props.Spacialized);
-
-				UI::EndPropertyGrid();
-
-				if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
+				if (audioSource)
 				{
-					UI::BeginPropertyGrid();
+					Gui::BeginDisabled(!audioSource->IsPlaying());
 
-					UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
-					{
-						component.Source->SetPosition(props.Position);
-					});
+					if (Gui::Button("Pause"))
+						audioSource->Pause();
 
-					UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
-					{
-						component.Source->SetDirection(props.Direction);
-					});
+					Gui::SameLine();
 
-					UI::DrawVec3Controls("Veloctiy", props.Velocity, 0.0f, 100.0f, [&]()
+					if (Gui::Button("Restart"))
+						audioSource->Restart();
+
+					Gui::SameLine();
+
+					if (Gui::Button("Stop"))
+						audioSource->Stop();
+
+					Gui::EndDisabled();
+				}
+
+				UI::BeginPropertyGrid();
+
+				if (audioSource)
+				{
+					std::string audioSourcePath = audioSource->GetPath();
+					std::string relativePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
+					UI::Property("Source", relativePath, true);
+				}
+
+				// Accept a Audio File from the content browser
+				if (Gui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						component.Source->SetVelocity(props.Velocity);
-					});
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path audioSourcePath = std::filesystem::path(path);
+
+						// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
+						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
+						{
+							if (audioSource->IsPlaying())
+								audioSource->Stop();
+
+							SharedReference<AudioSource> source = Project::GetEditorAssetManager()->GetAssetFromFilepath(audioSourcePath);
+							if (source)
+							{
+								component.AudioHandle = source->Handle;
+								audioSource = source;
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						}
+					}
+
+					Gui::EndDragDropTarget();
+				}
+
+				Gui::BeginDisabled(audioSource == nullptr);
+
+				if (!audioSource->GetPath().empty())
+				{
+					Gui::BeginDisabled(true);
+					const AudioClip& audioClip = audioSource->GetAudioClip();
+					float length = audioClip.Length;
+					UI::Property("Length", length);
+					Gui::EndDisabled();
+				}
+
+				if (audioSource)
+				{
+					PlaybackDeviceProperties& props = audioSource->GetProperties();
+
+					if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
+						audioSource->SetPitch(props.Pitch);
+
+					if (UI::Property("Volume", props.Volume, 0.1f))
+						audioSource->SetVolume(props.Volume);
+
+					if (UI::Property("Play On Start", props.PlayOnStart))
+						audioSource->SetPlayOnStart(props.PlayOnStart);
+
+					if (UI::Property("Play One Shot", props.PlayOneShot))
+						audioSource->SetPlayOneShot(props.PlayOneShot);
+
+					if (UI::Property("Loop", props.Loop))
+						audioSource->SetLooping(props.Loop);
+
+					if (UI::Property("Spacialized", props.Spacialized))
+						audioSource->SetSpacialized(props.Spacialized);
 
 					UI::EndPropertyGrid();
 
-					if (UI::PropertyGridHeader("Cone", false))
+					if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
 					{
 						UI::BeginPropertyGrid();
 
-						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-						if (UI::Property("Inner Angle", innerAngle, 0.5f))
+						UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-							component.Source->SetCone(props.Cone);
-						}
+							audioSource->SetPosition(props.Position);
+						});
 
-						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-						if (UI::Property("Outer Angle", outerAngle, 0.5f))
+						UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-							component.Source->SetCone(props.Cone);
-						}
+							audioSource->SetDirection(props.Direction);
+						});
 
-						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-						if (UI::Property("Outer Gain", outerGain, 0.5f))
+						UI::DrawVec3Controls("Veloctiy", props.Velocity, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-							component.Source->SetCone(props.Cone);
-						}
-
-						if (UI::Property("Min Gain", props.MinGain))
-							component.Source->SetMinGain(props.MinGain);
-						if (UI::Property("Max Gain", props.MaxGain))
-							component.Source->SetMaxGain(props.MaxGain);
-
-						static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
-
-						AttenuationModel selectedAttenuationModel = props.AttenuationModel;
-						if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), selectedAttenuationModel))
-							component.Source->SetAttenuationModel(selectedAttenuationModel);
-
-						if (UI::Property("Falloff", props.Falloff))
-							component.Source->SetFalloff(props.Falloff);
-
-						if (UI::Property("Min Distance", props.MinDistance, 0.1f))
-							component.Source->SetMinDistance(props.MinDistance);
-
-						if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
-							component.Source->SetMaxDistance(props.MaxDistance);
-
-						if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
-							component.Source->SetDopplerFactor(props.DopplerFactor);
+							audioSource->SetVelocity(props.Velocity);
+						});
 
 						UI::EndPropertyGrid();
+
+						if (UI::PropertyGridHeader("Cone", false))
+						{
+							UI::BeginPropertyGrid();
+
+							float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+							if (UI::Property("Inner Angle", innerAngle, 0.5f))
+							{
+								props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+								audioSource->SetCone(props.Cone);
+							}
+
+							float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+							if (UI::Property("Outer Angle", outerAngle, 0.5f))
+							{
+								props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+								audioSource->SetCone(props.Cone);
+							}
+
+							float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+							if (UI::Property("Outer Gain", outerGain, 0.5f))
+							{
+								props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+								audioSource->SetCone(props.Cone);
+							}
+
+							if (UI::Property("Min Gain", props.MinGain))
+								audioSource->SetMinGain(props.MinGain);
+							if (UI::Property("Max Gain", props.MaxGain))
+								audioSource->SetMaxGain(props.MaxGain);
+
+							static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
+
+							AttenuationModel currentAttenuationModel = props.AttenuationModel;
+							if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), currentAttenuationModel))
+								audioSource->SetAttenuationModel(currentAttenuationModel);
+
+							if (UI::Property("Falloff", props.Falloff))
+								audioSource->SetFalloff(props.Falloff);
+
+							if (UI::Property("Min Distance", props.MinDistance, 0.1f))
+								audioSource->SetMinDistance(props.MinDistance);
+
+							if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
+								audioSource->SetMaxDistance(props.MaxDistance);
+
+							if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
+								audioSource->SetDopplerFactor(props.DopplerFactor);
+
+							UI::EndPropertyGrid();
+							UI::EndTreeNode();
+						}
+
 						UI::EndTreeNode();
 					}
-
-					UI::EndTreeNode();
 				}
-			}
 
-			Gui::EndDisabled();
+				Gui::EndDisabled();
+			}
 		});
 
 		DrawComponent<AudioListenerComponent>("Audio Listener", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			ListenerDeviceProperties& props = component.Listener->GetProperties();
-			SharedReference<AudioListener> listener = component.Listener;
-
-			const uint32_t listenerIndex = listener->GetListenerIndex();
-			const bool invalidListener = listenerIndex < 0 || (listenerIndex > PlaybackDevice::MaxDeviceListeners - 1);
-
-			Gui::BeginDisabled(invalidListener);
-			UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+			SharedReference<AudioListener> audioListener = nullptr;
+			if (AssetManager::IsHandleValid(component.ListenerHandle))
 			{
-				component.Listener->SetPosition(props.Position);
-			});
+				audioListener = AssetManager::GetAsset<AudioListener>(component.ListenerHandle);
+			}
 
-			UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+			if (audioListener)
 			{
-				component.Listener->SetDirection(props.Direction);
-			});
+				ListenerDeviceProperties& props = audioListener->GetProperties();
 
-			UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
-			{
-				component.Listener->SetVelocity(props.Veloctiy);
-			});
+				const uint32_t listenerIndex = audioListener->GetListenerIndex();
+				const bool invalidListener = listenerIndex < 0 || (listenerIndex > PlaybackDevice::MaxDeviceListeners - 1);
+				Gui::BeginDisabled(invalidListener);
 
-			UI::EndPropertyGrid();
-
-			if (UI::PropertyGridHeader("Cone", false))
-			{
-				UI::BeginPropertyGrid();
-
-				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-				if (UI::Property("Inner Angle", innerAngle, 0.5f))
+				UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-					component.Listener->SetCone(props.Cone);
-				}
-				float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-				if (UI::Property("Outer Angle", outerAngle, 0.5f))
+					audioListener->SetPosition(props.Position);
+				});
+
+				UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-					component.Listener->SetCone(props.Cone);
-				}
-				float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-				if (UI::Property("Outer Gain", outerGain, 0.5f))
+					audioListener->SetDirection(props.Direction);
+				});
+
+				UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-					component.Listener->SetCone(props.Cone);
-				}
+					audioListener->SetVelocity(props.Veloctiy);
+				});
 
 				UI::EndPropertyGrid();
-				UI::EndTreeNode();
+
+				if (UI::PropertyGridHeader("Cone", false))
+				{
+					UI::BeginPropertyGrid();
+
+					float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+					if (UI::Property("Inner Angle", innerAngle, 0.5f))
+					{
+						props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+						audioListener->SetCone(props.Cone);
+					}
+					float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+					if (UI::Property("Outer Angle", outerAngle, 0.5f))
+					{
+						props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+						audioListener->SetCone(props.Cone);
+					}
+					float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+					if (UI::Property("Outer Gain", outerGain, 0.5f))
+					{
+						props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+						audioListener->SetCone(props.Cone);
+					}
+
+					UI::EndPropertyGrid();
+					UI::EndTreeNode();
+				}
+
+				Gui::EndDisabled();
 			}
-			Gui::EndDisabled();
 		});
 
 		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&, scene = m_ContextScene](auto& component)
@@ -2028,13 +2060,16 @@ namespace Vortex {
 				}
 			}
 
+			bool modified = false;
+
 			if (component.Type == RigidBodyType::Static)
 			{
 				UI::EndPropertyGrid();
 			}
 			else
 			{
-				UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
+				if (UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f))
+					modified = true;
 				UI::Property("Linear Velocity", component.LinearVelocity);
 				UI::Property("Max Linear Velocity", component.MaxLinearVelocity);
 				UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
@@ -2042,7 +2077,9 @@ namespace Vortex {
 				UI::Property("Max Angular Velocity", component.MaxAngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
-				UI::Property("Disable Gravity", component.DisableGravity);
+				if (UI::Property("Disable Gravity", component.DisableGravity))
+					modified = true;
+
 				UI::Property("IsKinematic", component.IsKinematic);
 
 				const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
@@ -2062,8 +2099,6 @@ namespace Vortex {
 					bool rotationX = (component.LockFlags & (uint8_t)ActorLockFlag::RotationX);
 					bool rotationY = (component.LockFlags & (uint8_t)ActorLockFlag::RotationY);
 					bool rotationZ = (component.LockFlags & (uint8_t)ActorLockFlag::RotationZ);
-
-					bool modified = false;
 
 					Gui::Text("Freeze Position");
 					Gui::NextColumn();
@@ -2146,10 +2181,11 @@ namespace Vortex {
 					UI::EndPropertyGrid();
 					UI::EndTreeNode();
 
-					if (modified && m_ContextScene->IsRunning())
-					{
-						Physics::WakeUpActor(entity);
-					}
+				}
+
+				if (modified && m_ContextScene->IsRunning())
+				{
+					Physics::WakeUpActor(entity);
 				}
 			}
 		});

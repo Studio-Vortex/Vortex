@@ -20,6 +20,7 @@ namespace Vortex {
 			if (type == "AnimationAsset")       return AssetType::AnimationAsset;
 			if (type == "StaticMeshAsset")      return AssetType::StaticMeshAsset;
 			if (type == "EnvironmentAsset")     return AssetType::EnvironmentAsset;
+			if (type == "AudioListenerAsset")   return AssetType::AudioListenerAsset;
 			if (type == "PhysicsMaterialAsset") return AssetType::PhysicsMaterialAsset;
 
 			VX_CORE_ASSERT(false, "Unknown Asset Type!");
@@ -43,6 +44,7 @@ namespace Vortex {
 				case AssetType::AnimationAsset:       return "AnimationAsset";
 				case AssetType::StaticMeshAsset:      return "StaticMeshAsset";
 				case AssetType::EnvironmentAsset:     return "EnvironmentAsset";
+				case AssetType::AudioListenerAsset:   return "AudioListenerAsset";
 				case AssetType::PhysicsMaterialAsset: return "PhysicsMaterialAsset";
 			}
 

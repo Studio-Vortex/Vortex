@@ -14,6 +14,7 @@ namespace Vortex {
 
 		{ ".wav", AssetType::AudioAsset },
 		{ ".mp3", AssetType::AudioAsset },
+		{ ".vsound", AssetType::AudioAsset },
 
 		{ ".hdr", AssetType::EnvironmentAsset },
 		{ ".HDR", AssetType::EnvironmentAsset },

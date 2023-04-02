@@ -3,6 +3,8 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Audio/AudioSource.h"
+
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
@@ -49,14 +51,133 @@ namespace Vortex {
 
 	void AudioSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
-
+		SerializeToYAML(metadata, asset);
 	}
 
 	bool AudioSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
+		return DeserializeFromYAML(metadata, asset);
+	}
+
+	void AudioSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		YAML::Emitter out;
+
+		SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
+		if (!audioSource)
+		{
+			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid audio source asset!");
+			return;
+		}
+
+		const std::string& trackName = audioSource->GetAudioClip().Name;
+		const PlaybackDeviceProperties& deviceProperties = audioSource->GetProperties();
+
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AudioSource" << YAML::Value << trackName;
+		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
+		{
+			VX_SERIALIZE_PROPERTY(AssetHandle, audioSource->Handle, out);
+			std::string filepath = "Audio/" + FileSystem::Relative(audioSource->GetPath(), FileSystem::GetParentDirectory(audioSource->GetPath())).string();
+			VX_SERIALIZE_PROPERTY(Filepath, filepath, out);
+
+			out << YAML::Key << "DeviceProperties" << YAML::Value;
+			out << YAML::BeginMap; // SoundSettings
+			VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
+			VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
+			VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
+
+			out << YAML::Key << "Cone" << YAML::Value;
+			out << YAML::BeginMap; // Cone
+			VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
+			VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
+			VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
+			out << YAML::EndMap; // Cone
+
+			VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
+			VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
+
+			VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
+			VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
+
+			VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
+			VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
+			VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
+			VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
+			VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
+
+			VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
+			VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
+			VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
+			VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
+			out << YAML::EndMap; // SoundSettings
+		}
+		out << YAML::EndMap;
+		out << YAML::EndMap;
+
+		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		std::ofstream fout(outputFile);
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
+
+		fout << out.c_str();
+
+		fout.close();
+	}
+
+	bool AudioSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
 		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		return false;
+		YAML::Node audioData = YAML::LoadFile(relativePath);
+		if (!audioData)
+			return false;
+
+		std::string trackName = audioData["AudioSource"].as<std::string>();
+
+		auto properties = audioData["Properties"];
+
+		std::string filepath = properties["Filepath"].as<std::string>();
+
+		auto deviceProps = properties["DeviceProperties"];
+
+		if (!deviceProps)
+			return false;
+		
+		PlaybackDeviceProperties deviceProperties;
+		deviceProperties.Position = deviceProps["Position"].as<Math::vec3>();
+		deviceProperties.Direction = deviceProps["Direction"].as<Math::vec3>();
+		deviceProperties.Velocity = deviceProps["Velocity"].as<Math::vec3>();
+
+		auto coneData = deviceProps["Cone"];
+		deviceProperties.Cone.InnerAngle = coneData["InnerAngle"].as<float>();
+		deviceProperties.Cone.OuterAngle = coneData["OuterAngle"].as<float>();
+		deviceProperties.Cone.OuterGain = coneData["OuterGain"].as<float>();
+
+		deviceProperties.MinGain = deviceProps["MinGain"].as<float>();
+		deviceProperties.MaxGain = deviceProps["MaxGain"].as<float>();
+
+		deviceProperties.AttenuationModel = Utils::AttenuationModelTypeFromString(deviceProps["AttenuationModel"].as<std::string>());
+		deviceProperties.Falloff = deviceProps["Falloff"].as<float>();
+
+		deviceProperties.MinDistance = deviceProps["MinDistance"].as<float>();
+		deviceProperties.MaxDistance = deviceProps["MaxDistance"].as<float>();
+
+		deviceProperties.Pitch = deviceProps["Pitch"].as<float>();
+		deviceProperties.DopplerFactor = deviceProps["DopplerFactor"].as<float>();
+		deviceProperties.Volume = deviceProps["Volume"].as<float>();
+
+		deviceProperties.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
+		deviceProperties.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
+		deviceProperties.Spacialized = deviceProps["Spacialized"].as<bool>();
+		deviceProperties.Loop = deviceProps["Loop"].as<bool>();
+
+		std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
+		asset = AudioSource::Create(fullPath);
+		asset->Handle = metadata.Handle;
+		asset.Is<AudioSource>()->SetProperties(deviceProperties);
+
+		return true;
 	}
 
 	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -187,20 +308,22 @@ namespace Vortex {
 
 		ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
 
-		VX_DESERIALIZE_PROPERTY(ColorBegin, Math::vec4, emitterProperties.ColorBegin, emitterData);
-		VX_DESERIALIZE_PROPERTY(ColorEnd, Math::vec4, emitterProperties.ColorEnd, emitterData);
-		VX_DESERIALIZE_PROPERTY(LifeTime, float, emitterProperties.LifeTime, emitterData);
-		VX_DESERIALIZE_PROPERTY(Position, Math::vec3, emitterProperties.Position, emitterData);
-		VX_DESERIALIZE_PROPERTY(Offset, Math::vec3, emitterProperties.Offset, emitterData);
-		VX_DESERIALIZE_PROPERTY(Rotation, float, emitterProperties.Rotation, emitterData);
-		VX_DESERIALIZE_PROPERTY(SizeBegin, Math::vec2, emitterProperties.SizeBegin, emitterData);
-		VX_DESERIALIZE_PROPERTY(SizeEnd, Math::vec2, emitterProperties.SizeEnd, emitterData);
-		VX_DESERIALIZE_PROPERTY(SizeVariation, Math::vec2, emitterProperties.SizeVariation, emitterData);
-		VX_DESERIALIZE_PROPERTY(Velocity, Math::vec3, emitterProperties.Velocity, emitterData);
-		VX_DESERIALIZE_PROPERTY(VelocityVariation, Math::vec3, emitterProperties.VelocityVariation, emitterData);
-		VX_DESERIALIZE_PROPERTY(GenerateRandomColors, bool, emitterProperties.GenerateRandomColors, emitterData);
+		auto emitterProps = emitterData["Properties"];
 
-		return false;
+		VX_DESERIALIZE_PROPERTY(ColorBegin, Math::vec4, emitterProperties.ColorBegin, emitterProps);
+		VX_DESERIALIZE_PROPERTY(ColorEnd, Math::vec4, emitterProperties.ColorEnd, emitterProps);
+		VX_DESERIALIZE_PROPERTY(LifeTime, float, emitterProperties.LifeTime, emitterProps);
+		VX_DESERIALIZE_PROPERTY(Position, Math::vec3, emitterProperties.Position, emitterProps);
+		VX_DESERIALIZE_PROPERTY(Offset, Math::vec3, emitterProperties.Offset, emitterProps);
+		VX_DESERIALIZE_PROPERTY(Rotation, float, emitterProperties.Rotation, emitterProps);
+		VX_DESERIALIZE_PROPERTY(SizeBegin, Math::vec2, emitterProperties.SizeBegin, emitterProps);
+		VX_DESERIALIZE_PROPERTY(SizeEnd, Math::vec2, emitterProperties.SizeEnd, emitterProps);
+		VX_DESERIALIZE_PROPERTY(SizeVariation, Math::vec2, emitterProperties.SizeVariation, emitterProps);
+		VX_DESERIALIZE_PROPERTY(Velocity, Math::vec3, emitterProperties.Velocity, emitterProps);
+		VX_DESERIALIZE_PROPERTY(VelocityVariation, Math::vec3, emitterProperties.VelocityVariation, emitterProps);
+		VX_DESERIALIZE_PROPERTY(GenerateRandomColors, bool, emitterProperties.GenerateRandomColors, emitterProps);
+
+		return true;
 	}
 
 	void MaterialSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -356,6 +479,27 @@ namespace Vortex {
 		asset->Handle = metadata.Handle;
 
 		return asset.As<Skybox>()->IsLoaded();
+	}
+
+	void AudioListenerSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		SerializeToYAML(metadata, asset);
+	}
+
+	bool AudioListenerSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
+		return DeserializeFromYAML(metadata, asset);
+	}
+
+	void AudioListenerSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+	}
+
+	bool AudioListenerSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
+		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+
+		return false;
 	}
 
 	void PhysicsMaterialSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)

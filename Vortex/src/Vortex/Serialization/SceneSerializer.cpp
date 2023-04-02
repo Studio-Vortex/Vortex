@@ -8,7 +8,7 @@
 #include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Asset/AssetImporter.h"
 
-#include "Vortex/Audio/AudioSystem.h"
+#include "Vortex/Audio/AudioSource.h"
 
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
@@ -20,7 +20,6 @@
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 #include "Vortex/Renderer/Font/Font.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
@@ -46,225 +45,6 @@ namespace Vortex {
 		Type data = scriptField["Data"].as<Type>();   \
 		fieldInstance.SetValue(data);                 \
 		break;                                        \
-	}
-
-	namespace Utils {
-
-		static std::string LightTypeToString(LightType lightType)
-		{
-			switch (lightType)
-			{
-				case LightType::Directional:  return "Directional";
-				case LightType::Point:        return "Point";
-				case LightType::Spot:         return "Spot";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Light Type!");
-			return {};
-		}
-
-		static LightType LightTypeFromString(const std::string& lightTypeString)
-		{
-			if (lightTypeString == "Directional")  return LightType::Directional;
-			if (lightTypeString == "Point")        return LightType::Point;
-			if (lightTypeString == "Spot")         return LightType::Spot;
-
-			VX_CORE_ASSERT(false, "Unknown Light Type!");
-			return LightType::Directional;
-		}
-
-		static std::string MeshTypeToString(MeshType meshType)
-		{
-			switch (meshType)
-			{
-				case MeshType::Cube:     return "Cube";
-				case MeshType::Sphere:   return "Sphere";
-				case MeshType::Capsule:  return "Capsule";
-				case MeshType::Cone:     return "Cone";
-				case MeshType::Cylinder: return "Cylinder";
-				case MeshType::Plane:    return "Plane";
-				case MeshType::Torus:    return "Torus";
-				case MeshType::Custom:   return "Custom";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Mesh Type!");
-			return {};
-		}
-
-		static MeshType MeshTypeFromString(const std::string& meshTypeString)
-		{
-			if (meshTypeString == "Cube")     return MeshType::Cube;
-			if (meshTypeString == "Sphere")   return MeshType::Sphere;
-			if (meshTypeString == "Capsule")  return MeshType::Capsule;
-			if (meshTypeString == "Cone")     return MeshType::Cone;
-			if (meshTypeString == "Cylinder") return MeshType::Cylinder;
-			if (meshTypeString == "Plane")    return MeshType::Plane;
-			if (meshTypeString == "Torus")    return MeshType::Torus;
-			if (meshTypeString == "Custom")   return MeshType::Custom;
-
-			VX_CORE_ASSERT(false, "Unknown Mesh Type!");
-			return MeshType::Cube;
-		}
-
-		static std::string AttenuationModelTypeToString(AttenuationModel attenuationModel)
-		{
-			switch (attenuationModel)
-			{
-				case AttenuationModel::None:        return "None";
-				case AttenuationModel::Inverse:     return "Inverse";
-				case AttenuationModel::Linear:      return "Linear";
-				case AttenuationModel::Exponential: return "Exponential";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
-			return "None";
-		}
-
-		static AttenuationModel AttenuationModelTypeFromString(const std::string& attenuationModel)
-		{
-			if (attenuationModel == "None")        return AttenuationModel::None;
-			if (attenuationModel == "Inverse")     return AttenuationModel::Inverse;
-			if (attenuationModel == "Linear")      return AttenuationModel::Linear;
-			if (attenuationModel == "Exponential") return AttenuationModel::Exponential;
-
-			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
-			return AttenuationModel::None;
-		}
-
-		static std::string RigidBody2DBodyTypeToString(RigidBody2DType bodyType)
-		{
-			switch (bodyType)
-			{
-				case RigidBody2DType::Static:    return "Static";
-				case RigidBody2DType::Dynamic:   return "Dynamic";
-				case RigidBody2DType::Kinematic: return "Kinematic";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Body Type!");
-			return {};
-		}
-
-		static RigidBody2DType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
-		{
-			if (bodyTypeString == "Static")    return RigidBody2DType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBody2DType::Dynamic;
-			if (bodyTypeString == "Kinematic") return RigidBody2DType::Kinematic;
-
-			VX_CORE_ASSERT(false, "Unknown Body Type!");
-			return RigidBody2DType::Static;
-		}
-
-		static std::string RigidBodyTypeToString(RigidBodyType bodyType)
-		{
-			switch (bodyType)
-			{
-				case RigidBodyType::Static:    return "Static";
-				case RigidBodyType::Dynamic:   return "Dynamic";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Body Type!");
-			return {};
-		}
-
-		static RigidBodyType RigidBodyTypeFromString(const std::string& bodyTypeString)
-		{
-			if (bodyTypeString == "Static")    return RigidBodyType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBodyType::Dynamic;
-
-			VX_CORE_ASSERT(false, "Unknown Body Type!");
-			return RigidBodyType::Static;
-		}
-
-		static std::string CollisionDetectionTypeToString(CollisionDetectionType collisionDetection)
-		{
-			switch (collisionDetection)
-			{
-				case Vortex::CollisionDetectionType::Discrete:              return "Discrete";
-				case Vortex::CollisionDetectionType::Continuous:            return "Continuous";
-				case Vortex::CollisionDetectionType::ContinuousSpeculative: return "ContinuousSpeculative";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Collision Detection Type!");
-			return {};
-		}
-
-		static CollisionDetectionType CollisionDetectionTypeFromString(const std::string& collisionDetectionString)
-		{
-			if (collisionDetectionString == "Discrete")              return CollisionDetectionType::Discrete;
-			if (collisionDetectionString == "Continuous")            return CollisionDetectionType::Continuous;
-			if (collisionDetectionString == "ContinuousSpeculative") return CollisionDetectionType::ContinuousSpeculative;
-
-			VX_CORE_ASSERT(false, "Unknown Collision Detection Type!");
-			return CollisionDetectionType::None;
-		}
-
-		static std::string NonWalkableModeToString(NonWalkableMode mode)
-		{
-			switch (mode)
-			{
-				case Vortex::NonWalkableMode::PreventClimbing:                return "PreventClimbing";
-				case Vortex::NonWalkableMode::PreventClimbingAndForceSliding: return "PreventClimbingAndForceSliding";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Non Walkable Mode!");
-			return "";
-		}
-
-		static NonWalkableMode NonWalkableModeFromString(const std::string& walkableMode)
-		{
-			if (walkableMode == "PreventClimbing") return NonWalkableMode::PreventClimbing;
-			if (walkableMode == "PreventClimbingAndForceSliding") return NonWalkableMode::PreventClimbingAndForceSliding;
-
-			VX_CORE_ASSERT(false, "Unknown Non Walkable Mode!");
-			return NonWalkableMode::PreventClimbing;
-		}
-
-		static std::string CapsuleClimbModeToString(CapsuleClimbMode mode)
-		{
-			switch (mode)
-			{
-				case CapsuleClimbMode::Easy:        return "Easy";
-				case CapsuleClimbMode::Constrained: return "Constrained";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Capsule Climb Mode!");
-			return "";
-		}
-
-		static CapsuleClimbMode CapsuleClimbModeFromString(const std::string& climbMode)
-		{
-			if (climbMode == "Easy")        return CapsuleClimbMode::Easy;
-			if (climbMode == "Constrained") return CapsuleClimbMode::Constrained;
-
-			VX_CORE_ASSERT(false, "Unknown Capsule Climb Mode!");
-			return CapsuleClimbMode::Easy;
-		}
-
-		static std::string CombineModeToString(CombineMode mode)
-		{
-			switch (mode)
-			{
-				case CombineMode::Average:  return "Average";
-				case CombineMode::Max:      return "Max";
-				case CombineMode::Min:      return "Min";
-				case CombineMode::Mulitply: return "Multiply";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
-			return "";
-		}
-
-		static CombineMode CombineModeFromString(const std::string& mode)
-		{
-			if (mode == "Average")  return CombineMode::Average;
-			if (mode == "Max")     	return CombineMode::Average;
-			if (mode == "Min")     	return CombineMode::Average;
-			if (mode == "Multiply") return CombineMode::Average;
-
-			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
-			return CombineMode::Average;
-		}
-
 	}
 
 	SceneSerializer::SceneSerializer(const SharedReference<Scene>& scene)
@@ -672,50 +452,26 @@ namespace Vortex {
 
 		if (entity.HasComponent<AudioSourceComponent>())
 		{
-			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; // AudioSourceComponent
+			const auto& asc = entity.GetComponent<AudioSourceComponent>();
 
-			const auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
-
-			if (audioSourceComponent.Source)
+			if (AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const PlaybackDeviceProperties& deviceProperties = audioSourceComponent.Source->GetProperties();
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
 				
-				const std::string& audioSourcePath = audioSourceComponent.Source->GetPath();
-				VX_SERIALIZE_PROPERTY(AudioSourcePath, audioSourcePath, out);
+				if (audioSource)
+				{
+					AssetImporter::Serialize(audioSource);
 
-				out << YAML::Key << "SoundSettings" << YAML::Value;
-				out << YAML::BeginMap; // SoundSettings
-				VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
-				VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
-				VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
-
-				out << YAML::Key << "Cone" << YAML::Value;
-				out << YAML::BeginMap; // Cone
-				VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
-				VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
-				VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
-				out << YAML::EndMap; // Cone
-
-				VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
-				VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
-
-				VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
-				VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
-
-				VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
-				VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
-				VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
-				VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
-				VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
-
-				VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
-				VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
-				VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
-				VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
-				out << YAML::EndMap; // SoundSettings
+					out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap;
+					VX_SERIALIZE_PROPERTY(AudioHandle, asc.AudioHandle, out);
+					out << YAML::EndMap;
+				}
 			}
+		}
 
-			out << YAML::EndMap; // AudioSourceComponent
+		if (entity.HasComponent<AudioListenerComponent>())
+		{
+			// TODO
 		}
 
 		if (entity.HasComponent<RigidBodyComponent>())
@@ -1334,69 +1090,17 @@ namespace Vortex {
 			{
 				auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
 
-				if (audioSourceComponent["AudioSourcePath"])
+				AssetHandle audioHandle = audioSourceComponent["AudioHandle"].as<uint64_t>();
+				if (AssetManager::IsHandleValid(audioHandle))
 				{
-					std::string audioSourcePath = audioSourceComponent["AudioSourcePath"].as<std::string>();
-					if (FileSystem::Exists(audioSourcePath))
-					{
-						asc.Source->SetPath(audioSourcePath);
-						asc.Source->Reload();
-					}
+					asc.AudioHandle = audioHandle;
 				}
+			}
 
-				auto soundProps = audioSourceComponent["SoundSettings"];
-
-				if (soundProps)
-				{
-					auto& deviceProperties = asc.Source->GetProperties();
-					if (soundProps["Position"])
-						deviceProperties.Position = soundProps["Position"].as<Math::vec3>();
-					if (soundProps["Direction"])
-						deviceProperties.Direction = soundProps["Direction"].as<Math::vec3>();
-					if (soundProps["Velocity"])
-						deviceProperties.Velocity = soundProps["Velocity"].as<Math::vec3>();
-
-					if (soundProps["Cone"])
-					{
-						auto cone = soundProps["Cone"];
-						deviceProperties.Cone.InnerAngle = cone["InnerAngle"].as<float>();
-						deviceProperties.Cone.OuterAngle = cone["OuterAngle"].as<float>();
-						deviceProperties.Cone.OuterGain = cone["OuterGain"].as<float>();
-					}
-
-					if (soundProps["MinGain"])
-						deviceProperties.MinGain = soundProps["MinGain"].as<float>();
-					if (soundProps["MaxGain"])
-						deviceProperties.MaxGain = soundProps["MaxGain"].as<float>();
-
-					if (soundProps["AttenuationModel"])
-						deviceProperties.AttenuationModel = Utils::AttenuationModelTypeFromString(soundProps["AttenuationModel"].as<std::string>());
-					if (soundProps["Falloff"])
-						deviceProperties.Falloff = soundProps["Falloff"].as<float>();
-
-					if (soundProps["MinDistance"])
-						deviceProperties.MinDistance = soundProps["MinDistance"].as<float>();
-					if (soundProps["MaxDistance"])
-						deviceProperties.MaxDistance = soundProps["MaxDistance"].as<float>();
-
-					if (soundProps["Pitch"])
-						deviceProperties.Pitch = soundProps["Pitch"].as<float>();
-					if (soundProps["DopplerFactor"])
-						deviceProperties.DopplerFactor = soundProps["DopplerFactor"].as<float>();
-					if (soundProps["Volume"])
-						deviceProperties.Volume = soundProps["Volume"].as<float>();
-
-					if (soundProps["PlayOnStart"])
-						deviceProperties.PlayOnStart = soundProps["PlayOnStart"].as<bool>();
-					if (soundProps["PlayOneShot"])
-						deviceProperties.PlayOneShot = soundProps["PlayOneShot"].as<bool>();
-					if (soundProps["Spacialized"])
-						deviceProperties.Spacialized = soundProps["Spacialized"].as<bool>();
-					if (soundProps["Loop"])
-						deviceProperties.Loop = soundProps["Loop"].as<bool>();
-
-					asc.Source->SetProperties(deviceProperties);
-				}
+			auto audioListenerComponent = entity["AudioListenerComponent"];
+			if (audioListenerComponent)
+			{
+				// TODO
 			}
 
 			auto rigidbodyComponent = entity["RigidbodyComponent"];

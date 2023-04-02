@@ -23,6 +23,7 @@ namespace Vortex {
 		AnimationAsset,
 		StaticMeshAsset,
 		EnvironmentAsset,
+		AudioListenerAsset,
 		PhysicsMaterialAsset,
 	};
 

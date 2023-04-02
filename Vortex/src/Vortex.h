@@ -102,12 +102,12 @@ namespace Gui = ImGui;
 #include "Vortex/Renderer/SubTexture2D.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/VertexArray.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 /// ---------------------------------------------------
 
 /// Utilities

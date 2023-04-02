@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Audio/ListenerDeviceProperties.h"
@@ -10,7 +11,7 @@ namespace Vortex {
 
 	class PlaybackDevice;
 
-	class VORTEX_API AudioListener : public RefCounted
+	class VORTEX_API AudioListener : public Asset
 	{
 	public:
 		AudioListener() = default;
@@ -27,6 +28,8 @@ namespace Vortex {
 		const ListenerDeviceProperties& GetProperties() const;
 
 		uint32_t GetListenerIndex() const;
+
+		ASSET_CLASS_TYPE(AudioListenerAsset)
 
 		static SharedReference<AudioListener> Create(const ListenerDeviceProperties& props, PlaybackDevice& device, uint32_t listenerIndex);
 		static SharedReference<AudioListener> Create();

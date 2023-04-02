@@ -5,9 +5,6 @@
 
 #include "Vortex/Scene/SceneCamera.h"
 
-#include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AudioListener.h"
-
 #include "Vortex/Renderer/Material.h"
 
 #include "Vortex/Physics/3D/PhysXTypes.h"
@@ -299,7 +296,7 @@ namespace Vortex {
 
 	struct VORTEX_API AudioSourceComponent
 	{
-		SharedReference<AudioSource> Source = nullptr;
+		AssetHandle AudioHandle = 0;
 
 		AudioSourceComponent() = default;
 		AudioSourceComponent(const AudioSourceComponent&) = default;
@@ -307,7 +304,7 @@ namespace Vortex {
 	
 	struct VORTEX_API AudioListenerComponent
 	{
-		SharedReference<AudioListener> Listener = nullptr;
+		AssetHandle ListenerHandle = 0;
 		
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;

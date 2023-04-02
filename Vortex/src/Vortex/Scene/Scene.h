@@ -157,6 +157,7 @@ namespace Vortex {
 		void OnCameraConstruct(entt::registry& registry, entt::entity e);
 		void OnStaticMeshConstruct(entt::registry& registry, entt::entity e);
 		void OnParticleEmitterConstruct(entt::registry& registry, entt::entity e);
+		void OnParticleEmitterDestruct(entt::registry& registry, entt::entity e);
 		void OnTextMeshConstruct(entt::registry& registry, entt::entity e);
 		void OnAnimatorConstruct(entt::registry& registry, entt::entity e);
 		void OnAnimationConstruct(entt::registry& registry, entt::entity e);
@@ -172,11 +173,8 @@ namespace Vortex {
 
 		void StopAnimatorsRuntime();
 
-		void StopParticleEmittersRuntime();
-
 		void OnMeshUpdateRuntime();
 		void OnAnimatorUpdateRuntime(TimeStep delta);
-		void OnParticleEmitterUpdateRuntime(TimeStep delta);
 
 		void ClearSceneMeshes();
 

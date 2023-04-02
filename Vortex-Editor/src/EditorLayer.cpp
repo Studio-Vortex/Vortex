@@ -2775,7 +2775,7 @@ namespace Vortex {
 
 	void EditorLayer::OnTranslationToolSelected()
 	{
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
 			return;
 
 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -2783,7 +2783,7 @@ namespace Vortex {
 
 	void EditorLayer::OnRotationToolSelected()
 	{
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
 			return;
 
 		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
@@ -2791,7 +2791,7 @@ namespace Vortex {
 
 	void EditorLayer::OnScaleToolSelected()
 	{
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
 			return;
 
 		m_GizmoType = ImGuizmo::OPERATION::SCALE;

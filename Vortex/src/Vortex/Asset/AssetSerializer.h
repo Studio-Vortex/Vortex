@@ -42,6 +42,9 @@ namespace Vortex {
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
 	class SceneAssetSerializer : public AssetSerializer
@@ -118,6 +121,16 @@ namespace Vortex {
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class AudioListenerSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
 	class PhysicsMaterialSerializer : public AssetSerializer

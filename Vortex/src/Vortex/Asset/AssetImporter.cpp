@@ -16,11 +16,13 @@ namespace Vortex {
 		s_Serializers[AssetType::PrefabAsset] = CreateUnique<PrefabAssetSerializer>();
 		s_Serializers[AssetType::ScriptAsset] = CreateUnique<ScriptSerializer>();
 		s_Serializers[AssetType::TextureAsset] = CreateUnique<TextureSerializer>();
+		s_Serializers[AssetType::ParticleAsset] = CreateUnique<ParticleEmitterSerializer>();
 		s_Serializers[AssetType::MaterialAsset] = CreateUnique<MaterialSerializer>();
 		s_Serializers[AssetType::AnimatorAsset] = CreateUnique<AnimatorSerializer>();
 		s_Serializers[AssetType::AnimationAsset] = CreateUnique<AnimationSerializer>();
 		s_Serializers[AssetType::StaticMeshAsset] = CreateUnique<StaticMeshSerializer>();
 		s_Serializers[AssetType::EnvironmentAsset] = CreateUnique<EnvironmentSerializer>();
+		s_Serializers[AssetType::AudioListenerAsset] = CreateUnique<AudioListenerSerializer>();
 		s_Serializers[AssetType::PhysicsMaterialAsset] = CreateUnique<PhysicsMaterialSerializer>();
 	}
 

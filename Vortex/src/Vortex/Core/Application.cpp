@@ -1,19 +1,26 @@
 #include "vxpch.h"
 #include "Application.h"
 
-#include "Vortex/Renderer/Renderer.h"
-
 #include "Vortex/Core/Input/Input.h"
 #include "Vortex/Core/Thread/ThreadPool.h"
+
 #include "Vortex/Events/KeyEvent.h"
+
 #include "Vortex/Audio/AudioSystem.h"
+
+#include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleSystem.h"
+
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
-#include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Networking/Networking.h"
 #include "Vortex/Networking/Server.h"
+
+#include "Vortex/System/SystemManager.h"
+
+#include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Utils/Random.h"
@@ -59,10 +66,11 @@ namespace Vortex {
 
 		//ThreadPool::Init();
 		Renderer::Init();
+		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
-		AudioSystem::Init();
-		Font::Init();
+		SystemManager::RegisterAssetSystem<AudioSystem>();
 		Random::Init();
+		Font::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -76,7 +84,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
-		Physics::Shutdown();
+		SystemManager::UnregisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
 		//ThreadPool::Shutdown();
 	}

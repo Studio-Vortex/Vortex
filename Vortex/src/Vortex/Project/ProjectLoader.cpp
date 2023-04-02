@@ -3,8 +3,14 @@
 
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Components.h"
+
 #include "Vortex/Audio/AudioSystem.h"
+
+#include "Vortex/Physics/3D/Physics.h"
+
 #include "Vortex/Scripting/ScriptEngine.h"
+
+#include "Vortex/System/SystemManager.h"
 
 namespace Vortex {
 
@@ -31,6 +37,7 @@ namespace Vortex {
 
 	bool ProjectLoader::SaveActiveEditorProject()
 	{
+		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
 		return Project::GetActive()->SaveToDisk();
 	}
 
@@ -43,12 +50,13 @@ namespace Vortex {
     void ProjectLoader::CloseActiveProject()
     {
 		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
-
 		if (!Project::GetActive())
 			return;
 
 		ScriptEngine::Shutdown();
-		AudioSystem::Shutdown();
+		Physics::Shutdown();
+		SystemManager::UnregisterAssetSystem<AudioSystem>();
+
     }
 
 }
