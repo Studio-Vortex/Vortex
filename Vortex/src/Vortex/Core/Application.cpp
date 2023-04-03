@@ -119,8 +119,7 @@ namespace Vortex {
 		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(VX_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
-		// Update Input State
-		Input::UpdateMouseScrollOffset(e);
+		Input::OnEvent(e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{

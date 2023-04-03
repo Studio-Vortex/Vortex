@@ -263,6 +263,7 @@ namespace Vortex {
 			m_SecondEditorCamera->OnEvent(e);
 
 		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowDragDropEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowDragDropEvent));
 		dispatcher.Dispatch<KeyPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnKeyPressedEvent));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(VX_BIND_CALLBACK(EditorLayer::OnMouseButtonPressedEvent));
 		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowCloseEvent));
@@ -1994,7 +1995,17 @@ namespace Vortex {
 		Renderer2D::Flush();
 	}
 
-	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
+    bool EditorLayer::OnWindowDragDropEvent(WindowDragDropEvent& e)
+    {
+		for (const auto& path : e.GetPaths())
+		{
+			Project::GetEditorAssetManager()->ImportAsset(path);
+		}
+
+        return true;
+    }
+
+    bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
 		if (m_SceneHierarchyPanel.IsEditingEntityName())
 			return false;

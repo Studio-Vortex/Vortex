@@ -2,6 +2,7 @@
 #include "Vortex/Core/Input/Input.h"
 
 #include "Vortex/Core/Application.h"
+#include "Vortex/Events/KeyEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 
 #include <GLFW/glfw3.h>
@@ -135,11 +136,11 @@ namespace Vortex {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)cursorMode);
 	}
 
-	void Input::UpdateMouseScrollOffset(const Event& event)
+	void Input::OnEvent(const Event& e)
 	{
-		if (event.GetEventType() == EventType::MouseScrolled)
+		if (e.GetEventType() == EventType::MouseScrolled)
 		{
-			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)event;
+			MouseScrolledEvent& scrolledEvent = (MouseScrolledEvent&)e;
 			SetMouseScrollOffset({ scrolledEvent.GetXOffset(), scrolledEvent.GetYOffset() });
 		}
 	}

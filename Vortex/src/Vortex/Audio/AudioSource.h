@@ -18,7 +18,7 @@ namespace Vortex {
 		AudioSource(const std::string& filepath, bool isDefault = false);
 		~AudioSource() override;
 
-		void Reload(bool isDefault = false);
+		void Reload();
 
 		void Play();
 		void PlayOneShot();
@@ -78,6 +78,7 @@ namespace Vortex {
 		AudioClip m_AudioClip;
 
 		bool m_IsLoaded = false;
+		bool m_IsDefault = false;
 	};
 
 }

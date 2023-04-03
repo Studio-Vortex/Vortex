@@ -51,6 +51,7 @@ namespace Vortex {
 		void UI_SceneSettingsToolbar();
 		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
 
+		bool OnWindowDragDropEvent(WindowDragDropEvent& e);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& e);
 		bool OnWindowCloseEvent(WindowCloseEvent& e);

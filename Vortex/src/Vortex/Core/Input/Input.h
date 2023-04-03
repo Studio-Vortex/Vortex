@@ -41,7 +41,7 @@ namespace Vortex {
 		static void SetCursorMode(CursorMode cursorMode);
 
 		// For Internal Use
-		static void UpdateMouseScrollOffset(const Event& event);
+		static void OnEvent(const Event& event);
 		static void UpdateKeyState(KeyCode key, int action);
 		static void UpdateMouseButtonState(MouseButton button, int action);
 		static bool KeyChangedThisFrame(KeyCode key);

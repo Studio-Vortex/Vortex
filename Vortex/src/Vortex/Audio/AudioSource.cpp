@@ -8,7 +8,7 @@ namespace Vortex {
 	AudioSource::AudioSource(const std::string& filepath, bool isDefault)
 	{
 		SetPath(filepath);
-		Reload(isDefault);
+		m_IsDefault = isDefault;
 	}
 
 	AudioSource::~AudioSource()
@@ -16,7 +16,7 @@ namespace Vortex {
 		Destroy();
 	}
 
-	void AudioSource::Reload(bool isDefault)
+	void AudioSource::Reload()
 	{
 		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot load empty file!");
 
@@ -24,7 +24,7 @@ namespace Vortex {
 		if (!m_IsLoaded)
 			return;
 
-		if (isDefault)
+		if (m_IsDefault)
 			return;
 
 		SetProperties(m_Properties);

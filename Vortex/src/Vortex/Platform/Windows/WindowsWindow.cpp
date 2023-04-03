@@ -230,6 +230,18 @@ namespace Vortex {
 				VX_CONSOLE_LOG_INFO("Joystick: {} Disconnected", jid);
 		});
 
+		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int pathCount, const char* paths[])
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			
+			std::vector<std::filesystem::path> filepaths(pathCount);
+			for (uint32_t i = 0; i < pathCount; i++)
+				filepaths[i] = paths[i];
+
+			WindowDragDropEvent event(std::move(filepaths));
+			data.EventCallback(event);
+		});
+
 		LoadWindowIcon();
 	}
 
