@@ -2,13 +2,13 @@
 
 ![Vortex Logo](Vortex-Editor/Resources/Images/VortexLogo.png)
 
-Vortex is an early-stage interactive application and rendering engine for Windows. Vortex is primarily a 2D engine with potential support for 3D comming in the near future. With that being said, you can still create a 3D looking scene with the features of the engine.
+Vortex is an early-stage 3D Game Engine for Windows
 
 ---
 
 ## Getting Started
 
-Visual Studio 2022 is recommended, Vortex has not been tested with other development environments.
+Visual Studio 2022 is recommended.
 
 <ins>**1. Downloading the repository:**<ins>
 
@@ -32,10 +32,8 @@ If you make changes to the engine, or if you want to regenerate project files, r
 
 ## What to Expect in the Future
 
--   High-fidelity Physically-Based 3D rendering
 -   Support for Mac, Linux, Android and IOS
 -   Fully featured Vulkan Renderer
--   Integrated 3rd party 3D physics engine
 -   Procedural terrain and world generation
 -   Artificial Intelligence
 -   Tree Graph editor system
@@ -63,3 +61,6 @@ If you make changes to the engine, or if you want to regenerate project files, r
 
 - Rocket Game
 ![Rocket game](Vortex-Editor/Resources/Images/Engine/RocketGame.png)
+
+- Physically Based Rendering with Shadow Mapping
+![PBR Shadow Map](Vortex-Editor/Resources/Images/Engine/PBRShadowMap.png)
