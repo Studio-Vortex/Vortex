@@ -2,9 +2,9 @@
 #include "Renderer2D.h"
 
 #include "Vortex/Renderer/RenderCommand.h"
-#include "Vortex/Renderer/LightSource2D.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Shader.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/Font/MSDFData.h"
 
@@ -54,6 +54,7 @@ namespace Vortex
 	{
 		Math::vec3 Position;
 		Math::vec4 Color;
+		Math::vec4 BgColor;
 		Math::vec2 TexCoord;
 		float TexIndex;
 
@@ -70,25 +71,25 @@ namespace Vortex
 
 		static constexpr inline uint32_t MaxLightSources = 100;
 
-		SharedRef<Texture2D> WhiteTexture; // Default texture
+		SharedReference<Texture2D> WhiteTexture; // Default texture
 
-		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
+		ShaderLibrary ShaderLibrary;
 
-		SharedRef<VertexArray> UnitQuadVA = nullptr;
-		SharedRef<VertexBuffer> UnitQuadVB = nullptr;
-		SharedRef<IndexBuffer> UnitQuadIB = nullptr;
+		SharedReference<VertexArray> UnitQuadVA = nullptr;
+		SharedReference<VertexBuffer> UnitQuadVB = nullptr;
+		SharedReference<IndexBuffer> UnitQuadIB = nullptr;
 
-		SharedRef<VertexArray> QuadVA = nullptr;
-		SharedRef<VertexBuffer> QuadVB = nullptr;
+		SharedReference<VertexArray> QuadVA = nullptr;
+		SharedReference<VertexBuffer> QuadVB = nullptr;
 
-		SharedRef<VertexArray> CircleVA = nullptr;
-		SharedRef<VertexBuffer> CircleVB = nullptr;
+		SharedReference<VertexArray> CircleVA = nullptr;
+		SharedReference<VertexBuffer> CircleVB = nullptr;
 
-		SharedRef<VertexArray> LineVA = nullptr;
-		SharedRef<VertexBuffer> LineVB = nullptr;
+		SharedReference<VertexArray> LineVA = nullptr;
+		SharedReference<VertexBuffer> LineVB = nullptr;
 
-		SharedRef<VertexArray> TextVA = nullptr;
-		SharedRef<VertexBuffer> TextVB = nullptr;
+		SharedReference<VertexArray> TextVA = nullptr;
+		SharedReference<VertexBuffer> TextVB = nullptr;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
@@ -108,10 +109,10 @@ namespace Vortex
 
 		float LineWidth = 1.5f;
 
-		std::array<SharedRef<Texture2D>, MaxTextureSlots> TextureSlots;
+		std::array<SharedReference<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = White Texture
 
-		std::array<SharedRef<Texture2D>, MaxTextureSlots> FontTextureSlots;
+		std::array<SharedReference<Texture2D>, MaxTextureSlots> FontTextureSlots;
 		uint32_t FontTextureSlotIndex = 0;
 
 		uint32_t LightSourceIndex = 0;
@@ -176,7 +177,7 @@ namespace Vortex
 			offset += VERTICES_PER_QUAD;
 		}
 
-		SharedRef<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DInternalData::MaxIndices);
+		SharedReference<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer2DInternalData::MaxIndices);
 		s_Data.QuadVA->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
@@ -216,6 +217,7 @@ namespace Vortex
 		s_Data.TextVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color"    },
+			{ ShaderDataType::Float4, "a_BgColor"  },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float,  "a_TexIndex" },
 			{ ShaderDataType::Int,    "a_EntityID" },
@@ -225,7 +227,10 @@ namespace Vortex
 		s_Data.TextVA->SetIndexBuffer(quadIB);
 		s_Data.TextVertexBufferBase = new TextVertex[Renderer2DInternalData::MaxVertices];
 
-		s_Data.WhiteTexture = Texture2D::Create(1, 1);
+		TextureProperties whiteTextureProps;
+		whiteTextureProps.Width = 1;
+		whiteTextureProps.Height = 1;
+		s_Data.WhiteTexture = Texture2D::Create(whiteTextureProps);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
@@ -237,15 +242,13 @@ namespace Vortex
 		// Set the first texture slot to out default white texture
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
-		s_Data.ShaderLibrary = ShaderLibrary::Create();
-
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Load("Quad", QUAD_SHADER_PATH);
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Load("Quad", QUAD_SHADER_PATH);
 		// Set the sampler2D array on the GPU
 		quadShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
-		s_Data.ShaderLibrary->Load("Circle", CIRCLE_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Line", LINE_SHADER_PATH);
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary->Load("Text", TEXT_SHADER_PATH);
+		s_Data.ShaderLibrary.Load("Circle", CIRCLE_SHADER_PATH);
+		s_Data.ShaderLibrary.Load("Line", LINE_SHADER_PATH);
+		SharedReference<Shader> textShader = s_Data.ShaderLibrary.Load("Text", TEXT_SHADER_PATH);
 		textShader->Enable();
 		textShader->SetIntArray("u_Textures", samplers, Renderer2DInternalData::MaxTextureSlots);
 
@@ -267,17 +270,19 @@ namespace Vortex
 	{
 		VX_PROFILE_FUNCTION();
 
+		s_Data.WhiteTexture.Reset();
+
 		delete[] s_Data.QuadVertexBufferBase;
 		delete[] s_Data.CircleVertexBufferBase;
 		delete[] s_Data.LineVertexBufferBase;
 		delete[] s_Data.TextVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& transform)
+	void Renderer2D::BeginScene(const Camera& camera, const Math::mat4& view)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = camera.GetProjectionMatrix() * Math::Inverse(transform);
+		Math::mat4 viewProjection = camera.GetProjectionMatrix() * view;
 		SetShaderViewProjectionMatrix(viewProjection);
 
 		StartBatch();
@@ -293,31 +298,21 @@ namespace Vortex
 		StartBatch();
 	}
 
-	void Renderer2D::BeginScene(const OrthographicCamera& camera)
-	{
-		VX_PROFILE_FUNCTION();
-
-		Math::mat4 viewProjection = camera.GetViewProjectionMatrix();
-		SetShaderViewProjectionMatrix(viewProjection);
-
-		StartBatch();
-	}
-
 	void Renderer2D::SetShaderViewProjectionMatrix(const Math::mat4& viewProjection)
 	{
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 		quadShader->Enable();
 		quadShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary->Get("Circle");
+		SharedReference<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
 		circleShader->Enable();
 		circleShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> lineShader = s_Data.ShaderLibrary->Get("Line");
+		SharedReference<Shader> lineShader = s_Data.ShaderLibrary.Get("Line");
 		lineShader->Enable();
 		lineShader->SetMat4("u_ViewProjection", viewProjection);
 
-		SharedRef<Shader> textShader = s_Data.ShaderLibrary->Get("Text");
+		SharedReference<Shader> textShader = s_Data.ShaderLibrary.Get("Text");
 		textShader->Enable();
 		textShader->SetMat4("u_ViewProjection", viewProjection);
 
@@ -378,7 +373,7 @@ namespace Vortex
 				s_Data.TextureSlots[i]->Bind(i);
 
 			// Bind a shader and make a draw call
-			SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
+			SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 			quadShader->Enable();
 			RenderCommand::DrawIndexed(s_Data.QuadVA, s_Data.QuadIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
@@ -393,7 +388,7 @@ namespace Vortex
 			s_Data.CircleVB->SetData(s_Data.CircleVertexBufferBase, dataSize);
 
 			// Bind a shader and make a draw call
-			s_Data.ShaderLibrary->Get("Circle")->Enable();
+			s_Data.ShaderLibrary.Get("Circle")->Enable();
 			RenderCommand::DrawIndexed(s_Data.CircleVA, s_Data.CircleIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
@@ -407,7 +402,7 @@ namespace Vortex
 			s_Data.LineVB->SetData(s_Data.LineVertexBufferBase, dataSize);
 
 			// Bind a shader and make a draw call
-			s_Data.ShaderLibrary->Get("Line")->Enable();
+			s_Data.ShaderLibrary.Get("Line")->Enable();
 			RenderCommand::DrawLines(s_Data.LineVA, s_Data.LineVertexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
@@ -425,7 +420,7 @@ namespace Vortex
 				s_Data.FontTextureSlots[i]->Bind(i);
 
 			// Bind a shader and make a draw call
-			s_Data.ShaderLibrary->Get("Text")->Enable();
+			s_Data.ShaderLibrary.Get("Text")->Enable();
 			RenderCommand::DrawIndexed(s_Data.TextVA, s_Data.TextIndexCount);
 			s_Data.Renderer2DStatistics.DrawCalls++;
 		}
@@ -433,32 +428,31 @@ namespace Vortex
 
 	void Renderer2D::RenderLightSource(const TransformComponent& transform, const LightSource2DComponent& lightSourceComponent)
 	{
-		SharedRef<LightSource2D> lightSource = lightSourceComponent.Source;
 		uint32_t& i = s_Data.LightSourceIndex;
 
-		SharedRef<Shader> quadShader = s_Data.ShaderLibrary->Get("Quad");
+		SharedReference<Shader> quadShader = s_Data.ShaderLibrary.Get("Quad");
 		quadShader->Enable();
-		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSourceComponent.Color);
 		quadShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
-		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+		quadShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSourceComponent.Intensity);
 
-		SharedRef<Shader> circleShader = s_Data.ShaderLibrary->Get("Circle");
+		SharedReference<Shader> circleShader = s_Data.ShaderLibrary.Get("Circle");
 		circleShader->Enable();
-		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSource->GetColor());
+		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Color", lightSourceComponent.Color);
 		circleShader->SetFloat3("u_LightSources[" + std::to_string(i) + "].Position", transform.Translation);
-		circleShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
+		circleShader->SetFloat("u_LightSources[" + std::to_string(i) + "].Intensity", lightSourceComponent.Intensity);
 
 		i++;
 	}
 
-	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, float textureIndex, const Math::vec2& textureScale, int entityID)
+	void Renderer2D::AddToQuadVertexBuffer(const Math::mat4& transform, const Math::vec4& color, const Math::vec2* textureCoords, uint32_t textureIndex, const Math::vec2& textureScale, int entityID)
 	{
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+			s_Data.QuadVertexBufferPtr->TexIndex = (float)textureIndex;
 			s_Data.QuadVertexBufferPtr->TexScale = textureScale;
 			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
@@ -508,7 +502,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		constexpr float textureIndex = 0.0f; // Our White Texture
+		constexpr uint32_t textureIndex = 0; // Our White Texture
 		constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -521,36 +515,36 @@ namespace Vortex
 		DrawQuad(transform, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor, int entityID)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -561,7 +555,7 @@ namespace Vortex
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale, entityID);
 	}
 
-	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(transform, texture, scale, ColorToVec4(tintColor));
 	}
@@ -597,64 +591,64 @@ namespace Vortex
 		DrawQuad(position, size, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Scale({ size.x, size.y, 1.0f });
 		DrawQuad(transform, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(position, size, texture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
-		const SharedRef<Texture2D>& texture = subtexture->GetTexure();
+		const SharedReference<Texture2D>& texture = subtexture->GetTexure();
 
 		// Find the texture ID for the given texture so we can give it to the vertex descriptions
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -666,12 +660,12 @@ namespace Vortex
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec2& position, const Math::vec2& size, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawQuad(const Math::vec3& position, const Math::vec2& size, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawQuad(position, size, subtexture, scale, ColorToVec4(tintColor));
 	}
@@ -683,15 +677,15 @@ namespace Vortex
 
 		Math::vec4 corners[8] =
 		{
-			transform * Math::vec4 { min.x, min.y, max.z, 1.0f },
-			transform * Math::vec4 { min.x, max.y, max.z, 1.0f },
-			transform * Math::vec4 { max.x, max.y, max.z, 1.0f },
-			transform * Math::vec4 { max.x, min.y, max.z, 1.0f },
+			transform * Math::vec4{ min.x, min.y, max.z, 1.0f },
+			transform * Math::vec4{ min.x, max.y, max.z, 1.0f },
+			transform * Math::vec4{ max.x, max.y, max.z, 1.0f },
+			transform * Math::vec4{ max.x, min.y, max.z, 1.0f },
 
-			transform * Math::vec4 { min.x, min.y, min.z, 1.0f },
-			transform * Math::vec4 { min.x, max.y, min.z, 1.0f },
-			transform * Math::vec4 { max.x, max.y, min.z, 1.0f },
-			transform * Math::vec4 { max.x, min.y, min.z, 1.0f }
+			transform * Math::vec4{ min.x, min.y, min.z, 1.0f },
+			transform * Math::vec4{ min.x, max.y, min.z, 1.0f },
+			transform * Math::vec4{ max.x, max.y, min.z, 1.0f },
+			transform * Math::vec4{ max.x, min.y, min.z, 1.0f }
 		};
 
 		for (uint32_t i = 0; i < 4; i++)
@@ -709,8 +703,8 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		const float textureIndex = 0.0f; // White Texture
-		const Math::vec2 textureScale = Math::vec2(1.0f);
+		static constexpr uint32_t textureIndex = 0; // White Texture
+		static constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec3 camRightWS = { cameraView[0][0], cameraView[1][0], cameraView[2][0] };
 		Math::vec3 camUpWS = { cameraView[0][1], cameraView[1][1], cameraView[2][1] };
@@ -748,24 +742,25 @@ namespace Vortex
 		s_Data.Renderer2DStatistics.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const SharedRef<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const SharedReference<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
+
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -824,7 +819,7 @@ namespace Vortex
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		static constexpr float textureIndex = 0.0f; // Our White Texture
+		static constexpr uint32_t textureIndex = 0; // White Texture
 		static constexpr Math::vec2 textureScale = Math::vec2(1.0f);
 
 		Math::vec2 textureCoords[4] = { {0.0f, 0.0f}, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -837,35 +832,35 @@ namespace Vortex
 		DrawRotatedQuad(transform, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(transform, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -875,7 +870,7 @@ namespace Vortex
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::mat4& transform, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(transform, texture, scale, ColorToVec4(tintColor));
 	}
@@ -911,68 +906,68 @@ namespace Vortex
 		DrawRotatedQuad(position, size, rotation, ColorToVec4(color));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, texture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
 		DrawRotatedQuad(transform, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, { tintColor.r, tintColor.g, tintColor.b, 1.0f });
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec3& tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, const Math::vec4& tintColor)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
-		const SharedRef<Texture2D>& texture = subtexture->GetTexure();
+		const SharedReference<Texture2D>& texture = subtexture->GetTexure();
 
 		for (size_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (*s_Data.TextureSlots[i].Raw() == *texture.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.TextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}
@@ -983,32 +978,44 @@ namespace Vortex
 		AddToQuadVertexBuffer(transform, tintColor, textureCoords, textureIndex, scale);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<Texture2D>& texture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, texture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec2& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, scale, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedRef<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
+	void Renderer2D::DrawRotatedQuad(const Math::vec3& position, const Math::vec2& size, float rotation, const SharedReference<SubTexture2D>& subtexture, const Math::vec2& scale, Color tintColor)
 	{
 		DrawRotatedQuad(position, size, rotation, subtexture, scale, ColorToVec4(tintColor));
 	}
 
-	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, int entityID)
+	void Renderer2D::DrawSprite(const Math::mat4& transform, SpriteRendererComponent& sprite, SharedReference<Texture2D> texture, int entityID)
 	{
-		if (sprite.Texture)
-			DrawQuad(transform, sprite.Texture, sprite.Scale, sprite.SpriteColor, entityID);
+		if (texture)
+			DrawQuad(transform, texture, sprite.TextureUV, sprite.SpriteColor, entityID);
 		else
 			DrawQuad(transform, sprite.SpriteColor, entityID);
+	}
+
+	void Renderer2D::DrawCircle(const Math::vec2& position, const Math::vec2& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID)
+	{
+		Math::mat4 transform = Math::Translate({ position.x, position.y, 0.0f }) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale({ size.x, size.y, 1.0f });
+		DrawCircle(transform, color, thickness, fade, entityID);
+	}
+
+	void Renderer2D::DrawCircle(const Math::vec3& position, const Math::vec3& size, float rotation, const Math::vec4& color, float thickness, float fade, int entityID)
+	{
+		Math::mat4 transform = Math::Translate(position) * Math::Rotate(rotation, { 0.0f, 0.0f, 1.0f }) * Math::Scale(size);
+		DrawCircle(transform, color, thickness, fade, entityID);
 	}
 
 	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color, float thickness, float fade, int entityID)
@@ -1020,6 +1027,34 @@ namespace Vortex
 			//NextBatch();
 
 		AddToCircleVertexBuffer(transform, color, thickness, fade, entityID);
+	}
+
+	void Renderer2D::DrawCircle(const Math::vec3& position, const Math::vec3& rotation, float radius, const Math::vec4& color)
+	{
+		const Math::mat4 transform = Math::Translate(position) *
+			Math::Rotate(rotation.x, { 1.0f, 0.0f, 0.0f }) *
+			Math::Rotate(rotation.y, { 0.0f, 1.0f, 0.0f }) *
+			Math::Rotate(rotation.z, { 0.0f, 0.0f, 1.0f }) *
+			Math::Scale(Math::vec3(radius));
+
+		DrawCircle(transform, color);
+	}
+
+	void Renderer2D::DrawCircle(const Math::mat4& transform, const Math::vec4& color)
+	{
+		uint32_t segments = 32;
+
+		for (uint32_t i = 0; i < segments; i++)
+		{
+			float angle = Math::TWO_PI * (float)i / segments;
+			Math::vec4 startPosition = { Math::Cos(angle), Math::Sin(angle), 0.0f, 1.0f };
+			angle = Math::TWO_PI * (float)((i + 1) % segments) / segments;
+			Math::vec4 endPosition = { Math::Cos(angle), Math::Sin(angle), 0.0f, 1.0f };
+
+			Math::vec3 p0 = transform * startPosition;
+			Math::vec3 p1 = transform * endPosition;
+			DrawLine(p0, p1, color);
+		}
 	}
 
 	void Renderer2D::DrawLine(const Math::vec3& start, const Math::vec3& end, const Math::vec4& color, int entityID)
@@ -1065,14 +1100,9 @@ namespace Vortex
 		DrawLine(topLeft, bottomLeft, color, entityID);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
+	void Renderer2D::DrawString(const std::string& string, SharedReference<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color, const Math::vec4& bgColor, int entityID)
 	{
-		DrawString(string, Font::GetDefaultFont(), position, maxWidth, color, entityID);
-	}
-
-	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::vec3& position, float maxWidth, const Math::vec4& color, int entityID)
-	{
-		DrawString(string, font, Math::Identity() * Math::Translate(position), maxWidth, color, entityID);
+		DrawString(string, font, Math::Translate(position), maxWidth, color, bgColor, entityID);
 	}
 
 	static bool NextLine(int index, const std::vector<int>& lines)
@@ -1101,17 +1131,17 @@ namespace Vortex
 
 #pragma warning(default : 4996)
 
-	void Renderer2D::DrawString(const std::string& string, const SharedRef<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color, float lineHeightOffset, float kerningOffset, int entityID)
+	void Renderer2D::DrawString(const std::string& string, SharedReference<Font>& font, const Math::mat4& transform, float maxWidth, const Math::vec4& color, const Math::vec4& bgColor, float lineHeightOffset, float kerningOffset, int entityID)
 	{
 		if (string.empty())
 			return;
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0;
 
 		// This is not ideal (WIP)
 		std::u32string utf32string = To_UTF32(string);
 
-		SharedRef<Texture2D> fontAtlas = font->GetFontAtlas();
+		SharedReference<Texture2D> fontAtlas = font->GetFontAtlas();
 		VX_CORE_ASSERT(fontAtlas, "Font Atlas was null pointer!");
 
 		if (!fontAtlas->IsLoaded())
@@ -1121,17 +1151,17 @@ namespace Vortex
 		{
 			if (*s_Data.FontTextureSlots[i].Raw() == *fontAtlas.Raw())
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (s_Data.FontTextureSlotIndex >= Renderer2DInternalData::MaxTextureSlots)
 				NextBatch();
 
-			textureIndex = (float)s_Data.FontTextureSlotIndex;
+			textureIndex = s_Data.FontTextureSlotIndex;
 			s_Data.FontTextureSlots[s_Data.FontTextureSlotIndex] = fontAtlas;
 			s_Data.FontTextureSlotIndex++;
 		}
@@ -1228,6 +1258,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pb, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { l, b };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1235,6 +1266,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pl, pt, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { l, t };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1242,6 +1274,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pt, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { r, t };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1249,6 +1282,7 @@ namespace Vortex
 
 					s_Data.TextVertexBufferPtr->Position = transform * Math::vec4(pr, pb, 0.0f, 1.0f);
 					s_Data.TextVertexBufferPtr->Color = color;
+					s_Data.TextVertexBufferPtr->BgColor = bgColor;
 					s_Data.TextVertexBufferPtr->TexCoord = { r, b };
 					s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
 					s_Data.TextVertexBufferPtr->EntityID = entityID;
@@ -1300,7 +1334,12 @@ namespace Vortex
 		memset(&s_Data.Renderer2DStatistics, NULL, sizeof(s_Data.Renderer2DStatistics));
 	}
 
-	SharedRef<ShaderLibrary> Renderer2D::GetShaderLibrary()
+	SharedReference<Texture2D> Renderer2D::GetWhiteTexture()
+	{
+		return s_Data.WhiteTexture;
+	}
+
+	const ShaderLibrary& Renderer2D::GetShaderLibrary()
 	{
 		return s_Data.ShaderLibrary;
 	}

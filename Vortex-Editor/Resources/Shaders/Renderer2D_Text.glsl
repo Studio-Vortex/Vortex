@@ -8,11 +8,13 @@
 
 layout (location = 0) in vec3  a_Position; // Vertex position
 layout (location = 1) in vec4  a_Color; // Vertex color
-layout (location = 2) in vec2  a_TexCoord; // Vertex texture coordinate
-layout (location = 3) in float a_TexIndex; // Texture index out of 32
-layout (location = 4) in int   a_EntityID; // Vertex Entity ID
+layout (location = 2) in vec4  a_BgColor; // Vertex background color
+layout (location = 3) in vec2  a_TexCoord; // Vertex texture coordinate
+layout (location = 4) in float a_TexIndex; // Texture index out of 32
+layout (location = 5) in int   a_EntityID; // Vertex Entity ID
 
 out vec4       f_Color;
+out vec4       f_BgColor;
 out vec2       f_TexCoord;
 out flat float f_TexIndex;
 out flat int   f_EntityID;
@@ -23,6 +25,7 @@ uniform mat4 u_ViewProjection;
 void main()
 {
 	f_Color = a_Color;
+	f_BgColor = a_BgColor;
 	f_TexCoord = a_TexCoord;
 	f_TexIndex = a_TexIndex;
 	
@@ -39,6 +42,7 @@ layout (location = 0) out vec4 o_Color;
 layout (location = 1) out int o_EntityID;
 
 in vec4       f_Color;
+in vec4       f_BgColor;
 in vec2       f_TexCoord;
 in flat float f_TexIndex;
 in flat int   f_EntityID;
@@ -69,7 +73,7 @@ float ScreenPxRange()
 
 void main()
 {
-	vec4 bgColor = vec4(f_Color.rgb, 0.0);
+	vec4 bgColor = f_BgColor;
 	vec4 fgColor = f_Color;
 
 	// MSDF texture has no mips (only LOD 0), but in the future it might

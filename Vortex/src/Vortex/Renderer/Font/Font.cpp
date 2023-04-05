@@ -66,7 +66,7 @@ namespace Vortex {
 
 	static bool TryReadFontAtlasFromCache(const std::string& fontName, float fontSize, AtlasHeader& header, void*& pixels, Buffer& storageBuffer)
 	{
-		std::string filename = fmt::format("{}-{}.sfa", fontName, fontSize);
+		std::string filename = fmt::format("{}-{}.vfa", fontName, fontSize);
 		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
 
 		if (std::filesystem::exists(filepath))
@@ -84,27 +84,27 @@ namespace Vortex {
 	{
 		Utils::CreateCacheDirectoryIfNeeded();
 
-		std::string filename = fmt::format("{}-{}.sfa", fontName, fontSize);
+		std::string filename = fmt::format("{}-{}.vfa", fontName, fontSize);
 		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
 
 		std::ofstream stream(filepath, std::ios::binary | std::ios::trunc);
 		if (!stream)
 		{
 			stream.close();
-			VX_CORE_ERROR("Failed to cache font atlas to {0}", filepath.string());
+			VX_CORE_ERROR_TAG("Font", "Failed to cache font atlas to {0}", filepath.string());
 			return;
 		}
 
 		stream.write((char*)&header, sizeof(AtlasHeader));
 		stream.write((char*)pixels, header.Width * header.Height * sizeof(float) * 4);
 
-		VX_CORE_INFO("Font Atlas successfully cached: {}", filepath.string());
+		VX_CORE_INFO_TAG("Font", "Font Atlas successfully cached: {}", filepath.string());
 	}
 
-	template <typename T, typename S, int N, GeneratorFunction<S, N> GEN_FN>
-	static SharedRef<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<GlyphGeometry>& glyphs, const FontGeometry& fontGeometry, const Configuration& config)
+	template <typename T, typename S, int N, GeneratorFunction<S, N> GenFunc>
+	static SharedReference<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<GlyphGeometry>& glyphs, const FontGeometry& fontGeometry, const Configuration& config)
 	{
-		ImmediateAtlasGenerator<S, N, GEN_FN, BitmapAtlasStorage<T, N>> generator(config.width, config.height);
+		ImmediateAtlasGenerator<S, N, GenFunc, BitmapAtlasStorage<T, N>> generator(config.width, config.height);
 		generator.setAttributes(config.generatorAttributes);
 		generator.setThreadCount(THREADS);
 		generator.generate(glyphs.data(), (int)glyphs.size());
@@ -116,14 +116,24 @@ namespace Vortex {
 		header.Height = bitmap.height;
 		CacheFontAtlas(fontName, fontSize, header, bitmap.pixels);
 
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		TextureProperties imageProps;
+		imageProps.Width = header.Width;
+		imageProps.Height = header.Height;
+		imageProps.TextureFormat = ImageFormat::RGBA32F;
+
+		SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(bitmap.pixels, header.Width * header.Height * 4);
 		return texture;
 	}
 
-	static SharedRef<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
+	static SharedReference<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
 	{
-		SharedRef<Texture2D> texture = Texture2D::Create(header.Width, header.Height, true);
+		TextureProperties imageProps;
+		imageProps.Width = header.Width;
+		imageProps.Height = header.Height;
+		imageProps.TextureFormat = ImageFormat::RGBA32F;
+
+		SharedReference<Texture2D> texture = Texture2D::Create(imageProps);
 		texture->SetData(pixels, header.Width * header.Height * 4);
 		return texture;
 	}
@@ -237,12 +247,12 @@ namespace Vortex {
 		}
 
 		VX_CORE_ASSERT(glyphsLoaded >= 0, "No geometry glyphs were loaded!");
-		VX_CORE_TRACE("Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
+		VX_CORE_TRACE_TAG("Font", "Loaded geometry of {} out of {} glyphs", glyphsLoaded, (int)charset.size());
 
 		// List missing glyphs
 		if (glyphsLoaded < (int)charset.size())
 		{
-			VX_CORE_WARN("Missing {} {}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
+			VX_CORE_WARN_TAG("Font", "Missing {} {}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
 		}
 
 		if (fontInput.fontName)
@@ -274,7 +284,7 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CORE_ERROR("Error: Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->Glyphs.size());
+				VX_CORE_ERROR_TAG("Font", "Error: Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->Glyphs.size());
 				VX_CORE_ASSERT(false,  "");
 			}
 		}
@@ -284,9 +294,9 @@ namespace Vortex {
 		config.emSize = atlasPacker.getScale();
 		config.pxRange = atlasPacker.getPixelRange();
 		if (!fixedScale)
-			VX_CORE_TRACE("Glyph size: {0} pixels/EM", config.emSize);
+			VX_CORE_TRACE_TAG("Font", "Glyph size: {0} pixels/EM", config.emSize);
 		if (!fixedDimensions)
-			VX_CORE_TRACE("Atlas dimensions: {0} x {1}", config.width, config.height);
+			VX_CORE_TRACE_TAG("Font", "Atlas dimensions: {0} x {1}", config.width, config.height);
 
 
 		// Edge coloring
@@ -326,7 +336,7 @@ namespace Vortex {
 		else
 		{
 			bool floatingPointFormat = true;
-			SharedRef<Texture2D> texture = nullptr;
+			SharedReference<Texture2D> texture = nullptr;
 
 			switch (config.imageType)
 			{
@@ -363,14 +373,14 @@ namespace Vortex {
 		s_DefaultFont.Reset();
 	}
 
-	SharedRef<Font> Font::GetDefaultFont()
+	SharedReference<Font>& Font::GetDefaultFont()
 	{
 		return s_DefaultFont;
 	}
 
-	SharedRef<Font> Font::Create(const std::filesystem::path& filepath)
+	SharedReference<Font> Font::Create(const std::filesystem::path& filepath)
 	{
-		return SharedRef<Font>::Create(filepath);
+		return SharedReference<Font>::Create(filepath);
 	}
 
 }

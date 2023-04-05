@@ -24,7 +24,7 @@ namespace Sandbox {
 			Vector2 landingPoint = transform.Translation.XY;
 			landingPoint.Y += m_BoxCollider.Size.Y + m_BoxCollider.Offset.Y + 0.1f;
 
-			Entity player = Physics2D.Raycast(transform.Translation.XY, landingPoint, out RayCastHit2D hit, ShowRaycast);
+			Entity player = Physics2D.Raycast(transform.Translation.XY, landingPoint, out RaycastHit2D hit, ShowRaycast);
 
 			float moveSpeed = Speed * delta;
 

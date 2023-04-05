@@ -1,17 +1,15 @@
 #include <Vortex.h>
 #include <Vortex/Core/EntryPoint.h>
 
-#include "ExampleLayer.h"
-#include "Sandbox2D.h"
+#include "Sandbox.h"
 
-class Sandbox : public Vortex::Application
+class SandboxApp : public Vortex::Application
 {
 public:
-	Sandbox(const Vortex::ApplicationProperties& properties)
+	SandboxApp(const Vortex::ApplicationProperties& properties)
 		: Application(properties)
 	{
-		//PushLayer(new ExampleLayer());
-		PushLayer(new Sandbox2D());
+		PushLayer(new Sandbox());
 	}
 };
 
@@ -19,13 +17,17 @@ Vortex::Application* Vortex::CreateApplication(ApplicationCommandLineArgs args)
 {
 	ApplicationProperties props;
 	props.Name = "Sandbox";
-	props.MaximizeWindow = true;
-	props.WindowDecorated = false;
+	props.WindowWidth = 1600;
+	props.WindowHeight = 900;
+	props.MaximizeWindow = false;
+	props.WindowDecorated = true;
 	props.VSync = true;
 	props.EnableGUI = true;
+	props.IsRuntime = false;
+	props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-	props.WorkingDirectory = "../Vortex-Editor";
+	props.WorkingDirectory = "C:/dev/Vortex Engine";
 	props.CommandLineArgs = args;
 
-	return new Sandbox(props);
+	return new SandboxApp(props);
 }

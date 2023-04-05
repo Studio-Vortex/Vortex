@@ -1,5 +1,4 @@
 ﻿using Vortex;
-using System;
 
 namespace Sandbox {
 
@@ -10,23 +9,46 @@ namespace Sandbox {
 		public float slowSpeed;
 		public float boostSpeed;
 		public bool hasPackage;
+		public Color4 hasPackageColor = new Color4(0.2f, 0.8f, 0.2f, 1.0f);
+		public Color4 noPackageColor = new Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		Vector4 hasPackageColor = new Vector4(0.2f, 0.8f, 0.2f, 1.0f);
-		Vector4 noPackageColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		Entity camera;
 		SpriteRenderer spriteRenderer;
 		TextMesh packagesLeftText;
 
 		protected override void OnCreate()
 		{
 			spriteRenderer = GetComponent<SpriteRenderer>();
-			packagesLeftText = FindEntityByName("Text").GetComponent<TextMesh>();
+			packagesLeftText = Scene.FindEntityByName("Text").GetComponent<TextMesh>();
+			camera = Scene.FindEntityByName("Camera");
 		}
 
 		protected override void OnUpdate(float delta)
 		{
 			ProcessRotation();
 			ProcessMovement();
-			ProcessDelivery();
+			
+			UpdateCamera();
+		}
+
+		protected override void OnCollisionEnter(Collision other)
+		{
+			HandleCollision(other);
+		}
+
+		protected override void OnTriggerEnter(Collision other)
+		{
+			HandleTrigger(other);
+		}
+
+		void HandleCollision(Collision other)
+		{
+			ProcessDelivery(other);
+		}
+
+		void HandleTrigger(Collision other)
+		{
+			ProcessDelivery(other);
 		}
 
 		void ProcessRotation()
@@ -34,9 +56,9 @@ namespace Sandbox {
 			float steerAmount = 0.0f;
 
 			if (Input.IsKeyDown(KeyCode.A))
-				steerAmount = -Math.Abs(steerSpeed);
+				steerAmount = -Mathf.Abs(steerSpeed);
 			else if (Input.IsKeyDown(KeyCode.D))
-				steerAmount = Math.Abs(steerSpeed);
+				steerAmount = Mathf.Abs(steerSpeed);
 
 			transform.Rotate(Vector3.Forward * steerAmount * Time.DeltaTime);
 		}
@@ -53,32 +75,44 @@ namespace Sandbox {
 			transform.Translate(velocity * moveSpeed * Time.DeltaTime);
 		}
 
-		void ProcessDelivery()
+		void ProcessDelivery(Collision other)
 		{
-			Entity other = Physics2D.Raycast(transform.Translation.XY, transform.Translation.XY + transform.Up.XY, out RayCastHit2D hit);
-			
-			if (other.Marker == "Package" && !hasPackage)
+			Entity entity = other.Entity;
+
+			switch (entity.Marker)
 			{
-				hasPackage = true;
-				spriteRenderer.Color = hasPackageColor;
-				Destroy(other);
+				case "Package":
+					if (!hasPackage)
+					{
+						hasPackage = true;
+						spriteRenderer.Color = hasPackageColor;
+						Destroy(entity);
+					}
+
+					break;
+				case "Customer":
+					if (hasPackage)
+					{
+						hasPackage = false;
+						spriteRenderer.Color = noPackageColor;
+						int packagesLeft = int.Parse(packagesLeftText.Text);
+						packagesLeftText.Text = (--packagesLeft).ToString();
+					}
+
+					break;
+				case "Boost":
+					moveSpeed = boostSpeed;
+					Destroy(entity);
+					break;
+				case "UnTagged":
+					moveSpeed = slowSpeed;
+					break;
 			}
-			else if (other.Marker == "Customer" && hasPackage)
-			{
-				hasPackage = false;
-				spriteRenderer.Color = noPackageColor;
-				int packagesLeft = Convert.ToInt32(packagesLeftText.Text);
-				packagesLeftText.Text = (--packagesLeft).ToString();
-			}
-			else if (other.Marker == "Boost")
-			{
-				moveSpeed = boostSpeed;
-				Destroy(other);
-			}
-			else if (other.Marker == "UnTagged")
-			{
-				moveSpeed = slowSpeed;
-			}
+		}
+
+		void UpdateCamera()
+		{
+			camera.transform.Translation = transform.Translation;
 		}
 
 	}

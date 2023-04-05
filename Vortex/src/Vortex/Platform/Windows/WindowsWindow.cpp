@@ -1,11 +1,11 @@
 #include "vxpch.h"
 #include "WindowsWindow.h"
 
-#include "Vortex/Events/ApplicationEvent.h"
+#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Events/WindowEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 #include "Vortex/Events/KeyEvent.h"
 
-#include "Vortex/Core/Input.h"
 #include "Vortex/Renderer/Renderer.h"
 
 #include "Vortex/Platform/OpenGL/OpenGLContext.h"
@@ -20,7 +20,7 @@ namespace Vortex {
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
-		VX_CORE_ERROR("GLFW Error: ({}): {}", error, description);
+		VX_CONSOLE_LOG_ERROR("GLFW Error: ({}): {}", error, description);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProperties& props)
@@ -47,7 +47,7 @@ namespace Vortex {
 		m_Properties.VSync = props.VSync;
 		m_Properties.Decorated = props.Decorated;
 
-		VX_CORE_INFO("Creating window '{}' {}", props.Title, props.Size);
+		VX_CONSOLE_LOG_INFO("Creating window '{}' {}", props.Title, props.Size);
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -62,9 +62,30 @@ namespace Vortex {
 			VX_PROFILE_SCOPE("glfwCreateWindow");
 
 #ifdef VX_DEBUG
-			if (Renderer::GetGraphicsAPI() == RendererAPI::API::OpenGL)
-				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			RendererAPI::API api = Renderer::GetGraphicsAPI();
+			switch (api)
+			{
+				case RendererAPI::API::OpenGL:
+					glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+					break;
+				case RendererAPI::API::Direct3D:
+					break;
+				case RendererAPI::API::Vulkan:
+					break;
+			}
 #endif // VX_DEBUG
+
+			RendererAPI::API rendererAPI = Renderer::GetGraphicsAPI();
+			switch (rendererAPI)
+			{
+				case Vortex::RendererAPI::API::OpenGL:
+					break;
+				case Vortex::RendererAPI::API::Direct3D:
+					glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+					break;
+				case Vortex::RendererAPI::API::Vulkan:
+					break;
+			}
 
 			if (!m_Properties.Decorated)
 			{
@@ -123,25 +144,31 @@ namespace Vortex {
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
+			const bool invalidKeyCode = key < (int32_t)KeyCode::StartingKey || key > (int32_t)KeyCode::MaxKeys;
+			if (invalidKeyCode)
+				return;
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			Input::UpdateKeyState((KeyCode)key, action);
 
 			switch (action)
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), 0);
+					KeyPressedEvent event((KeyCode)key, 0);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(static_cast<KeyCode>(key));
+					KeyReleasedEvent event((KeyCode)key);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(static_cast<KeyCode>(key), 1);
+					KeyPressedEvent event((KeyCode)key, 1);
 					data.EventCallback(event);
 					break;
 				}
@@ -152,7 +179,7 @@ namespace Vortex {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(static_cast<KeyCode>(keycode));
+			KeyTypedEvent event((KeyCode)keycode);
 			data.EventCallback(event);
 		});
 
@@ -160,17 +187,19 @@ namespace Vortex {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
+			Input::UpdateMouseButtonState((MouseButton)button, action);
+
 			switch (action)
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(static_cast<MouseButton>(button));
+					MouseButtonPressedEvent event((MouseButton)button);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(static_cast<MouseButton>(button));
+					MouseButtonReleasedEvent event((MouseButton)button);
 					data.EventCallback(event);
 					break;
 				}
@@ -196,9 +225,21 @@ namespace Vortex {
 		glfwSetJoystickCallback([](int jid, int event)
 		{
 			if (event == GLFW_CONNECTED)
-				VX_CORE_INFO("Joystick: {} Connected", jid);
+				VX_CONSOLE_LOG_INFO("Joystick: {} Connected", jid);
 			else if (event == GLFW_DISCONNECTED)
-				VX_CORE_INFO("Joystick: {} Disconnected", jid);
+				VX_CONSOLE_LOG_INFO("Joystick: {} Disconnected", jid);
+		});
+
+		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int pathCount, const char* paths[])
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			
+			std::vector<std::filesystem::path> filepaths(pathCount);
+			for (uint32_t i = 0; i < pathCount; i++)
+				filepaths[i] = paths[i];
+
+			WindowDragDropEvent event(std::move(filepaths));
+			data.EventCallback(event);
 		});
 
 		LoadWindowIcon();
@@ -214,6 +255,7 @@ namespace Vortex {
 		image.height = height;
 		image.pixels = textureData;
 		glfwSetWindowIcon(m_Window, 1, &image);
+
 		stbi_image_free(textureData);
 	}
 
@@ -225,45 +267,45 @@ namespace Vortex {
 		m_Context->SwapFrameBuffers();
 	}
 
-	void WindowsWindow::SetMaximized(bool maximized)
-	{
-		auto getWindowSizeFunc = [&]() {
-			int width;
-			int height;
-			glfwGetWindowSize(m_Window, &width, &height);
-			m_Properties.Size = Math::vec2((float)width, (float)height);
-		};
-
-		m_Properties.Maximized = maximized;
-
-		if (maximized)
-		{
-			glfwMaximizeWindow(m_Window);
-			getWindowSizeFunc();
-		}
-		else
-		{
-			glfwRestoreWindow(m_Window);
-			getWindowSizeFunc();
-		}
-	}
-
 	void WindowsWindow::SetTitle(const std::string& title)
 	{
-		m_Properties.Title = title;
 		glfwSetWindowTitle(m_Window, title.c_str());
+		m_Properties.Title = title;
 	}
+
+	void WindowsWindow::SetSize(const Math::vec2& size)
+	{
+		glfwSetWindowSize(m_Window, (int)size.x, (int)size.y);
+		m_Properties.Size = size;
+	}
+
+	void WindowsWindow::SetMaximized(bool maximized)
+	{
+		if (maximized)
+			glfwMaximizeWindow(m_Window);
+		else
+			glfwRestoreWindow(m_Window);
+
+		m_Properties.Maximized = maximized;
+	}
+
+    void WindowsWindow::SetDecorated(bool decorated)
+    {
+		glfwSetWindowAttrib(m_Window, GLFW_DECORATED, (int)decorated);
+		m_Properties.Decorated = decorated;
+    }
+
+    void WindowsWindow::SetResizeable(bool resizeable)
+    {
+		glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, (int)resizeable);
+		m_Properties.Resizeable = resizeable;
+    }
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		VX_PROFILE_FUNCTION();
 		glfwSwapInterval((int)enabled);
 		m_Properties.VSync = enabled;
-	}
-
-	bool WindowsWindow::IsVSyncEnabled() const
-	{
-		return m_Properties.VSync;
 	}
 
 	void WindowsWindow::CenterWindow() const

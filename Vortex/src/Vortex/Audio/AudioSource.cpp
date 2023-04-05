@@ -1,14 +1,14 @@
 #include "vxpch.h"
 #include "AudioSource.h"
 
-#include "Vortex/Audio/AudioEngine.h"
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 
-	AudioSource::AudioSource(const std::string& filepath)
-		: m_Path(filepath)
+	AudioSource::AudioSource(const std::string& filepath, bool isDefault)
 	{
-		LoadFromPathAndInitEngine(filepath);
+		SetPath(filepath);
+		m_IsDefault = isDefault;
 	}
 
 	AudioSource::~AudioSource()
@@ -16,117 +16,179 @@ namespace Vortex {
 		Destroy();
 	}
 
+	void AudioSource::Reload()
+	{
+		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot load empty file!");
+
+		m_IsLoaded = m_PlaybackDevice.Load(m_AudioClip.Filepath, &m_AudioClip.Length);
+		if (!m_IsLoaded)
+			return;
+
+		if (m_IsDefault)
+			return;
+
+		SetProperties(m_Properties);
+	}
+
 	void AudioSource::Play()
 	{
-		if (!m_Initialized)
+		if (!m_IsLoaded)
 		{
-			AudioEngine::InitEngine(&m_Engine);
-			AudioEngine::InitSoundFromPath(&m_Engine, m_Path, &m_Sound, &m_LengthInSeconds, m_Properties.Loop, m_Properties.Spacialized, m_Properties.Volume);
-			m_Initialized = true;
+			Reload();
 		}
 
-		if (m_Properties.PlayOneShot)
+		m_PlaybackDevice.Play();
+	}
+
+	void AudioSource::PlayOneShot()
+	{
+		if (!m_IsLoaded)
 		{
-			AudioEngine::StartEngine(&m_Engine);
-			AudioEngine::PlayOneShot(&m_Engine, m_Path.c_str());
+			Reload();
 		}
-		else
-		{
-			AudioEngine::StartEngine(&m_Engine);
-			AudioEngine::PlayFromSound(&m_Sound);
-		}
+
+		VX_CORE_ASSERT(!m_AudioClip.Filepath.empty(), "Cannot play sound from empty filepath!");
+		m_PlaybackDevice.PlayOneShot(m_AudioClip.Filepath);
 	}
 
 	void AudioSource::Pause()
 	{
-		if (m_Initialized)
-			AudioEngine::PauseSound(&m_Sound);
+		if (!m_IsLoaded)
+			return;
+
+		m_PlaybackDevice.Pause();
 	}
 
 	void AudioSource::Restart()
 	{
-		if (m_Initialized)
-			AudioEngine::RestartSound(&m_Sound);
+		if (!m_IsLoaded)
+			return;
+
+		m_PlaybackDevice.Restart();
 	}
 
 	void AudioSource::Stop()
 	{
-		if (m_Initialized)
-		{
-			AudioEngine::RestartSound(&m_Sound);
-			AudioEngine::StopSound(&m_Sound);
-			AudioEngine::ShutdownEngine(&m_Engine);
-			m_Initialized = false;
-		}
+		if (!m_IsLoaded)
+			return;
+
+		Restart();
+		m_PlaybackDevice.Stop();
+		m_IsLoaded = false;
 	}
 
 	void AudioSource::Destroy()
 	{
-		if (m_Initialized)
-		{
-			AudioEngine::DestroySound(&m_Sound);
-			AudioEngine::ShutdownEngine(&m_Engine);
-		}
+		if (!m_IsLoaded)
+			return;
+		
+		if (IsPlaying())
+			m_PlaybackDevice.Stop();
+
+		m_IsLoaded = false;
 	}
 
-	bool AudioSource::IsPlaying()
+	bool AudioSource::IsPlaying() const
 	{
-		return AudioEngine::IsPlaying(&m_Sound);
+		if (!m_IsLoaded)
+			return false;
+
+		return m_PlaybackDevice.IsPlaying();
+	}
+
+	bool AudioSource::IsPaused() const
+	{
+		return m_PlaybackDevice.IsPaused();
 	}
 
 	void AudioSource::SetPosition(const Math::vec3& position)
 	{
-		AudioEngine::SetPosition(&m_Sound, position);
+		m_PlaybackDevice.SetPosition(position);
+		m_Properties.Position = position;
 	}
 
 	void AudioSource::SetDirection(const Math::vec3& direction)
 	{
-		AudioEngine::SetDirection(&m_Sound, direction);
+		m_PlaybackDevice.SetDirection(direction);
+		m_Properties.Direction = direction;
 	}
 
 	void AudioSource::SetVelocity(const Math::vec3& velocity)
 	{
-		AudioEngine::SetVeloctiy(&m_Sound, velocity);
+		m_PlaybackDevice.SetVelocity(velocity);
+		m_Properties.Velocity = velocity;
 	}
 
-	void AudioSource::SetCone(const SoundProperties::AudioCone& cone)
+	void AudioSource::SetCone(const AudioCone& cone)
 	{
-		AudioEngine::SetCone(&m_Sound, cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
+		m_PlaybackDevice.SetCone(cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
+		m_Properties.Cone = cone;
+	}
+
+	void AudioSource::SetMinGain(float minGain)
+	{
+		m_PlaybackDevice.SetMinGain(minGain);
+		m_Properties.MinGain = minGain;
+	}
+
+	void AudioSource::SetMaxGain(float maxGain)
+	{
+		m_PlaybackDevice.SetMaxGain(maxGain);
+		m_Properties.MaxGain = maxGain;
+	}
+
+	void AudioSource::SetAttenuationModel(AttenuationModel attenuationModel)
+	{
+		m_PlaybackDevice.SetAttenuationModel(attenuationModel);
+		m_Properties.AttenuationModel = attenuationModel;
+	}
+
+	void AudioSource::SetFalloff(float falloff)
+	{
+		m_PlaybackDevice.SetFalloff(falloff);
+		m_Properties.Falloff = falloff;
 	}
 
 	void AudioSource::SetMinDistance(float minDistance)
 	{
-		AudioEngine::SetMinDistance(&m_Sound, minDistance);
+		m_PlaybackDevice.SetMinDistance(minDistance);
+		m_Properties.MinDistance = minDistance;
 	}
 
 	void AudioSource::SetMaxDistance(float maxDistance)
 	{
-		AudioEngine::SetMaxDistance(&m_Sound, maxDistance);
+		m_PlaybackDevice.SetMaxDistance(maxDistance);
+		m_Properties.MaxDistance = maxDistance;
 	}
 
 	void AudioSource::SetPitch(float pitch)
 	{
-		AudioEngine::SetPitch(&m_Sound, pitch);
+		m_PlaybackDevice.SetPitch(pitch);
+		m_Properties.Pitch = pitch;
 	}
 
 	void AudioSource::SetDopplerFactor(float dopplerFactor)
 	{
-		AudioEngine::SetDopplerFactor(&m_Sound, dopplerFactor);
+		m_PlaybackDevice.SetDopplerFactor(dopplerFactor);
+		m_Properties.DopplerFactor = dopplerFactor;
 	}
 
 	void AudioSource::SetVolume(float volume)
 	{
-		AudioEngine::SetVolume(&m_Sound, volume);
+		m_PlaybackDevice.SetVolume(volume);
+		m_Properties.Volume = volume;
 	}
 
 	void AudioSource::SetSpacialized(bool spacialized)
 	{
-		AudioEngine::SetSpacialized(&m_Sound, spacialized);
+		m_PlaybackDevice.SetSpacialized(spacialized);
+		m_Properties.Spacialized = spacialized;
 	}
 
-	void AudioSource::SetLoop(bool loop)
+	void AudioSource::SetLooping(bool loop)
 	{
-		AudioEngine::SetLoop(&m_Sound, loop);
+		m_PlaybackDevice.SetLooping(loop);
+		m_Properties.Loop = loop;
 	}
 
     void AudioSource::SetPlayOnStart(bool playOnStart)
@@ -139,16 +201,56 @@ namespace Vortex {
 		m_Properties.PlayOneShot = playOneShot;
 	}
 
-	void AudioSource::Reload()
+	const std::string& AudioSource::GetPath() const
 	{
-		LoadFromPathAndInitEngine(m_Path);
+		return m_AudioClip.Filepath;
 	}
 
-	void AudioSource::SetProperties(const SoundProperties& soundProps)
+	void AudioSource::SetPath(const std::string& filepath)
+	{
+		m_AudioClip.Filepath = filepath;
+		m_AudioClip.Name = FileSystem::RemoveFileExtension(filepath);
+	}
+
+	const AudioClip& AudioSource::GetAudioClip() const
+	{
+		return m_AudioClip;
+	}
+
+	float AudioSource::GetAmountComplete() const
+	{
+		return m_PlaybackDevice.GetSoundCursor() / m_AudioClip.Length;
+	}
+
+	PlaybackDevice& AudioSource::GetPlaybackDevice()
+	{
+		return m_PlaybackDevice;
+	}
+
+	const PlaybackDevice& AudioSource::GetPlaybackDevice() const
+	{
+		return m_PlaybackDevice;
+	}
+
+	const PlaybackDeviceProperties& AudioSource::GetProperties() const
+	{
+		return m_Properties;
+	}
+
+	PlaybackDeviceProperties& AudioSource::GetProperties()
+	{
+		return m_Properties;
+	}
+
+	void AudioSource::SetProperties(const PlaybackDeviceProperties& soundProps)
     {
 		SetDirection(soundProps.Direction);
-		SetVelocity(soundProps.Veloctiy);
+		SetVelocity(soundProps.Velocity);
 		SetCone(soundProps.Cone);
+		SetMinGain(soundProps.MinGain);
+		SetMaxGain(soundProps.MaxGain);
+		SetAttenuationModel(soundProps.AttenuationModel);
+		SetFalloff(soundProps.Falloff);
 		SetMinDistance(soundProps.MinDistance);
 		SetMaxDistance(soundProps.MaxDistance);
 		SetPitch(soundProps.Pitch);
@@ -156,58 +258,25 @@ namespace Vortex {
 		SetVolume(soundProps.Volume);
 		SetPlayOnStart(soundProps.PlayOnStart);
 		SetPlayOneShot(soundProps.PlayOneShot);
-		SetLoop(soundProps.Loop);
 		SetSpacialized(soundProps.Spacialized);
+		SetLooping(soundProps.Loop);
     }
 
-    float AudioSource::GetAmountComplete()
-	{
-		return AudioEngine::GetSoundCursor(&m_Sound) / m_LengthInSeconds;
-	}
-
-	void AudioSource::Copy(SharedRef<AudioSource> dest, const SharedRef<AudioSource>& src)
+	void AudioSource::Copy(SharedReference<AudioSource>& dest, const SharedReference<AudioSource>& src)
 	{
 		const auto& props = src->GetProperties();
-		dest->SetCone(props.Cone);
-		dest->SetDirection(props.Direction);
-		dest->SetDopplerFactor(props.DopplerFactor);
-		dest->SetLoop(props.Loop);
-		dest->SetMaxDistance(props.MaxDistance);
-		dest->SetMinDistance(props.MinDistance);
-		dest->SetPitch(props.Pitch);
-		dest->SetPosition(props.Position);
-		dest->SetSpacialized(props.Spacialized);
-		dest->SetPlayOnStart(props.PlayOnStart);
-		dest->SetPlayOneShot(props.PlayOneShot);
-		dest->SetVelocity(props.Veloctiy);
-		dest->SetVolume(props.Volume);
+		const PlaybackDeviceProperties& srcProps = src->GetProperties();
+		dest->SetProperties(srcProps);
 	}
 
-	void AudioSource::LoadFromPathAndInitEngine(const std::string& filepath)
+	SharedReference<AudioSource> AudioSource::Create(const std::string& filepath, bool isDefault)
 	{
-		AudioEngine::InitEngine(&m_Engine);
-
-		AudioEngine::InitSoundFromPath(
-			&m_Engine,
-			filepath,
-			&m_Sound,
-			&m_LengthInSeconds,
-			m_Properties.Loop,
-			m_Properties.Spacialized,
-			m_Properties.Volume
-		);
-
-		m_Initialized = true;
+		return SharedReference<AudioSource>::Create(filepath, isDefault);
 	}
 
-	SharedRef<AudioSource> AudioSource::Create(const std::string& filepath)
+	SharedReference<AudioSource> AudioSource::Create()
 	{
-		return SharedRef<AudioSource>::Create(filepath);
-	}
-
-    SharedRef<AudioSource> AudioSource::Create()
-    {
-        return SharedRef<AudioSource>::Create();
+		return SharedReference<AudioSource>::Create();
     }
 
 }

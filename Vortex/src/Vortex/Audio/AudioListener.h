@@ -1,52 +1,43 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include <miniaudio/miniaudio.h>
+#include "Vortex/Audio/ListenerDeviceProperties.h"
+#include "Vortex/Audio/ListenerDevice.h"
 
 namespace Vortex {
 
-	class VORTEX_API AudioListener : public RefCounted
+	class PlaybackDevice;
+
+	class VORTEX_API AudioListener : public Asset
 	{
 	public:
-		struct VORTEX_API ListenerProperties
-		{
-			Math::vec3 Position = Math::vec3(0.0f);
-			Math::vec3 Direction = Math::vec3(0.0f);
-			Math::vec3 Veloctiy = Math::vec3(0.0f);
-
-			struct VORTEX_API AudioCone
-			{
-				float InnerAngle = Math::Deg2Rad(10.0f);
-				float OuterAngle = Math::Deg2Rad(45.0f);
-				float OuterGain = 0.0f;
-			} Cone;
-		};
-
-	public:
 		AudioListener() = default;
-		AudioListener(const ListenerProperties& props);
+		AudioListener(const ListenerDeviceProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex);
 		~AudioListener();
 
 		void SetPosition(const Math::vec3& position);
 		void SetDirection(const Math::vec3& direction);
 		void SetVelocity(const Math::vec3& velocity);
 
-		void SetCone(const ListenerProperties::AudioCone& cone);
+		void SetCone(const AudioCone& cone);
 
-		inline const ListenerProperties& GetProperties() const { return m_Properties; }
-		inline ListenerProperties& GetProperties() { return m_Properties; }
+		ListenerDeviceProperties& GetProperties();
+		const ListenerDeviceProperties& GetProperties() const;
 
-		static SharedRef<AudioListener> Create(const ListenerProperties& props);
-		static SharedRef<AudioListener> Create();
+		uint32_t GetListenerIndex() const;
+
+		ASSET_CLASS_TYPE(AudioListenerAsset)
+
+		static SharedReference<AudioListener> Create(const ListenerDeviceProperties& props, PlaybackDevice& device, uint32_t listenerIndex);
+		static SharedReference<AudioListener> Create();
 
 	private:
-		inline static uint32_t s_ListenerCount = 0;
-
-	private:
-		ListenerProperties m_Properties;
-		uint32_t m_ListenerIndex = 0;
+		uint32_t m_ListenerIndex = -1;
+		ListenerDeviceProperties m_Properties;
+		ListenerDevice m_ListenerDevice;
 	};
 
 }

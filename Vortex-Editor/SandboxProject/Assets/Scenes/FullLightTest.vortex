@@ -1,0 +1,215 @@
+Scene: FullLightTest
+Entities:
+  - Entity: 10197051084978838702
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light (green)
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8, 4, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0, 1, 0]
+      Diffuse: [0, 1, 0]
+      Specular: [0, 1, 0]
+      Color: [0, 1, 0]
+      Position: [8, 4, 8]
+      Attenuation: [-0, 0.0337500013]
+  - Entity: 10328758055346153157
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Skybox
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SkyboxComponent:
+      SourcePath: Skybox\Skybox
+  - Entity: 3703055829262025412
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 10.1081123, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Ambient: [9.99999975e-05, 9.9989993e-05, 9.9989993e-05]
+      Diffuse: [0.200000003, 0.200000003, 0.200000003]
+      Specular: [1, 1, 1]
+      Color: [0.99999994, 0.888637722, 0.647542417]
+      Direction: [0, -0.25, 0]
+  - Entity: 7740157264708266272
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -2.00300646, 0]
+      Rotation: [0, 0, 0]
+      Scale: [30, 1, 30]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Default/Plane.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Textures\Floor.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 433391229921515733
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light (blue)
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8, 4, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 1]
+      Diffuse: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Color: [0, 0, 0.99999994]
+      Position: [-8, 4, 8]
+      Attenuation: [-0, 0.0357500017]
+  - Entity: 2124018647035494477
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.98858929, 1, 0]
+      Rotation: [0, -1.57079637, 1.01727409e-07]
+      Scale: [1, 0.999999583, 0.999999821]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        []
+  - Entity: 10395114933081005068
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light (red)
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4, -8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 0, 0]
+      Diffuse: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Color: [1, 0, 0]
+      Position: [0, 4, -8]
+      Attenuation: [-0, 0.0332500003]
+  - Entity: 11486642305700391745
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.0770841241, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\AK-47.obj
+      Ambient: [1, 1, 1]
+      DiffuseMapPath: Textures\Meshes\Ak47\Ak47.png
+      SpecularMapPath: Textures\Meshes\Ak47\SpecularMap.jpg
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.Rotate
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 16
+  - Entity: 2752483089449157979
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Spot Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 15.7274418, 0.0955014229]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Spot
+      Radiance: [1, 1, 1]
+      Ambient: [0, 0, 0]
+      Diffuse: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Color: [1, 1, 1]
+      Position: [0, 15.7274418, 0.0955014229]
+      Direction: [0, -1, 0]
+      Attenuation: [0.0450000018, 0.00749999983]
+      CutOff: 12.5
+      OuterCutOff: 17.5
+  - Entity: 12748811810033253870
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.07966638, -1.49588954]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 16929470818607818793
+      TextString: Ak-47

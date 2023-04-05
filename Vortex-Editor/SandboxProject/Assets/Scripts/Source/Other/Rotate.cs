@@ -1,5 +1,4 @@
-﻿using System;
-using Vortex;
+﻿using Vortex;
 
 namespace Sandbox {
 
@@ -9,7 +8,7 @@ namespace Sandbox {
 
 		protected override void OnCreate()
 		{
-			Debug.Log("Hello from C#!");
+			Log.Print("Hello from C#!");
 		}
 
 		protected override void OnUpdate(float delta)

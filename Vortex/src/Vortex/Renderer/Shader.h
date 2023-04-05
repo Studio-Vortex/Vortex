@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
@@ -35,35 +36,36 @@ namespace Vortex {
 
 		virtual const std::string& GetName() const = 0;
 
-		static SharedRef<Shader> Create(const std::string& filepath);
-		static SharedRef<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc = std::string());
+		static SharedReference<Shader> Create(const std::string& filepath);
+		static SharedReference<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc = std::string());
 	};
 
 
-	class VORTEX_API ShaderLibrary : public RefCounted
+	class VORTEX_API ShaderLibrary
 	{
 	public:
 		ShaderLibrary() = default;
 		~ShaderLibrary() = default;
 
-		void Add(const std::string& name, const SharedRef<Shader>& shader);
-		void Add(const SharedRef<Shader>& shader);
-		SharedRef<Shader> Load(const std::string& filepath);
-		SharedRef<Shader> Load(const std::string& name, const std::string& filepath);
+		void Add(const std::string& name, const SharedReference<Shader>& shader);
+		void Add(const SharedReference<Shader>& shader);
+		SharedReference<Shader> Load(const std::string& filepath);
+		SharedReference<Shader> Load(const std::string& name, const std::string& filepath);
 
-		SharedRef<Shader> Get(const std::string& name);
+		SharedReference<Shader>& Get(const std::string& name);
+		const SharedReference<Shader>& Get(const std::string& name) const;
 
 		bool Exists(const std::string& name) const;
 
-		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator begin() { return m_Shaders.begin(); }
-		inline std::unordered_map<std::string, SharedRef<Shader>>::iterator end() { return m_Shaders.end(); }
+		size_t Size() const;
 
-		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator begin() const { return m_Shaders.begin(); }
-		inline std::unordered_map<std::string, SharedRef<Shader>>::const_iterator end() const { return m_Shaders.end(); }
+		inline std::unordered_map<std::string, SharedReference<Shader>>::iterator begin() { return m_Shaders.begin(); }
+		inline std::unordered_map<std::string, SharedReference<Shader>>::iterator end() { return m_Shaders.end(); }
 
-		static SharedRef<ShaderLibrary> Create();
+		inline std::unordered_map<std::string, SharedReference<Shader>>::const_iterator begin() const { return m_Shaders.begin(); }
+		inline std::unordered_map<std::string, SharedReference<Shader>>::const_iterator end() const { return m_Shaders.end(); }
 
 	private:
-		std::unordered_map<std::string, SharedRef<Shader>> m_Shaders;
+		std::unordered_map<std::string, SharedReference<Shader>> m_Shaders;
 	};
 }

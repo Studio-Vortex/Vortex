@@ -1,22 +1,19 @@
 #pragma once
 
+#include "Vortex/Core/TimeStep.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Core/TimeStep.h"
 
-// Forward declarations
+#include "Vortex/Physics/2D/Physics2DData.h"
+
 class b2World;
 class b2Fixture;
 
 namespace Vortex {
 
-	struct PhysicsBody2DData
-	{
-		UUID EntityUUID;
-	};
-
-	class Physics2D
+	class VORTEX_API Physics2D
 	{
 	public:
 		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
@@ -25,6 +22,8 @@ namespace Vortex {
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);
 		static void OnSimulationStop();
+
+		static uint64_t Raycast(const Math::vec2& start, const Math::vec2& end, RaycastHit2D* outResult, bool drawDebugLine);
 
 		static b2World* GetPhysicsScene() { return s_PhysicsScene; }
 
@@ -38,6 +37,7 @@ namespace Vortex {
 		static void SetPhysicsWorldGravitty(const Math::vec2& gravity) { s_PhysicsWorld2DGravity = gravity; }
 
 	private:
+		inline static Scene* s_ContextScene = nullptr;
 		inline static b2World* s_PhysicsScene = nullptr;
 
 		inline static Math::vec2 s_PhysicsWorld2DGravity = Math::vec2(0.0f, -9.81f);

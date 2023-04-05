@@ -1,17 +1,30 @@
 #include "vxpch.h"
 #include "Application.h"
 
-#include "Vortex/Renderer/Renderer.h"
+#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Core/Thread/ThreadPool.h"
 
-#include "Vortex/Core/Input.h"
 #include "Vortex/Events/KeyEvent.h"
-#include "Vortex/Audio/AudioEngine.h"
+
+#include "Vortex/Audio/AudioSystem.h"
+
+#include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Font/Font.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleSystem.h"
+
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/2D/Physics2D.h"
+
+#include "Vortex/Networking/Networking.h"
+#include "Vortex/Networking/Server.h"
+
+#include "Vortex/System/SystemManager.h"
+
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Utils/PlatformUtils.h"
+#include "Vortex/Utils/Random.h"
+#include "Vortex/Utils/Time.h"
 
 extern bool g_ApplicationRunning;
 
@@ -30,13 +43,16 @@ namespace Vortex {
 		// Set working directory here
 		if (!m_Properties.WorkingDirectory.empty())
 			FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
+		else
+			m_Properties.WorkingDirectory = std::filesystem::current_path().string();
 
 		WindowProperties windowProps;
 		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
 		windowProps.Title = m_Properties.Name;
 		windowProps.Maximized = m_Properties.MaximizeWindow;
-		windowProps.VSync = m_Properties.VSync;
 		windowProps.Decorated = m_Properties.WindowDecorated;
+		windowProps.Resizeable = m_Properties.WindowResizable;
+		windowProps.VSync = m_Properties.VSync;
 
 		m_Window = Window::Create(windowProps);
 
@@ -48,11 +64,13 @@ namespace Vortex {
 		// Init engine sub-systems
 		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
 
+		//ThreadPool::Init();
 		Renderer::Init();
+		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
-		AudioEngine::Init();
-		Font::Init();
+		SystemManager::RegisterAssetSystem<AudioSystem>();
 		Random::Init();
+		Font::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -66,10 +84,9 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Font::Shutdown();
-		ScriptEngine::Shutdown();
-		AudioEngine::Shutdown();
-		Physics::Shutdown();
+		SystemManager::UnregisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
+		//ThreadPool::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -94,13 +111,6 @@ namespace Vortex {
 		g_ApplicationRunning = false;
 	}
 
-	void Application::SubmitToMainThread(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-
-		m_MainThreadQueue.emplace_back(func);
-	}
-
 	void Application::OnEvent(Event& e)
 	{
 		VX_PROFILE_FUNCTION();
@@ -109,8 +119,7 @@ namespace Vortex {
 		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(VX_BIND_CALLBACK(Application::OnWindowResizeEvent));
 
-		// Update Input State
-		Input::UpdateMouseState(e);
+		Input::OnEvent(e);
 
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
@@ -121,12 +130,21 @@ namespace Vortex {
 		}
 	}
 
+	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+
+		m_MainThreadQueue.emplace_back(func);
+	}
+
 	void Application::ExecuteMainThreadQueue()
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
 
-		for (auto& func : m_MainThreadQueue)
+		for (const auto& func : m_MainThreadQueue)
+		{
 			func();
+		}
 
 		m_MainThreadQueue.clear();
 	}
@@ -171,6 +189,8 @@ namespace Vortex {
 
 				m_GuiLayer->EndFrame();
 			}
+
+			Input::ResetChangesForNextFrame();
 
 			m_Window->OnUpdate();
 		}

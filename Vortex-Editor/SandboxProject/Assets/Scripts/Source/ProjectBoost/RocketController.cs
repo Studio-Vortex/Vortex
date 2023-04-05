@@ -122,7 +122,7 @@ namespace Sandbox {
 			Vector2 pos = transform.Translation.XY;
 			Vector2 groundPoint = pos;
 			groundPoint.Y -= transform.Scale.Y / 1.8f;
-			Entity entity = Physics2D.Raycast(pos, groundPoint, out RayCastHit2D downHit);
+			Entity entity = Physics2D.Raycast(pos, groundPoint, out RaycastHit2D downHit);
 
 			if (downHit.Hit)
 				ProcessEntity(entity);
@@ -160,7 +160,7 @@ namespace Sandbox {
 
 		void ReloadLevel()
 		{
-			Entity ground = FindEntityByName("Ground");
+			Entity ground = Scene.FindEntityByName("Ground");
 			AudioSource audioSource = ground.GetComponent<AudioSource>();
 
 			if (!audioSource.IsPlaying)

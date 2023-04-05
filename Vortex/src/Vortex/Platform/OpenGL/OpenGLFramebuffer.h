@@ -15,6 +15,7 @@ namespace Vortex {
 
 		void Resize(uint32_t width, uint32_t height) override;
 		int ReadPixel(uint32_t attachmentIndex, int x, int y) const override;
+		void ReadAttachmentToBuffer(uint32_t attachmentIndex, char* outBuffer) const override;
 
 		void ClearAttachment(uint32_t attachmentIndex, int clearValue) const override;
 		void ClearDepthAttachment() const override;

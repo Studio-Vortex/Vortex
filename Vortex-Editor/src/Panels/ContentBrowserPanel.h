@@ -1,35 +1,41 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class ContentBrowserPanel : public EditorPanel
+	class ContentBrowserPanel
 	{
 	public:
 		ContentBrowserPanel();
-		~ContentBrowserPanel() override = default;
+		~ContentBrowserPanel() = default;
 		
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project> project) {}
+		void SetSceneContext(const SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		void RenderRightClickPopupMenu();
+		void RenderCreateItemPopup();
 		void RenderFileExplorer();
-		void RenderSlider(float& thumbnailSize, float& padding);
+		void RenderMenuBar();
+		void RenderRightClickItemPopup(const std::filesystem::path& currentPath);
+		void RenderThumbnailSlider();
+		SharedReference<Texture2D> FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath);
+		void FindTextureFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon);
+		void FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon);
+		void FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon);
 
 	private:
 		inline static bool s_ShowPanel = true;
+		float m_ThumbnailSize = 96.0f;
+		float m_ThumbnailPadding = 16.0f;
 
 	private:
 		std::filesystem::path m_BaseDirectory;
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_PathToBeRenamed;
+		std::filesystem::path m_ItemPathToRename;
 
-		std::unordered_map<std::string, SharedRef<Texture2D>> m_TextureMap;
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};
 

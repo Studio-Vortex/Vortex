@@ -18,7 +18,7 @@ namespace Vortex {
 
 		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
 		{
-			glCreateTextures(TextureTarget(multisampled), count, outID);
+			glGenTextures(count, outID);
 		}
 
 		static void BindTexture(bool multisampled, uint32_t id)
@@ -62,7 +62,7 @@ namespace Vortex {
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
 
-				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -72,7 +72,7 @@ namespace Vortex {
 			{
 				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -82,23 +82,24 @@ namespace Vortex {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static bool IsDepthFormat(ImageFormat format)
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
+				case ImageFormat::DEPTH24STENCIL8: return true;
 			}
 
 			return false;
 		}
 
-		static GLenum VortexFBTextureFormatToGL(FramebufferTextureFormat format)
+		static GLenum VortexImageFormatToGL(ImageFormat format)
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-				case FramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
-				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case ImageFormat::RGBA8:       return GL_RGBA8;
+				case ImageFormat::RGBA16F:     return GL_RGBA16F;
+				case ImageFormat::RGBA32F:     return GL_RGBA32F;
+				case ImageFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
 			VX_CORE_ASSERT(false, "Unknown texture format!");
@@ -163,30 +164,35 @@ namespace Vortex {
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
 				Utils::BindTexture(multisample, m_ColorAttachments[i]);
+
 				switch (m_ColorAttachmentProperties[i].TextureFormat)
 				{
-					case FramebufferTextureFormat::RGBA8:
+					case ImageFormat::RGBA8:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA8, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
-					case FramebufferTextureFormat::RGBA16F:
+					case ImageFormat::RGBA16F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA16F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
 						break;
-					case FramebufferTextureFormat::RED_INTEGER:
+					case ImageFormat::RGBA32F:
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_RGBA32F, GL_RGBA, m_Properties.Width, m_Properties.Height, i);
+						break;
+					case ImageFormat::RED_INTEGER:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Properties.Samples, GL_R32I, GL_RED_INTEGER, m_Properties.Width, m_Properties.Height, i);
 						break;
 				}
 			}
 		}
 
-		if (m_DepthAttachmentProperty.TextureFormat != FramebufferTextureFormat::None)
+		if (m_DepthAttachmentProperty.TextureFormat != ImageFormat::None)
 		{
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
 
 			switch (m_DepthAttachmentProperty.TextureFormat)
 			{
-				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case ImageFormat::DEPTH24STENCIL8:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Properties.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Properties.Width, m_Properties.Height);
+					break;
 			}
 		}
 
@@ -211,7 +217,7 @@ namespace Vortex {
 	{
 		if (width == 0 || height == 0 || width > MAX_FRAME_BUFFER_SIZE || height > MAX_FRAME_BUFFER_SIZE)
 		{
-			VX_CORE_WARN("Attempted to resize Framebuffer to {}, {}", width, height);
+			VX_CONSOLE_LOG_WARN("Attempted to resize Framebuffer to {}, {}", width, height);
 			return;
 		}
 
@@ -246,6 +252,14 @@ namespace Vortex {
 		return pixelData;
 	}
 
+	void OpenGLFramebuffer::ReadAttachmentToBuffer(uint32_t attachmentIndex, char* outBuffer) const
+	{
+		VX_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadPixels(0, 0, m_Properties.Width, m_Properties.Height, GL_RGB, GL_UNSIGNED_BYTE, (void*)outBuffer);
+	}
+
 	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int clearValue) const
 	{
 		VX_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Index out of bounds!");
@@ -253,7 +267,7 @@ namespace Vortex {
 		auto& props = m_ColorAttachmentProperties[attachmentIndex];
 
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
-			Utils::VortexFBTextureFormatToGL(props.TextureFormat), GL_INT, &clearValue);
+			Utils::VortexImageFormatToGL(props.TextureFormat), GL_INT, &clearValue);
 	}
 
 	void OpenGLFramebuffer::ClearDepthAttachment() const
@@ -505,7 +519,7 @@ namespace Vortex {
 
 	void OpenGLDepthMapFramebuffer::ClearDepth(float value) const
 	{
-		glClearDepth(static_cast<double>(value));
+		glClearDepth((double)value);
 	}
 
 	void OpenGLDepthMapFramebuffer::ClearDepthAttachment() const
@@ -520,6 +534,7 @@ namespace Vortex {
 		// Create Depth Cubemap Texture
 		glGenTextures(1, &m_DepthCubemapTextureRendererID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_DepthCubemapTextureRendererID);
+
 		for (uint32_t i = 0; i < 6; i++)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, props.Width, props.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);

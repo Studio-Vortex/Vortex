@@ -2,16 +2,16 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Renderer/VertexArray.h"
 
 namespace Vortex {
 
-#ifdef VX_DEBUG
-	#define SP_RENDERER_STATISTICS 1;
-#elif VX_RELEASE
-	#define VX_RENDERER_STATISTICS 1; // Temporary
-#endif // VX_DEBUG
+#ifndef VX_DIST
+	#define VX_RENDERER_STATISTICS 1;
+#else
+	#define VX_RENDERER_STATISTICS 0;
+#endif // VX_DIST
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
@@ -43,24 +43,24 @@ namespace Vortex {
 			None = 0, OpenGL = 1, Direct3D = 2, Vulkan = 3
 		};
 
-		enum class TriangleCullMode
+		enum class VORTEX_API TriangleCullMode
 		{
 			None = 0, Front, Back, FrontAndBack
 		};
 
-		enum class StencilOperation
+		enum class VORTEX_API StencilOperation
 		{
 			None = 0, Keep, Always, NotEqual, Replace
 		};
 
-		enum class BlendMode
+		enum class VORTEX_API BlendMode
 		{
 			None = 0, SrcAlphaOneMinusSrcAlpha, ZeroSrcColor
 		};
 
 		struct VORTEX_API RendererInfo
 		{
-			const char* API;
+			const char* Name;
 			const unsigned char* GPU;
 			const unsigned char* Vendor;
 			const unsigned char* Version;
@@ -78,10 +78,10 @@ namespace Vortex {
 
 		virtual void Clear() const = 0;
 
-		virtual void DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
-		virtual void DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;
-		virtual void DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
-		virtual void DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
+		virtual void DrawTriangles(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
+		virtual void DrawIndexed(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount = 0) const = 0;
+		virtual void DrawLines(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const = 0;
+		virtual void DrawTriangleStrip(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const = 0;
 
 		virtual void EnableDepthTest() const = 0;
 		virtual void DisableDepthTest() const = 0;

@@ -22,9 +22,9 @@ namespace Sandbox.Shooter.Weapons {
 		static BulletPool bulletPool;
 
 		Vector3 startPosition;
-		Vector3 startRotation;
+		Quaternion startRotation;
 		Vector3 zoomedPosition;
-		Vector3 zoomedRotation;
+		Quaternion zoomedRotation;
 
 		Camera camera;
 
@@ -39,12 +39,12 @@ namespace Sandbox.Shooter.Weapons {
 
 		protected override void OnCreate()
 		{
-			camera = FindEntityByName("Camera").GetComponent<Camera>();
-			player = FindEntityByName("Player");
-			eyes = FindEntityByName("Eyes");
-			emptyGunSound = FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
-			reloadSound = FindEntityByName("Reload Sound").GetComponent<AudioSource>();
-			ammoTextEntity = FindEntityByName("Ammo Text");
+			camera = Scene.FindEntityByName("Camera").GetComponent<Camera>();
+			player = Scene.FindEntityByName("Player");
+			eyes = Scene.FindEntityByName("Eyes");
+			emptyGunSound = Scene.FindEntityByName("Empty Gun Sound").GetComponent<AudioSource>();
+			reloadSound = Scene.FindEntityByName("Reload Sound").GetComponent<AudioSource>();
+			ammoTextEntity = Scene.FindEntityByName("Ammo Text");
 			ammoText = ammoTextEntity.GetComponent<TextMesh>();
 			gunshotSound = GetComponent<AudioSource>();
 			muzzleBlast = GetComponent<ParticleEmitter>();
@@ -54,8 +54,8 @@ namespace Sandbox.Shooter.Weapons {
 
 			switch (weapon)
 			{
-				case WeaponType.Pistol: zoomedTransform = FindEntityByName("Pistol Zoomed Transform").transform; break;
-				case WeaponType.Rifle:  zoomedTransform = FindEntityByName("Rifle Zoomed Transform").transform;  break;
+				case WeaponType.Pistol: zoomedTransform = Scene.FindEntityByName("Pistol Zoomed Transform").transform; break;
+				case WeaponType.Rifle:  zoomedTransform = Scene.FindEntityByName("Rifle Zoomed Transform").transform;  break;
 			}
 
 			startPosition = transform.Translation;
@@ -89,7 +89,7 @@ namespace Sandbox.Shooter.Weapons {
 		void ProcessZoom()
 		{
 			bool rightMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Right);
-			bool leftTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > 0f;
+			bool leftTriggerPressed = Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > 0f;
 
 			if (rightMouseButtonPressed || leftTriggerPressed)
 			{
@@ -111,8 +111,8 @@ namespace Sandbox.Shooter.Weapons {
 		{
 			bool leftMouseButtonPressed = Input.IsMouseButtonDown(MouseButton.Left);
 			bool leftMouseButtonReleased = Input.IsMouseButtonUp(MouseButton.Left);
-			bool rightTriggerPressed = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > 0f;
-			bool rightTriggerReleased = Input.GetGamepadAxis(Gamepad.AxisRightTrigger) == -1;
+			bool rightTriggerPressed = Input.GetGamepadAxis(GamepadAxis.RightTrigger) > 0f;
+			bool rightTriggerReleased = Input.GetGamepadAxis(GamepadAxis.RightTrigger) == -1;
 			bool waitTimeOver = timeToWait <= 0f;
 
 			if ((leftMouseButtonPressed || rightTriggerPressed) && waitTimeOver)
@@ -166,7 +166,7 @@ namespace Sandbox.Shooter.Weapons {
 			}
 			else
 			{
-				Entity bullet = new Entity("Bullet");
+				Entity bullet = Scene.CreateEntity("Bullet");
 				CreateBullet(bullet);
 			}
 		}
@@ -176,10 +176,10 @@ namespace Sandbox.Shooter.Weapons {
 			bullet.transform.Translation = transform.worldTransform.Translation;
 			bullet.transform.Scale *= 0.25f;
 
-			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
-			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetMaterial();
-			material.Albedo = Color.Red.XYZ;
+			StaticMeshRenderer meshRenderer = bullet.AddComponent<StaticMeshRenderer>();
+			meshRenderer.MeshType = MeshType.Sphere;
+			Material material = meshRenderer.GetSubmesh(0).Material;
+			material.Albedo = Color.Red;
 
 			bullet.AddComponent<SphereCollider>();
 			RigidBody rb = bullet.AddComponent<RigidBody>();
@@ -209,7 +209,7 @@ namespace Sandbox.Shooter.Weapons {
 				return;
 
 			bool rKeyPressed = Input.IsKeyDown(KeyCode.R);
-			bool yButtonPressed = Input.IsGamepadButtonDown(Gamepad.ButtonY);
+			bool yButtonPressed = Input.IsGamepadButtonDown(GamepadButton.Y);
 
 			if (rKeyPressed || yButtonPressed)
 			{

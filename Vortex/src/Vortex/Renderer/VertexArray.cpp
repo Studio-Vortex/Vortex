@@ -12,12 +12,12 @@
 
 namespace Vortex {
 
-	SharedRef<VertexArray> VertexArray::Create()
+	SharedReference<VertexArray> VertexArray::Create()
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLVertexArray>::Create();
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLVertexArray>::Create();
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

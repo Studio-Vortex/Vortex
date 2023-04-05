@@ -10,7 +10,9 @@
 
 namespace Vortex {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const SharedRef<Scene>& context)
+#define MAX_CHILD_ENTITY_SEARCH_DEPTH 10
+
+	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
 		SetSceneContext(context);
 	}
@@ -24,14 +26,15 @@ namespace Vortex {
 			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
 
 			// Search Bar + Filtering
-			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize(" + ").x * 2.0f - 2.0f);
-			bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
+			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
+			const bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search...", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
 			if (isSearching)
 				m_EntitySearchInputTextFilter.Build();
 
 			Gui::SameLine();
 
-			if (Gui::Button(" + "))
+			UI::ShiftCursorX(-4.0f);
+			if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
 				Gui::OpenPopup("CreateEntity");
 
 			if (Gui::BeginPopup("CreateEntity"))
@@ -42,39 +45,48 @@ namespace Vortex {
 			}
 
 			Gui::Spacing();
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (m_ContextScene)
 			{
-				if (m_EntityShouldBeDestroyed && m_SelectedEntity)
-				{
-					Entity entityToBeDestroyed = m_SelectedEntity;
-
-					m_SelectedEntity = {};
-					m_EntityShouldBeDestroyed = false;
-
-					// If we are hovering on the entity we must reset it otherwise entt will complain
-					if (hoveredEntity == entityToBeDestroyed)
-						hoveredEntity = Entity{};
-
-					m_ContextScene->DestroyEntity(entityToBeDestroyed);
-				}
+				uint32_t searchDepth = 0;
+				const bool isSearching = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
+				std::vector<UUID> rootEntitiesInHierarchy;
 
 				m_ContextScene->m_Registry.each([&](auto entityID)
 				{
-					Entity entity{ entityID, m_ContextScene.Raw() };
+					const Entity entity{ entityID, m_ContextScene.Raw() };
+					
+					if (!entity)
+						return;
 
-					if (entity)
-					{
-						// If the name lines up with the search box we can show it
-						if (entity.GetParentUUID() == 0 && m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str()))
-							DrawEntityNode(entity, editorCamera);
-					}
+					const bool isChildEntity = entity.GetParentUUID() != 0;
+
+					if (isChildEntity)
+						return;
+
+					rootEntitiesInHierarchy.push_back(entity.GetUUID());
+
+					const bool matchingSearch = m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str());
+					
+					if (!matchingSearch)
+						return;
+
+					DrawEntityNode(entity, editorCamera);
 				});
+
+				if (isSearching)
+				{
+					for (const auto& rootEntity : rootEntitiesInHierarchy)
+					{
+						RecursiveEntitySearch(rootEntity, editorCamera, searchDepth);
+					}
+				}
 
 				if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
 				{
-					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+					const auto flags = ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", flags);
 
 					if (payload)
 					{
@@ -88,7 +100,7 @@ namespace Vortex {
 				// Left click anywhere on the panel to deselect entity
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 				{
-					m_SelectedEntity = {};
+					SelectionManager::DeselectEntity();
 					m_EntityShouldBeRenamed = false;
 					m_EntityShouldBeDestroyed = false;
 				}
@@ -99,6 +111,20 @@ namespace Vortex {
 					DisplayCreateEntityMenu(editorCamera);
 
 					Gui::EndPopup();
+				}
+
+				Entity selected = SelectionManager::GetSelectedEntity();
+
+				// destroy if requested
+				if (m_EntityShouldBeDestroyed && selected)
+				{
+					Entity entity = selected;
+
+					SelectionManager::DeselectEntity();
+					m_EntityShouldBeRenamed = false;
+					m_EntityShouldBeDestroyed = false;
+
+					m_ContextScene->SubmitToDestroyEntity(entity);
 				}
 			}
 
@@ -111,10 +137,42 @@ namespace Vortex {
 		}
 	}
 
-    void SceneHierarchyPanel::SetSceneContext(SharedRef<Scene> scene)
-    {
+	void SceneHierarchyPanel::RecursiveEntitySearch(UUID rootEntity, const EditorCamera* editorCamera, uint32_t& searchDepth)
+	{
+		if (searchDepth > MAX_CHILD_ENTITY_SEARCH_DEPTH)
+			return;
+
+		const Entity entity = m_ContextScene->TryGetEntityWithUUID(rootEntity);
+
+		if (!entity || entity.Children().empty())
+			return;
+
+		const auto& children = entity.Children();
+
+		for (const auto& childUUID : children)
+		{
+			const Entity child = m_ContextScene->TryGetEntityWithUUID(childUUID);
+
+			if (!child)
+				continue;
+
+			const std::string& name = child.GetName();
+
+			if (m_EntitySearchInputTextFilter.PassFilter(name.c_str()))
+			{
+				DrawEntityNode(child, editorCamera);
+			}
+
+			searchDepth++;
+
+			RecursiveEntitySearch(child.GetUUID(), editorCamera, searchDepth);
+		}
+	}
+
+	void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
+	{
 		m_ContextScene = scene;
-		m_SelectedEntity = {};
+		SelectionManager::DeselectEntity();
 		m_EntityShouldBeRenamed = false;
 		m_EntityShouldBeDestroyed = false;
 
@@ -127,250 +185,322 @@ namespace Vortex {
 
 		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 		m_ComponentSearchInputTextFilter.Build();
-    }
-
-	inline static Math::vec3 GetEditorCameraForwardPosition(const EditorCamera* editorCamera)
-	{
-		return editorCamera->GetPosition() + (editorCamera->GetForwardDirection() * 3.0f);
 	}
 
-	inline static void CreateDefaultModel(const std::string& name, Model::Default defaultMesh, Entity& entity, SharedRef<Scene> contextScene, const EditorCamera* editorCamera)
+	inline static Entity CreateDefaultMesh(const std::string& entityName, DefaultMeshes::StaticMeshes defaultMesh, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
-		entity = contextScene->CreateEntity(name);
-		MeshRendererComponent& meshRenderer = entity.AddComponent<MeshRendererComponent>();
-		meshRenderer.Type = static_cast<MeshType>(defaultMesh);
+		Entity entity = contextScene->CreateEntity(entityName);
+		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();
+		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
+		staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
+		entity.GetTransform().Translation = editorCamera->GetFocalPoint();
 
-		ModelImportOptions importOptions = ModelImportOptions();
+		entity.AddComponent<RigidBodyComponent>();
 
 		switch (defaultMesh)
 		{
-			case Model::Default::Cube:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<BoxColliderComponent>();
-				break;
-			case Model::Default::Sphere:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<SphereColliderComponent>();
-				break;
-			case Model::Default::Capsule:
-				entity.AddComponent<RigidBodyComponent>();
-				entity.AddComponent<CapsuleColliderComponent>();
-				importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-				break;
-			case Model::Default::Cone:
-				break;
-			case Model::Default::Cylinder:
-				break;
-			case Model::Default::Plane:
-				break;
-			case Model::Default::Torus:
-				break;
+			case DefaultMeshes::StaticMeshes::Cube:     entity.AddComponent<BoxColliderComponent>();     break;
+			case DefaultMeshes::StaticMeshes::Sphere:   entity.AddComponent<SphereColliderComponent>();  break;
+			case DefaultMeshes::StaticMeshes::Capsule:  entity.AddComponent<CapsuleColliderComponent>(); break;
+			case DefaultMeshes::StaticMeshes::Cone:     entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Cylinder: entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Plane:    entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMeshes::StaticMeshes::Torus:    entity.AddComponent<MeshColliderComponent>();    break;
 		}
-		
-		meshRenderer.Mesh = Model::Create(defaultMesh, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
-		entity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+
+		SelectionManager::SetSelectedEntity(entity);
+
+		return entity;
 	}
 
 	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera* editorCamera)
 	{
 		if (Gui::MenuItem("Create Empty"))
 		{
-			m_SelectedEntity = m_ContextScene->CreateEntity("Empty Entity");
-			m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+			SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Empty Entity"));
+			SelectionManager::GetSelectedEntity().GetTransform().Translation = editorCamera->GetFocalPoint();
 		}
-
+		UI::Draw::Underline();
+		Gui::Spacing();
+		
+		Gui::Text((const char*)VX_ICON_CUBE);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Create 3D"))
 		{
 			if (Gui::MenuItem("Cube"))
-				CreateDefaultModel("Cube", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Cube", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Sphere"))
-				CreateDefaultModel("Sphere", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Sphere", DefaultMeshes::StaticMeshes::Sphere, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Capsule"))
-				CreateDefaultModel("Capsule", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Capsule", DefaultMeshes::StaticMeshes::Capsule, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Cone"))
-				CreateDefaultModel("Cone", Model::Default::Cone, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Cone", DefaultMeshes::StaticMeshes::Cone, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Cylinder"))
-				CreateDefaultModel("Cylinder", Model::Default::Cylinder, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Cylinder", DefaultMeshes::StaticMeshes::Cylinder, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Plane"))
-				CreateDefaultModel("Plane", Model::Default::Plane, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Plane", DefaultMeshes::StaticMeshes::Plane, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Torus"))
-				CreateDefaultModel("Torus", Model::Default::Torus, m_SelectedEntity, m_ContextScene, editorCamera);
+			{
+				CreateDefaultMesh("Torus", DefaultMeshes::StaticMeshes::Torus, m_ContextScene, editorCamera);
+			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_SPINNER);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Create 2D"))
 		{
 			if (Gui::MenuItem("Quad"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Quad");
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
-				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
-				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Quad"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation.z = 0.0f;
+				selected.AddComponent<SpriteRendererComponent>();
+				selected.AddComponent<RigidBody2DComponent>();
+				selected.AddComponent<BoxCollider2DComponent>();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Circle");
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
-				m_SelectedEntity.GetTransform().Translation.z = 0.0f;
-				m_SelectedEntity.AddComponent<CircleRendererComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation.z = 0.0f;
+				selected.AddComponent<CircleRendererComponent>();
+				selected.AddComponent<RigidBody2DComponent>();
+				selected.AddComponent<CircleCollider2DComponent>();
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Camera"))
 		{
 			if (Gui::MenuItem("Perspective"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
-				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				auto& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Camera");
-				auto& cameraComponent = m_SelectedEntity.AddComponent<CameraComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				auto& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Light"))
 		{
 			if (Gui::MenuItem("Directional"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Directional Light");
-				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Directional Light"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Point"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Point Light");
-				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Point Light"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Spot"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Spot Light");
-				LightSourceComponent& lightSourceComponent = m_SelectedEntity.AddComponent<LightSourceComponent>();
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Spot Light"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
-				Renderer::CreateShadowMap(lightSourceComponent.Type, lightSourceComponent.Source);
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_CALCULATOR);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Physics"))
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateDefaultModel("Box Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
-				m_SelectedEntity.AddComponent<RigidBodyComponent>();
-				m_SelectedEntity.AddComponent<BoxColliderComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				CreateDefaultMesh("Box Collider", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateDefaultModel("Sphere Collider", Model::Default::Sphere, m_SelectedEntity, m_ContextScene, editorCamera);
-				m_SelectedEntity.AddComponent<RigidBodyComponent>();
-				m_SelectedEntity.AddComponent<SphereColliderComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				CreateDefaultMesh("Sphere Collider", DefaultMeshes::StaticMeshes::Sphere, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateDefaultModel("Capsule Collider", Model::Default::Capsule, m_SelectedEntity, m_ContextScene, editorCamera);
-				m_SelectedEntity.AddComponent<RigidBodyComponent>();
-				m_SelectedEntity.AddComponent<CapsuleColliderComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				CreateDefaultMesh("Capsule Collider", DefaultMeshes::StaticMeshes::Capsule, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
-			if (Gui::MenuItem("Static Mesh Collider"))
+			if (Gui::MenuItem("Mesh Collider"))
 			{
-				CreateDefaultModel("Static Mesh Collider", Model::Default::Cube, m_SelectedEntity, m_ContextScene, editorCamera);
-				m_SelectedEntity.AddComponent<RigidBodyComponent>();
-				m_SelectedEntity.AddComponent<StaticMeshColliderComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				CreateDefaultMesh("Mesh Collider", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
+
+			if (Gui::MenuItem("Fixed Joint"))
+			{
+				CreateDefaultMesh("Fixed Joint", DefaultMeshes::StaticMeshes::Cube, m_ContextScene, editorCamera);
+			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Box Collider2D");
-				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
-				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Box Collider2D"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<SpriteRendererComponent>();
+				selected.AddComponent<RigidBody2DComponent>();
+				selected.AddComponent<BoxCollider2DComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Circle Collider2D");
-				m_SelectedEntity.AddComponent<CircleRendererComponent>();
-				m_SelectedEntity.AddComponent<RigidBody2DComponent>();
-				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle Collider2D"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<CircleRendererComponent>();
+				selected.AddComponent<RigidBody2DComponent>();
+				selected.AddComponent<CircleCollider2DComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_VOLUME_UP);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Audio"))
 		{
 			if (Gui::MenuItem("Source Entity"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Source");
-				m_SelectedEntity.AddComponent<AudioSourceComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Source"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<AudioSourceComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Listener Entity"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Audio Listener");
-				m_SelectedEntity.AddComponent<AudioListenerComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Listener"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<AudioListenerComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_FONT);
+		Gui::SameLine();
 		if (Gui::BeginMenu("UI"))
 		{
 			if (Gui::MenuItem("Text"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Text");
-				m_SelectedEntity.AddComponent<TextMeshComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Text"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<TextMeshComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
 
 			Gui::EndMenu();
 		}
+		UI::Draw::Underline();
+		Gui::Spacing();
 
+		Gui::Text((const char*)VX_ICON_BOMB);
+		Gui::SameLine();
 		if (Gui::BeginMenu("Effects"))
 		{
 			if (Gui::MenuItem("Particles"))
 			{
-				m_SelectedEntity = m_ContextScene->CreateEntity("Particle Emitter");
-				m_SelectedEntity.AddComponent<ParticleEmitterComponent>();
-				m_SelectedEntity.GetTransform().Translation = GetEditorCameraForwardPosition(editorCamera);
+				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Particle Emitter"));
+				Entity selected = SelectionManager::GetSelectedEntity();
+				selected.AddComponent<ParticleEmitterComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			}
 
 			Gui::EndMenu();
@@ -381,21 +511,22 @@ namespace Vortex {
 	{
 		Gui::Begin("Inspector", &s_ShowInspectorPanel);
 
-		if (m_SelectedEntity)
-			DrawComponents(m_SelectedEntity);
+		Entity selected = SelectionManager::GetSelectedEntity();
+
+		if (selected)
+		{
+			DrawComponents(selected);
+		}
 		else
 		{
 			const char* name = "None";
 
-			if (hoveredEntity && m_ContextScene)
+			if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
 			{
-				if (hoveredEntity.HasComponent<TagComponent>())
-				{
-					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
 
-					if (!tag.empty())
-						name = tag.c_str();
-				}
+				if (!tag.empty())
+					name = tag.c_str();
 			}
 
 			Gui::SetCursorPosX(10.0f);
@@ -405,11 +536,148 @@ namespace Vortex {
 		Gui::End();
 	}
 
+	void SceneHierarchyPanel::DisplayAddComponentPopup()
+	{
+		if (Gui::BeginPopup("AddComponent"))
+		{
+			// Search Bar + Filtering
+			const bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			const bool searchBarInUse = strlen(m_ComponentSearchInputTextFilter.InputBuf) != 0;
+
+			if (isSearching)
+			{
+				m_ComponentSearchInputTextFilter.Build();
+			}
+
+			Gui::Spacing();
+			UI::Draw::Underline();
+
+			if (!searchBarInUse)
+			{
+				if (Gui::BeginMenu("Rendering"))
+				{
+					DisplayComponentMenuItem<CameraComponent>("Camera", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<SkyboxComponent>("Skybox", (const char*)VX_ICON_SKYATLAS);
+					DisplayComponentMenuItem<LightSourceComponent>("Light Source", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer", (const char*)VX_ICON_HOME);
+					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer", (const char*)VX_ICON_CUBE);
+					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer", (const char*)VX_ICON_SPINNER);
+					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer", (const char*)VX_ICON_CIRCLE);
+					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter", (const char*)VX_ICON_BOMB);
+					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
+					DisplayComponentMenuItem<AnimatorComponent>("Animator", (const char*)VX_ICON_CLOCK_O);
+					DisplayComponentMenuItem<AnimationComponent>("Animation", (const char*)VX_ICON_ADJUST);
+
+					Gui::EndMenu();
+				}
+				UI::Draw::Underline();
+				Gui::Spacing();
+
+				if (Gui::BeginMenu("Physics"))
+				{
+					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<MeshColliderComponent>("Mesh Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<RigidBody2DComponent>("RigidBody 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+
+					Gui::EndMenu();
+				}
+				UI::Draw::Underline();
+				Gui::Spacing();
+
+				if (Gui::BeginMenu("Audio"))
+				{
+					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source", (const char*)VX_ICON_VOLUME_UP);
+					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener", (const char*)VX_ICON_HEADPHONES);
+
+					Gui::EndMenu();
+				}
+				UI::Draw::Underline();
+				Gui::Spacing();
+
+				if (Gui::BeginMenu("AI"))
+				{
+					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent", (const char*)VX_ICON_LAPTOP);
+
+					Gui::EndMenu();
+				}
+				UI::Draw::Underline();
+				Gui::Spacing();
+
+				DisplayComponentMenuItem<ScriptComponent>("Script", (const char*)VX_ICON_FILE_CODE_O);
+			}
+			else
+			{
+				if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
+					DisplayComponentMenuItem<CameraComponent>(name, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SkyboxComponent>(componentName, (const char*)VX_ICON_SKYATLAS);
+				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<LightSourceComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
+				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<MeshRendererComponent>(componentName, (const char*)VX_ICON_HOME);
+				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName, (const char*)VX_ICON_CUBE);
+				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<LightSource2DComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
+				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SpriteRendererComponent>(componentName, (const char*)VX_ICON_SPINNER);
+				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CircleRendererComponent>(componentName, (const char*)VX_ICON_CIRCLE);
+				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName, (const char*)VX_ICON_BOMB);
+				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
+				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AnimatorComponent>(componentName, (const char*)VX_ICON_CLOCK_O);
+				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AnimationComponent>(componentName, (const char*)VX_ICON_ADJUST);
+				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<RigidBodyComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CharacterControllerComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<FixedJointComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<BoxColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<SphereColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CapsuleColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<MeshColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AudioSourceComponent>(componentName, (const char*)VX_ICON_VOLUME_UP);
+				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<AudioListenerComponent>(componentName, (const char*)VX_ICON_HEADPHONES);
+				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<RigidBody2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<BoxCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName, (const char*)VX_ICON_LAPTOP);
+				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O);
+			}
+
+			Gui::EndPopup();
+		}
+	}
+
 	void SceneHierarchyPanel::DisplayAddMarkerPopup(TagComponent& tagComponent)
 	{
 		Gui::Spacing();
 		Gui::TextCentered("New Marker", 5.0f);
-		Gui::Separator();
+		UI::Draw::Underline();
 		Gui::Spacing();
 
 		std::string buffer;
@@ -418,18 +686,18 @@ namespace Vortex {
 
 		if (marker.empty())
 		{
-			buffer.reserve(10);
+			buffer.reserve(25);
 		}
 		else
 		{
-			buffer.resize(markerSize);
-			memcpy(buffer.data(), marker.data(), markerSize);
+			buffer.resize(markerSize * 2);
+			memcpy(buffer.data(), marker.data(), markerSize * 2);
 		}
 
 		if (Gui::InputText("##Marker", buffer.data(), sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) && !buffer.empty())
 		{
 			tagComponent.Marker = buffer;
-			tagComponent.AddMarker(buffer);
+			TagComponent::AddMarker(buffer);
 			Gui::SetWindowFocus("Scene");
 		}
 	}
@@ -440,16 +708,16 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
+		ImGuiTreeNodeFlags flags = ((SelectionManager::GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		if (entity.Children().empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool isPrefab = entity.HasComponent<PrefabComponent>();
-		bool entityActive = entity.IsActive();
+		const bool isPrefab = entity.HasComponent<PrefabComponent>();
+		const bool entityActive = entity.IsActive();
 
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
@@ -463,9 +731,10 @@ namespace Vortex {
 		if (!entityActive)
 			Gui::PopStyleColor();
 
-		if (Gui::IsItemClicked())
+		// Allow dragging entities
+		if (Gui::IsItemHovered() && Gui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
-			m_SelectedEntity = entity;
+			SelectionManager::SetSelectedEntity(entity);
 			m_EntityShouldBeRenamed = false;
 		}
 
@@ -476,11 +745,11 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Rename", "F2"))
 			{
-				m_SelectedEntity = entity;
+				SelectionManager::SetSelectedEntity(entity);
 				m_EntityShouldBeRenamed = true;
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Add Empty Child"))
 			{
@@ -488,26 +757,26 @@ namespace Vortex {
 				m_ContextScene->ParentEntity(childEntity, entity);
 				// Set child to origin of parent
 				childEntity.GetTransform().Translation = Math::vec3(0.0f);
-				SetSelectedEntity(childEntity);
+				SelectionManager::SetSelectedEntity(childEntity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Unparent Entity"))
 			{
 				m_ContextScene->UnparentEntity(entity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
 			{
 				m_ContextScene->DuplicateEntity(entity);
 				Gui::CloseCurrentPopup();
 			}
-			Gui::Separator();
+			UI::Draw::Underline();
 
-			if (Gui::MenuItem("Delete Entity", "Del") && m_SelectedEntity)
+			if (Gui::MenuItem("Delete Entity", "Del") && SelectionManager::GetSelectedEntity())
 				m_EntityShouldBeDestroyed = true;
 
 			Gui::EndPopup();
@@ -533,10 +802,11 @@ namespace Vortex {
 
 		if (opened)
 		{
-			for (auto& child : entity.Children())
+			const auto& children = entity.Children();
+			for (const auto& child : children)
 			{
 				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
-				if (childEntity)
+				if (childEntity && std::find(children.begin(), children.end(), child) != children.end());
 				{
 					DrawEntityNode(childEntity, editorCamera);
 				}
@@ -546,12 +816,10 @@ namespace Vortex {
 		}
 
 		// Destroy the entity if requested
-		if (m_EntityShouldBeDestroyed && m_SelectedEntity == entity)
+		if (m_EntityShouldBeDestroyed && SelectionManager::GetSelectedEntity() == entity)
 		{
-			m_SelectedEntity = {};
-			m_EntityShouldBeDestroyed = false;
-
-			m_ContextScene->DestroyEntity(entity);
+			SelectionManager::DeselectEntity();
+			m_ContextScene->SubmitToDestroyEntity(entity);
 		}
 	}
 
@@ -565,11 +833,12 @@ namespace Vortex {
 
 			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			Gui::Separator();
+			UI::Draw::Underline();
 			bool open = UI::PropertyGridHeader(name.c_str());
 			Gui::PopStyleVar();
-			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (UI::ImageButtonEx(EditorResources::DotsIcon, { lineHeight * 0.75f, lineHeight * 0.8f }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
+			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.6f);
+			UI::ShiftCursorY(2.0f);
+			if (Gui::Button((const char*)VX_ICON_COG, { lineHeight, lineHeight }))
 				Gui::OpenPopup("ComponentSettings");
 
 			bool componentShouldBeRemoved = false;
@@ -586,7 +855,7 @@ namespace Vortex {
 				}
 				Gui::EndDisabled();
 
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				Gui::BeginDisabled(pasteCallback == nullptr);
 				if (Gui::MenuItem("Paste Component"))
@@ -598,35 +867,30 @@ namespace Vortex {
 				}
 				Gui::EndDisabled();
 
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Reset Component"))
 				{
-					if constexpr (std::is_same<TComponent, MeshRendererComponent>())
+					if constexpr (std::is_same<TComponent, StaticMeshRendererComponent>())
 					{
-						component = MeshRendererComponent();
-						component.Mesh = Model::Create(Model::Default::Cube, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+						component = StaticMeshRendererComponent();
+						component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
 					}
 					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
 					{
-						SharedRef<AudioSource> audioSource = component.Source;
-						component = AudioSourceComponent();
-						component.Source = audioSource;
+						if (AssetManager::IsHandleValid(component.AudioHandle))
+						{
+							SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
+							audioSource->SetProperties(PlaybackDeviceProperties{});
+						}
 					}
 					else if constexpr (std::is_same<TComponent, LightSourceComponent>())
 					{
-						auto ResetLightFunc = [&](auto type)
-						{
-							component = LightSourceComponent();
-							component.Source = LightSource::Create(LightSourceProperties());
-							component.Type = type;
-						};
-
 						switch (component.Type)
 						{
-							case LightType::Directional: ResetLightFunc(LightType::Directional); break;
-							case LightType::Point:       ResetLightFunc(LightType::Point);       break;
-							case LightType::Spot:        ResetLightFunc(LightType::Spot);        break;
+							case LightType::Directional: component = LightSourceComponent(LightType::Directional); break;
+							case LightType::Point:       component = LightSourceComponent(LightType::Point);       break;
+							case LightType::Spot:        component = LightSourceComponent(LightType::Spot);        break;
 						}
 					}
 					else if constexpr (std::is_same<TComponent, CameraComponent>())
@@ -652,7 +916,7 @@ namespace Vortex {
 				}
 
 				if (removeable)
-					Gui::Separator();
+					UI::Draw::Underline();
 
 				if (removeable && Gui::MenuItem("Remove Component"))
 					componentShouldBeRemoved = true;
@@ -699,11 +963,14 @@ namespace Vortex {
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
-			ImGuiInputTextFlags flags = (m_EntityShouldBeRenamed && m_SelectedEntity == entity) ?
-				ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
+			const bool shouldRename = m_EntityShouldBeRenamed && SelectionManager::GetSelectedEntity() == entity;
+			ImGuiInputTextFlags flags = shouldRename ? ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
 
-			if (m_SelectedEntity == entity && m_EntityShouldBeRenamed)
+			if (shouldRename)
+			{
 				Gui::SetKeyboardFocusHere();
+				m_IsEditingEntityName = true;
+			}
 			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
 			{
 				tag = std::string(buffer);
@@ -713,15 +980,16 @@ namespace Vortex {
 					Gui::SetWindowFocus("Scene");
 
 				m_EntityShouldBeRenamed = false;
+				m_IsEditingEntityName = false;
 			}
 
 			Gui::SameLine();
 			Gui::PushItemWidth(-1);
 
-			bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-			bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+			bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+			bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 
-			if (Gui::Button("Add Component") || (Input::IsKeyPressed(Key::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
+			if (Gui::Button("Add Component") || (Input::IsKeyDown(KeyCode::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
 			{
 				Gui::OpenPopup("AddComponent");
 
@@ -735,12 +1003,7 @@ namespace Vortex {
 			bool active = tagComponent.IsActive;
 			if (UI::Property("Active", active))
 			{
-				tagComponent.IsActive = active;
-
-				if (active)
-					m_ContextScene->ActiveateChildren(entity);
-				else
-					m_ContextScene->DeactiveateChildren(entity);
+				entity.SetActive(active);
 			}
 
 			UI::EndPropertyGrid();
@@ -748,32 +1011,40 @@ namespace Vortex {
 			Gui::SameLine();
 
 			auto& markers = tagComponent.Markers;
-			if (auto currentMarkerIt = std::find(markers.begin(), markers.end(), tagComponent.Marker);
-				currentMarkerIt != markers.end()
-			) {
-				const char* currentMarker = (*currentMarkerIt).c_str();
+			auto& current = tagComponent.Marker;
 
-				if (Gui::BeginCombo("##Marker", currentMarker, ImGuiComboFlags_HeightLarge))
+			if (auto it = std::find(markers.begin(), markers.end(), current); it != markers.end())
+			{
+				const char* currentIt = (*it).c_str();
+
+				if (Gui::BeginCombo("##Marker", currentIt, ImGuiComboFlags_HeightLarge))
 				{
 					uint32_t arraySize = markers.size();
 
 					for (uint32_t i = 0; i < arraySize; i++)
 					{
-						bool isSelected = strcmp(currentMarker, markers[i].c_str()) == 0;
+						const bool isSelected = strcmp(currentIt, markers[i].c_str()) == 0;
+
 						if (Gui::Selectable(markers[i].c_str(), isSelected))
 						{
-							currentMarker = markers[i].c_str();
-							tagComponent.Marker = markers[i];
+							currentIt = markers[i].c_str();
+							current = markers[i];
 						}
 
 						if (isSelected)
-							Gui::SetItemDefaultFocus();
-
-						if (i != arraySize - 1)
-							Gui::Separator();
-						else // The last marker in the markers vector
 						{
-							Gui::Separator();
+							Gui::SetItemDefaultFocus();
+						}
+
+						// skip last item
+						if (i != arraySize - 1)
+						{
+							UI::Draw::Underline();
+							Gui::Spacing();
+						}
+						else
+						{
+							UI::Draw::Underline();
 
 							const char* addMarkerButtonText = "Add Marker";
 							if (Gui::Button(addMarkerButtonText, { Gui::GetContentRegionAvail().x, Gui::CalcTextSize(addMarkerButtonText).y * 1.5f }))
@@ -786,6 +1057,7 @@ namespace Vortex {
 								Gui::OpenPopup("AddMarker");
 								m_DisplayAddMarkerPopup = false;
 							}
+
 							if (Gui::BeginPopup("AddMarker"))
 							{
 								DisplayAddMarkerPopup(tagComponent);
@@ -806,74 +1078,7 @@ namespace Vortex {
 		}
 
 		Gui::PopItemWidth();
-		if (Gui::BeginPopup("AddComponent"))
-		{
-			// Search Bar + Filtering
-			bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
-			if (isSearching)
-				m_ComponentSearchInputTextFilter.Build();
-
-			Gui::Spacing();
-			Gui::Separator();
-
-			if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
-				DisplayAddComponentPopup<CameraComponent>(name);
-			if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SkyboxComponent>(componentName);
-			if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<LightSourceComponent>(componentName);
-			if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<MeshRendererComponent>(componentName);
-			if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<LightSource2DComponent>(componentName);
-			if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SpriteRendererComponent>(componentName);
-			if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CircleRendererComponent>(componentName);
-			if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ParticleEmitterComponent>(componentName);
-			if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<TextMeshComponent>(componentName);
-			if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AnimatorComponent>(componentName);
-			if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AnimationComponent>(componentName);
-
-			if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AudioSourceComponent>(componentName);
-			if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<AudioListenerComponent>(componentName);
-
-			if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<RigidBodyComponent>(componentName);
-			if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CharacterControllerComponent>(componentName);
-			if (const char* componentName = "Physics Material"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<PhysicsMaterialComponent>(componentName);
-			if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<BoxColliderComponent>(componentName);
-			if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<SphereColliderComponent>(componentName);
-			if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CapsuleColliderComponent>(componentName);
-			if (const char* componentName = "Static Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<StaticMeshColliderComponent>(componentName);
-
-			if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<RigidBody2DComponent>(componentName);
-			if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<BoxCollider2DComponent>(componentName);
-			if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<CircleCollider2DComponent>(componentName);
-
-			if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<NavMeshAgentComponent>(componentName);
-
-			if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-				DisplayAddComponentPopup<ScriptComponent>(componentName);
-
-			Gui::EndPopup();
-		}
+		DisplayAddComponentPopup();
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
@@ -964,22 +1169,32 @@ namespace Vortex {
 
 			if (modified)
 			{
-				Math::ivec2 viewportSize = m_ContextScene->GetViewportSize();
+				Math::uvec2 viewportSize = m_ContextScene->GetViewportSize();
 				camera.SetViewportSize(viewportSize.x, viewportSize.y);
 			}
 		});
 
 		DrawComponent<SkyboxComponent>("Skybox", entity, [](auto& component)
 		{
-			SharedRef<Skybox> skybox = component.Source;
-			
+			AssetHandle environmentHandle = component.Skybox;
+			SharedReference<Skybox> skybox = nullptr;
+
+			if (AssetManager::IsHandleValid(environmentHandle))
+			{
+				skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
+			}
+
 			UI::BeginPropertyGrid();
 
-			std::string skyboxSourcePath = skybox->GetFilepath();
-			std::string relativeSkyboxPath = FileSystem::Relative(skyboxSourcePath, Project::GetAssetDirectory()).string();
-			UI::Property("Source", relativeSkyboxPath, true);
+			std::string relativeSkyboxPath = "None";
 
-			UI::EndPropertyGrid();
+			if (skybox && skybox->IsLoaded())
+			{
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Skybox);
+				relativeSkyboxPath = metadata.Filepath.string();
+			}
+
+			UI::Property("Environment Map", relativeSkyboxPath, true);
 
 			// Accept a Skybox Directory from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -990,46 +1205,56 @@ namespace Vortex {
 					std::filesystem::path skyboxPath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
-					if (std::filesystem::is_directory(skyboxPath) || std::filesystem::path(skyboxPath).filename().extension() == ".hdr")
-						skybox->SetFilepath(skyboxPath.string());
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(skyboxPath); type == AssetType::EnvironmentAsset)
+					{
+						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(skyboxPath);
+						if (AssetManager::IsHandleValid(environmentHandle))
+						{
+							component.Skybox = environmentHandle;
+						}
+					}
 					else
-						VX_CORE_WARN("Could not load skybox, must be a directory - {}", skyboxPath.filename().string());
+					{
+						VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
+					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
-			if (component.Source->IsDirty())
+			UI::EndPropertyGrid();
+
+			if (skybox && skybox->IsLoaded())
 			{
-				if (Gui::Button("Regenerate Environment Map"))
+				UI::BeginPropertyGrid();
+
+				UI::Property("Rotation", component.Rotation);
+
+				if (Gui::IsItemFocused())
 				{
-					component.Source->Reload();
-					component.Source->SetIsDirty(false);
+					// Nasty hack to reload skybox
+					if (Input::IsKeyPressed(KeyCode::Enter))
+					{
+						skybox->SetShouldReload(true);
+					}
 				}
 
-				Gui::SameLine();
-				UI::HelpMarker("Rebakes the irradiance map and reflections in the scene");
+				UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+
+				UI::EndPropertyGrid();
 			}
-
-			UI::BeginPropertyGrid();
-
-			if (UI::Property("Rotation", component.Rotation))
-				component.Source->SetIsDirty(true);
-
-			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
-
-			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<LightSourceComponent>("Light Source", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
+			UI::Property("Visible", component.Visible);
+
 			static const char* lightTypes[] = { "Directional", "Point", "Spot" };
 			int32_t currentLightType = (int32_t)component.Type;
 			if (UI::PropertyDropdown("Light Type", lightTypes, VX_ARRAYCOUNT(lightTypes), currentLightType))
 				component.Type = (LightType)currentLightType;
-
-			SharedRef<LightSource> lightSource = component.Source;
 
 			switch (component.Type)
 			{
@@ -1043,25 +1268,15 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					float cutoff = lightSource->GetCutOff();
-					if (UI::Property("CutOff", cutoff))
-						lightSource->SetCutOff(cutoff);
-
-					float outerCutoff = lightSource->GetOuterCutOff();
-					if (UI::Property("Outer CutOff", outerCutoff))
-						lightSource->SetOuterCutOff(outerCutoff);
+					UI::Property("CutOff", component.Cutoff, 0.5f, 0.5f, component.OuterCutoff);
+					UI::Property("Outer CutOff", component.OuterCutoff, 0.5f, component.Cutoff, 100.0f);
 
 					break;
 				}
 			}
 
-			Math::vec3 radiance = lightSource->GetRadiance();
-			if (UI::Property("Radiance", &radiance))
-				lightSource->SetRadiance(radiance);
-
-			float intensity = lightSource->GetIntensity();
-			if (UI::Property("Intensity", intensity, 0.05f, 0.05f))
-				lightSource->SetIntensity(intensity);
+			UI::Property("Radiance", &component.Radiance);
+			UI::Property("Intensity", component.Intensity, 0.05f, 0.0f);
 
 			UI::EndPropertyGrid();
 
@@ -1069,25 +1284,18 @@ namespace Vortex {
 			{
 				UI::BeginPropertyGrid();
 
-				bool castShadows = lightSource->GetCastShadows();
-				if (UI::Property("Cast Shadows", castShadows))
+				if (UI::Property("Cast Shadows", component.CastShadows))
 				{
-					lightSource->SetCastShadows(castShadows);
-					if (castShadows && component.Type == LightType::Directional)
+					if (component.CastShadows)
 					{
-						Renderer::CreateShadowMap(LightType::Directional, lightSource);
+						Renderer::CreateShadowMap(component.Type);
 					}
 				}
 
-				if (castShadows)
+				if (component.CastShadows)
 				{
-					bool softShadows = lightSource->GetSoftShadows();
-					if (UI::Property("Soft Shadows", softShadows))
-						lightSource->SetSoftShadows(softShadows);
-
-					float shadowBias = lightSource->GetShadowBias();
-					if (UI::Property("Shadow Bias", shadowBias, 1.0f, 0.0f, 1000.0f))
-						lightSource->SetShadowBias(shadowBias);
+					UI::Property("Soft Shadows", component.SoftShadows);
+					UI::Property("Shadow Bias", component.ShadowBias, 1.0f, 0.0f, 1000.0f);
 				}
 
 				UI::EndPropertyGrid();
@@ -1099,19 +1307,17 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			std::string meshSourcePath = "";
+			UI::Property("Visible", component.Visible);
+			
+			std::string relativeMeshPath = "";
 
-			if (component.Mesh)
+			if (AssetManager::IsHandleValid(component.Mesh))
 			{
-				meshSourcePath = component.Mesh->GetPath();
-				if (Model::IsDefaultMesh(meshSourcePath))
-					UI::Property("Mesh Source", meshSourcePath, true);
-				else
-				{
-					std::string relativeMeshPath = FileSystem::Relative(meshSourcePath, Project::GetAssetDirectory()).string();
-					UI::Property("Mesh Source", relativeMeshPath, true);
-				}
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Mesh);
+				relativeMeshPath = metadata.Filepath.string();
 			}
+
+			UI::Property("Mesh Source", relativeMeshPath, true);
 
 			// Accept a Model File from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1119,26 +1325,87 @@ namespace Vortex {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path modelFilepath = std::filesystem::path(path);
+					std::filesystem::path meshFilepath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-					if (modelFilepath.filename().extension() == ".obj" || modelFilepath.filename().extension() == ".fbx" || modelFilepath.filename().extension() == ".gltf" || modelFilepath.filename().extension() == ".dae" || modelFilepath.filename().extension() == ".glb")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(meshFilepath); type == AssetType::MeshAsset || type == AssetType::StaticMeshAsset)
 					{
-						component.Mesh = Model::Create(modelFilepath.string(), entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
-						component.Type = MeshType::Custom;
-
-						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && component.Mesh->HasAnimations())
+						AssetHandle meshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(meshFilepath);
+						if (AssetManager::IsHandleValid(meshHandle))
 						{
-							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+							component.Mesh = meshHandle;
 
-							animationComponent.Animation = Animation::Create(modelFilepath.string(), component.Mesh);
-							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+							if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && AssetManager::GetAsset<Mesh>(component.Mesh)->HasAnimations())
+							{
+								AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+								AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+
+								animationComponent.Animation = Animation::Create(meshFilepath.string(), component.Mesh);
+								animatorComponent.Animator = Animator::Create(animationComponent.Animation);
+							}
 						}
 					}
 					else
-						VX_CORE_WARN("Could not load model file - {}", modelFilepath.filename().string());
+					{
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", meshFilepath.filename().string());
+					}
 				}
+
+				Gui::EndDragDropTarget();
+			}
+
+			UI::EndPropertyGrid();
+
+			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
+		});
+
+		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", entity, [&](auto& component)
+		{
+			UI::BeginPropertyGrid();
+
+			UI::Property("Visible", component.Visible);
+
+			std::string relativePath = "";
+
+			if (AssetManager::IsHandleValid(component.StaticMesh))
+			{
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.StaticMesh);
+				relativePath = metadata.Filepath.string();
+			}
+
+			UI::Property("Mesh Source", relativePath, true);
+
+			// Accept a Model File from the content browser
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path staticMeshFilepath = std::filesystem::path(path);
+
+					// Make sure we are recieving an actual model file otherwise we will have trouble opening it
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(staticMeshFilepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
+					{
+						AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(staticMeshFilepath);
+						if (AssetManager::IsHandleValid(staticMeshHandle))
+						{
+							component.StaticMesh = staticMeshHandle;
+							component.Type = MeshType::Custom;
+
+							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+							if (staticMesh)
+							{
+								component.Materials->Clear();
+								staticMesh->LoadMaterialTable(component.Materials);
+							}
+						}
+					}
+					else
+					{
+						VX_CONSOLE_LOG_WARN("Could not load model file - {}", staticMeshFilepath.filename().string());
+					}
+				}
+
 				Gui::EndDragDropTarget();
 			}
 
@@ -1148,39 +1415,158 @@ namespace Vortex {
 			{
 				component.Type = (MeshType)currentMeshType;
 
-				if (component.Type == MeshType::Capsule)
+				if (component.Type == MeshType::Custom)
 				{
-					ModelImportOptions importOptions = ModelImportOptions();
-					importOptions.MeshTransformation.SetRotationEuler({ 0.0f, 0.0f, 90.0f });
-					component.Mesh = Model::Create((Model::Default)currentMeshType, entity.GetTransform(), importOptions, (int)(entt::entity)entity);
+					// Temporary
+					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
+					
+					if (AssetManager::IsHandleValid(component.StaticMesh))
+					{
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+						if (staticMesh)
+						{
+							component.Materials->Clear();
+							staticMesh->LoadMaterialTable(component.Materials);
+						}
+					}
 				}
-				else if (component.Type != MeshType::Custom)
-					component.Mesh = Model::Create((Model::Default)currentMeshType, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
 				else
-					component.Mesh = Model::Create(meshSourcePath, entity.GetTransform(), ModelImportOptions(), (int)(entt::entity)entity);
+				{
+					component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMeshes::StaticMeshes)component.Type);
+					
+					VX_CORE_ASSERT(AssetManager::IsHandleValid(component.StaticMesh), "Invalid Default Mesh Handle!");
+
+					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+					if (staticMesh)
+					{
+						component.Materials->Clear();
+						staticMesh->LoadMaterialTable(component.Materials);
+					}
+				}
 			}
 
-			UI::Property("UV", component.Scale, 0.05f);
+			if (AssetManager::IsHandleValid(component.StaticMesh))
+			{
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+
+				SharedReference<MaterialTable>& materialTable = component.Materials;
+
+				uint32_t submeshIndex = 0;
+				for (;;)
+				{
+					if (!materialTable->HasMaterial(submeshIndex))
+					{
+						if (materialTable->GetMaterialCount() == 0)
+						{
+							if (!AssetManager::IsHandleValid(Renderer::GetWhiteMaterial()->Handle))
+							{
+								Renderer::GetWhiteMaterial()->Handle = AssetHandle();
+								Project::GetEditorAssetManager()->AddMemoryOnlyAsset(Renderer::GetWhiteMaterial());
+							}
+
+							materialTable->SetMaterial(0, Renderer::GetWhiteMaterial()->Handle);
+						}
+
+						break;
+					}
+
+					AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
+					SharedReference<Material> material = nullptr;
+					if (AssetManager::IsHandleValid(materialHandle))
+					{
+						material = AssetManager::GetAsset<Material>(materialHandle);
+					}
+
+					const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
+					std::vector<const char*> options;
+					std::vector<std::string> filepaths;
+
+					for (const auto& materialHandle : allMaterials)
+					{
+						if (!AssetManager::IsHandleValid(materialHandle))
+							continue;
+
+						SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
+						if (!mat)
+							continue;
+
+						const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
+						if (!metadata.IsValid())
+							continue;
+
+						options.emplace_back(mat->GetName().c_str());
+						filepaths.emplace_back(metadata.Filepath.string());
+					}
+
+					std::string currentMaterialName = material ? material->GetName() : "Default Material";
+					if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
+					{
+						uint32_t index = std::find(options.begin(), options.end(), currentMaterialName) - options.begin();
+						material->Handle = *std::next(allMaterials.begin(), index);
+						materialTable->SetMaterial(submeshIndex, material->Handle);
+					}
+
+					if (Gui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path materialPath = std::filesystem::path(path);
+
+							// Make sure we are recieving an actual material otherwise we will have trouble opening it
+							if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::MaterialAsset)
+							{
+								AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
+
+								if (AssetManager::IsHandleValid(materialHandle))
+								{
+									SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+									if (material)
+									{
+										materialTable->SetMaterial(submeshIndex, material->Handle);
+										material->SetName(FileSystem::RemoveFileExtension(materialPath));
+									}
+								}
+								else
+								{
+									VX_CONSOLE_LOG_WARN("Could not load material {}", materialPath.filename().string());
+								}
+							}
+							else
+							{
+								VX_CONSOLE_LOG_WARN("Could not load material", materialPath.filename().string());
+							}
+						}
+
+						Gui::EndDragDropTarget();
+					}
+
+					submeshIndex++;
+				}
+			}
 
 			UI::EndPropertyGrid();
-
-			// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			// Texutre
-			{
-				SharedRef<Texture2D> icon = EditorResources::CheckerboardIcon;
+			UI::Property("Visible", component.Visible);
 
-				if (component.Texture)
-					icon = component.Texture;
-				ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+			ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+
+			// Texture
+			{
+				SharedReference<Texture2D> icon = EditorResources::CheckerboardIcon;
+
+				if (AssetManager::IsHandleValid(component.Texture))
+					icon = AssetManager::GetAsset<Texture2D>(component.Texture);
 
 				if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
-					component.Texture = nullptr;
+				{
+					component.Texture = 0;
+				}
 				else if (Gui::IsItemHovered())
 				{
 					Gui::BeginTooltip();
@@ -1197,24 +1583,30 @@ namespace Vortex {
 						std::filesystem::path texturePath = std::filesystem::path(path);
 
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-						if (texturePath.filename().extension() == ".png" || texturePath.filename().extension() == ".jpg" || texturePath.filename().extension() == ".tga")
+						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)
 						{
-							SharedRef<Texture2D> texture = Texture2D::Create(texturePath.string());
-
-							if (texture->IsLoaded())
-								component.Texture = texture;
+							AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturePath);
+							if (AssetManager::IsHandleValid(textureHandle))
+							{
+								component.Texture = textureHandle;
+							}
 							else
-								VX_CORE_WARN("Could not load texture {}", texturePath.filename().string());
+							{
+								VX_CONSOLE_LOG_WARN("Could not load texture {}", texturePath.filename().string());
+							}
 						}
 						else
-							VX_CORE_WARN("Could not load texture, not a '.png', '.jpg' or '.tga' - {}", texturePath.filename().string());
+						{
+							VX_CONSOLE_LOG_WARN("Could not load texture", texturePath.filename().string());
+						}
 					}
+
 					Gui::EndDragDropTarget();
 				}
 			}
 
 			UI::Property("Color", &component.SpriteColor);
-			UI::Property("UV", component.Scale, 0.05f);
+			UI::Property("UV", component.TextureUV, 0.05f);
 
 			UI::EndPropertyGrid();
 		});
@@ -1222,6 +1614,8 @@ namespace Vortex {
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
+
+			UI::Property("Visible", component.Visible);
 
 			UI::Property("Color", &component.Color);
 			UI::Property("Thickness", component.Thickness, 0.025f, 0.0f, 1.0f);
@@ -1232,46 +1626,83 @@ namespace Vortex {
 
 		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, [](auto& component)
 		{
-			SharedRef<ParticleEmitter> particleEmitter = component.Emitter;
+			SharedReference<ParticleEmitter> particleEmitter = nullptr;
 
-			ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+			std::string emitterName = "Default";
+		
+			if (AssetManager::IsHandleValid(component.EmitterHandle))
+			{
+				particleEmitter = AssetManager::GetAsset<ParticleEmitter>(component.EmitterHandle);
+				emitterName = particleEmitter->GetName();
+			}
 
-			if (Gui::Button("Start"))
-				particleEmitter->Start();
-			Gui::SameLine();
+			UI::Property("Name", emitterName);
 
-			if (Gui::Button("Stop"))
-				particleEmitter->Stop();
+			if (particleEmitter)
+			{
+				ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
 
-			UI::BeginPropertyGrid();
+				if (Gui::Button("Start"))
+					particleEmitter->Start();
+				Gui::SameLine();
 
-			UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
-			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
-			UI::Property("Offset", emitterProperties.Offset, 0.25f);
-			UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
-			UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
-			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
-			UI::Property("Color Start", &emitterProperties.ColorBegin);
-			UI::Property("Color End", &emitterProperties.ColorEnd);
-			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
-			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
+				if (Gui::Button("Stop"))
+					particleEmitter->Stop();
 
-			UI::EndPropertyGrid();
+				UI::BeginPropertyGrid();
+
+				UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
+				UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
+				UI::Property("Offset", emitterProperties.Offset, 0.25f);
+				UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
+				UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
+				UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
+
+				UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
+
+				if (!emitterProperties.GenerateRandomColors)
+				{
+					UI::Property("Color Start", &emitterProperties.ColorBegin);
+					UI::Property("Color End", &emitterProperties.ColorEnd);
+				}
+
+				UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
+				UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
+
+				UI::EndPropertyGrid();
+			}
+		},
+		[&](const auto& component)
+		{
+			AssetHandle emitterHandle = component.EmitterHandle;
+			if (AssetManager::IsHandleValid(emitterHandle))
+				m_ParticleEmitterToCopy = AssetManager::GetAsset<ParticleEmitter>(emitterHandle)->GetProperties();
+		},
+		[&](const auto& component)
+		{
+			AssetHandle emitterHandle = component.EmitterHandle;
+			if (AssetManager::IsHandleValid(emitterHandle))
+			{
+				SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(emitterHandle);
+				particleEmitter->SetProperties(m_ParticleEmitterToCopy);
+			}
 		});
 
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			std::string fontFilepath = component.FontAsset->GetFontAtlas()->GetPath();
+			UI::Property("Visible", component.Visible);
 
-			if (Font::GetDefaultFont()->GetFontAtlas()->GetPath() == fontFilepath)
-				UI::Property("Font Source", fontFilepath, true);
-			else
+			std::string relativeFontPath = "Default Font";
+
+			if (AssetManager::IsHandleValid(component.FontAsset))
 			{
-				std::string relativeFontPath = FileSystem::Relative(fontFilepath, Project::GetAssetDirectory()).string();
-				UI::Property("Font Source", relativeFontPath, true);
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.FontAsset);
+				relativeFontPath = metadata.Filepath.string();
 			}
+
+			UI::Property("Font Source", relativeFontPath, true);
 
 			// Accept a Font from the content browser
 			if (Gui::BeginDragDropTarget())
@@ -1282,18 +1713,24 @@ namespace Vortex {
 					std::filesystem::path fontPath = std::filesystem::path(path);
 
 					// Make sure we are recieving an actual font otherwise we will have trouble opening it
-					if (fontPath.filename().extension() == ".ttf" || fontPath.filename().extension() == ".TTF")
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(fontPath); type == AssetType::FontAsset)
 					{
-						SharedRef<Font> font = Font::Create(fontPath.string());
-
-						if (font->GetFontAtlas()->IsLoaded())
-							component.FontAsset = font;
+						AssetHandle fontAssetHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(fontPath);
+						if (AssetManager::IsHandleValid(fontAssetHandle))
+						{
+							component.FontAsset = fontAssetHandle;
+						}
 						else
-							VX_CORE_WARN("Could not load font {}", fontPath.filename().string());
+						{
+							VX_CONSOLE_LOG_WARN("Could not load font {}", fontPath.filename().string());
+						}
 					}
 					else
-						VX_CORE_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
+					{
+						VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
+					}
 				}
+
 				Gui::EndDragDropTarget();
 			}
 
@@ -1305,6 +1742,7 @@ namespace Vortex {
 			}
 
 			UI::Property("Color", &component.Color);
+			UI::Property("Background Color", &component.BgColor);
 			UI::Property("Line Spacing", component.LineSpacing, 1.0f);
 			UI::Property("Kerning", component.Kerning, 1.0f);
 			UI::Property("Max Width", component.MaxWidth, 1.0f);
@@ -1335,241 +1773,313 @@ namespace Vortex {
 
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
 		{
-			if (component.Source)
+			SharedReference<AudioSource> audioSource = nullptr;
+			if (AssetManager::IsHandleValid(component.AudioHandle))
+				audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
+
+			if (audioSource)
 			{
-				Gui::BeginDisabled(!component.Source->IsPlaying());
-				Gui::ProgressBar(component.Source->GetAmountComplete());
+				if (audioSource && !audioSource->GetPath().empty() && (audioSource->IsPlaying() || audioSource->IsPaused()))
+				{
+					Gui::BeginDisabled(!audioSource->IsPlaying());
+					Gui::ProgressBar(audioSource->GetAmountComplete());
+					Gui::EndDisabled();
+				}
+
+				Gui::BeginDisabled(audioSource == nullptr || audioSource->IsPlaying());
+				if (Gui::Button("Play"))
+				{
+					if (audioSource->GetProperties().PlayOneShot)
+					{
+						audioSource->PlayOneShot();
+					}
+					else
+					{
+						audioSource->Play();
+					}
+				}
 				Gui::EndDisabled();
-			}
-
-			Gui::BeginDisabled(component.Source == nullptr);
-
-			if (Gui::Button("Play"))
-				component.Source->Play();
-
-			Gui::SameLine();
-
-			{
-				Gui::BeginDisabled(component.Source != nullptr && !component.Source->IsPlaying());
-
-				if (Gui::Button("Pause"))
-					component.Source->Pause();
 
 				Gui::SameLine();
 
-				if (Gui::Button("Restart"))
-					component.Source->Restart();
-
-				Gui::EndDisabled();
-			}
-
-			Gui::SameLine();
-
-			if (Gui::Button("Stop"))
-				component.Source->Stop();
-
-			Gui::EndDisabled();
-
-			UI::BeginPropertyGrid();
-
-			std::string audioSourcePath = "";
-			if (component.Source)
-			{
-				audioSourcePath = component.Source->GetPath();
-
-				std::string relativeAudioSourcePath = "";
-				if (component.Source && !audioSourcePath.empty())
-					relativeAudioSourcePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
-
-				UI::Property("Source", relativeAudioSourcePath, true);
-			}
-
-			// Accept a Audio File from the content browser
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				if (audioSource)
 				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path audioSourcePath = std::filesystem::path(path);
+					Gui::BeginDisabled(!audioSource->IsPlaying());
 
-					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
-					if (audioSourcePath.filename().extension() == ".wav" || audioSourcePath.filename().extension() == ".mp3")
-					{
-						// If there is another file playing we need to stop it
-						if (component.Source->IsPlaying())
-							component.Source->Stop();
+					if (Gui::Button("Pause"))
+						audioSource->Pause();
 
-						SharedRef<AudioSource> audioSource = component.Source;
-						audioSource->SetPath(audioSourcePath.string());
-						audioSource->Reload();
-					}
-					else
-						VX_CORE_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+					Gui::SameLine();
+
+					if (Gui::Button("Restart"))
+						audioSource->Restart();
+
+					Gui::SameLine();
+
+					if (Gui::Button("Stop"))
+						audioSource->Stop();
+
+					Gui::EndDisabled();
 				}
-				Gui::EndDragDropTarget();
-			}
 
-			Gui::BeginDisabled(component.Source == nullptr);
+				UI::BeginPropertyGrid();
 
-			if (component.Source != nullptr)
-			{
-				AudioSource::SoundProperties& props = component.Source->GetProperties();
-
-				if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
-					component.Source->SetPitch(props.Pitch);
-
-				if (UI::Property("Volume", props.Volume, 0.1f))
-					component.Source->SetVolume(props.Volume);
-
-				if (UI::Property("Play On Start", props.PlayOnStart))
-					component.Source->SetPlayOnStart(props.PlayOnStart);
-
-				if (UI::Property("Play One Shot", props.PlayOneShot))
-					component.Source->SetPlayOneShot(props.PlayOneShot);
-
-				if (UI::Property("Loop", props.Loop))
-					component.Source->SetLoop(props.Loop);
-
-				if (UI::Property("Spacialized", props.Spacialized))
-					component.Source->SetSpacialized(props.Spacialized);
-
-				UI::EndPropertyGrid();
-
-				if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
+				if (audioSource)
 				{
-					UI::BeginPropertyGrid();
+					std::string audioSourcePath = audioSource->GetPath();
+					std::string relativePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
+					UI::Property("Source", relativePath, true);
+				}
 
-					UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+				// Accept a Audio File from the content browser
+				if (Gui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						component.Source->SetPosition(props.Position);
-					});
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path audioSourcePath = std::filesystem::path(path);
 
-					UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
-					{
-						component.Source->SetDirection(props.Direction);
-					});
+						// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
+						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
+						{
+							if (audioSource->IsPlaying())
+								audioSource->Stop();
 
-					UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
-					{
-						component.Source->SetVelocity(props.Veloctiy);
-					});
+							SharedReference<AudioSource> source = Project::GetEditorAssetManager()->GetAssetFromFilepath(audioSourcePath);
+							if (source)
+							{
+								component.AudioHandle = source->Handle;
+								audioSource = source;
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						}
+					}
+
+					Gui::EndDragDropTarget();
+				}
+
+				Gui::BeginDisabled(audioSource == nullptr);
+
+				if (!audioSource->GetPath().empty())
+				{
+					Gui::BeginDisabled(true);
+					const AudioClip& audioClip = audioSource->GetAudioClip();
+					float length = audioClip.Length;
+					UI::Property("Length", length);
+					Gui::EndDisabled();
+				}
+
+				if (audioSource)
+				{
+					PlaybackDeviceProperties& props = audioSource->GetProperties();
+
+					if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
+						audioSource->SetPitch(props.Pitch);
+
+					if (UI::Property("Volume", props.Volume, 0.1f))
+						audioSource->SetVolume(props.Volume);
+
+					if (UI::Property("Play On Start", props.PlayOnStart))
+						audioSource->SetPlayOnStart(props.PlayOnStart);
+
+					if (UI::Property("Play One Shot", props.PlayOneShot))
+						audioSource->SetPlayOneShot(props.PlayOneShot);
+
+					if (UI::Property("Loop", props.Loop))
+						audioSource->SetLooping(props.Loop);
+
+					if (UI::Property("Spacialized", props.Spacialized))
+						audioSource->SetSpacialized(props.Spacialized);
 
 					UI::EndPropertyGrid();
 
-					if (UI::PropertyGridHeader("Cone", false))
+					if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
 					{
 						UI::BeginPropertyGrid();
 
-						float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-						if (UI::Property("Inner Angle", innerAngle, 0.5f))
+						UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-							component.Source->SetCone(props.Cone);
-						}
-						float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-						if (UI::Property("Outer Angle", outerAngle, 0.5f))
+							audioSource->SetPosition(props.Position);
+						});
+
+						UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-							component.Source->SetCone(props.Cone);
-						}
-						float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-						if (UI::Property("Outer Gain", outerGain, 0.5f))
+							audioSource->SetDirection(props.Direction);
+						});
+
+						UI::DrawVec3Controls("Veloctiy", props.Velocity, 0.0f, 100.0f, [&]()
 						{
-							props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-							component.Source->SetCone(props.Cone);
-						}
-
-						if (UI::Property("Min Distance", props.MinDistance, 0.1f))
-							component.Source->SetMinDistance(props.MinDistance);
-
-						if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
-							component.Source->SetMaxDistance(props.MaxDistance);
-
-						if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
-							component.Source->SetDopplerFactor(props.DopplerFactor);
+							audioSource->SetVelocity(props.Velocity);
+						});
 
 						UI::EndPropertyGrid();
+
+						if (UI::PropertyGridHeader("Cone", false))
+						{
+							UI::BeginPropertyGrid();
+
+							float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+							if (UI::Property("Inner Angle", innerAngle, 0.5f))
+							{
+								props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+								audioSource->SetCone(props.Cone);
+							}
+
+							float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+							if (UI::Property("Outer Angle", outerAngle, 0.5f))
+							{
+								props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+								audioSource->SetCone(props.Cone);
+							}
+
+							float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+							if (UI::Property("Outer Gain", outerGain, 0.5f))
+							{
+								props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+								audioSource->SetCone(props.Cone);
+							}
+
+							if (UI::Property("Min Gain", props.MinGain))
+								audioSource->SetMinGain(props.MinGain);
+							if (UI::Property("Max Gain", props.MaxGain))
+								audioSource->SetMaxGain(props.MaxGain);
+
+							static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
+
+							AttenuationModel currentAttenuationModel = props.AttenuationModel;
+							if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), currentAttenuationModel))
+								audioSource->SetAttenuationModel(currentAttenuationModel);
+
+							if (UI::Property("Falloff", props.Falloff))
+								audioSource->SetFalloff(props.Falloff);
+
+							if (UI::Property("Min Distance", props.MinDistance, 0.1f))
+								audioSource->SetMinDistance(props.MinDistance);
+
+							if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
+								audioSource->SetMaxDistance(props.MaxDistance);
+
+							if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
+								audioSource->SetDopplerFactor(props.DopplerFactor);
+
+							UI::EndPropertyGrid();
+							UI::EndTreeNode();
+						}
+
 						UI::EndTreeNode();
 					}
-
-					UI::EndTreeNode();
 				}
-			}
 
-			Gui::EndDisabled();
+				Gui::EndDisabled();
+			}
 		});
 
 		DrawComponent<AudioListenerComponent>("Audio Listener", entity, [](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			AudioListener::ListenerProperties& props = component.Listener->GetProperties();
-
-			UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+			SharedReference<AudioListener> audioListener = nullptr;
+			if (AssetManager::IsHandleValid(component.ListenerHandle))
 			{
-				component.Listener->SetPosition(props.Position);
-			});
+				audioListener = AssetManager::GetAsset<AudioListener>(component.ListenerHandle);
+			}
 
-			UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+			if (audioListener)
 			{
-				component.Listener->SetDirection(props.Direction);
-			});
+				ListenerDeviceProperties& props = audioListener->GetProperties();
 
-			UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
-			{
-				component.Listener->SetVelocity(props.Veloctiy);
-			});
+				const uint32_t listenerIndex = audioListener->GetListenerIndex();
+				const bool invalidListener = listenerIndex < 0 || (listenerIndex > PlaybackDevice::MaxDeviceListeners - 1);
+				Gui::BeginDisabled(invalidListener);
 
-			UI::EndPropertyGrid();
-
-			if (UI::PropertyGridHeader("Cone", false))
-			{
-				UI::BeginPropertyGrid();
-
-				float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-				if (UI::Property("Inner Angle", innerAngle, 0.5f))
+				UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-					component.Listener->SetCone(props.Cone);
-				}
-				float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-				if (UI::Property("Outer Angle", outerAngle, 0.5f))
+					audioListener->SetPosition(props.Position);
+				});
+
+				UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-					component.Listener->SetCone(props.Cone);
-				}
-				float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-				if (UI::Property("Outer Gain", outerGain, 0.5f))
+					audioListener->SetDirection(props.Direction);
+				});
+
+				UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
 				{
-					props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-					component.Listener->SetCone(props.Cone);
-				}
+					audioListener->SetVelocity(props.Veloctiy);
+				});
 
 				UI::EndPropertyGrid();
-				UI::EndTreeNode();
+
+				if (UI::PropertyGridHeader("Cone", false))
+				{
+					UI::BeginPropertyGrid();
+
+					float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+					if (UI::Property("Inner Angle", innerAngle, 0.5f))
+					{
+						props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
+						audioListener->SetCone(props.Cone);
+					}
+					float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+					if (UI::Property("Outer Angle", outerAngle, 0.5f))
+					{
+						props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
+						audioListener->SetCone(props.Cone);
+					}
+					float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+					if (UI::Property("Outer Gain", outerGain, 0.5f))
+					{
+						props.Cone.OuterGain = Math::Deg2Rad(outerGain);
+						audioListener->SetCone(props.Cone);
+					}
+
+					UI::EndPropertyGrid();
+					UI::EndTreeNode();
+				}
+
+				Gui::EndDisabled();
 			}
 		});
 
-		DrawComponent<RigidBodyComponent>("RigidBody", entity, [](auto& component)
+		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&, scene = m_ContextScene](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
 			const char* bodyTypes[] = { "Static", "Dynamic" };
 			int32_t currentBodyType = (int32_t)component.Type;
 			if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
+			{
+				const bool recreateActor = component.Type != (RigidBodyType)currentBodyType;
 				component.Type = (RigidBodyType)currentBodyType;
 
+				if (scene->IsRunning() && recreateActor)
+				{
+					Physics::ReCreateActor(entity);
+				}
+			}
+
+			bool modified = false;
+
 			if (component.Type == RigidBodyType::Static)
+			{
 				UI::EndPropertyGrid();
+			}
 			else
 			{
-				UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f);
+				if (UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f))
+					modified = true;
 				UI::Property("Linear Velocity", component.LinearVelocity);
+				UI::Property("Max Linear Velocity", component.MaxLinearVelocity);
 				UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
 				UI::Property("Angular Velocity", component.AngularVelocity);
+				UI::Property("Max Angular Velocity", component.MaxAngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
 
-				UI::Property("DisableGravity", component.DisableGravity);
+				if (UI::Property("Disable Gravity", component.DisableGravity))
+					modified = true;
+
 				UI::Property("IsKinematic", component.IsKinematic);
 
 				const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
@@ -1579,43 +2089,169 @@ namespace Vortex {
 
 				UI::EndPropertyGrid();
 
-				if (UI::TreeNode("Constraints", false))
+				if (UI::PropertyGridHeader("Constraints", false))
 				{
 					UI::BeginPropertyGrid();
 
-					UI::Property("Position X", component.LockPositionX);
-					UI::Property("Position Y", component.LockPositionY);
-					UI::Property("Position Z", component.LockPositionZ);
+					bool translationX = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationX);
+					bool translationY = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationY);
+					bool translationZ = (component.LockFlags & (uint8_t)ActorLockFlag::TranslationZ);
+					bool rotationX = (component.LockFlags & (uint8_t)ActorLockFlag::RotationX);
+					bool rotationY = (component.LockFlags & (uint8_t)ActorLockFlag::RotationY);
+					bool rotationZ = (component.LockFlags & (uint8_t)ActorLockFlag::RotationZ);
 
-					UI::Property("Rotation X", component.LockRotationX);
-					UI::Property("Rotation Y", component.LockRotationY);
-					UI::Property("Rotation Z", component.LockRotationZ);
+					Gui::Text("Freeze Position");
+					Gui::NextColumn();
+					Gui::PushItemWidth(-1);
+
+					Gui::Text("X");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationX", &translationX))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationX;
+						modified = true;
+					}
+
+					Gui::SameLine();
+
+					Gui::Text("Y");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationY", &translationY))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationY;
+						modified = true;
+					}
+
+					Gui::SameLine();
+
+					Gui::Text("Z");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##TranslationZ", &translationZ))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationZ;
+						modified = true;
+					}
+
+					Gui::PopItemWidth();
+					Gui::NextColumn();
+					UI::Draw::Underline();
+
+					Gui::Text("Freeze Rotation");
+					Gui::NextColumn();
+					Gui::PushItemWidth(-1);
+
+					Gui::Text("X");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationX", &rotationX))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationX;
+						modified = true;
+					}
+
+					Gui::SameLine();
+
+					Gui::Text("Y");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationY", &rotationY))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationY;
+						modified = true;
+					}
+
+					Gui::SameLine();
+
+					Gui::Text("Z");
+					Gui::SameLine();
+
+					if (Gui::Checkbox("##RotationZ", &rotationZ))
+					{
+						component.LockFlags ^= (uint8_t)ActorLockFlag::RotationZ;
+						modified = true;
+					}
+
+					Gui::PopItemWidth();
+					Gui::NextColumn();
+					UI::Draw::Underline();
 
 					UI::EndPropertyGrid();
+					UI::EndTreeNode();
 
-					Gui::TreePop();
+				}
+
+				if (modified && m_ContextScene->IsRunning())
+				{
+					Physics::WakeUpActor(entity);
 				}
 			}
 		});
 
-		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [](auto& component)
+		DrawComponent<CharacterControllerComponent>("Character Controller", entity, [entity](auto& component)
 		{
 			UI::BeginPropertyGrid();
-
+			
 			UI::Property("Slope Limit", component.SlopeLimitDegrees);
 			UI::Property("Step Offset", component.StepOffset);
+			UI::Property("Contact Offset", component.ContactOffset);
 			UI::Property("Disable Gravity", component.DisableGravity);
+
+			Gui::BeginDisabled();
+			UI::Property("Speed Down", component.SpeedDown);
+			Gui::EndDisabled();
+
+			const char* nonWalkableModes[] = { "Prevent Climbing", "Prevent Climbing and Force Sliding" };
+			int32_t currentNonWalkableMode = (uint32_t)component.NonWalkMode;
+			if (UI::PropertyDropdown("Non Walkable Mode", nonWalkableModes, VX_ARRAYCOUNT(nonWalkableModes), currentNonWalkableMode))
+				component.NonWalkMode = (NonWalkableMode)currentNonWalkableMode;
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				const char* climbModes[] = { "Easy", "Constrained" };
+				int32_t currentClimbMode = (uint32_t)component.ClimbMode;
+				if (UI::PropertyDropdown("Capsule Climb Mode", climbModes, VX_ARRAYCOUNT(climbModes), currentClimbMode))
+					component.ClimbMode = (CapsuleClimbMode)currentClimbMode;
+			}
 
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<PhysicsMaterialComponent>("Physics Material", entity, [](auto& component)
+		DrawComponent<FixedJointComponent>("Fixed Joint", entity, [&](auto& component)
 		{
 			UI::BeginPropertyGrid();
 
-			UI::Property("Static Friction", component.StaticFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Dynamic Friction", component.DynamicFriction, 0.01f, 0.01f, 1.0f);
-			UI::Property("Bounciness", component.Bounciness, 0.01f, 0.01f, 1.0f);
+			std::string connectedEntityName = "Null";
+			if (Entity connectedEntity = m_ContextScene->TryGetEntityWithUUID(component.ConnectedEntity))
+			{
+				connectedEntityName = connectedEntity.GetName();
+			}
+
+			UI::Property("Connected Entity", connectedEntityName, true);
+
+			if (Gui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+				{
+					Entity& droppedEntity = *((Entity*)payload->Data);
+					component.ConnectedEntity = droppedEntity.GetUUID();
+				}
+
+				Gui::EndDragDropTarget();
+			}
+
+			UI::Property("Is Breakable", component.IsBreakable);
+			
+			if (component.IsBreakable)
+			{
+				UI::Property("Break Force", component.BreakForce);
+				UI::Property("Break Torque", component.BreakTorque);
+			}
+
+			UI::Property("Enable Collision", component.EnableCollision);
+			UI::Property("Enable PreProcessing", component.EnablePreProcessing);
 
 			UI::EndPropertyGrid();
 		});
@@ -1654,9 +2290,20 @@ namespace Vortex {
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<StaticMeshColliderComponent>("Static Mesh Collider", entity, [](auto& component)
+		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, [](auto& component)
 		{
-			
+			UI::BeginPropertyGrid();
+
+			static const char* collisionComplexities[] = { "Default", "Use Complex as Simple", "Use Simple as Complex" };
+			uint32_t currentCollisionComplexity = (uint32_t)component.CollisionComplexity;
+
+			if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYCOUNT(collisionComplexities), currentCollisionComplexity))
+				component.CollisionComplexity = (ECollisionComplexity)currentCollisionComplexity;
+
+			UI::Property("Is Trigger", component.IsTrigger);
+			UI::Property("Use Shared Shape", component.UseSharedShape);
+
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)
@@ -1672,6 +2319,7 @@ namespace Vortex {
 			{
 				UI::Property("Velocity", component.Velocity, 0.01f);
 				UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
+				UI::Property("Angular Velocity", component.AngularVelocity);
 				UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
 				UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
 				UI::Property("Freeze Rotation", component.FixedRotation);
@@ -1732,12 +2380,12 @@ namespace Vortex {
 			if (UI::PropertyDropdownSearch("Class", entityClassNameStrings.data(), entityClassNameStrings.size(), currentClassName, m_EntityClassNameInputTextFilter))
 				component.ClassName = currentClassName;
 
-			bool sceneRunning = m_ContextScene->IsRunning();
+			const bool sceneRunning = m_ContextScene->IsRunning();
 
 			// Fields
 			if (sceneRunning)
 			{
-				SharedRef<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+				SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
 
 				if (scriptInstance)
 				{
@@ -1845,7 +2493,40 @@ namespace Vortex {
 						{
 							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
 							if (UI::Property(name.c_str(), data))
+							{
 								scriptInstance->SetFieldValue(name, data);
+							}
+
+							if (Gui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Entity& droppedEntity = *((Entity*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}
+
+								Gui::EndDragDropTarget();
+							}
+						}
+						if (field.Type == ScriptFieldType::AssetHandle)
+						{
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (UI::Property(name.c_str(), data))
+							{
+								scriptInstance->SetFieldValue(name, data);
+							}
+
+							if (Gui::BeginDragDropTarget())
+							{
+								// TODO
+								/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Entity& droppedEntity = *((Entity*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}*/
+
+								Gui::EndDragDropTarget();
+							}
 						}
 					}
 				}
@@ -1854,16 +2535,17 @@ namespace Vortex {
 			{
 				if (scriptClassExists)
 				{
-					SharedRef<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					SharedReference<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto& fields = entityClass->GetFields();
 
-					auto& entityClassFields = ScriptEngine::GetScriptFieldMap(entity);
+					ScriptFieldMap& entityScriptFields = ScriptEngine::GetMutableScriptFieldMap(entity);
+
 					for (const auto& [name, field] : fields)
 					{
-						auto it = entityClassFields.find(name);
+						auto it = entityScriptFields.find(name);
 
 						// Field has been set in editor
-						if (it != entityClassFields.end())
+						if (it != entityScriptFields.end())
 						{
 							ScriptFieldInstance& scriptField = it->second;
 
@@ -1968,7 +2650,40 @@ namespace Vortex {
 							{
 								uint64_t data = scriptField.GetValue<uint64_t>();
 								if (UI::Property(name.c_str(), data))
+								{
 									scriptField.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										scriptField.SetValue(droppedEntity.GetUUID());
+									}
+
+									Gui::EndDragDropTarget();
+								}
+							}
+							if (field.Type == ScriptFieldType::AssetHandle)
+							{
+								uint64_t data = scriptField.GetValue<uint64_t>();
+								if (UI::Property(name.c_str(), data))
+								{
+									scriptField.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									// TODO
+									/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										scriptField.SetValue(droppedEntity.GetUUID());
+									}*/
+
+									Gui::EndDragDropTarget();
+								}
 							}
 						}
 						else
@@ -1979,7 +2694,7 @@ namespace Vortex {
 								float data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -1989,7 +2704,7 @@ namespace Vortex {
 								double data = 0.0f;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -1999,7 +2714,7 @@ namespace Vortex {
 								Math::vec2 data = Math::vec2(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2009,7 +2724,7 @@ namespace Vortex {
 								Math::vec3 data = Math::vec3(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2019,7 +2734,7 @@ namespace Vortex {
 								Math::vec4 data = Math::vec4(0.0f);
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2029,7 +2744,7 @@ namespace Vortex {
 								Math::vec3 data = Math::vec3(0.0f);
 								if (UI::Property(name.c_str(), &data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2039,7 +2754,7 @@ namespace Vortex {
 								Math::vec4 data = Math::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 								if (UI::Property(name.c_str(), &data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2049,7 +2764,7 @@ namespace Vortex {
 								bool data = false;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2059,7 +2774,7 @@ namespace Vortex {
 								char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2069,7 +2784,7 @@ namespace Vortex {
 								short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2079,7 +2794,7 @@ namespace Vortex {
 								int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2089,7 +2804,7 @@ namespace Vortex {
 								long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2099,7 +2814,7 @@ namespace Vortex {
 								unsigned char data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2109,7 +2824,7 @@ namespace Vortex {
 								unsigned short data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2119,7 +2834,7 @@ namespace Vortex {
 								unsigned int data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
@@ -2129,37 +2844,55 @@ namespace Vortex {
 								unsigned long long data = 0;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance& fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Entity)
 							{
-								uint64_t data = 0;
+								uint64_t data;
 								if (UI::Property(name.c_str(), data))
 								{
-									ScriptFieldInstance& fieldInstance = entityClassFields[name];
+									ScriptFieldInstance fieldInstance = entityScriptFields[name];
 									fieldInstance.Field = field;
 									fieldInstance.SetValue(data);
 								}
 
-								// Accept an Entity from the scene hierarchy
 								if (Gui::BeginDragDropTarget())
 								{
 									if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 									{
-										UUID* entityUUID = (UUID*)payload->Data;
-										
-										if (Entity entity = m_ContextScene->TryGetEntityWithUUID(*entityUUID))
-										{
-											ScriptFieldInstance& fieldInstance = entityClassFields[name];
-											fieldInstance.Field = field;
-											fieldInstance.SetValue(*entityUUID);
-										}
-										else
-											VX_WARN("Entity UUID {} was not found in the current scene.", *entityUUID);
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										ScriptFieldInstance fieldInstance = entityScriptFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue(droppedEntity.GetUUID());
 									}
+
+									Gui::EndDragDropTarget();
+								}
+							}
+							if (field.Type == ScriptFieldType::AssetHandle)
+							{
+								uint64_t data;
+								if (UI::Property(name.c_str(), data))
+								{
+									ScriptFieldInstance fieldInstance = entityScriptFields[name];
+									fieldInstance.Field = field;
+									fieldInstance.SetValue(data);
+								}
+
+								if (Gui::BeginDragDropTarget())
+								{
+									// TODO
+									/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+									{
+										Entity& droppedEntity = *((Entity*)payload->Data);
+										ScriptFieldInstance fieldInstance = entityScriptFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue(droppedEntity.GetUUID());
+									}*/
+
 									Gui::EndDragDropTarget();
 								}
 							}

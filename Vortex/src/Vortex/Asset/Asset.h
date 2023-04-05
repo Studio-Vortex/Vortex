@@ -1,33 +1,27 @@
 #pragma once
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-#include "Vortex/Asset/AssetTypes.h"
+#include "Vortex/Core/Base.h"
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+
+#include "Vortex/Asset/AssetTypes.h"
 
 namespace Vortex {
 
-	using AssetHandle = UUID;
+	using VORTEX_API AssetHandle = UUID;
 
-	class Asset : public RefCounted
+	class VORTEX_API Asset : public RefCounted
 	{
 	public:
 		AssetHandle Handle;
+
+	public:
 		virtual ~Asset() = default;
 
-		bool operator==(const Asset& other) const
-		{
-			return Handle == other.Handle;
-		}
+		bool operator==(const Asset& other) const { return Handle == other.Handle; }
+		bool operator!=(const Asset& other) const { return !(*this == other); }
 
-		bool operator!=(const Asset& other) const
-		{
-			return !(*this == other);
-		}
-
-		bool IsValid() const
-		{
-			return Handle != 0;
-		}
+		bool IsValid() const { return Handle != 0; }
 
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetAssetType() const { return AssetType::None; }

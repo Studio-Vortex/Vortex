@@ -1,15 +1,18 @@
 #pragma once
 
 #include <functional>
-#include <filesystem>
 #include <algorithm>
-#include <stdint.h>
+#include <execution>
+#include <optional>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <utility>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <random>
+#include <ranges>
 #include <cmath>
 #include <any>
 
@@ -18,16 +21,16 @@
 #include <atomic>
 #include <future>
 
+#include <unordered_map>
+#include <unordered_set>
 #include <string>
-#include <sstream>
-#include <bitset>
 #include <vector>
+#include <bitset>
 #include <array>
+#include <stack>
 #include <deque>
 #include <map>
 #include <set>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "Vortex/Core/Log.h"
 #include "Vortex/Debug/Instrumentor.h"

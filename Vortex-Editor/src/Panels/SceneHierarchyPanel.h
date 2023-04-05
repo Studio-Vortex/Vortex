@@ -1,30 +1,23 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
+#include <Vortex/Editor/SelectionManager.h>
 
 namespace Vortex {
 	
-	class SceneHierarchyPanel : public EditorPanel
+	class SceneHierarchyPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const SharedRef<Scene>& context);
-		~SceneHierarchyPanel() override = default;
+		SceneHierarchyPanel(const SharedReference<Scene>& context);
+		~SceneHierarchyPanel() = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override;
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(const SharedReference<Scene>& scene);
 
-		inline Entity& GetSelectedEntity() { return m_SelectedEntity; }
-		inline const Entity& GetSelectedEntity() const { return m_SelectedEntity; }
-
-		inline void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
-
-		inline bool GetEntityShouldBeRenamed() const { return m_EntityShouldBeRenamed; }
-		inline void SetEntityShouldBeRenamed(bool enabled) { m_EntityShouldBeRenamed = enabled; }
-
-		inline void SetEntityToBeDestroyed(bool destroy) { m_EntityShouldBeDestroyed = destroy; }
+		inline bool IsEditingEntityName() const { return m_IsEditingEntityName; }
+		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
 		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
 
@@ -35,35 +28,55 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayAddComponentPopup(const std::string& name)
+		void DisplayComponentMenuItem(const std::string& name, const char* icon)
 		{
-			if (!m_SelectedEntity.HasComponent<TComponent>())
+			Entity& selectedEntity = SelectionManager::GetSelectedEntity();
+
+			if (!selectedEntity.HasComponent<TComponent>())
 			{
+				Gui::Text(icon);
+				Gui::SameLine();
+				Gui::AlignTextToFramePadding();
+
 				if (Gui::MenuItem(name.c_str()))
 				{
-					m_SelectedEntity.AddComponent<TComponent>();
+					selectedEntity.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();
 				}
+
+				UI::Draw::Underline();
+				Gui::Spacing();
 			}
 		}
+
+		void DisplayAddComponentPopup();
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
 		void DrawEntityNode(Entity entity, const EditorCamera* editorCamera);
 		void DrawComponents(Entity entity);
 
+		void RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth);
+
 	private:
 		inline static bool s_ShowSceneHierarchyPanel = true;
 		inline static bool s_ShowInspectorPanel = true;
 
 	private:
-		SharedRef<Scene> m_ContextScene = nullptr;
-		Entity m_SelectedEntity;
+		SharedReference<Scene> m_ContextScene = nullptr;
+		
+		// TODO think of a better way of doing this
 		TransformComponent m_TransformToCopy;
+		ParticleEmitterProperties m_ParticleEmitterToCopy;
+
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
 		ImGuiTextFilter m_EntityClassNameInputTextFilter;
+		ImGuiTextFilter m_EntityFieldSearchInputTextFilter;
+		ImGuiTextFilter m_MaterialSearchInputTextFilter;
+
 		bool m_EntityShouldBeRenamed = false;
+		bool m_IsEditingEntityName = false;
 		bool m_EntityShouldBeDestroyed = false;
 		bool m_DisplayAddMarkerPopup = false;
 	};

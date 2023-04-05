@@ -1,0 +1,198 @@
+Scene: TestScene
+Entities:
+  - Entity: 491786084942910285
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11, 0, 7.44775772]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 1029342521851258087
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-11, 2.67599225, -1.59501582e-07]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [5, 1, 5]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\Maps\ToyBox\toy_box_normal.png
+      AlbedoMapPath: Textures\Maps\ToyBox\toy_box_diffuse.png
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      ParallaxOcclusionMapPath: Textures\Maps\ToyBox\toy_box_disp.png
+      ParallaxHeightScale: 0.100000001
+      TextureScale: [1, 1]
+  - Entity: 12050327286741746804
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.5, 0, 7.44775772]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 17368305189730893293
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.5, 2.67599225, -1.59501582e-07]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [5, 1, 5]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\PBR\RustedSteel\rusted-steel_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\RustedSteel\rusted-steel_albedo.png
+      MetallicMapPath: Textures\PBR\RustedSteel\rusted-steel_metallic.png
+      RoughnessMapPath: Textures\PBR\RustedSteel\rusted-steel_roughness.png
+      Emission: 0
+      ParallaxOcclusionMapPath: Textures\PBR\RustedSteel\rusted-steel_height.png
+      ParallaxHeightScale: 0.100000001
+      AmbientOcclusionMapPath: Textures\PBR\RustedSteel\rusted-steel_ao.png
+      TextureScale: [1, 1]
+  - Entity: 6401072732590791669
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.5, 0, 7.44775772]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 18331971267624937207
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.5, 2.67599225, -1.59501582e-07]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [5, 1, 5]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: 0
+      TextureScale: [1, 1]
+  - Entity: 10716084891165368475
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.67599225, 0]
+      Rotation: [1.57079637, 0, 0]
+      Scale: [5, 1, 5]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      NormalMapPath: Textures\Maps\Brick\bricks2_normal.jpg
+      AlbedoMapPath: Textures\Maps\Brick\bricks2.jpg
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: 0
+      ParallaxOcclusionMapPath: Textures\Maps\Brick\bricks2_disp.jpg
+      ParallaxHeightScale: 0.100000001
+      TextureScale: [1, 1]
+  - Entity: 3716664249769279234
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 7.44775772]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 6534715316253534875
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 6.55461025]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\MonValley_G_DirtRoad_3k.hdr
+  - Entity: 13983818445518233300
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [32.892189, 4.79518986, 4.37103224]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]

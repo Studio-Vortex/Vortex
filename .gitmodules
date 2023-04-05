@@ -22,3 +22,6 @@
 [submodule "Vortex/vendor/msdf-atlas-gen"]
 	path = Vortex/vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git
+[submodule "Vortex/vendor/FastNoise"]
+	path = Vortex/vendor/FastNoise
+	url = https://github.com/Auburn/FastNoiseLite.git

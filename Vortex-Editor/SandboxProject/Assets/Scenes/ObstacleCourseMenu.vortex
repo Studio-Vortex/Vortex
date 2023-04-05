@@ -1,0 +1,105 @@
+Scene: ObstacleCourseMenu
+Entities:
+  - Entity: 9854272352518091032
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Title
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.70000005, 2.68466377, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 4575036499131245881
+      TextString: Obstacle Course
+  - Entity: 4637812540949681571
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Direction: [0, -1, -0.5]
+  - Entity: 5035918027216790249
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.ObstacleCourse.Menu
+  - Entity: 14755149337560521668
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tutorial Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3.20201826, 0.834728718, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.75, 0.75, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 3192464695141981385
+      TextString: "Controls - WASD\nYou have 30 seconds to collect all 10 coins before the game restarts."
+  - Entity: 5139799778648134450
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Tutorial Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.46142673, -3.24785233, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.75, 0.75, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 12158130549565556932
+      TextString: (Press Enter To Play)

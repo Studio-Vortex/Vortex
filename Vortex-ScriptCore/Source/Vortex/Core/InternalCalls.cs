@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using System;
 
 namespace Vortex {
 
@@ -21,6 +21,40 @@ namespace Vortex {
 
 		#endregion
 
+		#region SceneRenderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomThreshold();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomThreshold(float threshold);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomSoftKnee();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomSoftKnee(float softKnee);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetBloomUnknown();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetBloomUnknown(float unknown);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetExposure();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetExposure(float exposure);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetGamma();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetGamma(float gamma);
+
+		#endregion
+
 		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -36,7 +70,16 @@ namespace Vortex {
 		internal extern static void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawCircleVec2(ref Vector2 translation, ref Vector2 size, ref Vector4 color, float thickness, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawCircleVec3(ref Vector3 translation, ref Vector3 size, ref Vector4 color, float thickness, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_DrawBoundingBox(ref Vector3 worldPosition, ref Vector3 size, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawBoundingBoxFromTransform(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_Flush();
@@ -49,7 +92,19 @@ namespace Vortex {
 		internal extern static bool Scene_FindEntityByID(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_FindEntityByName(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_FindChildByName(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_CreateEntity(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_Instantiate(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_InstantiateAsChild(ulong entityID, ulong parentID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_IsPaused();
@@ -63,12 +118,18 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_GetHoveredEntity();
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Scene_GetCurrentBuildIndex();
+
 		#endregion
 
 		#region SceneManager
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SceneManager_LoadScene(string sceneName);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneManager_LoadSceneFromBuildIndex(uint buildIndex);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string SceneManager_GetActiveScene();
@@ -87,6 +148,9 @@ namespace Vortex {
 		internal extern static void Entity_RemoveComponent(ulong entityID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_FindChildByName(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static Entity[] Entity_GetChildren(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -99,10 +163,7 @@ namespace Vortex {
 		internal extern static string Entity_GetMarker(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_CreateWithName(string name);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_FindEntityByName(string name);
+		internal extern static void Entity_SetMarker(ulong entityID, string value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_AddChild(ulong parentEntityID, ulong childEntityID);
@@ -117,7 +178,17 @@ namespace Vortex {
 		internal extern static ulong Entity_Destroy(ulong entityID, bool excludeChildren);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Entity_DestroyTimed(ulong entityID, float waitTime, bool excludeChildren);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_SetActive(ulong entityID, bool isActive);
+
+		#endregion
+
+		#region AssetHandle
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AssetHandle_IsValid(ref AssetHandle assetHandle);
 
 		#endregion
 
@@ -130,16 +201,25 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetTranslation(ulong entityID, ref Vector3 translation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 result);
+		internal extern static void TransformComponent_GetRotation(ulong entityID, out Quaternion result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Quaternion orientation);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotationQuaternion(ulong entityID, out Quaternion result);
+		internal extern static void TransformComponent_GetEulerAngles(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotationQuaternion(ulong entityID, ref Quaternion orientation);
+		internal extern static void TransformComponent_SetEulerAngles(ulong entityID, ref Vector3 eulerAngles);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_Rotate(ulong entityID, ref Vector3 eulers, Space relativeTo);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_RotateAround(ulong entityID, ref Vector3 worldPoint, ref Vector3 axis, float angle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetTranslationAndRotation(ulong entityID, ref Vector3 translation, ref Vector3 eulerAngles);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
@@ -148,7 +228,13 @@ namespace Vortex {
 		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 scale);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Vector3 translation, out Vector3 rotationEuler, out Vector3 scale);
+		internal extern static void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetTransformMatrix(ulong entityID, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_SetTransformMatrix(ulong entityID, ref Matrix4 transform);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetForwardDirection(ulong entityID, out Vector3 result);
@@ -179,6 +265,12 @@ namespace Vortex {
 		#region Camera
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ProjectionType CameraComponent_GetProjectionType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetProjectionType(ulong entityID, ProjectionType type);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_GetPrimary(ulong entityID, out bool outPrimary);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -191,14 +283,56 @@ namespace Vortex {
 		internal extern static void CameraComponent_SetPerspectiveVerticalFOV(ulong entityID, float perspectiveVerticalFOV);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetNearClip(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetNearClip(ulong entityID, float nearClip);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetFarClip(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetFarClip(ulong entityID, float farClip);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicSize(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicSize(ulong entityID, float orthographicSize);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicNear(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicNear(ulong entityID, float orthographicNear);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float CameraComponent_GetOrthographicFar(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetOrthographicFar(ulong entityID, float orthographicFar);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_GetFixedAspectRatio(ulong entityID, out bool outFixedAspectRatio);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_SetFixedAspectRatio(ulong entityID, bool fixedAspectRatio);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_GetClearColor(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CameraComponent_SetClearColor(ulong entityID, ref Color3 clearColor);
+
 		#endregion
 
 		#region LightSource
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static LightType LightSourceComponent_GetLightType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetLightType(ulong entityID, LightType type);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_GetRadiance(ulong entityID, out Vector3 outRadiance);
@@ -242,6 +376,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void LightSourceComponent_SetSoftShadows(ulong entityID, bool softShadows);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool LightSourceComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void LightSourceComponent_SetVisible(ulong entityID, bool visible);
+
 		#endregion
 
 		#region TextMesh
@@ -257,6 +397,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TextMeshComponent_SetColor(ulong entityID, ref Vector4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_GetBackgroundColor(ulong entityID, out Vector4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshComponent_SetBackgroundColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float TextMeshComponent_GetLineSpacing(ulong entityID);
@@ -276,6 +422,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TextMeshComponent_SetMaxWidth(ulong entityID, float maxWidth);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool TextMeshRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TextMeshRendererComponent_SetVisible(ulong entityID, bool visible);
+
 		#endregion
 
 		#region Animator
@@ -286,59 +438,135 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AnimatorComponent_Play(ulong entityID);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AnimatorComponent_Stop(ulong entityID);
+
 		#endregion
 
 		#region MeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static MeshType MeshRendererComponent_GetMeshType(ulong entityID);
+		internal extern static bool MeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
+		internal extern static bool MeshRendererComponent_IsVisible(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_GetScale(ulong entityID, out Vector2 result);
+		internal extern static void MeshRendererComponent_SetVisible(ulong entityID, bool visible);
+
+		#endregion
+
+		#region StaticMeshRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void MeshRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
+		internal extern static MeshType StaticMeshRendererComponent_GetMeshType(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetMeshType(ulong entityID, MeshType meshType);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetMaterialHandle(uint submeshIndex, ulong entityID, ref AssetHandle materialHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool StaticMeshRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetVisible(ulong entityID, bool visible);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool StaticMeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong entityID, out AssetHandle assetHandle);
 
 		#endregion
 
 		#region Material
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_GetAlbedo(ulong entityID, out Vector3 result);
+		internal extern static void Material_GetAlbedo(ref AssetHandle assetHandle, out Vector3 outAlbedo);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetAlbedo(ulong entityID, ref Vector3 albedo);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetMetallic(ulong entityID);
+		internal extern static void Material_SetAlbedo(ref AssetHandle assetHandle, ref Vector3 albedo);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetMetallic(ulong entityID, float metallic);
+		internal extern static bool Material_GetAlbedoMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetRoughness(ulong entityID);
+		internal extern static void Material_SetAlbedoMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetRoughness(ulong entityID, float roughness);
+		internal extern static bool Material_GetNormalMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetEmission(ulong entityID);
+		internal extern static void Material_SetNormalMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetEmission(ulong entityID, float emission);
+		internal extern static float Material_GetMetallic(ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Material_GetOpacity(ulong entityID);
+		internal extern static void Material_SetMetallic(ref AssetHandle assetHandle, float metallic);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Material_SetOpacity(ulong entityID, float opacity);
+		internal extern static bool Material_GetMetallicMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetMetallicMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Material_GetRoughness(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetRoughness(ref AssetHandle assetHandle, float roughness);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetRoughnessMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetRoughnessMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Material_GetEmission(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetEmission(ref AssetHandle assetHandle, float emission);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetEmissionMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetEmissionMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_GetAmbientOcclusionMap(ref AssetHandle assetHandle, out AssetHandle outHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetAmbientOcclusionMap(ref AssetHandle assetHandle, ref AssetHandle textureHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_GetUV(ref AssetHandle assetHandle, out Vector2 outUV);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetUV(ref AssetHandle assetHandle, ref Vector2 uv);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Material_GetOpacity(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetOpacity(ref AssetHandle assetHandle, float opacity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Material_IsFlagSet(ref AssetHandle assetHandle, MaterialFlag flag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Material_SetFlag(ref AssetHandle assetHandle, MaterialFlag flag, bool value);
 
 		#endregion
 
 		#region SpriteRenderer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SpriteRendererComponent_GetTextureHandle(ulong entityID, out AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SpriteRendererComponent_SetTextureHandle(ulong entityID, ref AssetHandle assetHandle);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SpriteRendererComponent_GetColor(ulong entityID, out Vector4 result);
@@ -347,16 +575,16 @@ namespace Vortex {
 		internal extern static void SpriteRendererComponent_SetColor(ulong entityID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static string SpriteRendererComponent_GetTexture(ulong entityID);
+		internal extern static void SpriteRendererComponent_GetUV(ulong entityID, out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetTexture(ulong entityID, string texturePathString);
+		internal extern static void SpriteRendererComponent_SetUV(ulong entityID, ref Vector2 uv);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_GetScale(ulong entityID, out Vector2 result);
+		internal extern static bool SpriteRendererComponent_IsVisible(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SpriteRendererComponent_SetScale(ulong entityID, ref Vector2 scale);
+		internal extern static void SpriteRendererComponent_SetVisible(ulong entityID, bool visible);
 
 		#endregion
 
@@ -379,6 +607,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CircleRendererComponent_SetFade(ulong entityID, float fade);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool CircleRendererComponent_IsVisible(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void CircleRendererComponent_SetVisible(ulong entityID, bool visible);
 
 		#endregion
 
@@ -461,32 +695,143 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_Play(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_PlayOneShot(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Restart(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_Stop(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetPosition(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPosition(ulong entityID, ref Vector3 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetDirection(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetDirection(ulong entityID, ref Vector3 direction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetVelocity(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMinGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMinGain(ulong entityID, float minGain);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMaxGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMaxGain(ulong entityID, float maxGain);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static AttenuationModel AudioSourceComponent_GetAttenuationModel(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetAttenuationModel(ulong entityID, AttenuationModel model);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetFalloff(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFalloff(ulong entityID, float falloff);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMinDistance(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMinDistance(ulong entityID, float minDistance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetMaxDistance(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetMaxDistance(ulong entityID, float maxDistance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetPitch(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPitch(ulong entityID, float pitch);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetDopplerFactor(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetDopplerFactor(ulong entityID, float effect);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetVolume(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetVolume(ulong entityID, float volume);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetPlayOnStart(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPlayOnStart(ulong entityID, bool playOnStart);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsSpacialized(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetIsSpacialized(ulong entityID, bool spacialized);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsLooping(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetIsLooping(ulong entityID, bool looping);
+
+		#endregion
+
+		#region AudioClip
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static string AudioClip_GetName(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioClip_GetLength(ulong entityID);
+
+		#endregion
+
+		#region AudioCone
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetInnerAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetInnerAngle(ulong entityID, float innerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetOuterAngle(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetOuterAngle(ulong entityID, float outerAngle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioCone_GetOuterGain(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioCone_SetOuterGain(ulong entityID, float outerGain);
+
+		#endregion
+
+		#region AudioListener
 
 		#endregion
 
 		#region RigidBody
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_GetTranslation(ulong entityID, out Vector3 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_SetTranslation(ulong entityID, ref Vector3 translation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Vector3 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Vector3 rotation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_Translate(ulong entityID, ref Vector3 translation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_Rotate(ulong entityID, ref Vector3 rotation);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBodyComponent_LookAt(ulong entityID, ref Vector3 worldPoint);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);
@@ -511,6 +856,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetLinearVelocity(ulong entityID, ref Vector3 velocity);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetMaxLinearVelocity(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetMaxLinearVelocity(ulong entityID, float maxLinearVelocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float RigidBodyComponent_GetLinearDrag(ulong entityID);
@@ -523,6 +874,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, ref Vector3 velocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBodyComponent_GetMaxAngularVelocity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetMaxAngularVelocity(ulong entityID, float maxAngularVelocity);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float RigidBodyComponent_GetAngularDrag(ulong entityID);
@@ -541,6 +898,33 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID, bool isKinematic);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetKinematicTargetTranslation(ulong entityID, out Vector3 result);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetKinematicTargetTranslation(ulong entityID, ref Vector3 target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_GetKinematicTargetRotation(ulong entityID, out Quaternion result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetKinematicTargetRotation(ulong entityID, ref Quaternion target);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint RigidBodyComponent_GetLockFlags(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_SetLockFlag(ulong entityID, ActorLockFlag flag, bool value, bool forceWake);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_IsLockFlagSet(ulong entityID, ActorLockFlag flag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool RigidBodyComponent_IsSleeping(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBodyComponent_WakeUp(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBodyComponent_AddForce(ulong entityID, ref Vector3 force, ForceMode forceMode);
@@ -584,6 +968,40 @@ namespace Vortex {
 
 		#endregion
 
+		#region PhysicsMaterial
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetStaticFriction(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetStaticFriction(ref AssetHandle assetHandle, float staticFriction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetDynamicFriction(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetDynamicFriction(ref AssetHandle assetHandle, float dynamicFriction);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float PhysicsMaterial_GetBounciness(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetBounciness(ref AssetHandle assetHandle, float bounciness);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static CombineMode PhysicsMaterial_GetFrictionCombineMode(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetFrictionCombineMode(ref AssetHandle assetHandle, CombineMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static CombineMode PhysicsMaterial_GetBouncinessCombineMode(ref AssetHandle assetHandle);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PhysicsMaterial_SetBouncinessCombineMode(ref AssetHandle assetHandle, CombineMode mode);
+
+		#endregion
+
 		#region CharacterController
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -594,6 +1012,42 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool CharacterControllerComponent_IsGrounded(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_GetFootPosition(ulong entityID, out Vector3 footPosition);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetSpeedDown(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetSlopeLimit(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetSlopeLimit(ulong entityID, float slopeLimit);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetStepOffset(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetStepOffset(ulong entityID, float stepOffset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float CharacterControllerComponent_GetContactOffset(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetContactOffset(ulong entityID, float contactOffset);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetNonWalkableMode(ulong entityID, NonWalkableMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern CapsuleClimbMode CharacterControllerComponent_GetClimbMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void CharacterControllerComponent_SetClimbMode(ulong entityID, CapsuleClimbMode mode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern bool CharacterControllerComponent_GetDisableGravity(ulong entityID);
@@ -603,9 +1057,52 @@ namespace Vortex {
 
 		#endregion
 
-		#region PhysicsMaterial
+		#region FixedJoint
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern ulong FixedJointComponent_GetConnectedEntity(ulong entityID);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetConnectedEntity(ulong entityID, ulong connectedEntityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float FixedJointComponent_GetBreakForce(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakForce(ulong entityID, float breakForce);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern float FixedJointComponent_GetBreakTorque(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakTorque(ulong entityID, float breakTorque);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetBreakForceAndTorque(ulong entityID, float breakForce, float breakTorque);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetEnableCollision(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetCollisionEnabled(ulong entityID, bool enableCollision);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetPreProcessingEnabled(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetPreProcessingEnabled(ulong entityID, bool enablePreProcessing);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_IsBroken(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern bool FixedJointComponent_GetIsBreakable(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_SetIsBreakable(ulong entityID, bool isBreakable);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal static extern void FixedJointComponent_Break(ulong entityID);
 
 		#endregion
 
@@ -629,6 +1126,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void BoxColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool BoxColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
+
 		#endregion
 
 		#region SphereCollider
@@ -650,6 +1150,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SphereColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SphereColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
 
 		#endregion
 
@@ -678,6 +1181,34 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CapsuleColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool CapsuleColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
+
+		#endregion
+
+		#region MeshCollider
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_IsStaticMesh(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_IsColliderMeshValid(ulong entityID, ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetColliderMesh(ulong entityID, out AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshColliderComponent_SetColliderMesh(ulong entityID, ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetIsTrigger(ulong entityID);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshColliderComponent_SetIsTrigger(ulong entityID, bool isTrigger);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshColliderComponent_GetMaterialHandle(ulong entityID, out AssetHandle assetHandle);
 
 		#endregion
 
@@ -714,17 +1245,35 @@ namespace Vortex {
 		internal extern static void RigidBody2DComponent_SetDrag(ulong entityID, float drag);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetAngularVelocity(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetAngularVelocity(ulong entityID, float angularVelocity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetAngularDrag(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetAngularDrag(ulong entityID, float angularDrag);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool RigidBody2DComponent_GetFixedRotation(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody2DComponent_SetFixedRotation(ulong entityID, bool freeze);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float RigidBody2DComponent_GetGravityScale(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void RigidBody2DComponent_SetGravityScale(ulong entityID, float gravityScale);
 
 		#endregion
 
 		#region Physics2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RayCastHit2D hit, bool drawDebugLine);
+		internal extern static ulong Physics2D_Raycast(ref Vector2 start, ref Vector2 end, out RaycastHit2D hit, bool drawDebugLine);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal static extern void Physics2D_GetWorldGravity(out Vector2 result);
@@ -826,13 +1375,55 @@ namespace Vortex {
 
 		#endregion
 
-		#region RandomDevice
+		#region Texture2D
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static int RandomDevice_RangedInt32(int min, int max);
+		internal extern static bool Texture2D_LoadFromPath(string filepath, out AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Texture2D_Constructor(uint width, uint height, out AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Texture2D_GetWidth(ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint Texture2D_GetHeight(ref AssetHandle assetHandle);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Texture2D_SetPixel(ref AssetHandle assetHandle, uint xOffset, uint yOffset, ref Color4 color);
+
+		#endregion
+
+		#region Random
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float RandomDevice_RangedFloat(float min, float max);
+		internal extern static int Random_RangedInt32(int min, int max);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Random_RangedFloat(float min, float max);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Random_Float();
+
+		#endregion
+
+		#region Quaternion
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Quaternion_Inverse(ref Quaternion quat, out Quaternion result);
+
+		#endregion
+
+		#region Matrix4
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_Rotate(float angleDeg, ref Vector3 axis, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, ref Vector3 up, out Matrix4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Matrix4_Multiply(ref Matrix4 matrix, ref Matrix4 other, out Matrix4 result);
 
 		#endregion
 
@@ -845,10 +1436,16 @@ namespace Vortex {
 		internal extern static double Mathf_GetPI_D();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Round(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Abs(float value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Sqrt(float value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Mathf_Pow(float value, float power);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float Mathf_Sin(float value);
@@ -880,21 +1477,60 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_Rad2DegVector3(ref Vector3 value, out Vector3 result);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Mathf_InverseQuat(ref Quaternion value, out Quaternion result);
+
 		#endregion
 
-		#region Quaternion
+		#region Noise
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static IntPtr Noise_Constructor(int seed, NoiseType type);
 		
-
-		#endregion
-
-		#region Vector3
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_Destructor(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFrequency(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFrequency(IntPtr unmanagedInstance, float freqeuncy);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static int Noise_GetFractalOctaves(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalOctaves(IntPtr unmanagedInstance, int octaves);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFractalLacunarity(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalLacunarity(IntPtr unmanagedInstance, float lacunarity);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetFractalGain(IntPtr unmanagedInstance);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Noise_SetFractalGain(IntPtr unmanagedInstance, float gain);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_GetVec2(IntPtr unmanagedInstance, float x, float y);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Vector3_CrossProductVec3(ref Vector3 left, ref Vector3 right, out Vector3 result);
+		internal extern static float Noise_GetVec3(IntPtr unmanagedInstance, float x, float y, float z);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Vector3_DotProductVec3(ref Vector3 left, ref Vector3 right);
+		internal extern static void Noise_SetSeed(int seed);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_PerlinNoiseVec2(float x, float y);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Noise_PerlinNoiseVec3(float x, float y, float z);
 
 		#endregion
 
@@ -911,10 +1547,22 @@ namespace Vortex {
 		#region Input
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyPressed(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsKeyReleased(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyDown(KeyCode key);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyUp(KeyCode key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonPressed(MouseButton mouseButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsMouseButtonReleased(MouseButton mouseButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsMouseButtonDown(MouseButton mouseButton);
@@ -923,19 +1571,22 @@ namespace Vortex {
 		internal extern static bool Input_IsMouseButtonUp(MouseButton mouseButton);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Input_GetMousePosition(out Vector2 position);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Input_GetMouseScrollOffset(out Vector2 position);
+		internal extern static void Input_GetMousePosition(out Vector2 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Input_IsGamepadButtonDown(Gamepad gamepadButton);
+		internal extern static void Input_SetMousePosition(ref Vector2 position);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Input_IsGamepadButtonUp(Gamepad gamepadButton);
+		internal extern static void Input_GetMouseWheelMovement(out Vector2 movement);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Input_GetGamepadAxis(Gamepad gamepadAxis);
+		internal extern static bool Input_IsGamepadButtonDown(GamepadButton gamepadButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Input_IsGamepadButtonUp(GamepadButton gamepadButton);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Input_GetGamepadAxis(GamepadAxis gamepadAxis);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static CursorMode Input_GetCursorMode();
@@ -963,10 +1614,10 @@ namespace Vortex {
 		internal extern static void Gui_End();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_Separator();
+		internal extern static void Gui_Underline();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_Spacing();
+		internal extern static void Gui_Spacing(ulong count);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_Text(string text);
@@ -974,24 +1625,42 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Gui_Button(string text);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyBool(string label, out bool value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyInt(string label, out int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyULong(string label, out ulong value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyFloat(string label, out float value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyDouble(string label, out double value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec2(string label, out Vector2 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec3(string label, out Vector3 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec4(string label, out Vector4 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor3(string label, out Color3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor4(string label, out Color4 value);
+
 		#endregion
 
-		#region Debug
+		#region Log
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Log(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Info(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Warn(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Error(string message);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Debug_Critical(string message);
+		internal extern static void Log_Message(string message, LogType type);
 
 		#endregion
 	}

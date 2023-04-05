@@ -1,0 +1,588 @@
+Scene: PBRScene
+Entities:
+  - Entity: 7745179279750652673
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 3, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\MarbleTiles\MarbleTiles01_4K_Normal.png
+      AlbedoMapPath: Textures\PBR\MarbleTiles\MarbleTiles01_4K_BaseColor.png
+      Metallic: 0.00999999978
+      RoughnessMapPath: Textures\PBR\MarbleTiles\MarbleTiles01_4K_Roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 7984967876501552256
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 3, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      AlbedoMapPath: Textures\PBR\PaintedMetal\PaintedMetal01_4K_BaseColor.png
+      MetallicMapPath: Textures\PBR\PaintedMetal\PaintedMetal01_4K_Metallic.png
+      RoughnessMapPath: Textures\PBR\PaintedMetal\PaintedMetal01_4K_Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\PaintedMetal\PaintedMetal01_4K_AO.png
+      TextureScale: [1, 1]
+  - Entity: 13867192994577478312
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\ParquetFlooring\ParquetFlooring04_4K_Normal.png
+      AlbedoMapPath: Textures\PBR\ParquetFlooring\ParquetFlooring04_4K_BaseColor.png
+      Metallic: 0.00999999978
+      RoughnessMapPath: Textures\PBR\ParquetFlooring\ParquetFlooring04_4K_Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\ParquetFlooring\ParquetFlooring04_4K_AO.png
+      TextureScale: [1, 1]
+  - Entity: 17570962845115696911
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 3, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\ScratchedGold\ScratchedGold01_4K_Normal.png
+      AlbedoMapPath: Textures\PBR\ScratchedGold\ScratchedGold01_4K_BaseColor.png
+      Metallic: 1
+      RoughnessMapPath: Textures\PBR\ScratchedGold\ScratchedGold01_4K_Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\ScratchedGold\ScratchedGold01_4K_AO.png
+      TextureScale: [1, 1]
+  - Entity: 12574978795116545018
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 3, 3.16649675e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\ScratchedPaintedMetal\ScratchedPaintedMetal01_4K_Normal.png
+      AlbedoMapPath: Textures\PBR\ScratchedPaintedMetal\ScratchedPaintedMetal01_4K_BaseColor.png
+      MetallicMapPath: Textures\PBR\ScratchedPaintedMetal\ScratchedPaintedMetal01_4K_Metallic.png
+      RoughnessMapPath: Textures\PBR\ScratchedPaintedMetal\ScratchedPaintedMetal01_4K_Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\ScratchedPaintedMetal\ScratchedPaintedMetal01_4K_AO.png
+      TextureScale: [1, 1]
+  - Entity: 15487321703972860022
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\MetalGrid\metalgrid1_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\MetalGrid\metalgrid1_basecolor.png
+      MetallicMapPath: Textures\PBR\MetalGrid\metalgrid1_metallic.png
+      RoughnessMapPath: Textures\PBR\MetalGrid\metalgrid1_roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\MetalGrid\metalgrid1_AO.png
+      TextureScale: [1, 1]
+  - Entity: 12616554642489948849
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 4.5, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Titanium\Titanium-Scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Titanium\Titanium-Scuffed_basecolor.png
+      MetallicMapPath: Textures\PBR\Titanium\Titanium-Scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Titanium\Titanium-Scuffed_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 580698461053930483
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4.5, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Iron\Iron-Scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Iron\Iron-Scuffed_basecolor.png
+      MetallicMapPath: Textures\PBR\Iron\Iron-Scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Iron\Iron-Scuffed_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 17587529021079703219
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 4.5, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Copper\Copper-scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Copper\Copper-scuffed_basecolor-boosted.png
+      MetallicMapPath: Textures\PBR\Copper\Copper-scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Copper\Copper-scuffed_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 14378220493577566624
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 4.5, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_normal.png
+      AlbedoMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_basecolor.png
+      MetallicMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_metallic.png
+      RoughnessMapPath: Textures\PBR\Aluminum\Aluminum-Scuffed_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 1709937908598677287
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 7340862994430380820
+      - Handle: 6767676238414649377
+      - Handle: 4214105258981376555
+      - Handle: 14319716450263103335
+      - Handle: 13060212103103351015
+      - Handle: 10794565588649853001
+      - Handle: 15780398506189045291
+      - Handle: 14378220493577566624
+      - Handle: 17587529021079703219
+      - Handle: 580698461053930483
+      - Handle: 12616554642489948849
+      - Handle: 15487321703972860022
+      - Handle: 8022546712875621825
+      - Handle: 17298815367012634368
+      - Handle: 11487658224382403878
+      - Handle: 7117334863489827475
+      - Handle: 14683690963969005663
+      - Handle: 17946669794251668423
+      - Handle: 5934082855980478221
+      - Handle: 2659364364283453838
+      - Handle: 12574978795116545018
+      - Handle: 17570962845115696911
+      - Handle: 13867192994577478312
+      - Handle: 7984967876501552256
+      - Handle: 7745179279750652673
+    TagComponent:
+      Tag: Spheres
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 7340862994430380820
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\RustedSteel\rusted-steel_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\RustedSteel\rusted-steel_albedo.png
+      MetallicMapPath: Textures\PBR\RustedSteel\rusted-steel_metallic.png
+      RoughnessMapPath: Textures\PBR\RustedSteel\rusted-steel_roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\RustedSteel\rusted-steel_ao.png
+      TextureScale: [1, 1]
+  - Entity: 6767676238414649377
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, -1.86264515e-09, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Granite\gray-granite-flecks-Normal-ogl.png
+      AlbedoMapPath: Textures\PBR\Granite\gray-granite-flecks-albedo.png
+      MetallicMapPath: Textures\PBR\Granite\gray-granite-flecks-Metallic.png
+      RoughnessMapPath: Textures\PBR\Granite\gray-granite-flecks-Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Granite\gray-granite-flecks-ao.png
+      TextureScale: [1, 1]
+  - Entity: 4214105258981376555
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.99996758, 4.5, 2.88669355e-08]
+      Rotation: [0, -0, 0]
+      Scale: [0.99999994, 1, 0.99999994]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Gold\normal.png
+      AlbedoMapPath: Textures\PBR\Gold\albedo.png
+      MetallicMapPath: Textures\PBR\Gold\metallic.png
+      RoughnessMapPath: Textures\PBR\Gold\roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Gold\ao.png
+      TextureScale: [1, 1]
+  - Entity: 5681226600142261862
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4, 3, 4]
+      Rotation: [-0.436332315, -0.785398185, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\PaperMill_E_3k.hdr
+      Rotation: 0
+      Intensity: 1
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: WalkSpeed
+          Type: Vector3
+          Data: [2, 2, 2]
+  - Entity: 8022546712875621825
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, -1.49011612e-08, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\RustedIron\rustediron2_normal.png
+      AlbedoMapPath: Textures\PBR\RustedIron\rustediron2_basecolor.png
+      MetallicMapPath: Textures\PBR\RustedIron\rustediron2_metallic.png
+      RoughnessMapPath: Textures\PBR\RustedIron\rustediron2_roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 11487658224382403878
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, -1.49011612e-08, 2.98023224e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Plastic\normal.png
+      AlbedoMapPath: Textures\PBR\Plastic\albedo.png
+      MetallicMapPath: Textures\PBR\Plastic\metallic.png
+      RoughnessMapPath: Textures\PBR\Plastic\roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\Plastic\ao.png
+      TextureScale: [1, 1]
+  - Entity: 2428038519868128268
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.30000019, 6.75358582, -12.3000002]
+      Rotation: [0, -0.0174532924, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 0.200000003
+      CastShadows: true
+  - Entity: 16025406807111236010
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -1.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [21.0013657, 1, 17.9996128]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 4713100716563549281
+    Active: true
+    Parent: 16920930602759839648
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [15, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+      ShadowBias: 5
+      CastShadows: true
+  - Entity: 16467046980354212268
+    Active: true
+    Parent: 16920930602759839648
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-15, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Attenuation: [0.0450000018, 0.00749999983]
+      ShadowBias: 5
+      CastShadows: true
+  - Entity: 16920930602759839648
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 16467046980354212268
+      - Handle: 4713100716563549281
+    TagComponent:
+      Tag: Lights
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 7117334863489827475
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [3, 1.5, -5.96046448e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Marble\Marble006_4K_NormalDX.png
+      AlbedoMapPath: Textures\PBR\Marble\Marble006_4K_Color.png
+      Metallic: 0.00999999978
+      RoughnessMapPath: Textures\PBR\Marble\Marble006_4K_Roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 14683690963969005663
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.5, 1.5, -5.96046448e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\MetalPlates2\MetalPlates008_4K_NormalGL.png
+      AlbedoMapPath: Textures\PBR\MetalPlates2\MetalPlates008_4K_Color.png
+      MetallicMapPath: Textures\PBR\MetalPlates2\MetalPlates008_4K_Metalness.png
+      RoughnessMapPath: Textures\PBR\MetalPlates2\MetalPlates008_4K_Roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 17946669794251668423
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 1.5, -5.96046448e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\Porcelain\Porcelain003_4K_NormalGL.png
+      AlbedoMapPath: Textures\PBR\Porcelain\Porcelain003_4K_Color.png
+      Metallic: 0.00999999978
+      RoughnessMapPath: Textures\PBR\Porcelain\Porcelain003_4K_Roughness.png
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 5934082855980478221
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.5, 1.5, -5.96046448e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\StainlessSteel\used-stainless-steel2_normal-ogl.png
+      AlbedoMapPath: Textures\PBR\StainlessSteel\used-stainless-steel2_albedo.png
+      MetallicMapPath: Textures\PBR\StainlessSteel\used-stainless-steel2_metallic.png
+      RoughnessMapPath: Textures\PBR\StainlessSteel\used-stainless-steel2_roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\StainlessSteel\used-stainless-steel2_ao.png
+      TextureScale: [1, 1]
+  - Entity: 2659364364283453838
+    Active: true
+    Parent: 1709937908598677287
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-3, 1.5, -6.14672899e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      NormalMapPath: Textures\PBR\LeatherDark\Leather034C_4K_NormalGL.png
+      AlbedoMapPath: Textures\PBR\LeatherDark\Leather034C_4K_Color.png
+      Metallic: 0.00999999978
+      RoughnessMapPath: Textures\PBR\LeatherDark\Leather034C_4K_Roughness.png
+      Emission: [0, 0, 0]
+      AmbientOcclusionMapPath: Textures\PBR\LeatherDark\Leather034C_4K_AmbientOcclusion.png
+      TextureScale: [1, 1]

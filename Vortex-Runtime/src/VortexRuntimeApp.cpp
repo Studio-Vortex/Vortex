@@ -36,13 +36,17 @@ namespace Vortex {
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
 		props.SampleCount = 1;
-		props.MaximizeWindow = false;
-		props.WindowDecorated = true;
+		props.MaximizeWindow = true;
+		props.WindowDecorated = false;
 		props.VSync = true;
 		props.EnableGUI = true;
+		props.IsRuntime = true;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		props.WorkingDirectory = "C:/dev/Vortex Engine";
+		{
+			// Note this is here for debugging purposes inside visual studio otherwise it can be removed
+			props.WorkingDirectory = "C:/dev/Vortex Engine";
+		}
 		props.CommandLineArgs = args;
 
 		return new VortexRuntime(props);

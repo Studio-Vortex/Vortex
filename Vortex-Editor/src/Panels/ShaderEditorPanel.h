@@ -1,21 +1,20 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 #include <TextEditor.h>
 
 namespace Vortex {
 
-	class ShaderEditorPanel : public EditorPanel
+	class ShaderEditorPanel
 	{
 	public:
 		ShaderEditorPanel();
-		~ShaderEditorPanel() override = default;
+		~ShaderEditorPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

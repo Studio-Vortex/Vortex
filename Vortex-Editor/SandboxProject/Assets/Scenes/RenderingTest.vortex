@@ -1,0 +1,104 @@
+Scene: RenderingTest
+Entities:
+  - Entity: 7765858340618289196
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 10]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 13289591643945133999
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 15.3999996, 0]
+      Rotation: [0.0043633231, -0.0174532924, -0.00872664619]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      CastShadows: true
+  - Entity: 4217714830724021058
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4.69546843, 10.0859566]
+      Rotation: [-0.267035365, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\neon_photostudio_4k.hdr
+      Rotation: -268
+  - Entity: 5887988287301750662
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.00861924887, 2.30240369, 0.291668117]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [1, 1, 1]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false

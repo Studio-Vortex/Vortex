@@ -1,47 +1,64 @@
 #include "vxpch.h"
 #include "AudioListener.h"
 
-#include "Vortex/Audio/AudioEngine.h"
+#include "Vortex/Audio/PlaybackDevice.h"
 
 namespace Vortex {
 
-	AudioListener::AudioListener(const ListenerProperties& props)
-		: m_Properties(props)
+	AudioListener::AudioListener(const ListenerDeviceProperties& props, PlaybackDevice& playbackDevice, uint32_t listenerIndex)
+		: m_Properties(props), m_ListenerIndex(listenerIndex)
 	{
-		s_ListenerCount++;
-		m_ListenerIndex = s_ListenerCount;
+		m_ListenerDevice.Init(playbackDevice, listenerIndex);
 	}
 
 	AudioListener::~AudioListener()
 	{
-		s_ListenerCount--;
+		m_ListenerDevice.Shutdown();
 	}
 
 	void AudioListener::SetPosition(const Math::vec3& position)
 	{
-		
+		m_ListenerDevice.SetPosition(position);
 	}
 
 	void AudioListener::SetDirection(const Math::vec3& direction)
 	{
+		m_ListenerDevice.SetDirection(direction);
 	}
 
 	void AudioListener::SetVelocity(const Math::vec3& velocity)
 	{
+		m_ListenerDevice.SetVelocity(velocity);
 	}
 
-	void AudioListener::SetCone(const ListenerProperties::AudioCone& cone)
+	void AudioListener::SetCone(const AudioCone& cone)
 	{
+		m_ListenerDevice.SetCone(cone.InnerAngle, cone.OuterAngle, cone.OuterGain);
 	}
 
-	SharedRef<AudioListener> AudioListener::Create(const ListenerProperties& props)
+	ListenerDeviceProperties& AudioListener::GetProperties()
 	{
-		return SharedRef<AudioListener>::Create(props);
+		return m_Properties;
 	}
 
-	SharedRef<AudioListener> AudioListener::Create()
+	const ListenerDeviceProperties& AudioListener::GetProperties() const
 	{
-		return SharedRef<AudioListener>::Create();
+		return m_Properties;
+	}
+
+	uint32_t AudioListener::GetListenerIndex() const
+	{
+		return m_ListenerIndex;
+	}
+
+	SharedReference<AudioListener> AudioListener::Create(const ListenerDeviceProperties& props, PlaybackDevice& device, uint32_t listenerIndex)
+	{
+		return SharedReference<AudioListener>::Create(props, device, listenerIndex);
+	}
+
+	SharedReference<AudioListener> AudioListener::Create()
+	{
+		return SharedReference<AudioListener>::Create();
 	}
 
 }

@@ -1,14 +1,12 @@
 #include "vxpch.h"
-#include "WindowsNetworking.h"
+#include "Vortex/Networking/Networking.h"
+
+#include <WinSock2.h>
+#include <ws2tcpip.h>
 
 namespace Vortex {
 
-	WindowsSockets::WindowsSockets()
-	{
-		Init();
-	}
-
-	bool WindowsSockets::Init()
+	void Networking::Init()
 	{
 		WSADATA socketData;
 		ZeroMemory(&socketData, sizeof(WSADATA));
@@ -21,8 +19,11 @@ namespace Vortex {
 		{
 
 		}
+	}
 
-		return false;
+	void Networking::Shutdown()
+	{
+
 	}
 
 }

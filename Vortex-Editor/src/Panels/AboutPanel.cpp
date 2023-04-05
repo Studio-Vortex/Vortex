@@ -15,14 +15,26 @@ namespace Vortex {
 		Gui::Begin("About", &s_ShowPanel);
 
 		Gui::PushFont(largeFont);
-		Gui::Text("Vortex Engine");
+		Gui::Text("Vortex Game Engine");
 		Gui::PopFont();
 
-		Gui::Separator();
-		Gui::Text("Vortex is an early-stage game engine for Windows.");
-		Gui::Text("For more info, visit: https://github.com/Jshuk-7/Vortex");
+		UI::Draw::Underline();
+		Gui::Text("Vortex is an early-stage game engine and interactive application for Windows.");
+
+		Gui::Spacing();
+
 		Gui::Text("This software contains source code powered by NVIDIA Corporation.");
-		Gui::Separator();
+		UI::Draw::Underline();
+
+		Gui::Spacing();
+		
+		if (Gui::Button("Go To Documentation"))
+		{
+			Platform::OpenURLInBrowser("https://jshuk-7.github.io/Vortex-Web");
+		}
+
+		Gui::Spacing();
+		UI::Draw::Underline();
 
 		Gui::PushFont(boldFont);
 		Gui::Text("Vortex Core Team");

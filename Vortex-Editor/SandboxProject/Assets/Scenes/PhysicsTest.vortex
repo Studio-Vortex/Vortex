@@ -1,0 +1,175 @@
+Scene: PhysicsTest
+Entities:
+  - Entity: 16667712689186544879
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 10]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 1
+      Roughness: 0.319999993
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12946188233478012265
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Spawner
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Default/Sphere.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ScriptComponent:
+      ClassName: Sandbox.TestGame.Test
+  - Entity: 8822852638765074949
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 0, 0]
+      Shininess: 32
+      Albedo: [1, 0, 0]
+      Metallic: 1
+      Roughness: 0.319999993
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [1, 1, 1]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: true
+      LockPositionY: true
+      LockPositionZ: true
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12631347723645982242
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2, 6, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.200000003, 0.200000003, 0.200000003]
+      Specular: [1, 1, 1]
+      Color: [1, 1, 1]
+      Position: [-2, 6, 2]
+      Attenuation: [-0, -0]
+  - Entity: 16243324924802072915
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 7.99398422]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    AudioSourceComponent:
+      AudioSourcePath: SFX\CalmMusic.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false

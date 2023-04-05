@@ -5,64 +5,53 @@
 #include "Vortex/Core/Application.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/Model.h"
+#include "Vortex/Renderer/BloomPass.h"
 
-#include "Vortex/Editor/EditorResources.h"
-
-// Temporary
-#include <Glad/glad.h>
+#include <unordered_map>
 
 namespace Vortex {
 
-	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
-	static constexpr const char* EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
-	static constexpr const char* IRRADIANCE_CONVOLUTION_SHADER_PATH = "Resources/Shaders/Irradiance_Convolution.glsl";
-	static constexpr const char* IBL_PREFILTER_SHADER_PATH = "Resources/Shaders/IBL_Prefilter.glsl";
-	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/Renderer_BRDF_LUT.glsl";
-	static constexpr const char* ENVIRONMENT_SHADER_PATH = "Resources/Shaders/Renderer_Environment.glsl";
-	static constexpr const char* SKYLIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SkyLightShadowMap.glsl";
-	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
-	static constexpr const char* SPOT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SpotLightShadowMap.glsl";
-	static constexpr const char* GAUSSIAN_BLUR_SHADER_PATH = "Resources/Shaders/GaussianBlur.glsl";
-	static constexpr const char* BLOOM_FINAL_COMPOSITE_SHADER_PATH = "Resources/Shaders/BloomFinalComposite.glsl";
-	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
-
-	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
-
 	struct RendererInternalData
 	{
-		SharedRef<ShaderLibrary> ShaderLibrary = nullptr;
+		ShaderLibrary ShaderLibrary;
 
-		SharedRef<Model> SkyboxMesh = nullptr;
+		SharedReference<StaticMesh> SkyboxMesh = nullptr;
+		SharedReference<Skybox> CurrentEnvironment = nullptr;
+
+		SharedReference<Material> WhiteMaterial = nullptr;
 
 		static constexpr inline uint32_t MaxPointLights = 50;
 		static constexpr inline uint32_t MaxSpotLights = 50;
 		
 		SceneLightDescription SceneLightDesc{};
 
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 
-		SharedRef<HDRFramebuffer> HDRFramebuffer = nullptr;
-		SharedRef<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
-		std::vector<SharedRef<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
-		std::vector<SharedRef<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
-
-		SharedRef<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
+		SharedReference<HDRFramebuffer> HDRFramebuffer = nullptr;
+		SharedReference<DepthMapFramebuffer> SkylightDepthMapFramebuffer = nullptr;
+		std::vector<SharedReference<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
+		std::vector<SharedReference<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
 
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
-		Math::vec3 BloomThreshold = Math::vec3(0.2126f, 0.7152f, 0.0722f);
+
+		BloomRenderPass BloomRenderPass;
+		struct BloomSettings
+		{
+			float Threshold = 0.2126f;
+			float Knee = 0.7152f;
+			float Intensity = 0.0722f;
+		} BloomSettings;
 		uint32_t BloomSampleSize = 5;
 
 		RenderStatistics RendererStatistics;
 		RenderTime RenderTime;
 		RendererAPI::TriangleCullMode CullMode = RendererAPI::TriangleCullMode::None;
 
-		SharedRef<Texture2D> BRDF_LUT = nullptr;
+		SharedReference<Texture2D> BRDF_LUT = nullptr;
 
 		uint32_t RenderFlags = 0;
 	};
@@ -75,23 +64,42 @@ namespace Vortex {
 
 		RenderCommand::Init();
 
-		s_Data.ShaderLibrary = ShaderLibrary::Create();
-		s_Data.ShaderLibrary->Load("PBR", PBR_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("EquirectangularToCubemap", EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("IrradianceConvolution", IRRADIANCE_CONVOLUTION_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("IBL_Prefilter", IBL_PREFILTER_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Environment", ENVIRONMENT_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("SkyLightShadowMap", SKYLIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("SpotLightShadowMap", SPOT_LIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Blur", GAUSSIAN_BLUR_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("BloomFinalComposite", BLOOM_FINAL_COMPOSITE_SHADER_PATH);
-		s_Data.ShaderLibrary->Load("Stencil", STENCIL_SHADER_PATH);
+		// Mesh shaders
+		s_Data.ShaderLibrary.Load("PBR", "Resources/Shaders/Renderer_PBR.glsl");
+		s_Data.ShaderLibrary.Load("PBR_Static", "Resources/Shaders/Renderer_PBR_Static.glsl");
+		
+		// PBR shaders
+		s_Data.ShaderLibrary.Load("EquirectangularToCubemap", "Resources/Shaders/PBR_Equirectangular_to_Cubemap.glsl");
+		s_Data.ShaderLibrary.Load("IrradianceConvolution", "Resources/Shaders/PBR_Irradiance_Convolution.glsl");
+		s_Data.ShaderLibrary.Load("IBL_Prefilter", "Resources/Shaders/PBR_IBL_Prefilter.glsl");
+		s_Data.ShaderLibrary.Load("BRDF_LUT", "Resources/Shaders/PBR_BRDF_LUT.glsl");
+		s_Data.ShaderLibrary.Load("Environment", "Resources/Shaders/PBR_Environment.glsl");
 
-		s_Data.BRDF_LUT = Texture2D::Create(BRDF_LUT_TEXTURE_PATH, TextureWrap::Clamp);
+		// Shadow map shaders
+		s_Data.ShaderLibrary.Load("SkyLightShadowMap", "Resources/Shaders/Renderer_SkyLightShadow.glsl");
+		s_Data.ShaderLibrary.Load("PointLightShadowMap", "Resources/Shaders/Renderer_PointLightShadow.glsl");
+		s_Data.ShaderLibrary.Load("SpotLightShadowMap", "Resources/Shaders/Renderer_SpotLightShadow.glsl");
+		
+		s_Data.ShaderLibrary.Load("Stencil", "Resources/Shaders/Renderer_Stencil.glsl");
 
-		s_Data.SkyboxMesh = Model::Create(MeshType::Cube);
+		// Bloom shaders
+		s_Data.ShaderLibrary.Load("Bloom_Upsample", "Resources/Shaders/Bloom_Upsample.glsl");
+		s_Data.ShaderLibrary.Load("Bloom_Downsample", "Resources/Shaders/Bloom_Downsample.glsl");
+		s_Data.ShaderLibrary.Load("Bloom", "Resources/Shaders/Bloom.glsl");
+		s_Data.ShaderLibrary.Load("Bloom_FinalComposite", "Resources/Shaders/Bloom_FinalComposite.glsl");
+
+		// BRDF Look up texture
+		TextureProperties brdfImageProps;
+		brdfImageProps.Filepath = "Resources/Textures/IBL_BRDF_LUT.tga";
+		brdfImageProps.WrapMode = ImageWrap::Clamp;
+		s_Data.BRDF_LUT = Texture2D::Create(brdfImageProps);
+
+		SharedReference<Shader> shader = s_Data.ShaderLibrary.Get("PBR_Static");
+		MaterialProperties materialProps{};
+		materialProps.Albedo = Math::vec3(1.0f, 1.0f, 1.0f);
+		s_Data.WhiteMaterial = Material::Create(shader, materialProps);
+
+		s_Data.SkyboxMesh = StaticMesh::Create(MeshType::Cube);
 
 #if VX_RENDERER_STATISTICS
 		ResetStats();
@@ -104,37 +112,38 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		s_Data.SkyboxMesh.Reset();
+		s_Data.WhiteMaterial.Reset();
+
+		s_Data.BRDF_LUT.Reset();
+
+		s_Data.BloomRenderPass.Destroy();
+
 		Renderer2D::Shutdown();
 	}
 
 	void Renderer::OnWindowResize(const Viewport& viewport)
 	{
 		RenderCommand::SetViewport(viewport);
+		s_Data.BloomRenderPass.Destroy();
+		CreateBlurFramebuffer(viewport.Width, viewport.Height);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
+		BindRenderTarget(targetFramebuffer);
 
-		BindShaders(Math::Inverse(transform.GetTransform()), camera.GetProjectionMatrix(), transform.Translation);
+		BindShaders(view, camera.GetProjectionMatrix(), translation);
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
-	void Renderer::BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (targetFramebuffer)
-		{
-			s_Data.TargetFramebuffer = targetFramebuffer;
-			s_Data.TargetFramebuffer->Bind();
-		}
+		BindRenderTarget(targetFramebuffer);
 
 		BindShaders(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPosition());
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
@@ -142,12 +151,10 @@ namespace Vortex {
 
 	void Renderer::EndScene()
 	{
-		if (s_Data.TargetFramebuffer)
-			s_Data.TargetFramebuffer->Unbind();
 		s_Data.TargetFramebuffer = nullptr;
 	}
 
-	void Renderer::Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
+	void Renderer::Submit(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -157,7 +164,7 @@ namespace Vortex {
 		s_Data.RendererStatistics.DrawCalls++;
 	}
 
-	void Renderer::DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray)
+	void Renderer::DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -165,119 +172,98 @@ namespace Vortex {
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 		s_Data.RendererStatistics.DrawCalls++;
-	}
-
-	void Renderer::RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
-	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::CameraIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-	}
-
-	void Renderer::RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID)
-	{
-		switch (lightSource.Type)
-		{
-			case LightType::Directional:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SkyLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-			case LightType::Point:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::PointLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-			case LightType::Spot:
-				Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::SpotLightIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
-				break;
-		}
-	}
-
-	void Renderer::RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID)
-	{
-		Renderer2D::DrawQuadBillboard(cameraView, transform.Translation, EditorResources::AudioSourceIcon, Math::vec2(1.0f), ColorToVec4(Color::White), entityID);
 	}
 
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
 	{
-		SharedRef<LightSource> lightSource = lightSourceComponent.Source;
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYCOUNT(shaders);
 
 		switch (lightSourceComponent.Type)
 		{
 			case LightType::Directional:
 			{
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_SkyLight.Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
-				pbrShader->SetFloat("u_SkyLight.ShadowBias", lightSource->GetShadowBias() / 1'000.0f);
-				pbrShader->SetBool("u_SkyLight.SoftShadows", lightSource->GetSoftShadows());
-				pbrShader->SetFloat("u_SkyLight.Intensity", lightSource->GetIntensity());
-				s_Data.SceneLightDesc.HasSkyLight = true;
-
-				Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
-				Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
+				Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+				Math::mat4 lightView = Math::LookAt(transform.Translation, transform.GetRotationEuler(), Math::vec3(0.0f, 1.0f, 0.0f));
 				Math::mat4 lightProjection = orthogonalProjection * lightView;
-				pbrShader->SetMat4("u_SkyLightProjection", lightProjection);
+
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
+
+					shader->Enable();
+					shader->SetFloat3("u_SkyLight.Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_SkyLight.Direction", Math::Normalize(transform.GetRotationEuler()));
+					shader->SetFloat("u_SkyLight.ShadowBias", lightSourceComponent.ShadowBias / 1'000.0f);
+					shader->SetBool("u_SkyLight.SoftShadows", lightSourceComponent.SoftShadows);
+					shader->SetFloat("u_SkyLight.Intensity", lightSourceComponent.Intensity);
+					shader->SetMat4("u_SkyLightProjection", lightProjection);
+				}
+
+				s_Data.SceneLightDesc.HasSkyLight = true;
 
 				break;
 			}
 			case LightType::Point:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.PointLightIndex;
+				uint32_t& pointLightIndex = s_Data.SceneLightDesc.PointLightIndex;
 
-				if (i + 1 > RendererInternalData::MaxPointLights)
+				if (pointLightIndex > RendererInternalData::MaxPointLights - 1)
 					break;
 
-				lightSource->SetPointLightIndex(i);
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
 
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_PointLights[" + std::to_string(i) +"].Position", transform.Translation);
-				pbrShader->SetFloat("u_PointLights[" + std::to_string(i) +"].Intensity", lightSource->GetIntensity());
+					shader->Enable();
+					shader->SetFloat3("u_PointLights[" + std::to_string(pointLightIndex) + "].Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_PointLights[" + std::to_string(pointLightIndex) + "].Position", transform.Translation);
+					shader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].Intensity", lightSourceComponent.Intensity);
+				}
 
-				i++;
+				pointLightIndex++;
 
 				break;
 			}
 			case LightType::Spot:
 			{
-				uint32_t& i = s_Data.SceneLightDesc.SpotLightIndex;
+				uint32_t& spotLightIndex = s_Data.SceneLightDesc.SpotLightIndex;
 
-				if (i + 1 > RendererInternalData::MaxSpotLights)
+				if (spotLightIndex > RendererInternalData::MaxSpotLights - 1)
 					break;
 
-				lightSource->SetSpotLightIndex(i);
+				for (uint32_t i = 0; i < shaderCount; i++)
+				{
+					auto& shader = shaders[i];
 
-				pbrShader->Enable();
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Radiance", lightSource->GetRadiance());
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Position", transform.Translation);
-				pbrShader->SetFloat3("u_SpotLights[" + std::to_string(i) + "].Direction", Math::Normalize(transform.GetRotationEuler()));
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].Intensity", lightSource->GetIntensity());
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSource->GetCutOff())));
-				pbrShader->SetFloat("u_SpotLights[" + std::to_string(i) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSource->GetOuterCutOff())));
+					shader->Enable();
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Radiance", lightSourceComponent.Radiance);
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Position", transform.Translation);
+					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Direction", transform.GetRotationEuler());
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].Intensity", lightSourceComponent.Intensity);
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].CutOff", Math::Cos(Math::Deg2Rad(lightSourceComponent.Cutoff)));
+					shader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].OuterCutOff", Math::Cos(Math::Deg2Rad(lightSourceComponent.OuterCutoff)));
+				}
 
-				i++;
+				spotLightIndex++;
 
 				break;
 			}
 		}
 	}
 
-	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent)
+	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		SharedRef<Skybox> skybox = skyboxComponent.Source;
-
-		bool framebufferNotCreated = s_Data.HDRFramebuffer == nullptr;
+		if (!s_Data.SceneLightDesc.HasEnvironment)
+			return;
 
 		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
-
-		// TODO fix this hack!
-		if (skybox->PathChanged() || framebufferNotCreated)
-		{
-			CreateEnvironmentMap(skyboxComponent);
-		}
 
 		// Render Environment Map
 		{
 			RenderCommand::DisableDepthMask();
 
-			SharedRef<Shader> environmentShader = s_Data.ShaderLibrary->Get("Environment");
+			SharedReference<Shader> environmentShader = s_Data.ShaderLibrary.Get("Environment");
 			environmentShader->Enable();
 			environmentShader->SetMat4("u_View", Math::mat4(Math::mat3(view)));
 			environmentShader->SetMat4("u_Projection", projection);
@@ -286,7 +272,7 @@ namespace Vortex {
 			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
 			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
-			SharedRef<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+			SharedReference<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes().at(0).GetVertexArray();
 
 			skyboxMeshVA->Bind();
 			s_Data.HDRFramebuffer->BindEnvironmentCubemap();
@@ -294,7 +280,7 @@ namespace Vortex {
 			RenderCommand::EnableDepthMask();
 		}
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
 		s_Data.HDRFramebuffer->BindIrradianceCubemap();
@@ -303,6 +289,16 @@ namespace Vortex {
 		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
 		s_Data.BRDF_LUT->Bind(3);
 		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+
+		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		pbrStaticShader->Enable();
+		pbrStaticShader->SetInt("u_SceneProperties.IrradianceMap", 1);
+		s_Data.HDRFramebuffer->BindIrradianceCubemap();
+		pbrStaticShader->SetInt("u_SceneProperties.PrefilterMap", 2);
+		s_Data.HDRFramebuffer->BindPrefilterCubemap();
+		pbrStaticShader->SetInt("u_SceneProperties.BRDFLut", 3);
+		s_Data.BRDF_LUT->Bind(3);
+		pbrStaticShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
 
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
@@ -340,11 +336,9 @@ namespace Vortex {
 		return s_Data.SceneLightDesc;
 	}
 
-	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent)
+	void Renderer::CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		SharedRef<Skybox> skybox = skyboxComponent.Source;
-
-		s_Data.HDRFramebuffer = HDRFramebuffer::Create({});
+		s_Data.HDRFramebuffer = HDRFramebuffer::Create(FramebufferProperties{});
 
 		Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
 
@@ -362,13 +356,13 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->CreateEnvironmentCubemap(s_Data.EnvironmentMapResolution);
 
 		// convert HDR equirectangular environment map to cubemap equivalent
-		SharedRef<Shader> equirectToCubemapShader = s_Data.ShaderLibrary->Get("EquirectangularToCubemap");
+		SharedReference<Shader> equirectToCubemapShader = s_Data.ShaderLibrary.Get("EquirectangularToCubemap");
 		equirectToCubemapShader->Enable();
 		equirectToCubemapShader->SetInt("u_EquirectangularMap", 0);
 		equirectToCubemapShader->SetMat4("u_Projection", captureProjection);
-		skybox->Bind();
+		environment->Bind();
 
-		SharedRef<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetVertexArray();
+		SharedReference<VertexArray> cubeMeshVA = s_Data.SkyboxMesh->GetSubmeshes().at(0).GetVertexArray();
 
 		{
 			// don't forget to configure the viewport to the capture dimensions.
@@ -402,7 +396,7 @@ namespace Vortex {
 		s_Data.HDRFramebuffer->CreateIrradianceCubemap(irradianceTexSize);
 		s_Data.HDRFramebuffer->RescaleAndBindFramebuffer(irradianceTexSize, irradianceTexSize);
 
-		SharedRef<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary->Get("IrradianceConvolution");
+		SharedReference<Shader> irradianceConvolutionShader = s_Data.ShaderLibrary.Get("IrradianceConvolution");
 		irradianceConvolutionShader->Enable();
 		irradianceConvolutionShader->SetInt("u_EnvironmentMap", 0);
 		irradianceConvolutionShader->SetMat4("u_Projection", captureProjection);
@@ -435,7 +429,7 @@ namespace Vortex {
 		// Create Prefiltered Envrionment Map
 		s_Data.HDRFramebuffer->CreatePrefilteredEnvironmentCubemap(s_Data.PrefilterMapResolution);
 
-		SharedRef<Shader> iblPrefilterShader = s_Data.ShaderLibrary->Get("IBL_Prefilter");
+		SharedReference<Shader> iblPrefilterShader = s_Data.ShaderLibrary.Get("IBL_Prefilter");
 		iblPrefilterShader->Enable();
 		iblPrefilterShader->SetInt("u_EnvironmentMap", 0);
 		iblPrefilterShader->SetMat4("u_Projection", captureProjection);
@@ -448,10 +442,11 @@ namespace Vortex {
 		for (uint32_t mip = 0; mip < maxMipLevels; mip++)
 		{
 			// Resize framebuffer according to mip-level size
-			uint32_t mipWidth = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
-			uint32_t mipHeight = static_cast<uint32_t>(s_Data.PrefilterMapResolution * std::pow(0.5, mip));
+			uint32_t mipWidth = (uint32_t)s_Data.PrefilterMapResolution * std::pow(0.5, mip);
+			uint32_t mipHeight = (uint32_t)s_Data.PrefilterMapResolution * std::pow(0.5, mip);
 			s_Data.HDRFramebuffer->BindAndSetRenderbufferStorage(mipWidth, mipHeight);
 
+			// don't forget to set viewport to mip level
 			{
 				Viewport viewport;
 				viewport.TopLeftXPos = 0;
@@ -475,17 +470,19 @@ namespace Vortex {
 				RenderCommand::DrawTriangles(cubeMeshVA, 36);
 			}
 		}
+
 		s_Data.HDRFramebuffer->Unbind();
 
-		skybox->SetPathChanged(false);
+		environment->SetShouldReload(false);
 	}
 
-	void Renderer::CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource)
+	void Renderer::CreateShadowMap(LightType type)
 	{
 		switch (type)
 		{
 			case LightType::Directional:
 			{
+				s_Data.SkylightDepthMapFramebuffer.Reset();
 				FramebufferProperties depthFramebufferProps{};
 				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
 				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
@@ -495,23 +492,23 @@ namespace Vortex {
 			}
 			case LightType::Point:
 			{
-				FramebufferProperties depthCubemapProps{};
+				/*FramebufferProperties depthCubemapProps{};
 				depthCubemapProps.Width = s_Data.ShadowMapResolution;
 				depthCubemapProps.Height = s_Data.ShadowMapResolution;
 				SharedRef<DepthCubemapFramebuffer> framebuffer = DepthCubemapFramebuffer::Create(depthCubemapProps);
 				s_Data.PointLightDepthMapFramebuffers.push_back(framebuffer);
-				s_Data.SceneLightDesc.ActivePointLights++;
+				s_Data.SceneLightDesc.ActivePointLights++;*/
 
 				break;
 			}
 			case LightType::Spot:
 			{
-				FramebufferProperties depthFramebufferProps{};
+				/*FramebufferProperties depthFramebufferProps{};
 				depthFramebufferProps.Width = s_Data.ShadowMapResolution;
 				depthFramebufferProps.Height = s_Data.ShadowMapResolution;
 				SharedRef<DepthMapFramebuffer> framebuffer = DepthMapFramebuffer::Create(depthFramebufferProps);
 				s_Data.SpotLightDepthMapFramebuffers.push_back(framebuffer);
-				s_Data.SceneLightDesc.ActiveSpotLights++;
+				s_Data.SceneLightDesc.ActiveSpotLights++;*/
 
 				break;
 			}
@@ -534,259 +531,62 @@ namespace Vortex {
 				{
 					if (IsFlagSet(RenderFlag::EnableBloom))
 						BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
+
 					break;
 				}
 			}
 		}
 	}
 
-	void Renderer::RenderToDepthMap(Scene* contextScene)
+	void Renderer::RenderToDepthMap(SharedReference<Scene>& contextScene)
 	{
-		auto meshRendererView = contextScene->GetAllEntitiesWith<MeshRendererComponent>();
+		auto& sceneMeshes = contextScene->GetSceneMeshes();
+
 		auto lightSourceView = contextScene->GetAllEntitiesWith<LightSourceComponent>();
 
-		for (auto& lightSource : lightSourceView)
+		if (!s_Data.SkylightDepthMapFramebuffer)
 		{
-			Entity lightSourceEntity{ lightSource, contextScene };
+			CreateShadowMap(LightType::Directional);
+		}
+
+		for (const auto& lightSource : lightSourceView)
+		{
+			Entity lightSourceEntity{ lightSource, contextScene.Raw() };
 			LightSourceComponent& lightSourceComponent = lightSourceEntity.GetComponent<LightSourceComponent>();
-			
+
 			switch (lightSourceComponent.Type)
 			{
 				case LightType::Directional:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
 					{
 						s_Data.SkylightDepthMapFramebuffer.Reset();
 						continue;
 					}
 
-					// Configure shader
-					Math::mat4 orthogonalProjection = Math::Ortho(-50.0f, 50.0f, -50.0f, 50.0f, 0.01f, 500.0f);
-					TransformComponent& transform = lightSourceEntity.GetTransform();
-					Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
-					Math::mat4 lightProjection = orthogonalProjection * lightView;
-					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SkyLightShadowMap");
-
-					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
-
-					{
-						// don't forget to configure the viewport to the shadow resolution
-						Viewport viewport;
-						viewport.TopLeftXPos = 0;
-						viewport.TopLeftYPos = 0;
-						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
-						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
-
-						RenderCommand::SetViewport(viewport);
-					}
-					
-					if (!s_Data.SkylightDepthMapFramebuffer)
-						CreateShadowMap(LightType::Directional, lightSourceComponent.Source);
-
-					s_Data.SkylightDepthMapFramebuffer->Bind();
-					shadowMapShader->Enable();
-					shadowMapShader->SetMat4("u_LightProjection", lightProjection);
-					s_Data.SkylightDepthMapFramebuffer->ClearDepth(1.0f);
-					s_Data.SkylightDepthMapFramebuffer->ClearDepthAttachment();
-
-					// Render to shadow map
-					for (auto& meshRenderer : meshRendererView)
-					{
-						Entity meshRendererEntity{ meshRenderer, contextScene };
-
-						// Skip if not active
-						if (!meshRendererEntity.IsActive())
-							continue;
-
-						MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
-						Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
-						shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
-
-						SharedRef<Model> model = meshRendererComponent.Mesh;
-						if (!model)
-							continue;
-
-						if (model->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
-						{
-							model->RenderToSkylightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
-							continue;
-						}
-
-						model->RenderToSkylightShadowMap(worldSpaceTransform);
-					}
-
-					s_Data.SkylightDepthMapFramebuffer->Unbind();
-					RenderCommand::SetCullMode(s_Data.CullMode);
+					RenderDirectionalLightShadow(lightSourceComponent, lightSourceEntity, sceneMeshes);
 
 					break;
 				}
 				case LightType::Point:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
+					{
 						continue;
-
-					// Configure shader
-					/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
-					float nearPlane = 0.01f;
-					float farPlane = 100.0f;
-					Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(90.0f), aspectRatio, nearPlane, farPlane);
-					TransformComponent& transform = lightSourceEntity.GetTransform();
-
-					Math::mat4 shadowTransforms[6]{};
-					shadowTransforms[0] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(1.0, 0.0, 0.0), Math::vec3(0.0, -1.0, 0.0));
-					shadowTransforms[1] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(-1.0, 0.0, 0.0), Math::vec3(0.0, -1.0, 0.0));
-					shadowTransforms[2] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 1.0, 0.0), Math::vec3(0.0, 0.0, 1.0));
-					shadowTransforms[3] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, -1.0, 0.0), Math::vec3(0.0, 0.0, -1.0));
-					shadowTransforms[4] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, 1.0), Math::vec3(0.0, -1.0, 0.0));
-					shadowTransforms[5] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, -1.0), Math::vec3(0.0, -1.0, 0.0));
-
-					uint32_t pointLightIndex = lightSourceComponent.Source->GetPointLightIndex();
-
-					SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
-					pbrShader->Enable();
-					pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
-					pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].FarPlane", farPlane);
-
-					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("PointLightShadowMap");
-					shadowMapShader->Enable();
-					for (uint32_t i = 0; i < 6; i++)
-						shadowMapShader->SetMat4("u_ShadowTransforms[" + std::to_string(i) + "]", shadowTransforms[i]);
-
-					shadowMapShader->SetFloat3("u_LightPosition", transform.Translation);
-					shadowMapShader->SetFloat("u_FarPlane", farPlane);
-
-					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
-
-					{
-						// don't forget to configure the viewport to the shadow resolution
-						Viewport viewport;
-						viewport.TopLeftXPos = 0;
-						viewport.TopLeftYPos = 0;
-						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
-						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
-
-						RenderCommand::SetViewport(viewport);
 					}
 
-					uint32_t framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
-					uint32_t pointLightCount = s_Data.SceneLightDesc.ActivePointLights;
-
-					if (framebufferCount < pointLightCount || framebufferCount == 0)
-					{
-						CreateShadowMap(LightType::Point, lightSourceComponent.Source);
-						framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
-					}
-
-					for (uint32_t i = 0; i < framebufferCount; i++)
-					{
-						SharedRef<DepthCubemapFramebuffer> pointLightDepthFramebuffer = s_Data.PointLightDepthMapFramebuffers[i];
-						pointLightDepthFramebuffer->Bind();
-						pointLightDepthFramebuffer->ClearDepthAttachment();
-
-						// Render to shadow map
-						for (auto& meshRenderer : meshRendererView)
-						{
-							Entity meshRendererEntity{ meshRenderer, contextScene };
-
-							// Skip if not active
-							if (!meshRendererEntity.IsActive())
-								continue;
-
-							MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
-							Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
-							shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
-
-							if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
-							{
-								meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
-								continue;
-							}
-
-							meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform);
-						}
-
-						pointLightDepthFramebuffer->Unbind();
-					}
-
-					RenderCommand::SetCullMode(s_Data.CullMode);*/
+					RenderPointLightShadow(lightSourceComponent, lightSourceEntity, sceneMeshes);
 
 					break;
 				}
 				case LightType::Spot:
 				{
-					if (!lightSourceComponent.Source->GetCastShadows())
+					if (!lightSourceComponent.CastShadows)
+					{
 						continue;
-
-					/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
-					float nearPlane = 0.01f;
-					float farPlane = 100.0f;
-					Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(45.0f), aspectRatio, nearPlane, farPlane);
-					TransformComponent& transform = lightSourceEntity.GetTransform();
-
-					Math::mat4 view = Math::LookAt(transform.Translation, transform.Translation + Math::Normalize(transform.GetRotationEuler()), { 0.0f, 1.0f, 0.0f });
-
-					uint32_t spotLightIndex = lightSourceComponent.Source->GetSpotLightIndex();
-
-					SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
-					pbrShader->Enable();
-					pbrShader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
-
-					SharedRef<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SpotLightShadowMap");
-					shadowMapShader->Enable();
-
-					RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
-
-					{
-						// don't forget to configure the viewport to the shadow resolution
-						Viewport viewport;
-						viewport.TopLeftXPos = 0;
-						viewport.TopLeftYPos = 0;
-						viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
-						viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
-
-						RenderCommand::SetViewport(viewport);
 					}
 
-					uint32_t framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
-					uint32_t spotLightCount = s_Data.SceneLightDesc.ActiveSpotLights;
-
-					if (framebufferCount < spotLightCount)
-					{
-						CreateShadowMap(LightType::Spot, lightSourceComponent.Source);
-						framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
-					}
-
-					for (uint32_t i = 0; i < framebufferCount; i++)
-					{
-						SharedRef<DepthMapFramebuffer> spotLightDepthFramebuffer = s_Data.SpotLightDepthMapFramebuffers[i];
-						spotLightDepthFramebuffer->Bind();
-						spotLightDepthFramebuffer->ClearDepthAttachment();
-
-						for (auto& meshRenderer : meshRendererView)
-						{
-							Entity meshRendererEntity{ meshRenderer, contextScene };
-
-							// Skip if not active
-							if (!meshRendererEntity.IsActive())
-								continue;
-
-							MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
-							Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
-							shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
-
-							if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
-							{
-								meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
-								continue;
-							}
-
-							meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform);
-						}
-
-						spotLightDepthFramebuffer->Unbind();
-					}
-
-					RenderCommand::SetCullMode(s_Data.CullMode);*/
+					RenderSpotLightShadow(lightSourceComponent, lightSourceEntity, sceneMeshes);
 
 					break;
 				}
@@ -794,33 +594,50 @@ namespace Vortex {
 		}
 	}
 
-	const SharedRef<DepthMapFramebuffer>& Renderer::GetSkyLightDepthFramebuffer()
+	const SharedReference<DepthMapFramebuffer>& Renderer::GetSkyLightDepthFramebuffer()
 	{
 		return s_Data.SkylightDepthMapFramebuffer;
 	}
 
 	void Renderer::BindSkyLightDepthMap()
 	{
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
-		pbrShader->Enable();
-
-		// TEMPORARY FIX
-		{
-			pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
-			pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
-		}
-
 		if (!s_Data.SkylightDepthMapFramebuffer)
 			return;
 
-		s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
-		pbrShader->Enable();
-		pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
+		{
+			SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
+			pbrShader->Enable();
+
+			// TEMPORARY FIX
+			{
+				pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
+				pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+			}
+
+			s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
+			pbrShader->Enable();
+			pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
+		}
+
+		{
+			SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+			pbrStaticShader->Enable();
+
+			// TEMPORARY FIX
+			{
+				pbrStaticShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
+				pbrStaticShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+			}
+
+			s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
+			pbrStaticShader->Enable();
+			pbrStaticShader->SetInt("u_SkyLight.ShadowMap", 4);
+		}
 	}
 
 	void Renderer::BindPointLightDepthMaps()
 	{
-		/*SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		/*SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 
 		const uint32_t startSlot = 12;
@@ -837,7 +654,7 @@ namespace Vortex {
 
 	void Renderer::BindSpotLightDepthMaps()
 	{
-		/*SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		/*SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
 		pbrShader->Enable();
 
 		const uint32_t startSlot = 12;
@@ -852,28 +669,295 @@ namespace Vortex {
 		}*/
 	}
 
+	void Renderer::BindRenderTarget(SharedReference<Framebuffer>& renderTarget)
+	{
+		VX_CORE_ASSERT(renderTarget, "Invalid Render Target!");
+
+		if (renderTarget)
+		{
+			s_Data.TargetFramebuffer = renderTarget;
+			renderTarget->Bind();
+		}
+	}
+
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
 	{
 		VX_PROFILE_FUNCTION();
 
 		Math::mat4 viewProjection = projection * view;
 
-		SharedRef<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		Math::vec3 bloomSettings = { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
+
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomThreshold);
+		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
+
+		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
+		pbrStaticShader->Enable();
+		pbrStaticShader->SetMat4("u_ViewProjection", viewProjection);
+		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		pbrStaticShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+		pbrStaticShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
+		pbrStaticShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
 		s_Data.SceneLightDesc.PointLightIndex = 0;
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
+	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	{
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
+
+		// Configure shader
+		{
+			Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+			TransformComponent& transform = lightSourceEntity.GetTransform();
+			Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
+			Math::mat4 lightProjection = orthogonalProjection * lightView;
+
+			RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
+
+			{
+				// don't forget to configure the viewport to the shadow resolution
+				Viewport viewport;
+				viewport.TopLeftXPos = 0;
+				viewport.TopLeftYPos = 0;
+				viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+				viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+				RenderCommand::SetViewport(viewport);
+			}
+
+			s_Data.SkylightDepthMapFramebuffer->Bind();
+
+			shadowMapShader->Enable();
+			shadowMapShader->SetMat4("u_LightProjection", lightProjection);
+			s_Data.SkylightDepthMapFramebuffer->ClearDepth(1.0f);
+			s_Data.SkylightDepthMapFramebuffer->ClearDepthAttachment();
+		}
+
+		uint32_t i = 0;
+
+		// Render Meshes
+		for (const auto& mesh : sceneMeshes->Meshes)
+		{
+			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceMeshTransforms[i];
+			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+			if (mesh->HasAnimations() && sceneMeshes->MeshEntities[i].HasComponent<AnimatorComponent>())
+			{
+				shadowMapShader->SetBool("u_HasAnimations", true);
+
+				const AnimatorComponent& animatorComponent = sceneMeshes->MeshEntities[i].GetComponent<AnimatorComponent>();
+				const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+				for (uint32_t c = 0; c < transforms.size(); c++)
+				{
+					shadowMapShader->SetMat4("u_FinalBoneMatrices[" + std::to_string(c) + "]", transforms[c]);
+				}
+			}
+			else
+			{
+				shadowMapShader->SetBool("u_HasAnimations", false);
+			}
+
+			const Submesh& submesh = mesh->GetSubmesh();
+
+			submesh.RenderToSkylightShadowMap();
+
+			i++;
+		}
+
+		i = 0;
+
+		// Render Static Meshes
+		for (const auto& staticMesh : sceneMeshes->StaticMeshes)
+		{
+			Math::mat4 worldSpaceTransform = sceneMeshes->WorldSpaceStaticMeshTransforms[i++];
+			shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+			const auto& submeshes = staticMesh->GetSubmeshes();
+
+			for (const auto& [submeshIndex, submesh] : submeshes)
+			{
+				submesh.RenderToSkylightShadowMap();
+			}
+		}
+
+		s_Data.SkylightDepthMapFramebuffer->Unbind();
+		RenderCommand::SetCullMode(s_Data.CullMode);
+	}
+
+	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	{
+		// Configure shader
+		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
+		float nearPlane = 0.01f;
+		float farPlane = 100.0f;
+		Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(90.0f), aspectRatio, nearPlane, farPlane);
+		TransformComponent& transform = lightSourceEntity.GetTransform();
+
+		Math::mat4 shadowTransforms[6]{};
+		shadowTransforms[0] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(1.0, 0.0, 0.0), Math::vec3(0.0, -1.0, 0.0));
+		shadowTransforms[1] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(-1.0, 0.0, 0.0), Math::vec3(0.0, -1.0, 0.0));
+		shadowTransforms[2] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 1.0, 0.0), Math::vec3(0.0, 0.0, 1.0));
+		shadowTransforms[3] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, -1.0, 0.0), Math::vec3(0.0, 0.0, -1.0));
+		shadowTransforms[4] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, 1.0), Math::vec3(0.0, -1.0, 0.0));
+		shadowTransforms[5] = perspectiveProjection * Math::LookAt(transform.Translation, transform.Translation + Math::vec3(0.0, 0.0, -1.0), Math::vec3(0.0, -1.0, 0.0));
+
+		uint32_t pointLightIndex = lightSourceComponent.Source->GetPointLightIndex();
+
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+		pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
+		pbrShader->SetFloat("u_PointLights[" + std::to_string(pointLightIndex) + "].FarPlane", farPlane);
+
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("PointLightShadowMap");
+		shadowMapShader->Enable();
+		for (uint32_t i = 0; i < 6; i++)
+			shadowMapShader->SetMat4("u_ShadowTransforms[" + std::to_string(i) + "]", shadowTransforms[i]);
+
+		shadowMapShader->SetFloat3("u_LightPosition", transform.Translation);
+		shadowMapShader->SetFloat("u_FarPlane", farPlane);
+
+		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+
+		{
+			// don't forget to configure the viewport to the shadow resolution
+			Viewport viewport;
+			viewport.TopLeftXPos = 0;
+			viewport.TopLeftYPos = 0;
+			viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+			viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+			RenderCommand::SetViewport(viewport);
+		}
+
+		uint32_t framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
+		uint32_t pointLightCount = s_Data.SceneLightDesc.ActivePointLights;
+
+		if (framebufferCount < pointLightCount || framebufferCount == 0)
+		{
+			CreateShadowMap(LightType::Point, lightSourceComponent.Source);
+			framebufferCount = s_Data.PointLightDepthMapFramebuffers.size();
+		}
+
+		for (uint32_t i = 0; i < framebufferCount; i++)
+		{
+			SharedRef<DepthCubemapFramebuffer> pointLightDepthFramebuffer = s_Data.PointLightDepthMapFramebuffers[i];
+			pointLightDepthFramebuffer->Bind();
+			pointLightDepthFramebuffer->ClearDepthAttachment();
+
+			// Render to shadow map
+			for (auto& meshRenderer : meshRendererView)
+			{
+				Entity meshRendererEntity{ meshRenderer, contextScene };
+
+				// Skip if not active
+				if (!meshRendererEntity.IsActive())
+					continue;
+
+				MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
+				Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
+				shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+				if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+				{
+					meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+					continue;
+				}
+
+				meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform);
+			}
+
+			pointLightDepthFramebuffer->Unbind();
+		}
+
+		RenderCommand::SetCullMode(s_Data.CullMode);*/
+	}
+
+	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	{
+		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
+		float nearPlane = 0.01f;
+		float farPlane = 100.0f;
+		Math::mat4 perspectiveProjection = Math::Perspective(Math::Deg2Rad(45.0f), aspectRatio, nearPlane, farPlane);
+		TransformComponent& transform = lightSourceEntity.GetTransform();
+
+		Math::mat4 view = Math::LookAt(transform.Translation, transform.Translation + Math::Normalize(transform.GetRotationEuler()), { 0.0f, 1.0f, 0.0f });
+
+		uint32_t spotLightIndex = lightSourceComponent.Source->GetSpotLightIndex();
+
+		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary->Get("PBR");
+		pbrShader->Enable();
+		pbrShader->SetFloat("u_SpotLights[" + std::to_string(spotLightIndex) + "].ShadowBias", lightSourceComponent.Source->GetShadowBias() / 1'000.0f);
+
+		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary->Get("SpotLightShadowMap");
+		shadowMapShader->Enable();
+
+		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+
+		{
+			// don't forget to configure the viewport to the shadow resolution
+			Viewport viewport;
+			viewport.TopLeftXPos = 0;
+			viewport.TopLeftYPos = 0;
+			viewport.Width = (uint32_t)s_Data.ShadowMapResolution;
+			viewport.Height = (uint32_t)s_Data.ShadowMapResolution;
+
+			RenderCommand::SetViewport(viewport);
+		}
+
+		uint32_t framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
+		uint32_t spotLightCount = s_Data.SceneLightDesc.ActiveSpotLights;
+
+		if (framebufferCount < spotLightCount)
+		{
+			CreateShadowMap(LightType::Spot, lightSourceComponent.Source);
+			framebufferCount = s_Data.SpotLightDepthMapFramebuffers.size();
+		}
+
+		for (uint32_t i = 0; i < framebufferCount; i++)
+		{
+			SharedRef<DepthMapFramebuffer> spotLightDepthFramebuffer = s_Data.SpotLightDepthMapFramebuffers[i];
+			spotLightDepthFramebuffer->Bind();
+			spotLightDepthFramebuffer->ClearDepthAttachment();
+
+			for (auto& meshRenderer : meshRendererView)
+			{
+				Entity meshRendererEntity{ meshRenderer, contextScene };
+
+				// Skip if not active
+				if (!meshRendererEntity.IsActive())
+					continue;
+
+				MeshRendererComponent& meshRendererComponent = meshRendererEntity.GetComponent<MeshRendererComponent>();
+				Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(meshRendererEntity);
+				shadowMapShader->SetMat4("u_Model", worldSpaceTransform);
+
+				if (meshRendererComponent.Mesh->HasAnimations() && meshRendererEntity.HasComponent<AnimatorComponent>())
+				{
+					meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform, meshRendererEntity.GetComponent<AnimatorComponent>());
+					continue;
+				}
+
+				meshRendererComponent.Mesh->RenderToPointLightShadowMap(worldSpaceTransform);
+			}
+
+			spotLightDepthFramebuffer->Unbind();
+		}
+
+		RenderCommand::SetCullMode(s_Data.CullMode);*/
+	}
+
 	void Renderer::ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps)
 	{
-		if (!s_Data.BlurFramebuffer)
+		if (false)//should be checking if the framebuffer wasn't created yet
 		{
 			Viewport viewport = postProcessProps.ViewportSize;
 			CreateBlurFramebuffer(viewport.Width, viewport.Height);
@@ -901,10 +985,11 @@ namespace Vortex {
 	{
 		switch (stage)
 		{
-			case Vortex::PostProcessStage::Bloom: return 1;
+			case PostProcessStage::Bloom: return 1;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown post process stage!");
+		return 0;
 	}
 
 	PostProcessStage Renderer::FindHighestPriortyStage(PostProcessStage* stages, uint32_t count)
@@ -927,56 +1012,12 @@ namespace Vortex {
 
 	void Renderer::CreateBlurFramebuffer(uint32_t width, uint32_t height)
 	{
-		FramebufferProperties props{};
-		props.Width = width;
-		props.Height = height;
-		s_Data.BlurFramebuffer = GaussianBlurFramebuffer::Create(props);
+		s_Data.BloomRenderPass.InitRenderPass({ (float)width, (float)height });
 	}
 
-	void Renderer::BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer)
+	void Renderer::BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer)
 	{
-		if (!s_Data.BlurFramebuffer)
-		{
-			const FramebufferProperties& props = sceneFramebuffer->GetProperties();
-			CreateBlurFramebuffer(props.Width, props.Height);
-		}
-
-		bool horizontal = true;
-		SharedRef<Shader> blurShader = s_Data.ShaderLibrary->Get("Blur");
-		blurShader->Enable();
-		glActiveTexture(GL_TEXTURE0);
-		sceneFramebuffer->BindColorTexture(2);
-		blurShader->SetInt("u_Texture", 0);
-
-		for (uint32_t i = 0; i < s_Data.BloomSampleSize; i++)
-		{
-			s_Data.BlurFramebuffer->Bind(!horizontal);
-			blurShader->SetBool("u_Horizontal", !horizontal);
-
-			s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
-
-			Renderer2D::DrawUnitQuad();
-			horizontal = !horizontal;
-		}
-
-		s_Data.BlurFramebuffer->Unbind();
-		RenderCommand::Clear();
-
-		SharedRef<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary->Get("BloomFinalComposite");
-		bloomFinalCompositeShader->Enable();
-
-		glActiveTexture(GL_TEXTURE0);
-		sceneFramebuffer->BindColorTexture(0);
-		bloomFinalCompositeShader->SetInt("u_SceneTexture", 0);
-
-		glActiveTexture(GL_TEXTURE1);
-		s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
-		bloomFinalCompositeShader->SetInt("u_BloomTexture", 1);
-
-		bloomFinalCompositeShader->SetBool("u_Bloom", true);
-		bloomFinalCompositeShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		bloomFinalCompositeShader->SetFloat("u_Gamma", s_Data.SceneGamma);
-		Renderer2D::DrawUnitQuad();
+		s_Data.BloomRenderPass.RenderPass();
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
@@ -1027,10 +1068,26 @@ namespace Vortex {
 		s_Data.ShadowMapResolution = props.ShadowMapResolution;
 		s_Data.SceneExposure = props.Exposure;
 		s_Data.SceneGamma = props.Gamma;
+		s_Data.BloomSettings.Threshold = props.BloomThreshold.x;
+		s_Data.BloomSettings.Knee = props.BloomThreshold.y;
+		s_Data.BloomSettings.Intensity = props.BloomThreshold.z;
+		s_Data.BloomSampleSize = props.BloomSampleSize;
+
+		ClearFlags();
+		s_Data.RenderFlags = props.RenderFlags;
+
 		Application::Get().GetWindow().SetVSync(props.UseVSync);
 
 		if (!props.TriangleCullMode.empty())
+		{
 			s_Data.CullMode = Utils::TriangleCullModeFromString(props.TriangleCullMode);
+		}
+	}
+
+	void Renderer::SetEnvironment(SharedReference<Skybox>& environment)
+	{
+		s_Data.CurrentEnvironment = environment;
+		s_Data.SceneLightDesc.HasEnvironment = environment != nullptr;
 	}
 
 	float Renderer::GetEnvironmentMapResolution()
@@ -1083,6 +1140,54 @@ namespace Vortex {
 		s_Data.SceneGamma = gamma;
 	}
 
+	Math::vec3 Renderer::GetBloomSettings()
+	{
+		return { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
+	}
+
+	void Renderer::SetBloomSettings(const Math::vec3& bloomSettings)
+	{
+		s_Data.BloomSettings.Threshold = bloomSettings.x;
+		s_Data.BloomSettings.Knee = bloomSettings.y;
+		s_Data.BloomSettings.Intensity = bloomSettings.z;
+	}
+
+	void Renderer::SetBloomThreshold(float threshold)
+	{
+		s_Data.BloomSettings.Threshold = threshold;
+	}
+
+	void Renderer::SetBloomKnee(float knee)
+	{
+		s_Data.BloomSettings.Knee = knee;
+	}
+
+	void Renderer::SetBloomIntensity(float intensity)
+	{
+		s_Data.BloomSettings.Intensity = intensity;
+	}
+
+	uint32_t Renderer::GetBloomSampleSize()
+	{
+		return s_Data.BloomSampleSize;
+	}
+
+	void Renderer::SetBloomSampleSize(uint32_t samples)
+	{
+		s_Data.BloomSampleSize = samples;
+	}
+
+	uint32_t Renderer::GetFlags()
+	{
+		return s_Data.RenderFlags;
+	}
+
+	void Renderer::SetFlags(uint32_t flags)
+	{
+		ClearFlags();
+		s_Data.RenderFlags = flags;
+	}
+
 	void Renderer::SetFlag(RenderFlag flag)
 	{
 		s_Data.RenderFlags |= (uint32_t)flag;
@@ -1108,27 +1213,17 @@ namespace Vortex {
 		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
 	}
 
-	Math::vec3 Renderer::GetBloomThreshold()
+	SharedReference<Material> Renderer::GetWhiteMaterial()
 	{
-		return s_Data.BloomThreshold;
+		return s_Data.WhiteMaterial;
 	}
 
-	void Renderer::SetBloomThreshold(const Math::vec3& threshold)
+	SharedReference<Texture2D> Renderer::GetWhiteTexture()
 	{
-		s_Data.BloomThreshold = threshold;
+		return Renderer2D::GetWhiteTexture();
 	}
 
-	uint32_t Renderer::GetBloomSampleSize()
-	{
-		return s_Data.BloomSampleSize;
-	}
-
-	void Renderer::SetBloomSampleSize(uint32_t samples)
-	{
-		s_Data.BloomSampleSize = samples;
-	}
-
-	SharedRef<ShaderLibrary> Renderer::GetShaderLibrary()
+	ShaderLibrary& Renderer::GetShaderLibrary()
 	{
 		return s_Data.ShaderLibrary;
 	}

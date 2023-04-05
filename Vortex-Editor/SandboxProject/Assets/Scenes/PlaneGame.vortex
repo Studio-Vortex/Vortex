@@ -1,0 +1,123 @@
+Scene: PlaneGame
+Entities:
+  - Entity: 15568017333843948541
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5000, 1, 5000]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 4871826198086346918
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Directional Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 50, -1]
+      Rotation: [0, -0.0174532924, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 5
+      CastShadows: true
+  - Entity: 11471243407816717667
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 16324399371270945291
+      - Handle: 6470674524784150820
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.49011612e-08, 0.626838446, 7.4505806e-09]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Meshes\F22.obj
+      AlbedoMapPath: Textures\Meshes\F22.png
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    ScriptComponent:
+      ClassName: Sandbox.PlaneController
+      ScriptFields:
+        - Name: CameraOffset
+          Type: Vector3
+          Data: [0, 0.600000024, 6]
+        - Name: Deadzone
+          Type: Float
+          Data: 0.150000006
+        - Name: MoveSpeed
+          Type: Float
+          Data: 12
+        - Name: RotationSpeed
+          Type: Float
+          Data: 75
+  - Entity: 16324399371270945291
+    Active: true
+    Parent: 11471243407816717667
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.912081122, 3.78471136]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\belfast_sunset_puresky_4k.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 923541586779526164
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Runway
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0159022212, 0.529999971, -23.1149502]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 50]
+    MeshRendererComponent:
+      MeshType: Plane
+      MeshSource: Resources/Meshes/Plane.fbx
+      AlbedoMapPath: Textures\Meshes\Runway.png
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]

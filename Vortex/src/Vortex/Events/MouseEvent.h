@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Events/Event.h"
-#include "Vortex/Core/Input.h"
+#include "Vortex/Core/Input/MouseCodes.h"
 
 namespace Vortex {
+
 	class VORTEX_API MouseMovedEvent : public Event
 	{
 	public:
@@ -94,4 +95,5 @@ namespace Vortex {
 
 		EVENT_CLASS_TYPE(MouseButtonReleased)
 	};
+
 }

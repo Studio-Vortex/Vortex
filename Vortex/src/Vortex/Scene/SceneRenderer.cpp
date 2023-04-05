@@ -1,268 +1,488 @@
 #include "vxpch.h"
 #include "SceneRenderer.h"
 
-#include "Vortex/Renderer/Model.h"
-#include "Vortex/Renderer/Renderer.h"
-#include "Vortex/Renderer/Renderer2D.h"
-#include "Vortex/Renderer/ParticleEmitter.h"
-#include "Vortex/Renderer/LightSource.h"
-#include "Vortex/Renderer/LightSource2D.h"
+#include "Vortex/Asset/AssetManager.h"
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Components.h"
 
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
 
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/SceneCamera.h"
-#include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/Framebuffer.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
-#include "Vortex/Project/Project.h"
-#include "Vortex/Scene/Scene.h"
+#include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Editor/EditorResources.h"
 
 namespace Vortex {
 
+	static AssetHandle s_EnvironmentHandle = 0;
+	static SharedReference<Skybox> s_EmptyEnvironment = nullptr;
+
 	void SceneRenderer::RenderScene(const SceneRenderPacket& renderPacket)
 	{
-		Scene* scene = renderPacket.Scene;
+		VX_CORE_ASSERT(renderPacket.Scene, "Invalid Scene!");
+
+		OnRenderScene2D(renderPacket);
+		OnRenderScene3D(renderPacket);
+	}
+
+	void SceneRenderer::BeginSceneRenderer2D(const SceneRenderPacket& renderPacket)
+	{
+		if (renderPacket.EditorScene)
+		{
+			Renderer2D::BeginScene((EditorCamera*)renderPacket.MainCamera);
+		}
+		else
+		{
+			Renderer2D::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix);
+		}
+	}
+
+	void SceneRenderer::EndSceneRenderer2D()
+	{
+		Renderer2D::EndScene();
+	}
+
+	void SceneRenderer::BeginSceneRenderer(const SceneRenderPacket& renderPacket)
+	{
+		if (renderPacket.EditorScene)
+		{
+			Renderer::BeginScene((EditorCamera*)renderPacket.MainCamera, renderPacket.TargetFramebuffer);
+		}
+		else
+		{
+			Renderer::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix, renderPacket.MainCameraWorldSpaceTranslation, renderPacket.TargetFramebuffer);
+		}
+	}
+
+	void SceneRenderer::EndSceneRenderer()
+	{
+		Renderer::EndScene();
+	}
+
+	void SceneRenderer::OnRenderScene2D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
 		Camera activeCamera = *renderPacket.MainCamera;
-		SharedRef<Project> activeProject = Project::GetActive();
+		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		// Render 2D
+		BeginSceneRenderer2D(renderPacket);
+
+		LightPass2D(renderPacket);
+
+		SpritePass(renderPacket);
+
+		ParticlePass(renderPacket);
+
+		TextPass(renderPacket);
+
+		// Scene Icons
+		if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
 		{
-			Math::mat4 cameraView;
-
-			if (renderPacket.EditorScene)
-			{
-				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-				Renderer2D::BeginScene(editorCamera);
-				cameraView = editorCamera->GetViewMatrix();
-			}
-			else
-			{
-				Renderer2D::BeginScene(activeCamera, renderPacket.MainCameraWorldSpaceTransform.GetTransform());
-				cameraView = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
-			}
-
-			// Light Pass 2D
-			{
-				auto view = scene->GetAllEntitiesWith<TransformComponent, LightSource2DComponent>();
-
-				for (const auto e : view)
-				{
-					auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
-					Entity entity{ e, scene };
-
-					if (!entity.IsActive())
-						continue;
-
-					Renderer2D::RenderLightSource(transformComponent, lightSource2DComponent);
-				}
-			}
-
-			// Sprite Pass 2D
-			{
-				auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
-
-				for (const auto e : view)
-				{
-					auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
-					Entity entity{ e, scene };
-
-					if (!entity.IsActive())
-						continue;
-
-					Renderer2D::DrawSprite(scene->GetWorldSpaceTransformMatrix(entity), spriteRendererComponent, (int)(entt::entity)e);
-				}
-			}
-
-			// Circle Pass 2D
-			{
-				auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
-
-				for (const auto e : group)
-				{
-					auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
-					Entity entity{ e, scene };
-
-					if (!entity.IsActive())
-						continue;
-
-					Renderer2D::DrawCircle(scene->GetWorldSpaceTransformMatrix(entity), circleRendererComponent.Color, circleRendererComponent.Thickness, circleRendererComponent.Fade, (int)(entt::entity)e);
-				}
-			}
-
-			// Render Particles
-			{
-				auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
-
-				for (const auto& e : view)
-				{
-					auto [transformComponent, particleEmitterComponent] = view.get<TransformComponent, ParticleEmitterComponent>(e);
-					Entity entity{ e, scene };
-
-					if (!entity.IsActive())
-						continue;
-
-					SharedRef<ParticleEmitter> particleEmitter = particleEmitterComponent.Emitter;
-
-					const auto& particles = particleEmitter->GetParticles();
-
-					// Render the particles in reverse to blend correctly
-					for (auto it = particles.crbegin(); it != particles.crend(); it++)
-					{
-						const ParticleEmitter::Particle& particle = *it;
-
-						if (!particle.Active)
-							continue;
-
-						float life = particle.LifeRemaining / particle.LifeTime;
-						Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
-						Math::vec4 color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
-						Renderer2D::DrawQuadBillboard(cameraView, particle.Position, size, color);
-					}
-				}
-			}
-
-			// Render Text
-			{
-				auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
-
-				RendererAPI::TriangleCullMode cullMode = Renderer2D::GetCullMode();
-				Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
-
-				for (auto& e : view)
-				{
-					auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
-					Entity entity{ e, scene };
-
-					if (!entity.IsActive())
-						continue;
-
-					Renderer2D::DrawString(
-						textMeshComponent.TextString,
-						textMeshComponent.FontAsset,
-						scene->GetWorldSpaceTransformMatrix(entity),
-						textMeshComponent.MaxWidth,
-						textMeshComponent.Color,
-						textMeshComponent.LineSpacing,
-						textMeshComponent.Kerning,
-						(int)(entt::entity)e
-					);
-				}
-
-				Renderer2D::SetCullMode(cullMode);
-			}
-
-			// Render Scene Icons
-			if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
-			{
-				{
-					auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
-
-					for (const auto e : view)
-					{
-						const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
-						Entity entity{ e, scene };
-
-						if (!entity.IsActive())
-							continue;
-
-						Renderer::RenderCameraIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
-					}
-				}
-
-				{
-					auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
-
-					for (const auto e : view)
-					{
-						const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
-						Entity entity{ e, scene };
-
-						if (!entity.IsActive())
-							continue;
-
-						Renderer::RenderLightSourceIcon(scene->GetWorldSpaceTransform(entity), lightSourceComponent, cameraView, (int)(entt::entity)e);
-					}
-				}
-
-				{
-					auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
-
-					for (const auto e : view)
-					{
-						const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
-						Entity entity{ e, scene };
-
-						if (!entity.IsActive())
-							continue;
-
-						Renderer::RenderAudioSourceIcon(scene->GetWorldSpaceTransform(entity), cameraView, (int)(entt::entity)e);
-					}
-				}
-			}
-
-			Renderer2D::EndScene();
+			SceneIconPass(renderPacket);
 		}
 
-		// Render 3D
+		EndSceneRenderer2D();
+	}
+
+	void SceneRenderer::OnRenderScene3D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Math::mat4* view = (Math::mat4*)&renderPacket.MainCameraViewMatrix;
+		Math::mat4* projection = (Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
+
+		SkyboxComponent skyboxComponent;
+		SharedReference<Skybox> environment = nullptr;
+
+		FindCurrentEnvironment(renderPacket, skyboxComponent, environment);
+
+		BeginSceneRenderer(renderPacket);
+
+		const bool hasEnvironment = s_EnvironmentHandle != 0 && view && projection && environment;
+
+		if (hasEnvironment)
 		{
-			if (renderPacket.EditorScene)
-			{
-				EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-				Renderer::BeginScene(editorCamera, renderPacket.TargetFramebuffer);
+			RenderEnvironment(*view, *projection, &skyboxComponent, environment);
+		}
+		else
+		{
+			ClearEnvironment();
+		}
 
-				SceneRenderer::RenderSkybox(editorCamera->GetViewMatrix(), editorCamera->GetProjectionMatrix(), scene);
-			}
-			else
-			{
-				SceneCamera& sceneCamera = reinterpret_cast<SceneCamera&>(activeCamera);
-				Renderer::BeginScene(sceneCamera, renderPacket.MainCameraWorldSpaceTransform, renderPacket.TargetFramebuffer);
+		LightPass3D(renderPacket);
 
-				Math::mat4 view = Math::Inverse(renderPacket.MainCameraWorldSpaceTransform.GetTransform());
-				Math::mat4 projection = sceneCamera.GetProjectionMatrix();
+		const std::map<float, Entity>& sortedEntities = SortMeshGeometry(renderPacket);
 
-				SceneRenderer::RenderSkybox(view, projection, scene);
-			}
+		GeometryPass(renderPacket, sortedEntities);
 
-			// Light pass
-			{
-				auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+		EndSceneRenderer();
+	}
 
-				for (auto& e : lightSourceView)
-				{
-					Entity entity{ e, scene };
+	void SceneRenderer::LightPass2D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
 
-					if (!entity.IsActive())
-						continue;
+		Scene* scene = renderPacket.Scene;
 
-					LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-					Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
-				}
-			}
+		auto view = scene->GetAllEntitiesWith<TransformComponent, LightSource2DComponent>();
 
-			// Geometry pass
-			// Sort Meshes by distance from camera and render in reverse order
-			std::map<float, Entity> sortedEntities;
+		for (const auto e : view)
+		{
+			Entity entity{ e, scene };
+			const auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
 
-			auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
-			uint32_t i = 0;
+			if (!entity.IsActive())
+				continue;
 
-			auto SortEntityByDistanceFunc = [&](float distance, Entity entity, uint32_t offset = 0)
-			{
-				if (sortedEntities.find(distance) == sortedEntities.end())
-				{
-					sortedEntities[distance] = entity;
-					return;
-				}
+			Renderer2D::RenderLightSource(transformComponent, lightSource2DComponent);
+		}
+	}
 
-				// slightly modify the distance
-				sortedEntities[distance + (0.01f * offset)] = entity;
-			};
+	void SceneRenderer::SpritePass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
 
-			for (const auto e : meshView)
+		Scene* scene = renderPacket.Scene;
+
+		// Sprite Pass 2D
+		{
+			auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
+
+			for (const auto e : view)
 			{
 				Entity entity{ e, scene };
+				const auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
+
+				if (!entity.IsActive())
+					continue;
+
+				if (!spriteRendererComponent.Visible)
+					continue;
+
+				AssetHandle textureHandle = spriteRendererComponent.Texture;
+				SharedReference<Texture2D> texture = nullptr;
+
+				if (AssetManager::IsHandleValid(textureHandle))
+					texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+
+				Renderer2D::DrawSprite(
+					scene->GetWorldSpaceTransformMatrix(entity),
+					spriteRendererComponent,
+					texture,
+					(int)(entt::entity)e
+				);
+			}
+		}
+
+		// Circle Pass 2D
+		{
+			auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+
+			for (const auto e : group)
+			{
+				Entity entity{ e, scene };
+				const auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
+
+				if (!entity.IsActive())
+					continue;
+
+				if (!circleRendererComponent.Visible)
+					continue;
+
+				Renderer2D::DrawCircle(
+					scene->GetWorldSpaceTransformMatrix(entity),
+					circleRendererComponent.Color,
+					circleRendererComponent.Thickness,
+					circleRendererComponent.Fade,
+					(int)(entt::entity)e
+				);
+			}
+		}
+	}
+
+	void SceneRenderer::ParticlePass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+
+		auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, scene };
+			if (!entity.IsActive())
+				continue;
+
+			const auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
+			if (!particleEmitter)
+				continue;
+
+			const auto& particles = particleEmitter->GetParticles();
+			const bool random = particleEmitter->GetProperties().GenerateRandomColors;
+
+			// Render the particles in reverse to blend correctly
+			for (auto it = particles.crbegin(); it != particles.crend(); it++)
+			{
+				const Particle& particle = *it;
+
+				if (!particle.Active)
+					continue;
+
+				const float life = particle.LifeRemaining / particle.LifeTime;
+				Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
+				Math::vec4 color;
+
+				if (random)
+					color = particle.RandomColor;
+				else
+					color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
+
+				Renderer2D::DrawQuadBillboard(cameraView, particle.Position, size, color);
+			}
+		}
+	}
+
+	void SceneRenderer::TextPass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+
+		auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
+
+		RendererAPI::TriangleCullMode originalCullMode = Renderer2D::GetCullMode();
+		Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, scene };
+			const auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!textMeshComponent.Visible)
+				continue;
+
+			AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
+			SharedReference<Font> font = nullptr;
+
+			if (AssetManager::IsHandleValid(fontAssetHandle))
+				font = AssetManager::GetAsset<Font>(fontAssetHandle);
+			else
+				font = Font::GetDefaultFont();
+
+			Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+
+			Renderer2D::DrawString(
+				textMeshComponent.TextString,
+				font,
+				worldSpaceTransform,
+				textMeshComponent.MaxWidth,
+				textMeshComponent.Color,
+				textMeshComponent.BgColor,
+				textMeshComponent.LineSpacing,
+				textMeshComponent.Kerning,
+				(int)(entt::entity)e
+			);
+		}
+
+		Renderer2D::SetCullMode(originalCullMode);
+	}
+
+	void SceneRenderer::SceneIconPass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Icons can only be rendered in a Editor Scene!");
+
+		Scene* scene = renderPacket.Scene;
+		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+
+		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
+
+		// Camera Icons
+		{
+			auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, scene };
+				const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
+
+				if (!entity.IsActive())
+					continue;
+
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
+				Renderer2D::DrawQuadBillboard(
+					cameraView,
+					transform.Translation,
+					EditorResources::CameraIcon,
+					Math::vec2(projectProps.GizmoProps.GizmoSize),
+					ColorToVec4(Color::White),
+					(int)(entt::entity)e
+				);
+			}
+		}
+
+		// Light Icons
+		{
+			auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, scene };
+				const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
+
+				if (!entity.IsActive())
+					continue;
+
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
+				static const SharedReference<Texture2D> icons[3] =
+				{
+					EditorResources::SkyLightIcon,
+					EditorResources::PointLightIcon,
+					EditorResources::SpotLightIcon,
+				};
+
+				Renderer2D::DrawQuadBillboard(
+					cameraView,
+					transform.Translation,
+					icons[(uint32_t)lightSourceComponent.Type],
+					Math::vec2(projectProps.GizmoProps.GizmoSize),
+					ColorToVec4(Color::White),
+					(int)(entt::entity)e
+				);
+			}
+		}
+
+		// Audio Icons
+		{
+			auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, scene };
+				const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
+
+				if (!entity.IsActive())
+					continue;
+
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+
+				Renderer2D::DrawQuadBillboard(
+					cameraView,
+					transform.Translation,
+					EditorResources::AudioSourceIcon,
+					Math::vec2(projectProps.GizmoProps.GizmoSize),
+					ColorToVec4(Color::White),
+					(int)(entt::entity)e
+				);
+			}
+		}
+	}
+
+	void SceneRenderer::FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	{
+		Scene* scene = renderPacket.Scene;
+
+		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
+
+		// Only render one environment per scene
+		for (const auto e : skyboxView)
+		{
+			Entity entity{ e, scene };
+
+			if (!entity.IsActive())
+				continue;
+
+			skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			AssetHandle environmentHandle = skyboxComponent.Skybox;
+			if (!AssetManager::IsHandleValid(environmentHandle))
+				continue;
+
+			environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+			if (!environment)
+				continue;
+
+			if (environmentHandle != s_EnvironmentHandle)
+			{
+				SetEnvironment(environmentHandle, skyboxComponent, environment);
+			}
+
+			return;
+		}
+	}
+
+	void SceneRenderer::LightPass3D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+
+		auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+
+		for (const auto e : lightSourceView)
+		{
+			Entity entity{ e, scene };
+			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!lightSourceComponent.Visible)
+				continue;
+
+			Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
+		}
+	}
+
+	std::map<float, Entity> SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		InstrumentationTimer timer("Pre-Geo-Pass Sort");
+		Scene* scene = renderPacket.Scene;
+
+		// Sort All Meshes by distance from camera
+		std::map<float, Entity> sortedEntities;
+
+		// Sort Meshes
+		{
+			auto meshRendererView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			uint32_t i = 0;
+
+			for (const auto e : meshRendererView)
+			{
+				Entity entity{ e, scene };
+				const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+				if (!entity.IsActive())
+					continue;
+
+				if (!meshRendererComponent.Visible)
+					continue;
+
 				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
@@ -271,75 +491,240 @@ namespace Vortex {
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistanceFunc(distance, entity, i);
+					SortEntityByDistance(sortedEntities, distance, entity, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTransform.Translation;
+					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistanceFunc(distance, entity, i);
+					SortEntityByDistance(sortedEntities, distance, entity, i);
 				}
 
 				i++;
 			}
-
-			InstrumentationTimer timer("Geometry Pass");
-			{
-				for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
-				{
-					Entity entity = it->second;
-					MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
-
-					if (!entity.IsActive())
-						continue;
-
-					Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-
-					SharedRef<Model> model = meshRendererComponent.Mesh;
-					if (!model)
-						continue;
-					SharedRef<Material> material = model->GetMaterial();
-					if (!material)
-						continue;
-					SetMaterialFlags(material);
-
-					if (model->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
-						model->Render(worldSpaceTransform, entity.GetComponent<AnimatorComponent>());
-					else
-						model->Render(worldSpaceTransform);
-
-					ResetAllMaterialFlags();
-				}
-			}
-
-			RenderTime& renderTime = Renderer::GetRenderTime();
-			renderTime.GeometryPassRenderTime += timer.ElapsedMS();
-
-			Renderer::EndScene();
 		}
+
+		// Sort Static Meshes
+		{
+			auto staticMeshRendererView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+			uint32_t i = 0;
+
+			for (const auto e : staticMeshRendererView)
+			{
+				Entity entity{ e, scene };
+				const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+				if (!entity.IsActive())
+					continue;
+
+				if (!staticMeshRendererComponent.Visible)
+					continue;
+
+				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+
+				if (renderPacket.EditorScene)
+				{
+					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+					Math::vec3 cameraPosition = editorCamera->GetPosition();
+					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+					SortEntityByDistance(sortedEntities, distance, entity, i);
+				}
+				else
+				{
+					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
+					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+
+					SortEntityByDistance(sortedEntities, distance, entity, i);
+				}
+
+				i++;
+			}
+		}
+
+		RenderTime& renderTime = Renderer::GetRenderTime();
+		renderTime.PreGeometryPassSortTime += timer.ElapsedMS();
+
+		return sortedEntities;
 	}
 
-	void SceneRenderer::RenderSkybox(const Math::mat4& view, const Math::mat4& projection, Scene* scene)
+	void SceneRenderer::SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset)
 	{
-		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
-
-		for (auto& e : skyboxView)
+		if (sortedEntities.find(distance) == sortedEntities.end())
 		{
-			Entity entity{ e, scene };
+			sortedEntities[distance] = entity;
+			return;
+		}
 
-			if (!entity.IsActive())
+		// slightly modify the distance
+		sortedEntities[distance + (0.01f * offset)] = entity;
+	}
+
+	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedEntities)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+
+		InstrumentationTimer timer("Geometry Pass");
+		SceneLightDescription sceneLightDesc = Renderer::GetSceneLightDescription();
+		
+		// Render in reverse to blend correctly
+		for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
+		{
+			Entity entity = it->second;
+			
+			VX_CORE_ASSERT(entity.HasComponent<MeshRendererComponent>() || entity.HasComponent<StaticMeshRendererComponent>(), "Entity doesn't have mesh component!");
+
+			if (entity.HasComponent<MeshRendererComponent>())
+			{
+				RenderMesh(scene, entity, sceneLightDesc);
+			}
+			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			{
+				RenderStaticMesh(scene, entity, sceneLightDesc);
+			}
+		}
+
+		RenderTime& renderTime = Renderer::GetRenderTime();
+		renderTime.GeometryPassRenderTime += timer.ElapsedMS();
+	}
+
+	void SceneRenderer::RenderMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	{
+		VX_PROFILE_FUNCTION();
+
+		const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+		AssetHandle meshHandle = meshRendererComponent.Mesh;
+		if (!AssetManager::IsHandleValid(meshHandle))
+			return;
+
+		SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
+		if (!mesh)
+			return;
+
+		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+		auto& submesh = mesh->GetSubmesh();
+
+		SharedReference<Material> material = submesh.GetMaterial();
+		if (!material)
+			return;
+
+		SetMaterialFlags(material);
+
+		SharedReference<Shader> shader = material->GetShader();
+		shader->Enable();
+
+		shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
+		shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
+		shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+		shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+		Renderer::BindSkyLightDepthMap();
+		Renderer::BindPointLightDepthMaps();
+		Renderer::BindSpotLightDepthMaps();
+
+		if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+		{
+			shader->SetBool("u_HasAnimations", true);
+
+			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+
+			for (uint32_t i = 0; i < transforms.size(); i++)
+			{
+				shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
+			}
+		}
+		else
+		{
+			shader->SetBool("u_HasAnimations", false);
+		}
+
+		submesh.Render();
+
+		ResetAllMaterialFlags();
+	}
+
+	void SceneRenderer::RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	{
+		VX_PROFILE_FUNCTION();
+
+		const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+		AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+		if (!AssetManager::IsHandleValid(staticMeshHandle))
+			return;
+
+		SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
+		if (!staticMesh)
+			return;
+
+		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+		const auto& submeshes = staticMesh->GetSubmeshes();
+
+		auto& materialTable = staticMeshRendererComponent.Materials;
+
+		// render each submesh
+		for (const auto& [submeshIndex, submesh] : submeshes)
+		{
+			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Material table not synchronized with mesh!");
+
+			AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
+			if (!AssetManager::IsHandleValid(materialHandle))
 				continue;
 
-			SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			Renderer::DrawEnvironmentMap(view, projection, skyboxComponent);
+			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+			if (!material)
+				continue;
 
-			// Only render one skybox per scene
-			break;
+			SetMaterialFlags(material);
+
+			SharedReference<Shader> shader = material->GetShader();
+			shader->Enable();
+
+			shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
+			shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
+			shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+			shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
+
+			Renderer::BindSkyLightDepthMap();
+			Renderer::BindPointLightDepthMaps();
+			Renderer::BindSpotLightDepthMaps();
+
+			submesh.Render(materialHandle);
+
+			ResetAllMaterialFlags();
 		}
 	}
 
-	void SceneRenderer::SetMaterialFlags(const SharedRef<Material>& material)
+	void SceneRenderer::SetEnvironment(AssetHandle environmentHandle, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	{
+		VX_PROFILE_FUNCTION();
+
+		s_EnvironmentHandle = environmentHandle;
+		Renderer::CreateEnvironmentMap(skyboxComponent, environment);
+		Renderer::SetEnvironment(environment);
+	}
+
+	void SceneRenderer::ClearEnvironment()
+	{
+		VX_PROFILE_FUNCTION();
+
+		Renderer::SetEnvironment(s_EmptyEnvironment);
+		s_EnvironmentHandle = 0;
+	}
+
+	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent* skyboxComponent, SharedReference<Skybox>& environment)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Renderer::DrawEnvironmentMap(view, projection, *skyboxComponent, environment);
+	}
+
+	void SceneRenderer::SetMaterialFlags(const SharedReference<Material>& material)
 	{
 		if (material->HasFlag(MaterialFlag::NoDepthTest))
 		{

@@ -12,10 +12,11 @@ namespace Vortex {
 	class PrefabSerializer
 	{
 	public:
+		PrefabSerializer() = default;
 		PrefabSerializer(const SharedRef<Prefab>& prefab);
 
-		bool Serialize(const std::filesystem::path& path);
-		bool Deserialize(const std::filesystem::path& path, PrefabComponent& prefabComponent);
+		bool Serialize(const std::string& filepath);
+		bool Deserialize(const std::string& filepath, PrefabComponent& prefabComponent);
 
 	private:
 		SharedRef<Prefab> m_Prefab = nullptr;

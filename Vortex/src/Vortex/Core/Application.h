@@ -4,7 +4,9 @@
 
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/LayerStack.h"
-#include "Vortex/Events/ApplicationEvent.h"
+
+#include "Vortex/Events/WindowEvent.h"
+
 #include "Vortex/Renderer/RendererAPI.h"
 
 #include "Vortex/Gui/GuiLayer.h"
@@ -30,11 +32,13 @@ namespace Vortex {
 		std::string Name = "Vortex Application";
 		uint16_t WindowWidth = 1600;
 		uint16_t WindowHeight = 900;
-		uint32_t SampleCount = 4;
+		uint32_t SampleCount = 1;
 		bool MaximizeWindow = false;
 		bool WindowDecorated = true;
+		bool WindowResizable = true;
 		bool VSync = true;
-		bool EnableGUI = false;
+		bool EnableGUI = true;
+		bool IsRuntime = false;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
 		std::string WorkingDirectory;
 		ApplicationCommandLineArgs CommandLineArgs;
@@ -58,9 +62,11 @@ namespace Vortex {
 
 		const ApplicationProperties& GetProperties() const { return m_Properties; }
 
+		inline bool IsRuntime() { return m_Properties.IsRuntime; }
+
 		void Quit();
 
-		void SubmitToMainThread(const std::function<void()>& func);
+		void SubmitToMainThreadQueue(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
 		std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }

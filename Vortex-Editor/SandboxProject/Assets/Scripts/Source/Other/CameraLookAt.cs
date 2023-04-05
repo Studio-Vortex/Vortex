@@ -16,7 +16,7 @@ namespace Sandbox {
 
 		protected override void OnUpdate(float delta)
 		{
-			if (Input.IsGamepadButtonDown(Gamepad.LeftBumper))
+			if (Input.IsGamepadButtonDown(GamepadButton.LeftBumper))
 				m_Sound.Play();
 		}
 	}

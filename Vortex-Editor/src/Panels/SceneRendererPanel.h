@@ -1,26 +1,25 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class SceneRendererPanel : public EditorPanel
+	class SceneRendererPanel
 	{
 	public:
 		SceneRendererPanel() = default;
-		~SceneRendererPanel() override = default;
+		~SceneRendererPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override;
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene);
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:
-		SharedRef<Scene> m_ContextScene = nullptr;
+		SharedReference<Scene> m_ContextScene = nullptr;
 		inline static bool s_ShowPanel = true;
-		inline static std::vector<SharedRef<Shader>> s_Loaded2DShaders;
-		inline static std::vector<SharedRef<Shader>> s_Loaded3DShaders;
+		inline static std::vector<SharedReference<Shader>> s_Loaded2DShaders;
+		inline static std::vector<SharedReference<Shader>> s_Loaded3DShaders;
 	};
 
 }

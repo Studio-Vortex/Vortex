@@ -13,26 +13,26 @@ namespace Vortex {
 
 		if (s_Loaded2DShaders.empty())
 		{
-			auto shaders2D = Renderer2D::GetShaderLibrary();
+			const ShaderLibrary& shaders2D = Renderer2D::GetShaderLibrary();
 
-			auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
-
-			for (it = shaders2D->begin(); it != shaders2D->end(); it++)
-				s_Loaded2DShaders.push_back(it->second);
+			for (const auto& [name, shader] : shaders2D)
+			{
+				s_Loaded2DShaders.push_back(shader);
+			}
 		}
 
 		if (s_Loaded3DShaders.empty())
 		{
-			auto shaders3D = Renderer::GetShaderLibrary();
+			const ShaderLibrary& shaders3D = Renderer::GetShaderLibrary();
 
-			auto it = std::unordered_map<std::string, SharedRef<Shader>>::iterator();
-
-			for (it = shaders3D->begin(); it != shaders3D->end(); it++)
-				s_Loaded3DShaders.push_back(it->second);
+			for (const auto& [name, shader] : shaders3D)
+			{
+				s_Loaded3DShaders.push_back(shader);
+			}
 		}
 
 		static std::vector<std::string> shaderNames;
-		static std::vector<SharedRef<Shader>> shaders;
+		static std::vector<SharedReference<Shader>> shaders;
 
 		bool shadersLoaded = !s_Loaded2DShaders.empty() && !s_Loaded3DShaders.empty();
 
@@ -79,22 +79,26 @@ namespace Vortex {
 					shader->Reload();
 			}
 
-			for (auto& shader : shaders)
+			static const char* columns[] = { "Name", "" };
+
+			UI::Table("Loaded Shaders", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
 			{
-				Gui::Columns(2);
-
-				const std::string& shaderName = shader->GetName();
-				Gui::Text(shaderName.c_str());
-				Gui::NextColumn();
-				std::string buttonName = "Reload##" + shaderName;
-
-				if (Gui::Button(buttonName.c_str()))
+				for (auto& shader : shaders)
 				{
-					shader->Reload();
-				}
+					Gui::TableNextColumn();
+					const std::string& shaderName = shader->GetName();
+					Gui::Text(shaderName.c_str());
+					UI::Draw::Underline();
 
-				Gui::Columns(1);
-			}
+					Gui::TableNextColumn();
+					std::string buttonName = "Reload##" + shaderName;
+
+					if (Gui::Button(buttonName.c_str()))
+					{
+						shader->Reload();
+					}
+				}
+			});
 
 			UI::EndTreeNode();
 		}
@@ -110,7 +114,7 @@ namespace Vortex {
 			static const char* cullModes[4] = { "None", "Front", "Back", "Front And Back" };
 			int32_t currentCullMode = (int32_t)Renderer::GetCullMode();
 
-			SharedRef<Project> activeProject = Project::GetActive();
+			SharedReference<Project> activeProject = Project::GetActive();
 			ProjectProperties& projectProps = activeProject->GetProperties();
 
 			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYCOUNT(cullModes), currentCullMode))
@@ -124,11 +128,23 @@ namespace Vortex {
 			{
 				auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
 
-				Entity entity{ skyboxView[0], m_ContextScene.Raw() };
-				SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
-				SharedRef<Skybox> skybox = skyboxComponent.Source;
-				skybox->Reload();
-				Renderer::CreateEnvironmentMap(skyboxComponent);
+				for (const auto e : skyboxView)
+				{
+					Entity entity{ e, m_ContextScene.Raw() };
+
+					SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+					AssetHandle environmentHandle = skyboxComponent.Skybox;
+					if (!AssetManager::IsHandleValid(environmentHandle))
+						continue;
+
+					SharedReference<Skybox> environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+					if (!environment)
+						continue;
+
+					environment->SetShouldReload(true);
+					Renderer::CreateEnvironmentMap(skyboxComponent, environment);
+					break;
+				}
 			};
 
 			static const char* envMapSizes[3] = { "512", "1024", "2048" };
@@ -197,31 +213,43 @@ namespace Vortex {
 
 				LightSourceComponent skylight;
 				auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
-				for (auto& e : lightSourceView)
+				for (const auto e : lightSourceView)
 				{
 					Entity entity{ e, m_ContextScene.Raw() };
-					if (const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>(); lightSourceComponent.Type == LightType::Directional)
-						skylight = lightSourceComponent;
+					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+					
+					if (lightSourceComponent.Type != LightType::Directional)
+						continue;
+
+					skylight = lightSourceComponent;
 				}
 
-				Renderer::CreateShadowMap(LightType::Directional, skylight.Source);
+				Renderer::CreateShadowMap(LightType::Directional);
 			}
 
 			float sceneExposure = Renderer::GetSceneExposure();
 			if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f))
+			{
 				Renderer::SetSceneExposure(sceneExposure);
+			}
 
 			float gamma = Renderer::GetSceneGamma();
 			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
+			{
 				Renderer::SetSceneGamma(gamma);
+			}
 
 			static bool wireframeMode = false;
 			if (UI::Property("Show Wireframe", wireframeMode))
+			{
 				RenderCommand::SetWireframe(wireframeMode);
+			}
 
 			static bool vsync = Application::Get().GetWindow().IsVSyncEnabled();
 			if (UI::Property("Use VSync", vsync))
+			{
 				Application::Get().GetWindow().SetVSync(vsync);
+			}
 
 			UI::EndPropertyGrid();
 
@@ -231,13 +259,25 @@ namespace Vortex {
 
 				bool bloomEnabled = Renderer::IsFlagSet(RenderFlag::EnableBloom);
 				if (UI::Property("Enable Bloom", bloomEnabled))
+				{
 					Renderer::ToggleFlag(RenderFlag::EnableBloom);
+				}
 
 				if (bloomEnabled)
 				{
-					Math::vec3 bloomThreshold = Renderer::GetBloomThreshold();
-					if (UI::Property("Bloom Threshold", bloomThreshold))
-						Renderer::SetBloomThreshold(bloomThreshold);
+					Math::vec3 bloomSettings = Renderer::GetBloomSettings();
+					bool modified = false;
+					if (UI::Property("Threshold", bloomSettings.x))
+						modified = true;
+					if (UI::Property("Knee", bloomSettings.y))
+						modified = true;
+					if (UI::Property("Intensity", bloomSettings.z))
+						modified = true;
+
+					if (modified)
+					{
+						Renderer::SetBloomSettings(bloomSettings);
+					}
 
 					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
 					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
@@ -273,7 +313,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-    void SceneRendererPanel::SetSceneContext(SharedRef<Scene> scene)
+    void SceneRendererPanel::SetSceneContext(SharedReference<Scene>& scene)
     {
 		m_ContextScene = scene;
     }

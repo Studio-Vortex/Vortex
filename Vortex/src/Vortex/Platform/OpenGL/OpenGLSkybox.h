@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/Texture.h"
 
 namespace Vortex {
 
@@ -8,37 +9,30 @@ namespace Vortex {
 	{
 	public:
 		OpenGLSkybox() = default;
-		OpenGLSkybox(const std::string& filepath);
+		OpenGLSkybox(const std::filesystem::path& filepath);
 		~OpenGLSkybox() override;
 
-		inline void SetFilepath(const std::string& filepath) override;
-		inline const std::string& GetFilepath() const override { return m_Filepath; }
+		void LoadFromFilepath(const std::filesystem::path& filepath) override;
+		const std::filesystem::path& GetFilepath() const override;
+
+		SharedReference<Texture2D> GetEnvironmentMap() const override;
 
 		void Bind() const override;
 		void Unbind() const override;
 
-		bool PathChanged() const override { return m_PathChanged; }
-		void SetPathChanged(bool changed) override { m_PathChanged = changed; }
+		inline bool ShouldReload() const override { return m_ShouldReload; }
+		inline void SetShouldReload(bool reload) override { m_ShouldReload = reload; }
 
-		bool IsDirty() const override { return m_IsDirty; }
-		void SetIsDirty(bool dirty) override { m_IsDirty = dirty; }
+		uint32_t GetRendererID() const override;
 
-		void Reload() override;
-
-		uint32_t GetRendererID() const override { return m_RendererID; }
-
-		inline bool IsLoaded() const override { return m_IsLoaded; }
+		bool IsLoaded() const override;
 
 	private:
-		void LoadEquirectangularMapFromPath(const std::string& path);
-		void LoadSkybox(const std::string& filepath);
+		void LoadEquirectangularMapFromPath(const std::filesystem::path& path);
 
 	private:
-		uint32_t m_RendererID = 0;
-		std::string m_Filepath;
-		bool m_IsLoaded = false;
-		bool m_PathChanged = false;
-		bool m_IsDirty = false;
+		SharedReference<Texture2D> m_HDREnvironmentMap = nullptr;
+		bool m_ShouldReload = false;
 	};
 
 }

@@ -32,9 +32,13 @@ namespace Vortex {
 		props.WindowDecorated = true;
 		props.VSync = true;
 		props.EnableGUI = true;
+		props.IsRuntime = false;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		props.WorkingDirectory = "C:/dev/Vortex Engine";
+		{
+			// Note this is here for debugging purposes inside visual studio otherwise it can be removed
+			props.WorkingDirectory = "C:/dev/Vortex Engine";
+		}
 		props.CommandLineArgs = args;
 
 		return new VortexLauncher(props);

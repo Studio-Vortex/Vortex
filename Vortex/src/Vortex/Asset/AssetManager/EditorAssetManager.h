@@ -2,10 +2,16 @@
 
 #include "Vortex/Asset/AssetManager/IAssetManager.h"
 
+#include "Vortex/Editor/DefaultMeshes.h"
+
 #include "Vortex/Asset/AssetImporter.h"
 #include "Vortex/Asset/AssetRegistry.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
 namespace Vortex {
+
+	class AssetRegistryPanel;
 
 	class EditorAssetManager : public IAssetManager
 	{
@@ -14,28 +20,92 @@ namespace Vortex {
 		~EditorAssetManager() override;
 
 		AssetType GetAssetType(AssetHandle handle) const override;
-		SharedRef<Asset> GetAsset(AssetHandle handle) const override;
-		void AddMemoryOnlyAsset(SharedRef<Asset> asset) override;
+		SharedReference<Asset> GetAsset(AssetHandle handle) override;
+		void AddMemoryOnlyAsset(SharedReference<Asset> asset) override;
 		bool ReloadData(AssetHandle handle) override;
-		bool IsHandleValid(AssetHandle handle) const override;
-		bool IsMemoryOnlyAsset(AssetHandle handle) const override;
-		bool IsAssetLoaded(AssetHandle handle) const override;
+		VX_FORCE_INLINE bool IsHandleValid(AssetHandle handle) override { return IsMemoryOnlyAsset(handle) || GetMetadata(handle).IsValid(); }
+		VX_FORCE_INLINE bool IsMemoryOnlyAsset(AssetHandle handle) override { return m_MemoryOnlyAssets.find(handle) != m_MemoryOnlyAssets.end(); }
+		VX_FORCE_INLINE bool IsAssetLoaded(AssetHandle handle) override { return m_LoadedAssets.find(handle) != m_LoadedAssets.end(); }
 		std::unordered_set<AssetHandle> GetAllAssetsWithType(AssetType type) const override;
-		const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetLoadedAssets() const override;
-		const std::unordered_map<AssetHandle, SharedRef<Asset>>& GetMemoryOnlyAssets() const override;
+		const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetLoadedAssets() const override;
+		const std::unordered_map<AssetHandle, SharedReference<Asset>>& GetMemoryOnlyAssets() const override;
 
 		const AssetRegistry& GetAssetRegistry() const;
 
+		std::filesystem::path GetRelativePath(const std::filesystem::path& filepath);
+
+		SharedReference<Asset> GetAssetFromFilepath(const std::filesystem::path& filepath);
+		AssetHandle GetAssetHandleFromFilepath(const std::filesystem::path& filepath);
+		AssetType GetAssetTypeFromExtension(const std::string& extension);
+		AssetType GetAssetTypeFromFilepath(const std::filesystem::path& filepath);
+
+		bool IsValidAssetExtension(const std::filesystem::path& extension);
+
+		const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
+		const AssetMetadata& GetMetadata(AssetHandle handle);
+		const AssetMetadata& GetMetadata(SharedReference<Asset> asset);
+		AssetMetadata& GetMutableMetadata(AssetHandle handle);
+
+		std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata);
+
+		AssetHandle ImportAsset(const std::filesystem::path& filepath);
+
+		bool RenameAsset(SharedReference<Asset>& asset, const std::string& newName);
+
+		AssetHandle GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh);
+		bool IsDefaultStaticMesh(AssetHandle assetHandle);
+
+		template <typename TAsset, typename... Args>
+		VX_FORCE_INLINE SharedReference<TAsset> CreateNewAsset(const std::string& directory, const std::string& filename, Args&&... args)
+		{
+			static_assert(std::is_base_of<Asset, TAsset>::value, "CreateNewAsset only works for types derived from Asset");
+
+			AssetMetadata metadata;
+			metadata.Handle = AssetHandle();
+			if (directory.empty() || directory == ".")
+				metadata.Filepath = filename;
+			else
+				metadata.Filepath = GetRelativePath(directory + "/" + filename);
+			metadata.IsDataLoaded = true;
+			metadata.Type = TAsset::GetStaticType();
+
+			m_AssetRegistry[metadata.Handle] = metadata;
+
+			WriteToRegistryFile();
+
+			SharedReference<TAsset> asset = SharedReference<TAsset>::Create(std::forward<Args>(args)...);
+			asset->Handle = metadata.Handle;
+			m_LoadedAssets[metadata.Handle] = asset;
+			AssetImporter::Serialize(asset);
+
+			VX_CONSOLE_LOG_INFO("New Asset Created: Handle: '{}', Path: '{}'", metadata.Handle, metadata.Filepath.string());
+
+			return asset;
+		}
+
+		bool OnProjectSerialized();
+		bool OnProjectDeserialized();
+
 	private:
 		void LoadAssetRegistry();
-		void ProcessDirectory();
+		void ProcessDirectory(const std::filesystem::path& directory);
 		void ReloadAssets();
 		void WriteToRegistryFile();
 
+		AssetMetadata& GetMetadataInternal(AssetHandle handle);
+
 	private:
-		std::unordered_map<AssetHandle, SharedRef<Asset>> m_LoadedAssets;
-		std::unordered_map<AssetHandle, SharedRef<Asset>> m_MemoryOnlyAssets;
+		std::unordered_map<AssetHandle, SharedReference<Asset>> m_LoadedAssets;
+		std::unordered_map<AssetHandle, SharedReference<Asset>> m_MemoryOnlyAssets;
+
 		AssetRegistry m_AssetRegistry;
+
+		// used only to prevent crashing when closing the editor
+		std::filesystem::path m_ProjectAssetDirectory;
+		std::filesystem::path m_ProjectAssetRegistryPath;
+
+	private:
+		friend AssetRegistryPanel;
 	};
 
 }

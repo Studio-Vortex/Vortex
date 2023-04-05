@@ -1,21 +1,26 @@
 #include "vxpch.h"
 #include "ScriptEngine.h"
 
-#include "Vortex/Core/Application.h"
 #include "Vortex/Core/Buffer.h"
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/Components.h"
-#include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Scripting/ScriptRegistry.h"
-#include "Vortex/Scripting/ScriptEngine.h"
-#include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Debug/Instrumentor.h"
+#include "Vortex/Core/Application.h"
+
 #include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Components.h"
+#include "Vortex/Scene/Entity.h"
+
+#include "Vortex/Scripting/ScriptRegistry.h"
+#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ScriptFieldInstance.h"
+#include "Vortex/Scripting/ScriptClass.h"
+#include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Audio/AudioSource.h"
+
 #include "Vortex/Physics/3D/Physics.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
 #include <mono/jit/jit.h>
-#include <mono/metadata/class.h>
-#include <mono/metadata/object.h>
 #include <mono/metadata/threads.h>
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/assembly.h>
@@ -25,136 +30,9 @@
 
 namespace Vortex {
 
-	static constexpr const char* APP_ASSEMBLY_PATH = "C:/dev/Vortex_Game_Engine/Vortex/Vortex-Editor/SandboxProject/Assets/Scripts/Binaries/Sandbox.dll";
+	static constexpr const char* APP_ASSEMBLY_RELOAD_SOUND_PATH = "Resources/Sounds/Compile.wav";
 
-	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
-	{
-		{ "System.Single",  ScriptFieldType::Float   },
-		{ "System.Double",  ScriptFieldType::Double  },
-		{ "System.Boolean", ScriptFieldType::Bool    },
-		{ "System.Char",    ScriptFieldType::Char    },
-		{ "System.Int16",   ScriptFieldType::Short   },
-		{ "System.Int32",   ScriptFieldType::Int     },
-		{ "System.Int64",   ScriptFieldType::Long    },
-		{ "System.Byte",    ScriptFieldType::Byte    },
-		{ "System.UInt16",  ScriptFieldType::UShort  },
-		{ "System.UInt32",  ScriptFieldType::UInt    },
-		{ "System.UInt64",  ScriptFieldType::ULong   },
-		{ "Vortex.Vector2", ScriptFieldType::Vector2 },
-		{ "Vortex.Vector3", ScriptFieldType::Vector3 },
-		{ "Vortex.Vector4", ScriptFieldType::Vector4 },
-		{ "Vortex.Color3",  ScriptFieldType::Color3  },
-		{ "Vortex.Color4",  ScriptFieldType::Color4  },
-		{ "Vortex.Entity",  ScriptFieldType::Entity  },
-	};
-
-	namespace Utils {
-
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false)
-		{
-			UniqueBuffer fileData = FileSystem::ReadBinary(filepath);
-
-			if (!fileData)
-			{
-				return nullptr;
-			}
-
-			// NOTE: We can't use this image for anything other than loading the assembly
-			//       because this image doesn't have a reference to the assembly
-			MonoImageOpenStatus status;
-			MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
-
-			if (status != MONO_IMAGE_OK)
-			{
-				const char* errorMessage = mono_image_strerror(status);
-				VX_CORE_ERROR("Mono Assembly Error: {}", errorMessage);
-				return nullptr;
-			}
-
-			if (loadPdb)
-			{
-				std::filesystem::path assemblyPath = filepath;
-				std::filesystem::path pdbPath = assemblyPath.replace_extension(".pdb");
-
-				if (FileSystem::Exists(pdbPath))
-				{
-					UniqueBuffer pdbFileData = FileSystem::ReadBinary(pdbPath);
-
-					mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
-
-					VX_CORE_INFO("PDB Loaded : {}", pdbPath);
-				}
-			}
-
-			std::string pathString = filepath.string();
-			MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
-			mono_image_close(image);
-
-			return assembly;
-		}
-
-		static void PrintAssemblyTypes(MonoAssembly* assembly)
-		{
-			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-			for (int32_t i = 0; i < numTypes; i++)
-			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
-				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-				VX_CORE_TRACE("{}.{}", nameSpace, name);
-			}
-		}
-
-		static std::vector<MonoAssemblyTypeInfo> GetAssemblyTypeInfo(MonoAssembly* assembly)
-		{
-			std::vector<MonoAssemblyTypeInfo> result;
-
-			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-			for (int32_t i = 0; i < numTypes; i++)
-			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
-				mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-				MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
-
-				if (name[0] == '<' || !monoClass)
-					continue;
-
-				int fieldCount = mono_class_num_fields(monoClass);
-
-				result.emplace_back(nameSpace, name, fieldCount);
-			}
-
-			return result;
-		}
-
-		static ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
-		{
-			std::string typeName = mono_type_get_name(monoType);
-
-			auto it = s_ScriptFieldTypeMap.find(typeName);
-			if (it == s_ScriptFieldTypeMap.end())
-				return ScriptFieldType::None;
-
-			return it->second;
-		}
-
-	}
-
-	bool s_ScriptEngineInitialized = false;
-
-	struct ScriptEngineData
+	struct ScriptEngineInternalData
 	{
 		MonoDomain* RootDomain = nullptr;
 		MonoDomain* AppDomain = nullptr;
@@ -168,33 +46,35 @@ namespace Vortex {
 		std::filesystem::path CoreAssemblyFilepath;
 		std::filesystem::path AppAssemblyFilepath;
 
-		SharedRef<ScriptClass> EntityClass = nullptr;
+		SharedReference<ScriptClass> EntityClass = nullptr;
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
 		bool DebuggingEnabled = false;
 
-		SharedRef<AudioSource> AppAssemblyReloadSound = nullptr;
+		SharedReference<AudioSource> AppAssemblyReloadSound = nullptr;
 
-		std::unordered_map<std::string, SharedRef<ScriptClass>> EntityClasses;
-		std::unordered_map<UUID, SharedRef<ScriptInstance>> EntityInstances;
+		std::unordered_map<std::string, SharedReference<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, SharedReference<ScriptInstance>> EntityInstances;
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 
 		// Runtime
 		Scene* ContextScene = nullptr;
 	};
 
-	static ScriptEngineData* s_Data = nullptr;
+	static ScriptEngineInternalData* s_Data = nullptr;
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
 	{
-		if (!s_Data->AssemblyReloadPending && changeType == filewatch::Event::modified)
-		{
-			// Add reload to main thread queue
+		const bool assemblyModified = changeType == filewatch::Event::modified;
+		const bool reloadNotPending = !s_Data->AssemblyReloadPending;
 
+		if (assemblyModified && reloadNotPending)
+		{
 			s_Data->AssemblyReloadPending = true;
 
-			Application::Get().SubmitToMainThread([]()
+			// Add reload to main thread queue
+			Application::Get().SubmitToMainThreadQueue([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
 
@@ -206,9 +86,9 @@ namespace Vortex {
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScriptEngineData();
+		s_Data = new ScriptEngineInternalData();
 
-		SharedRef<Project> activeProject = Project::GetActive();
+		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 		s_Data->DebuggingEnabled = projectProps.ScriptingProps.EnableMonoDebugging;
 
@@ -216,20 +96,20 @@ namespace Vortex {
 		ScriptRegistry::RegisterMethods();
 
 		std::filesystem::path coreAssemblyPath = "Resources/Scripts/Vortex-ScriptCore.dll";
-		bool status = LoadAssembly(coreAssemblyPath);
+		bool assemblyLoaded = LoadAssembly(coreAssemblyPath);
 
-		if (!status)
+		if (!assemblyLoaded)
 		{
-			VX_CORE_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
 			return;
 		}
 
-		std::filesystem::path appAssemblyPath = Project::GetAssetFileSystemPath(projectProps.ScriptingProps.ScriptBinaryPath);
-		status = LoadAppAssembly(appAssemblyPath);
+		std::filesystem::path appAssemblyPath = Project::GetAssetDirectory() / projectProps.ScriptingProps.ScriptBinaryPath;
+		assemblyLoaded = LoadAppAssembly(appAssemblyPath);
 		
-		if (!status)
+		if (!assemblyLoaded)
 		{
-			VX_CORE_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
 			return;
 		}
 
@@ -237,18 +117,14 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
-		s_Data->AppAssemblyReloadSound = AudioSource::Create("Resources/Sounds/Compile.wav");
-		s_ScriptEngineInitialized = true;
+		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH, true);
+		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-		if (!s_ScriptEngineInitialized)
-			return;
-
 		ShutdownMono();
-		s_ScriptEngineInitialized = false;
 
 		delete s_Data;
 		s_Data = nullptr;
@@ -258,10 +134,15 @@ namespace Vortex {
 	{
 		mono_set_assemblies_path("mono/lib");
 
+		SharedReference<Project> activeProject = Project::GetActive();
+		const ProjectProperties& projectProps = activeProject->GetProperties();
+
 		if (s_Data->DebuggingEnabled)
 		{
+			uint32_t debugListenerPort = projectProps.ScriptingProps.DebugListenerPort;
+
 			const char* argv[2] = {
-				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=Resources/Logs/MonoDebugger.txt",
+				fmt::format("--debugger-agent=transport=dt_socket,address=127.0.0.1:{0},server=y,suspend=n,loglevel=3,logfile=Resources/Logs/MonoDebugger.txt", debugListenerPort).c_str(),
 				"--soft-breakpoints"
 			};
 
@@ -276,7 +157,9 @@ namespace Vortex {
 		s_Data->RootDomain = rootDomain;
 
 		if (s_Data->DebuggingEnabled)
+		{
 			mono_debug_domain_create(s_Data->RootDomain);
+		}
 
 		mono_thread_set_main(mono_thread_current());
 	}
@@ -297,9 +180,10 @@ namespace Vortex {
 		char name[20] = "VortexScriptRuntime";
 		s_Data->AppDomain = mono_domain_create_appdomain(name, nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
+		mono_domain_set_config(s_Data->AppDomain, ".", "");
 
 		s_Data->CoreAssemblyFilepath = filepath;
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
+		s_Data->CoreAssembly = ScriptUtils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 
 		if (s_Data->CoreAssembly == nullptr)
 			return false;
@@ -312,7 +196,7 @@ namespace Vortex {
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		s_Data->AppAssemblyFilepath = filepath;
-		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
+		s_Data->AppAssembly = ScriptUtils::LoadMonoAssembly(filepath, s_Data->DebuggingEnabled);
 
 		if (s_Data->AppAssembly == nullptr)
 			return false;
@@ -339,7 +223,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedRef<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
@@ -350,167 +234,221 @@ namespace Vortex {
 	void ScriptEngine::OnRuntimeStop()
 	{
 		s_Data->ContextScene = nullptr;
-
-		if (!s_Data->EntityInstances.empty())
-			s_Data->EntityInstances.clear();
+		s_Data->EntityInstances.clear();
 	}
 
-	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	bool ScriptEngine::EntityClassExists(const std::string& fullyQualifiedClassName)
 	{
-		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
+		return s_Data->EntityClasses.contains(fullyQualifiedClassName);
+	}
+
+	bool ScriptEngine::EntityInstanceExists(UUID entityUUID)
+	{
+		return s_Data->EntityInstances.contains(entityUUID);
+	}
+
+	void ScriptEngine::ConstructEntityRuntime(UUID entityUUID, MonoObject* instance)
+	{
+		MonoMethod* constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+
+		void* param = &entityUUID;
+		ScriptUtils::InvokeMethod(instance, constructor, &param);
+	}
+
+	void ScriptEngine::CreateEntityScriptInstanceRuntime(Entity entity)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+		VX_CORE_ASSERT(!EntityInstanceExists(entityUUID), "Instance was already found with UUID!");
+		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Entity Class was not found in Entity Classes Map!");
+
+		SharedReference<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
+		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass, entity);
+		s_Data->EntityInstances[entityUUID] = instance;
+
+		// Copy field values
+		auto it = s_Data->EntityScriptFields.find(entityUUID);
+
+		if (it == s_Data->EntityScriptFields.end())
+			return;
+
+		const ScriptFieldMap& fields = it->second;
+
+		for (const auto& [name, fieldInstance] : fields)
+		{
+			instance->SetFieldValueInternal(name, fieldInstance.GetDataBuffer());
+		}
+	}
+
+	void ScriptEngine::OnAwakeEntity(Entity entity)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
+
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+
+		GetEntityScriptInstance(entityUUID)->InvokeOnAwake();
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
+		UUID entityUUID = entity.GetUUID();
+
 		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
 
-		if (EntityClassExists(scriptComponent.ClassName))
-		{
-			UUID uuid = entity.GetUUID();
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-			SharedRef<ScriptInstance> instance = SharedRef<ScriptInstance>::Create(s_Data->EntityClasses[scriptComponent.ClassName], entity);
-			s_Data->EntityInstances[uuid] = instance;
-
-			// Copy field values
-			auto it = s_Data->EntityScriptFields.find(uuid);
-			if (it != s_Data->EntityScriptFields.end())
-			{
-				const ScriptFieldMap& fields = it->second;
-				for (const auto& [name, fieldInstance] : fields)
-					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
-			}
-
-			instance->InvokeOnCreate();
-		}
+		GetEntityScriptInstance(entityUUID)->InvokeOnCreate();
 	}
 
 	void ScriptEngine::OnUpdateEntity(Entity entity, TimeStep delta)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
 
-		if (it != s_Data->EntityInstances.end())
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+		
+		if (EntityInstanceExists(entityUUID))
 		{
-			it->second->InvokeOnUpdate(delta);
+			GetEntityScriptInstance(entityUUID)->InvokeOnUpdate(delta);
 		}
 		else
 		{
-			VX_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 		}
 	}
 
 	void ScriptEngine::OnDestroyEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		it->second->InvokeOnDestroy();
+		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
+		instance->InvokeOnDestroy();
 
-		// Remove the instance from the map because it is no longer an active instance of a class
-		s_Data->EntityInstances.erase(it);
+		s_Data->EntityInstances.erase(entityUUID);
 	}
 
-	void ScriptEngine::OnCollisionBeginEntity(Entity entity, Entity other, Collision collision)
+	void ScriptEngine::OnCollisionEnterEntity(Entity entity, Collision& collision)
 	{
-		UUID uuid = entity.GetUUID();
-		UUID otherUUID = other.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnCollisionBegin();
+		GetEntityScriptInstance(entityUUID)->InvokeOnCollisionEnter(collision);
 	}
 
-	void ScriptEngine::OnCollisionEndEntity(Entity entity, Entity other, Collision collision)
+	void ScriptEngine::OnCollisionExitEntity(Entity entity, Collision& collision)
 	{
-		UUID uuid = entity.GetUUID();
-		UUID otherUUID = other.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnCollisionEnd();
+		GetEntityScriptInstance(entityUUID)->InvokeOnCollisionExit(collision);
 	}
 
-	void ScriptEngine::OnTriggerBeginEntity(Entity entity, Entity otherEntity)
+	void ScriptEngine::OnTriggerEnterEntity(Entity entity, Collision& collision)
 	{
-		UUID uuid = entity.GetUUID();
-		UUID otherUUID = otherEntity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
-
-		it->second->InvokeOnTriggerBegin();
+		GetEntityScriptInstance(entityUUID)->InvokeOnTriggerEnter(collision);
 	}
 
-	void ScriptEngine::OnTriggerEndEntity(Entity entity, Entity otherEntity)
+	void ScriptEngine::OnTriggerExitEntity(Entity entity, Collision& collision)
 	{
-		UUID uuid = entity.GetUUID();
-		UUID otherUUID = otherEntity.GetUUID();
+		UUID entityUUID = entity.GetUUID();
 
-		auto it = s_Data->EntityInstances.find(uuid);
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		GetEntityScriptInstance(entityUUID)->InvokeOnTriggerExit(collision);
+	}
 
-		it->second->InvokeOnTriggerEnd();
+	void ScriptEngine::OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+
+		GetEntityScriptInstance(entityUUID)->InvokeOnFixedJointDisconnected(forceAndTorque);
 	}
 
 	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		it->second->InvokeOnRaycastCollision();
+		GetEntityScriptInstance(entityUUID)->InvokeOnRaycastCollision();
+	}
+
+	void ScriptEngine::OnEnabled(Entity entity)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+
+		GetEntityScriptInstance(entityUUID)->InvokeOnEnabled();
+	}
+
+	void ScriptEngine::OnDisabled(Entity entity)
+	{
+		UUID entityUUID = entity.GetUUID();
+
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+
+		GetEntityScriptInstance(entityUUID)->InvokeOnDisabled();
 	}
 
 	void ScriptEngine::OnGuiEntity(Entity entity)
 	{
-		UUID uuid = entity.GetUUID();
-		auto it = s_Data->EntityInstances.find(uuid);
+		UUID entityUUID = entity.GetUUID();
 
-		VX_CORE_ASSERT(it != s_Data->EntityInstances.end(), "Instance was not found in Entity Instance Map!");
+		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		it->second->InvokeOnGui();
+		GetEntityScriptInstance(entityUUID)->InvokeOnGui();
 	}
 
-	SharedRef<ScriptClass> ScriptEngine::GetCoreEntityClass()
+	SharedReference<ScriptClass> ScriptEngine::GetCoreEntityClass()
 	{
 		return s_Data->EntityClass;
 	}
 
-	SharedRef<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
+	SharedReference<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
-		auto it = s_Data->EntityInstances.find(uuid);
+		if (s_Data->EntityInstances.contains(uuid))
+			return s_Data->EntityInstances[uuid];
 
-		if (it != s_Data->EntityInstances.end())
-			return it->second;
-		else
-			return nullptr;
+		return nullptr;
 	}
 
-	SharedRef<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	SharedReference<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
-		auto it = s_Data->EntityClasses.find(name);
+		if (s_Data->EntityClasses.contains(name))
+			return s_Data->EntityClasses[name];
 
-		if (it != s_Data->EntityClasses.end())
-			return it->second;
-		else
-			return nullptr;
+		return nullptr;
 	}
 
-	std::unordered_map<std::string, SharedRef<ScriptClass>> ScriptEngine::GetClasses()
+	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetClasses()
 	{
 		return s_Data->EntityClasses;
 	}
 
-	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	const ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		VX_CORE_ASSERT(entity, "Entity was invalid!");
+
+		return s_Data->EntityScriptFields[entity.GetUUID()];
+	}
+
+	ScriptFieldMap& ScriptEngine::GetMutableScriptFieldMap(Entity entity)
 	{
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
@@ -525,17 +463,15 @@ namespace Vortex {
 		{
 			return it->second->GetManagedObject();
 		}
-		else
-		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
-			VX_CORE_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
-			return nullptr;
-		}
+		
+		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
+		VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+		return nullptr;
 	}
 
 	std::vector<MonoAssemblyTypeInfo> ScriptEngine::GetCoreAssemblyTypeInfo()
 	{
-		return Utils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
+		return ScriptUtils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
 
 	Scene* ScriptEngine::GetContextScene()
@@ -546,6 +482,16 @@ namespace Vortex {
 	MonoImage* ScriptEngine::GetCoreAssemblyImage()
 	{
 		return s_Data->CoreAssemblyImage;
+	}
+
+	MonoDomain* ScriptEngine::GetAppDomain()
+	{
+		return s_Data->AppDomain;
+	}
+
+	MonoImage* ScriptEngine::GetAppAssemblyImage()
+	{
+		return s_Data->AppAssemblyImage;
 	}
 
 	void ScriptEngine::DuplicateScriptInstance(Entity entity, Entity targetEntity)
@@ -560,7 +506,7 @@ namespace Vortex {
 		{
 			auto entityClasses = ScriptEngine::GetClasses();
 
-			
+			//TODO
 		}
 	}
 
@@ -587,7 +533,7 @@ namespace Vortex {
 
 			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
-			if (monoClass == entityClass)
+			if (!monoClass || monoClass == entityClass)
 				continue;
 
 			bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
@@ -595,13 +541,13 @@ namespace Vortex {
 			if (!isEntityClass)
 				continue;
 
-			SharedRef<ScriptClass> scriptClass = SharedRef<ScriptClass>::Create(nameSpace, className);
+			SharedReference<ScriptClass> scriptClass = SharedReference<ScriptClass>::Create(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);
 
 			if (displayClassNames)
-				VX_CORE_WARN("{} has {} fields: ", className, fieldCount);
+				VX_CONSOLE_LOG_INFO("{} has {} fields: ", className, fieldCount);
 
 			void* iterator = nullptr;
 
@@ -613,12 +559,13 @@ namespace Vortex {
 				if (flags & MONO_FIELD_ATTR_PUBLIC)
 				{
 					MonoType* type = mono_field_get_type(classField);
-					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+					ScriptFieldType fieldType = ScriptUtils::MonoTypeToScriptFieldType(type);
 
 					if (displayClassNames)
-						VX_CORE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, ScriptUtils::ScriptFieldTypeToString(fieldType));
 
-					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, classField };
+					ScriptField scriptField = { fieldType, fieldName, classField };
+					scriptClass->SetField(fieldName, scriptField);
 				}
 			}
 		}
@@ -626,138 +573,7 @@ namespace Vortex {
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
-		mono_runtime_object_init(instance);
-		return instance;
-	}
-
-	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
-		: m_ClassNamespace(classNamespace), m_ClassName(className)
-	{
-		m_MonoClass = mono_class_from_name(isCore ? s_Data->CoreAssemblyImage : s_Data->AppAssemblyImage, classNamespace.c_str(), className.c_str());
-	}
-
-	MonoObject* ScriptClass::Instantiate()
-	{
-		return ScriptEngine::InstantiateClass(m_MonoClass);
-	}
-
-	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)
-	{
-		return mono_class_get_method_from_name(m_MonoClass, name.c_str(), parameterCount);
-	}
-
-	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
-	{
-		MonoObject* exception = nullptr;
-		return mono_runtime_invoke(method, instance, params, &exception);
-	}
-
-	ScriptInstance::ScriptInstance(SharedRef<ScriptClass> scriptClass, Entity entity)
-		: m_ScriptClass(scriptClass)
-	{
-		m_Instance = m_ScriptClass->Instantiate();
-
-		m_Constructor          = s_Data->EntityClass->GetMethod(".ctor", 1);
-		m_OnCreateFunc         = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_OnUpdateFunc         = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_OnDestroyFunc        = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_OnCollisionBeginFunc = m_ScriptClass->GetMethod("OnCollisionBegin", 0);
-		m_OnCollisionEndFunc   = m_ScriptClass->GetMethod("OnCollisionEnd", 0);
-		m_OnTriggerBeginFunc   = m_ScriptClass->GetMethod("OnTriggerBegin", 0);
-		m_OnTriggerEndFunc     = m_ScriptClass->GetMethod("OnTriggerEnd", 0);
-		m_OnCollisionFunc      = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
-		m_OnGuiFunc            = m_ScriptClass->GetMethod("OnGui", 0);
-
-		// Call Entity constructor
-		{
-			UUID entitytUUID = entity.GetUUID();
-			void* param = &entitytUUID;
-			scriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
-		}
-	}
-
-	void ScriptInstance::InvokeOnCreate()
-	{
-		if (m_OnCreateFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateFunc);
-	}
-
-	void ScriptInstance::InvokeOnUpdate(float delta)
-	{
-		if (m_OnUpdateFunc)
-		{
-			void* param = &delta;
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateFunc, &param);
-		}
-	}
-
-	void ScriptInstance::InvokeOnDestroy()
-	{
-		if (m_OnDestroyFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnDestroyFunc);
-	}
-
-	void ScriptInstance::InvokeOnCollisionBegin()
-	{
-		if (m_OnCollisionBeginFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionBeginFunc);
-	}
-
-	void ScriptInstance::InvokeOnCollisionEnd()
-	{
-		if (m_OnCollisionEndFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionEndFunc);
-	}
-
-	void ScriptInstance::InvokeOnTriggerBegin()
-	{
-		if (m_OnTriggerBeginFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerBeginFunc);
-	}
-
-	void ScriptInstance::InvokeOnTriggerEnd()
-	{
-		if (m_OnTriggerEndFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnTriggerEndFunc);
-	}
-
-	void ScriptInstance::InvokeOnRaycastCollision()
-	{
-		if (m_OnCollisionFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnCollisionFunc);
-	}
-
-	void ScriptInstance::InvokeOnGui()
-	{
-		if (m_OnGuiFunc)
-			m_ScriptClass->InvokeMethod(m_Instance, m_OnGuiFunc);
-	}
-
-	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
-	{
-		const auto& fields = m_ScriptClass->GetFields();
-		auto it = fields.find(fieldName);
-
-		if (it == fields.end())
-			return false;
-
-		const ScriptField& field = it->second;
-		mono_field_get_value(m_Instance, field.ClassField, buffer);
-		return true;
-	}
-
-	bool ScriptInstance::SetFieldValueInternal(const std::string& fieldName, const void* value)
-	{
-		const auto& fields = m_ScriptClass->GetFields();
-		auto it = fields.find(fieldName);
-
-		if (it == fields.end())
-			return false;
-
-		const ScriptField& field = it->second;
-		mono_field_set_value(m_Instance, field.ClassField, (void*)value);
-		return true;
+		return ScriptUtils::InstantiateClass(monoClass);
 	}
 
 }

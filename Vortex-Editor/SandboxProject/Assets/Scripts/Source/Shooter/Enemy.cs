@@ -18,13 +18,13 @@ namespace Sandbox.Shooter.AI {
 
 		protected override void OnCreate()
 		{
-			player = FindEntityByName("Player");
+			player = Scene.FindEntityByName("Player");
 			isAggravated = false;
 		}
 
 		protected override void OnUpdate(float delta)
 		{
-			weaponManager = FindEntityByName("Weapon Manager").As<WeaponManager>();
+			weaponManager = Scene.FindEntityByName("Weapon Manager").As<WeaponManager>();
 
 			if (GetDistanceToPlayer() < followRadius || wasHit)
 			{

@@ -4,9 +4,19 @@
 
 namespace Vortex {
 
+#define VX_MAX_PROJECT_NAME_LENGTH 256
+#define VX_MAX_PROJECT_DIR_LENGTH 256
+
 	struct LauncherProperties
 	{
-		std::string EditorPath;
+		std::filesystem::path WorkingDirectory = "";
+		std::filesystem::path ProjectPath = "";
+		std::filesystem::path EditorPath = "";
+
+		inline static char ProjectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH];
+		inline static char ProjectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH];
+
+		ProjectType ProjectType = ProjectType::e3D;
 	};
 
 	class LauncherLayer : public Layer
@@ -24,16 +34,29 @@ namespace Vortex {
 
 	private:
 		void DisplayCreateProjectPopup();
+		
+		void CreateProjectFilesAndDirectories();
+		void CreatePremakeBuildScript();
+		void GenerateSolutionFromBatchScript();
+		void BuildProjectDLL();
+
+		void CreateProject();
+		void SaveProjectToDisk();
 		void LaunchEditor();
+
+		void ReplaceToken(std::string& str, const char* token, const std::string& value);
+
+		void ResetInputFields();
+		void ResetWorkingDirectory();
 
 	private:
 		LauncherProperties m_Properties;
-		SharedRef<Framebuffer> m_Framebuffer;
-		SharedRef<Texture2D> m_VortexLogoIcon;
-		Math::vec2 m_ViewportSize = Math::vec2();
-		std::filesystem::path m_ProjectPath = std::filesystem::path();
+		SharedReference<Framebuffer> m_Framebuffer = nullptr;
+		SharedReference<Texture2D> m_SelectedProjectIcon = nullptr;
 
-		bool m_CreatingNewProject = false;
+		Math::vec2 m_ViewportSize = Math::vec2();
+
+		bool m_IsCreatingNewProject = false;
 	};
 
 }

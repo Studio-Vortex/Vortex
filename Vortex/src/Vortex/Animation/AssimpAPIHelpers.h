@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 
 #include <assimp/quaternion.h>
 #include <assimp/vector3.h>

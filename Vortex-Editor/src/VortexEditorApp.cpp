@@ -18,14 +18,16 @@ namespace Vortex {
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
 		ApplicationProperties props;
-		// TODO: Remove this, just for convenience
+
+		// Just for convenience
 #ifdef VX_DEBUG
-		props.Name = "Vortex Editor - (Debug devel x64)";
+		props.Name = fmt::format("Vortex Editor - (Debug devel - {})", VORTEX_BUILD_ID);
 #elif VX_RELEASE
-		props.Name = "Vortex Editor - (Release x64)";
+		props.Name = fmt::format("Vortex Editor - (Release - {0})", VORTEX_BUILD_ID);
 #elif VX_DIST
-		props.Name = "Vortex Editor";
+		props.Name = fmt::format("Vortex Editor ({0})", VORTEX_BUILD_ID);
 #endif
+
 		props.WindowWidth = 1600;
 		props.WindowHeight = 900;
 		props.SampleCount = 1;
@@ -33,9 +35,13 @@ namespace Vortex {
 		props.WindowDecorated = true;
 		props.VSync = true;
 		props.EnableGUI = true;
+		props.IsRuntime = false;
 		props.GraphicsAPI = RendererAPI::API::OpenGL;
 
-		props.WorkingDirectory = "C:/dev/Vortex Engine";
+		{
+			// Note this is here for debugging purposes inside visual studio otherwise it can be removed
+			props.WorkingDirectory = "C:/dev/Vortex Engine";
+		}
 		props.CommandLineArgs = args;
 
 		return new VortexEditor(props);

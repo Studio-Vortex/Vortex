@@ -1,67 +1,75 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
 #include "Vortex/Core/ReferenceCounting/InstancePool.h"
 #include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 namespace Vortex {
 
 	template <typename T>
-	class VORTEX_API SharedRef
+	class SharedReference
 	{
 	public:
-		VX_FORCE_INLINE SharedRef()
+		SharedReference()
 			: m_Instance(nullptr) { }
 
-		VX_FORCE_INLINE SharedRef(std::nullptr_t)
+		SharedReference(std::nullptr_t)
 			: m_Instance(nullptr) { }
 
-		VX_FORCE_INLINE SharedRef(T* instance)
+		SharedReference(T* instance)
 			: m_Instance(instance)
 		{
-			//static_assert(std::is_base_of<RefCounted, T>::value, "Class is not reference counted!");
+			static_assert(std::is_base_of<RefCounted, T>::value, "Class is not reference counted!");
 			IncRef();
 		}
 
 		template <typename U>
-		VX_FORCE_INLINE SharedRef(const SharedRef<U>& other)
+		SharedReference(const SharedReference<U>& other)
 		{
 			m_Instance = (T*)other.m_Instance;
 			IncRef();
 		}
 
 		template <typename U>
-		VX_FORCE_INLINE SharedRef(SharedRef<U>&& other)
+		SharedReference(SharedReference<U>&& other)
 		{
 			m_Instance = (T*)other.m_Instance;
 			other.m_Instance = nullptr;
 		}
 
-		VX_FORCE_INLINE SharedRef(const SharedRef<T>& other)
+		SharedReference(const SharedReference<T>& other)
 			: m_Instance(other.m_Instance)
 		{
 			IncRef();
 		}
 
-		VX_FORCE_INLINE ~SharedRef()
+		~SharedReference()
 		{
 			DecRef();
 		}
 
 	public:
-		VX_FORCE_INLINE void Reset(T* instance = nullptr)
+		void Reset(T* instance = nullptr)
 		{
 			DecRef();
 			m_Instance = instance;
 		}
 
 		template <typename U>
-		VX_FORCE_INLINE SharedRef<U> As() const
+		constexpr SharedReference<U> As() const
 		{
-			return SharedRef<U>(*this);
+			return SharedReference<U>(*this);
 		}
 
-		VX_FORCE_INLINE void Swap(const SharedRef<T>& other)
+		template <typename U>
+		constexpr SharedReference<U> Is() const
+		{
+			if constexpr (std::is_base_of<T, U>::value)
+				return As<U>();
+
+			return nullptr;
+		}
+
+		void Swap(const SharedReference<T>& other)
 		{
 			T* temp = m_Instance;
 			m_Instance = other.m_Instance;
@@ -69,7 +77,7 @@ namespace Vortex {
 			temp = nullptr;
 		}
 
-		VX_FORCE_INLINE bool EqualsObject(const SharedRef<T>& other)
+		bool EqualsObject(const SharedReference<T>& other)
 		{
 			if (!m_Instance || !other.m_Instance)
 				return false;
@@ -79,27 +87,27 @@ namespace Vortex {
 
 	public:
 		template <typename... Args>
-		VX_FORCE_INLINE static SharedRef<T> Create(Args&&... args)
+		static SharedReference<T> Create(Args&&... args)
 		{
-			return SharedRef<T>(new T(std::forward<Args>(args)...));
+			return SharedReference<T>(new T(std::forward<Args>(args)...));
 		}
 
-		VX_FORCE_INLINE static SharedRef<T> CopyWithoutIncrement(const SharedRef<T>& other)
+		static SharedReference<T> CopyWithoutIncrement(const SharedReference<T>& other)
 		{
-			SharedRef<T> result = nullptr;
+			SharedReference<T> result = nullptr;
 			result->m_Instance = other.m_Instance;
 			return result;
 		}
 
 	public:
-		VX_FORCE_INLINE SharedRef& operator=(std::nullptr_t)
+		SharedReference& operator=(std::nullptr_t)
 		{
 			DecRef();
 			m_Instance = nullptr;
 			return *this;
 		}
 
-		VX_FORCE_INLINE SharedRef& operator=(const SharedRef<T>& other)
+		SharedReference& operator=(const SharedReference<T>& other)
 		{
 			other.IncRef();
 			DecRef();
@@ -109,7 +117,7 @@ namespace Vortex {
 		}
 
 		template <typename U>
-		VX_FORCE_INLINE SharedRef& operator=(const SharedRef<T>& other)
+		SharedReference& operator=(const SharedReference<T>& other)
 		{
 			other.IncRef();
 			DecRef();
@@ -119,7 +127,7 @@ namespace Vortex {
 		}
 
 		template <typename U>
-		VX_FORCE_INLINE SharedRef& operator=(SharedRef<U>&& other)
+		SharedReference& operator=(SharedReference<U>&& other)
 		{
 			DecRef();
 
@@ -128,30 +136,30 @@ namespace Vortex {
 			return *this;
 		}
 
-		VX_FORCE_INLINE operator bool() { return m_Instance != nullptr; }
-		VX_FORCE_INLINE operator bool() const { return m_Instance != nullptr; }
+		operator bool() { return m_Instance != nullptr; }
+		operator bool() const { return m_Instance != nullptr; }
 
-		VX_FORCE_INLINE T* operator->() { return m_Instance; }
-		VX_FORCE_INLINE const T* operator->() const { return m_Instance; }
+		T* operator->() { return m_Instance; }
+		const T* operator->() const { return m_Instance; }
 
-		VX_FORCE_INLINE T& operator*() { return *m_Instance; }
-		VX_FORCE_INLINE const T& operator*() const { return *m_Instance; }
+		T& operator*() { return *m_Instance; }
+		const T& operator*() const { return *m_Instance; }
 
-		VX_FORCE_INLINE T* Raw() { return  m_Instance; }
-		VX_FORCE_INLINE const T* Raw() const { return  m_Instance; }
+		T* Raw() { return  m_Instance; }
+		const T* Raw() const { return  m_Instance; }
 
-		VX_FORCE_INLINE bool operator==(const SharedRef<T>& other) const
+		bool operator==(const SharedReference<T>& other) const
 		{
 			return m_Instance == other.m_Instance;
 		}
 
-		VX_FORCE_INLINE bool operator!=(const SharedRef<T>& other) const
+		bool operator!=(const SharedReference<T>& other) const
 		{
 			return !(*this == other);
 		}
 
 	private:
-		VX_FORCE_INLINE void IncRef() const
+		void IncRef() const
 		{
 			if (m_Instance)
 			{
@@ -160,7 +168,7 @@ namespace Vortex {
 			}
 		}
 
-		VX_FORCE_INLINE void DecRef() const
+		void DecRef() const
 		{
 			if (m_Instance)
 			{
@@ -179,7 +187,7 @@ namespace Vortex {
 		inline static InstancePool s_InstancePool;
 
 		template <typename U>
-		friend class SharedRef;
+		friend class SharedReference;
 
 		mutable T* m_Instance = nullptr;
 	};

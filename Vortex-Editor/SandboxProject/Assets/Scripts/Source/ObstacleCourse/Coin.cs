@@ -13,11 +13,11 @@ namespace Sandbox.ObstacleCourse {
 
 		protected override void OnRaycastCollision()
 		{
-			ScoreText scoreText = FindEntityByName("Score Text").As<ScoreText>();
+			ScoreText scoreText = Scene.FindEntityByName("Score Text").As<ScoreText>();
 			scoreText.IncrementScore();
 			Destroy(this);
 
-			if (FindEntityByName("Pickup Sound").TryGetComponent(out AudioSource pickupSound))
+			if (Scene.FindEntityByName("Pickup Sound").TryGetComponent(out AudioSource pickupSound))
 			{
 				pickupSound.Play();
 			}

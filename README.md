@@ -24,9 +24,9 @@ git clone --recursive "https://github.com/Jshuk-7/Vortex"
 
 Since there are currently no released binaries available, you must build the engine from source.
 
-Run the [Win32-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win32-GenProjects.bat) file found in `scripts` folder. This will create a Visual Studio 2022 solution file that you can use to build the engine.
+Run the [Win64-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win64-GenProjects.bat) file found in `scripts` folder. This will create a Visual Studio 2022 solution file that you can use to build the engine.
 
-If you make changes to the engine, or if you want to regenerate project files, rerun the [Win32-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win32-GenProjects.bat) file found in the `scripts` folder.
+If you make changes to the engine, or if you want to regenerate project files, rerun the [Win64-GenProjects.bat](https://github.com/JShuk-7/Vortex/blob/master/scripts/Win64-GenProjects.bat) file found in the `scripts` folder.
 
 ---
 
@@ -47,11 +47,20 @@ If you make changes to the engine, or if you want to regenerate project files, r
 - Imported 3D model with skybox
 ![3D model with skybox](Vortex-Editor/Resources/Images/Engine/3DModel.png)
 
-- Sponza model in full chrome
-![Sponza in chrome](Vortex-Editor/Resources/Images/Engine/SponzaChrome.png)
+- Sponza Scene
+![Textured Sponza Scene](Vortex-Editor/Resources/Images/Engine/SponzaScene.png)
 
 - FPS Demo with Nvidia PhysX
 ![FPS Demo game](Vortex-Editor/Resources/Images/Engine/FPSDemo.png)
+
+- Game Menu
+![Game menu](Vortex-Editor/Resources/Images/Engine/Roll-A-Ball.png)
+
+- Obstacle Course
+![Obstacke course](Vortex-Editor/Resources/Images/Engine/ObstacleCourse.png)
+
+- Rocket Game
+![Rocket game](Vortex-Editor/Resources/Images/Engine/RocketGame.png)
 
 - Physically Based Rendering with Shadow Mapping
 ![PBR Shadow Map](Vortex-Editor/Resources/Images/Engine/PBRShadowMap.png)

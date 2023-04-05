@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Vortex/Scene/Scene.h"
 #include "Vortex/Core/Base.h"
+#include "Vortex/Scene/Scene.h"
+
+#include <string>
 
 namespace YAML {
 
@@ -17,10 +19,11 @@ namespace Vortex {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer(const SharedRef<Scene>& scene);
+		SceneSerializer() = default;
+		SceneSerializer(const SharedReference<Scene>& scene);
 		
 		static void SerializeEntity(YAML::Emitter& out, Entity entity);
-		static void DeserializeEntities(YAML::Node& entitiesNode, SharedRef<Scene>& scene);
+		static void DeserializeEntities(YAML::Node& entitiesNode, SharedReference<Scene>& scene);
 
 		void Serialize(const std::string& filepath);
 		void SerializeRuntime(const std::string& filepath);
@@ -29,7 +32,7 @@ namespace Vortex {
 		bool DeserializeRuntime(const std::string& filepath);
 
 	private:
-		SharedRef<Scene> m_Scene = nullptr;
+		SharedReference<Scene> m_Scene = nullptr;
 	};
 
 }

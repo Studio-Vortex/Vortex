@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "Animation.h"
 
+#include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Animation/AssimpAPIHelpers.h"
 
 #include <assimp/Importer.hpp>
@@ -21,9 +22,22 @@ namespace Vortex {
 		//aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
-	Animation::Animation(const std::string& animationPath, SharedRef<Model>& model)
+	Animation::Animation(const std::string& animationPath, AssetHandle meshAssetHandle)
 		: m_Filepath(animationPath)
 	{
+		if (!AssetManager::IsHandleValid(meshAssetHandle))
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load animation, invalid mesh asset handle!");
+			return;
+		}
+
+		SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshAssetHandle);
+		if (!mesh)
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load animation, invalid mesh asset handle!");
+			return;
+		}
+
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(animationPath, s_AnimatedMeshImportFlags);
 		VX_CORE_ASSERT(scene && scene->mRootNode, "Invalid Scene");
@@ -33,7 +47,8 @@ namespace Vortex {
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHeirarchyData(m_RootNode, scene->mRootNode);
-		ReadMissingBones(animation, model);
+
+		ReadMissingBones(animation, mesh);
 	}
 
 	Bone* Animation::FindBone(const std::string& name)
@@ -51,27 +66,26 @@ namespace Vortex {
 			return &(*iter);
 	}
 
-	void Animation::ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model)
+	void Animation::ReadMissingBones(const aiAnimation* animation, SharedReference<Mesh>& mesh)
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = model->GetBoneInfoMap();//getting m_BoneInfoMap from Model class
-		uint32_t& boneCount = model->GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& boneInfoMap = mesh->GetBoneInfoMap();// getting m_BoneInfoMap from Model class
+		uint32_t& boneCount = mesh->GetBoneCount(); // getting the m_BoneCounter from Model class
 
-		//reading channels(bones engaged in an animation and their keyframes)
+		// reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
 		{
 			auto channel = animation->mChannels[i];
 			std::string boneName = channel->mNodeName.data;
-			auto it = boneInfoMap.find(boneName);
 
-			if (it == boneInfoMap.end())
+			if (boneInfoMap.find(boneName) == boneInfoMap.end())
 			{
 				boneInfoMap[boneName].ID = boneCount;
 				boneCount++;
 			}
 
-			Bone bone(boneName, it->second.ID, channel);
+			Bone bone(boneName, boneInfoMap[channel->mNodeName.data].ID, channel);
 			m_Bones.push_back(bone);
 		}
 
@@ -94,9 +108,9 @@ namespace Vortex {
 		}
 	}
 
-	SharedRef<Animation> Animation::Create(const std::string& animationPath, SharedRef<Model>& model)
+	SharedRef<Animation> Animation::Create(const std::string& animationPath, AssetHandle meshAssetHandle)
 	{
-		return SharedRef<Animation>::Create(animationPath, model);
+		return CreateShared<Animation>(animationPath, meshAssetHandle);
 	}
 
 }

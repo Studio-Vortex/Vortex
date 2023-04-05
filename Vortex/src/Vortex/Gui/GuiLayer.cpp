@@ -3,6 +3,8 @@
 
 #include "Vortex/Core/Application.h"
 #include "Vortex/Gui/Colors.h"
+#include "Vortex/Editor/FontAwesome.h"
+
 #include <imgui.h>
 
 #define IMGUI_IMPL_API
@@ -34,15 +36,34 @@ namespace Vortex {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Bold.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Regular.ttf", 22.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Regular.ttf", 26.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Italic.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/roboto/Roboto-Regular.ttf", 18.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Arial.ttf", 17.0f);
-		io.Fonts->AddFontFromFileTTF("Resources/Fonts/SegoeUI.ttf", 18.0f);
-		const auto& regular = io.Fonts->AddFontFromFileTTF("Resources/Fonts/opensans/OpenSans-Regular.ttf", 18.0f);
-		io.FontDefault = regular;
+		struct UIFont
+		{
+			const char* Filepath = "";
+			float FontSize = 16.0f;
+			bool IsDefault = false;
+		};
+
+		std::vector<UIFont> fonts =
+		{
+			{ "Resources/Fonts/opensans/OpenSans-Bold.ttf", 18.0f, false },
+			{ "Resources/Fonts/opensans/OpenSans-Regular.ttf", 22.0f, false },
+			{ "Resources/Fonts/opensans/OpenSans-Regular.ttf", 26.0f, false },
+			{ "Resources/Fonts/opensans/OpenSans-Italic.ttf", 18.0f, false },
+			{ "Resources/Fonts/roboto/Roboto-Regular.ttf", 18.0f, false },
+			{ "Resources/Fonts/Arial.ttf", 17.0f, false },
+			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 17.0f, false },
+			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, true },
+		};
+
+		for (const auto& font : fonts)
+		{
+			ImFont* f = io.Fonts->AddFontFromFileTTF(font.Filepath, font.FontSize);
+			
+			MergeIconFontWithLast();
+
+			if (font.IsDefault)
+				io.FontDefault = f;
+		}
 
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -50,7 +71,10 @@ namespace Vortex {
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			style.FrameRounding = 5.0f;
 		}
+
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
 
 		style.WindowTitleAlign = { 0.5f, 0.5f };
 		style.WindowMenuButtonPosition = ImGuiDir_Right;
@@ -222,6 +246,17 @@ namespace Vortex {
 		colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.2f, 0.4f, 0.75f, 0.65f);
 		colors[ImGuiCol_FrameBg] = ImVec4(0.5f, 0.5f, 0.5f, 0.25f);
 		colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);
+	}
+
+	void GuiLayer::MergeIconFontWithLast()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		ImFontConfig config;
+		config.MergeMode = true;
+		const ImWchar iconRanges[] = { VX_ICON_MIN, VX_ICON_MAX, 0 };
+		io.Fonts->AddFontFromFileTTF(VX_FONT_ICON_FILE_NAME, 16.0f, &config, iconRanges);
+		io.Fonts->Build();
 	}
 
 }

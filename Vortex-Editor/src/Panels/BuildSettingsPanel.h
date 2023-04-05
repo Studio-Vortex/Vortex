@@ -1,31 +1,37 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class BuildSettingsPanel : public EditorPanel
+	class BuildSettingsPanel
 	{
 	public:
 		using LaunchRuntimeFn = std::function<void(const std::filesystem::path&)>;
 
 	public:
-		BuildSettingsPanel(const LaunchRuntimeFn& callback);
-		~BuildSettingsPanel() override = default;
+		BuildSettingsPanel(SharedReference<Project>& project, const LaunchRuntimeFn& func);
+		~BuildSettingsPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
+
+	private:
+		void FindAndSetBestSize();
+		void FindBestWidth(float& width);
+		void FindBestHeight(float& height);
 
 	private:
 		inline static bool s_ShowPanel = false;
 
 	private:
+		ProjectProperties& m_ProjectProperties;
+		LaunchRuntimeFn m_LaunchRuntimeFunc;
+
 		std::filesystem::path m_ProjectPath;
 		std::filesystem::path m_StartupScene;
-		LaunchRuntimeFn m_LaunchRuntimeCallback = nullptr;
 	};
 
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <xhash>
 
 namespace Vortex {
 
-	class UUID
+	class VORTEX_API UUID
 	{
 	public:
 		UUID();

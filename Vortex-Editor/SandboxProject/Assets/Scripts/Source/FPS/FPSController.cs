@@ -25,10 +25,10 @@ namespace Sandbox
 
 		protected override void OnCreate()
 		{
-			Input.ShowMouseCursor = false;
+			Input.SetCursorMode(CursorMode.Locked);
 			m_TimeBetweenShot = timeBetweenShots;
-			gunshotSound = FindEntityByName("Camera").GetComponent<AudioSource>();
-			muzzleBlast = FindEntityByName("Gun").GetComponent<ParticleEmitter>();
+			gunshotSound = Scene.FindEntityByName("Camera").GetComponent<AudioSource>();
+			muzzleBlast = Scene.FindEntityByName("Gun").GetComponent<ParticleEmitter>();
 
 			/*Entity container = FindEntityByName("Container");
 
@@ -52,64 +52,64 @@ namespace Sandbox
 
 			muzzleBlast.Stop();
 
-			float rightTrigger = Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
+			float rightTrigger = Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 			if (rightTrigger > 0.0f && m_TimeBetweenShot <= 0.0f)
 			{
 				PlayEffects();
 				FireBullet();
 			}
 
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? runSpeed : walkSpeed;
+			Vector3 speed = Input.IsGamepadButtonDown(GamepadButton.LeftStick) ? runSpeed : walkSpeed;
 
 			m_Velocity *= speed * delta;
 			m_Rotation *= rotationSpeed * delta;
 
 			transform.Translation += m_Velocity;
-			transform.Rotation += m_Rotation;
+			transform.EulerAngles += m_Rotation;
 		}
 
 		void ProcessMovement()
 		{
-			Vector3 speed = Input.IsGamepadButtonDown(Gamepad.LeftStick) ? runSpeed : walkSpeed;
+			Vector3 speed = Input.IsGamepadButtonDown(GamepadButton.LeftStick) ? runSpeed : walkSpeed;
 
-			if (Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftY));
+			if (Input.GetGamepadAxis(GamepadAxis.LeftTrigger) < -ControllerDeadzone)
+				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(GamepadAxis.LeftY));
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > ControllerDeadzone)
+				transform.Translate(-transform.Forward * speed * Time.DeltaTime * Input.GetGamepadAxis(GamepadAxis.LeftY));
 
-			if (Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(Gamepad.AxisLeftX));
+			if (Input.GetGamepadAxis(GamepadAxis.LeftX) < -ControllerDeadzone)
+				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(GamepadAxis.LeftX));
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftX) > ControllerDeadzone)
+				transform.Translate(transform.Right * speed * Time.DeltaTime * Input.GetGamepadAxis(GamepadAxis.LeftX));
 
-			if (Input.GetGamepadAxis(Gamepad.AxisRightTrigger) > ControllerDeadzone)
-				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(Gamepad.AxisRightTrigger);
-			else if (Input.GetGamepadAxis(Gamepad.AxisLeftTrigger) > ControllerDeadzone)
-				m_Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftTrigger);
+			if (Input.GetGamepadAxis(GamepadAxis.RightTrigger) > ControllerDeadzone)
+				m_Velocity.Y = 1.0f * Input.GetGamepadAxis(GamepadAxis.RightTrigger);
+			else if (Input.GetGamepadAxis(GamepadAxis.LeftTrigger) > ControllerDeadzone)
+				m_Velocity.Y = -1.0f * Input.GetGamepadAxis(GamepadAxis.LeftTrigger);
 
-			if (Input.IsGamepadButtonDown(Gamepad.LeftStick))
+			if (Input.IsGamepadButtonDown(GamepadButton.LeftStick))
 				m_Velocity *= ShiftModifer;
 		}
 
 		void ProcessRotation()
 		{
-			float rightAxisX = -Input.GetGamepadAxis(Gamepad.AxisRightX);
+			float rightAxisX = -Input.GetGamepadAxis(GamepadAxis.RightX);
 			if (rightAxisX < -ControllerDeadzone || rightAxisX > ControllerDeadzone)
 				m_Rotation.Y = rightAxisX;
 
-			float rightAxisY = -Input.GetGamepadAxis(Gamepad.AxisRightY);
+			float rightAxisY = -Input.GetGamepadAxis(GamepadAxis.RightY);
 			if (rightAxisY < -ControllerDeadzone || rightAxisY > ControllerDeadzone)
 				m_Rotation.X = rightAxisY;
 
 			if (transform.Rotation.X >= maxLookUp)
 			{
 				float roll = Math.Min(maxLookUp, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
+				transform.Rotation *= new Quaternion(new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z));
 			}
 			if (transform.Rotation.X <= maxLookDown)
 			{
 				float roll = Math.Max(maxLookDown, transform.Rotation.X);
-				transform.Rotation = new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z);
+				transform.Rotation *= new Quaternion(new Vector3(roll, transform.Rotation.Y, transform.Rotation.Z));
 			}
 		}
 
@@ -124,14 +124,14 @@ namespace Sandbox
 
 		void FireBullet()
 		{
-			Entity bullet = new Entity("Bullet");
+			Entity bullet = Scene.CreateEntity("Bullet");
 			bullet.transform.Translation = transform.Translation + (transform.Forward * 2.0f) + (transform.Right * 0.5f) + (transform.Up * 0.25f);
 			bullet.transform.Scale = new Vector3(0.5f);
 
-			MeshRenderer meshRenderer = bullet.AddComponent<MeshRenderer>();
-			meshRenderer.Type = MeshType.Sphere;
-			Material material = meshRenderer.GetMaterial();
-			material.Albedo = Color.Red.XYZ;
+			StaticMeshRenderer meshRenderer = bullet.AddComponent<StaticMeshRenderer>();
+			meshRenderer.MeshType = MeshType.Sphere;
+			Material material = meshRenderer.GetSubmesh(0).Material;
+			material.Albedo = Color.Red;
 			bullet.AddComponent<SphereCollider>();
 
 			RigidBody rigidbody = bullet.AddComponent<RigidBody>();

@@ -1,0 +1,108 @@
+Scene: MeshTest
+Entities:
+  - Entity: 7855541743676024435
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.0116313696, -1.03197503, 0.358007431]
+      Rotation: [0, 0, 0]
+      Scale: [20, 1, 20]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 1196805321569524362
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-4.80108738, 3.33635521, 7.53657436]
+      Rotation: [-0.256332308, -6.80640459, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\MonValley_G_DirtRoad_3k.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 9645139824403695210
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.60000002, 5.4000001, 0]
+      Rotation: [0, -0.0174532924, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 0.200000003
+      CastShadows: true
+  - Entity: 11928473280817130205
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Robot.fbx
+      NormalMapPath: Textures\PBR\Robot\TLSFK_Mech_N.png
+      AlbedoMapPath: Textures\PBR\Robot\TLSFK_Mech_D.png
+      MetallicMapPath: Textures\PBR\Robot\TLSFK_Mech_M.png
+      RoughnessMapPath: Textures\PBR\Robot\TLSFK_Mech_R.png
+      EmissionMapPath: Textures\PBR\Robot\TLSFK_Mech_E.png
+      AmbientOcclusionMapPath: Textures\PBR\Robot\TLSFK_Mech_AO.png
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 1, 0]
+      DisableGravity: true
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false

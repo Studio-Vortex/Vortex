@@ -1,0 +1,1354 @@
+Scene: Shooter - Test
+Entities:
+  - Entity: 4603206186445396804
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [19.9000015, 4.58091068, -7.02221298]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [1, 1, 1]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 30
+      TextHash: 18270985939192414794
+      TextString: "Welcome to the FPS demo!\nTo see how it all works,\nhead to ShooterController.cs inside the scripts folder"
+  - Entity: 17605065890578989225
+    Active: true
+    Parent: 7592765017645986439
+    Children:
+      []
+    TagComponent:
+      Tag: Ammo Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.55699873, 3.30319023, -4.59284973]
+      Rotation: [0, 1.17237306e-07, 0]
+      Scale: [0.254205108, 0.747147024, 0.505220473]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 12638135523509116079
+      TextString: 0
+  - Entity: 3747151008331614729
+    Active: true
+    Parent: 11706350616490927115
+    Children:
+      []
+    TagComponent:
+      Tag: Footstep 2
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Footstep02.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 5145853655518936808
+    Active: true
+    Parent: 11706350616490927115
+    Children:
+      []
+    TagComponent:
+      Tag: Footstep 1
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Footstep01.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 11706350616490927115
+    Active: true
+    Parent: 14121836211859560184
+    Children:
+      - Handle: 5798427802461613054
+      - Handle: 7567766171463468696
+      - Handle: 5145853655518936808
+      - Handle: 3747151008331614729
+    TagComponent:
+      Tag: SFX
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 4569281017490540369
+    Active: true
+    Parent: 1130615360352122302
+    Children:
+      []
+    TagComponent:
+      Tag: Empty Entity
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3.73214531, 7.28107643]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 5798427802461613054
+    Active: true
+    Parent: 11706350616490927115
+    Children:
+      []
+    TagComponent:
+      Tag: Reload Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.53674316e-07, -4.76837158e-07, 0]
+      Rotation: [0, -1.19209304e-07, 0]
+      Scale: [0.999999881, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\GunPickUp.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 8254485208598999361
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 7471452221306318801
+      - Handle: 16167750224240186334
+      - Handle: 16133483720595956930
+      - Handle: 6490051208338193505
+      - Handle: 16650058936702638775
+      - Handle: 12294007582153403408
+      - Handle: 12830887138881663403
+      - Handle: 8526391081639291124
+      - Handle: 12458920419939273338
+    TagComponent:
+      Tag: Box Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 14041082356036332045
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Front Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, -20.5]
+      Rotation: [0, -0, 0]
+      Scale: [40, 7, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7032006996653769159
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Debug Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [6.0729022, 6.63822937, -11.6963348]
+      Rotation: [2.93086386, 0.230731711, -3.14159274]
+      Scale: [0.999999821, 1, 0.999999762]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: false
+      FixedAspectRatio: false
+  - Entity: 12664846459653409833
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Back Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 20.5]
+      Rotation: [0, -0, 0]
+      Scale: [40, 7, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7471452221306318801
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [9.62260056, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16167750224240186334
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [5.95657539, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16133483720595956930
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.58468437, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 6490051208338193505
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-5.56217194, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16650058936702638775
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.95657563, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12294007582153403408
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-2.55276871, 2.82154608, -16.2283535]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12830887138881663403
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 8526391081639291124
+    Active: true
+    Parent: 8254485208598999361
+    Children:
+      []
+    TagComponent:
+      Tag: Box Collider
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.456575632, 2.88619566, -16.2336426]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [0, 1, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 3537418998991437848
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 841532147420893293
+      - Handle: 11509656160068524589
+      - Handle: 4669384967762567068
+    TagComponent:
+      Tag: SFX
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 7567766171463468696
+    Active: true
+    Parent: 11706350616490927115
+    Children:
+      []
+    TagComponent:
+      Tag: Empty Gun Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.581706047, -0.312159061, -0.0360336304]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1.00000012]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\EmptyGunClick.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 841532147420893293
+    Active: true
+    Parent: 3537418998991437848
+    Children:
+      []
+    TagComponent:
+      Tag: Wind Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 5, 1.49011612e-08]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\WindSound.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: true
+  - Entity: 4875139843610844103
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 6322590091079303927
+    Active: true
+    Parent: 14079900523171581816
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-18, 10, 18]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 1, 1]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-18, 10, 18]
+      Attenuation: [-0, -0]
+  - Entity: 14121836211859560184
+    Active: true
+    Parent: 7592765017645986439
+    Children:
+      - Handle: 2772165272144980929
+      - Handle: 14598005617564748846
+      - Handle: 11706350616490927115
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.413783073, -0.502170324]
+      Rotation: [0, -0, 0]
+      Scale: [1.40783095, 4.13782597, 2.79799557]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 13736356520571757098
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 7592765017645986439
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-9.53564453, 4.27378464, 17.8573799]
+      Rotation: [0, -0.742673993, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Capsule
+      MeshSource: Resources/Meshes/Default/Capsule.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.25
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    CharacterControllerComponent:
+      DisableGravity: false
+      LayerID: 0
+      SlopeLimitDegrees: 10
+      StepOffset: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.00999999978
+    CapsuleColliderComponent:
+      Radius: 0.5
+      Height: 1
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.Shooter.ShooterController
+      ScriptFields:
+        - Name: controllerDeadzone
+          Type: Float
+          Data: 0.150000006
+        - Name: controllerHorizontalRotationSpeed
+          Type: Float
+          Data: 200
+        - Name: controllerVerticalRotationSpeed
+          Type: Float
+          Data: 100
+        - Name: jumpForce
+          Type: Float
+          Data: 6
+        - Name: maxLookDown
+          Type: Float
+          Data: -60
+        - Name: maxLookUp
+          Type: Float
+          Data: 60
+        - Name: mouseHorizontalRotationSpeed
+          Type: Float
+          Data: 20
+        - Name: mouseVerticalRotationSpeed
+          Type: Float
+          Data: 10
+        - Name: runSpeed
+          Type: Float
+          Data: 10
+        - Name: runStrafeSpeed
+          Type: Float
+          Data: 5
+        - Name: strafeSpeed
+          Type: Float
+          Data: 3
+        - Name: walkSpeed
+          Type: Float
+          Data: 4
+  - Entity: 7592765017645986439
+    Active: true
+    Parent: 13736356520571757098
+    Children:
+      - Handle: 9434674632672453555
+      - Handle: 14121836211859560184
+      - Handle: 17605065890578989225
+    TagComponent:
+      Tag: Eyes
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.399999976, -0.5]
+      Rotation: [0, -0, 0]
+      Scale: [0.710312545, 0.241672799, 0.357398659]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 18413214378755178517
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Left Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-20.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 7, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 9327485935197982315
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Right Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [20.5, 3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 7, 40]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    PhysicsMaterialComponent:
+      StaticFriction: 1
+      DynamicFriction: 1
+      Bounciness: 0.00999999978
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 2772165272144980929
+    Active: true
+    Parent: 14121836211859560184
+    Children:
+      []
+    TagComponent:
+      Tag: Pistol
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.47777462, -0.388863087, -0.935481071]
+      Rotation: [0.10297443, 0.00349065848, -1.45520037e-11]
+      Scale: [0.5, 0.5, 0.5]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Colt1911PBR.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\PBR\Colt1911\normal_map.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\PBR\Colt1911\albedo_map.jpg
+      MetallicMapPath: Textures\PBR\Colt1911\metallic_map.jpg
+      RoughnessMapPath: Textures\PBR\Colt1911\roughness_map.jpg
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    ParticleEmitterComponent:
+      ColorBegin: [1, 0.814797521, 0, 0.875]
+      ColorEnd: [1, 0.4579072, 0, 1]
+      LifeTime: 0.699999988
+      Position: [-8.09155464, 4.38492155, 16.9908028]
+      Offset: [0.27177763, 0.0798048452, 1.97984004]
+      Rotation: 0.100000001
+      SizeBegin: [0, 0]
+      SizeEnd: [0.699999988, 0.699999988]
+      SizeVariation: [1, 1]
+      Velocity: [0.27177763, 0.0798048452, 1.97984004]
+      VelocityVariation: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\PistolShot.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 3
+        PlayOnStart: false
+        PlayOneShot: true
+        Spacialized: true
+        Loop: false
+    ScriptComponent:
+      ClassName: Sandbox.Shooter.Weapons.Gun
+      ScriptFields:
+        - Name: bulletSpeed
+          Type: Float
+          Data: 150
+        - Name: damageAmount
+          Type: Float
+          Data: 35
+        - Name: normalFOV
+          Type: Float
+          Data: 60
+        - Name: startingAmmo
+          Type: UInt
+          Data: 25
+        - Name: timeBetweenShots
+          Type: Float
+          Data: 0.119999997
+        - Name: weaponType
+          Type: UInt
+          Data: 1
+        - Name: zoomedFOV
+          Type: Float
+          Data: 40
+  - Entity: 11660840398601048030
+    Active: true
+    Parent: 14079900523171581816
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [18, 10, 18]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 1, 1]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [18, 10, 18]
+      Attenuation: [-0, -0]
+  - Entity: 18395384556709081904
+    Active: true
+    Parent: 14079900523171581816
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 10, 7.4505806e-09]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 1, 1]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [0, 10, 7.4505806e-09]
+      Attenuation: [-0, -0]
+  - Entity: 7563192858854841487
+    Active: true
+    Parent: 14079900523171581816
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-18, 10, -18]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 1, 1]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [-18, 10, -18]
+      Attenuation: [-0, -0]
+  - Entity: 10577259924501520376
+    Active: true
+    Parent: 14079900523171581816
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [18, 10, -18]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [1, 1, 1]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [18, 10, -18]
+      Attenuation: [-0, -0]
+  - Entity: 14079900523171581816
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 395431648054432020
+      - Handle: 18395384556709081904
+      - Handle: 1101658491528595120
+      - Handle: 14451159877111433340
+      - Handle: 6322590091079303927
+      - Handle: 7563192858854841487
+      - Handle: 10577259924501520376
+      - Handle: 11660840398601048030
+    TagComponent:
+      Tag: Light Container
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 9434674632672453555
+    Active: true
+    Parent: 7592765017645986439
+    Children:
+      []
+    TagComponent:
+      Tag: UI Reticle
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.413783073, -5.37215185]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    ScriptComponent:
+      ClassName: Sandbox.Shooter.UI_Reticle
+      ScriptFields:
+        - Name: color
+          Type: Vector4
+          Data: [0, 1, 0, 1]
+        - Name: size
+          Type: Vector2
+          Data: [0.0199999996, 0.200000003]
+  - Entity: 14598005617564748846
+    Active: true
+    Parent: 14121836211859560184
+    Children:
+      []
+    TagComponent:
+      Tag: Pistol Zoomed Transform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.300000012, -0.939999998]
+      Rotation: [0.0174532924, 0, 0]
+      Scale: [1, 1, 1.00000012]
+  - Entity: 11509656160068524589
+    Active: true
+    Parent: 3537418998991437848
+    Children:
+      []
+    TagComponent:
+      Tag: Gull Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 6, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\GullSound.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 0.600000024
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 4669384967762567068
+    Active: true
+    Parent: 3537418998991437848
+    Children:
+      []
+    TagComponent:
+      Tag: Fog Horn Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\FogHorn01.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: true
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 14488522200861807628
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Platform
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-8.60210419, 2.76573563, 17]
+      Rotation: [0, -0, 0]
+      Scale: [5, 1, 6]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 16420441300735579077
+    Active: true
+    Parent: 912400192007623340
+    Children:
+      []
+    TagComponent:
+      Tag: Ramp
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.09528065, 1.09482801, 16.8940544]
+      Rotation: [0, -0, -0.12407387]
+      Scale: [26.6982117, 0.999999881, 3]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Default/Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 0, 0]
+      Metallic: 0
+      Roughness: 1
+      TextureScale: [5.30000019, 1]
+      Reflective: false
+      Refractive: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 912400192007623340
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 4875139843610844103
+      - Handle: 14041082356036332045
+      - Handle: 12664846459653409833
+      - Handle: 9327485935197982315
+      - Handle: 18413214378755178517
+      - Handle: 14488522200861807628
+      - Handle: 16420441300735579077
+    TagComponent:
+      Tag: Environment
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

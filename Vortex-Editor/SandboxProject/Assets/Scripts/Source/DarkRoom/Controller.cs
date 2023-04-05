@@ -17,23 +17,38 @@ namespace Sandbox.DarkRoom {
 		AudioSource[] footstepSounds;
 		RigidBody rigidbody;
 		Entity eyes;
+		bool inputEnabled = true;
 
 		protected override void OnCreate()
 		{
 			controller = GetComponent<CharacterController>();
 			rigidbody = GetComponent<RigidBody>();
-			eyes = FindEntityByName("Eyes");
-			Input.ShowMouseCursor = false;
+			eyes = Scene.FindEntityByName("Eyes");
 			footstepSounds = new AudioSource[2];
-			footstepSounds[0] = FindEntityByName("Footstep1").GetComponent<AudioSource>();
-			footstepSounds[1] = FindEntityByName("Footstep2").GetComponent<AudioSource>();
+			footstepSounds[0] = Scene.FindEntityByName("Footstep1").GetComponent<AudioSource>();
+			footstepSounds[1] = Scene.FindEntityByName("Footstep2").GetComponent<AudioSource>();
+			Input.SetCursorMode(CursorMode.Locked);
 		}
 
 		protected override void OnUpdate(float delta)
 		{
-			MovePlayer();
-			RotatePlayer();
-			Jump();
+			if (inputEnabled)
+			{
+				MovePlayer();
+				RotatePlayer();
+				Jump();
+			}
+
+			if (Input.IsKeyDown(KeyCode.Escape))
+			{
+				inputEnabled = false;
+				Input.SetCursorMode(CursorMode.Normal);
+			}
+			else if (Input.IsKeyDown(KeyCode.F6))
+			{
+				inputEnabled = true;
+				Input.SetCursorMode(CursorMode.Locked);
+			}
 		}
 
 		bool FootstepSoundIsPlaying()
@@ -45,8 +60,8 @@ namespace Sandbox.DarkRoom {
 		{
 			Vector3 displacement = Vector3.Zero;
 
-			int rand0 = RandomDevice.RangedInt(0, 1);
-			int rand1 = RandomDevice.RangedInt(0, 1);
+			int rand0 = Random.Int(0, 1);
+			int rand1 = Random.Int(0, 1);
 
 			if (Input.IsKeyDown(KeyCode.W))
 			{
@@ -83,16 +98,16 @@ namespace Sandbox.DarkRoom {
 
 		void RotatePlayer()
 		{
-			mousePosThisFrame = Input.GetMousePosition();
+			mousePosThisFrame = Input.MousePosition;
 			Vector2 mouseDelta = mousePosThisFrame - mousePosLastFrame;
 			mousePosLastFrame = mousePosThisFrame;
 
 			float deltaRoll = mouseDelta.Y * verticalRotationSpeed * Time.DeltaTime;
 			float deltaPitch = -mouseDelta.X * horizontalRotationSpeed * Time.DeltaTime;
-			rigidbody.Rotate(0, deltaPitch, 0);
+			transform.Rotate(0, deltaPitch, 0);
 			eyes.transform.Rotate(deltaRoll, 0, 0);
-			float clampedRoll = Mathf.Clamp(eyes.transform.Rotation.X, maxLookDown, maxLookUp);
-			eyes.transform.Rotation = new Vector3(clampedRoll, eyes.transform.Rotation.YZ);
+			float clampedRoll = Mathf.Clamp(eyes.transform.EulerAngles.X, maxLookDown, maxLookUp);
+			eyes.transform.Rotation = new Quaternion(new Vector3(clampedRoll, eyes.transform.EulerAngles.YZ));
 		}
 
 		void Jump()

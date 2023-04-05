@@ -23,12 +23,12 @@ namespace Vortex {
 		return Project::GetAssetManager()->GetAssetType(handle);
 	}
 
-	const std::unordered_map<AssetHandle, SharedRef<Asset>>& AssetManager::GetLoadedAssets()
+	const std::unordered_map<AssetHandle, SharedReference<Asset>>& AssetManager::GetLoadedAssets()
 	{
 		return Project::GetAssetManager()->GetLoadedAssets();
 	}
 
-	const std::unordered_map<AssetHandle, SharedRef<Asset>>& AssetManager::GetMemoryOnlyAssets()
+	const std::unordered_map<AssetHandle, SharedReference<Asset>>& AssetManager::GetMemoryOnlyAssets()
 	{
 		return Project::GetAssetManager()->GetMemoryOnlyAssets();
 	}

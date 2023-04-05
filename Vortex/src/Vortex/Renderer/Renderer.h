@@ -1,26 +1,31 @@
 #pragma once
 
-#include "Vortex/Editor/EditorCamera.h"
-#include "Vortex/Renderer/RendererAPI.h"
-#include "Vortex/Renderer/Framebuffer.h"
-#include "Vortex/Renderer/RenderCommand.h"
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Components.h"
+
 #include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Project/Project.h"
-#include "Vortex/Scene/Entity.h"
-#include "Vortex/Scene/Scene.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Material.h"
+#include "Vortex/Animation/Animator.h"
+#include "Vortex/Renderer/RendererAPI.h"
+#include "Vortex/Renderer/Framebuffer.h"
+#include "Vortex/Renderer/RenderCommand.h"
 
-#include "Vortex/Scene/Components.h"
+#include "Vortex/Editor/EditorCamera.h"
 
 #include <vector>
-
-#include <entt/entt.hpp>
 
 namespace Vortex {
 
 	struct VORTEX_API SceneLightDescription
 	{
+		bool HasEnvironment = false;
 		bool HasSkyLight = false;
 		uint32_t PointLightIndex = 0;
 		uint32_t ActivePointLights = 0;
@@ -31,7 +36,9 @@ namespace Vortex {
 	struct VORTEX_API RenderTime
 	{
 		float ShadowMapRenderTime = 0.0f;
+		float PreGeometryPassSortTime = 0.0f;
 		float GeometryPassRenderTime = 0.0f;
+		float BloomPassRenderTime = 0.0f;
 	};
 
 	enum class PostProcessStage
@@ -41,7 +48,7 @@ namespace Vortex {
 
 	struct VORTEX_API PostProcessProperties
 	{
-		SharedRef<Framebuffer> TargetFramebuffer = nullptr;
+		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Viewport ViewportSize = {};
 		PostProcessStage* Stages = nullptr;
 		uint32_t StageCount = 0;
@@ -61,31 +68,27 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const TransformComponent& transform, SharedRef<Framebuffer> targetFramebuffer);
-		static void BeginScene(const EditorCamera* camera, SharedRef<Framebuffer> targetFramebuffer);
+		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer);
+		static void BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
-		static void Submit(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
-		static void DrawIndexed(const SharedRef<Shader>& shader, const SharedRef<VertexArray>& vertexArray);
-
-		static void RenderCameraIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
-		static void RenderLightSourceIcon(const TransformComponent& transform, const LightSourceComponent& lightSource, const Math::mat4& cameraView, int entityID = -1);
-		static void RenderAudioSourceIcon(const TransformComponent& transform, const Math::mat4& cameraView, int entityID = -1);
+		static void Submit(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
+		static void DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
-		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent);
+		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
 		static void DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
 
 		static SceneLightDescription GetSceneLightDescription();
 
-		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent);
-		static void CreateShadowMap(LightType type, const SharedRef<LightSource>& lightSource);
+		static void CreateEnvironmentMap(SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
+		static void CreateShadowMap(LightType type);
 
 		static void BeginPostProcessingStages(const PostProcessProperties& postProcessProps);
 
-		static void RenderToDepthMap(Scene* contextScene);
-		static const SharedRef<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
+		static void RenderToDepthMap(SharedReference<Scene>& contextScene);
+		static const SharedReference<DepthMapFramebuffer>& GetSkyLightDepthFramebuffer();
 
 		static void BindSkyLightDepthMap();
 		static void BindPointLightDepthMaps();
@@ -109,6 +112,8 @@ namespace Vortex {
 
 		static void SetProperties(const ProjectProperties::RendererProperties& props);
 
+		static void SetEnvironment(SharedReference<Skybox>& environment);
+
 		static float GetEnvironmentMapResolution();
 		static void SetEnvironmentMapResolution(float resolution);
 
@@ -124,28 +129,46 @@ namespace Vortex {
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
 
+		static Math::vec3 GetBloomSettings();
+		static void SetBloomSettings(const Math::vec3& threshold);
+		static void SetBloomThreshold(float threshold);
+		static void SetBloomKnee(float knee);
+		static void SetBloomIntensity(float intensity);
+
+		static uint32_t GetBloomSampleSize();
+		static void SetBloomSampleSize(uint32_t samples);
+
+		static uint32_t GetFlags();
+		static void SetFlags(uint32_t flags);
 		static void SetFlag(RenderFlag flag);
 		static void ToggleFlag(RenderFlag flag);
 		static void DisableFlag(RenderFlag flag);
 		static bool IsFlagSet(RenderFlag flag);
 		static void ClearFlags();
 
-		static Math::vec3 GetBloomThreshold();
-		static void SetBloomThreshold(const Math::vec3& threshold);
+		static SharedReference<Material> GetWhiteMaterial();
+		static SharedReference<Texture2D> GetWhiteTexture();
 
-		static uint32_t GetBloomSampleSize();
-		static void SetBloomSampleSize(uint32_t samples);
-
-		static SharedRef<ShaderLibrary> GetShaderLibrary();
+		static ShaderLibrary& GetShaderLibrary();
 
 	private:
+		// Helpers
+
+		static void BindRenderTarget(SharedReference<Framebuffer>& renderTarget);
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+
+		// Post Processing
+
 		static void ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps);
 		static std::vector<PostProcessStage> SortPostProcessStages(PostProcessStage* stages, uint32_t count);
 		static uint32_t GetPostProcessStageScore(PostProcessStage stage);
 		static PostProcessStage FindHighestPriortyStage(PostProcessStage* stages, uint32_t count);
 		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
-		static void BlurAndSubmitFinalSceneComposite(SharedRef<Framebuffer> sceneFramebuffer);
+		static void BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer);
 	};
 
 }

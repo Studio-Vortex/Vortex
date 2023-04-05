@@ -1,0 +1,1119 @@
+Scene: DarkRoom
+Entities:
+  - Entity: 3264264906184155559
+    Active: true
+    Parent: 10572338677353727193
+    Children:
+      []
+    TagComponent:
+      Tag: Inside Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-6.21459627, 1.58964229, 8.85779858]
+      Rotation: [0.00766662322, -0.276002735, 0]
+      Scale: [0.99999994, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: false
+      FixedAspectRatio: false
+  - Entity: 10789164221201522186
+    Active: true
+    Parent: 10572338677353727193
+    Children:
+      []
+    TagComponent:
+      Tag: Flashbang Sound
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.0999999, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Flash Bang Sound Effect.mp3
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 12987368319232909664
+    Active: true
+    Parent: 16037689736604712664
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1.99999952, 0.400000006, 1.99999952]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 0, 0]
+      Attenuation: [-0, -0]
+      ShadowBias: 5
+      CastShadows: true
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [10, 0, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 16037689736604712664
+    Active: true
+    Parent: 530251108294274169
+    Children:
+      - Handle: 12987368319232909664
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10, 4.5, -10]
+      Rotation: [0, -0, 0]
+      Scale: [0.100000001, 0.5, 0.100000001]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 6213076257044492794
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Door Frame
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 4.75, -12.5]
+      Rotation: [0, -0, 0]
+      Scale: [2, 1, 1.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 10175744776789878735
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Door Frame
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.25, 2.5, -12.5]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 5.25, 1.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 4375312476402947296
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Door Frame
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.25, 2.5, -12.5]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 5.25, 1.5]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 14527841432423247767
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      []
+    TagComponent:
+      Tag: Door Piece
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.25, -0.283541977, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.270000011, 0.266666681, 1.20000005]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.427450985, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 8989679807535730599
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      []
+    TagComponent:
+      Tag: Door Piece
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.25, 0.210503399, 0.00520706177]
+      Rotation: [0, -0, 0]
+      Scale: [0.270000011, 0.266666681, 1.20000005]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.427450985, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 2858620638649529678
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      []
+    TagComponent:
+      Tag: Door Piece
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.25, -0.282666683, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.270000011, 0.266666681, 1.20000005]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.427450985, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 1683364571417325035
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      []
+    TagComponent:
+      Tag: Door Piece
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.25, 0.210503399, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.270000011, 0.266666681, 1.20000005]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0.426567078, 0]
+      Metallic: 1
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 4942952572524502396
+    Active: true
+    Parent: 5488840924889760230
+    Children:
+      []
+    TagComponent:
+      Tag: Door Knob
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.86102295e-06, 0, 0.392971039]
+      Rotation: [0, -0, 0]
+      Scale: [1.99999988, 1.99999988, 0.400000006]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 5488840924889760230
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      - Handle: 4942952572524502396
+    TagComponent:
+      Tag: Handle Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.283198088, -0.03672719, 0.471553802]
+      Rotation: [0, -0, 0]
+      Scale: [0.0250000004, 0.0133333346, 1.25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 17753869664699059785
+    Active: true
+    Parent: 3813045837886932982
+    Children:
+      - Handle: 5488840924889760230
+      - Handle: 1683364571417325035
+      - Handle: 2858620638649529678
+      - Handle: 8989679807535730599
+      - Handle: 14527841432423247767
+      - Handle: 12100058036858696337
+    TagComponent:
+      Tag: Door
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1, 0.151360512, -0.0997848511]
+      Rotation: [0, 0, 0]
+      Scale: [2, 3.75, 0.200000003]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 2360049877280682737
+    Active: true
+    Parent: 14693552438204560788
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.5, 0.143302917]
+      Rotation: [0, -0, 0]
+      Scale: [1.9999994, 0.400000006, 1.9999994]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [0, 0, 1]
+      Attenuation: [-0, -0]
+      ShadowBias: 5
+      CastShadows: true
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [0, 0, 10]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 9024847813439715868
+    Active: true
+    Parent: 13330407485510836206
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1.9999994, 0.400000006, 1.9999994]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 0]
+      Attenuation: [-0, -0]
+      ShadowBias: 5
+      CastShadows: true
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [10, 10, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 13330407485510836206
+    Active: true
+    Parent: 530251108294274169
+    Children:
+      - Handle: 9024847813439715868
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-10, 4.5, 10]
+      Rotation: [0, -0, 0]
+      Scale: [0.100000001, 0.5, 0.100000001]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 14870038896226313840
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [26, 1, 26]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 0.00999999978
+      Roughness: 1
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 14693552438204560788
+    Active: true
+    Parent: 530251108294274169
+    Children:
+      - Handle: 2360049877280682737
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [10, 4.5, 10]
+      Rotation: [0, -0, 0]
+      Scale: [0.100000001, 0.5, 0.100000001]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 18147519413818132543
+    Active: true
+    Parent: 13583485185780049097
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 6.7949295e-05, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\MonValley_G_DirtRoad_3k.hdr
+      Rotation: 0
+      Intensity: 1
+  - Entity: 8306536776169562406
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 2.5, 12.5]
+      Rotation: [0, -0, 0]
+      Scale: [26, 5, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 1
+      Roughness: 0.25
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 7417529328146674537
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [7.01274776, 2.5, -12.5]
+      Rotation: [0, -0, 0]
+      Scale: [12, 5, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 1
+      Roughness: 0.25
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 15259078026045126640
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [12.5, 2.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 5, 25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 1
+      Roughness: 0.25
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 4369265635399541094
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-12.5, 2.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 5, 25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 1
+      Roughness: 0.25
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 8587817494827264714
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Wall
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.01461601, 2.5, -12.5]
+      Rotation: [0, -0, 0]
+      Scale: [12, 5, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 1
+      Roughness: 0.25
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 18070711691652277609
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Directional Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [8.69999981, 17.7000008, -43.9000015]
+      Rotation: [0.00349065848, -0.0174532924, 0.00872664619]
+      Scale: [1, 1, 1]
+    SkyboxComponent:
+      SourcePath: EnvironmentMaps\MonValley_G_DirtRoad_3k.hdr
+      Rotation: 0
+      Intensity: 1
+    LightSourceComponent:
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      ShadowBias: 0.200000003
+      CastShadows: true
+  - Entity: 10572338677353727193
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 6506342327880130875
+      - Handle: 530251108294274169
+      - Handle: 3813045837886932982
+      - Handle: 10789164221201522186
+      - Handle: 3264264906184155559
+    TagComponent:
+      Tag: Room
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 6506342327880130875
+    Active: true
+    Parent: 10572338677353727193
+    Children:
+      - Handle: 8587817494827264714
+      - Handle: 7417529328146674537
+      - Handle: 4369265635399541094
+      - Handle: 15259078026045126640
+      - Handle: 8306536776169562406
+      - Handle: 14870038896226313840
+      - Handle: 11565368591664650607
+      - Handle: 4375312476402947296
+      - Handle: 10175744776789878735
+      - Handle: 6213076257044492794
+      - Handle: 677991014265712002
+    TagComponent:
+      Tag: Walls
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 12543082086930788185
+    Active: true
+    Parent: 0
+    Children:
+      - Handle: 9120438666109078320
+      - Handle: 10042831517051071601
+    TagComponent:
+      Tag: Player
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-7.40581584e-07, 2.16805172, -27.1356525]
+      Rotation: [0, 3.14159274, 0]
+      Scale: [1.5, 1.5, 1.5]
+    MeshRendererComponent:
+      MeshType: Capsule
+      MeshSource: Resources/Meshes/Capsule.fbx
+      ModelImportOptions:
+        Translation: [0, 0, 0]
+        Rotation: [0, 0, 90]
+        Scale: [1, 1, 1]
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Dynamic
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.100000001
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    CharacterControllerComponent:
+      DisableGravity: false
+      LayerID: 0
+      SlopeLimitDegrees: 45
+      StepOffset: 1
+    CapsuleColliderComponent:
+      Radius: 0.5
+      Height: 1
+      Offset: [0, 0, 0]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.DarkRoom.Controller
+      ScriptFields:
+        - Name: horizontalRotationSpeed
+          Type: Float
+          Data: 20
+        - Name: jumpForce
+          Type: Float
+          Data: 5
+        - Name: maxLookDown
+          Type: Float
+          Data: -60
+        - Name: maxLookUp
+          Type: Float
+          Data: 60
+        - Name: moveSpeed
+          Type: Float
+          Data: 5
+        - Name: verticalRotationSpeed
+          Type: Float
+          Data: 10
+  - Entity: 9120438666109078320
+    Active: true
+    Parent: 12543082086930788185
+    Children:
+      - Handle: 13583485185780049097
+      - Handle: 17536188834312900144
+      - Handle: 12613177062576207636
+    TagComponent:
+      Tag: Eyes
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-1.93267624e-12, 0.499999642, -0.485460281]
+      Rotation: [0, 0, 0]
+      Scale: [0.756256878, 0.277937055, 0.362254381]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 0, 0]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 13583485185780049097
+    Active: true
+    Parent: 9120438666109078320
+    Children:
+      - Handle: 18147519413818132543
+    TagComponent:
+      Tag: Camera Holder
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.000107765198, -0.540107727]
+      Rotation: [0, -0, 0]
+      Scale: [1.32230198, 3.59793711, 2.76049137]
+  - Entity: 10042831517051071601
+    Active: true
+    Parent: 12543082086930788185
+    Children:
+      - Handle: 9254192119749663433
+      - Handle: 5228444624965363352
+    TagComponent:
+      Tag: SFX
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 9254192119749663433
+    Active: true
+    Parent: 10042831517051071601
+    Children:
+      []
+    TagComponent:
+      Tag: Footstep1
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Footstep01.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 5228444624965363352
+    Active: true
+    Parent: 10042831517051071601
+    Children:
+      []
+    TagComponent:
+      Tag: Footstep2
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\Footstep02.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+  - Entity: 3813045837886932982
+    Active: true
+    Parent: 10572338677353727193
+    Children:
+      - Handle: 17753869664699059785
+    TagComponent:
+      Tag: Door Hinge
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1, 2.25, -12.4002151]
+      Rotation: [12.5686951, 0, 12.5659485]
+      Scale: [1, 1, 1]
+    AudioSourceComponent:
+      AudioSourcePath: SFX\WoodenDoorOpening.wav
+      SoundSettings:
+        Position: [0, 0, 0]
+        Direction: [0, 0, 0]
+        Veloctiy: [0, 0, 0]
+        Cone:
+          InnerAngle: 0.17453292
+          OuterAngle: 0.785398185
+          OuterGain: 0
+        MinDistance: 1
+        MaxDistance: 10
+        Pitch: 1
+        DopplerFactor: 1
+        Volume: 1
+        PlayOnStart: false
+        PlayOneShot: false
+        Spacialized: true
+        Loop: false
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [1, 1.85000002, 0.100000001]
+      Offset: [-1, 0.129999995, -0.100000001]
+      IsTrigger: false
+    ScriptComponent:
+      ClassName: Sandbox.DarkRoom.OpenDoor
+      ScriptFields:
+        - Name: rotationSpeed
+          Type: Float
+          Data: 30
+        - Name: stopAngle
+          Type: Float
+          Data: 90
+  - Entity: 12651796958130437315
+    Active: true
+    Parent: 530251108294274169
+    Children:
+      - Handle: 12406681738219325929
+    TagComponent:
+      Tag: Light Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [10, 4.5, -10]
+      Rotation: [0, -0, 0]
+      Scale: [0.100000001, 0.5, 0.100000001]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 12406681738219325929
+    Active: true
+    Parent: 12651796958130437315
+    Children:
+      []
+    TagComponent:
+      Tag: Light Bulb
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1.99999952, 0.400000006, 1.99999952]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [0, 1, 0]
+      Attenuation: [-0, -0]
+      ShadowBias: 5
+      CastShadows: true
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [0, 10, 0]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 530251108294274169
+    Active: true
+    Parent: 10572338677353727193
+    Children:
+      - Handle: 12651796958130437315
+      - Handle: 14693552438204560788
+      - Handle: 13330407485510836206
+      - Handle: 16037689736604712664
+    TagComponent:
+      Tag: Lights
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 677991014265712002
+    Active: true
+    Parent: 6506342327880130875
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, -26]
+      Rotation: [0, -0, 0]
+      Scale: [26, 1, 26]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [0.999899983, 0.999940336, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.00999999978
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+    RigidbodyComponent:
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      LinearVelocity: [0, 0, 0]
+      LockPositionX: false
+      LockPositionY: false
+      LockPositionZ: false
+      LockRotationX: false
+      LockRotationY: false
+      LockRotationZ: false
+      Mass: 1
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 12100058036858696337
+    Active: true
+    Parent: 17753869664699059785
+    Children:
+      - Handle: 280772639248040793
+    TagComponent:
+      Tag: Handle Post
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.283198088, -0.03672719, -0.469999999]
+      Rotation: [0, -0, 0]
+      Scale: [0.0250000004, 0.0133333346, 1.25]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: Resources/Meshes/Cube.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 280772639248040793
+    Active: true
+    Parent: 12100058036858696337
+    Children:
+      []
+    TagComponent:
+      Tag: Door Knob
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [2.86102295e-06, 0, -0.389999986]
+      Rotation: [0, -0, 0]
+      Scale: [1.99999988, 1.99999988, 0.400000006]
+    MeshRendererComponent:
+      MeshType: Sphere
+      MeshSource: Resources/Meshes/Sphere.fbx
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      Emission: [0, 0, 0]
+      TextureScale: [1, 1]
+  - Entity: 12613177062576207636
+    Active: true
+    Parent: 9120438666109078320
+    Children:
+      []
+    TagComponent:
+      Tag: Help Text
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [-0.228823364, 0, -1.8236084]
+      Rotation: [-0, -0, 0]
+      Scale: [0.0881534666, 0.239862472, 1.8403275]
+    TextMeshComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      MaxWidth: 10
+      TextHash: 4998303111268409036
+      TextString: press [e] to open

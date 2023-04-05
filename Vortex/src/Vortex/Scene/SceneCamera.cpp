@@ -21,6 +21,12 @@ namespace Vortex {
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0)
+		{
+			VX_CORE_ASSERT(false, "Resizing to 0 is invalid!");
+			return;
+		}
+
 		m_AspectRatio = (float)width / (float)height;
 		m_ViewportSize = { (float)width, (float)height };
 
@@ -54,7 +60,13 @@ namespace Vortex {
 				break;
 		}
 
-		SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		uint32_t width = (uint32_t)m_ViewportSize.x;
+		uint32_t height = (uint32_t)m_ViewportSize.y;
+
+		if (width != 0 && height != 0)
+		{
+			SetViewportSize(width, height);
+		}
 	}
 
 }

@@ -30,10 +30,10 @@ namespace Vortex {
 		) {
 			switch (severity)
 			{
-				case GL_DEBUG_SEVERITY_HIGH:         VX_CORE_CRITICAL(message); return;
-				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR(message);    return;
-				case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN(message);     return;
-				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE(message);    return;
+				case GL_DEBUG_SEVERITY_HIGH:         VX_CORE_ERROR_TAG("RendererAPI", message); return;
+				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CORE_ERROR_TAG("RendererAPI", message); return;
+				case GL_DEBUG_SEVERITY_LOW:          VX_CORE_WARN_TAG("RendererAPI", message);  return;
+				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CORE_TRACE_TAG("RendererAPI", message); return;
 			}
 
 			VX_CORE_ASSERT(false, "Unknown severity level!");
@@ -83,26 +83,26 @@ namespace Vortex {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawTriangles(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const
+	void OpenGLRendererAPI::DrawTriangles(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const
+	void OpenGLRendererAPI::DrawIndexed(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 	
-	void OpenGLRendererAPI::DrawLines(const SharedRef<VertexArray>& vertexArray, uint32_t vertexCount) const
+	void OpenGLRendererAPI::DrawLines(const SharedReference<VertexArray>& vertexArray, uint32_t vertexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
 
-	void OpenGLRendererAPI::DrawTriangleStrip(const SharedRef<VertexArray>& vertexArray, uint32_t indexCount) const
+	void OpenGLRendererAPI::DrawTriangleStrip(const SharedReference<VertexArray>& vertexArray, uint32_t indexCount) const
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, indexCount);

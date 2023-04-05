@@ -2,25 +2,23 @@
 #include "Base.h"
 
 #include "Vortex/Core/Log.h"
-
-#define VORTEX_BUILD_ID "v0.1a"
+#include "Vortex/Core/Platform.h"
 
 namespace Vortex {
 
 	void InitalizeEngine()
 	{
-		// TODO: This should be reworked
-		ShowWindow(GetConsoleWindow(), SW_HIDE);
+		Platform::HideConsoleWindow();
 
 		Log::Init();
 
-		VX_CORE_TRACE("Vortex Engine {}", VORTEX_BUILD_ID);
-		VX_CORE_TRACE("Initalizing...");
+		VX_CONSOLE_LOG_TRACE("Vortex Engine {}", VORTEX_BUILD_ID);
+		VX_CONSOLE_LOG_TRACE("Initalizing...");
 	}
 
 	void ShutdownEngine()
 	{
-		VX_CORE_TRACE("Shutting down...");
+		VX_CONSOLE_LOG_TRACE("Shutting down...");
 	}
 
 }

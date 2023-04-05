@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math.h"
+#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Animation/Bone.h"
-#include "Vortex/Renderer/Model.h"
-#include "Vortex/Asset/Asset.h"
+#include "Vortex/Renderer/Mesh.h"
 
 #include <string>
 #include <unordered_map>
@@ -22,12 +21,12 @@ namespace Vortex {
 		std::vector<AssimpNodeData> Children;
 	};
 
-	class VORTEX_API Animation : public Asset
+	class VORTEX_API Animation
 	{
 	public:
 		Animation() = default;
-		Animation(const std::string& animationPath, SharedRef<Model>& model);
-		~Animation() override = default;
+		Animation(const std::string& animationPath, AssetHandle meshAssetHandle);
+		~Animation() = default;
 
 		Bone* FindBone(const std::string& name);
 
@@ -42,13 +41,10 @@ namespace Vortex {
 
 		inline const std::string& GetPath() const { return m_Filepath; }
 
-		static AssetType GetStaticType() { return AssetType::Animation; }
-		AssetType GetAssetType() const override { return AssetType::Animation; }
-
-		static SharedRef<Animation> Create(const std::string& animationPath, SharedRef<Model>& model);
+		static SharedRef<Animation> Create(const std::string& animationPath, AssetHandle meshAssetHandle);
 
 	private:
-		void ReadMissingBones(const aiAnimation* animation, SharedRef<Model>& model);
+		void ReadMissingBones(const aiAnimation* animation, SharedReference<Mesh>& mesh);
 		void ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src) const;
 
 	private:

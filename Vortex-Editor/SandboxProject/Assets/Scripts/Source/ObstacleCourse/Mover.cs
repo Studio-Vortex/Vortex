@@ -16,7 +16,7 @@ namespace Sandbox.ObstacleCourse {
 		{
 			rigidbody = GetComponent<RigidBody>();
 			collider = GetComponent<BoxCollider>();
-			camera = FindEntityByName("Camera");
+			camera = Scene.FindEntityByName("Camera");
 		}
 
 		protected override void OnUpdate(float deltaTime)

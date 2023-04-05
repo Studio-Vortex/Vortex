@@ -9,24 +9,29 @@ namespace Vortex {
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
-		OpenGLTexture2D(uint32_t width, uint32_t height, bool rbga32f);
-		OpenGLTexture2D(const std::string& path, TextureWrap wrapMode, bool flipVertical);
+		OpenGLTexture2D(const TextureProperties& imageProps);
 		~OpenGLTexture2D() override;
 
-		inline uint32_t GetWidth() const override { return m_Width; }
-		inline uint32_t GetHeight() const override { return m_Height; }
+		const TextureProperties& GetProperties() const override { return m_Properties; }
 
-		const std::string& GetPath() const override { return m_Path; }
+		inline uint32_t GetWidth() const override { return m_Properties.Width; }
+		inline uint32_t GetHeight() const override { return m_Properties.Height; }
+
+		const std::string& GetPath() const override { return m_Properties.Filepath; }
 
 		void SetData(const void* data, uint32_t size) override;
 		void SetData(void* data, uint32_t size) override;
 
+		void SetPixel(uint32_t xOffset, uint32_t yOffset, void* data);
+
 		void Bind(uint32_t slot) const override;
 		void Unbind() const override;
 
-		bool IsLoaded() const override { return m_IsLoaded; }
+		bool IsLoaded() const override { return m_Properties.IsLoaded; }
 
 		inline uint32_t GetRendererID() const override { return m_RendererID; }
+
+		void SaveToFile() const override;
 
 		inline bool operator==(const Texture& other) const override
 		{
@@ -34,13 +39,15 @@ namespace Vortex {
 		}
 
 	private:
-		std::string m_Path;
+		void CreateImageFromWidthAndHeight();
+		void CreateImageFromHDRFile();
+		void CreateImageFromFile();
+
+	private:
+		TextureProperties m_Properties;
 		mutable uint32_t m_Slot;
-		uint32_t m_Width;
-		uint32_t m_Height;
 		uint32_t m_RendererID = 0;
 		GLenum m_InternalFormat, m_DataFormat;
-		bool m_IsLoaded = false;
 	};
 
 }

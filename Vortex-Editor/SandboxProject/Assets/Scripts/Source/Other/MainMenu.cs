@@ -22,17 +22,17 @@ namespace Sandbox {
 
 			Velocity = Vector3.Zero;
 
-			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(Gamepad.AxisLeftY) < -ControllerDeadzone)
-				Velocity.Y = 1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftY);
-			else if (Input.IsKeyDown(KeyCode.S) || Input.GetGamepadAxis(Gamepad.AxisLeftY) > ControllerDeadzone)
-				Velocity.Y = -1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftY);
+			if (Input.IsKeyDown(KeyCode.W) || Input.GetGamepadAxis(GamepadAxis.LeftY) < -ControllerDeadzone)
+				Velocity.Y = 1.0f * -Input.GetGamepadAxis(GamepadAxis.LeftY);
+			else if (Input.IsKeyDown(KeyCode.S) || Input.GetGamepadAxis(GamepadAxis.LeftY) > ControllerDeadzone)
+				Velocity.Y = -1.0f * Input.GetGamepadAxis(GamepadAxis.LeftY);
 
-			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(Gamepad.AxisLeftX) < -ControllerDeadzone)
-				Velocity.X = -1.0f * -Input.GetGamepadAxis(Gamepad.AxisLeftX);
-			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(Gamepad.AxisLeftX) > ControllerDeadzone)
-				Velocity.X = 1.0f * Input.GetGamepadAxis(Gamepad.AxisLeftX);
+			if (Input.IsKeyDown(KeyCode.A) || Input.GetGamepadAxis(GamepadAxis.LeftX) < -ControllerDeadzone)
+				Velocity.X = -1.0f * -Input.GetGamepadAxis(GamepadAxis.LeftX);
+			else if (Input.IsKeyDown(KeyCode.D) || Input.GetGamepadAxis(GamepadAxis.LeftX) > ControllerDeadzone)
+				Velocity.X = 1.0f * Input.GetGamepadAxis(GamepadAxis.LeftX);
 
-			if (Input.IsGamepadButtonDown(Gamepad.ButtonA))
+			if (Input.IsGamepadButtonDown(GamepadButton.A))
 				SceneManager.LoadScene("Real3D");
 
 			transform.Translate(Velocity * Speed * delta);

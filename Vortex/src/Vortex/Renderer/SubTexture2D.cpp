@@ -3,7 +3,7 @@
 
 namespace Vortex {
 
-	SubTexture2D::SubTexture2D(const SharedRef<Texture2D>& texture, const Math::vec2& min, const Math::vec2& max)
+	SubTexture2D::SubTexture2D(const SharedReference<Texture2D>& texture, const Math::vec2& min, const Math::vec2& max)
 		: m_Texture(texture)
 	{
 		m_TexCoords[0] = { min.x, min.y };
@@ -12,7 +12,7 @@ namespace Vortex {
 		m_TexCoords[3] = { min.x, max.y };
 	}
 
-	SharedRef<SubTexture2D> SubTexture2D::CreateFromCoords(const SharedRef<Texture2D>& texture, const Math::vec2& coords, const Math::vec2& cellSize, const Math::vec2& spriteSize)
+	SharedReference<SubTexture2D> SubTexture2D::CreateFromCoords(const SharedReference<Texture2D>& texture, const Math::vec2& coords, const Math::vec2& cellSize, const Math::vec2& spriteSize)
 	{
 		Math::vec2 min = {
 			(coords.x * cellSize.x) / texture->GetWidth(),
@@ -24,7 +24,7 @@ namespace Vortex {
 			((coords.y + spriteSize.y) * cellSize.y) / texture->GetHeight()
 		};
 
-		return SharedRef<SubTexture2D>::Create(texture, min, max);
+		return SharedReference<SubTexture2D>::Create(texture, min, max);
 	}
 
 }

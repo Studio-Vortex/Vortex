@@ -1,0 +1,93 @@
+Scene: Sponza
+Entities:
+  - Entity: 6109378477435774637
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: FlashLight
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 5.07338858, -1.49011612e-08]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Spot
+      Radiance: [1, 1, 1]
+      Ambient: [0.100000001, 0.100000001, 0.100000001]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [1, 1, 1]
+      Position: [0, 5.07338858, -1.49011612e-08]
+      Direction: [0, -1, 0]
+      Attenuation: [0.1875, -0]
+      CutOff: 29.6000004
+      OuterCutOff: 6.5
+  - Entity: 17222560285558059433
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sponza
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.0299999993, 0.0299999993, 0.0299999993]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\Sponza.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.00999999978
+      Roughness: 0.870000005
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 8573183984605174604
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 3, 0]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Sandbox.CameraController3D
+      ScriptFields:
+        - Name: Flashlight
+          Type: Bool
+          Data: true
+  - Entity: 13925530697240142544
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Skybox
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SkyboxComponent:
+      SourcePath: Skybox\Skybox

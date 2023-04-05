@@ -2,41 +2,40 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Asset/Asset.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include <string>
+#include "Vortex/Renderer/Texture.h"
+
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 
 	class VORTEX_API Skybox : public Asset
 	{
 	public:
-		virtual ~Skybox() override = default;
+		virtual ~Skybox() = default;
 
-		virtual void SetFilepath(const std::string& filepath) = 0;
-		virtual const std::string& GetFilepath() const = 0;
+		virtual void LoadFromFilepath(const std::filesystem::path& filepath) = 0;
+		virtual const std::filesystem::path& GetFilepath() const = 0;
+
+		virtual SharedReference<Texture2D> GetEnvironmentMap() const = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
 		virtual bool IsLoaded() const = 0;
 
-		virtual bool PathChanged() const = 0;
-		virtual void SetPathChanged(bool changed) = 0;
-
-		virtual bool IsDirty() const = 0;
-		virtual void SetIsDirty(bool dirty) = 0;
-
-		virtual void Reload() = 0;
+		virtual bool ShouldReload() const = 0;
+		virtual void SetShouldReload(bool reload) = 0;
 
 		virtual uint32_t GetRendererID() const = 0;
 
-		static void Copy(SharedRef<Skybox> dstSkybox, const SharedRef<Skybox>& srcSkybox);
+		static void Copy(SharedReference<Skybox>& dstSkybox, const SharedReference<Skybox>& srcSkybox);
 
-		static AssetType GetStaticType() { return AssetType::Environment; }
-		AssetType GetAssetType() const override { return AssetType::Environment; }
+		ASSET_CLASS_TYPE(EnvironmentAsset)
 
-		static SharedRef<Skybox> Create();
-		static SharedRef<Skybox> Create(const std::string& filepath);
+		static SharedReference<Skybox> Create();
+		static SharedReference<Skybox> Create(const std::filesystem::path& filepath);
 	};
 
 }

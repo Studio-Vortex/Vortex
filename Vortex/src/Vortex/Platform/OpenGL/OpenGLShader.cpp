@@ -1,8 +1,6 @@
 #include "vxpch.h"
 #include "OpenGLShader.h"
 
-#include "Vortex/Utils/PlatformUtils.h"
-
 #include <Glad/glad.h>
 
 namespace Vortex {
@@ -37,7 +35,7 @@ namespace Vortex {
 		sources[GL_VERTEX_SHADER] = vertexSrc;
 		sources[GL_FRAGMENT_SHADER] = fragmentSrc;
 		Compile(sources);
-		VX_CORE_INFO("Shader Loaded: {}", m_Name);
+		VX_CONSOLE_LOG_INFO("Shader Loaded: {}", m_Name);
 	}
 
 	OpenGLShader::~OpenGLShader()
@@ -60,7 +58,7 @@ namespace Vortex {
 		auto lastDot = filepath.rfind('.');
 		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
-		VX_CORE_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
+		VX_CONSOLE_LOG_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
@@ -83,12 +81,12 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CORE_ERROR("Could not read from file '/{}'", filepath);
+				VX_CONSOLE_LOG_ERROR("Could not read from file '/{}'", filepath);
 			}
 		}
 		else
 		{
-			VX_CORE_ERROR("Failed to open shader file from: '/{}'", filepath);
+			VX_CONSOLE_LOG_ERROR("Failed to open shader file from: '/{}'", filepath);
 		}
 
 		return result;
@@ -154,7 +152,7 @@ namespace Vortex {
 
 				glDeleteShader(shader);
 
-				VX_CORE_ERROR("{}", &infoLog[0]);
+				VX_CONSOLE_LOG_ERROR("{}", &infoLog[0]);
 				VX_CORE_ASSERT(false, "Shader compilation failed!");
 				break;
 			}
@@ -182,7 +180,7 @@ namespace Vortex {
 			for (auto id : glShaderIDs)
 				glDeleteShader(id);
 
-			VX_CORE_ERROR("{}", &infoLog[0]);
+			VX_CONSOLE_LOG_ERROR("{}", &infoLog[0]);
 			VX_CORE_ASSERT(false, "Failed to link Shader Program!");
 			return;
 		}

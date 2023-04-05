@@ -72,7 +72,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void ContentBrowserPanel::RenderRightClickPopupMenu()
+	void ContentBrowserPanel::RenderCreateItemPopup()
 	{
 		// Right-click on blank space in content browser panel
 		if (Gui::BeginPopupContextWindow(0, 1, false))
@@ -81,40 +81,57 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("Folder"))
 				{
-					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("New Folder");
-					std::filesystem::create_directory(m_PathToBeRenamed);
+					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("New Folder");
+					std::filesystem::create_directory(m_ItemPathToRename);
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Scene"))
 				{
-					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.vortex");
-					std::ofstream fout(m_PathToBeRenamed);
+					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("Untitled.vortex");
+					std::ofstream fout(m_ItemPathToRename);
 					fout << "Scene: Untitled\nEntities:";
 					fout.close();
 
 					Gui::CloseCurrentPopup();
 				}
-				Gui::Separator();
+				UI::Draw::Underline();
+
+				if (Gui::MenuItem("Material"))
+				{
+					std::filesystem::path materialsDirectory = Project::GetAssetDirectory() / "Materials";
+					if (!FileSystem::Exists(materialsDirectory))
+						FileSystem::CreateDirectoryV(materialsDirectory);
+
+					m_ItemPathToRename = m_CurrentDirectory / "NewMaterial.vmaterial";
+					SharedReference<Shader> pbrStaticShader = Renderer::GetShaderLibrary().Get("PBR_Static");
+					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
+					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", "NewMaterial.vmaterial", pbrStaticShader, MaterialProperties());
+					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
+
+					Gui::CloseCurrentPopup();
+				}
+				UI::Draw::Underline();
 
 				if (Gui::MenuItem("C# Script"))
 				{
-					m_PathToBeRenamed = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
-					std::ofstream fout(m_PathToBeRenamed);
-					fout << R"(using System;
-using Vortex;
+					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
+					std::ofstream fout(m_ItemPathToRename);
+					fout << R"(using Vortex;
 
 public class Untitled : Entity
 {
-	public override void OnCreate()
+	// Called once before the first frame or when the Entity is Instantiated into the Scene
+	void OnCreate()
 	{
-		// Called once before the first frame
+		
 	}
 
-	public override void OnUpdate(float delta)
+	// Called once every frame
+	void OnUpdate()
 	{
-		// Called once every frame
+		
 	}
 }
 )";
@@ -137,220 +154,335 @@ public class Untitled : Entity
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		// Make sure cached texture icons exist, if they dont remove them from cache
-		for (auto it = m_TextureMap.cbegin(), next_it = it; it != m_TextureMap.cend(); it = next_it)
-		{
-			++next_it;
-
-			if (!std::filesystem::exists(it->first))
-				m_TextureMap.erase(it);
-		}
-
-		Gui::BeginDisabled(m_CurrentDirectory == std::filesystem::path(m_BaseDirectory));
-		float originalFrameRounding = Gui::GetStyle().FrameRounding;
-		Gui::GetStyle().FrameRounding = 5.0f;
-		if (Gui::Button("  <--  "))
-		{
-			// Clear the search input text so it does not interfere with the parent directory
-			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-			m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
-
-			m_CurrentDirectory = m_CurrentDirectory.parent_path();
-		}
-		Gui::GetStyle().FrameRounding = originalFrameRounding;
-		Gui::EndDisabled();
-
-		Gui::SameLine();
-		if (std::filesystem::equivalent(m_CurrentDirectory, m_BaseDirectory))
-		{
-			SharedRef<Project> activeProject = Project::GetActive();
-			std::filesystem::path projectAssetDirectoryWithSlashes = activeProject->GetAssetDirectory();
-			size_t lastSlashPos = projectAssetDirectoryWithSlashes.string().find_last_of("/\\") + 1;
-			std::string projectAssetDirectory = projectAssetDirectoryWithSlashes.string().substr(lastSlashPos, projectAssetDirectoryWithSlashes.string().size());
-			Gui::Text(projectAssetDirectory.c_str());
-		}
-		else
-		{
-			Gui::Text(std::filesystem::relative(m_CurrentDirectory, m_BaseDirectory).string().c_str());
-		}
-
-		// Search Bar + Filtering
-		float inputTextSize = Gui::GetWindowWidth() / 3.0f;
-		Gui::SetCursorPos({ Gui::GetContentRegionAvail().x - inputTextSize, -3.0f });
-		Gui::SetNextItemWidth(inputTextSize);
-		bool isSearching = Gui::InputTextWithHint("##AssetSearch", "Search", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-		if (isSearching)
-			m_SearchInputTextFilter.Build();
+		RenderMenuBar();
 
 		Gui::Spacing();
-		Gui::Separator();
+		UI::Draw::Underline();
 
-		static float padding = 16.0f;
-		static float thumbnailSize = 96.0f;
-		float cellSize = thumbnailSize + padding;
+		float cellSize = m_ThumbnailSize + m_ThumbnailPadding;
 
 		float panelWidth = Gui::GetContentRegionAvail().x;
 		int columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 			columnCount = 1;
 		
-		//                                                leave some space for the thumbnail size tool
-		Gui::BeginChild("Directories", ImVec2(0, Gui::GetContentRegionAvail().y - 45.0f), false);
+		//                                                leave some space for the thumbnail size slider
+		Gui::BeginChild("##FileExplorer", ImVec2(0, Gui::GetContentRegionAvail().y - 45.0f), false);
 
 		Gui::Columns(columnCount, 0, false);
 
-		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& currentPath = directoryEntry.path();
 			std::filesystem::path relativePath = currentPath;
 			std::string filenameString = relativePath.filename().string();
-			bool skipDirectoryEntry = false;
+			const bool skipDirectoryEntry = !m_SearchInputTextFilter.PassFilter(relativePath.string().c_str());
+			const bool isHiddenFile = !directoryEntry.is_directory()
+				&& !Project::GetEditorAssetManager()->IsValidAssetExtension(FileSystem::GetFileExtension(currentPath));
 
-			if (!m_SearchInputTextFilter.PassFilter(relativePath.string().c_str())) // If the search box text doesn't match up we can skip the directory entry
-				skipDirectoryEntry = true;
-
-			if (skipDirectoryEntry)
+			if (skipDirectoryEntry || isHiddenFile)
 				continue;
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedRef<Texture2D> icon = EditorResources::FileIcon;
-
-			// File icons
-
-			const std::string& extension = currentPath.extension().string();
-
-			if (directoryEntry.is_directory())
-				icon = EditorResources::DirectoryIcon;
-			else if (extension == ".vortex")
-				icon = EditorResources::SceneIcon;
-			else if (extension == ".cs")
-				icon = EditorResources::CodeFileIcon;
-			else if (extension == ".obj")
-				icon = EditorResources::OBJIcon;
-			else if (extension == ".fbx")
-				icon = EditorResources::FBXIcon;
-			else if (extension == ".ttf" || extension == ".TTF")
-				icon = EditorResources::FontIcon;
-			else if (extension == ".wav" || extension == ".mp3")
-				icon = EditorResources::AudioFileIcon;
-			else if (extension == ".hdr")
-				icon = EditorResources::HDRImageIcon;
-			else if (extension == ".png" || extension == ".jpg" || extension == ".tga")
-			{
-				if (m_TextureMap.find(currentPath.string()) == m_TextureMap.end())
-					m_TextureMap[currentPath.string()] = Texture2D::Create(currentPath.string());
-
-				icon = m_TextureMap[currentPath.string()];
-			}
+			SharedReference<Texture2D> itemIcon = FindSuitableItemIcon(directoryEntry, currentPath);
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
-			UI::ImageButtonEx(icon, { thumbnailSize, thumbnailSize }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
+			UI::ImageButtonEx(itemIcon, { m_ThumbnailSize, m_ThumbnailSize }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
 			Gui::PopStyleColor();
 
-			static bool confirmDeletionPopupOpen = false;
+			RenderRightClickItemPopup(currentPath);
 
-			// Right-click on directory or file for utilities popup
-			if (Gui::BeginPopupContextItem())
+			// Drag items from the content browser to else-where in the editor
+			if (Gui::BeginDragDropSource())
 			{
-				if (Gui::MenuItem("Rename"))
-				{
-					m_PathToBeRenamed = currentPath;
-					Gui::CloseCurrentPopup();
-				}
-				Gui::Separator();
+				const wchar_t* itemPath = relativePath.c_str();
+				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
+				Gui::BeginTooltip();
 
-				bool isCSharpFile = currentPath.filename().extension() == ".cs";
+				SharedReference<Texture2D> icon = FindSuitableItemIcon(directoryEntry, currentPath);
 
-				if (isCSharpFile && Gui::MenuItem("Open with VsCode"))
-				{
-					FileSystem::LaunchApplication("code", std::format("{} {}", currentPath.parent_path().string(), currentPath.string()).c_str());
-					Gui::CloseCurrentPopup();
-				}
-				if (isCSharpFile)
-					Gui::Separator();
+				UI::ImageEx(icon, { 12.0f, 12.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+				Gui::SameLine();
 
-				if (Gui::MenuItem("Open in Explorer"))
-				{
-					FileDialogue::OpenInFileExplorer(m_CurrentDirectory.string().c_str());
-					Gui::CloseCurrentPopup();
-				}
-				Gui::Separator();
+				std::string fullPath = directoryEntry.path().relative_path().string();
+				size_t lastSlashPos = fullPath.find_last_of("/\\") + 1;
+				std::string filenameWithExtension = fullPath.substr(lastSlashPos);
+				std::string filename = FileSystem::RemoveFileExtension(filenameWithExtension);
+				Gui::Text("%s", filename.c_str());
 
-				if (Gui::MenuItem("Delete"))
-				{
-					confirmDeletionPopupOpen = true;
-					Gui::CloseCurrentPopup();
-				}
-
-				Gui::EndPopup();
+				Gui::EndTooltip();
+				Gui::EndDragDropSource();
 			}
 
-			if (confirmDeletionPopupOpen)
+			// Double click to enter into a directory or open the file
+			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
-				Gui::OpenPopup("Confirm");
-				confirmDeletionPopupOpen = false;
+				if (directoryEntry.is_directory())
+				{
+					m_CurrentDirectory /= currentPath.filename();
+
+					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+					m_SearchInputTextFilter.Build();
+				}
+				else
+				{
+					FileDialogue::OpenInFileExplorer(currentPath.string().c_str());
+				}
 			}
-			
-			if (UI::ShowMessageBox("Confirm", { 500, 200 }))
+
+			// If we are not renaming the current entry we can show the path
+			if (currentPath != m_ItemPathToRename)
 			{
-				Gui::Separator();
+				size_t dotPos = filenameString.find('.');
+				std::string filenameWithoutExtension = filenameString.substr(0, dotPos);
+				Gui::TextWrapped(filenameWithoutExtension.c_str());
+			}
+
+			Gui::NextColumn();
+			Gui::PopID();
+		}
+
+		Gui::Columns(1);
+
+		RenderCreateItemPopup();
+
+		Gui::EndChild();
+
+		// Accept a Prefab from the scene hierarchy
+		if (Gui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+			{
+				Entity& droppedEntity = *(Entity*)payload->Data;
+				VX_CONSOLE_LOG_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
+				// Todo Create a new prefab here from the entity's uuid
+				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".vprefab"));
+				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);
+			}
+			Gui::EndDragDropTarget();
+		}
+
+		Gui::Spacing();
+		UI::Draw::Underline();
+		Gui::Spacing();
+
+		RenderThumbnailSlider();
+	}
+
+	void ContentBrowserPanel::RenderMenuBar()
+	{
+		Gui::BeginDisabled(m_CurrentDirectory == Project::GetAssetDirectory());
+
+		if (Gui::Button((const char*)VX_ICON_CHEVRON_LEFT, { 45, 0 }))
+		{
+			// Clear the search input text so it does not interfere with the parent directory
+			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+			m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+
+			m_CurrentDirectory = FileSystem::GetParentDirectory(m_CurrentDirectory);
+		}
+
+		Gui::EndDisabled();
+		Gui::SameLine();
+
+		std::filesystem::path fullyQualifiedAssetDirectory = m_BaseDirectory;
+		size_t lastSlashPos = fullyQualifiedAssetDirectory.string().find_last_of("/\\") + 1;
+		std::string relativeProjectAssetDirectory = fullyQualifiedAssetDirectory.string().substr(lastSlashPos, fullyQualifiedAssetDirectory.string().size());
+
+		if (FileSystem::Equivalent(m_CurrentDirectory, Project::GetAssetDirectory()))
+		{
+			Gui::Text(relativeProjectAssetDirectory.c_str());
+		}
+		else
+		{
+			if (Gui::Button(relativeProjectAssetDirectory.c_str()))
+			{
+				m_CurrentDirectory = m_BaseDirectory;
+			}
+		}
+
+		Gui::SameLine();
+
+		std::filesystem::path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
+		std::vector<std::string> splitPath = String::SplitString(relativePath.string(), "/\\");
+
+		if (splitPath[0] != ".")
+		{
+			UI::ShiftCursorY(1.0f);
+			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
+			Gui::SameLine();
+		}
+
+		const size_t numPaths = splitPath.size();
+		uint32_t i = 0;
+
+		for (const auto& entry : splitPath)
+		{
+			if (entry == ".")
+				continue;
+
+			std::string label = entry + "##" + std::to_string(i);
+			if (Gui::Button(label.c_str()))
+			{
+				if (!FileSystem::Equivalent(m_CurrentDirectory, entry))
+				{
+					m_CurrentDirectory = FileSystem::Relative(entry, m_BaseDirectory);
+				}
+			}
+
+			Gui::SameLine();
+
+			if (numPaths - 1 == i++)
+				break;
+
+			UI::ShiftCursorY(1.0f);
+			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
+
+			Gui::SameLine();
+		}
+
+		// Search Bar + Filtering
+		float inputTextSize = Gui::GetWindowWidth() / 3.0f;
+		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
+		Gui::SetNextItemWidth(inputTextSize);
+		const bool isSearching = Gui::InputTextWithHint("##ItemAssetSearch", "Search...", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		if (isSearching)
+			m_SearchInputTextFilter.Build();
+	}
+
+	void ContentBrowserPanel::RenderRightClickItemPopup(const std::filesystem::path& currentItemPath)
+	{
+		static bool confirmDeletionPopupOpen = false;
+
+		// Right-click on directory or file for utilities popup
+		if (Gui::BeginPopupContextItem())
+		{
+			if (Gui::MenuItem("Rename"))
+			{
+				m_ItemPathToRename = currentItemPath;
+				Gui::CloseCurrentPopup();
+			}
+			UI::Draw::Underline();
+
+			bool isCSharpFile = currentItemPath.filename().extension() == ".cs";
+
+			if (isCSharpFile && Gui::MenuItem("Open with VsCode"))
+			{
+				Platform::LaunchProcess("code", std::format("{} {}", currentItemPath.parent_path().string(), currentItemPath.string()).c_str());
+				Gui::CloseCurrentPopup();
+			}
+			if (isCSharpFile)
+				UI::Draw::Underline();
+
+			if (Gui::MenuItem("Open in Explorer"))
+			{
+				if (std::filesystem::is_directory(currentItemPath))
+				{
+					FileDialogue::OpenInFileExplorer(currentItemPath.string().c_str());
+				}
+				else
+				{
+					std::filesystem::path parentDirectory = FileSystem::GetParentDirectory(currentItemPath);
+					FileDialogue::OpenInFileExplorer(parentDirectory.string().c_str());
+				}
+
+				Gui::CloseCurrentPopup();
+			}
+			UI::Draw::Underline();
+
+			if (Gui::MenuItem("Delete"))
+			{
+				confirmDeletionPopupOpen = true;
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
+		}
+
+		if (confirmDeletionPopupOpen)
+		{
+			Gui::OpenPopup("Confirm");
+			confirmDeletionPopupOpen = false;
+		}
+
+		if (UI::ShowMessageBox("Confirm", { 500, 200 }))
+		{
+			UI::Draw::Underline();
+			Gui::Spacing();
+
+			ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
+
+			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentItemPath.filename()).c_str(), 40.0f);
+			Gui::TextCentered("This cannot be undone.", 60.0f);
+
+			for (uint32_t i = 0; i < 18; i++)
 				Gui::Spacing();
 
-				ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
-
-				Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentPath.filename()).c_str(), 40.0f);
-				Gui::TextCentered("This cannot be undone.", 60.0f);
-
-				for (uint32_t i = 0; i < 18; i++)
-					Gui::Spacing();
-
-				if (Gui::Button("Yes", button_size))
-				{
-					std::filesystem::remove(currentPath);
-					Gui::CloseCurrentPopup();
-				}
-
-				Gui::SameLine();
-
-				if (Gui::Button("No", button_size))
-					Gui::CloseCurrentPopup();
-
-				Gui::SameLine();
-
-				if (Gui::Button("Cancel", button_size))
-					Gui::CloseCurrentPopup();
-
-				Gui::EndPopup();
+			if (Gui::Button("Yes", button_size))
+			{
+				std::filesystem::remove(currentItemPath);
+				Gui::CloseCurrentPopup();
 			}
 
-			if (currentPath == m_PathToBeRenamed)
+			Gui::SameLine();
+
+			if (Gui::Button("No", button_size))
+				Gui::CloseCurrentPopup();
+
+			Gui::SameLine();
+
+			if (Gui::Button("Cancel", button_size))
+				Gui::CloseCurrentPopup();
+
+			Gui::EndPopup();
+		}
+
+		if (currentItemPath == m_ItemPathToRename)
+		{
+			// Find the last backslash in the path and copy the filename to the buffer
+			char buffer[256];
+			size_t pos = currentItemPath.string().find_last_of('\\');
+			std::string oldFilenameWithExtension = currentItemPath.string().substr(pos + 1, currentItemPath.string().length());
+			memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
+
+			Gui::SetKeyboardFocusHere();
+			Gui::SetNextItemWidth(m_ThumbnailSize);
+			if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				// Find the last backslash in the path and copy the filename to the buffer
-				char buffer[256];
-				size_t pos = currentPath.string().find_last_of('\\');
-				std::string oldFilenameWithExtension = currentPath.string().substr(pos + 1, currentPath.string().length());
-				memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
+				const bool inputTextEmpty = strlen(buffer) == 0;
+				const bool consistentPaths = (m_CurrentDirectory / std::filesystem::path(buffer)) == currentItemPath;
 
-				Gui::SetKeyboardFocusHere();
-				Gui::SetNextItemWidth(thumbnailSize);
-				if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+				if (!inputTextEmpty && !consistentPaths)
 				{
-					bool inputTextWasNotEmpty = strlen(buffer) != 0;
+					// Get the new path from the input text buffer relative to the current directory
+					std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
 
-					if (inputTextWasNotEmpty && (m_CurrentDirectory / std::filesystem::path(buffer)) != currentPath)
+					// Temporary until asset manager is sorted
+					std::filesystem::rename(currentItemPath, newFilePath);
+
+					if (FileSystem::HasFileExtension(currentItemPath))
 					{
-						// Get the new path from the input text buffer relative to the current directory
-						std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
-						
-						// Rename the current path to the new path
-						std::filesystem::rename(currentPath, newFilePath);
+						SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
+						// TODO make this work
+						//Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
 
+						// TODO this should take place in asset manager
+						if (newFilePath.filename().extension() == ".vmaterial")
+						{
+							SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
+							if (material)
+							{
+								material->SetName(FileSystem::RemoveFileExtension(newFilePath));
+							}
+						}
+
+						// TODO this should take place in asset manager
 						// Rename C# Class name in file
 						if (newFilePath.filename().extension() == ".cs")
 						{
 							std::ifstream cSharpScriptFile(newFilePath);
-							 
+
 							if (cSharpScriptFile.is_open())
 							{
 								// Make sure we start at the beginning of the file
@@ -412,7 +544,7 @@ public class Untitled : Entity
 						}
 
 						// Rename SpriteRendererComponent Texture path
-						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".tga")
+						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
 						{
 							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
 							// we have the old filename
@@ -420,82 +552,94 @@ public class Untitled : Entity
 							// we also have the newFilePath
 						}
 					}
-
-					m_PathToBeRenamed = "";
 				}
+
+				m_ItemPathToRename.clear();
 			}
-
-			// Drag items from the content browser to else-where in the editor
-			if (Gui::BeginDragDropSource())
-			{
-				const wchar_t* itemPath = relativePath.c_str();
-				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
-				Gui::BeginTooltip();
-				std::string path = directoryEntry.path().relative_path().string();
-				size_t lastSlash = path.find_last_of("/\\") + 1;
-				Gui::Text("%s", path.substr(lastSlash).c_str());
-				Gui::EndTooltip();
-				Gui::EndDragDropSource();
-			}
-
-			// Double click to enter into a directory
-			if (Gui::IsItemHovered() && Gui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			{
-				if (directoryEntry.is_directory())
-				{
-					m_CurrentDirectory /= currentPath.filename();
-
-					// We also need to reset the search input text here
-					memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-					m_SearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
-				}
-			}
-
-			// If we are not renaming the current entry we can show the path
-			if (currentPath != m_PathToBeRenamed)
-			{
-				size_t dotPos = filenameString.find('.');
-				std::string filenameWithoutExtension = filenameString.substr(0, dotPos);
-				Gui::TextWrapped(filenameWithoutExtension.c_str());
-			}
-
-			Gui::NextColumn();
-			Gui::PopID();
 		}
-
-		Gui::Columns(1);
-
-		RenderRightClickPopupMenu();
-
-		Gui::EndChild();
-
-		// Accept a Prefab from the scene hierarchy
-		if (Gui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
-			{
-				Entity& droppedEntity = *(Entity*)payload->Data;
-				VX_CORE_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
-				// Todo Create a new prefab here from the entity's uuid
-				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".sprefab"));
-				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);
-			}
-			Gui::EndDragDropTarget();
-		}
-
-		Gui::Spacing();
-		Gui::Separator();
-		Gui::Spacing();
-
-		RenderSlider(thumbnailSize, padding);
 	}
 
-	void ContentBrowserPanel::RenderSlider(float& thumbnailSize, float& padding)
+	void ContentBrowserPanel::RenderThumbnailSlider()
 	{
 		Gui::PushItemWidth(-1);
-		Gui::SliderFloat("##Thumbnail Size", &thumbnailSize, 64.0f, 512.0f, "%.0f");
+
+		if (Gui::SliderFloat("##Thumbnail Size", &m_ThumbnailSize, 64.0f, 512.0f, "%.0f"))
+		{
+			m_ThumbnailPadding = m_ThumbnailSize / 6.0f;
+		}
+
 		Gui::PopItemWidth();
-		padding = thumbnailSize / 6.0f;
+	}
+
+	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath)
+	{
+		std::string extension = FileSystem::GetFileExtension(currentItemPath);
+		SharedReference<Texture2D> itemIcon = nullptr;
+
+		if (directoryEntry.is_directory())
+		{
+			itemIcon = EditorResources::DirectoryIcon;
+			return itemIcon;
+		}
+
+		AssetType assetType = AssetType::None;
+		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension); type != AssetType::None)
+			assetType = type;
+		
+		if (assetType == AssetType::None)
+		{
+			itemIcon = EditorResources::FileIcon;
+			return itemIcon;
+		}
+
+		switch (assetType)
+		{
+			case Vortex::AssetType::MeshAsset:            FindMeshIcon(extension, itemIcon); break;
+			case Vortex::AssetType::FontAsset:            itemIcon = EditorResources::FontIcon; break;
+			case Vortex::AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon; break;
+			case Vortex::AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon; break;
+			case Vortex::AssetType::PrefabAsset:          break;
+			case Vortex::AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon; break;
+			case Vortex::AssetType::TextureAsset:         FindTextureFromAssetManager(currentItemPath, itemIcon); break;
+			case Vortex::AssetType::MaterialAsset:        break;
+			case Vortex::AssetType::AnimatorAsset:        break;
+			case Vortex::AssetType::AnimationAsset:       break;
+			case Vortex::AssetType::StaticMeshAsset:      FindMeshIcon(extension, itemIcon); break;
+			case Vortex::AssetType::EnvironmentAsset:     FindEnvironmentMapFromAssetManager(currentItemPath, itemIcon); break;
+			case Vortex::AssetType::PhysicsMaterialAsset: break;
+		}
+
+		// This means we either haven't implemented an Icon for this extension or it's just a random extension
+		if (!itemIcon)
+			itemIcon = EditorResources::FileIcon;
+
+		return itemIcon;
+	}
+
+	void ContentBrowserPanel::FindTextureFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon)
+	{
+		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
+		{
+			VX_CORE_ASSERT(asset.Is<Texture2D>(), "Invalid Texture!");
+			itemIcon = asset.As<Texture2D>();
+		}
+	}
+
+	void ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon)
+	{
+		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
+		{
+			VX_CORE_ASSERT(asset.Is<Skybox>(), "Invalid Environment!");
+			itemIcon = asset.As<Skybox>()->GetEnvironmentMap();
+		}
+	}
+
+	void ContentBrowserPanel::FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon)
+	{
+		if (extension == ".obj")
+			itemIcon = EditorResources::OBJIcon;
+		else if (extension == ".fbx")
+			itemIcon = EditorResources::FBXIcon;
 	}
 
 }

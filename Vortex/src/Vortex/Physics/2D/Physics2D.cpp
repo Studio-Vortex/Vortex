@@ -1,11 +1,16 @@
 #include "vxpch.h"
 #include "Physics2D.h"
 
+#include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Physics/2D/RaycastCallback2D.h"
+
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_circle_shape.h>
 #include <box2d/b2_polygon_shape.h>
+
+#include <mono/jit/jit.h>
 
 namespace Vortex {
 
@@ -26,6 +31,33 @@ namespace Vortex {
 
 	}
 
+	RaycastHit2D::RaycastHit2D(const RaycastCallback2D* raycastInfo, Scene* contextScene)
+	{
+		Hit = raycastInfo->fixture != nullptr;
+
+		if (Hit)
+		{
+			Point = Math::vec2(raycastInfo->point.x, raycastInfo->point.y);
+			Normal = Math::vec2(raycastInfo->normal.x, raycastInfo->normal.y);
+
+			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastInfo->fixture->GetUserData().pointer);
+			UUID entityUUID = physicsBodyData->EntityUUID;
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
+
+			if (ScriptEngine::GetEntityScriptInstance(entityUUID))
+			{
+				ScriptEngine::OnRaycastCollisionEntity(entity); // Call the Entity's OnCollision Function
+			}
+		}
+		else
+		{
+			Point = Math::vec2();
+			Normal = Math::vec2();
+			Tag = mono_string_new(mono_domain_get(), "");
+		}
+	}
+
 	void Physics2D::OnSimulationStart(Scene* contextScene)
 	{
 		s_PhysicsScene = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
@@ -35,7 +67,7 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, contextScene };
-			auto& transform = entity.GetTransform();
+			auto transform = contextScene->GetWorldSpaceTransform(entity);
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
 			CreatePhysicsBody(entity, transform, rb2d);
@@ -46,41 +78,49 @@ namespace Vortex {
 	{
 		s_PhysicsScene->SetGravity({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
+		s_ContextScene = contextScene;
+
 		// Physics
 		{
-			// Copies transform from Vortex to Box2D
-			auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
+			// Copy transform from Vortex to Box2D
+			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBody2DComponent>();
 
-			for (auto e : view)
+			for (const auto e : view)
 			{
 				Entity entity = { e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+				RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				// If a rb2d component is added during runtime we can create the physics body here
-				if (rb2d.RuntimeBody == nullptr)
-					CreatePhysicsBody(entity, transform, rb2d);
+				// If a rigidbody component is added during runtime we can create the physics body here
+				if (!rigidbody.RuntimeBody)
+				{
+					CreatePhysicsBody(entity, transform, rigidbody);
+				}
 
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 				Math::vec3 translation = transform.Translation;
 				float angle = transform.GetRotationEuler().z;
 
 				const auto& bodyPosition = body->GetPosition();
 				const float bodyAngle = body->GetAngle();
 
-				bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
+				const bool awake = bodyPosition.x != translation.x || bodyPosition.y != translation.y || bodyAngle != angle;
+				body->SetAwake(awake);// TODO fix this
 
 				body->SetTransform({ translation.x, translation.y }, angle);
-				if (rb2d.Velocity != Math::vec2(0.0f))
-					body->SetLinearVelocity({ rb2d.Velocity.x, rb2d.Velocity.y });
-				body->SetLinearDamping(rb2d.Drag);
-				body->SetAngularDamping(rb2d.AngularDrag);
-				body->SetGravityScale(rb2d.GravityScale);
-				body->SetFixedRotation(rb2d.FixedRotation);
+				if (rigidbody.Velocity != Math::vec2(0.0f))
+				{
+					body->SetLinearVelocity({ rigidbody.Velocity.x, rigidbody.Velocity.y });
+				}
+				body->SetLinearDamping(rigidbody.Drag);
+				body->SetAngularVelocity(rigidbody.AngularVelocity);
+				body->SetAngularDamping(rigidbody.AngularDrag);
+				body->SetGravityScale(rigidbody.GravityScale);
+				body->SetFixedRotation(rigidbody.FixedRotation);
 
 				if (entity.HasComponent<BoxCollider2DComponent>())
 				{
-					auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+					const auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
 					b2Fixture* fixture = (b2Fixture*)bc2d.RuntimeFixture;
 
 					fixture->SetDensity(bc2d.Density);
@@ -92,7 +132,7 @@ namespace Vortex {
 
 				if (entity.HasComponent<CircleCollider2DComponent>())
 				{
-					auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+					const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
 					b2Fixture* fixture = (b2Fixture*)cc2d.RuntimeFixture;
 
 					fixture->SetDensity(cc2d.Density);
@@ -100,21 +140,18 @@ namespace Vortex {
 					fixture->SetRestitution(cc2d.Restitution);
 					fixture->SetRestitutionThreshold(cc2d.RestitutionThreshold);
 				}
-
-				if (awake)
-					body->SetAwake(true);
 			}
 
 			s_PhysicsScene->Step(delta, s_PhysicsWorld2DVeloctityIterations, s_PhysicsWorld2DPositionIterations);
 
 			// Get transform from Box2D
-			for (auto e : view)
+			for (const auto e : view)
 			{
 				Entity entity{ e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();
-				auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+				const auto& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 				const auto& position = body->GetPosition();
 				transform.Translation = Math::vec3(position.x, position.y, transform.Translation.z);
 				const auto& rotation = transform.GetRotationEuler();
@@ -128,6 +165,24 @@ namespace Vortex {
 		delete s_PhysicsScene;
 		s_PhysicsScene = nullptr;
 		s_PhysicsBodyDataMap.clear();
+		s_ContextScene = nullptr;
+	}
+
+	uint64_t Physics2D::Raycast(const Math::vec2& start, const Math::vec2& end, RaycastHit2D* outResult, bool drawDebugLine)
+	{
+		// Create an instance of the callback and initialize it
+		RaycastCallback2D raycastCallback;
+		s_PhysicsScene->RayCast(&raycastCallback, {start.x, start.y}, {end.x, end.y});
+
+		*outResult = RaycastHit2D(&raycastCallback, s_ContextScene);
+
+		if (outResult->Hit)
+		{
+			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastCallback.fixture->GetUserData().pointer);
+			return physicsBodyData->EntityUUID;
+		}
+
+		return 0; // Invalid entity UUID
 	}
 
 	void Physics2D::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
@@ -208,7 +263,8 @@ namespace Vortex {
 
 	void Physics2D::DestroyPhysicsBody(Entity entity)
 	{
-		// Destroy the physics body and fixture if they exist
+		if (!entity.HasComponent<RigidBody2DComponent>())
+			return;
 
 		b2Body* entityRuntimePhysicsBody = (b2Body*)entity.GetComponent<RigidBody2DComponent>().RuntimeBody;
 

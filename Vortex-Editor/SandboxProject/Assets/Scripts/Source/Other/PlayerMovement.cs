@@ -14,7 +14,7 @@ namespace Sandbox {
 		protected override void OnCreate()
 		{
 			rigidbody = GetComponent<RigidBody>();
-			m_Camera = FindEntityByName("Camera");
+			m_Camera = Scene.FindEntityByName("Camera");
 		}
 
 		protected override void OnUpdate(float delta)

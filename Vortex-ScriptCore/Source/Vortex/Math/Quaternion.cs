@@ -6,25 +6,27 @@ namespace Vortex
 	[StructLayout(LayoutKind.Sequential)]
 	public struct Quaternion : IEquatable<Quaternion>
 	{
+		public float W;
 		public float X;
 		public float Y;
 		public float Z;
-		public float W;
 
-		public Quaternion(float x, float y, float z, float w)
+		public static Quaternion Identity => new Quaternion(1, 0, 0, 0);
+
+		public Quaternion(float w, float x, float y, float z)
 		{
+			W = w;
 			X = x;
 			Y = y;
 			Z = z;
-			W = w;
 		}
 
 		public Quaternion(Vector3 xyz, float w)
 		{
+			W = w;
 			X = xyz.X;
 			Y = xyz.Y;
 			Z = xyz.Z;
-			W = w;
 		}
 
 		public Quaternion(Vector3 euler)
@@ -32,10 +34,22 @@ namespace Vortex
 			Vector3 c = Vector3.Cos(euler * 0.5f);
 			Vector3 s = Vector3.Sin(euler * 0.5f);
 
+			W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
 			X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
 			Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
 			Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
+		}
+
+		public Quaternion(float x, float y, float z)
+		{
+			Vector3 euler = new Vector3(x, y, z);
+			Vector3 c = Vector3.Cos(euler * 0.5f);
+			Vector3 s = Vector3.Sin(euler * 0.5f);
+
 			W = c.X * c.Y * c.Z + s.X * s.Y * s.Z;
+			X = s.X * c.Y * c.Z - c.X * s.Y * s.Z;
+			Y = c.X * s.Y * c.Z + s.X * c.Y * s.Z;
+			Z = c.X * c.Y * s.Z - s.X * s.Y * c.Z;
 		}
 
 		public static Vector3 operator *(Quaternion q, Vector3 v)
@@ -49,16 +63,17 @@ namespace Vortex
 		public static Quaternion operator *(Quaternion a, Quaternion b)
 		{
 			Quaternion result = new Quaternion();
+			result.W = a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z;
 			result.X = a.W * b.X + a.X * b.W + a.Y * b.Z - a.Z * b.Y;
 			result.Y = a.W * b.Y + a.Y * b.W + a.Z * b.X - a.X * b.Z;
 			result.Z = a.W * b.Z + a.Z * b.W + a.X * b.Y - a.Y * b.X;
-			result.W = a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z;
 			return result;
 		}
 
 		public Vector3 XYZ
 		{
 			get => new Vector3(X, Y, Z);
+
 			set
 			{
 				X = value.X;
@@ -68,23 +83,15 @@ namespace Vortex
 		}
 
 		public override int GetHashCode() => (W, X, Y, Z).GetHashCode();
-
 		public override bool Equals(object obj) => obj is Quaternion other && Equals(other);
-
 		public bool Equals(Quaternion right) => W == right.W && X == right.X && Y == right.Y && Z == right.Z;
 
 		public static bool operator ==(Quaternion left, Quaternion right) => left.Equals(right);
 		public static bool operator !=(Quaternion left, Quaternion right) => !(left == right);
 
-		public float Length
-		{
-			get => Mathf.Sqrt(LengthSquared);
-		}
+		public float Length => Mathf.Sqrt(LengthSquared);
 
-		public float LengthSquared
-		{
-			get => X * X + Y * Y + Z * Z + W * W;
-		}
+		public float LengthSquared => X * X + Y * Y + Z * Z + W * W;
 
 		public static Quaternion FromToRotation(Vector3 aFrom, Vector3 aTo)
 		{
@@ -98,10 +105,12 @@ namespace Vortex
 			aAxis.Normalize();
 			float rad = Mathf.Deg2Rad(aAngle) * 0.5f;
 			aAxis *= Mathf.Sin(rad);
-			return new Quaternion(aAxis.X, aAxis.Y, aAxis.Z, Mathf.Cos(rad));
+			return new Quaternion(Mathf.Cos(rad), aAxis.X, aAxis.Y, aAxis.Z);
 		}
 
-		public static Quaternion QuaternionLookRotation(Vector3 forward, Vector3 up)
+		public static Quaternion LookRotation(Vector3 forward) => LookRotation(forward, Vector3.Up);
+
+		public static Quaternion LookRotation(Vector3 forward, Vector3 up)
 		{
 			forward.Normalize();
 
@@ -122,7 +131,7 @@ namespace Vortex
 			var quaternion = new Quaternion();
 			if (num8 > 0f)
 			{
-				var num = (float)Math.Sqrt(num8 + 1f);
+				var num = Mathf.Sqrt(num8 + 1f);
 				quaternion.W = num * 0.5f;
 				num = 0.5f / num;
 				quaternion.X = (m12 - m21) * num;
@@ -132,7 +141,7 @@ namespace Vortex
 			}
 			if ((m00 >= m11) && (m00 >= m22))
 			{
-				var num7 = (float)Math.Sqrt(((1f + m00) - m11) - m22);
+				var num7 = Mathf.Sqrt(((1f + m00) - m11) - m22);
 				var num4 = 0.5f / num7;
 				quaternion.X = 0.5f * num7;
 				quaternion.Y = (m01 + m10) * num4;
@@ -142,7 +151,7 @@ namespace Vortex
 			}
 			if (m11 > m22)
 			{
-				var num6 = (float)Math.Sqrt(((1f + m11) - m00) - m22);
+				var num6 = Mathf.Sqrt(((1f + m11) - m00) - m22);
 				var num3 = 0.5f / num6;
 				quaternion.X = (m10 + m01) * num3;
 				quaternion.Y = 0.5f * num6;
@@ -150,7 +159,7 @@ namespace Vortex
 				quaternion.W = (m20 - m02) * num3;
 				return quaternion;
 			}
-			var num5 = (float)Math.Sqrt(((1f + m22) - m00) - m11);
+			var num5 = Mathf.Sqrt(((1f + m22) - m00) - m11);
 			var num2 = 0.5f / num5;
 			quaternion.X = (m20 + m02) * num2;
 			quaternion.Y = (m21 + m12) * num2;
@@ -166,6 +175,9 @@ namespace Vortex
 			W *= scale;
 		}
 
+		public static Quaternion EulerAngles(Vector3 eulers) => new Quaternion(eulers);
+		public static Quaternion EulerAngles(float x, float y, float z) => new Quaternion(new Vector3(x, y, z));
+
 		public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
 		{
 			if (t > 1) t = 1;
@@ -180,7 +192,7 @@ namespace Vortex
 			{
 				if (b.LengthSquared == 0.0f)
 				{
-					return new Quaternion(0, 0, 0, 1);
+					return new Quaternion(1, 0, 0, 0);
 				}
 				return b;
 			}
@@ -188,7 +200,6 @@ namespace Vortex
 			{
 				return a;
 			}
-
 
 			float cosHalfAngle = a.W * b.W + Vector3.Dot(a.XYZ, b.XYZ);
 
@@ -209,11 +220,11 @@ namespace Vortex
 			if (cosHalfAngle < 0.99f)
 			{
 				// do proper slerp for big angles
-				float halfAngle = (float)System.Math.Acos(cosHalfAngle);
-				float sinHalfAngle = (float)System.Math.Sin(halfAngle);
+				float halfAngle = Mathf.Acos(cosHalfAngle);
+				float sinHalfAngle = Mathf.Sin(halfAngle);
 				float oneOverSinHalfAngle = 1.0f / sinHalfAngle;
-				blendA = (float)System.Math.Sin(halfAngle * (1.0f - t)) * oneOverSinHalfAngle;
-				blendB = (float)System.Math.Sin(halfAngle * t) * oneOverSinHalfAngle;
+				blendA = Mathf.Sin(halfAngle * (1.0f - t)) * oneOverSinHalfAngle;
+				blendB = Mathf.Sin(halfAngle * t) * oneOverSinHalfAngle;
 			}
 			else
 			{
@@ -229,7 +240,13 @@ namespace Vortex
 				return result;
 			}
 
-			return new Quaternion(0, 0, 0, 1);
+			return Identity;
+		}
+
+		public static Quaternion Inverse(Quaternion quat)
+		{
+			InternalCalls.Quaternion_Inverse(ref quat, out Quaternion result);
+			return result;
 		}
 
 	}

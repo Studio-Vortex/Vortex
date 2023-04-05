@@ -1,56 +1,43 @@
 #pragma once
-#include "Vortex/Core/Math.h"
+
+#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Scene/Components.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
 
 #include <PhysX/PxPhysicsAPI.h>
 
+#include <string>
+
 namespace Vortex {
 
-	static inline std::tuple<Math::vec3, Math::quaternion, Math::vec3> GetTransformDecomposition(const Math::mat4& transform)
-	{
-		Math::vec3 scale, translation, skew;
-		Math::vec4 perspective;
-		Math::quaternion orientation;
-		Math::Decompose(transform, scale, orientation, translation, skew, perspective);
+	static inline physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix) { return *(physx::PxMat44*)&matrix; }
+	static inline const physx::PxVec3& ToPhysXVector(const Math::vec3& vector) { return *(physx::PxVec3*)&vector; }
+	static inline const physx::PxVec4& ToPhysXVector(const Math::vec4& vector) { return *(physx::PxVec4*)&vector; }
+	static inline physx::PxExtendedVec3 ToPhysXExtendedVector(const Math::vec3& vector) { return physx::PxExtendedVec3(vector.x, vector.y, vector.z); }
+	static inline physx::PxQuat ToPhysXQuat(const Math::quaternion& quat) { return physx::PxQuat(quat.x, quat.y, quat.z, quat.w); }
 
-		return { translation, orientation, scale };
-	}
-
-	static inline physx::PxQuat ToPhysXQuat(const Math::quaternion& quat)
+	static inline physx::PxTransform ToPhysXTransform(const TransformComponent& transform)
 	{
-		return physx::PxQuat(quat.x, quat.y, quat.z, quat.w);
-	}
-
-	static inline physx::PxVec3 ToPhysXVector(const Math::vec3& vector)
-	{
-		return physx::PxVec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline physx::PxVec4 ToPhysXVector(const Math::vec4& vector)
-	{
-		return physx::PxVec4(vector.x, vector.y, vector.z, vector.w);
-	}
-
-	static inline physx::PxExtendedVec3 ToPhysxExtendedVector(const Math::vec3& vector)
-	{
-		return physx::PxExtendedVec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline physx::PxTransform ToPhysXTransform(const Math::mat4& matrix)
-	{
-		physx::PxQuat r = ToPhysXQuat(Math::Normalize(Math::ToQuaternion(matrix)));
-		physx::PxVec3 p = ToPhysXVector(Math::vec3(matrix[3]));
+		physx::PxQuat r = ToPhysXQuat(transform.GetRotation());
+		physx::PxVec3 p = ToPhysXVector(transform.Translation);
 		return physx::PxTransform(p, r);
 	}
 
-	static inline physx::PxMat44 ToPhysXMatrix(const Math::mat4& matrix)
+	static inline physx::PxTransform ToPhysXTransform(const Math::mat4& transform)
 	{
-		return *(physx::PxMat44*)&matrix;
+		Math::vec3 translation;
+		Math::quaternion rotation;
+		Math::vec3 scale;
+		Math::DecomposeTransform(transform, translation, rotation, scale);
+
+		physx::PxQuat r = ToPhysXQuat(rotation);
+		physx::PxVec3 p = ToPhysXVector(translation);
+		return physx::PxTransform(p, r);
 	}
 
-	static inline Math::quaternion FromPhysXQuat(const physx::PxQuat& quat)
+	static inline physx::PxTransform ToPhysXTransform(const Math::vec3& translation, const Math::quaternion& rotation)
 	{
-		return Math::quaternion(quat.w, quat.x, quat.y, quat.z);
+		return physx::PxTransform(ToPhysXVector(translation), ToPhysXQuat(rotation));
 	}
 
 	static inline Math::vec3 FromPhysXExtendedVector(const physx::PxExtendedVec3& vector)
@@ -58,15 +45,10 @@ namespace Vortex {
 		return Math::vec3(vector.x, vector.y, vector.z);
 	}
 
-	static inline Math::vec3 FromPhysXVector(const physx::PxVec3& vector)
-	{
-		return Math::vec3(vector.x, vector.y, vector.z);
-	}
-
-	static inline Math::vec4 FromPhysXVector(const physx::PxVec4& vector)
-	{
-		return Math::vec4(vector.x, vector.y, vector.z, vector.w);
-	}
+	static inline Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix) { return *(Math::mat4*)&matrix; }
+	static inline Math::vec3 FromPhysXVector(const physx::PxVec3& vector) { return *(Math::vec3*)&vector; }
+	static inline Math::vec4 FromPhysXVector(const physx::PxVec4& vector) { return *(Math::vec4*)&vector; }
+	static inline Math::quaternion FromPhysXQuat(const physx::PxQuat& quat) { return Math::quaternion(quat.w, quat.x, quat.y, quat.z); }
 
 	static inline Math::mat4 FromPhysXTransform(const physx::PxTransform& transform)
 	{
@@ -75,59 +57,21 @@ namespace Vortex {
 		return Math::Translate(position) * Math::ToMat4(rotation);
 	}
 
-	static inline Math::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
+	static inline std::string PhysXGeometryTypeToString(physx::PxGeometryType::Enum type)
 	{
-		return *(Math::mat4*)&matrix;
-	}
-
-	namespace Utils {
-
-		static std::string BroadphaseTypeToString(BroadphaseType broadphaseModel)
+		switch (type)
 		{
-			switch (broadphaseModel)
-			{
-				case BroadphaseType::SweepAndPrune:     return "SweepAndPrune";
-				case BroadphaseType::MultiBoxPrune:     return "MultiBoxPrune";
-				case BroadphaseType::AutomaticBoxPrune: return "AutomaticBoxPrune";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
-			return {};
+			case physx::PxGeometryType::eSPHERE:       return "Sphere";
+			case physx::PxGeometryType::ePLANE:        return "Plane";
+			case physx::PxGeometryType::eCAPSULE:      return "Capsule";
+			case physx::PxGeometryType::eBOX:          return "Box";
+			case physx::PxGeometryType::eCONVEXMESH:   return "Convex Mesh";
+			case physx::PxGeometryType::eTRIANGLEMESH: return "Triangle Mesh";
+			case physx::PxGeometryType::eHEIGHTFIELD:  return "Height Field";
 		}
 
-		static BroadphaseType BroadphaseTypeFromString(const std::string& broadphaseModel)
-		{
-			if (broadphaseModel == "SweepAndPrune")     return BroadphaseType::SweepAndPrune;
-			if (broadphaseModel == "MultiBoxPrune")     return BroadphaseType::MultiBoxPrune;
-			if (broadphaseModel == "AutomaticBoxPrune") return BroadphaseType::AutomaticBoxPrune;
-
-			VX_CORE_ASSERT(false, "Unknown Broadphase Type!");
-			return BroadphaseType::SweepAndPrune;
-		}
-
-		static std::string FrictionTypeToString(FrictionType frictionModel)
-		{
-			switch (frictionModel)
-			{
-				case FrictionType::OneDirectional: return "OneDirectional";
-				case FrictionType::Patch:          return "Patch";
-				case FrictionType::TwoDirectional: return "TwoDirectional";
-			}
-
-			VX_CORE_ASSERT(false, "Unknown Friction Type!");
-			return {};
-		}
-
-		static FrictionType FrictionTypeFromString(const std::string& frictionModel)
-		{
-			if (frictionModel == "OneDirectional") return FrictionType::OneDirectional;
-			if (frictionModel == "Patch")          return FrictionType::Patch;
-			if (frictionModel == "TwoDirectional") return FrictionType::TwoDirectional;
-
-			VX_CORE_ASSERT(false, "Unknown Friction Type!");
-			return FrictionType::OneDirectional;
-		}
-
+		VX_CORE_ASSERT(false, "Unknown Geometry Type!");
+		return "";
 	}
 
 }

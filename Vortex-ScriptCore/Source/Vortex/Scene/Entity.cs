@@ -7,15 +7,14 @@ namespace Vortex {
 		public readonly ulong ID;
 		public Transform transform;
 
-		public string Tag
-		{
-			get => InternalCalls.Entity_GetTag(ID);
-		}
-
+		public string Tag => InternalCalls.Entity_GetTag(ID);
 		public string Marker
 		{
 			get => InternalCalls.Entity_GetMarker(ID);
+			set => InternalCalls.Entity_SetMarker(ID, value);
 		}
+
+		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
 		protected Entity() { ID = 0; }
 
@@ -25,21 +24,35 @@ namespace Vortex {
 			transform = GetComponent<Transform>();
 		}
 
-		public Entity(string name)
-		{
-			ID = InternalCalls.Entity_CreateWithName(name);
-			transform = GetComponent<Transform>();
-		}
-
+		protected virtual void OnAwake() { }
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate(float delta) { }
+		protected virtual void OnUpdate() { }
 		protected virtual void OnDestroy() { }
-		protected virtual void OnCollisionBegin() { }
-		protected virtual void OnCollisionEnd() { }
-		protected virtual void OnTriggerBegin() { }
-		protected virtual void OnTriggerEnd() { }
+		protected virtual void OnCollisionEnter(Collision other) { }
+		protected virtual void OnCollisionExit(Collision other) { }
+		protected virtual void OnTriggerEnter(Collision other) { }
+		protected virtual void OnTriggerExit(Collision other) { }
+		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
 		protected virtual void OnRaycastCollision() { }
+		protected virtual void OnEnabled() { }
+		protected virtual void OnDisabled() { }
 		protected virtual void OnGui() { }
+
+		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
+		public void Destroy(Entity entity, float waitTime, bool excludeChildren = false) => InternalCalls.Entity_DestroyTimed(entity.ID, waitTime, excludeChildren);
+
+		public Entity FindEntityByName(string name) => Scene.FindEntityByName(name);
+
+		public Entity FindChildByName(string name)
+		{
+			ulong entityID = InternalCalls.Entity_FindChildByName(ID, name);
+
+			if (entityID == 0)
+				return null;
+
+			return new Entity(entityID);
+		}
 
 		public bool HasComponent<T>()
 			where T : Component, new()
@@ -56,19 +69,6 @@ namespace Vortex {
 
 			T component = new T() { Entity = this };
 			return component;
-		}
-
-		public bool TryGetComponent<T>(out T component)
-			where T : Component, new()
-		{
-			if (!HasComponent<T>())
-			{
-				component = null;
-				return false;
-			}
-
-			component = new T() { Entity = this };
-			return true;
 		}
 
 		public T AddComponent<T>()
@@ -96,17 +96,18 @@ namespace Vortex {
 			}
 		}
 
-		public Entity FindEntityByName(string name)
+		public bool TryGetComponent<T>(out T component)
+			where T : Component, new()
 		{
-			ulong entityID = InternalCalls.Entity_FindEntityByName(name);
+			if (!HasComponent<T>())
+			{
+				component = null;
+				return false;
+			}
 
-			if (entityID == 0)
-				return null;
-
-			return new Entity(entityID);
+			component = new T() { Entity = this };
+			return true;
 		}
-
-		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
 
 		public Entity GetChild(uint index)
 		{
@@ -119,8 +120,14 @@ namespace Vortex {
 		}
 
 		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
-
 		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);
+
+		public bool Is<T>()
+			where T : Entity, new()
+		{
+			object instance = InternalCalls.Entity_GetScriptInstance(ID);
+			return instance is T;
+		}
 
 		public T As<T>()
 			where T : Entity, new()
@@ -129,12 +136,25 @@ namespace Vortex {
 			return instance as T;
 		}
 
-		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
+		public void SetActive(bool active) => InternalCalls.Entity_SetActive(ID, active);
 
-		public void SetActive(bool active)
+		public override bool Equals(object obj) => obj is Entity other && Equals(other);
+
+		public bool Equals(Entity other)
 		{
-			InternalCalls.Entity_SetActive(ID, active);
+			if (other is null)
+				return false;
+
+			if (ReferenceEquals(this, other))
+				return true;
+
+			return ID == other.ID;
 		}
+
+		public override int GetHashCode() => (int)ID;
+
+		public static bool operator ==(Entity entityA, Entity entityB) => entityA is null ? entityB is null : entityA.Equals(entityB);
+		public static bool operator !=(Entity entityA, Entity entityB) => !(entityA == entityB);
 	}
 
 }

@@ -1,0 +1,91 @@
+Scene: PBRVaseTest
+Entities:
+  - Entity: 12055319750689147318
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0, -7.4505806e-09]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      MeshType: Custom
+      MeshSource: Meshes\BrassVase.obj
+      Ambient: [1, 1, 1]
+      NormalMapPath: Textures\Meshes\BrassVase\NormalMap.jpg
+      Shininess: 32
+      AlbedoMapPath: Textures\Meshes\BrassVase\BrassVase.jpg
+      MetallicMapPath: Textures\Meshes\BrassVase\SpecularMap.jpg
+      RoughnessMapPath: Textures\Meshes\BrassVase\DisplacementMap.jpg
+      AmbientOcclusionMapPath: Textures\Meshes\BrassVase\AmbientOcclusionMap.jpg
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false
+  - Entity: 1576917181103930753
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Point Light
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0.882820189, 2.80116606, 1.10979319]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      LightType: Point
+      Radiance: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Diffuse: [0.5, 0.5, 0.5]
+      Specular: [0.5, 0.5, 0.5]
+      Color: [10, 10, 10]
+      Position: [0.882820189, 2.80116606, 1.10979319]
+      Attenuation: [0.0450000018, 0.00749999983]
+  - Entity: 6799301353101324552
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [1.46953028e-07, 1.60532343, 4]
+      Rotation: [0, 0, 1.05367121e-07]
+      Scale: [0.99999994, 0.999999762, 0.99999994]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 1000
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 3637616441294541488
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: UnTagged
+    TransformComponent:
+      Translation: [0, 0.815855622, -5.86980247]
+      Rotation: [0, 0, 0]
+      Scale: [12.4417362, 7.99135208, 1]
+    MeshRendererComponent:
+      MeshType: Cube
+      MeshSource: ..\..\Resources\Meshes\Default\Cube.obj
+      Ambient: [1, 1, 1]
+      Shininess: 32
+      Albedo: [1, 1, 1]
+      Metallic: 0.5
+      Roughness: 0.5
+      TextureScale: [1, 1]
+      Reflective: false
+      Refractive: false

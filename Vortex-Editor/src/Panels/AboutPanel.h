@@ -1,19 +1,18 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class AboutPanel : public EditorPanel
+	class AboutPanel
 	{
 	public:
 		AboutPanel() = default;
-		~AboutPanel() override = default;
+		~AboutPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override {}
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project>& project) {}
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
 
 	private:

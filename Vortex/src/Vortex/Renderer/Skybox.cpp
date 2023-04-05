@@ -6,24 +6,23 @@
 
 /*
 *** #ifdef VX_PLATFORM_WINDOWS
-***		#include "Platform/Direct3D/Direct3DTexture.h"
+***		#include "Platform/Direct3D/Direct3DSkybox.h"
 *** #endif // VX_PLATFORM_WINDOWS
 */
 
 namespace Vortex {
 
-    void Skybox::Copy(SharedRef<Skybox> dstSkybox, const SharedRef<Skybox>& srcSkybox)
+    void Skybox::Copy(SharedReference<Skybox>& dstSkybox, const SharedReference<Skybox>& srcSkybox)
     {
-		dstSkybox->SetFilepath(srcSkybox->GetFilepath());
-		dstSkybox->Reload();
+		dstSkybox->LoadFromFilepath(srcSkybox->GetFilepath());
     }
 
-    SharedRef<Skybox> Skybox::Create()
+    SharedReference<Skybox> Skybox::Create()
     {
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLSkybox>::Create();
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLSkybox>::Create();
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS
@@ -34,12 +33,12 @@ namespace Vortex {
 		return nullptr;
     }
 
-    SharedRef<Skybox> Skybox::Create(const std::string& filepath)
+    SharedReference<Skybox> Skybox::Create(const std::filesystem::path& filepath)
 	{
 		switch (Renderer::GetGraphicsAPI())
 		{
 			case RendererAPI::API::None:     VX_CORE_ASSERT(false, "Renderer API was set to RendererAPI::None!"); return nullptr;
-			case RendererAPI::API::OpenGL:   return SharedRef<OpenGLSkybox>::Create(filepath);
+			case RendererAPI::API::OpenGL:   return SharedReference<OpenGLSkybox>::Create(filepath);
 #ifdef VX_PLATFORM_WINDOWS
 			case RendererAPI::API::Direct3D: return nullptr;
 #endif // VX_PLATFORM_WINDOWS

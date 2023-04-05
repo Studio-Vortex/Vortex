@@ -15,6 +15,8 @@ namespace Vortex {
 
 		size_t Count() const;
 		bool Contains(AssetHandle handle) const;
+		std::unordered_map<AssetHandle, AssetMetadata>::iterator Find(AssetHandle handle);
+		const std::unordered_map<AssetHandle, AssetMetadata>::const_iterator Find(AssetHandle handle) const;
 		size_t Remove(AssetHandle handle);
 		void Clear();
 

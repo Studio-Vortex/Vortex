@@ -10,13 +10,13 @@ namespace Vortex {
 	class ProjectSerializer
 	{
 	public:
-		ProjectSerializer(const SharedRef<Project>& project);
+		ProjectSerializer(const SharedReference<Project>& project);
 
 		bool Serialize(const std::filesystem::path& path);
 		bool Deserialize(const std::filesystem::path& path);
 
 	private:
-		SharedRef<Project> m_Project = nullptr;
+		SharedReference<Project> m_Project = nullptr;
 	};
 
 }

@@ -1,26 +1,32 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/EditorPanel.h>
 
 namespace Vortex {
 
-	class ProjectSettingsPanel : public EditorPanel
+	class ProjectSettingsPanel
 	{
 	public:
-		ProjectSettingsPanel(SharedRef<Project> project);
-		~ProjectSettingsPanel() override = default;
+		ProjectSettingsPanel(SharedReference<Project>& project);
+		~ProjectSettingsPanel() = default;
 
-		void OnGuiRender() override;
-		void SetProjectContext(SharedRef<Project> project) override;
-		void SetSceneContext(SharedRef<Scene> scene) override {}
+		void OnGuiRender();
+		void SetProjectContext(SharedReference<Project>& project);
+		void SetSceneContext(SharedReference<Scene>& scene) {}
 		bool& IsOpen() { return s_ShowPanel; }
+
+	private:
+		void RenderGeneralSettingsPanel();
+		void RenderPhysicsSettingsPanel();
+		void RenderScriptingSettingsPanel();
+		void RenderEditorSettingsPanel();
 
 	private:
 		inline static bool s_ShowPanel = false;
 
 	private:
-		ProjectProperties& m_Properties;
+		ProjectProperties& m_ProjectProperties;
+		std::vector<std::function<void()>> m_CallbackPanels;
 	};
 
 }
