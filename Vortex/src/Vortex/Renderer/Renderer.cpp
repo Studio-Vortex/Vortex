@@ -5,26 +5,11 @@
 #include "Vortex/Core/Application.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
+#include "Vortex/Renderer/BloomPass.h"
 
 #include <unordered_map>
 
 namespace Vortex {
-
-	static constexpr const char* PBR_SHADER_PATH = "Resources/Shaders/Renderer_PBR.glsl";
-	static constexpr const char* PBR_STATIC_SHADER_PATH = "Resources/Shaders/Renderer_PBR_Static.glsl";
-	static constexpr const char* EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH = "Resources/Shaders/Equirectangular_to_Cubemap.glsl";
-	static constexpr const char* IRRADIANCE_CONVOLUTION_SHADER_PATH = "Resources/Shaders/Irradiance_Convolution.glsl";
-	static constexpr const char* IBL_PREFILTER_SHADER_PATH = "Resources/Shaders/IBL_Prefilter.glsl";
-	static constexpr const char* BRDF_LUT_SHADER_PATH = "Resources/Shaders/Renderer_BRDF_LUT.glsl";
-	static constexpr const char* ENVIRONMENT_SHADER_PATH = "Resources/Shaders/Renderer_Environment.glsl";
-	static constexpr const char* SKYLIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SkyLightShadowMap.glsl";
-	static constexpr const char* POINT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_PointLightShadowMap.glsl";
-	static constexpr const char* SPOT_LIGHT_SHADOW_MAP_SHADER_PATH = "Resources/Shaders/Renderer_SpotLightShadowMap.glsl";
-	static constexpr const char* GAUSSIAN_BLUR_SHADER_PATH = "Resources/Shaders/GaussianBlur.glsl";
-	static constexpr const char* BLOOM_FINAL_COMPOSITE_SHADER_PATH = "Resources/Shaders/BloomFinalComposite.glsl";
-	static constexpr const char* STENCIL_SHADER_PATH = "Resources/Shaders/Renderer_Stencil.glsl";
-
-	static constexpr const char* BRDF_LUT_TEXTURE_PATH = "Resources/Textures/IBL_BRDF_LUT.tga";
 
 	struct RendererInternalData
 	{
@@ -47,14 +32,19 @@ namespace Vortex {
 		std::vector<SharedReference<DepthCubemapFramebuffer>> PointLightDepthMapFramebuffers;
 		std::vector<SharedReference<DepthMapFramebuffer>> SpotLightDepthMapFramebuffers;
 
-		SharedReference<GaussianBlurFramebuffer> BlurFramebuffer = nullptr;
-
 		float EnvironmentMapResolution = 512.0f;
 		float PrefilterMapResolution = 128.0f;
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
-		Math::vec3 BloomSettings = Math::vec3(0.2126f /* Threshold */, 0.7152f /* Soft Knee */, 0.0722f /* Unknown */);
+
+		BloomRenderPass BloomRenderPass;
+		struct BloomSettings
+		{
+			float Threshold = 0.2126f;
+			float Knee = 0.7152f;
+			float Intensity = 0.0722f;
+		} BloomSettings;
 		uint32_t BloomSampleSize = 5;
 
 		RenderStatistics RendererStatistics;
@@ -74,24 +64,34 @@ namespace Vortex {
 
 		RenderCommand::Init();
 
-		s_Data.ShaderLibrary.Load("PBR", PBR_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("PBR_Static", PBR_STATIC_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("EquirectangularToCubemap", EQUIRECTANGULAR_TO_CUBEMAP_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("IrradianceConvolution", IRRADIANCE_CONVOLUTION_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("IBL_Prefilter", IBL_PREFILTER_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("BRDF_LUT", BRDF_LUT_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("Environment", ENVIRONMENT_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("SkyLightShadowMap", SKYLIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("PointLightShadowMap", POINT_LIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("SpotLightShadowMap", SPOT_LIGHT_SHADOW_MAP_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("Blur", GAUSSIAN_BLUR_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("BloomFinalComposite", BLOOM_FINAL_COMPOSITE_SHADER_PATH);
-		s_Data.ShaderLibrary.Load("Stencil", STENCIL_SHADER_PATH);
+		// Mesh shaders
+		s_Data.ShaderLibrary.Load("PBR", "Resources/Shaders/Renderer_PBR.glsl");
+		s_Data.ShaderLibrary.Load("PBR_Static", "Resources/Shaders/Renderer_PBR_Static.glsl");
+		
+		// PBR shaders
+		s_Data.ShaderLibrary.Load("EquirectangularToCubemap", "Resources/Shaders/PBR_Equirectangular_to_Cubemap.glsl");
+		s_Data.ShaderLibrary.Load("IrradianceConvolution", "Resources/Shaders/PBR_Irradiance_Convolution.glsl");
+		s_Data.ShaderLibrary.Load("IBL_Prefilter", "Resources/Shaders/PBR_IBL_Prefilter.glsl");
+		s_Data.ShaderLibrary.Load("BRDF_LUT", "Resources/Shaders/PBR_BRDF_LUT.glsl");
+		s_Data.ShaderLibrary.Load("Environment", "Resources/Shaders/PBR_Environment.glsl");
 
+		// Shadow map shaders
+		s_Data.ShaderLibrary.Load("SkyLightShadowMap", "Resources/Shaders/Renderer_SkyLightShadow.glsl");
+		s_Data.ShaderLibrary.Load("PointLightShadowMap", "Resources/Shaders/Renderer_PointLightShadow.glsl");
+		s_Data.ShaderLibrary.Load("SpotLightShadowMap", "Resources/Shaders/Renderer_SpotLightShadow.glsl");
+		
+		s_Data.ShaderLibrary.Load("Stencil", "Resources/Shaders/Renderer_Stencil.glsl");
+
+		// Bloom shaders
+		s_Data.ShaderLibrary.Load("Bloom_Upsample", "Resources/Shaders/Bloom_Upsample.glsl");
+		s_Data.ShaderLibrary.Load("Bloom_Downsample", "Resources/Shaders/Bloom_Downsample.glsl");
+		s_Data.ShaderLibrary.Load("Bloom", "Resources/Shaders/Bloom.glsl");
+		s_Data.ShaderLibrary.Load("Bloom_FinalComposite", "Resources/Shaders/Bloom_FinalComposite.glsl");
+
+		// BRDF Look up texture
 		TextureProperties brdfImageProps;
-		brdfImageProps.Filepath = BRDF_LUT_TEXTURE_PATH;
+		brdfImageProps.Filepath = "Resources/Textures/IBL_BRDF_LUT.tga";
 		brdfImageProps.WrapMode = ImageWrap::Clamp;
-
 		s_Data.BRDF_LUT = Texture2D::Create(brdfImageProps);
 
 		SharedReference<Shader> shader = s_Data.ShaderLibrary.Get("PBR_Static");
@@ -117,12 +117,16 @@ namespace Vortex {
 
 		s_Data.BRDF_LUT.Reset();
 
+		s_Data.BloomRenderPass.Destroy();
+
 		Renderer2D::Shutdown();
 	}
 
 	void Renderer::OnWindowResize(const Viewport& viewport)
 	{
 		RenderCommand::SetViewport(viewport);
+		s_Data.BloomRenderPass.Destroy();
+		CreateBlurFramebuffer(viewport.Width, viewport.Height);
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer)
@@ -250,13 +254,10 @@ namespace Vortex {
 
 	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
-		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
-
-		// TODO fix this hack!
 		if (!s_Data.SceneLightDesc.HasEnvironment)
-		{
 			return;
-		}
+
+		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 		// Render Environment Map
 		{
@@ -685,13 +686,15 @@ namespace Vortex {
 
 		Math::mat4 viewProjection = projection * view;
 
+		Math::vec3 bloomSettings = { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
+
 		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
 		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomSettings);
+		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
 
 		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 		pbrStaticShader->Enable();
@@ -699,7 +702,7 @@ namespace Vortex {
 		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
 		pbrStaticShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrStaticShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrStaticShader->SetFloat3("u_SceneProperties.BloomThreshold", s_Data.BloomSettings);
+		pbrStaticShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
 		s_Data.SceneLightDesc.PointLightIndex = 0;
@@ -954,7 +957,7 @@ namespace Vortex {
 
 	void Renderer::ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps)
 	{
-		if (!s_Data.BlurFramebuffer)
+		if (false)//should be checking if the framebuffer wasn't created yet
 		{
 			Viewport viewport = postProcessProps.ViewportSize;
 			CreateBlurFramebuffer(viewport.Width, viewport.Height);
@@ -1009,53 +1012,12 @@ namespace Vortex {
 
 	void Renderer::CreateBlurFramebuffer(uint32_t width, uint32_t height)
 	{
-		FramebufferProperties props{};
-		props.Width = width;
-		props.Height = height;
-		s_Data.BlurFramebuffer = GaussianBlurFramebuffer::Create(props);
+		s_Data.BloomRenderPass.InitRenderPass({ (float)width, (float)height });
 	}
 
 	void Renderer::BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer)
 	{
-		if (!s_Data.BlurFramebuffer)
-		{
-			const FramebufferProperties& props = sceneFramebuffer->GetProperties();
-			CreateBlurFramebuffer(props.Width, props.Height);
-		}
-
-		bool horizontal = true;
-		SharedReference<Shader> blurShader = s_Data.ShaderLibrary.Get("Blur");
-		blurShader->Enable();
-		blurShader->SetInt("u_Texture", 5);
-
-		for (uint32_t i = 0; i < s_Data.BloomSampleSize; i++)
-		{
-			s_Data.BlurFramebuffer->Bind(horizontal);
-			blurShader->SetBool("u_Horizontal", horizontal);
-
-			s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
-
-			Renderer2D::DrawUnitQuad();
-			horizontal = !horizontal;
-		}
-
-		s_Data.BlurFramebuffer->Unbind();
-		RenderCommand::Clear();
-
-		SharedReference<Shader> bloomFinalCompositeShader = s_Data.ShaderLibrary.Get("BloomFinalComposite");
-		bloomFinalCompositeShader->Enable();
-
-		sceneFramebuffer->BindColorTexture(0);
-		bloomFinalCompositeShader->SetInt("u_SceneTexture", 0);
-
-		s_Data.BlurFramebuffer->BindColorTexture(!horizontal);
-		bloomFinalCompositeShader->SetInt("u_BloomTexture", 1);
-
-		bloomFinalCompositeShader->SetBool("u_Bloom", true);
-		bloomFinalCompositeShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-		bloomFinalCompositeShader->SetFloat("u_Gamma", s_Data.SceneGamma);
-
-		Renderer2D::DrawUnitQuad();
+		s_Data.BloomRenderPass.RenderPass();
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
@@ -1106,7 +1068,9 @@ namespace Vortex {
 		s_Data.ShadowMapResolution = props.ShadowMapResolution;
 		s_Data.SceneExposure = props.Exposure;
 		s_Data.SceneGamma = props.Gamma;
-		s_Data.BloomSettings = props.BloomThreshold;
+		s_Data.BloomSettings.Threshold = props.BloomThreshold.x;
+		s_Data.BloomSettings.Knee = props.BloomThreshold.y;
+		s_Data.BloomSettings.Intensity = props.BloomThreshold.z;
 		s_Data.BloomSampleSize = props.BloomSampleSize;
 
 		ClearFlags();
@@ -1178,27 +1142,29 @@ namespace Vortex {
 
 	Math::vec3 Renderer::GetBloomSettings()
 	{
-		return s_Data.BloomSettings;
+		return { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
 	}
 
 	void Renderer::SetBloomSettings(const Math::vec3& bloomSettings)
 	{
-		s_Data.BloomSettings = bloomSettings;
+		s_Data.BloomSettings.Threshold = bloomSettings.x;
+		s_Data.BloomSettings.Knee = bloomSettings.y;
+		s_Data.BloomSettings.Intensity = bloomSettings.z;
 	}
 
 	void Renderer::SetBloomThreshold(float threshold)
 	{
-		s_Data.BloomSettings.x = threshold;
+		s_Data.BloomSettings.Threshold = threshold;
 	}
 
-	void Renderer::SetBloomSoftKnee(float softKnee)
+	void Renderer::SetBloomKnee(float knee)
 	{
-		s_Data.BloomSettings.y = softKnee;
+		s_Data.BloomSettings.Knee = knee;
 	}
 
-	void Renderer::SetBloomUnknown(float unknown)
+	void Renderer::SetBloomIntensity(float intensity)
 	{
-		s_Data.BloomSettings.z = unknown;
+		s_Data.BloomSettings.Intensity = intensity;
 	}
 
 	uint32_t Renderer::GetBloomSampleSize()

@@ -152,7 +152,7 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Renderer::SetBloomSoftKnee(softKnee);
+			Renderer::SetBloomKnee(softKnee);
 		}
 
 		float SceneRenderer_GetBloomUnknown()
@@ -166,7 +166,7 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Renderer::SetBloomUnknown(unknown);
+			Renderer::SetBloomIntensity(unknown);
 		}
 
 		float SceneRenderer_GetExposure()

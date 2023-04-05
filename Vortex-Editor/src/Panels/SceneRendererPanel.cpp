@@ -269,9 +269,9 @@ namespace Vortex {
 					bool modified = false;
 					if (UI::Property("Threshold", bloomSettings.x))
 						modified = true;
-					if (UI::Property("Soft Knee", bloomSettings.y))
+					if (UI::Property("Knee", bloomSettings.y))
 						modified = true;
-					if (UI::Property("Unknown", bloomSettings.z))
+					if (UI::Property("Intensity", bloomSettings.z))
 						modified = true;
 
 					if (modified)

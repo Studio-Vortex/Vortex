@@ -132,8 +132,8 @@ namespace Vortex {
 		static Math::vec3 GetBloomSettings();
 		static void SetBloomSettings(const Math::vec3& threshold);
 		static void SetBloomThreshold(float threshold);
-		static void SetBloomSoftKnee(float softKnee);
-		static void SetBloomUnknown(float unknown);
+		static void SetBloomKnee(float knee);
+		static void SetBloomIntensity(float intensity);
 
 		static uint32_t GetBloomSampleSize();
 		static void SetBloomSampleSize(uint32_t samples);
