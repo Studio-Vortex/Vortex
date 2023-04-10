@@ -1295,6 +1295,7 @@ namespace Vortex {
 			const auto& name = tagComponent.Tag;
 			const auto& marker = tagComponent.Marker;
 			Entity copiedEntity = destination->CreateEntityWithUUID(uuid, name, marker);
+			copiedEntity.SetActive(tagComponent.IsActive);
 			enttMap[uuid] = (entt::entity)copiedEntity;
 		}
 
