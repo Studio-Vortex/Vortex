@@ -1777,6 +1777,9 @@ namespace Vortex {
 			if (AssetManager::IsHandleValid(component.AudioHandle))
 				audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
 
+			if (!audioSource)
+				audioSource = AudioSource::Create();
+
 			if (audioSource)
 			{
 				if (audioSource && !audioSource->GetPath().empty() && (audioSource->IsPlaying() || audioSource->IsPaused()))

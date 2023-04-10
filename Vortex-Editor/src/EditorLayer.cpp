@@ -178,15 +178,26 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 
-		timer = InstrumentationTimer("Bloom Pass");
-		PostProcessProperties postProcessProps{};
-		postProcessProps.TargetFramebuffer = m_Framebuffer;
-		postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
-		PostProcessStage stages[] = { PostProcessStage::Bloom };
-		postProcessProps.Stages = stages;
-		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
-		Renderer::BeginPostProcessingStages(postProcessProps);
-		renderTime.BloomPassRenderTime += timer.ElapsedMS();
+		{
+			timer = InstrumentationTimer("Bloom Pass");
+			Math::vec3 cameraPos = m_EditorCamera->GetPosition();
+			if (m_SceneState == SceneState::Play)
+			{
+				if (Entity primaryCamera = m_ActiveScene->GetPrimaryCameraEntity())
+					cameraPos = primaryCamera.GetTransform().Translation;
+			}
+
+			PostProcessProperties postProcessProps{};
+			postProcessProps.TargetFramebuffer = m_Framebuffer;
+
+			postProcessProps.CameraPosition = cameraPos;
+			postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
+			PostProcessStage stages[] = { PostProcessStage::Bloom };
+			postProcessProps.Stages = stages;
+			postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+			Renderer::BeginPostProcessingStages(postProcessProps);
+			renderTime.BloomPassRenderTime += timer.ElapsedMS();
+		}
 
 		if (m_ShowSecondViewport)
 		{

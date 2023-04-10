@@ -90,7 +90,6 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity.HasComponent<AudioSourceComponent>(), "Entity doesn't have audio source component!");
 		
 		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-
 		asc.AudioHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
 
 		auto& audioData = s_Data->ActiveScenes[context];

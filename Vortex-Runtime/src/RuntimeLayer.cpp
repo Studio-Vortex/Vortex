@@ -87,13 +87,19 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 		
-		PostProcessProperties postProcessProps{};
-		postProcessProps.TargetFramebuffer = m_Framebuffer;
-		postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
-		PostProcessStage stages[] = { PostProcessStage::Bloom };
-		postProcessProps.Stages = stages;
-		postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
-		Renderer::BeginPostProcessingStages(postProcessProps);
+		if (Entity primaryCamera = m_RuntimeScene->GetPrimaryCameraEntity())
+		{
+			PostProcessProperties postProcessProps{};
+			postProcessProps.TargetFramebuffer = m_Framebuffer;
+
+			Math::vec3 cameraPos = primaryCamera.GetTransform().Translation;
+			postProcessProps.CameraPosition = cameraPos;
+			postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
+			PostProcessStage stages[] = { PostProcessStage::Bloom };
+			postProcessProps.Stages = stages;
+			postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+			Renderer::BeginPostProcessingStages(postProcessProps);
+		}
 
 		const bool pendingTransition = ScriptRegistry::HasPendingTransitionQueued();
 		if (pendingTransition)

@@ -49,6 +49,7 @@ namespace Vortex {
 	struct VORTEX_API PostProcessProperties
 	{
 		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
+		Math::vec3 CameraPosition = {};
 		Viewport ViewportSize = {};
 		PostProcessStage* Stages = nullptr;
 		uint32_t StageCount = 0;
@@ -168,7 +169,7 @@ namespace Vortex {
 		static uint32_t GetPostProcessStageScore(PostProcessStage stage);
 		static PostProcessStage FindHighestPriortyStage(PostProcessStage* stages, uint32_t count);
 		static void CreateBlurFramebuffer(uint32_t width, uint32_t height);
-		static void BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer);
+		static void BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer, const Math::vec3& cameraPosition);
 	};
 
 }

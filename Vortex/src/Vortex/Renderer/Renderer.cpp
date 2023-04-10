@@ -88,7 +88,7 @@ namespace Vortex {
 		s_Data.ShaderLibrary.Load("Bloom", "Resources/Shaders/Bloom.glsl");
 		s_Data.ShaderLibrary.Load("Bloom_FinalComposite", "Resources/Shaders/Bloom_FinalComposite.glsl");
 
-		// BRDF Look up texture
+		// BRDF look up texture
 		TextureProperties brdfImageProps;
 		brdfImageProps.Filepath = "Resources/Textures/IBL_BRDF_LUT.tga";
 		brdfImageProps.WrapMode = ImageWrap::Clamp;
@@ -530,7 +530,7 @@ namespace Vortex {
 				case PostProcessStage::Bloom:
 				{
 					if (IsFlagSet(RenderFlag::EnableBloom))
-						BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer);
+						BlurAndSubmitFinalSceneComposite(postProcessProps.TargetFramebuffer, postProcessProps.CameraPosition);
 
 					break;
 				}
@@ -1015,9 +1015,9 @@ namespace Vortex {
 		s_Data.BloomRenderPass.InitRenderPass({ (float)width, (float)height });
 	}
 
-	void Renderer::BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer)
+	void Renderer::BlurAndSubmitFinalSceneComposite(SharedReference<Framebuffer> sceneFramebuffer, const Math::vec3& cameraPosition)
 	{
-		s_Data.BloomRenderPass.RenderPass();
+		s_Data.BloomRenderPass.RenderPass(cameraPosition);
 	}
 
 	RendererAPI::TriangleCullMode Renderer::GetCullMode()
