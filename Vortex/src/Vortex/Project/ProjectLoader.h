@@ -11,8 +11,6 @@ namespace Vortex {
 		static bool SaveActiveEditorProject();
 
 		static bool LoadRuntimeProject();
-
-		static void CloseActiveProject();
 	};
 
 }

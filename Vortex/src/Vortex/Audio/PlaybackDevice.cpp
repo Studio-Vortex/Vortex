@@ -12,8 +12,14 @@ namespace Vortex {
 	
 	PlaybackDevice::~PlaybackDevice()
 	{
+		if (!(&m_Sound && &m_Engine))
+			return;
+		
+		/*if (IsPlaying())
+			Stop();
+
 		AudioEngine::DestroySound(&m_Sound);
-		AudioEngine::ShutdownEngine(&m_Engine);
+		AudioEngine::ShutdownEngine(&m_Engine);*/
 	}
 	
 	bool PlaybackDevice::Load(const std::string& filepath, float* length)

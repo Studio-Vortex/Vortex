@@ -175,9 +175,8 @@ namespace Vortex {
 		std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
 		asset = AudioSource::Create(fullPath);
 		asset->Handle = metadata.Handle;
-		SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
-		audioSource->Reload();
-		audioSource->SetProperties(deviceProperties);
+		//SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
+		//audioSource->SetProperties(deviceProperties);
 
 		return true;
 	}

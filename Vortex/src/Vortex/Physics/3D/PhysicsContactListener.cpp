@@ -161,8 +161,14 @@ namespace Vortex {
 			PhysicsBodyData* triggerActorUserData = (PhysicsBodyData*)pairs[i].triggerActor->userData;
 			PhysicsBodyData* otherActorUserData = (PhysicsBodyData*)pairs[i].otherActor->userData;
 
-			if (!triggerActorUserData || !otherActorUserData)
+			if (!triggerActorUserData)
 				continue;
+
+			if (!otherActorUserData)
+			{
+				// figure out how to get controller info here
+				continue;
+			}
 
 			Entity triggerEntity = contextScene->TryGetEntityWithUUID(triggerActorUserData->EntityUUID);
 			Entity otherEntity = contextScene->TryGetEntityWithUUID(otherActorUserData->EntityUUID);

@@ -83,9 +83,16 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		ScriptEngine::Shutdown();
+
+		SystemManager::UnregisterAssetSystem<AudioSystem>();
+
+		Physics::Shutdown();
+
 		Font::Shutdown();
 		SystemManager::UnregisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
+
 		//ThreadPool::Shutdown();
 	}
 
@@ -200,7 +207,8 @@ namespace Vortex {
 	{
 		m_Running = false;
 		g_ApplicationRunning = false;
-		return true;
+
+		return false;
 	}
 
 	bool Application::OnWindowResizeEvent(WindowResizeEvent& e)

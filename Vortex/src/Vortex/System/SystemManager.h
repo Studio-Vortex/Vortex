@@ -25,7 +25,7 @@ namespace Vortex {
 
 			AssetType assetType = TSystemType::GetStaticType();
 
-			VX_CORE_ASSERT(!ContainsAssetSystem<TSystemType>(), "AssetSystem was already registered for AssetSystem!");
+			VX_CORE_ASSERT(!ContainsAssetSystem<TSystemType>(), "AssetSystem was already registered for AssetType!");
 			SharedReference<IAssetSystem> assetSystem = SharedReference<TSystemType>::Create();
 			s_AssetSystems[assetType] = assetSystem;
 			SetAssetSystemEnabled<TSystemType>(true);
@@ -42,9 +42,9 @@ namespace Vortex {
 
 			AssetType assetType = TSystemType::GetStaticType();
 
-			VX_CORE_ASSERT(ContainsAssetSystem<TSystemType>(), "No AssetSystem was found for AssetSystem!");
+			VX_CORE_ASSERT(ContainsAssetSystem<TSystemType>(), "No AssetSystem was found for AssetType!");
 			SharedReference<IAssetSystem> assetSystem = s_AssetSystems[assetType];
-			SetAssetSystemEnabled<TSystemType>(true);
+			SetAssetSystemEnabled<TSystemType>(false);
 
 			assetSystem->Shutdown();
 
@@ -58,7 +58,7 @@ namespace Vortex {
 
 			AssetType assetType = TSystemType::GetStaticType();
 
-			VX_CORE_ASSERT(ContainsAssetSystem<TSystemType>(), "No AssetSystem was found for AssetSystem!");
+			VX_CORE_ASSERT(ContainsAssetSystem<TSystemType>(), "No AssetSystem was found for AssetType!");
 			if (!s_AssetSystems.contains(assetType))
 				return nullptr;
 

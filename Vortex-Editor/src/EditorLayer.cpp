@@ -2417,8 +2417,6 @@ namespace Vortex {
 	{
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
-
-		ProjectLoader::CloseActiveProject();
 	}
 
 	void EditorLayer::CreateNewScene()

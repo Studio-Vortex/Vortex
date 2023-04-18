@@ -460,6 +460,8 @@ namespace Vortex {
 		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 		characterController.RuntimeController = (void*)controller;
 
+		actor->setName(entity.GetName().c_str());
+
 		SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 	}
 

@@ -1848,11 +1848,16 @@ namespace Vortex {
 							if (audioSource->IsPlaying())
 								audioSource->Stop();
 
-							SharedReference<AudioSource> source = Project::GetEditorAssetManager()->GetAssetFromFilepath(audioSourcePath);
-							if (source)
+							if (FileSystem::GetFileExtension(audioSourcePath) != ".vsound")
 							{
-								component.AudioHandle = source->Handle;
-								audioSource = source;
+								std::string name = FileSystem::RemoveFileExtension(audioSourcePath);
+								std::string filename = name + ".vsound";
+								SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, audioSourcePath.string());
+								if (asset)
+								{
+									component.AudioHandle = asset->Handle;
+									audioSource = asset;
+								}
 							}
 						}
 						else

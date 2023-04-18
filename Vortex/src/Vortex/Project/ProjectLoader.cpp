@@ -47,16 +47,4 @@ namespace Vortex {
 		return false;
 	}
 
-    void ProjectLoader::CloseActiveProject()
-    {
-		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
-		if (!Project::GetActive())
-			return;
-
-		ScriptEngine::Shutdown();
-		Physics::Shutdown();
-		SystemManager::UnregisterAssetSystem<AudioSystem>();
-
-    }
-
 }

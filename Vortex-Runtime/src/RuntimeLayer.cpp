@@ -196,8 +196,6 @@ namespace Vortex {
 	{
 		if (m_RuntimeScene->IsRunning())
 			OnRuntimeSceneStop();
-
-		ProjectLoader::CloseActiveProject();
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)

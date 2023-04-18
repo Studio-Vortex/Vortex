@@ -11,10 +11,7 @@ namespace Vortex {
 		m_IsDefault = isDefault;
 	}
 
-	AudioSource::~AudioSource()
-	{
-		Destroy();
-	}
+	AudioSource::~AudioSource() { }
 
 	void AudioSource::Reload()
 	{
@@ -27,7 +24,7 @@ namespace Vortex {
 		if (m_IsDefault)
 			return;
 
-		SetProperties(m_Properties);
+		//SetProperties(m_Properties);
 	}
 
 	void AudioSource::Play()
@@ -74,17 +71,6 @@ namespace Vortex {
 
 		Restart();
 		m_PlaybackDevice.Stop();
-		m_IsLoaded = false;
-	}
-
-	void AudioSource::Destroy()
-	{
-		if (!m_IsLoaded)
-			return;
-		
-		if (IsPlaying())
-			m_PlaybackDevice.Stop();
-
 		m_IsLoaded = false;
 	}
 
