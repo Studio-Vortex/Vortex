@@ -1334,7 +1334,8 @@ namespace Vortex {
 		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
 
 		Entity startingCamera = context->CreateEntity("Camera");
-		startingCamera.AddComponent<AudioListenerComponent>();
+		// we can do this once audio is fixed
+		//startingCamera.AddComponent<AudioListenerComponent>();
 		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
 		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 		TransformComponent& cameraTransform = startingCamera.GetTransform();

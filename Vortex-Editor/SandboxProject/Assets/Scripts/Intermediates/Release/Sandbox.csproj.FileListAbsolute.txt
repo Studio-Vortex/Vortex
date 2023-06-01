@@ -14,4 +14,3 @@ C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Int
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Intermediates\Release\Sandbox.csproj.CopyComplete
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Intermediates\Release\Sandbox.dll
 C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Intermediates\Release\Sandbox.pdb
-C:\dev\Vortex_Game_Engine\Vortex\Vortex-Editor\SandboxProject\Assets\Scripts\Binaries\Vortex-ScriptCore.pdb

@@ -8,6 +8,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include <objbase.h>
 #include <ShlObj.h>
 #include <commdlg.h>
 #include <shellapi.h>
@@ -58,11 +59,12 @@ namespace Vortex {
 	{
 		std::filesystem::path result = "";
 		IFileOpenDialog* dialog;
+
 		if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, (void**)&dialog)))
 		{
 			DWORD options;
 			dialog->GetOptions(&options);
-			dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_PATHMUSTEXIST);
+			dialog->SetOptions(options | FOS_PICKFOLDERS);
 			if (SUCCEEDED(dialog->Show(NULL)))
 			{
 				IShellItem* selectedItem;
@@ -86,6 +88,7 @@ namespace Vortex {
 		std::replace(fp.begin(), fp.end(), '\\', '/');
 		return fp;
 	}
+#pragma optimize("", on)
 
 	void FileDialogue::OpenInFileExplorer(const char* directoryName)
 	{
