@@ -1602,73 +1602,134 @@ namespace Vortex {
 			OverlayRenderSpriteColliders(editorCamera, spriteColliderColor);
 		}
 
+		// Render Bounding Boxes
 		if (projectProps.EditorProps.ShowBoundingBoxes)
 		{
 			OverlayRenderMeshBoundingBoxes(boundingBoxColor);
 			OverlayRenderSpriteBoundingBoxes(boundingBoxColor);
 		}
 
-		// Draw selected entity outline + colliders
-		if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
+		// Render Visible Mesh Colliders
 		{
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+			std::vector<Entity> entities;
 
-			if (m_ShowSelectedEntityCollider)
+			auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxColliderComponent>();
+			auto sphereColliderView = m_ActiveScene->GetAllEntitiesWith<SphereColliderComponent>();
+
+			for (const auto e : boxColliderView)
 			{
-				OverlayRenderMeshCollider(selectedEntity, transform, colliderColor);
-				OverlayRenderSpriteCollider(editorCamera, selectedEntity, transform, spriteColliderColor);
+				Entity entity = { e, m_ActiveScene.Raw() };
+				const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				if (boxCollider.Visible)
+					entities.emplace_back(e, m_ActiveScene.Raw());
+			}
+			for (const auto e : sphereColliderView)
+			{
+				Entity entity = { e, m_ActiveScene.Raw() };
+				const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+				if (sphereCollider.Visible)
+					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 
-			if (m_ShowSelectedEntityOutline)
+			for (auto& entity : entities)
 			{
-				Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
+				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				OverlayRenderMeshCollider(entity, transform, colliderColor);
+			}
+		}
 
-				if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
-					OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
-				
-				if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
-					OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
-				
-				if (selectedEntity.HasComponent<TextMeshComponent>())
+		// Render Visible 2D Colliders
+		{
+			std::vector<Entity> entities;
+
+			auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxCollider2DComponent>();
+			auto circleColliderView = m_ActiveScene->GetAllEntitiesWith<CircleCollider2DComponent>();
+
+			for (const auto e : boxColliderView)
+			{
+				Entity entity = { e, m_ActiveScene.Raw() };
+				const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+				if (boxCollider.Visible)
+					entities.emplace_back(e, m_ActiveScene.Raw());
+			}
+			for (const auto e : circleColliderView)
+			{
+				Entity entity = { e, m_ActiveScene.Raw() };
+				const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+				if (circleCollider.Visible)
+					entities.emplace_back(e, m_ActiveScene.Raw());
+			}
+
+			for (auto& entity : entities)
+			{
+				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
+			}
+		}
+
+		// Draw selected entity outline + colliders
+		{
+			if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
+			{
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+
+				if (m_ShowSelectedEntityCollider)
 				{
-					const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
-
-					const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-					Math::mat4 transform = worldSpaceTransform.GetTransform();
-
-					Renderer2D::DrawRect(transform, outlineColor);
+					OverlayRenderMeshCollider(selectedEntity, transform, colliderColor);
+					OverlayRenderSpriteCollider(editorCamera, selectedEntity, transform, spriteColliderColor);
 				}
-				
-				if (selectedEntity.HasComponent<CameraComponent>())
-				{
-					const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 
-					if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+				if (m_ShowSelectedEntityOutline)
+				{
+					Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
+
+					if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+						OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
+
+					if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
+						OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
+
+					if (selectedEntity.HasComponent<TextMeshComponent>())
 					{
-						// TODO fix this
-						//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+						const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+
+						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+						Math::mat4 transform = worldSpaceTransform.GetTransform();
+
 						Renderer2D::DrawRect(transform, outlineColor);
 					}
-					else
+
+					if (selectedEntity.HasComponent<CameraComponent>())
 					{
-						Renderer2D::DrawRect(transform, outlineColor);
+						const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
+
+						if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+						{
+							// TODO fix this
+							//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
+							Renderer2D::DrawRect(transform, outlineColor);
+						}
+						else
+						{
+							Renderer2D::DrawRect(transform, outlineColor);
+						}
 					}
-				}
-				
-				if (selectedEntity.HasComponent<LightSourceComponent>())
-				{
-					const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-					if (lightSourceComponent.Type == LightType::Point)
+					if (selectedEntity.HasComponent<LightSourceComponent>())
 					{
-						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-						Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-						const float radius = lightSourceComponent.Intensity * 0.5f;
+						if (lightSourceComponent.Type == LightType::Point)
+						{
+							Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
 
-						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
-						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
-						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+							Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+							const float radius = lightSourceComponent.Intensity * 0.5f;
+
+							Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+							Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+							Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+						}
 					}
 				}
 			}

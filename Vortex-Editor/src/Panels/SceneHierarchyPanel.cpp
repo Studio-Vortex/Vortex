@@ -2270,6 +2270,7 @@ namespace Vortex {
 
 			UI::Property("Half Size", component.HalfSize, 0.01f);
 			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Visible", component.Visible);
 			UI::Property("Is Trigger", component.IsTrigger);
 
 			UI::EndPropertyGrid();
@@ -2281,6 +2282,7 @@ namespace Vortex {
 
 			UI::Property("Radius", component.Radius, 0.01f);
 			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Visible", component.Visible);
 			UI::Property("Is Trigger", component.IsTrigger);
 
 			UI::EndPropertyGrid();
@@ -2293,6 +2295,7 @@ namespace Vortex {
 			UI::Property("Radius", component.Radius, 0.01f);
 			UI::Property("Height", component.Height, 0.01f);
 			UI::Property("Offset", component.Offset, 0.01f);
+			UI::Property("Visible", component.Visible);
 			UI::Property("Is Trigger", component.IsTrigger);
 
 			UI::EndPropertyGrid();
@@ -2308,6 +2311,7 @@ namespace Vortex {
 			if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYCOUNT(collisionComplexities), currentCollisionComplexity))
 				component.CollisionComplexity = (ECollisionComplexity)currentCollisionComplexity;
 
+			UI::Property("Visible", component.Visible);
 			UI::Property("Is Trigger", component.IsTrigger);
 			UI::Property("Use Shared Shape", component.UseSharedShape);
 
@@ -2346,6 +2350,7 @@ namespace Vortex {
 			UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
 			UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
 			UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+			UI::Property("Visible", component.Visible);
 			UI::Property("Is Tigger", component.IsTrigger);
 
 			UI::EndPropertyGrid();
@@ -2361,6 +2366,7 @@ namespace Vortex {
 			UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
 			UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
 			UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+			UI::Property("Visible", component.Visible);
 
 			UI::EndPropertyGrid();
 		});

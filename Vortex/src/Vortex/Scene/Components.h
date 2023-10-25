@@ -377,6 +377,7 @@ namespace Vortex {
 		Math::vec3 Offset = Math::vec3(0.0f);
 		AssetHandle Material = 0;
 
+		bool Visible = false;
 		bool IsTrigger = false;
 
 		BoxColliderComponent() = default;
@@ -389,6 +390,7 @@ namespace Vortex {
 		Math::vec3 Offset = Math::vec3(0.0f);
 		AssetHandle Material = 0;
 
+		bool Visible = false;
 		bool IsTrigger = false;
 
 		SphereColliderComponent() = default;
@@ -402,6 +404,7 @@ namespace Vortex {
 		Math::vec3 Offset = Math::vec3(0.0f);
 		AssetHandle Material = 0;
 
+		bool Visible = false;
 		bool IsTrigger = false;
 
 		CapsuleColliderComponent() = default;
@@ -414,6 +417,8 @@ namespace Vortex {
 		uint32_t SubmeshIndex = 0;
 		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
 		AssetHandle Material = 0;
+
+		bool Visible = false;
 		bool IsTrigger = false;
 		bool UseSharedShape = false;
 
@@ -452,6 +457,7 @@ namespace Vortex {
 		float Restitution = 0.0f;
 		float RestitutionThreshold = 0.5f;
 
+		bool Visible = false;
 		bool IsTrigger = false;
 
 		// Storage for runtime
@@ -471,6 +477,8 @@ namespace Vortex {
 		float Friction = 0.5f;
 		float Restitution = 0.0f;
 		float RestitutionThreshold = 0.5f;
+
+		bool Visible = false;
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
