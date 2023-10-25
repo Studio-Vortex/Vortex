@@ -423,10 +423,10 @@ namespace Vortex {
 		internal extern static void TextMeshComponent_SetMaxWidth(ulong entityID, float maxWidth);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool TextMeshRendererComponent_IsVisible(ulong entityID);
+		internal extern static bool TextMeshComponent_IsVisible(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TextMeshRendererComponent_SetVisible(ulong entityID, bool visible);
+		internal extern static void TextMeshComponent_SetVisible(ulong entityID, bool visible);
 
 		#endregion
 

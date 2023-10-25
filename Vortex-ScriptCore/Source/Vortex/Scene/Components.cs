@@ -383,8 +383,8 @@ namespace Vortex {
 
 		public bool Visible
 		{
-			get => InternalCalls.TextMeshRendererComponent_IsVisible(Entity.ID);
-			set => InternalCalls.TextMeshRendererComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_IsVisible(Entity.ID);
+			set => InternalCalls.TextMeshComponent_SetVisible(Entity.ID, value);
 		}
 	}
 
