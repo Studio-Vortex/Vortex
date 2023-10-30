@@ -4,6 +4,19 @@
 	{
 		public static uint BuildIndex = InternalCalls.Scene_GetCurrentBuildIndex();
 
+		public static Entity PrimaryCamera
+		{
+			get
+			{
+				ulong entityID = InternalCalls.Scene_GetPrimaryCamera();
+
+				if (entityID == 0)
+					return null;
+
+				return new Entity(entityID);
+			}
+		}
+
 		public static Entity FindEntityByID(ulong entityID)
 		{
 			bool found = InternalCalls.Scene_FindEntityByID(entityID);

@@ -1799,6 +1799,7 @@ namespace Vortex {
 					else
 					{
 						audioSource->Play();
+						VX_CONSOLE_LOG_INFO("Audio Source Playing - {}", audioSource->GetAudioClip().Name);
 					}
 				}
 				Gui::EndDisabled();

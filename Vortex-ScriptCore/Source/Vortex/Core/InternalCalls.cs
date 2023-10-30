@@ -89,6 +89,9 @@ namespace Vortex {
 		#region Scene
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_GetPrimaryCamera();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Scene_FindEntityByID(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

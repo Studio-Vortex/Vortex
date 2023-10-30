@@ -300,6 +300,18 @@ namespace Vortex {
 
 #pragma region Scene
 
+		uint64_t Scene_GetPrimaryCamera()
+		{
+			Scene* contextScene = GetContextScene();
+
+			Entity primaryCamera = contextScene->GetPrimaryCameraEntity();
+
+			if (!primaryCamera)
+				return 0;
+
+			return primaryCamera.GetUUID();
+		}
+
 		bool Scene_FindEntityByID(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -8169,6 +8181,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawBoundingBoxFromTransform);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_Flush);
 
+		VX_REGISTER_INTERNAL_CALL(Scene_GetPrimaryCamera);
 		VX_REGISTER_INTERNAL_CALL(Scene_FindEntityByID);
 		VX_REGISTER_INTERNAL_CALL(Scene_FindEntityByName);
 		VX_REGISTER_INTERNAL_CALL(Scene_FindChildByName);

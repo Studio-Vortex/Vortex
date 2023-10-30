@@ -82,6 +82,7 @@ namespace Vortex {
 		
 #pragma region Scene
 		
+		uint64_t Scene_GetPrimaryCamera();
 		bool Scene_FindEntityByID(UUID entityUUID);
 		uint64_t Scene_FindEntityByName(MonoString* name);
 		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName);
