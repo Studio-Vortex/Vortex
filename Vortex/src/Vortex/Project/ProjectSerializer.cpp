@@ -126,6 +126,12 @@ namespace Vortex {
 			}
 			out << YAML::EndMap; // RendererProperties
 
+			out << YAML::Key << "NetworkProperties" << YAML::BeginMap; // Network Properties
+			{
+				// Add when we have some settings to save
+			}
+			out << YAML::EndMap; // Network Properties
+
 			out << YAML::Key << "PhysicsProperties" << YAML::BeginMap; // Physics Properties
 			{
 				out << YAML::Key << "ShowPhysicsColliders" << YAML::Value << props.PhysicsProps.ShowColliders;
@@ -291,6 +297,12 @@ namespace Vortex {
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
 
 			Renderer::SetProperties(props.RendererProps);
+		}
+
+		if (projectData["NetworkProperties"])
+		{
+			auto networkData = projectData["NetworkProperties"];
+			// add when we have some settings to load
 		}
 
 		{

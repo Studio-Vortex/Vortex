@@ -10,9 +10,11 @@ namespace Vortex {
 		m_CallbackPanels = std::vector<std::function<void()>>
 		{
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderGeneralSettingsPanel),
+			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderEditorSettingsPanel),
+			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderGizmoSettingsPanel),
+			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderNetworkSettingsPanel),
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderPhysicsSettingsPanel),
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderScriptingSettingsPanel),
-			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderEditorSettingsPanel),
 		};
 	}
 
@@ -33,7 +35,7 @@ namespace Vortex {
 		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		Gui::BeginChild("Selections", { contentRegionAvail.x / 4.0f, contentRegionAvail.y }, true);
 
-		static const char* selections[] = { "General", "Physics", "Scripting", "Editor" };
+		static const char* selections[] = { "General", "Editor", "Gizmo", "Network", "Physics", "Scripting" };
 		static auto count = VX_ARRAYCOUNT(selections);
 		static uint32_t selection = 0;
 
@@ -76,6 +78,10 @@ namespace Vortex {
 		std::string assetDirectoryStr = assetDirectory.string();
 		UI::Property("Asset Directory", assetDirectoryStr, true);
 
+		std::filesystem::path& assetRegistry = m_ProjectProperties.General.AssetRegistryPath;
+		std::string assetRegistryStr = assetRegistry.string();
+		UI::Property("Asset Registry", assetRegistryStr, true);
+
 		std::filesystem::path& startScene = m_ProjectProperties.General.StartScene;
 		std::string startSceneStr = startScene.string();
 		if (UI::Property("Start Scene", startSceneStr, true))
@@ -84,9 +90,67 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
+	void ProjectSettingsPanel::RenderEditorSettingsPanel()
+	{
+		UI::BeginPropertyGrid();
+
+		enum class Theme { Dark, LightGray, Default, Classic, Light };
+		static const char* themes[] = { "Dark", "Light Gray", "Default", "Classic", "Light" };
+		static int32_t currentTheme = (int32_t)Theme::Dark;
+		if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYCOUNT(themes), currentTheme))
+		{
+			if (currentTheme == 0)
+				Application::Get().GetGuiLayer()->SetDarkThemeColors();
+			if (currentTheme == 1)
+				Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
+			if (currentTheme == 2)
+				Gui::StyleColorsDark();
+			if (currentTheme == 3)
+				Gui::StyleColorsClassic();
+			if (currentTheme == 4)
+				Gui::StyleColorsLight();
+		}
+
+		const auto& io = Gui::GetIO();
+		std::vector<const char*> buffer;
+		uint32_t count = io.Fonts->Fonts.Size;
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			buffer.push_back(io.Fonts->Fonts[i]->GetDebugName());
+		}
+
+		ImFont* currentFont = Gui::GetFont();
+		UI::FontSelector("Editor Font", buffer.data(), count, currentFont);
+
+		UI::Property("Frame Step Count", m_ProjectProperties.EditorProps.FrameStepCount);
+		UI::Property("Draw Editor Grid", m_ProjectProperties.EditorProps.DrawEditorGrid);
+		UI::Property("Draw Editor Axes", m_ProjectProperties.EditorProps.DrawEditorAxes);
+
+		UI::EndPropertyGrid();
+	}
+
+	void ProjectSettingsPanel::RenderGizmoSettingsPanel()
+	{
+		UI::BeginPropertyGrid();
+
+		// Minimums don't work here for some reason
+		UI::Property("Enabled", m_ProjectProperties.GizmoProps.Enabled);
+		UI::Property("Orthographic Gizmos", m_ProjectProperties.GizmoProps.IsOrthographic);
+		UI::Property("Snap", m_ProjectProperties.GizmoProps.SnapEnabled);
+		UI::Property("Snap Value", m_ProjectProperties.GizmoProps.SnapValue, 0.05f, 0.05f);
+		UI::Property("Rotation Snap Value", m_ProjectProperties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
+		UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, 0.05f);
+		UI::Property("Draw Grid", m_ProjectProperties.GizmoProps.DrawGrid);
+		if (m_ProjectProperties.GizmoProps.DrawGrid)
+			UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, 0.5f);
+
+		UI::EndPropertyGrid();
+	}
+
 	void ProjectSettingsPanel::RenderPhysicsSettingsPanel()
 	{
-		if (UI::PropertyGridHeader("3D", false))
+		if (UI::PropertyGridHeader("3D", true))
 		{
 			UI::BeginPropertyGrid();
 
@@ -121,7 +185,7 @@ namespace Vortex {
 			UI::EndTreeNode();
 		}
 
-		if (UI::PropertyGridHeader("2D", false))
+		if (UI::PropertyGridHeader("2D", true))
 		{
 			UI::BeginPropertyGrid();
 
@@ -130,7 +194,6 @@ namespace Vortex {
 			Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
 			if (UI::Property("Gravity", gravity2D))
 				Physics2D::SetPhysicsWorldGravitty(gravity2D);
-
 
 			int32_t positionIterations2D = Physics2D::GetPhysicsWorldPositionIterations();
 			if (UI::Property("Position Iterations", positionIterations2D, 1.0f, 1, 100))
@@ -145,6 +208,15 @@ namespace Vortex {
 		}
 	}
 
+	void ProjectSettingsPanel::RenderNetworkSettingsPanel()
+	{
+		UI::BeginPropertyGrid();
+
+
+
+		UI::EndPropertyGrid();
+	}
+
 	void ProjectSettingsPanel::RenderScriptingSettingsPanel()
 	{
 		UI::BeginPropertyGrid();
@@ -157,69 +229,6 @@ namespace Vortex {
 		UI::Property("Reload Assembly On Play", m_ProjectProperties.ScriptingProps.ReloadAssemblyOnPlay);
 
 		UI::EndPropertyGrid();
-	}
-
-	void ProjectSettingsPanel::RenderEditorSettingsPanel()
-	{
-		if (UI::PropertyGridHeader("Preferences", false))
-		{
-			UI::BeginPropertyGrid();
-
-			enum class Theme { Dark, LightGray, Default, Classic, Light };
-			static const char* themes[] = { "Dark", "Light Gray", "Default", "Classic", "Light" };
-			static int32_t currentTheme = (int32_t)Theme::Dark;
-			if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYCOUNT(themes), currentTheme))
-			{
-				if (currentTheme == 0)
-					Application::Get().GetGuiLayer()->SetDarkThemeColors();
-				if (currentTheme == 1)
-					Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
-				if (currentTheme == 2)
-					Gui::StyleColorsDark();
-				if (currentTheme == 3)
-					Gui::StyleColorsClassic();
-				if (currentTheme == 4)
-					Gui::StyleColorsLight();
-			}
-
-			const auto& io = Gui::GetIO();
-			std::vector<const char*> buffer;
-			uint32_t count = io.Fonts->Fonts.Size;
-
-			for (uint32_t i = 0; i < count; i++)
-			{
-				buffer.push_back(io.Fonts->Fonts[i]->GetDebugName());
-			}
-
-			ImFont* currentFont = Gui::GetFont();
-			UI::FontSelector("Editor Font", buffer.data(), count, currentFont);
-
-			UI::Property("Frame Step Count", m_ProjectProperties.EditorProps.FrameStepCount);
-			UI::Property("Draw Editor Grid", m_ProjectProperties.EditorProps.DrawEditorGrid);
-			UI::Property("Draw Editor Axes", m_ProjectProperties.EditorProps.DrawEditorAxes);
-
-			UI::EndPropertyGrid();
-			UI::EndTreeNode();
-		}
-
-		if (UI::PropertyGridHeader("Gizmos", false))
-		{
-			UI::BeginPropertyGrid();
-
-			// Minimums don't work here for some reason
-			UI::Property("Enabled", m_ProjectProperties.GizmoProps.Enabled);
-			UI::Property("Orthographic Gizmos", m_ProjectProperties.GizmoProps.IsOrthographic);
-			UI::Property("Snap", m_ProjectProperties.GizmoProps.SnapEnabled);
-			UI::Property("Snap Value", m_ProjectProperties.GizmoProps.SnapValue, 0.05f, 0.05f);
-			UI::Property("Rotation Snap Value", m_ProjectProperties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
-			UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, 0.05f);
-			UI::Property("Draw Grid", m_ProjectProperties.GizmoProps.DrawGrid);
-			if (m_ProjectProperties.GizmoProps.DrawGrid)
-				UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, 0.5f);
-
-			UI::EndPropertyGrid();
-			UI::EndTreeNode();
-		}
 	}
 
 }

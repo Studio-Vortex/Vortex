@@ -138,7 +138,6 @@ namespace Vortex {
 
 	void ParticleSystem::OnGuiRender()
 	{
-		
 	}
 
 }

@@ -5,8 +5,58 @@
 #include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
-    
-    SharedReference<IAssetManager> Project::GetAssetManager()
+
+	ProjectProperties& Project::GetProperties()
+	{
+		return m_Properties;
+	}
+	
+	const ProjectProperties& Project::GetProperties() const
+	{
+		return m_Properties;
+	}
+	
+	const std::string& Project::GetName() const
+	{
+		return m_Properties.General.Name;
+	}
+	
+	SharedReference<Project> Project::GetActive()
+	{
+		return s_ActiveProject;
+	}
+
+	const std::filesystem::path& Project::GetProjectDirectory()
+	{
+		VX_CORE_ASSERT(s_ActiveProject, "No active project!");
+		return s_ActiveProject->m_ProjectDirectory;
+	}
+
+	const std::filesystem::path& Project::GetProjectFilepath()
+	{
+		VX_CORE_ASSERT(s_ActiveProject, "No active project!");
+		return s_ActiveProject->m_ProjectFilepath;
+	}
+
+	std::filesystem::path Project::GetAssetDirectory()
+	{
+		VX_CORE_ASSERT(s_ActiveProject, "No active project!");
+		return GetProjectDirectory() / s_ActiveProject->m_Properties.General.AssetDirectory;
+	}
+
+	std::filesystem::path Project::GetAssetRegistryPath()
+	{
+		VX_CORE_ASSERT(s_ActiveProject, "No active Project!");
+		return GetAssetDirectory() / s_ActiveProject->m_Properties.General.AssetRegistryPath;
+	}
+
+	std::filesystem::path Project::GetCacheDirectory()
+	{
+		VX_CORE_ASSERT(s_ActiveProject, "No active project!");
+		return GetProjectDirectory() / "Cache";
+	}
+
+	SharedReference<IAssetManager> Project::GetAssetManager()
     {
         return s_AssetManager;
     }

@@ -17,9 +17,11 @@ namespace Vortex {
 
 	private:
 		void RenderGeneralSettingsPanel();
+		void RenderEditorSettingsPanel();
+		void RenderGizmoSettingsPanel();
+		void RenderNetworkSettingsPanel();
 		void RenderPhysicsSettingsPanel();
 		void RenderScriptingSettingsPanel();
-		void RenderEditorSettingsPanel();
 
 	private:
 		inline static bool s_ShowPanel = false;
