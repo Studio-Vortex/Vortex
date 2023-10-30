@@ -53,22 +53,6 @@ namespace Vortex {
 
 					const auto& srcComponent = src.get<TComponent>(srcEntity);
 					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
-
-					if constexpr (std::is_same<TComponent, AudioSourceComponent>())
-					{
-						/*auto srcHandle = srcComponent.AudioHandle;
-						auto& dstAsc = dst.get<AudioSourceComponent>(dstEntity);
-
-						if (!AssetManager::IsHandleValid(srcHandle) || !AssetManager::IsHandleValid(dstAsc.AudioHandle))
-							continue;
-
-						SharedReference<AudioSource> src = AssetManager::GetAsset<AudioSource>(srcHandle);
-						SharedReference<AudioSource> dst = AssetManager::GetAsset<AudioSource>(dstAsc.AudioHandle);
-
-						dst->SetPath(src->GetPath());
-						dst->Reload();
-						dst->SetProperties(src->GetProperties());*/
-					}
 				}
 			}(), ...);
 		}
@@ -89,6 +73,19 @@ namespace Vortex {
 				if (src.HasComponent<TComponent>())
 				{
 					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
+				}
+
+				if (src.HasComponent<StaticMeshRendererComponent>())
+				{
+					const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>();
+					auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>();
+
+					uint32_t materialCount = srcMesh.Materials->GetMaterialCount();
+					for (uint32_t i = 0; i < materialCount; i++)
+					{
+						AssetHandle materialHandle = srcMesh.Materials->GetMaterial(i);
+						dstMesh.Materials->SetMaterial(i, materialHandle);
+					}
 				}
 			}(), ...);
 		}
