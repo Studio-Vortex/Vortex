@@ -8,6 +8,9 @@ namespace Vortex {
 	class VORTEX_API ParticleSystem : public IAssetSystem
 	{
 	public:
+		ParticleSystem();
+		virtual ~ParticleSystem() override = default;
+
 		virtual void Init() override;
 		virtual void Shutdown() override;
 
@@ -23,6 +26,8 @@ namespace Vortex {
 		virtual void OnRuntimeScenePaused(Scene* context) override;
 		virtual void OnRuntimeSceneResumed(Scene* context) override;
 		virtual void OnRuntimeStop(Scene* context) override;
+
+		virtual void OnGuiRender() override;
 
 		ASSET_SYSTEM_TYPE(ParticleAsset)
 	};

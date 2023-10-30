@@ -9,7 +9,7 @@
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/Platform.h"
 #include "Vortex/Core/TimeStep.h"
-
+#include "Vortex/System/SystemManager.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 #include "Vortex/Core/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
@@ -32,8 +32,6 @@
 #include "Vortex/Core/Math/Ray.h"
 #include "Vortex/Core/Math/AABB.h"
 #include "Vortex/Core/Math/Noise.h"
-
-namespace Math = Vortex::Math;
 /// ---------------------------------------------------
 
 /// Networking
@@ -44,9 +42,6 @@ namespace Math = Vortex::Math;
 /// Gui
 #include "Vortex/Gui/GuiLayer.h"
 #include "Vortex/UI/UI.h"
-
-#include <imgui.h>
-namespace Gui = ImGui;
 /// ---------------------------------------------------
 
 /// Project

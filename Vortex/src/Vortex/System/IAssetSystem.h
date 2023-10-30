@@ -16,6 +16,9 @@ namespace Vortex {
 	class VORTEX_API IAssetSystem : public RefCounted
 	{
 	public:
+		IAssetSystem(const std::string& name = "Asset System") { m_DebugName = name; }
+		virtual ~IAssetSystem() = default;
+
 		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
 
@@ -33,6 +36,15 @@ namespace Vortex {
 		virtual void OnRuntimeScenePaused(Scene* context) = 0;
 		virtual void OnRuntimeSceneResumed(Scene* context) = 0;
 		virtual void OnRuntimeStop(Scene* context) = 0;
+
+		// Debug
+
+		inline const std::string& GetDebugName() const { return m_DebugName; }
+
+		virtual void OnGuiRender() = 0;
+
+	private:
+		std::string m_DebugName;
 	};
 
 }

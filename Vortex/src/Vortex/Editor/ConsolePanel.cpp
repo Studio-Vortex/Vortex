@@ -8,8 +8,6 @@
 
 namespace Vortex {
 
-	namespace Gui = ImGui;
-
 	static ConsolePanel* s_Instance = nullptr;
 
 	static const Math::vec4 s_InfoTint = Math::vec4(0.0f, 0.431372549f, 1.0f, 1.0f);

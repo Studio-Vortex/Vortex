@@ -10,9 +10,13 @@
 
 #include <imgui_internal.h>
 
-namespace Vortex::UI {
+namespace Vortex {
 
 	namespace Gui = ImGui;
+
+}
+
+namespace Vortex::UI {
 
 	static int s_UIContextID = 0;
 	static uint32_t s_Counter = 0;

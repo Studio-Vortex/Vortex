@@ -13,6 +13,8 @@
 #include "Vortex/Audio/AudioListener.h"
 #include "Vortex/Audio/AudioAssert.h"
 
+#include "Vortex/UI/UI.h"
+
 namespace Vortex {
 
 	struct AudioSystemInternalData
@@ -32,6 +34,11 @@ namespace Vortex {
 	};
 
 	static AudioSystemInternalData* s_Data;
+
+	AudioSystem::AudioSystem()
+		: IAssetSystem("Audio System")
+	{
+	}
 
 	void AudioSystem::Init()
 	{
@@ -322,6 +329,15 @@ namespace Vortex {
 	SharedReference<AudioContext> AudioSystem::GetAudioContext()
 	{
 		return s_Data->Context;
+	}
+
+	void AudioSystem::OnGuiRender()
+	{
+		for (auto& [scene, audioData] : s_Data->ActiveScenes)
+		{
+			const std::string& sceneName = scene->GetDebugName();
+			Gui::Text(sceneName.c_str());
+		}
 	}
 
 }

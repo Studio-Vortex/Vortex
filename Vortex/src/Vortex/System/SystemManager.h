@@ -98,6 +98,9 @@ namespace Vortex {
 	private:
 		inline static std::unordered_map<AssetType, SharedReference<IAssetSystem>> s_AssetSystems;
 		inline static std::unordered_map<AssetType, uint8_t> s_EnabledSystems;
+
+	private:
+		friend class SystemManagerPanel;
 	};
 
 }

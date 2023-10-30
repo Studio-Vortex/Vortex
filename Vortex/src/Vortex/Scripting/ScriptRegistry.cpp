@@ -7857,8 +7857,6 @@ namespace Vortex {
 
 #pragma region Gui
 
-		namespace Gui = ImGui;
-
 		void BeginWindow(char* text, uint32_t flags)
 		{
 			Gui::Begin(text, nullptr, flags);

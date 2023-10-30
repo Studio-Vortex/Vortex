@@ -17,6 +17,9 @@ namespace Vortex {
 		};
 
 	public:
+		AudioSystem();
+		virtual ~AudioSystem() override = default;
+
 		virtual void Init() override;
 		virtual void Shutdown() override;
 
@@ -39,6 +42,8 @@ namespace Vortex {
 		static AudioAPI GetAudioAPI();
 
 		static SharedReference<AudioContext> GetAudioContext();
+
+		virtual void OnGuiRender() override;
 
 		ASSET_SYSTEM_TYPE(AudioAsset)
 	};

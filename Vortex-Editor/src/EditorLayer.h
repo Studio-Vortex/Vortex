@@ -14,6 +14,7 @@
 #include "Panels/SceneRendererPanel.h"
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
+#include "Panels/SystemManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 #include "Panels/ECSDebugPanel.h"
@@ -38,7 +39,7 @@ namespace Vortex {
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
 		void UIHandleAssetDrop(bool& meshImportPopupOpen);
-		void OnMeshImportPopupOpened(bool& meshImportPopupOpen);
+		void OnMeshImportPopupRender(bool& meshImportPopupOpen);
 		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
 		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
@@ -91,6 +92,7 @@ namespace Vortex {
 		void OnScaleToolSelected();
 
 		// Overlay
+
 		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
@@ -174,6 +176,7 @@ namespace Vortex {
 		SceneRendererPanel m_SceneRendererPanel;
 		AssetRegistryPanel m_AssetRegistryPanel;
 		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
+		SystemManagerPanel m_SystemManagerPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
 		ConsolePanel m_ConsolePanel;

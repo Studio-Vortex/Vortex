@@ -356,6 +356,7 @@ namespace Vortex {
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
+			m_SystemManagerPanel.OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
@@ -689,6 +690,8 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
 				UI::Draw::Underline();
+				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
+				UI::Draw::Underline();
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
@@ -711,7 +714,8 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
+				Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
+				UI::Draw::Underline();
 
 				Gui::EndMenu();
 			}
@@ -758,7 +762,7 @@ namespace Vortex {
 
 		UIHandleAssetDrop(meshImportPopupOpen);
 
-		OnMeshImportPopupOpened(meshImportPopupOpen);
+		OnMeshImportPopupRender(meshImportPopupOpen);
 
 		if (Gui::IsItemVisible())
 		{
@@ -960,12 +964,12 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OnMeshImportPopupOpened(bool& meshImportPopupOpen)
+	void EditorLayer::OnMeshImportPopupRender(bool& isOpen)
 	{
-		if (meshImportPopupOpen)
+		if (isOpen)
 		{
 			Gui::OpenPopup("Mesh Import Options");
-			meshImportPopupOpen = false;
+			isOpen = false;
 		}
 
 		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))

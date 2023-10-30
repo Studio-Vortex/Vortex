@@ -24,7 +24,7 @@ namespace Vortex {
 		{
 			static const char* columns[] = { "Component", "Value" };
 
-			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 200.0f }, [&]()
+			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 400.0f }, [&]()
 			{
 				([&]()
 				{
@@ -38,7 +38,6 @@ namespace Vortex {
 					Gui::Text(hasComponent);
 				}(), ...);
 			});
-
 		}
 
 		template <typename... TComponent>

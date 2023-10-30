@@ -19,7 +19,12 @@ namespace Vortex {
 
 	static ParticleSystemInternalData s_Data;
 
-	void ParticleSystem::Init()
+    ParticleSystem::ParticleSystem()
+		: IAssetSystem("Particle System")
+    {
+    }
+
+    void ParticleSystem::Init()
 	{
 	}
 
@@ -129,6 +134,11 @@ namespace Vortex {
 
 	void ParticleSystem::OnRuntimeStop(Scene* context)
 	{
+	}
+
+	void ParticleSystem::OnGuiRender()
+	{
+		
 	}
 
 }
