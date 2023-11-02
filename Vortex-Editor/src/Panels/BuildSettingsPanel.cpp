@@ -31,9 +31,10 @@ namespace Vortex {
 		{
 			const auto& buildIndices = Scene::GetScenesInBuild();
 
-			if (Gui::BeginChild("##ScenesInBuild"))
+			auto contentRegionAvail = Gui::GetContentRegionAvail();
+			if (Gui::BeginChild("##ScenesInBuild", { 0, contentRegionAvail.y / 2.0f }))
 			{
-				auto contentRegionAvail = Gui::GetContentRegionAvail();
+				contentRegionAvail = Gui::GetContentRegionAvail();
 
 				uint32_t i = 0;
 
@@ -41,7 +42,7 @@ namespace Vortex {
 
 				for (const auto& [buildIndex, sceneFilePath] : buildIndices)
 				{
-					auto contentRegionAvail = Gui::GetContentRegionAvail();
+					contentRegionAvail = Gui::GetContentRegionAvail();
 
 					UI::BeginPropertyGrid();
 
@@ -49,7 +50,7 @@ namespace Vortex {
 					size_t lastDotPos = sceneFilePath.find_last_of('.');
 					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
 
-					UI::Property(std::to_string(i + 1).c_str(), sceneName, true);
+					UI::Property(std::to_string(i).c_str(), sceneName, true);
 
 					UI::EndPropertyGrid();
 

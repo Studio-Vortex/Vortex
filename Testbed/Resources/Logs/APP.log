@@ -1,110 +1,24 @@
 Vortex Engine v0.1a
 Initalizing...
 Creating window 'Sandbox' (1600.000, 900.000)
-RendererAPI
 Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
-RendererAPI
 Shader Loaded: 'Renderer_PBR_Static' - path /Resources/Shaders/Renderer_PBR_Static.glsl
-RendererAPI
 Shader Loaded: 'PBR_Equirectangular_to_Cubemap' - path /Resources/Shaders/PBR_Equirectangular_to_Cubemap.glsl
-RendererAPI
 Shader Loaded: 'PBR_Irradiance_Convolution' - path /Resources/Shaders/PBR_Irradiance_Convolution.glsl
-RendererAPI
 Shader Loaded: 'PBR_IBL_Prefilter' - path /Resources/Shaders/PBR_IBL_Prefilter.glsl
-RendererAPI
 Shader Loaded: 'PBR_BRDF_LUT' - path /Resources/Shaders/PBR_BRDF_LUT.glsl
-RendererAPI
 Shader Loaded: 'PBR_Environment' - path /Resources/Shaders/PBR_Environment.glsl
-RendererAPI
 Shader Loaded: 'Renderer_SkyLightShadow' - path /Resources/Shaders/Renderer_SkyLightShadow.glsl
 Shader Loaded: 'Renderer_PointLightShadow' - path /Resources/Shaders/Renderer_PointLightShadow.glsl
-RendererAPI
 Shader Loaded: 'Renderer_SpotLightShadow' - path /Resources/Shaders/Renderer_SpotLightShadow.glsl
-RendererAPI
 Shader Loaded: 'Renderer_Stencil' - path /Resources/Shaders/Renderer_Stencil.glsl
-RendererAPI
 Shader Loaded: 'Bloom_Upsample' - path /Resources/Shaders/Bloom_Upsample.glsl
-RendererAPI
 Shader Loaded: 'Bloom_Downsample' - path /Resources/Shaders/Bloom_Downsample.glsl
-RendererAPI
 Shader Loaded: 'Bloom' - path /Resources/Shaders/Bloom.glsl
-RendererAPI
 Shader Loaded: 'Bloom_FinalComposite' - path /Resources/Shaders/Bloom_FinalComposite.glsl
-RendererAPI
 Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
-RendererAPI
 Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
-RendererAPI
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
-RendererAPI
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
-[Audio] Located 3 hardware device(s)
-[Audio] Device 1: Headset (Jesse’s AirPods Pro Hands-Free AG Audio)
-[Audio]        Default - false
-[Audio] Device 2: Headphones (Jesse’s AirPods Pro Stereo)
-[Audio]        Default - true
-[Audio] Device 3: LC27RG50 (NVIDIA High Definition Audio)
-[Audio]        Default - false
-[Audio] Loading library: ole32.dll
-
-[Audio] Loading symbol: CoInitializeEx
-
-[Audio] Loading symbol: CoUninitialize
-
-[Audio] Loading symbol: CoCreateInstance
-
-[Audio] Loading symbol: CoTaskMemFree
-
-[Audio] Loading symbol: PropVariantClear
-
-[Audio] Loading symbol: StringFromGUID2
-
-[Audio] Loading library: user32.dll
-
-[Audio] Loading symbol: GetForegroundWindow
-
-[Audio] Loading symbol: GetDesktopWindow
-
-[Audio] Loading library: advapi32.dll
-
-[Audio] Loading symbol: RegOpenKeyExA
-
-[Audio] Loading symbol: RegCloseKey
-
-[Audio] Loading symbol: RegQueryValueExA
-
-[Audio] Attempting to initialize WASAPI backend...
-
-[Audio] Loading library: kernel32.dll
-
-[Audio] Loading symbol: VerifyVersionInfoW
-
-[Audio] Loading symbol: VerSetConditionMask
-
-[Audio] System Architecture:
-
-[Audio]   Endian: LE
-
-[Audio]   SSE2:   YES
-
-[Audio]   AVX2:   YES
-
-[Audio]   NEON:   NO
-
-[Audio] [WASAPI] Trying IAudioClient3_InitializeSharedAudioStream(actualPeriodInFrames=441)
-
-[Audio]     defaultPeriodInFrames=441
-
-[Audio]     fundamentalPeriodInFrames=441
-
-[Audio]     minPeriodInFrames=441
-
-[Audio]     maxPeriodInFrames=441
-
-[Audio] [WASAPI] Using IAudioClient3
-
-[Audio]     periodSizeInFramesOut=441
-
-LOADING SOUND!
-LOADING SOUND!
+[Audio] Located 0 hardware device
 Shutting down...

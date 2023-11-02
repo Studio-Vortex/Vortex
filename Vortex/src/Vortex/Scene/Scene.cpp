@@ -75,7 +75,12 @@ namespace Vortex {
 					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
 				}
 
-				if (src.HasComponent<StaticMeshRendererComponent>())
+				// NOTE: when meshes are copied over after hitting play,
+				// the material values are not also set meaning the material handle wasn't set properly,
+				// or the mesh could possibly have another random modified state of the material.
+				// Either case this needs to be fixed.
+
+				/*if (src.HasComponent<StaticMeshRendererComponent>())
 				{
 					const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>();
 					auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>();
@@ -84,9 +89,12 @@ namespace Vortex {
 					for (uint32_t i = 0; i < materialCount; i++)
 					{
 						AssetHandle materialHandle = srcMesh.Materials->GetMaterial(i);
+						if (!AssetManager::IsHandleValid(materialHandle))
+							continue;
+
 						dstMesh.Materials->SetMaterial(i, materialHandle);
 					}
-				}
+				}*/
 			}(), ...);
 		}
 

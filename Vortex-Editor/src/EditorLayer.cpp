@@ -772,7 +772,9 @@ namespace Vortex {
 		}
 
 		if (m_SceneViewportHovered || !m_ShowSecondViewport)
+		{
 			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
+		}
 
 		Gui::End();
 	}
