@@ -14,4 +14,5 @@ public:
 	void OnUpdate(Vortex::TimeStep ts) override;
 	void OnGuiRender() override;
 	void OnEvent(Vortex::Event &e) override;
+	Vortex::SharedReference<Vortex::AudioSource> audioSource;
 };

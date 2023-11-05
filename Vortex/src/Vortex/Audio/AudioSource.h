@@ -26,8 +26,6 @@ namespace Vortex {
 		void Restart();
 		void Stop();
 
-		void Destroy();
-
 		bool IsPlaying() const;
 		bool IsPaused() const;
 

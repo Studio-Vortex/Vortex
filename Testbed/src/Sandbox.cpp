@@ -9,6 +9,7 @@ Sandbox::Sandbox()
 
 void Sandbox::OnAttach()
 {
+	audioSource = SharedReference<AudioSource>::Create("Projects/Alterverse/Assets/Audio/imarealone.mp3");
 }
 
 void Sandbox::OnDetach()
@@ -36,38 +37,19 @@ void Sandbox::OnGuiRender()
 		| ImGuiWindowFlags_NoResize
 		| ImGuiWindowFlags_NoDecoration
 		| ImGuiWindowFlags_NoBringToFrontOnFocus;
-	Gui::Begin("Network", nullptr, flags);
-	
-	static bool firstFrame = true;
-	if (firstFrame)
-	{
-		Gui::OpenPopup("Sign In");
-		firstFrame = false;
-	}
+	Gui::Begin("Audio Test", nullptr, flags);
 
-	static std::string name = "";
+	Gui::Text(audioSource->GetAudioClip().Name.c_str());
+	float len = audioSource->GetAudioClip().Length;
+	UI::BeginPropertyGrid();
+	UI::Property("Length", len);
+	UI::EndPropertyGrid();
 
-	if (UI::ShowMessageBox("Sign In", { 500, 300 }))
-	{
-		UI::BeginPropertyGrid();
-
-		UI::Property("Name", name);
-
-		UI::EndPropertyGrid();
-
-		if (Gui::Button("Sign In"))
+	if (Gui::Button("Play")) {
+		if (!audioSource->IsPlaying())
 		{
-
+			audioSource->Play();
 		}
-
-		Gui::SameLine();
-
-		if (Gui::Button("Cancel"))
-		{
-			Gui::CloseCurrentPopup();
-		}
-
-		Gui::EndPopup();
 	}
 
 	Gui::End();
