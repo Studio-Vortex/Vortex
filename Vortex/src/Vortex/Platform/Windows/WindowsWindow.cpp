@@ -62,8 +62,7 @@ namespace Vortex {
 			VX_PROFILE_SCOPE("glfwCreateWindow");
 
 #ifdef VX_DEBUG
-			RendererAPI::API api = Renderer::GetGraphicsAPI();
-			switch (api)
+			switch (Renderer::GetGraphicsAPI())
 			{
 				case RendererAPI::API::OpenGL:
 					glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
@@ -75,10 +74,11 @@ namespace Vortex {
 			}
 #endif // VX_DEBUG
 
-			RendererAPI::API rendererAPI = Renderer::GetGraphicsAPI();
-			switch (rendererAPI)
+			switch (Renderer::GetGraphicsAPI())
 			{
 				case Vortex::RendererAPI::API::OpenGL:
+					glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
+					glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
 					break;
 				case Vortex::RendererAPI::API::Direct3D:
 					glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -99,7 +99,7 @@ namespace Vortex {
 
 			m_Window = glfwCreateWindow((int)m_Properties.Size.x, (int)m_Properties.Size.y, m_Properties.Title.c_str(), nullptr, nullptr);
 
-			// Set the correct window height if maximized
+			// Set the correct window size if maximized
 			if (m_Properties.Maximized)
 			{
 				int maximzedWidth, maximizedHeight;

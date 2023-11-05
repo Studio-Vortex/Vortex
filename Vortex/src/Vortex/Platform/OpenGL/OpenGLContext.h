@@ -6,6 +6,9 @@ struct GLFWwindow;
 
 namespace Vortex {
 
+#define OPENGL_VERSION_MAJOR 4
+#define OPENGL_VERSION_MINOR 6
+
 	class OpenGLContext : public GraphicsContext
 	{
 	public:
