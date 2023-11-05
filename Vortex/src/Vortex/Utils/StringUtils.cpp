@@ -48,4 +48,16 @@ namespace Vortex {
 		return result;
     }
 
+	void String::ReplaceToken(std::string& str, const char* token, const std::string& value)
+	{
+		size_t pos = 0;
+
+		while ((pos = str.find(token, pos)) != std::string::npos)
+		{
+			size_t length = strlen(token);
+			str.replace(pos, length, value);
+			pos += length;
+		}
+	}
+
 }

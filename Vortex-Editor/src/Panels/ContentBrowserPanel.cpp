@@ -406,7 +406,7 @@ public class Untitled : Entity
 			confirmDeletionPopupOpen = false;
 		}
 
-		if (UI::ShowMessageBox("Confirm", { 500, 200 }))
+		if (UI::ShowMessageBox("Confirm", { 500, 165 }))
 		{
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -416,12 +416,14 @@ public class Untitled : Entity
 			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentItemPath.filename()).c_str(), 40.0f);
 			Gui::TextCentered("This cannot be undone.", 60.0f);
 
-			for (uint32_t i = 0; i < 18; i++)
-				Gui::Spacing();
+			Gui::Spacing();
+			UI::Draw::Underline();
+
+			UI::ShiftCursorY(40.0f);
 
 			if (Gui::Button("Yes", button_size))
 			{
-				std::filesystem::remove(currentItemPath);
+				FileSystem::Remove(currentItemPath);
 				Gui::CloseCurrentPopup();
 			}
 

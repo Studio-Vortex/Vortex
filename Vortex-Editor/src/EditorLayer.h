@@ -38,8 +38,8 @@ namespace Vortex {
 		void OnGuiRender() override;
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
-		void UIHandleAssetDrop(bool& meshImportPopupOpen);
-		void OnMeshImportPopupRender(bool& meshImportPopupOpen);
+		void UIHandleAssetDrop();
+		void UIOnPopupRender();
 		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
 		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
@@ -47,10 +47,19 @@ namespace Vortex {
 	private:
 		void ResizeTargetFramebuffersIfNeeded();
 
+		// UI
+
 		void UI_GizmosToolbar();
 		void UI_CentralToolbar();
 		void UI_SceneSettingsToolbar();
 		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
+
+		// Popups
+
+		void OnCreateScriptPopupRender();
+		void OnMeshImportPopupRender();
+
+		// Events
 
 		bool OnWindowDragDropEvent(WindowDragDropEvent& e);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
@@ -165,6 +174,11 @@ namespace Vortex {
 		bool m_ShowSelectedEntityOutline = true;
 		bool m_CaptureFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
+
+		// Popups
+
+		bool m_OpenCreateScriptPopup = false;
+		bool m_OpenMeshImportPopup = false;
 
 		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
 		PhysicsStatisticsPanel m_PhysicsStatsPanel;

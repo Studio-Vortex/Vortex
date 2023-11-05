@@ -13,6 +13,8 @@ namespace Vortex {
 
 		static std::string ToLower(std::string& string);
 		static std::string ToLowerCopy(std::string_view& string);
+
+		static void ReplaceToken(std::string& str, const char* token, const std::string& value);
 	};
 
 }

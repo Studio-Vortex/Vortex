@@ -631,23 +631,28 @@ namespace Vortex {
 				std::filesystem::path scriptsFolder = std::filesystem::path("Projects") / activeProject->GetName() / "Assets\\Scripts";
 				std::filesystem::path solutionPath = scriptsFolder / projectSolutionFilename;
 
+				if (Gui::MenuItem("Create Script"))
+				{
+					m_OpenCreateScriptPopup = true;
+					Gui::CloseCurrentPopup();
+				}
+				UI::Draw::Underline();
+
 				if (Gui::MenuItem("Open Visual Studio Solution"))
 				{
-					std::filesystem::current_path(scriptsFolder);
-
+					FileSystem::SetCurrentPath(scriptsFolder);
 					Platform::LaunchProcess(projectSolutionFilename.string().c_str(), "");
-
-					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Rebuild C# Assembly"))
 				{
-					std::filesystem::current_path("Resources/HelperScripts");
-
+					FileSystem::SetCurrentPath("Resources/HelperScripts");
 					Platform::LaunchProcess("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
-
-					std::filesystem::current_path(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					Gui::CloseCurrentPopup();
 				}
 
 				Gui::EndMenu();
@@ -664,6 +669,7 @@ namespace Vortex {
 				if (Gui::MenuItem("Build and Run", "Ctrl+B"))
 				{
 					OnLaunchRuntime(activeProject->GetProjectFilepath());
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
@@ -710,12 +716,9 @@ namespace Vortex {
 					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
-					UI::Draw::Underline();
 
 					Gui::EndMenu();
 				}
-
-				UI::Draw::Underline();
 
 				Gui::EndMenu();
 			}
@@ -752,17 +755,14 @@ namespace Vortex {
 		m_SceneViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered && !m_SecondViewportFocused);
 
-		static bool meshImportPopupOpen = false;
-
 		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportSize = { scenePanelSize.x, scenePanelSize.y };
 
 		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 
-		UIHandleAssetDrop(meshImportPopupOpen);
-
-		OnMeshImportPopupRender(meshImportPopupOpen);
+		UIHandleAssetDrop();
+		UIOnPopupRender();
 
 		if (Gui::IsItemVisible())
 		{
@@ -779,7 +779,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::UIHandleAssetDrop(bool& meshImportPopupOpen)
+	void EditorLayer::UIHandleAssetDrop()
 	{
 		// Accept Items from the content browser
 		if (Gui::BeginDragDropTarget())
@@ -944,7 +944,7 @@ namespace Vortex {
 
 						if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 						{
-							meshImportPopupOpen = true;
+							m_OpenMeshImportPopup = true;
 							m_MeshFilepath = modelPath.string();
 							m_MeshEntityToEdit = m_HoveredEntity;
 						}
@@ -966,91 +966,10 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OnMeshImportPopupRender(bool& isOpen)
+	void EditorLayer::UIOnPopupRender()
 	{
-		if (isOpen)
-		{
-			Gui::OpenPopup("Mesh Import Options");
-			isOpen = false;
-		}
-
-		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))
-		{
-			UI::Draw::Underline();
-			Gui::Spacing();
-
-			ImVec2 button_size(Gui::GetFontSize() * 13.27f, 0.0f);
-
-			Gui::TextCentered("A mesh asset must be generated from this mesh file. (i.e. .fbx)", 40.0f);
-			Gui::TextCentered("Import options can be selected below", 60.0f);
-
-			Gui::Spacing();
-			UI::Draw::Underline();
-
-			UI::DrawVec3Controls("Translation", m_ModelImportOptions.MeshTransformation.Translation);
-			Math::vec3 rotationEuler = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
-			UI::DrawVec3Controls("Rotation", rotationEuler, 0.0f, 100.0f, [&]()
-			{
-				m_ModelImportOptions.MeshTransformation.SetRotationEuler(rotationEuler);
-			});
-			UI::DrawVec3Controls("Scale", m_ModelImportOptions.MeshTransformation.Scale);
-
-			UI::ShiftCursorY(20.0f);
-
-			UI::BeginPropertyGrid();
-
-			std::string assetDir = Project::GetAssetDirectory().string();
-			size_t assetDirPos = m_MeshFilepath.find(assetDir);
-			std::string filepath = m_MeshFilepath.substr(assetDirPos + assetDir.size() + 1);
-			UI::Property("Filepath", filepath, true);
-
-			UI::EndPropertyGrid();
-
-			UI::ShiftCursorY(10.0f);
-
-			if (Gui::Button("Import", button_size))
-			{
-				if (m_MeshEntityToEdit.HasComponent<MeshRendererComponent>())
-				{
-					MeshRendererComponent& meshRenderer = m_MeshEntityToEdit.GetComponent<MeshRendererComponent>();
-					meshRenderer.Mesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
-				}
-				else if (m_MeshEntityToEdit.HasComponent<StaticMeshRendererComponent>())
-				{
-					StaticMeshRendererComponent& staticMeshRenderer = m_MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
-					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
-
-					if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
-					{
-						staticMeshRenderer.Type = MeshType::Custom;
-
-						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
-						if (staticMesh)
-						{
-							staticMeshRenderer.Materials->Clear();
-							staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
-						}
-					}
-				}
-
-				m_MeshFilepath = "";
-				m_ModelImportOptions = MeshImportOptions();
-
-				Gui::CloseCurrentPopup();
-			}
-
-			Gui::SameLine();
-
-			if (Gui::Button("Cancel", button_size))
-			{
-				m_MeshFilepath = "";
-				m_ModelImportOptions = MeshImportOptions();
-
-				Gui::CloseCurrentPopup();
-			}
-
-			Gui::EndPopup();
-		}
+		OnCreateScriptPopupRender();
+		OnMeshImportPopupRender();
 	}
 
 	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode)
@@ -1192,7 +1111,9 @@ namespace Vortex {
 		UI::ImageEx(sceneTextureID, ImVec2{ m_SecondViewportSize.x, m_SecondViewportSize.y });
 
 		if (m_SecondViewportHovered)
+		{
 			OnGizmosRender(m_SecondEditorCamera, m_SecondViewportBounds, true);
+		}
 
 		Gui::End();
 	}
@@ -1742,6 +1663,173 @@ namespace Vortex {
 		}
 
 		Renderer2D::EndScene();
+	}
+
+	void EditorLayer::OnCreateScriptPopupRender()
+	{
+		if (m_OpenCreateScriptPopup)
+		{
+			Gui::OpenPopup("Create Script");
+			m_OpenCreateScriptPopup = false;
+		}
+
+		if (UI::ShowMessageBox("Create Script", { 500, 220 }))
+		{
+			UI::Draw::Underline();
+			Gui::Spacing();
+
+			ImVec2 buttonSize(Gui::GetFontSize() * 13.27f, 0.0f);
+
+			Gui::TextCentered("Enter script name and choose a programming language", 40.0f);
+
+			Gui::Spacing();
+			UI::Draw::Underline();
+
+			UI::BeginPropertyGrid();
+
+			static std::string className = "Untitled";
+			UI::Property("Class Name", className);
+
+			enum class ScriptingLanguage
+			{
+				CSharp,
+				Cpp,
+			};
+
+			static ScriptingLanguage currentScriptingLanguage = ScriptingLanguage::CSharp;
+			const char* scriptingLanguages[] = { "C#", "C++" };
+			UI::PropertyDropdown("Language", scriptingLanguages, VX_ARRAYCOUNT(scriptingLanguages), currentScriptingLanguage);
+			
+			UI::EndPropertyGrid();
+
+			UI::ShiftCursorY(20.0f);
+			UI::ShiftCursorX(7.0f);
+
+			auto resetPopup = []() {
+				currentScriptingLanguage = ScriptingLanguage::CSharp;
+				className = "Untitiled";
+			};
+
+			if (Gui::Button("Create", buttonSize))
+			{
+				switch (currentScriptingLanguage)
+				{
+					case ScriptingLanguage::CSharp:
+					{
+						std::string scriptName = className + ".cs";
+
+						break;
+					}
+					case ScriptingLanguage::Cpp:
+					{
+						break;
+					}
+				}
+
+				resetPopup();
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::SameLine();
+
+			if (Gui::Button("Cancel", buttonSize))
+			{
+				resetPopup();
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
+		}
+	}
+
+	void EditorLayer::OnMeshImportPopupRender()
+	{
+		if (m_OpenMeshImportPopup)
+		{
+			Gui::OpenPopup("Mesh Import Options");
+			m_OpenMeshImportPopup = false;
+		}
+
+		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))
+		{
+			UI::Draw::Underline();
+			Gui::Spacing();
+
+			ImVec2 buttonSize(Gui::GetFontSize() * 13.27f, 0.0f);
+
+			Gui::TextCentered("A mesh asset must be generated from this mesh file. (i.e. .fbx)", 40.0f);
+			Gui::TextCentered("Import options can be selected below", 60.0f);
+
+			Gui::Spacing();
+			UI::Draw::Underline();
+
+			UI::ShiftCursorX(-15.0f);
+
+			UI::DrawVec3Controls("Translation", m_ModelImportOptions.MeshTransformation.Translation);
+			Math::vec3 rotationEuler = m_ModelImportOptions.MeshTransformation.GetRotationEuler();
+			UI::DrawVec3Controls("Rotation", rotationEuler, 0.0f, 100.0f, [&]()
+			{
+				m_ModelImportOptions.MeshTransformation.SetRotationEuler(rotationEuler);
+			});
+			UI::DrawVec3Controls("Scale", m_ModelImportOptions.MeshTransformation.Scale);
+
+			UI::ShiftCursorY(20.0f);
+
+			UI::BeginPropertyGrid();
+
+			std::string assetDir = Project::GetAssetDirectory().string();
+			size_t assetDirPos = m_MeshFilepath.find(assetDir);
+			std::string filepath = m_MeshFilepath.substr(assetDirPos + assetDir.size() + 1);
+			UI::Property("Filepath", filepath, true);
+
+			UI::EndPropertyGrid();
+
+			UI::ShiftCursorY(10.0f);
+			UI::ShiftCursorX(7.0f);
+
+			if (Gui::Button("Import", buttonSize))
+			{
+				if (m_MeshEntityToEdit.HasComponent<MeshRendererComponent>())
+				{
+					MeshRendererComponent& meshRenderer = m_MeshEntityToEdit.GetComponent<MeshRendererComponent>();
+					meshRenderer.Mesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
+				}
+				else if (m_MeshEntityToEdit.HasComponent<StaticMeshRendererComponent>())
+				{
+					StaticMeshRendererComponent& staticMeshRenderer = m_MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
+					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshFilepath);
+
+					if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
+					{
+						staticMeshRenderer.Type = MeshType::Custom;
+
+						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+						if (staticMesh)
+						{
+							staticMeshRenderer.Materials->Clear();
+							staticMesh->LoadMaterialTable(staticMeshRenderer.Materials);
+						}
+					}
+				}
+
+				m_MeshFilepath = "";
+				m_ModelImportOptions = MeshImportOptions();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::SameLine();
+
+			if (Gui::Button("Cancel", buttonSize))
+			{
+				m_MeshFilepath = "";
+				m_ModelImportOptions = MeshImportOptions();
+
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
+		}
 	}
 
 	void EditorLayer::OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor)

@@ -101,9 +101,9 @@ namespace Vortex {
 			selectedProject = 0;
 		}
 
-		UI::Draw::Underline();
-
 		i = 1;
+
+		UI::Draw::Underline();
 
 		for (const auto& directoryEntry : std::filesystem::recursive_directory_iterator("Projects"))
 		{
@@ -190,9 +190,13 @@ namespace Vortex {
 		}
 
 		if (Gui::IsPopupOpen("Create New Project"))
+		{
 			DisplayCreateProjectPopup();
+		}
 		else
+		{
 			m_IsCreatingNewProject = false;
+		}
 
 		Gui::PopStyleColor(3);
 		Gui::PopStyleVar(3);
@@ -300,14 +304,14 @@ namespace Vortex {
 
 		std::string premakeFileStr = ss.str();
 
-		ReplaceToken(premakeFileStr, "$PROJECT_NAME$", m_Properties.ProjectNameBuffer);
+		String::ReplaceToken(premakeFileStr, "$PROJECT_NAME$", m_Properties.ProjectNameBuffer);
 
 		std::ofstream fout(premakeFilepath);
 		fout << premakeFileStr;
 		fout.close();
 	}
 
-	void LauncherLayer::GenerateSolutionFromBatchScript()
+	void LauncherLayer::GenerateProjectSolution()
 	{
 		std::string projectName = m_Properties.ProjectNameBuffer;
 		FileSystem::SetCurrentPath("Projects/" + projectName + "/Assets/Scripts");
@@ -315,7 +319,7 @@ namespace Vortex {
 		ResetWorkingDirectory();
 	}
 
-	void LauncherLayer::BuildProjectDLL()
+	void LauncherLayer::BuildProjectSolution()
 	{
 		auto projectSolutionFilename = std::filesystem::path(m_Properties.ProjectNameBuffer);
 		FileSystem::ReplaceExtension(projectSolutionFilename, ".sln");
@@ -329,19 +333,22 @@ namespace Vortex {
 	void LauncherLayer::CreateProject()
 	{
 		if (!FileSystem::Exists(m_Properties.ProjectDirectoryBuffer))
+		{
 			FileSystem::CreateDirectoriesV(m_Properties.ProjectDirectoryBuffer);
+		}
 
 		CreateProjectFilesAndDirectories();
 		VX_CORE_ASSERT(Project::GetActive(), "Project wasn't created properly!");
 		CreatePremakeBuildScript();
 		
 		using namespace std::chrono_literals;
+		auto sleep = [](auto time) { std::this_thread::sleep_for(time); };
 
-		GenerateSolutionFromBatchScript();
-		std::this_thread::sleep_for(25ms);
+		GenerateProjectSolution();
+		sleep(500ms);
 
-		BuildProjectDLL();
-		std::this_thread::sleep_for(25ms);
+		BuildProjectSolution();
+		sleep(500ms);
 		SaveProjectToDisk();
 
 		LaunchEditor();
@@ -359,18 +366,6 @@ namespace Vortex {
 	{
 		std::string projectPath = FileSystem::Relative(m_Properties.ProjectPath, m_Properties.WorkingDirectory).string();
 		Platform::LaunchProcess(m_Properties.EditorPath.string().c_str(), projectPath.c_str());
-	}
-
-	void LauncherLayer::ReplaceToken(std::string& str, const char* token, const std::string& value)
-	{
-		size_t pos = 0;
-
-		while ((pos = str.find(token, pos)) != std::string::npos)
-		{
-			size_t length = strlen(token);
-			str.replace(pos, length, value);
-			pos += length;
-		}
 	}
 
 	void LauncherLayer::ResetInputFields()

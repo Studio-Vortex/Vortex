@@ -10,13 +10,13 @@ namespace Vortex {
 	{
 		std::string sourcePaths[] =
 		{
-			"Resources/Default/Meshes/Cube.fbx",
-			"Resources/Default/Meshes/Sphere.fbx",
-			"Resources/Default/Meshes/Capsule.fbx",
-			"Resources/Default/Meshes/Cone.fbx",
-			"Resources/Default/Meshes/Cylinder.fbx",
-			"Resources/Default/Meshes/Plane.fbx",
-			"Resources/Default/Meshes/Torus.fbx",
+			"Resources/Meshes/Default/Cube.fbx",
+			"Resources/Meshes/Default/Sphere.fbx",
+			"Resources/Meshes/Default/Capsule.fbx",
+			"Resources/Meshes/Default/Cone.fbx",
+			"Resources/Meshes/Default/Cylinder.fbx",
+			"Resources/Meshes/Default/Plane.fbx",
+			"Resources/Meshes/Default/Torus.fbx",
 		};
 
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
