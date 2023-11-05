@@ -695,26 +695,26 @@ namespace Vortex {
 				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
 				UI::Draw::Underline();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
-
-				UI::Draw::Underline();
-				UI::ShiftCursorY(20.0f);
-
-				Gui::PushFont(boldFont);
-				Gui::Text("Debug");
-				Gui::PopFont();
 				UI::Draw::Underline();
 
-				Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
-				UI::Draw::Underline();
-				Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
+				if (Gui::BeginMenu("Debug"))
+				{
+					Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
+					UI::Draw::Underline();
+
+					Gui::EndMenu();
+				}
+
 				UI::Draw::Underline();
 
 				Gui::EndMenu();
