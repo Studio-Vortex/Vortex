@@ -92,8 +92,10 @@ namespace Vortex {
     bool FileSystem::CreateFileV(const std::filesystem::path& filepath)
     {
 		std::ofstream fout(filepath);
+		bool success = fout.is_open();
+		fout.close();
 
-		return true;
+		return success;
     }
 
 	void FileSystem::Copy(const std::filesystem::path& from, const std::filesystem::path& to)
