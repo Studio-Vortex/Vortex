@@ -15,8 +15,7 @@
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
 
-#include "Vortex/Networking/Networking.h"
-#include "Vortex/Networking/Server.h"
+#include "Vortex/Network/Networking.h"
 
 #include "Vortex/System/SystemManager.h"
 
@@ -99,6 +98,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// ThreadPool::Init();
+		Networking::Init();
 		Renderer::Init();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
@@ -125,6 +125,7 @@ namespace Vortex {
 		Font::Shutdown();
 		SystemManager::UnregisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
+		Networking::Shutdown();
 		// ThreadPool::Shutdown();
 	}
 

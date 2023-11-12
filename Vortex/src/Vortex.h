@@ -35,8 +35,7 @@
 /// ---------------------------------------------------
 
 /// Networking
-#include "Vortex/Networking/Networking.h"
-#include "Vortex/Networking/Server.h"
+#include "Vortex/Network/Networking.h"
 /// ---------------------------------------------------
 
 /// Gui
