@@ -67,6 +67,9 @@ namespace Vortex {
 
 		s_Data->Context->Shutdown();
 
+		Application::Get().RemoveModule(s_Data->Module);
+		s_Data->Module.Shutdown();
+
 		delete s_Data;
 		s_Data = nullptr;
 	}

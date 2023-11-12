@@ -130,6 +130,9 @@ namespace Vortex {
 		s_Data.BloomRenderPass.Destroy();
 
 		Renderer2D::Shutdown();
+
+		Application::Get().RemoveModule(s_Data.Module);
+		s_Data.Module.Shutdown();
 	}
 
 	void Renderer::OnWindowResize(const Viewport& viewport)
