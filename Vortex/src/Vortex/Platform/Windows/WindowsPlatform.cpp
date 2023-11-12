@@ -8,12 +8,12 @@ namespace Vortex {
 
 	void Platform::OpenURLInBrowser(const std::string& url)
 	{
-		ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+		Platform::LaunchProcess(url.c_str(), "");
 	}
 
 	std::string Platform::GetName()
 	{
-		return "Windows x64";
+		return "Windows x86_64";
 	}
 
     void Platform::HideConsoleWindow()
@@ -23,7 +23,7 @@ namespace Vortex {
 
 	void Platform::LaunchProcess(const char* binaryPath, const char* args)
 	{
-		ShellExecuteA(NULL, "open", binaryPath, args, NULL, SWP_SHOWWINDOW);
+		ShellExecuteA(nullptr, "open", binaryPath, args, nullptr, SWP_SHOWWINDOW);
 	}
 
 }
