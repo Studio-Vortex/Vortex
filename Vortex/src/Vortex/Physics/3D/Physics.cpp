@@ -92,6 +92,9 @@ namespace Vortex {
 
 		Application::Get().RemoveModule(s_Data->Module);
 		s_Data->Module.Shutdown();
+
+		delete s_Data;
+		s_Data = nullptr;
 	}
 
 	void Physics::OnSimulationStart(Scene* contextScene)
@@ -938,9 +941,6 @@ namespace Vortex {
 		PxCloseExtensions();
 		s_Data->PhysXSDK->release();
 		s_Data->Foundation->release();
-
-		delete s_Data;
-		s_Data = nullptr;
 	}
 
 	void Physics::ShutdownPhysicsSceneInternal()
