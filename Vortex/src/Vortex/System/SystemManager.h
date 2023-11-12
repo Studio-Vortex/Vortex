@@ -18,6 +18,8 @@ namespace Vortex {
 		static void OnRuntimeSceneResumed(Scene* context);
 		static void OnRuntimeStop(Scene* context);
 
+		static void OnGuiRender();
+
 		template <typename TSystemType>
 		VX_FORCE_INLINE static SharedReference<IAssetSystem> RegisterAssetSystem()
 		{

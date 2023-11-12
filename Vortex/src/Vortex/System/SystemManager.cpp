@@ -79,4 +79,16 @@ namespace Vortex {
 		}
 	}
 
+	void SystemManager::OnGuiRender()
+	{
+		for (auto& [assetType, assetSystem] : s_AssetSystems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			if (!s_EnabledSystems.at(assetType))
+				continue;
+
+			assetSystem->OnGuiRender();
+		}
+	}
+
 }

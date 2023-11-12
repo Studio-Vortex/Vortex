@@ -303,16 +303,24 @@ namespace Vortex {
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 		else
+		{
 			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+		}
 
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		{
 			window_flags |= ImGuiWindowFlags_NoBackground;
-
+		}
 		if (!opt_padding)
+		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		}
+
 		Gui::Begin("Engine Dockspace", &dockspaceOpen, window_flags);
 		if (!opt_padding)
+		{
 			Gui::PopStyleVar();
+		}
 
 		if (opt_fullscreen)
 			Gui::PopStyleVar(2);
@@ -367,13 +375,20 @@ namespace Vortex {
 		// Always render if open
 		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 
+		// Update Engine Systems Gui
+		SystemManager::OnGuiRender();
+
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();
 
 		if (m_ShowScenePanel)
+		{
 			OnScenePanelRender();
+		}
 		if (m_ShowSecondViewport)
+		{
 			OnSecondViewportPanelRender();
+		}
 
 		if (m_ShowSceneCreateEntityMenu)
 		{
