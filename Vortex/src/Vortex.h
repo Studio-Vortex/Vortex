@@ -34,8 +34,14 @@
 #include "Vortex/Core/Math/Noise.h"
 /// ---------------------------------------------------
 
+/// Module
+#include "Vortex/Module/Module.h"
+/// ---------------------------------------------------
+
 /// Networking
 #include "Vortex/Network/Networking.h"
+#include "Vortex/Network/Server.h"
+#include "Vortex/Network/Socket.h"
 /// ---------------------------------------------------
 
 /// Gui
