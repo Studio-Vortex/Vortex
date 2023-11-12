@@ -73,11 +73,11 @@ namespace Vortex {
 		std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
 
 	private:
+		void ExecuteMainThreadQueue();
+		
 		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
-
-		void ExecuteMainThreadQueue();
 
 	private:
 		ApplicationProperties m_Properties;
@@ -89,7 +89,7 @@ namespace Vortex {
 		std::mutex m_MainThreadQueueMutex;
 
 		float m_LastFrameTime = 0.0f;
-		bool m_Running = true;
+		bool m_Running = false;
 		bool m_ApplicationMinimized = false;
 
 	private:

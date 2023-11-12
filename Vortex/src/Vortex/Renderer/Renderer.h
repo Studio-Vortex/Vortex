@@ -150,7 +150,7 @@ namespace Vortex {
 		static SharedReference<Material> GetWhiteMaterial();
 		static SharedReference<Texture2D> GetWhiteTexture();
 
-		static ShaderLibrary& GetShaderLibrary();
+		static const ShaderLibrary& GetShaderLibrary();
 
 	private:
 		// Helpers

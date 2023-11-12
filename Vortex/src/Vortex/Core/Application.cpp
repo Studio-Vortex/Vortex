@@ -77,6 +77,8 @@ namespace Vortex {
 			m_GuiLayer = new GuiLayer();
 			PushOverlay(m_GuiLayer);
 		}
+
+		m_Running = true;
 	}
 
 	Application::~Application()
