@@ -43,6 +43,19 @@ namespace Vortex {
 		SubModuleProperties m_Properties;
 	};
 
+	struct RequiredModule
+	{
+		std::string ModuleName;
+		std::string RequiredModule;
+	};
+
+	struct ModuleResult
+	{
+		bool Success;
+		uint32_t UnresolvedModules;
+		std::vector<RequiredModule> FailedModuleReferences;
+	};
+
 	class VORTEX_API ModuleLibrary : public LibraryBase<SubModule, std::string>
 	{
 	public:
@@ -56,6 +69,8 @@ namespace Vortex {
 
 		SubModule& Get(const std::string& name) override;
 		const SubModule& Get(const std::string& name) const override;
+
+		ModuleResult ResolveModules() const;
 	};
 
 }

@@ -349,11 +349,6 @@ namespace Vortex {
 
 	void AudioSystem::OnGuiRender()
 	{
-		for (auto& [scene, audioData] : s_Data->ActiveScenes)
-		{
-			const std::string& sceneName = scene->GetDebugName();
-			Gui::Text(sceneName.c_str());
-		}
 	}
 
 }

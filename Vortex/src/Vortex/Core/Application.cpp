@@ -183,7 +183,8 @@ namespace Vortex {
 
 	void Application::RemoveModule(const SubModule& submodule)
 	{
-		m_ModuleLibrary.Remove(submodule.GetName());
+		const std::string& moduleName = submodule.GetName();
+		m_ModuleLibrary.Remove(moduleName);
 	}
 
 	const ModuleLibrary& Application::GetModules() const

@@ -34,7 +34,7 @@ namespace Vortex {
 		static std::vector<std::string> shaderNames;
 		static std::vector<SharedReference<Shader>> shaders;
 
-		bool shadersLoaded = !s_Loaded2DShaders.empty() && !s_Loaded3DShaders.empty();
+		const bool shadersLoaded = !s_Loaded2DShaders.empty() && !s_Loaded3DShaders.empty();
 
 		if (shadersLoaded)
 		{

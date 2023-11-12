@@ -127,7 +127,7 @@ namespace Vortex {
 		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
 
 		SubModuleProperties moduleProps;
-		moduleProps.ModuleName = "Script Engine";
+		moduleProps.ModuleName = "Script-Engine";
 		moduleProps.APIVersion = Version(1, 2, 0);
 		moduleProps.RequiredModules = {};
 		s_Data->Module.Init(moduleProps);

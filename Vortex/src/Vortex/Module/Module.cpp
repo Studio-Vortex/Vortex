@@ -59,4 +59,31 @@ namespace Vortex {
 		return Get(name);
 	}
 
+    ModuleResult ModuleLibrary::ResolveModules() const
+    {
+		ModuleResult result = {};
+
+		for (const auto& submodule : *this)
+		{
+			std::vector<std::string> requiredModules = submodule.GetRequiredModules();
+			if (requiredModules.empty())
+				continue;
+
+			for (const auto& requiredModule : requiredModules)
+			{
+				if (!Exists(requiredModule))
+				{
+					RequiredModule required;
+					required.ModuleName = submodule.GetName();
+					required.RequiredModule = requiredModule;
+					result.FailedModuleReferences.push_back(required);
+					result.UnresolvedModules++;
+				}
+			}
+		}
+
+		result.Success = result.UnresolvedModules == 0;
+		return result;
+    }
+
 }

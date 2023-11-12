@@ -269,9 +269,13 @@ namespace Vortex {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		if (m_AllowViewportCameraEvents)
+		{
 			m_EditorCamera->OnEvent(e);
+		}
 		else if (m_AllowSecondViewportCameraEvents)
+		{
 			m_SecondEditorCamera->OnEvent(e);
+		}
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowDragDropEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowDragDropEvent));
@@ -323,7 +327,9 @@ namespace Vortex {
 		}
 
 		if (opt_fullscreen)
+		{
 			Gui::PopStyleVar(2);
+		}
 
 		ImGuiIO& io = Gui::GetIO();
 		ImGuiStyle& style = Gui::GetStyle();
@@ -358,16 +364,17 @@ namespace Vortex {
 			m_PhysicsMaterialEditorPanel.OnGuiRender();
 			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
-			m_ECSDebugPanel.OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender();
+			m_SceneRendererPanel.OnGuiRender();
+			m_AssetRegistryPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
 			m_SystemManagerPanel.OnGuiRender();
-			m_AssetRegistryPanel.OnGuiRender();
-			m_SceneRendererPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
+			m_SubModulesPanel.OnGuiRender();
+			m_ECSDebugPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender(m_ActiveScene);
 			m_AboutPanel.OnGuiRender();
 		}
@@ -473,8 +480,8 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
 				{
-					Gui::CloseCurrentPopup();
 					SaveSceneAs();
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
@@ -729,6 +736,8 @@ namespace Vortex {
 					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Sub Modules", nullptr, &m_SubModulesPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
 

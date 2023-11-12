@@ -33,7 +33,7 @@ namespace Vortex {
     void ParticleSystem::Init()
 	{
 		SubModuleProperties moduleProps;
-		moduleProps.ModuleName = "Particle System";
+		moduleProps.ModuleName = "Particle-System";
 		moduleProps.APIVersion = Version(1, 1, 0);
 		moduleProps.RequiredModules = {};
 		s_Data.Module.Init(moduleProps);
