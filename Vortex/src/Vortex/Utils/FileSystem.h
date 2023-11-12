@@ -38,8 +38,8 @@ namespace Vortex {
 		static std::string RemoveFileExtension(const std::filesystem::path& filepath);
 		static void ReplaceExtension(std::filesystem::path& filepath, std::string_view extension);
 
-		static std::filesystem::path GetCurrentPath();
-		static void SetCurrentPath(const std::filesystem::path& filepath);
+		static std::filesystem::path GetWorkingDirectory();
+		static void SetWorkingDirectory(const std::filesystem::path& filepath);
 	};
 
 }

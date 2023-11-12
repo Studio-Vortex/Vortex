@@ -314,7 +314,7 @@ namespace Vortex {
 	void LauncherLayer::GenerateProjectSolution()
 	{
 		std::string projectName = m_Properties.ProjectNameBuffer;
-		FileSystem::SetCurrentPath("Projects/" + projectName + "/Assets/Scripts");
+		FileSystem::SetWorkingDirectory("Projects/" + projectName + "/Assets/Scripts");
 		Platform::LaunchProcess("Win64Gen.bat", "");
 		ResetWorkingDirectory();
 	}
@@ -325,7 +325,7 @@ namespace Vortex {
 		FileSystem::ReplaceExtension(projectSolutionFilename, ".sln");
 		std::filesystem::path solutionPath = std::filesystem::path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
-		FileSystem::SetCurrentPath("Resources/HelperScripts");
+		FileSystem::SetWorkingDirectory("Resources/HelperScripts");
 		Platform::LaunchProcess("BuildSolution.bat", solutionPath.string().c_str());
 		ResetWorkingDirectory();
 	}
@@ -376,7 +376,7 @@ namespace Vortex {
 
 	void LauncherLayer::ResetWorkingDirectory()
 	{
-		FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
+		FileSystem::SetWorkingDirectory(m_Properties.WorkingDirectory);
 	}
 
 }

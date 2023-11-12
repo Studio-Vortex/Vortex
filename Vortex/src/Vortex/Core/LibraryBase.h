@@ -18,10 +18,7 @@ namespace Vortex {
 
 		virtual bool Exists(const K& identifier) const = 0;
 
-		virtual size_t Size() const
-		{
-			return m_LibraryData.size();
-		}
+		virtual size_t Size() const { return m_LibraryData.size(); }
 
 		virtual const V& Get(const K& identifier) const = 0;
 		virtual V& Get(const K& identifier) = 0;
@@ -45,15 +42,9 @@ namespace Vortex {
 		virtual void Add(const V& value) = 0;
 		virtual uint8_t Remove(const K& identifier) = 0;
 
-		virtual bool Exists(const K& identifier) const
-		{
-			return m_LibraryData.find(identifier) != m_LibraryData.end();
-		}
+		virtual bool Exists(const K& identifier) const { return m_LibraryData.find(identifier) != m_LibraryData.end(); }
 
-		virtual size_t Size() const
-		{
-			return m_LibraryData.size();
-		}
+		virtual size_t Size() const { return m_LibraryData.size(); }
 
 		virtual const V& Get(const K& identifier) const = 0;
 		virtual V& Get(const K& identifier) = 0;

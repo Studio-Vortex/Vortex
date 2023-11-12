@@ -5,6 +5,8 @@
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/LayerStack.h"
 
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Events/WindowEvent.h"
 
 #include "Vortex/Renderer/RendererAPI.h"
@@ -64,7 +66,7 @@ namespace Vortex {
 
 		inline bool IsRuntime() { return m_Properties.IsRuntime; }
 
-		void Quit();
+		void Close();
 
 		void SubmitToMainThreadQueue(const std::function<void()>& func);
 
@@ -72,7 +74,19 @@ namespace Vortex {
 		std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
 		std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
 
+		void AddModule(const SubModule& submodule);
+		void RemoveModule(const SubModule& submodule);
+		const ModuleLibrary& GetModules() const;
+
 	private:
+		void SetWorkingDirectory();
+
+		// We can't use 'CreateWindow' because it is a function of the Windows API
+		void CreateWindowV();
+
+		void InitializeSubModules();
+		void ShutdownSubModules();
+
 		void ExecuteMainThreadQueue();
 		
 		void Run();
@@ -84,6 +98,8 @@ namespace Vortex {
 		UniqueRef<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		LayerStack m_LayerStack;
+
+		ModuleLibrary m_ModuleLibrary;
 
 		std::vector<std::function<void()>> m_MainThreadQueue;
 		std::mutex m_MainThreadQueueMutex;

@@ -1223,7 +1223,7 @@ namespace Vortex {
 		return Renderer2D::GetWhiteTexture();
 	}
 
-	const ShaderLibrary& Renderer::GetShaderLibrary()
+	ShaderLibrary& Renderer::GetShaderLibrary()
 	{
 		return s_Data.ShaderLibrary;
 	}

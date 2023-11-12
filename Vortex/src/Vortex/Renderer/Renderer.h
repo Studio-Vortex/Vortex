@@ -98,8 +98,8 @@ namespace Vortex {
 		inline static RendererAPI::API GetGraphicsAPI() { return RendererAPI::GetAPI(); }
 		inline static void SetGraphicsAPI(const RendererAPI::API& api) { RendererAPI::SetAPI(api); }
 
-		inline static const RendererAPI::RendererInfo& GetGraphicsAPIInfo() { return RendererAPI::GetAPIInfo(); }
-		inline static void SetGraphicsAPIInfo(const RendererAPI::RendererInfo& info) { RendererAPI::SetAPIInfo(info); }
+		inline static const RendererAPI::Info& GetGraphicsAPIInfo() { return RendererAPI::GetAPIInfo(); }
+		inline static void SetGraphicsAPIInfo(const RendererAPI::Info& info) { RendererAPI::SetAPIInfo(info); }
 
 		static RendererAPI::TriangleCullMode GetCullMode();
 		static void SetCullMode(RendererAPI::TriangleCullMode cullMode);
@@ -150,7 +150,7 @@ namespace Vortex {
 		static SharedReference<Material> GetWhiteMaterial();
 		static SharedReference<Texture2D> GetWhiteTexture();
 
-		static const ShaderLibrary& GetShaderLibrary();
+		static ShaderLibrary& GetShaderLibrary();
 
 	private:
 		// Helpers

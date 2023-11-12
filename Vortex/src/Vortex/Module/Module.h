@@ -43,11 +43,11 @@ namespace Vortex {
 		SubModuleProperties m_Properties;
 	};
 
-	class VORTEX_API SubModuleLibrary : public LibraryBase<SubModule, std::string>
+	class VORTEX_API ModuleLibrary : public LibraryBase<SubModule, std::string>
 	{
 	public:
-		SubModuleLibrary() = default;
-		~SubModuleLibrary() override = default;
+		ModuleLibrary() = default;
+		~ModuleLibrary() override = default;
 
 		void Add(const SubModule& submodule) override;
 		uint8_t Remove(const std::string& name) override;

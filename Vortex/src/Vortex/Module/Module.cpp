@@ -3,13 +3,13 @@
 
 namespace Vortex {
 
-	void SubModuleLibrary::Add(const SubModule& submodule)
+	void ModuleLibrary::Add(const SubModule& submodule)
 	{
 		VX_CORE_ASSERT(!Exists(submodule.GetName()), "SubModule already exists!");
 		m_LibraryData.push_back(submodule);
 	}
 
-	uint8_t SubModuleLibrary::Remove(const std::string& name)
+	uint8_t ModuleLibrary::Remove(const std::string& name)
 	{
 		VX_CORE_ASSERT(Exists(name), "Unknown module name!");
 
@@ -25,7 +25,7 @@ namespace Vortex {
 		return 1;
 	}
 
-	bool SubModuleLibrary::Exists(const std::string& name) const
+	bool ModuleLibrary::Exists(const std::string& name) const
 	{
 		for (const auto& submodule : *this)
 		{
@@ -38,7 +38,7 @@ namespace Vortex {
 		return false;
 	}
 
-	SubModule& SubModuleLibrary::Get(const std::string& name)
+	SubModule& ModuleLibrary::Get(const std::string& name)
 	{
 		if (!Exists(name)) {
 			VX_CORE_ASSERT(false, "Error: Unknown module '{}', cannot access invalid module", name);
@@ -54,7 +54,7 @@ namespace Vortex {
 		}
 	}
 
-	const SubModule& SubModuleLibrary::Get(const std::string& name) const
+	const SubModule& ModuleLibrary::Get(const std::string& name) const
 	{
 		return Get(name);
 	}

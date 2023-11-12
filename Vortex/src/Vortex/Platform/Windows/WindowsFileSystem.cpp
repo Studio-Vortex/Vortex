@@ -159,12 +159,12 @@ namespace Vortex {
 		filepath.replace_extension(extension);
     }
 
-	std::filesystem::path FileSystem::GetCurrentPath()
+	std::filesystem::path FileSystem::GetWorkingDirectory()
 	{
 		return std::filesystem::current_path();
 	}
 
-	void FileSystem::SetCurrentPath(const std::filesystem::path& filepath)
+	void FileSystem::SetWorkingDirectory(const std::filesystem::path& filepath)
 	{
 		std::filesystem::current_path(filepath);
 	}

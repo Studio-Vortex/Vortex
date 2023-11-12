@@ -60,7 +60,7 @@ namespace Vortex {
 
 			if (!OpenExistingProject())
 			{
-				Application::Get().Quit();
+				Application::Get().Close();
 			}
 		}
 
@@ -465,7 +465,7 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Exit", "Alt+F4"))
 				{
-					Application::Get().Quit();
+					Application::Get().Close();
 					Gui::CloseCurrentPopup();
 				}
 
@@ -640,18 +640,18 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Open Visual Studio Solution"))
 				{
-					FileSystem::SetCurrentPath(scriptsFolder);
+					FileSystem::SetWorkingDirectory(scriptsFolder);
 					Platform::LaunchProcess(projectSolutionFilename.string().c_str(), "");
-					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetWorkingDirectory(Application::Get().GetProperties().WorkingDirectory);
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Rebuild C# Assembly"))
 				{
-					FileSystem::SetCurrentPath("Resources/HelperScripts");
+					FileSystem::SetWorkingDirectory("Resources/HelperScripts");
 					Platform::LaunchProcess("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
-					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetWorkingDirectory(Application::Get().GetProperties().WorkingDirectory);
 					Gui::CloseCurrentPopup();
 				}
 

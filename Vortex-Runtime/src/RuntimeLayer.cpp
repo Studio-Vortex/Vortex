@@ -210,7 +210,7 @@ namespace Vortex {
 		if (!sceneMetadata.IsValid() || sceneMetadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(sceneMetadata.Handle))
 		{
 			VX_CORE_FATAL("Could not load {} - not a scene file", sceneMetadata.Filepath.filename().string());
-			Application::Get().Quit();
+			Application::Get().Close();
 			return false;
 		}
 

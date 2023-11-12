@@ -99,7 +99,7 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Application::Get().Quit();
+			Application::Get().Close();
 		}
 
 		void Application_GetSize(Math::vec2* outSize)
