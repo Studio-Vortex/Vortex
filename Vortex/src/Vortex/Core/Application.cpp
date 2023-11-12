@@ -105,6 +105,7 @@ namespace Vortex {
 		SystemManager::RegisterAssetSystem<AudioSystem>();
 		Random::Init();
 		Font::Init();
+		Input::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -117,6 +118,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		Input::Shutdown();
 		ScriptEngine::Shutdown();
 		SystemManager::UnregisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();

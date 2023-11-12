@@ -1,9 +1,10 @@
 #include "vxpch.h"
 #include "Font.h"
 
+#include "Vortex/Project/Project.h"
+
 #include "Vortex/Renderer/Font/MSDFData.h"
 
-#include "Vortex/Project/Project.h"
 #include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {

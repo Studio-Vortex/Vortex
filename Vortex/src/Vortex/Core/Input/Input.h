@@ -40,7 +40,10 @@ namespace Vortex {
 		static CursorMode GetCursorMode();
 		static void SetCursorMode(CursorMode cursorMode);
 
-		// For Internal Use
+		// For Internal Use Only
+		static void Init();
+		static void Shutdown();
+
 		static void OnEvent(const Event& event);
 		static void UpdateKeyState(KeyCode key, int action);
 		static void UpdateMouseButtonState(MouseButton button, int action);
