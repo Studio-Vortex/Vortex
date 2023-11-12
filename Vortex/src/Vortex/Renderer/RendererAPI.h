@@ -58,7 +58,7 @@ namespace Vortex {
 			None = 0, SrcAlphaOneMinusSrcAlpha, ZeroSrcColor
 		};
 
-		struct VORTEX_API RendererInfo
+		struct VORTEX_API Info
 		{
 			const char* Name;
 			const unsigned char* GPU;
@@ -105,12 +105,12 @@ namespace Vortex {
 		inline static API GetAPI() { return s_API; }
 		inline static void SetAPI(API api) { s_API = api; }
 
-		inline static const RendererInfo& GetAPIInfo() { return s_RendererInfo; }
-		inline static void SetAPIInfo(const RendererInfo& info) { s_RendererInfo = info; }
+		inline static const Info& GetAPIInfo() { return s_RendererInfo; }
+		inline static void SetAPIInfo(const Info& info) { s_RendererInfo = info; }
 
 	private:
 		static API s_API;
-		static RendererInfo s_RendererInfo;
+		static Info s_RendererInfo;
 	};
 
 	namespace Utils {

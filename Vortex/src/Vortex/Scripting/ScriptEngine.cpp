@@ -1,8 +1,10 @@
 #include "vxpch.h"
 #include "ScriptEngine.h"
 
-#include "Vortex/Core/Buffer.h"
 #include "Vortex/Core/Application.h"
+#include "Vortex/Core/Buffer.h"
+
+#include "Vortex/Module/Module.h"
 
 #include "Vortex/Project/Project.h"
 
@@ -60,6 +62,9 @@ namespace Vortex {
 
 		// Runtime
 		Scene* ContextScene = nullptr;
+
+		// Other
+		SubModule Module;
 	};
 
 	static ScriptEngineInternalData* s_Data = nullptr;
@@ -120,11 +125,22 @@ namespace Vortex {
 		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH, true);
 		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
+
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Script-Engine";
+		moduleProps.APIVersion = Version(1, 2, 0);
+		moduleProps.RequiredModules = {};
+		s_Data->Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data->Module);
 	}
 
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
+
+		Application::Get().RemoveModule(s_Data->Module);
+		s_Data->Module.Shutdown();
 
 		delete s_Data;
 		s_Data = nullptr;

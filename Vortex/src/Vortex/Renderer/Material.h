@@ -48,7 +48,7 @@ namespace Vortex {
 	{
 	public:
 		Material() = default;
-		Material(SharedReference<Shader>& shader, const MaterialProperties& props);
+		Material(const SharedReference<Shader>& shader, const MaterialProperties& props);
 		~Material() override = default;
 
 		void Bind() const;
@@ -118,7 +118,7 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(MaterialAsset)
 
-		static SharedReference<Material> Create(SharedReference<Shader>& shader, const MaterialProperties& props);
+		static SharedReference<Material> Create(const SharedReference<Shader>& shader, const MaterialProperties& props);
 
 	protected:
 		MaterialProperties m_Properties;

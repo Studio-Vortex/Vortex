@@ -1,6 +1,10 @@
 #include "vxpch.h"
 #include "ParticleSystem.h"
 
+#include "Vortex/Core/Application.h"
+
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Project/Project.h"
 #include "Vortex/Asset/AssetManager.h"
 
@@ -15,6 +19,8 @@ namespace Vortex {
 	{
 		using ParticleEmitterData = std::unordered_map<UUID, AssetHandle>;
 		std::unordered_map<Scene*, ParticleEmitterData> ActiveScenes;
+
+		SubModule Module;
 	};
 
 	static ParticleSystemInternalData s_Data;
@@ -26,11 +32,21 @@ namespace Vortex {
 
     void ParticleSystem::Init()
 	{
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Particle-System";
+		moduleProps.APIVersion = Version(1, 1, 0);
+		moduleProps.RequiredModules = {};
+		s_Data.Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data.Module);
 	}
 
 	void ParticleSystem::Shutdown()
 	{
 		s_Data.ActiveScenes.clear();
+
+		Application::Get().RemoveModule(s_Data.Module);
+		s_Data.Module.Shutdown();
 	}
 
 	void ParticleSystem::SubmitContextScene(Scene* context)
@@ -112,7 +128,7 @@ namespace Vortex {
 			if (!particleEmitter)
 				continue;
 
-			// Set the starting particle position to the entity's translation
+			// Set the particle position to the entity's translation
 			Math::vec3 entityTranslation = context->GetWorldSpaceTransform(entity).Translation;
 			particleEmitter->GetProperties().Position = entityTranslation;
 			particleEmitter->OnUpdate(delta);

@@ -380,9 +380,9 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		const bool shouldUpdateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
+		const bool updateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
 
-		if (shouldUpdateCurrentFrame)
+		if (updateCurrentFrame)
 		{
 			// C++ Entity OnUpdate
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -445,10 +445,11 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
+
 		SystemManager::GetAssetSystem<AudioSystem>()->OnUpdateRuntime(this);
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
-		if (shouldUpdateCurrentFrame)
+		if (updateCurrentFrame)
 		{
 			UpdateQueueFreeTimers(delta);
 		}

@@ -40,37 +40,72 @@ namespace Vortex {
 		VX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		// Set working directory here
+		SetWorkingDirectory();
+		CreateWindowV();
+		InitializeSubModules();
+
+		m_Running = true;
+	}
+
+	Application::~Application()
+	{
+		VX_PROFILE_FUNCTION();
+
+		ShutdownSubModules();
+	}
+
+	void Application::SetWorkingDirectory()
+	{
+		VX_PROFILE_FUNCTION();
+
 		if (!m_Properties.WorkingDirectory.empty())
-			FileSystem::SetCurrentPath(m_Properties.WorkingDirectory);
+		{
+			FileSystem::SetWorkingDirectory(m_Properties.WorkingDirectory);
+		}
 		else
-			m_Properties.WorkingDirectory = std::filesystem::current_path().string();
+		{
+			m_Properties.WorkingDirectory = FileSystem::GetWorkingDirectory().string();
+		}
+	}
+
+	void Application::CreateWindowV()
+	{
+		VX_PROFILE_FUNCTION();
 
 		WindowProperties windowProps;
-		windowProps.Size = { m_Properties.WindowWidth, m_Properties.WindowHeight };
+		windowProps.Size.x = m_Properties.WindowWidth;
+		windowProps.Size.y = m_Properties.WindowHeight;
 		windowProps.Title = m_Properties.Name;
 		windowProps.Maximized = m_Properties.MaximizeWindow;
 		windowProps.Decorated = m_Properties.WindowDecorated;
 		windowProps.Resizeable = m_Properties.WindowResizable;
 		windowProps.VSync = m_Properties.VSync;
 
+		// We need to set the app's graphics api before we create the window
+		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
+
 		m_Window = Window::Create(windowProps);
 
 		if (!m_Properties.MaximizeWindow)
+		{
 			m_Window->CenterWindow();
+		}
 
 		m_Window->SetEventCallback(VX_BIND_CALLBACK(Application::OnEvent));
+	}
 
-		// Init engine sub-systems
-		Renderer::SetGraphicsAPI(m_Properties.GraphicsAPI);
+	void Application::InitializeSubModules()
+	{
+		VX_PROFILE_FUNCTION();
 
-		//ThreadPool::Init();
+		// ThreadPool::Init();
 		Renderer::Init();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
 		SystemManager::RegisterAssetSystem<AudioSystem>();
 		Random::Init();
 		Font::Init();
+		Input::Init();
 
 		if (m_Properties.EnableGUI)
 		{
@@ -79,21 +114,18 @@ namespace Vortex {
 		}
 	}
 
-	Application::~Application()
+	void Application::ShutdownSubModules()
 	{
 		VX_PROFILE_FUNCTION();
 
+		Input::Shutdown();
 		ScriptEngine::Shutdown();
-
 		SystemManager::UnregisterAssetSystem<AudioSystem>();
-
 		Physics::Shutdown();
-
 		Font::Shutdown();
 		SystemManager::UnregisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
-
-		//ThreadPool::Shutdown();
+		// ThreadPool::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -112,7 +144,7 @@ namespace Vortex {
 		m_LayerStack.PushOverlay(overlay);
 	}
 
-	void Application::Quit()
+	void Application::Close()
 	{
 		m_Running = false;
 		g_ApplicationRunning = false;
@@ -142,6 +174,22 @@ namespace Vortex {
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
 
 		m_MainThreadQueue.emplace_back(func);
+	}
+
+	void Application::AddModule(const SubModule& submodule)
+	{
+		m_ModuleLibrary.Add(submodule);
+	}
+
+	void Application::RemoveModule(const SubModule& submodule)
+	{
+		const std::string& moduleName = submodule.GetName();
+		m_ModuleLibrary.Remove(moduleName);
+	}
+
+	const ModuleLibrary& Application::GetModules() const
+	{
+		return m_ModuleLibrary;
 	}
 
 	void Application::ExecuteMainThreadQueue()

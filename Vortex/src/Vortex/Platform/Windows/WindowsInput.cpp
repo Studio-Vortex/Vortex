@@ -2,6 +2,9 @@
 #include "Vortex/Core/Input/Input.h"
 
 #include "Vortex/Core/Application.h"
+
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Events/KeyEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 
@@ -9,50 +12,74 @@
 
 namespace Vortex {
 
-	static Math::vec2 s_MouseScrollOffset(0.0f);
-	static std::bitset<VX_MAX_KEYS> s_Keys{};
-	static std::bitset<VX_MAX_KEYS> s_KeysChangedThisFrame{};
-	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtons{};
-	static std::bitset<VX_MAX_MOUSE_BUTTONS> s_MouseButtonsChangedThisFrame{};
+	struct InputInternalData
+	{
+		Math::vec2 MouseScrollOffset;
+		std::bitset<VX_MAX_KEYS> Keys;
+		std::bitset<VX_MAX_KEYS> KeysChangedThisFrame;
+		std::bitset<VX_MAX_MOUSE_BUTTONS> MouseButtons;
+		std::bitset<VX_MAX_MOUSE_BUTTONS> MouseButtonsChangedThisFrame;
+
+		SubModule Module;
+	};
+
+	static InputInternalData s_Data;
+
+	void Input::Init()
+	{
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Input";
+		moduleProps.APIVersion = Version(1, 2, 0);
+		moduleProps.RequiredModules = {};
+		s_Data.Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data.Module);
+	}
+
+	void Input::Shutdown()
+	{
+		Application::Get().RemoveModule(s_Data.Module);
+		s_Data.Module.Shutdown();
+	}
 
 	bool Input::IsKeyPressed(KeyCode keycode)
 	{
-		return s_Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
+		return s_Data.Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
 	}
 
 	bool Input::IsKeyReleased(KeyCode keycode)
 	{
-		return !s_Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
+		return !s_Data.Keys.test((size_t)keycode) && KeyChangedThisFrame(keycode);
 	}
 
 	bool Input::IsKeyDown(KeyCode keycode)
 	{
-		return s_Keys.test((size_t)keycode);
+		return s_Data.Keys.test((size_t)keycode);
 	}
 
 	bool Input::IsKeyUp(KeyCode keycode)
 	{
-		return !s_Keys.test((size_t)keycode);
+		return !s_Data.Keys.test((size_t)keycode);
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton button)
 	{
-		return s_MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
+		return s_Data.MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
 	}
 
 	bool Input::IsMouseButtonReleased(MouseButton button)
 	{
-		return !s_MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
+		return !s_Data.MouseButtons.test((size_t)button) && MouseButtonChangedThisFrame(button);
 	}
 
 	bool Input::IsMouseButtonDown(MouseButton button)
 	{
-		return s_MouseButtons.test((size_t)button);
+		return s_Data.MouseButtons.test((size_t)button);
 	}
 
 	bool Input::IsMouseButtonUp(MouseButton button)
 	{
-		return !s_MouseButtons.test((size_t)button);
+		return !s_Data.MouseButtons.test((size_t)button);
 	}
 
 	bool Input::IsGamepadButtonDown(GamepadButton gamepad)
@@ -77,16 +104,16 @@ namespace Vortex {
 
 	Math::vec2 Input::GetMouseScrollOffset()
 	{
-		Math::vec2 value = s_MouseScrollOffset;
+		Math::vec2 value = s_Data.MouseScrollOffset;
 
 		// Reset the scroll offset
-		s_MouseScrollOffset = Math::vec2(0.0f);
+		s_Data.MouseScrollOffset = Math::vec2(0.0f);
 		return value;
 	}
 
 	void Input::SetMouseScrollOffset(const Math::vec2& offset)
 	{
-		s_MouseScrollOffset = offset;
+		s_Data.MouseScrollOffset = offset;
 	}
 
 	float Input::GetGamepadAxis(GamepadAxis axis)
@@ -149,46 +176,46 @@ namespace Vortex {
 	{
 		if (action != GLFW_RELEASE)
 		{
-			if (!s_Keys.test((size_t)key))
-				s_Keys.set((size_t)key, true);
+			if (!s_Data.Keys.test((size_t)key))
+				s_Data.Keys.set((size_t)key, true);
 		}
 		else
 		{
-			s_Keys.set((size_t)key, false);
+			s_Data.Keys.set((size_t)key, false);
 		}
 
-		s_KeysChangedThisFrame.set((size_t)key, action != GLFW_REPEAT);
+		s_Data.KeysChangedThisFrame.set((size_t)key, action != GLFW_REPEAT);
 	}
 
 	void Input::UpdateMouseButtonState(MouseButton button, int action)
 	{
 		if (action != GLFW_RELEASE)
 		{
-			if (!s_MouseButtons.test((size_t)button))
-				s_MouseButtons.set((size_t)button, true);
+			if (!s_Data.MouseButtons.test((size_t)button))
+				s_Data.MouseButtons.set((size_t)button, true);
 		}
 		else
 		{
-			s_MouseButtons.set((size_t)button, false);
+			s_Data.MouseButtons.set((size_t)button, false);
 		}
 
-		s_MouseButtonsChangedThisFrame.set((size_t)button, action != GLFW_REPEAT);
+		s_Data.MouseButtonsChangedThisFrame.set((size_t)button, action != GLFW_REPEAT);
 	}
 
 	bool Input::KeyChangedThisFrame(KeyCode key)
 	{
-		return s_KeysChangedThisFrame.test((size_t)key);
+		return s_Data.KeysChangedThisFrame.test((size_t)key);
 	}
 
 	bool Input::MouseButtonChangedThisFrame(MouseButton mousebutton)
 	{
-		return s_MouseButtonsChangedThisFrame.test((size_t)mousebutton);
+		return s_Data.MouseButtonsChangedThisFrame.test((size_t)mousebutton);
 	}
 
 	void Input::ResetChangesForNextFrame()
 	{
-		s_KeysChangedThisFrame.reset();
-		s_MouseButtonsChangedThisFrame.reset();
+		s_Data.KeysChangedThisFrame.reset();
+		s_Data.MouseButtonsChangedThisFrame.reset();
 	}
 
 }

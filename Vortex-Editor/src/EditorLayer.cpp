@@ -60,7 +60,7 @@ namespace Vortex {
 
 			if (!OpenExistingProject())
 			{
-				Application::Get().Quit();
+				Application::Get().Close();
 			}
 		}
 
@@ -269,9 +269,13 @@ namespace Vortex {
 	void EditorLayer::OnEvent(Event& e)
 	{
 		if (m_AllowViewportCameraEvents)
+		{
 			m_EditorCamera->OnEvent(e);
+		}
 		else if (m_AllowSecondViewportCameraEvents)
+		{
 			m_SecondEditorCamera->OnEvent(e);
+		}
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowDragDropEvent>(VX_BIND_CALLBACK(EditorLayer::OnWindowDragDropEvent));
@@ -303,19 +307,29 @@ namespace Vortex {
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 		else
+		{
 			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+		}
 
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		{
 			window_flags |= ImGuiWindowFlags_NoBackground;
-
+		}
 		if (!opt_padding)
+		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		}
+
 		Gui::Begin("Engine Dockspace", &dockspaceOpen, window_flags);
 		if (!opt_padding)
+		{
 			Gui::PopStyleVar();
+		}
 
 		if (opt_fullscreen)
+		{
 			Gui::PopStyleVar(2);
+		}
 
 		ImGuiIO& io = Gui::GetIO();
 		ImGuiStyle& style = Gui::GetStyle();
@@ -350,16 +364,17 @@ namespace Vortex {
 			m_PhysicsMaterialEditorPanel.OnGuiRender();
 			m_PhysicsStatsPanel.OnGuiRender();
 			m_ProjectSettingsPanel->OnGuiRender();
-			m_ECSDebugPanel.OnGuiRender();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender();
+			m_SceneRendererPanel.OnGuiRender();
+			m_AssetRegistryPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
 			m_SystemManagerPanel.OnGuiRender();
-			m_AssetRegistryPanel.OnGuiRender();
-			m_SceneRendererPanel.OnGuiRender();
 			m_ShaderEditorPanel.OnGuiRender();
+			m_SubModulesPanel.OnGuiRender();
+			m_ECSDebugPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender(m_ActiveScene);
 			m_AboutPanel.OnGuiRender();
 		}
@@ -367,13 +382,20 @@ namespace Vortex {
 		// Always render if open
 		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
 
+		// Update Engine Systems Gui
+		SystemManager::OnGuiRender();
+
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();
 
 		if (m_ShowScenePanel)
+		{
 			OnScenePanelRender();
+		}
 		if (m_ShowSecondViewport)
+		{
 			OnSecondViewportPanelRender();
+		}
 
 		if (m_ShowSceneCreateEntityMenu)
 		{
@@ -458,14 +480,14 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
 				{
-					Gui::CloseCurrentPopup();
 					SaveSceneAs();
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Exit", "Alt+F4"))
 				{
-					Application::Get().Quit();
+					Application::Get().Close();
 					Gui::CloseCurrentPopup();
 				}
 
@@ -640,18 +662,18 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Open Visual Studio Solution"))
 				{
-					FileSystem::SetCurrentPath(scriptsFolder);
+					FileSystem::SetWorkingDirectory(scriptsFolder);
 					Platform::LaunchProcess(projectSolutionFilename.string().c_str(), "");
-					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetWorkingDirectory(Application::Get().GetProperties().WorkingDirectory);
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Rebuild C# Assembly"))
 				{
-					FileSystem::SetCurrentPath("Resources/HelperScripts");
+					FileSystem::SetWorkingDirectory("Resources/HelperScripts");
 					Platform::LaunchProcess("BuildSolution.bat", ("..\\..\\" / solutionPath).string().c_str());
-					FileSystem::SetCurrentPath(Application::Get().GetProperties().WorkingDirectory);
+					FileSystem::SetWorkingDirectory(Application::Get().GetProperties().WorkingDirectory);
 					Gui::CloseCurrentPopup();
 				}
 
@@ -714,6 +736,8 @@ namespace Vortex {
 					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Sub Modules", nullptr, &m_SubModulesPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
 

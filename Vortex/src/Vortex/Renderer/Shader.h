@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/LibraryBase.h"
 #include "Vortex/Core/ReferenceCounting/RefCounted.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
@@ -41,31 +43,20 @@ namespace Vortex {
 	};
 
 
-	class VORTEX_API ShaderLibrary
+	class VORTEX_API ShaderLibrary : public LibraryMapBase<SharedReference<Shader>, std::string>
 	{
 	public:
 		ShaderLibrary() = default;
-		~ShaderLibrary() = default;
+		~ShaderLibrary() override = default;
 
 		void Add(const std::string& name, const SharedReference<Shader>& shader);
-		void Add(const SharedReference<Shader>& shader);
+		void Add(const SharedReference<Shader>& shader) override;
+		uint8_t Remove(const std::string& name) override;
+
 		SharedReference<Shader> Load(const std::string& filepath);
 		SharedReference<Shader> Load(const std::string& name, const std::string& filepath);
 
-		SharedReference<Shader>& Get(const std::string& name);
-		const SharedReference<Shader>& Get(const std::string& name) const;
-
-		bool Exists(const std::string& name) const;
-
-		size_t Size() const;
-
-		inline std::unordered_map<std::string, SharedReference<Shader>>::iterator begin() { return m_Shaders.begin(); }
-		inline std::unordered_map<std::string, SharedReference<Shader>>::iterator end() { return m_Shaders.end(); }
-
-		inline std::unordered_map<std::string, SharedReference<Shader>>::const_iterator begin() const { return m_Shaders.begin(); }
-		inline std::unordered_map<std::string, SharedReference<Shader>>::const_iterator end() const { return m_Shaders.end(); }
-
-	private:
-		std::unordered_map<std::string, SharedReference<Shader>> m_Shaders;
+		SharedReference<Shader>& Get(const std::string& name) override;
+		const SharedReference<Shader>& Get(const std::string& name) const override;
 	};
 }

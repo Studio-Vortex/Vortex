@@ -1,6 +1,9 @@
 #include "vxpch.h"
 #include "AudioSystem.h"
 
+#include "Vortex/Core/Application.h"
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Asset/AssetManager.h"
@@ -31,6 +34,8 @@ namespace Vortex {
 		};
 
 		std::unordered_map<Scene*, SceneAudioData> ActiveScenes;
+
+		SubModule Module;
 	};
 
 	static AudioSystemInternalData* s_Data;
@@ -46,6 +51,14 @@ namespace Vortex {
 
 		s_Data->Context = AudioContext::Create();
 		s_Data->Context->Init();
+
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Audio";
+		moduleProps.APIVersion = Version(1, 2, 0);
+		moduleProps.RequiredModules = {};
+		s_Data->Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data->Module);
 	}
 
 	void AudioSystem::Shutdown()
@@ -53,6 +66,9 @@ namespace Vortex {
 		s_Data->ActiveScenes.clear();
 
 		s_Data->Context->Shutdown();
+
+		Application::Get().RemoveModule(s_Data->Module);
+		s_Data->Module.Shutdown();
 
 		delete s_Data;
 		s_Data = nullptr;
@@ -333,11 +349,6 @@ namespace Vortex {
 
 	void AudioSystem::OnGuiRender()
 	{
-		for (auto& [scene, audioData] : s_Data->ActiveScenes)
-		{
-			const std::string& sceneName = scene->GetDebugName();
-			Gui::Text(sceneName.c_str());
-		}
 	}
 
 }
