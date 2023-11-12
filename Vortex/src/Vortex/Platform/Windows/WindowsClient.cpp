@@ -1,5 +1,5 @@
 #include "vxpch.h"
-#include "Vortex/Networking/CLient.h"
+#include "Vortex/Network/CLient.h"
 
 namespace Vortex {
 
