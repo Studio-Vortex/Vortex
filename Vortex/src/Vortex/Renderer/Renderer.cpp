@@ -4,10 +4,10 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/Application.h"
 
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/BloomPass.h"
-
-#include <unordered_map>
 
 namespace Vortex {
 
@@ -54,6 +54,8 @@ namespace Vortex {
 		SharedReference<Texture2D> BRDF_LUT = nullptr;
 
 		uint32_t RenderFlags = 0;
+
+		SubModule Module;
 	};
 
 	static RendererInternalData s_Data;
@@ -106,6 +108,14 @@ namespace Vortex {
 #endif // VX_RENDERER_STATISTICS
 
 		Renderer2D::Init();
+
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Renderer";
+		moduleProps.APIVersion = Version(1, 0, 0);
+		moduleProps.RequiredModules = {};
+		s_Data.Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data.Module);
 	}
 
 	void Renderer::Shutdown()

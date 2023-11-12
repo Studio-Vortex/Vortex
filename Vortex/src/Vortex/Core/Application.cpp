@@ -56,6 +56,8 @@ namespace Vortex {
 
 	void Application::SetWorkingDirectory()
 	{
+		VX_PROFILE_FUNCTION();
+
 		if (!m_Properties.WorkingDirectory.empty())
 		{
 			FileSystem::SetWorkingDirectory(m_Properties.WorkingDirectory);
@@ -68,6 +70,8 @@ namespace Vortex {
 
 	void Application::CreateWindowV()
 	{
+		VX_PROFILE_FUNCTION();
+
 		WindowProperties windowProps;
 		windowProps.Size.x = m_Properties.WindowWidth;
 		windowProps.Size.y = m_Properties.WindowHeight;
@@ -92,6 +96,8 @@ namespace Vortex {
 
 	void Application::InitializeSubModules()
 	{
+		VX_PROFILE_FUNCTION();
+
 		// ThreadPool::Init();
 		Renderer::Init();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
@@ -109,6 +115,8 @@ namespace Vortex {
 
 	void Application::ShutdownSubModules()
 	{
+		VX_PROFILE_FUNCTION();
+
 		ScriptEngine::Shutdown();
 		SystemManager::UnregisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
