@@ -1,13 +1,20 @@
 #include "vxpch.h"
 #include "Physics.h"
 
+#include "Vortex/Core/Application.h"
+
+#include "Vortex/Module/Module.h"
+
 #include "Vortex/Project/Project.h"
+
 #include "Vortex/Renderer/Renderer2D.h"
+
 #include "Vortex/Physics/3D/PhysXUtilities.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
 #include "Vortex/Physics/3D/CookingFactory.h"
+
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Utils/Time.h"
@@ -60,6 +67,8 @@ namespace Vortex {
 		Math::vec3 SceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);
 		uint32_t PositionSolverIterations = 8;
 		uint32_t VelocitySolverIterations = 2;
+
+		SubModule Module;
 	};
 
 	static PhysicsEngineInternalData* s_Data = nullptr;
@@ -67,11 +76,22 @@ namespace Vortex {
 	void Physics::Init()
 	{
 		InitPhysicsSDKInternal();
+
+		SubModuleProperties moduleProps;
+		moduleProps.ModuleName = "Physics";
+		moduleProps.APIVersion = Version(1, 1, 0);
+		moduleProps.RequiredModules = {};
+		s_Data->Module.Init(moduleProps);
+
+		Application::Get().AddModule(s_Data->Module);
 	}
 
 	void Physics::Shutdown()
 	{
 		ShutdownPhysicsSDKInternal();
+
+		Application::Get().RemoveModule(s_Data->Module);
+		s_Data->Module.Shutdown();
 	}
 
 	void Physics::OnSimulationStart(Scene* contextScene)
