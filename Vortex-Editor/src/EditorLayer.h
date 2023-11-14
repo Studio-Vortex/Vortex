@@ -4,6 +4,8 @@
 #include <Vortex/Editor/ConsolePanel.h>
 #include <Vortex/Scene/SceneRenderer.h>
 
+#include <Vortex/Editor/PanelManager.h>
+
 #include "Panels/PhysicsMaterialEditorPanel.h"
 #include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
@@ -181,6 +183,8 @@ namespace Vortex {
 		bool m_OpenCreateScriptPopup = false;
 		bool m_OpenMeshImportPopup = false;
 
+		SharedReference<PanelManager> m_PanelManager = nullptr;
+
 		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
 		PhysicsStatisticsPanel m_PhysicsStatsPanel;
 		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
@@ -197,7 +201,7 @@ namespace Vortex {
 		SubModulesPanel m_SubModulesPanel;
 		ECSDebugPanel m_ECSDebugPanel;
 		ConsolePanel m_ConsolePanel;
-		AboutPanel m_AboutPanel;
+		//AboutPanel m_AboutPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

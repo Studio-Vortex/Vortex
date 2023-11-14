@@ -8,11 +8,11 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!m_ShowPanel)
 			return;
 
 		Gui::SetNextWindowSizeConstraints(ImVec2{ 480, 280 }, ImVec2{ 600, 400 });
-		Gui::Begin("About", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &m_ShowPanel);
 
 		Gui::PushFont(largeFont);
 		Gui::Text("Vortex Game Engine");

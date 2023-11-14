@@ -82,11 +82,18 @@ namespace Vortex {
 			0.1f,
 			1000.0f
 		);
+
+		m_PanelManager = PanelManager::Create();
+		m_PanelManager->AddPanel<AboutPanel>("About");
+
+		m_PanelManager->OnEditorAttach();
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		VX_PROFILE_FUNCTION();
+
+		m_PanelManager->OnEditorDetach();
 
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
@@ -376,7 +383,7 @@ namespace Vortex {
 			m_SubModulesPanel.OnGuiRender();
 			m_ECSDebugPanel.OnGuiRender();
 			m_ConsolePanel.OnGuiRender(m_ActiveScene);
-			m_AboutPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<AboutPanel>();
 		}
 
 		// Always render if open
@@ -749,7 +756,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Help"))
 			{
-				Gui::MenuItem("About", nullptr, &m_AboutPanel.IsOpen());
+				m_PanelManager->AddMainMenuBarItem<AboutPanel>();
 
 				Gui::EndMenu();
 			}
@@ -2365,6 +2372,8 @@ namespace Vortex {
 
 					break;
 				}
+
+				break;
 			}
 			case KeyCode::X:
 			{
@@ -2385,6 +2394,8 @@ namespace Vortex {
 
 					break;
 				}
+
+				break;
 			}
 
 			// Tools
@@ -2858,7 +2869,13 @@ namespace Vortex {
 		Window& window = application.GetWindow();
 
 		const static std::string originalTitle = window.GetTitle();
-		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
+		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>",
+			projectName,
+			sceneName,
+			platformName,
+			originalTitle,
+			graphicsAPI
+		);
 		window.SetTitle(newTitle);
 	}
 
