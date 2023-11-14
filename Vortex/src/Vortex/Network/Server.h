@@ -2,13 +2,41 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+
+#include "Vortex/Network/Port.h"
+#include "Vortex/Network/IpAddress.h"
+#include "Vortex/Network/NetworkTypes.h"
+#include "Vortex/Network/SocketProperties.h"
+
 namespace Vortex {
 
-	class VORTEX_API Server
+	struct VORTEX_API ServerProperties
+	{
+		SocketProperties SocketOptions;
+		IpAddress IpAddr;
+		Port PortAddr;
+	};
+
+	class VORTEX_API Server : public RefCounted
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		virtual ~Server() = default;
+
+		virtual void Bind() = 0;
+		virtual void Listen() = 0;
+
+		virtual void Accept() = 0;
+		virtual void Connect() = 0;
+
+		virtual void Receive() = 0;
+		virtual void Send() = 0;
+
+		virtual const IpAddress& GetIpAddr() const = 0;
+		virtual Port GetPort() const = 0;
+
+		static SharedReference<Server> Create(const ServerProperties& serverProps);
 	};
 
 }

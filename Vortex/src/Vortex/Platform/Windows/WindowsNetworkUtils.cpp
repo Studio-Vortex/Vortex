@@ -9,8 +9,9 @@ namespace Vortex::Utils {
 	{
 		switch (family)
 		{
-			case AddressFamily::None:     return 0;
-			case AddressFamily::Internet: return AF_INET;
+			case AddressFamily::None:         return 0;
+			case AddressFamily::InternetIPv4: return AF_INET;
+			case AddressFamily::InternetIPv6: return AF_INET6;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown address family");
@@ -23,7 +24,7 @@ namespace Vortex::Utils {
 		{
 			case ConnectionType::None: return 0;
 			case ConnectionType::Tcp:  return SOCK_STREAM;
-			case ConnectionType::Udp:  return SOCK_RAW;
+			case ConnectionType::Udp:  return SOCK_DGRAM;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown connection type");
