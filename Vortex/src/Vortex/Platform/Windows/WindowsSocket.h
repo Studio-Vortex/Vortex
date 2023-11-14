@@ -12,7 +12,7 @@ namespace Vortex {
 		WindowsSocket(const SocketProperties& socketProps);
 		~WindowsSocket() override;
 
-		void Shutdown() override;
+		void Disconnect(NetworkChannel channel) override;
 
 		void Bind(Port port, IpAddress ipAddr) override;
 		void Listen() override;

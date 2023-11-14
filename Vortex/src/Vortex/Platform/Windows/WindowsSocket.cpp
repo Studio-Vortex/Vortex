@@ -60,9 +60,15 @@ namespace Vortex {
 
 	WindowsSocket::~WindowsSocket() { }
 
-	void WindowsSocket::Shutdown()
+	void WindowsSocket::Disconnect(NetworkChannel channel)
 	{
 		Ws2Socket sock = Utils::GetSocket(m_SocketID);
+
+		VX_CHECK_NETWORK_RESULT(
+			shutdown(sock, Utils::NetworkChannelToWinSockChannel(channel)),
+			"Failed to disconnect socket ID: '{}'",
+			m_SocketID
+		);
 
 		VX_CHECK_NETWORK_RESULT(
 			closesocket(sock),

@@ -21,7 +21,7 @@ namespace Vortex {
 	public:
 		virtual ~Socket() = default;
 
-		virtual void Shutdown() = 0;
+		virtual void Disconnect(NetworkChannel channel) = 0;
 
 		virtual void Bind(Port port, IpAddress ipAddr) = 0;
 		virtual void Listen() = 0;

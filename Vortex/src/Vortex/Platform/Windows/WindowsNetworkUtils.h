@@ -4,15 +4,12 @@
 
 #include <string>
 
-namespace Vortex {
+namespace Vortex::Utils {
 
-	namespace Utils {
-
-		int AddressFamilyToWinSockAF(AddressFamily family);
-		int ConnectionTypeToWinSockType(ConnectionType type);
-		int NetworkProtocolToWinSockProtocol(NetworkProtocol protocol);
-		std::string SocketOptionToWinSockOption(SocketOption opt);
-
-	}
+	int NetworkChannelToWinSockChannel(NetworkChannel channel);
+	int AddressFamilyToWinSockAF(AddressFamily family);
+	int ConnectionTypeToWinSockType(ConnectionType type);
+	int NetworkProtocolToWinSockProtocol(NetworkProtocol protocol);
+	std::string SocketOptionToWinSockOption(SocketOption opt);
 
 }

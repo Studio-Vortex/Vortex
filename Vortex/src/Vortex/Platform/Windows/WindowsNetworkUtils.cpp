@@ -5,6 +5,19 @@
 
 namespace Vortex::Utils {
 
+	int NetworkChannelToWinSockChannel(NetworkChannel channel)
+	{
+		switch (channel)
+		{
+			case NetworkChannel::Send:    return SD_SEND;
+			case NetworkChannel::Receive: return SD_RECEIVE;
+			case NetworkChannel::Both:    return SD_BOTH;
+		}
+
+		VX_CORE_ASSERT(false, "Unknown network channel");
+		return 0;
+	}
+
 	int AddressFamilyToWinSockAF(AddressFamily family)
 	{
 		switch (family)

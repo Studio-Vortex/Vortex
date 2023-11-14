@@ -24,6 +24,8 @@ namespace Vortex {
 	public:
 		virtual ~Server() = default;
 
+		virtual void Shutdown() = 0;
+
 		virtual void Bind() = 0;
 		virtual void Listen() = 0;
 

@@ -14,6 +14,8 @@ namespace Vortex {
 		WindowsServer(const ServerProperties& serverProps);
 		~WindowsServer() override;
 
+		void Shutdown() override;
+
 		void Bind() override;
 		void Listen() override;
 
@@ -23,14 +25,12 @@ namespace Vortex {
 		void Receive() override;
 		void Send() override;
 
-		const IpAddress& GetIpAddr() const override { return m_IpAddr; }
-		Port GetPort() const override { return m_Port; }
+		const IpAddress& GetIpAddr() const override { return m_Properties.IpAddr; }
+		Port GetPort() const override { return m_Properties.PortAddr; }
 
 	private:
 		ServerProperties m_Properties;
 		SharedReference<Socket> m_Socket = nullptr;
-		IpAddress m_IpAddr;
-		Port m_Port;
 	};
 
 }

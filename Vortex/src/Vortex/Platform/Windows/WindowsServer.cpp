@@ -11,14 +11,16 @@ namespace Vortex {
 		m_Socket = Socket::Create(serverProps.SocketOptions);
 	}
 
-	WindowsServer::~WindowsServer()
+	WindowsServer::~WindowsServer() { }
+
+	void WindowsServer::Shutdown()
 	{
-		m_Socket->Shutdown();
+		m_Socket->Disconnect(NetworkChannel::Both);
 	}
 
 	void WindowsServer::Bind()
 	{
-		m_Socket->Bind();
+		m_Socket->Bind(m_Properties.PortAddr, m_Properties.IpAddr);
 	}
 
 	void WindowsServer::Listen()

@@ -4,6 +4,13 @@
 
 namespace Vortex {
 
+	enum class NetworkChannel
+	{
+		Send,
+		Receive,
+		Both,
+	};
+
 	enum class VORTEX_API SocketOption
 	{
 		None = 0,
@@ -11,17 +18,23 @@ namespace Vortex {
 
 	enum class VORTEX_API AddressFamily
 	{
-		None = 0, InternetIPv4, InternetIPv6,
+		None = 0,
+		InternetIPv4,
+		InternetIPv6,
 	};
 
 	enum class VORTEX_API ConnectionType
 	{
-		None = 0, Tcp, Udp,
+		None = 0,
+		Tcp,
+		Udp,
 	};
 
 	enum class VORTEX_API NetworkProtocol
 	{
-		None = 0, Tcp, Udp,
+		None = 0,
+		Tcp,
+		Udp,
 	};
 
 }
