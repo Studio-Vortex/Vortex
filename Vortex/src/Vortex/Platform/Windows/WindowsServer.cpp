@@ -5,10 +5,18 @@
 
 namespace Vortex {
 
+#define DEBUG_CONFIG VX_RELEASE
+
 	WindowsServer::WindowsServer(const ServerProperties& serverProps)
 		: m_Properties(serverProps)
 	{
-		m_Socket = Socket::Create(serverProps.SocketOptions);
+		m_Socket = Socket::Create(m_Properties.SocketOptions);
+
+#ifdef DEBUG_CONFIG
+		std::string addrStr = m_Properties.IpAddr.ToString();
+		uint16_t port = m_Properties.PortAddr.Address;
+		VX_CONSOLE_LOG_INFO("Server started at '{}' on port '{}'", addrStr, port);
+#endif // DEBUG_CONFIG
 	}
 
 	WindowsServer::~WindowsServer() { }
@@ -16,6 +24,12 @@ namespace Vortex {
 	void WindowsServer::Shutdown()
 	{
 		m_Socket->Disconnect(NetworkChannel::Both);
+
+#ifdef DEBUG_CONFIG
+		std::string addrStr = m_Properties.IpAddr.ToString();
+		uint16_t port = m_Properties.PortAddr.Address;
+		VX_CONSOLE_LOG_INFO("Server shutting down at '{}' on port '{}'", addrStr, port);
+#endif // DEBUG_CONFIG
 	}
 
 	void WindowsServer::Bind()

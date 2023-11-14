@@ -82,6 +82,8 @@ namespace Vortex {
 			0.1f,
 			1000.0f
 		);
+
+		m_NetworkManagerPanel.OnEditorAttach();
 	}
 
 	void EditorLayer::OnDetach()
@@ -368,6 +370,7 @@ namespace Vortex {
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender();
+			m_NetworkManagerPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
@@ -730,6 +733,8 @@ namespace Vortex {
 					Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
+					UI::Draw::Underline();
+					Gui::MenuItem("Network Manager", nullptr, &m_NetworkManagerPanel.IsOpen());
 					UI::Draw::Underline();
 					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
 					UI::Draw::Underline();

@@ -13,6 +13,8 @@
 
 namespace Vortex {
 
+#define DEBUG_CONFIG VX_RELEASE
+
 	using Ws2Socket = SOCKET;
 
 	struct SocketInternalData
@@ -53,9 +55,9 @@ namespace Vortex {
 		VX_CORE_ASSERT(!s_Data.ActiveSockets.contains(m_SocketID), "Socket with ID already exists");
 		s_Data.ActiveSockets[m_SocketID] = sock;
 
-#ifdef VX_DEBUG
+#ifdef DEBUG_CONFIG
 		VX_CONSOLE_LOG_INFO("Socket opened ID: '{}'", m_SocketID);
-#endif // VX_DEBUG
+#endif // DEBUG_CONFIG
 	}
 
 	WindowsSocket::~WindowsSocket() { }
@@ -76,9 +78,9 @@ namespace Vortex {
 			m_SocketID
 		);
 
-#ifdef VX_DEBUG
+#ifdef DEBUG_CONFIG
 		VX_CONSOLE_LOG_INFO("Socket closed ID: '{}'", m_SocketID);
-#endif // VX_DEBUG
+#endif // DEBUG_CONFIG
 	}
 
 	void WindowsSocket::Bind(Port port, IpAddress ipAddr)
@@ -99,9 +101,9 @@ namespace Vortex {
 			m_SocketID
 		);
 
-#ifdef VX_DEBUG
+#ifdef DEBUG_CONFIG
 		VX_CONSOLE_LOG_INFO("Socket ID: '{}' binded to port: '{}' at ip: '{}'", m_SocketID, port.Address, addrStr);
-#endif // VX_DEBUG
+#endif // DEBUG_CONFIG
 	}
 
 	void WindowsSocket::Listen()

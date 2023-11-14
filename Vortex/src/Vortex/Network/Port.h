@@ -8,7 +8,7 @@ namespace Vortex {
 	{
 		uint16_t Address;
 
-		Port(uint16_t port)
+		Port(uint16_t port = 27999)
 			: Address(port) { }
 	};
 
