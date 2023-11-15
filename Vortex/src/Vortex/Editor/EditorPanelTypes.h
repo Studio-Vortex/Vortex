@@ -9,9 +9,12 @@ namespace Vortex {
 	enum class VORTEX_API EditorPanelType
 	{
 		None = 0,
+		SceneRenderer,
+		AssetRegistry,
 		BuildSettings,
 		SystemManager,
 		ShaderEditor,
+		Performance,
 		SubModules,
 		ECSDebug,
 		Console,
