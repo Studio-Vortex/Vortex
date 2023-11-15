@@ -1698,15 +1698,22 @@ namespace Vortex {
 					{
 						const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 
-						if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+						switch (sceneCamera.GetProjectionType())
 						{
-							// TODO fix this
-							//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
-							Renderer2D::DrawRect(transform, outlineColor);
-						}
-						else
-						{
-							Renderer2D::DrawRect(transform, outlineColor);
+							case SceneCamera::ProjectionType::Perspective:
+							{
+								const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+								auto corners = GetFrustumCornersWorldSpace(worldSpaceTransform, sceneCamera);
+
+								Renderer::DrawFrustum(corners, ColorToVec4(Color::LightBlue));
+								break;
+							}
+							case SceneCamera::ProjectionType::Orthographic:
+							{
+								auto scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
+								Renderer2D::DrawRect(scaled, outlineColor);
+								break;
+							}
 						}
 					}
 
@@ -1714,16 +1721,29 @@ namespace Vortex {
 					{
 						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-						if (lightSourceComponent.Type == LightType::Point)
+						Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+
+						switch (lightSourceComponent.Type)
 						{
-							Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+							case LightType::Directional:
+							{
+								break;
+							}
+							case LightType::Point:
+							{
+								const float radius = lightSourceComponent.Intensity * 0.5f;
 
-							Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-							const float radius = lightSourceComponent.Intensity * 0.5f;
+								Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+								Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+								Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
 
-							Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
-							Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
-							Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+								break;
+							}
+							case LightType::Spot:
+							{
+								break;
+							}
 						}
 					}
 				}
@@ -2992,6 +3012,35 @@ namespace Vortex {
 			FileSystem::ReplaceExtension(copy, ".vortex");
 			filepath = copy.string();
 		}
+	}
+
+	std::vector<Math::vec4> EditorLayer::GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera)
+	{
+		Math::mat4 proj = sceneCamera.GetProjectionMatrix();
+		Math::mat4 view = Math::Inverse(transform.GetTransform());
+
+		Math::mat4 inv = Math::Inverse(proj * view);
+
+		std::vector<Math::vec4> frustumCorners;
+		for (uint32_t x = 0; x < 2; x++)
+		{
+			for (uint32_t y = 0; y < 2; y++)
+			{
+				for (uint32_t z = 0; z < 2; z++)
+				{
+					const Math::vec4 pt = inv * Math::vec4(
+						2.0f * x - 1.0f,
+						2.0f * y - 1.0f,
+						2.0f * z - 1.0f,
+						1.0f
+					);
+
+					frustumCorners.push_back(pt / pt.w);
+				}
+			}
+		}
+
+		return frustumCorners;
 	}
 
 	std::pair<float, float> EditorLayer::GetMouseViewportSpace(bool mainViewport)

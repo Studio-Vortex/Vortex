@@ -119,6 +119,8 @@ namespace Vortex {
 		void CaptureFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
+		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
+
 		std::pair<float, float> GetMouseViewportSpace(bool mainViewport);
 		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
 

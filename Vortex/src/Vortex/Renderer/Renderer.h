@@ -79,7 +79,7 @@ namespace Vortex {
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
-		static void DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color);
+		static void DrawFrustum(const std::vector<Math::vec4>& corners, const Math::vec4& color);
 
 		static SceneLightDescription GetSceneLightDescription();
 
